@@ -40,12 +40,14 @@ void SetWindowBlur(HWND hWnd)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
 {
 
-	HWND taskbar = FindWindowA("Shell_TrayWnd", NULL);
-	HWND secondtaskbar = FindWindowA("Shell_SecondaryTrayWnd", NULL);
+	HWND mainTb, otherTb ;
+	mainTb = FindWindowA("Shell_TrayWnd", NULL); // Primary desktop taskbar
+		// = FindWindowA("Shell_SecondaryTrayWnd", NULL);
 	
 	while (true) {
-		SetWindowBlur(taskbar); 
-		SetWindowBlur(secondtaskbar);
+		SetWindowBlur(mainTb); 
+		while (otherTb = FindWindowEx(0, otherTb, "Shell_SecondaryTrayWnd", ""))
+    		SetWindowBlur(otherTb);
 		Sleep((DWORD)10);
 	}
 	FreeLibrary(hModule);
