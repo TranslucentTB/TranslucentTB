@@ -1,4 +1,8 @@
 #include <windows.h>
+#include <fstream>
+#include <iostream>
+
+using namespace std;
 
 const HINSTANCE hModule = LoadLibrary(TEXT("user32.dll"));
 
@@ -28,7 +32,12 @@ void SetWindowBlur(HWND hWnd)
 	{	
 		if (SetWindowCompositionAttribute)
 		{
-			ACCENTPOLICY policy = { 3, 0, 0, 0 }; // ACCENT_ENABLE_BLURBEHIND=3, ACCENT_INVALID=4...
+			ACCENTPOLICY policy;
+			ifstream file("transparent.xml");
+			if(!file)
+				policy = { 3, 0, 0, 0 }; // ACCENT_ENABLE_BLURBEHIND=3, ACCENT_INVALID=4...
+			else
+				policy = {2, 2, 0, 0};
 			WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) }; // WCA_ACCENT_POLICY=19
 			SetWindowCompositionAttribute(hWnd, &data);
 		}
