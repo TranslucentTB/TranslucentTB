@@ -41,8 +41,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 {
 
 	HWND taskbar = FindWindowA("Shell_TrayWnd", NULL);
+	HWND secondtaskbar = FindWindowA("Shell_SecondaryTrayWnd", NULL);
+	
 	while (true) {
-		SetWindowBlur(taskbar); Sleep((DWORD)10);
+		SetWindowBlur(taskbar); 
+		SetWindowBlur(secondtaskbar);
+		Sleep((DWORD)10);
 	}
 	FreeLibrary(hModule);
 
