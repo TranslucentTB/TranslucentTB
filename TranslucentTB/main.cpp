@@ -77,7 +77,7 @@ void SetWindowBlur(HWND hWnd)
 				// nFlags doesn't matter
 				// nAccentState = ACCENT_ENABLE_BLURBEHIND = 3
 
-				policy = { ACCENT_ENABLE_BLURBEHIND, 0, opt.color, 0 };
+				policy = { ACCENT_ENABLE_BLURBEHIND, 2, opt.color, 0 };
 			}
 
 			WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) }; // WCA_ACCENT_POLICY=19
