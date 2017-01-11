@@ -1,6 +1,8 @@
 #include <windows.h>
 #include <fstream>
+#include <stdio.h>
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -49,13 +51,22 @@ void SetWindowBlur(HWND hWnd)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
 {
 
-	HWND otherTb ;
+	HWND mainTb, otherTb ;
+	std::vector<HWND> secondTbVec;
 	
 	while (true) {
-		SetWindowBlur(FindWindowA("Shell_TrayWnd", NULL)); 
+		secondTbVec.clear();
 		while (otherTb = FindWindowEx(0, otherTb, "Shell_SecondaryTrayWnd", ""))
-    		SetWindowBlur(otherTb);
-		Sleep((DWORD)10);
+			secondTbVec.push_back(otherTb);
+
+		mainTb = FindWindowA("Shell_TrayWnd", NULL);
+		for( int a = 0; a < 500; a++) {
+			SetWindowBlur(mainTb); 
+			for(unsigned int i = 0; i < secondTbVec.size(); ++i) {
+				SetWindowBlur(secondTbVec[i]); //call the virtual function
+			}
+			Sleep((DWORD)10);
+		}
 	}
 	FreeLibrary(hModule);
 
