@@ -27,6 +27,7 @@ typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
 const pSetWindowCompositionAttribute SetWindowCompositionAttribute = (pSetWindowCompositionAttribute)GetProcAddress(hModule, "SetWindowCompositionAttribute");
 
 BOOL transparent, tpWhenMax, tpWhenFgMax;
+char str[256];
 
 void SetWindowBlur(HWND hWnd, BOOL transparent)
 {
@@ -52,7 +53,6 @@ void SetWindowBlur(HWND hWnd, BOOL transparent)
 BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam) {
 
 	WINDOWPLACEMENT result = {};
-	char str[256];
 	result.length = sizeof(WINDOWPLACEMENT);
 
 	::GetWindowPlacement(hWnd, &result);
@@ -70,29 +70,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 	HWND mainTb, otherTb, fgWin;
 	WINDOWPLACEMENT result = {};
 	result.length = sizeof(WINDOWPLACEMENT);
-	char str[256];
-
-	tpWhenMax = true;
-	
 	std::vector<HWND> secondTbVec;
-
-	// sprintf_s(str, "Item: %d !", secondTbVec[i]);
-	// OutputDebugString(str);
-
+	tpWhenMax = true;
 	
 	fgWin = GetForegroundWindow();
 	::GetWindowPlacement(fgWin, &result);
 	sprintf_s(str, "State: %d !", result.showCmd);
 	OutputDebugString(str);
-
-	
-	//ifstream tp("transparent.xml");
-	//if (!tp) { transparent = false; }
-	//else { transparent = true; }
-
-	//ifstream tpWM("transparentWhenMaximised.xml");
-	//if(!tpWM) { tpWhenMax = false; }
-	//else { tpWhenMax = true; }
 	sprintf_s(str, "Heeey it worked! Reading from settings.ini");
 	OutputDebugString(str);
 	
@@ -108,8 +92,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 					transparent = true;
 					EnumWindows(EnumWindowsProcess, NULL); 
 				}
-					// if(result.showCmd == 3) { transparent = false; }
-					// else { transparent = true; }
 				if(tpWhenFgMax) {
 					fgWin = GetForegroundWindow();
 					::GetWindowPlacement(fgWin, &result);
@@ -119,7 +101,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 
 				SetWindowBlur(mainTb, transparent); 
 				for(unsigned int i = 0; i < secondTbVec.size(); ++i) {
-					SetWindowBlur(secondTbVec[i], transparent); //call the virtual function
+					SetWindowBlur(secondTbVec[i], transparent);
 				}
 				Sleep((DWORD)10);}
 		}
