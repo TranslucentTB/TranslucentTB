@@ -24,13 +24,9 @@ struct OPTIONS
 	int color;
 } opt;
 
-const int APPEARANCE_BLURRY = 1;
-const int APPEARANCE_OPAQUE = 2;
-const int APPEARANCE_TRANSPARENT = 3;
-
-const int ACCENT_ENABLE_GRADIENT = 1;
-const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2;
-const int ACCENT_ENABLE_BLURBEHIND = 3;
+const int ACCENT_ENABLE_GRADIENT = 1; // Makes the taskbar a solid color specified by nColor. This mode doesn't care about the alpha channel.
+const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2; // Makes the taskbar a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
+const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry overlay. nColor is same as above.
 
 
 typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
@@ -44,41 +40,7 @@ void SetWindowBlur(HWND hWnd)
 		{
 			ACCENTPOLICY policy;
 
-			if (opt.taskbar_appearance == APPEARANCE_OPAQUE)
-			{
-				// Makes the taskbar a solid color specified by nColor.
-				// This mode doesn't care about the alpha channel.
-				// nFlags doesn't seem to matter.
-				// nAccentState = ACCENT_ENABLE_GRADIENT = 1
-
-				policy = { ACCENT_ENABLE_GRADIENT, 0, opt.color, 0 };
-			}
-			else if (opt.taskbar_appearance == APPEARANCE_TRANSPARENT)
-			{
-				// Makes the taskbar a tinted transparent overlay.
-				// nColor is the tint color. A value of zero makes it opaque
-				// and uses the system selected color scheme. Anything else
-				// applies a tint to the taskbar, and the alpha channel
-				// determines the opacity.
-				// nFlags doesn't seem to matter.
-				// nAccentState = ACCENT_ENABLE_TRANSPARENTGRADIENT = 2
-
-				// This has been really inconsistent on my system, sometimes the 
-				// taskbar just turns to a solid white, but launching the program
-				// a few more times with different colors in between will eventually
-				// apply the color tint as expected.
-
-				policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 0, opt.color, 0 };
-			}
-			else if (opt.taskbar_appearance == APPEARANCE_BLURRY)
-			{
-				// This mode only blurs the taskbar, the nColor
-				// field has no effect.
-				// nFlags doesn't matter
-				// nAccentState = ACCENT_ENABLE_BLURBEHIND = 3
-
-				policy = { ACCENT_ENABLE_BLURBEHIND, 0, opt.color, 0 };
-			}
+			policy = { opt.taskbar_appearance, 2, opt.color, 0 };
 
 			WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) }; // WCA_ACCENT_POLICY=19
 			SetWindowCompositionAttribute(hWnd, &data);
@@ -180,7 +142,7 @@ void PrintHelp()
 void ParseOptions()
 {
 	// Set default value
-	opt.taskbar_appearance = APPEARANCE_BLURRY;
+	opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
 
 	// Loop through command line arguments
 	LPWSTR *szArglist;
@@ -199,15 +161,15 @@ void ParseOptions()
 		}
 		else if (wcscmp(arg, L"--blur") == 0)
 		{
-			opt.taskbar_appearance = APPEARANCE_BLURRY;
+			opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
 		}
 		else if (wcscmp(arg, L"--opaque") == 0)
 		{
-			opt.taskbar_appearance = APPEARANCE_OPAQUE;
+			opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
 		}
 		else if (wcscmp(arg, L"--transparent") == 0)
 		{
-			opt.taskbar_appearance = APPEARANCE_TRANSPARENT;
+			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 		}
 		else if (wcscmp(arg, L"--tint") == 0)
 		{
@@ -250,7 +212,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 	HWND taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
 	while (true)
 	{
-		SetWindowBlur(taskbar); Sleep((DWORD)10);
+		SetWindowBlur(taskbar);
+		Sleep((DWORD)10);
 	}
 	FreeLibrary(hModule);
 
