@@ -1,7 +1,7 @@
 #include <windows.h>
 //#include <iostream>
 
-const HINSTANCE hModule = LoadLibrary(L"user32.dll");
+const HINSTANCE hModule = LoadLibraryW(L"user32.dll");
 
 struct ACCENTPOLICY
 {
