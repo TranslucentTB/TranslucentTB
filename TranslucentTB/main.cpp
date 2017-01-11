@@ -24,9 +24,9 @@ struct OPTIONS
 	int color;
 } opt;
 
-const int ACCENT_ENABLE_GRADIENT = 1;
-const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2;
-const int ACCENT_ENABLE_BLURBEHIND = 3;
+const int ACCENT_ENABLE_GRADIENT = 1; // Makes the taskbar a solid color specified by nColor. This mode doesn't care about the alpha channel.
+const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2; // Makes the taskbar a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
+const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry overlay. nColor is same as above.
 
 
 typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
