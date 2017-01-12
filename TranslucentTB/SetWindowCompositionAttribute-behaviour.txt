@@ -1,0 +1,14 @@
+ACCENT_ENABLE_GRADIENT
+  Simply sets the taskbar to the opaque color specified in nColor from --tint. Doesn't care about the alpha channel.
+
+ACCENT_ENABLE_TRANSPARENTGRADIENT
+  Also applies the alpha value of nColor to the taskbar. Inconsistent results arise when
+  nColor is zero. One report from @charlesmilette is that it results in a completely transparent taskbar, as expected,
+  but another (from @MrAksel) has seen that the taskbar displays as a solid color from the system color scheme (as selected
+  in Personalization->Colors). There were also problems with the color not applying properly, and just turning solid
+  white (though nColor was inspected and was not 0xFFFFFFFF).
+
+ACCENT_ENABLE_BLURBEHIND
+  Applies a blur to the content behind the taskbar. Inconsistent results in this mode too. 
+  @MrAksel saw no effect from the nColor field, no matter the value, but @charlesmilette saw a tint applied,
+  as expected.
