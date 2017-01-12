@@ -12,6 +12,7 @@ const static LPCWSTR singleProcName = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
 bool run = true; //needed for tray exit
 HWND taskbar;
 HWND secondtaskbar;
+HMENU popup;
 
 #pragma region composition
 
@@ -154,8 +155,9 @@ void PrintHelp()
 
 void ParseOptions()
 {
-	// Set default value
+	// Set default values
 	opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+	opt.color = 0x00000000;
 
 	// Loop through command line arguments
 	LPWSTR *szArglist;
@@ -249,11 +251,12 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			switch (tray)
 			{
 			case IDM_BLUR:
+				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_BLUR, MF_BYCOMMAND);
 				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
 				break;
 			case IDM_CLEAR:
+				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_CLEAR, MF_BYCOMMAND);
 				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-				opt.color = 0x000000;
 				break;
 			case IDM_EXIT:
 				run = false;
@@ -303,7 +306,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 {
 	if (singleProc()) {
 		MSG msg; // for message translation and dispatch
-		HMENU popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
+		popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
 		menu = GetSubMenu(popup, 0);
 		WNDCLASSEX wnd = { 0 };
 
@@ -325,6 +328,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 
 		ShowWindow(tray_hwnd, WM_SHOWWINDOW);
 		ParseOptions(); //command line argument settings
+		if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
+		{
+			CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_BLUR, MF_BYCOMMAND);
+		}
+		else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
+		{
+			CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_CLEAR, MF_BYCOMMAND);
+		}
+
 		RefreshHandles();
 		WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
 		while (run) {
@@ -344,4 +356,3 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 	CloseHandle(ev);
 	return 0;
 }
-
