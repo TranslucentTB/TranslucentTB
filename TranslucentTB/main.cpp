@@ -1,6 +1,3 @@
-// Those definitions are only in case you want to compile with cl.exe
-#define UNICODE
-#define _UNICODE
 #include <windows.h>
 #include <iostream>
 #include <string>
