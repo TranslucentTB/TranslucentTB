@@ -6,6 +6,9 @@
 #include <shellapi.h>
 #include "resource.h"
 
+//we use a GUID for uniqueness
+const static LPCWSTR singleProcName = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
+
 bool run = true; //needed for tray exit
 HWND taskbar;
 HWND secondtaskbar;
@@ -129,9 +132,9 @@ void PrintHelp()
 			cout << endl;
 
 			if (createdconsole && instream)
-			{	
+			{
 				string wait;
-				
+
 				cout << "Press enter to exit the program." << endl;
 				if (!getline(cin, wait))
 				{
@@ -260,7 +263,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 	}
 	if (message == WM_TASKBARCREATED) // Unfortunately, WM_TASKBARCREATED is not a constant, so I can't include it in the switch.
 	{
-	    RefreshHandles();
+		RefreshHandles();
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
@@ -283,45 +286,62 @@ void initTray(HWND parent)
 
 #pragma endregion
 
+HANDLE ev;
+
+bool singleProc()
+{
+	ev = CreateEvent(NULL, TRUE, FALSE, singleProcName);
+	if (GetLastError() == ERROR_ALREADY_EXISTS)
+	{
+
+		return false;
+	}
+	return true;
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
 {
-	MSG msg; // for message translation and dispatch
-	HMENU popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
-	menu = GetSubMenu(popup, 0);
-	WNDCLASSEX wnd = { 0 };
+	if (singleProc()) {
+		MSG msg; // for message translation and dispatch
+		HMENU popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
+		menu = GetSubMenu(popup, 0);
+		WNDCLASSEX wnd = { 0 };
 
-	wnd.hInstance = hInstance;
-	wnd.lpszClassName = L"TranslucentTB";
-	wnd.lpfnWndProc = TBPROCWND;
-	wnd.style = CS_HREDRAW | CS_VREDRAW;
-	wnd.cbSize = sizeof(WNDCLASSEX);
+		wnd.hInstance = hInstance;
+		wnd.lpszClassName = L"TranslucentTB";
+		wnd.lpfnWndProc = TBPROCWND;
+		wnd.style = CS_HREDRAW | CS_VREDRAW;
+		wnd.cbSize = sizeof(WNDCLASSEX);
 
-	wnd.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wnd.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wnd.hbrBackground = (HBRUSH)BLACK_BRUSH;
-	RegisterClassEx(&wnd);
+		wnd.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+		wnd.hCursor = LoadCursor(NULL, IDC_ARROW);
+		wnd.hbrBackground = (HBRUSH)BLACK_BRUSH;
+		RegisterClassEx(&wnd);
 
-	HWND tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"TranslucentTB", L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
-		400, 400, NULL, NULL, hInstance, NULL);
+		HWND tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"TranslucentTB", L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
+			400, 400, NULL, NULL, hInstance, NULL);
 
-	initTray(tray_hwnd);
-  
-	ShowWindow(tray_hwnd, WM_SHOWWINDOW);
-	ParseOptions(); //command line argument settings
-	RefreshHandles();
-	WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
-	while (run) {
-		SetWindowBlur(taskbar);
-		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+		initTray(tray_hwnd);
+
+		ShowWindow(tray_hwnd, WM_SHOWWINDOW);
+		ParseOptions(); //command line argument settings
+		RefreshHandles();
+		WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
+		while (run) {
+			SetWindowBlur(taskbar);
+			if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+			while (secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", L""))
+			{
+				SetWindowBlur(secondtaskbar);
+			}
+			Sleep(10);
 		}
-		while (secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", L""))
-		{
-			SetWindowBlur(secondtaskbar);
-		}
-		Sleep(10);
+		Shell_NotifyIcon(NIM_DELETE, &Tray);
 	}
-	Shell_NotifyIcon(NIM_DELETE, &Tray);
+	CloseHandle(ev);
+	return 0;
 }
 
