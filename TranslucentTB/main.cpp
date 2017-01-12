@@ -2,7 +2,13 @@
 #include <iostream>
 #include <string>
 
-const HINSTANCE hModule = LoadLibraryW(L"user32.dll");
+//used for the tray things
+#include <shellapi.h>
+#include "resource.h"
+
+bool run = true; //needed for tray exit
+
+#pragma region composition
 
 struct ACCENTPOLICY
 {
@@ -29,27 +35,28 @@ const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2; // Makes the taskbar a tinted t
 const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry overlay. nColor is same as above.
 
 
+
 typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
-const pSetWindowCompositionAttribute SetWindowCompositionAttribute = (pSetWindowCompositionAttribute)GetProcAddress(hModule, "SetWindowCompositionAttribute");
+static pSetWindowCompositionAttribute SetWindowCompositionAttribute = (pSetWindowCompositionAttribute)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowCompositionAttribute");
 
 void SetWindowBlur(HWND hWnd)
 {
-	if (hModule)
+	if (SetWindowCompositionAttribute)
 	{
-		if (SetWindowCompositionAttribute)
-		{
-			ACCENTPOLICY policy;
+		ACCENTPOLICY policy;
 
-			policy = { opt.taskbar_appearance, 2, opt.color, 0 };
+		policy = { opt.taskbar_appearance, 2, opt.color, 0 };
 
-			WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) }; // WCA_ACCENT_POLICY=19
-			SetWindowCompositionAttribute(hWnd, &data);
-		}
-
+		WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) }; // WCA_ACCENT_POLICY=19
+		SetWindowCompositionAttribute(hWnd, &data);
 	}
+
 }
 
+#pragma endregion 
 
+
+#pragma region command line
 void PrintHelp()
 {
 	// BUG - 
@@ -204,17 +211,103 @@ void ParseOptions()
 	LocalFree(szArglist);
 }
 
+#pragma endregion
+
+#pragma region tray
+
+#define WM_NOTIFY_TB 3141
+
+HMENU menu;
+
+LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+
+	switch (message)
+	{
+	case WM_CLOSE:
+		PostQuitMessage(0);
+		break;
+	case WM_NOTIFY_TB:
+		if (lParam == WM_LBUTTONUP)
+		{
+			POINT pt;
+			GetCursorPos(&pt);
+			SetForegroundWindow(hWnd);
+			UINT tray = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_RIGHTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
+			switch (tray)
+			{
+			case IDM_BLUR:
+				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+				break;
+			case IDM_CLEAR:
+				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+				opt.color = 0x000000;
+				break;
+			case IDM_EXIT:
+				run = false;
+				break;
+			}
+		}
+	}
+	return DefWindowProc(hWnd, message, wParam, lParam);
+}
+
+NOTIFYICONDATA Tray;
+
+void initTray(HWND parent)
+{
+
+	Tray.cbSize = sizeof(Tray);
+	Tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
+	Tray.hWnd = parent;
+	wcscpy_s(Tray.szTip, L"TransparentTB");
+	Tray.uCallbackMessage = WM_NOTIFY_TB;
+	Tray.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
+	Tray.uID = 101;
+	Shell_NotifyIcon(NIM_ADD, &Tray);
+	Shell_NotifyIcon(NIM_SETVERSION, &Tray);
+}
+
+#pragma endregion
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
 {
-	ParseOptions();
+	MSG msg; // for message translation and dispatch
+	HMENU popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
+	menu = GetSubMenu(popup, 0);
+	WNDCLASSEX wnd = { 0 };
 
+	wnd.hInstance = hInstance;
+	wnd.lpszClassName = L"TranslucentTB";
+	wnd.lpfnWndProc = TBPROCWND;
+	wnd.style = CS_HREDRAW | CS_VREDRAW;
+	wnd.cbSize = sizeof(WNDCLASSEX);
+
+	wnd.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wnd.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wnd.hbrBackground = (HBRUSH)BLACK_BRUSH;
+	RegisterClassEx(&wnd);
+
+	HWND tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"TranslucentTB", L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
+		400, 400, NULL, NULL, hInstance, NULL);
+
+	initTray(tray_hwnd);
+
+	ShowWindow(tray_hwnd, WM_SHOWWINDOW);
+	ParseOptions(); //command line argument settings
 	HWND taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
-	while (true)
-	{
+	HWND secondtaskbar = FindWindow(L"Shell_SecondaryTrayWnd", NULL); // we use this for the taskbars on other monitors.
+	while (run) {
 		SetWindowBlur(taskbar);
-		Sleep((DWORD)10);
+		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		while (secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", L""))
+		{
+			SetWindowBlur(secondtaskbar);
+		}
+		Sleep(10);
 	}
-	FreeLibrary(hModule);
-
+	Shell_NotifyIcon(NIM_DELETE, &Tray);
 }
