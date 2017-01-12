@@ -292,7 +292,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		400, 400, NULL, NULL, hInstance, NULL);
 
 	initTray(tray_hwnd);
-
+  
 	ShowWindow(tray_hwnd, WM_SHOWWINDOW);
 	ParseOptions(); //command line argument settings
 	HWND taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
@@ -311,3 +311,4 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 	}
 	Shell_NotifyIcon(NIM_DELETE, &Tray);
 }
+
