@@ -240,12 +240,12 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 		PostQuitMessage(0);
 		break;
 	case WM_NOTIFY_TB:
-		if (lParam == WM_LBUTTONUP)
+		if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
 		{
 			POINT pt;
 			GetCursorPos(&pt);
 			SetForegroundWindow(hWnd);
-			UINT tray = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_RIGHTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
+			UINT tray = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
 			switch (tray)
 			{
 			case IDM_BLUR:
