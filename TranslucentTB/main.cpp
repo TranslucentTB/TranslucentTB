@@ -1,3 +1,6 @@
+// Those definitions are only in case you want to compile with cl.exe
+#define UNICODE
+#define _UNICODE
 #include <windows.h>
 #include <iostream>
 #include <string>
@@ -7,6 +10,8 @@
 #include "resource.h"
 
 bool run = true; //needed for tray exit
+HWND taskbar;
+HWND secondtaskbar;
 
 #pragma region composition
 
@@ -33,6 +38,7 @@ struct OPTIONS
 const int ACCENT_ENABLE_GRADIENT = 1; // Makes the taskbar a solid color specified by nColor. This mode doesn't care about the alpha channel.
 const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2; // Makes the taskbar a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
 const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry overlay. nColor is same as above.
+unsigned int WM_TASKBARCREATED;
 
 
 
@@ -211,6 +217,12 @@ void ParseOptions()
 	LocalFree(szArglist);
 }
 
+void RefreshHandles()
+{
+	taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
+	secondtaskbar = FindWindow(L"Shell_SecondaryTrayWnd", NULL); // we use this for the taskbars on other monitors.
+}
+
 #pragma endregion
 
 #pragma region tray
@@ -248,6 +260,10 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				break;
 			}
 		}
+	}
+	if (message == WM_TASKBARCREATED) // Unfortunately, WM_TASKBARCREATED is not a constant, so I can't include it in the switch.
+	{
+	    RefreshHandles();
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
@@ -295,8 +311,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
   
 	ShowWindow(tray_hwnd, WM_SHOWWINDOW);
 	ParseOptions(); //command line argument settings
-	HWND taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
-	HWND secondtaskbar = FindWindow(L"Shell_SecondaryTrayWnd", NULL); // we use this for the taskbars on other monitors.
+	RefreshHandles();
+	WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
 	while (run) {
 		SetWindowBlur(taskbar);
 		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
