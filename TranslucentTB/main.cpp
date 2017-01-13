@@ -153,6 +153,52 @@ void PrintHelp()
 	}
 }
 
+void ParseSingleOption(std::wstring arg, std::wstring value)
+{
+	if (arg == L"--help")
+	{
+		PrintHelp();
+		exit(0);
+	}
+	else if (arg == L"--blur")
+	{
+		opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+	}
+	else if (arg == L"--opaque")
+	{
+		opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
+	}
+	else if (arg == L"--transparent")
+	{
+		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+	}
+	else if (arg == L"--tint")
+	{
+		// The next argument should be a color in hex format
+		if (value.length() > 0)
+		{
+			unsigned long colval = 0;
+			size_t numchars;
+
+			colval = stoul(value, &numchars, 16);
+			
+			// ACCENTPOLICY.nColor expects the byte order to be ABGR,
+			// fiddle some bits to make it intuitive for the user.
+			opt.color =
+				(colval & 0xFF000000) +
+				((colval & 0x00FF0000) >> 16) +
+				(colval & 0x0000FF00) +
+				((colval & 0x000000FF) << 16);
+		}
+		else
+		{
+			// TODO error handling for missing value
+			// Really not much to do as we don't have functional
+			// output streams, and opening a window seems overkill.
+		}
+	}
+}
+
 void ParseOptions()
 {
 	// Set default values
@@ -167,53 +213,13 @@ void ParseOptions()
 
 	for (int i = 0; i < nArgs; i++)
 	{
-		LPWSTR arg = szArglist[i];
+		LPWSTR lparg = szArglist[i];
+		LPWSTR lpvalue = (i + 1 < nArgs) ? szArglist[i + 1] : L"";
 
-		if (wcscmp(arg, L"--help") == 0)
-		{
-			PrintHelp();
-			exit(0);
-		}
-		else if (wcscmp(arg, L"--blur") == 0)
-		{
-			opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-		}
-		else if (wcscmp(arg, L"--opaque") == 0)
-		{
-			opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
-		}
-		else if (wcscmp(arg, L"--transparent") == 0)
-		{
-			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-		}
-		else if (wcscmp(arg, L"--tint") == 0)
-		{
-			// The next argument should be a color in hex format
-			if (i + 1 < nArgs && wcslen(szArglist[i + 1]) > 0)
-			{
-				LPWSTR param = szArglist[i + 1];
-				unsigned long colval = 0;
-				WCHAR* stopchar;
+		std::wstring arg = std::wstring(lparg);
+		std::wstring value = std::wstring(lpvalue);
 
-
-				colval = wcstoul(param, &stopchar, 16);
-
-
-				// ACCENTPOLICY.nColor expects the byte order to be ABGR,
-				// fiddle some bits to make it intuitive for the user.
-				opt.color =
-					(colval & 0xFF000000) +
-					((colval & 0x00FF0000) >> 16) +
-					(colval & 0x0000FF00) +
-					((colval & 0x000000FF) << 16);
-			}
-			else
-			{
-				// TODO error handling for missing value
-				// Really not much to do as we don't have functional
-				// output streams, and opening a window seems overkill.
-			}
-		}
+		ParseSingleOption(arg, value);
 	}
 
 	LocalFree(szArglist);
