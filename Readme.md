@@ -52,3 +52,7 @@ You may have seen similar abilities from programs such as Start is Back++ and Cl
 
 On build 14986, Windows defenders real time protection sometimes seems to cause Explorer to freeze. There are two work-arounds: temporarily disable defender when starting it, or start it via the command line.
 I do not know if this is fixed in build 15002.
+
+###License
+
+This program is free software under the GPL v3. Please see the COPYING file for more.
