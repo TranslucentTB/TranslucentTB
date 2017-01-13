@@ -243,3 +243,6 @@ ModelManifest.xml
 
 # Visual Studio Code configuration
 .vscode/
+*.lnk
+README.md
+README.md
