@@ -41,7 +41,7 @@ const int ACCENT_ENABLE_GRADIENT = 1; // Makes the taskbar a solid color specifi
 const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2; // Makes the taskbar a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
 const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry overlay. nColor is same as above.
 unsigned int WM_TASKBARCREATED;
-std::vector<HWND> taskbars; // Create a vector for all second taskbars
+std::vector<HWND> taskbars; // Create a vector for all taskbars
 
 
 typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
@@ -347,7 +347,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
-			for(unsigned int i = 0; i > taskbars.size(); i++) {
+			for(int i = 0; i > 10; i++) {
 				SetWindowBlur(taskbars[i]);
 			}
 			Sleep(10);
