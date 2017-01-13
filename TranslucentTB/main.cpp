@@ -6,7 +6,13 @@
 #include <shellapi.h>
 #include "resource.h"
 
+//we use a GUID for uniqueness
+const static LPCWSTR singleProcName = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
+
 bool run = true; //needed for tray exit
+HWND taskbar;
+HWND secondtaskbar;
+HMENU popup;
 
 #pragma region composition
 
@@ -33,6 +39,7 @@ struct OPTIONS
 const int ACCENT_ENABLE_GRADIENT = 1; // Makes the taskbar a solid color specified by nColor. This mode doesn't care about the alpha channel.
 const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2; // Makes the taskbar a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
 const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry overlay. nColor is same as above.
+unsigned int WM_TASKBARCREATED;
 
 
 
@@ -126,9 +133,9 @@ void PrintHelp()
 			cout << endl;
 
 			if (createdconsole && instream)
-			{	
+			{
 				string wait;
-				
+
 				cout << "Press enter to exit the program." << endl;
 				if (!getline(cin, wait))
 				{
@@ -148,8 +155,9 @@ void PrintHelp()
 
 void ParseOptions()
 {
-	// Set default value
+	// Set default values
 	opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+	opt.color = 0x00000000;
 
 	// Loop through command line arguments
 	LPWSTR *szArglist;
@@ -211,6 +219,12 @@ void ParseOptions()
 	LocalFree(szArglist);
 }
 
+void RefreshHandles()
+{
+	taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
+	secondtaskbar = FindWindow(L"Shell_SecondaryTrayWnd", NULL); // we use this for the taskbars on other monitors.
+}
+
 #pragma endregion
 
 #pragma region tray
@@ -228,26 +242,31 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 		PostQuitMessage(0);
 		break;
 	case WM_NOTIFY_TB:
-		if (lParam == WM_LBUTTONUP)
+		if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
 		{
 			POINT pt;
 			GetCursorPos(&pt);
 			SetForegroundWindow(hWnd);
-			UINT tray = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_RIGHTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
+			UINT tray = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
 			switch (tray)
 			{
 			case IDM_BLUR:
+				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_BLUR, MF_BYCOMMAND);
 				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
 				break;
 			case IDM_CLEAR:
+				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_CLEAR, MF_BYCOMMAND);
 				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-				opt.color = 0x000000;
 				break;
 			case IDM_EXIT:
 				run = false;
 				break;
 			}
 		}
+	}
+	if (message == WM_TASKBARCREATED) // Unfortunately, WM_TASKBARCREATED is not a constant, so I can't include it in the switch.
+	{
+		RefreshHandles();
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
@@ -270,45 +289,70 @@ void initTray(HWND parent)
 
 #pragma endregion
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
+HANDLE ev;
+
+bool singleProc()
 {
-	MSG msg; // for message translation and dispatch
-	HMENU popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
-	menu = GetSubMenu(popup, 0);
-	WNDCLASSEX wnd = { 0 };
+	ev = CreateEvent(NULL, TRUE, FALSE, singleProcName);
+	if (GetLastError() == ERROR_ALREADY_EXISTS)
+	{
 
-	wnd.hInstance = hInstance;
-	wnd.lpszClassName = L"TranslucentTB";
-	wnd.lpfnWndProc = TBPROCWND;
-	wnd.style = CS_HREDRAW | CS_VREDRAW;
-	wnd.cbSize = sizeof(WNDCLASSEX);
-
-	wnd.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wnd.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wnd.hbrBackground = (HBRUSH)BLACK_BRUSH;
-	RegisterClassEx(&wnd);
-
-	HWND tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"TranslucentTB", L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
-		400, 400, NULL, NULL, hInstance, NULL);
-
-	initTray(tray_hwnd);
-  
-	ShowWindow(tray_hwnd, WM_SHOWWINDOW);
-	ParseOptions(); //command line argument settings
-	HWND taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
-	HWND secondtaskbar = FindWindow(L"Shell_SecondaryTrayWnd", NULL); // we use this for the taskbars on other monitors.
-	while (run) {
-		SetWindowBlur(taskbar);
-		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-		while (secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", L""))
-		{
-			SetWindowBlur(secondtaskbar);
-		}
-		Sleep(10);
+		return false;
 	}
-	Shell_NotifyIcon(NIM_DELETE, &Tray);
+	return true;
 }
 
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
+{
+	if (singleProc()) {
+		MSG msg; // for message translation and dispatch
+		popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
+		menu = GetSubMenu(popup, 0);
+		WNDCLASSEX wnd = { 0 };
+
+		wnd.hInstance = hInstance;
+		wnd.lpszClassName = L"TranslucentTB";
+		wnd.lpfnWndProc = TBPROCWND;
+		wnd.style = CS_HREDRAW | CS_VREDRAW;
+		wnd.cbSize = sizeof(WNDCLASSEX);
+
+		wnd.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+		wnd.hCursor = LoadCursor(NULL, IDC_ARROW);
+		wnd.hbrBackground = (HBRUSH)BLACK_BRUSH;
+		RegisterClassEx(&wnd);
+
+		HWND tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"TranslucentTB", L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
+			400, 400, NULL, NULL, hInstance, NULL);
+
+		initTray(tray_hwnd);
+
+		ShowWindow(tray_hwnd, WM_SHOWWINDOW);
+		ParseOptions(); //command line argument settings
+		if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
+		{
+			CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_BLUR, MF_BYCOMMAND);
+		}
+		else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
+		{
+			CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_CLEAR, MF_BYCOMMAND);
+		}
+
+		RefreshHandles();
+		WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
+		while (run) {
+			SetWindowBlur(taskbar);
+			if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+			while (secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", L""))
+			{
+				SetWindowBlur(secondtaskbar);
+			}
+			Sleep(10);
+		}
+		Shell_NotifyIcon(NIM_DELETE, &Tray);
+	}
+	CloseHandle(ev);
+	return 0;
+}
