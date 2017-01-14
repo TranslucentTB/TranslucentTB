@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <iostream>
+#include <fstream>
 #include <string>
 
 //used for the tray things
@@ -9,7 +10,19 @@
 //we use a GUID for uniqueness
 const static LPCWSTR singleProcName = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
 
-bool run = true; //needed for tray exit
+//needed for tray exit
+bool run = true; 
+
+// config file path (defaults to ./config.cfg)
+std::wstring configfile;
+// holds whether the user passed a --config parameter on the command line
+bool explicitconfig;
+bool shouldsaveconfig;
+
+// holds the alpha channel value between 0 or 255,
+// defaults to -1 (not set).
+int forcedtransparency;
+
 HWND taskbar;
 HWND secondtaskbar;
 HMENU popup;
@@ -62,6 +75,15 @@ void SetWindowBlur(HWND hWnd)
 
 #pragma endregion 
 
+#pragma region IO help
+
+bool file_exists(std::wstring path)
+{
+	std::ifstream infile(path);
+	return infile.good();
+}
+
+#pragma endregion
 
 #pragma region command line
 void PrintHelp()
@@ -153,9 +175,166 @@ void PrintHelp()
 	}
 }
 
-void ParseOptions()
+void ParseSingleConfigOption(std::wstring arg, std::wstring value)
+{
+	if (arg == L"accent")
+	{
+		if (value == L"blur")
+			opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+		else if (value == L"opaque")
+			opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
+		else if (value == L"transparent" ||
+				 value == L"translucent")
+			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+	}
+	else if (arg == L"color" ||
+			 arg == L"tint")
+	{
+		if (value.find(L'#') == 0)
+			value = value.substr(1, value.length() - 1);
+
+		size_t numchars = 0;
+		// heh make sure we don't run into overflow errors 
+		// TODO use proper range here and check for overflows. Write to logfile and warn user of error.
+		unsigned long long parsed = std::stoull(value, &numchars, 16);
+
+		opt.color =
+			(parsed & 0xFF000000) +
+			((parsed & 0x00FF0000) >> 16) +
+			(parsed & 0x0000FF00) +
+			((parsed & 0x000000FF) << 16);
+	}
+	else if (arg == L"opacity")
+	{
+		// TODO Same here. Should check range and warn user if the value doesn't fit.
+		size_t numchars = 0;
+		int parsed = std::stoi(value, &numchars, 10);
+
+		if (parsed < 0)
+			parsed = 0;
+		else if (parsed > 255)
+			parsed = 255;
+
+		forcedtransparency = parsed;
+	}
+}
+
+void ParseConfigFile(std::wstring path)
+{
+	std::wifstream configstream(path);
+
+	for (std::wstring line; std::getline(configstream, line); )
+	{
+		// Skip comments
+		size_t comment_index = line.find(L';');
+		if (comment_index == 0)
+			continue;
+		else
+			line = line.substr(0, comment_index);
+
+		size_t split_index = line.find(L'=');
+		std::wstring key = line.substr(0, split_index);
+		std::wstring val = line.substr(split_index + 1, line.length() - split_index - 1);
+
+		ParseSingleConfigOption(key, val);
+	}
+
+	if (forcedtransparency >= 0)
+	{
+		opt.color = (forcedtransparency << 24) +
+					(opt.color & 0x00FFFFFF);
+	}
+}
+
+void SaveConfigFile()
+{
+	if (!configfile.empty())
+	{
+		using namespace std;
+		wofstream configstream(configfile);
+
+		configstream << L"; Taskbar appearance: opaque, transparent, or blur (default)." << endl;
+
+		if (opt.taskbar_appearance == ACCENT_ENABLE_GRADIENT)
+			configstream << L"accent=opaque" << endl;
+		else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
+			configstream << L"accent=transparent" << endl;
+		else if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
+			configstream << L"accent=blur" << endl;
+
+		configstream << endl;
+		configstream << L"; Color and opacity of the taskbar." << endl;
+
+		// TODO include the alpha channel here or not?
+		unsigned int bitreversed =
+			(opt.color & 0xFF000000) +
+			((opt.color & 0x00FF0000) >> 16) +
+			(opt.color & 0x0000FF00) +
+			((opt.color & 0x000000FF) << 16);
+		configstream << L"color=" << hex << bitreversed << L"    ; A color in hexadecimal notation. Described in usage.md." << endl;
+		configstream << L"opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << L"    ; A value in the range 0 to 255." << endl;
+	}
+}
+
+void ParseSingleOption(std::wstring arg, std::wstring value)
+{
+	if (arg == L"--help")
+	{
+		PrintHelp();
+		exit(0);
+	}
+	else if (arg == L"--config")
+	{
+		// Ignore - this was handled in a previous iteration
+		// over the arguments.
+	}
+	else if (arg == L"--blur")
+	{
+		opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+	}
+	else if (arg == L"--opaque")
+	{
+		opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
+	}
+	else if (arg == L"--transparent")
+	{
+		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+	}
+	else if (arg == L"--tint")
+	{
+		// The next argument should be a color in hex format
+		if (value.length() > 0)
+		{
+			unsigned long colval = 0;
+			size_t numchars;
+
+			colval = stoul(value, &numchars, 16);
+			
+			// ACCENTPOLICY.nColor expects the byte order to be ABGR,
+			// fiddle some bits to make it intuitive for the user.
+			opt.color =
+				(colval & 0xFF000000) +
+				((colval & 0x00FF0000) >> 16) +
+				(colval & 0x0000FF00) +
+				((colval & 0x000000FF) << 16);
+		}
+		else
+		{
+			// TODO error handling for missing value
+			// Really not much to do as we don't have functional
+			// output streams, and opening a window seems overkill.
+		}
+	}
+}
+
+void ParseCmdOptions()
 {
 	// Set default values
+	shouldsaveconfig = false;
+	explicitconfig = false;
+	configfile = L"config.cfg";
+	forcedtransparency = -1;
+
 	opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
 	opt.color = 0x00000000;
 
@@ -165,55 +344,41 @@ void ParseOptions()
 
 	szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
 
+
+	// Find the --config option if provided
 	for (int i = 0; i < nArgs; i++)
 	{
-		LPWSTR arg = szArglist[i];
+		LPWSTR lparg = szArglist[i];
+		LPWSTR lpvalue = (i + 1 < nArgs) ? szArglist[i + 1] : L"";
 
-		if (wcscmp(arg, L"--help") == 0)
+		std::wstring arg = std::wstring(lparg);
+		std::wstring value = std::wstring(lpvalue);
+
+		if (arg == L"--config")
 		{
-			PrintHelp();
-			exit(0);
-		}
-		else if (wcscmp(arg, L"--blur") == 0)
-		{
-			opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-		}
-		else if (wcscmp(arg, L"--opaque") == 0)
-		{
-			opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
-		}
-		else if (wcscmp(arg, L"--transparent") == 0)
-		{
-			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-		}
-		else if (wcscmp(arg, L"--tint") == 0)
-		{
-			// The next argument should be a color in hex format
-			if (i + 1 < nArgs && wcslen(szArglist[i + 1]) > 0)
+			// We allow multiple --config options. The later ones will override the previous ones.
+			// The lates will be assigned to configfile, and that's where changes are saved.
+			if (value.length() > 0 &&
+				file_exists(value))
 			{
-				LPWSTR param = szArglist[i + 1];
-				unsigned long colval = 0;
-				WCHAR* stopchar;
-
-
-				colval = wcstoul(param, &stopchar, 16);
-
-
-				// ACCENTPOLICY.nColor expects the byte order to be ABGR,
-				// fiddle some bits to make it intuitive for the user.
-				opt.color =
-					(colval & 0xFF000000) +
-					((colval & 0x00FF0000) >> 16) +
-					(colval & 0x0000FF00) +
-					((colval & 0x000000FF) << 16);
+				configfile = value;
+				ParseConfigFile(value);
 			}
-			else
-			{
-				// TODO error handling for missing value
-				// Really not much to do as we don't have functional
-				// output streams, and opening a window seems overkill.
-			}
+			// TODO else? Missing or invalid parameter, should log
 		}
+	}
+
+	// Iterate over the rest of the arguments 
+	// Those options override the config files.
+	for (int i = 0; i < nArgs; i++)
+	{
+		LPWSTR lparg = szArglist[i];
+		LPWSTR lpvalue = (i + 1 < nArgs) ? szArglist[i + 1] : L"";
+
+		std::wstring arg = std::wstring(lparg);
+		std::wstring value = std::wstring(lpvalue);
+
+		ParseSingleOption(arg, value);
 	}
 
 	LocalFree(szArglist);
@@ -253,10 +418,12 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			case IDM_BLUR:
 				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_BLUR, MF_BYCOMMAND);
 				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+				shouldsaveconfig = true;
 				break;
 			case IDM_CLEAR:
 				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_CLEAR, MF_BYCOMMAND);
 				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+				shouldsaveconfig = true;
 				break;
 			case IDM_EXIT:
 				run = false;
@@ -305,6 +472,13 @@ bool singleProc()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
 {
 	if (singleProc()) {
+		// TODO Usually the command line overrides the config file, so these should be reversed.
+		// Still, we check the --config parameter on the command line, so that should be handled
+		// before the config file. Needs two passes on the command line arguments, lets leave that
+		// for later.
+		ParseCmdOptions(); //command line argument settings
+		ParseConfigFile(); //config file settings
+
 		MSG msg; // for message translation and dispatch
 		popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
 		menu = GetSubMenu(popup, 0);
@@ -327,7 +501,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		initTray(tray_hwnd);
 
 		ShowWindow(tray_hwnd, WM_SHOWWINDOW);
-		ParseOptions(); //command line argument settings
 		if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
 		{
 			CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_BLUR, MF_BYCOMMAND);
@@ -352,6 +525,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 			Sleep(10);
 		}
 		Shell_NotifyIcon(NIM_DELETE, &Tray);
+
+		if (shouldsaveconfig)
+			SaveConfigFile();
 	}
 	CloseHandle(ev);
 	return 0;
