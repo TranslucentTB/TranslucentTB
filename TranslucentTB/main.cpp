@@ -13,8 +13,13 @@ const static LPCWSTR singleProcName = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
 //needed for tray exit
 bool run = true; 
 
-//needed to save config
+// config file path (defaults to ./config.cfg)
 std::wstring configfile;
+// holds whether the user passed a --config parameter on the command line
+bool explicitconfig;
+
+// holds the alpha channel value between 0 or 255,
+// defaults to -1 (not set).
 int forcedtransparency;
 
 HWND taskbar;
@@ -242,10 +247,12 @@ void ParseConfigFile()
 
 void SaveConfigFile()
 {
-	using namespace std;
 	if (!configfile.empty())
 	{
+		using namespace std;
 		wofstream configstream(configfile);
+
+		configstream << L"; Taskbar appearance: opaque, transparent, or blur (default)." << endl;
 
 		if (opt.taskbar_appearance == ACCENT_ENABLE_GRADIENT)
 			configstream << L"accent=opaque" << endl;
@@ -254,14 +261,17 @@ void SaveConfigFile()
 		else if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
 			configstream << L"accent=blur" << endl;
 
+		configstream << endl;
+		configstream << L"; Color and opacity of the taskbar." << endl;
+
 		// TODO include the alpha channel here or not?
 		unsigned int bitreversed =
 			(opt.color & 0xFF000000) +
 			((opt.color & 0x00FF0000) >> 16) +
 			(opt.color & 0x0000FF00) +
 			((opt.color & 0x000000FF) << 16);
-		configstream << "color=" << hex << bitreversed << endl;
-		configstream << "opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << " ; Range 0 to 255" << endl;
+		configstream << L"color=" << hex << bitreversed << L"    ; A color in hexadecimal notation. Described in usage.md." << endl;
+		configstream << L"opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << L"    ; A value in the range 0 to 255." << endl;
 	}
 }
 
@@ -274,11 +284,12 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	}
 	else if (arg == L"--config")
 	{
-		if (configfile.empty() &&
+		if (!explicitconfig &&
 			value.length() > 0 &&
 			file_exists(value))
 		{
 			configfile = value;
+			explicitconfig = true;
 		}
 		else 
 		{
@@ -327,6 +338,7 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 void ParseCmdOptions()
 {
 	// Set default values
+	explicitconfig = false;
 	configfile = L"config.cfg";
 	forcedtransparency = -1;
 
@@ -493,7 +505,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		}
 		Shell_NotifyIcon(NIM_DELETE, &Tray);
 
-		SaveConfigFile();
+		if (explicitconfig)
+			SaveConfigFile();
 	}
 	CloseHandle(ev);
 	return 0;
