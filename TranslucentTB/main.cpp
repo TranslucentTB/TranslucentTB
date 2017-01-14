@@ -17,6 +17,7 @@ bool run = true;
 std::wstring configfile;
 // holds whether the user passed a --config parameter on the command line
 bool explicitconfig;
+bool shouldsaveconfig;
 
 // holds the alpha channel value between 0 or 255,
 // defaults to -1 (not set).
@@ -218,9 +219,9 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 	}
 }
 
-void ParseConfigFile()
+void ParseConfigFile(std::wstring path)
 {
-	std::wifstream configstream(configfile);
+	std::wifstream configstream(path);
 
 	for (std::wstring line; std::getline(configstream, line); )
 	{
@@ -241,7 +242,7 @@ void ParseConfigFile()
 	if (forcedtransparency >= 0)
 	{
 		opt.color = (forcedtransparency << 24) +
-			(opt.color & 0x00FFFFFF);
+					(opt.color & 0x00FFFFFF);
 	}
 }
 
@@ -284,17 +285,8 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	}
 	else if (arg == L"--config")
 	{
-		if (!explicitconfig &&
-			value.length() > 0 &&
-			file_exists(value))
-		{
-			configfile = value;
-			explicitconfig = true;
-		}
-		else 
-		{
-			// TODO Missing or invalid parameter, should log
-		}
+		// Ignore - this was handled in a previous iteration
+		// over the arguments.
 	}
 	else if (arg == L"--blur")
 	{
@@ -338,6 +330,7 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 void ParseCmdOptions()
 {
 	// Set default values
+	shouldsaveconfig = false;
 	explicitconfig = false;
 	configfile = L"config.cfg";
 	forcedtransparency = -1;
@@ -351,6 +344,32 @@ void ParseCmdOptions()
 
 	szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
 
+
+	// Find the --config option if provided
+	for (int i = 0; i < nArgs; i++)
+	{
+		LPWSTR lparg = szArglist[i];
+		LPWSTR lpvalue = (i + 1 < nArgs) ? szArglist[i + 1] : L"";
+
+		std::wstring arg = std::wstring(lparg);
+		std::wstring value = std::wstring(lpvalue);
+
+		if (arg == L"--config")
+		{
+			// We allow multiple --config options. The later ones will override the previous ones.
+			// The lates will be assigned to configfile, and that's where changes are saved.
+			if (value.length() > 0 &&
+				file_exists(value))
+			{
+				configfile = value;
+				ParseConfigFile(value);
+			}
+			// TODO else? Missing or invalid parameter, should log
+		}
+	}
+
+	// Iterate over the rest of the arguments 
+	// Those options override the config files.
 	for (int i = 0; i < nArgs; i++)
 	{
 		LPWSTR lparg = szArglist[i];
@@ -399,10 +418,12 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			case IDM_BLUR:
 				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_BLUR, MF_BYCOMMAND);
 				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+				shouldsaveconfig = true;
 				break;
 			case IDM_CLEAR:
 				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_CLEAR, MF_BYCOMMAND);
 				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+				shouldsaveconfig = true;
 				break;
 			case IDM_EXIT:
 				run = false;
@@ -505,7 +526,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		}
 		Shell_NotifyIcon(NIM_DELETE, &Tray);
 
-		if (explicitconfig)
+		if (shouldsaveconfig)
 			SaveConfigFile();
 	}
 	CloseHandle(ev);
