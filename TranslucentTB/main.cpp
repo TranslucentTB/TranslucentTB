@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 //used for the tray things
 #include <shellapi.h>
@@ -53,7 +54,7 @@ const int ACCENT_ENABLE_GRADIENT = 1; // Makes the taskbar a solid color specifi
 const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2; // Makes the taskbar a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
 const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry overlay. nColor is same as above.
 unsigned int WM_TASKBARCREATED;
-
+std::vector<HWND> taskbars; // Create a vector for all taskbars
 
 
 typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
@@ -386,8 +387,10 @@ void ParseCmdOptions()
 
 void RefreshHandles()
 {
-	taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
-	secondtaskbar = FindWindow(L"Shell_SecondaryTrayWnd", NULL); // we use this for the taskbars on other monitors.
+	taskbars.clear();
+	taskbars.push_back(FindWindowW(L"Shell_TrayWnd", NULL));
+	while (secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", NULL))
+			taskbars.push_back(secondtaskbar); // We find all taskbars on second monitors and add them to a vector
 }
 
 #pragma endregion
@@ -513,14 +516,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		RefreshHandles();
 		WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
 		while (run) {
-			SetWindowBlur(taskbar);
 			if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
-			while (secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", L""))
-			{
-				SetWindowBlur(secondtaskbar);
+			for(int i = 0; i > 10; i++) {
+				SetWindowBlur(taskbars[i]);
 			}
 			Sleep(10);
 		}
