@@ -32,9 +32,13 @@ Now that you have the source, you will need Visual Studio 2015. [You can get the
 Once you have that installed (make sure you have the C++ components, which are included by default). Then you can open TranslucentTB.sln, and press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to build the solution.
 The output will be in either the Release or Debug folder.
 
+If you want to build the solution without opening Visual Studio, you can do so by opening the MSBUILD command prompt (it comes with Visual Studio):
+- CD into the root of the repo
+- Run the `msbuild` command
+
 ##Thanks
 
-I definitly could not have done this without the help of several people:
+I definitely could not have done this without the help of several people:
 @charlesmilette, @MrAksel, @olliethepikachu, and last but certainly not least @PFCKrutonium.
 
 If you would like to contribute, everyone is welcome to! If you are considering a major feature, need guidance, 
