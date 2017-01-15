@@ -61,6 +61,12 @@ enum SAVECONFIGSTATES { DoNotSave, SaveTransparency, SaveAll } shouldsaveconfig;
 			// SaveTransparency | Save opt.taskbar_appearance
 			// SaveAll          | Save all options
 
+struct READFROMCONFIG
+{
+	bool dynamicws;
+	bool tint;
+} configfileoptions; // Keep a struct, as we will need to save them later
+
 struct TASKBARPROPERTIES
 {
 	HMONITOR hmon;
@@ -217,10 +223,9 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 	}
 	else if (arg == L"dynamic-ws")
 	{
-		if (value == L"true" ||
-			value == L"enable")
+		if (value == L"enable")
 			{
-				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 				opt.dynamic = true;
 			}
 	}
@@ -299,15 +304,15 @@ void SaveConfigFile()
 		else if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
 			configstream << L"accent=blur" << endl;
 
-		if (shouldsaveconfig == SaveAll)
+		if (configfileoptions.dynamicws == true || 
+			shouldsaveconfig == SaveAll)
 		{
-
-			if (opt.dynamic)
-			{
-				configstream << L"; Dynamic states: Window States and (WIP) Start Menu" << endl;
-				configstream << L"dynamic-ws=enable" << endl;
-			}
-
+			configstream << L"; Dynamic states: Window States and (WIP) Start Menu" << endl;
+			configstream << L"dynamic-ws=enable" << endl;
+		}
+		if (configfileoptions.tint == true ||
+			shouldsaveconfig == SaveAll)
+		{
 			configstream << endl;
 			configstream << L"; Color and opacity of the taskbar." << endl;
 
@@ -353,11 +358,13 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	}
 	else if (arg == L"--dynamic-ws")
 	{
-			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-			opt.dynamic = true;
+		configfileoptions.dynamicws = true;
+		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+		opt.dynamic = true;
 	}
 	else if (arg == L"--tint")
 	{
+		configfileoptions.tint = true;
 		// The next argument should be a color in hex format
 		if (value.length() > 0)
 		{
@@ -488,14 +495,12 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			case IDM_BLUR:
 				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_BLUR, MF_BYCOMMAND);
 				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-				opt.dynamic = false;
 				if (shouldsaveconfig == DoNotSave)
 					shouldsaveconfig = SaveTransparency;
 				break;
 			case IDM_CLEAR:
 				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_CLEAR, MF_BYCOMMAND);
 				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-				opt.dynamic = false;
 				if (shouldsaveconfig == DoNotSave)
 					shouldsaveconfig = SaveTransparency;
 				break;
@@ -534,6 +539,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 
 void SetTaskbarBlur()
 {
+	std::cout << opt.dynamic << std::endl;
 	if (opt.dynamic) {
 		if (counter >= 5)   // Change this if you want to change the time it takes for the program to update
 		{                   // 100 = 1 second; we use 5, because the difference is less noticeable and it has
@@ -541,7 +547,7 @@ void SetTaskbarBlur()
 							// than response time.
 			counter = 0;
 			for (auto &taskbar: taskbars)
-			{
+		 	{
 				taskbar.second.state = Normal; // Reset taskbar state
 			}
 			EnumWindows(&EnumWindowsProcess, NULL);
@@ -557,7 +563,7 @@ void SetTaskbarBlur()
 		} else if (taskbar.second.state == Normal) {
 			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
 		}
-	} 
+	}
 	counter++;
 }
 
@@ -595,12 +601,13 @@ bool singleProc()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
 {
 	if (singleProc()) {
+
 		// TODO Usually the command line overrides the config file, so these should be reversed.
 		// Still, we check the --config parameter on the command line, so that should be handled
 		// before the config file. Needs two passes on the command line arguments, lets leave that
 		// for later.
-		ParseConfigFile(L"config.cfg"); //config file settings
 		ParseCmdOptions(); //command line argument settings
+		ParseConfigFile(L"config.cfg"); //config file settings
 
 		MSG msg; // for message translation and dispatch
 		popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
