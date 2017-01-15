@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <map>
 
 //used for the tray things
 #include <shellapi.h>
@@ -17,7 +18,6 @@ bool run = true;
 std::wstring configfile;
 // holds whether the user passed a --config parameter on the command line
 bool explicitconfig;
-bool shouldsaveconfig;
 
 // holds the alpha channel value between 0 or 255,
 // defaults to -1 (not set).
@@ -47,25 +47,50 @@ struct OPTIONS
 {
 	int taskbar_appearance;
 	int color;
+	bool dynamic;
 } opt;
 
+enum TASKBARSTATE { Normal, WindowMaximised, StartMenuOpen }; // Create a state to store all 
+															  // states of the Taskbar
+			// Normal           | Proceed as normal. If no dynamic options are set, act as it says in opt.taskbar_appearance
+			// WindowMaximised  | There is a window which is maximised on the monitor this HWND is in. Display as blurred.
+			// StartMenuOpen    | The Start Menu is open on the monitor this HWND is in. Display as it would be without TranslucentTB active.
+
+enum SAVECONFIGSTATES { DoNotSave, SaveTransparency, SaveAll } shouldsaveconfig;  // Create an enum to store all config states
+			// DoNotSave        | Fairly self-explanatory
+			// SaveTransparency | Save opt.taskbar_appearance
+			// SaveAll          | Save all options
+
+struct TASKBARPROPERTIES
+{
+	HMONITOR hmon;
+	TASKBARSTATE state;
+};
+
+int counter = 0;
 const int ACCENT_ENABLE_GRADIENT = 1; // Makes the taskbar a solid color specified by nColor. This mode doesn't care about the alpha channel.
 const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2; // Makes the taskbar a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
 const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry overlay. nColor is same as above.
 unsigned int WM_TASKBARCREATED;
-
+std::map<HWND, TASKBARPROPERTIES> taskbars; // Create a map for all taskbars
 
 
 typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
 static pSetWindowCompositionAttribute SetWindowCompositionAttribute = (pSetWindowCompositionAttribute)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowCompositionAttribute");
 
-void SetWindowBlur(HWND hWnd)
+void SetWindowBlur(HWND hWnd, int appearance = 0) // `appearance` can be 0, which means 'follow opt.taskbar_appearance'
 {
 	if (SetWindowCompositionAttribute)
 	{
 		ACCENTPOLICY policy;
 
-		policy = { opt.taskbar_appearance, 2, opt.color, 0 };
+		if (appearance) // Custom taskbar appearance is set
+		{
+			policy = { appearance, 2, opt.color, 0 };
+		} else { // Use the defaults
+			policy = { opt.taskbar_appearance, 2, opt.color, 0 };
+		}
+		
 
 		WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) }; // WCA_ACCENT_POLICY=19
 		SetWindowCompositionAttribute(hWnd, &data);
@@ -140,6 +165,9 @@ void PrintHelp()
 			cout << "                  see explanation below. This will not affect the blur mode. If COLOR is zero in" << endl;
 			cout << "                  combination with --transparent the taskbar becomes opaque and uses the selected" << endl;
 			cout << "                  system color scheme." << endl;
+			cout << "  --dynamic-ws  | will make the taskbar transparent when no windows are maximised in the current" << endl;
+			cout << "                  monitor, otherwise blurry." << endl;
+			cout << "  --save-all    | will save all of the above settings into config.cfg on program exit." << endl;
 			cout << "  --help        | Displays this help message." << endl;
 			cout << endl;
 
@@ -186,6 +214,15 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		else if (value == L"transparent" ||
 				 value == L"translucent")
 			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+	}
+	else if (arg == L"dynamic-ws")
+	{
+		if (value == L"true" ||
+			value == L"enable")
+			{
+				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+				opt.dynamic = true;
+			}
 	}
 	else if (arg == L"color" ||
 			 arg == L"tint")
@@ -262,17 +299,27 @@ void SaveConfigFile()
 		else if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
 			configstream << L"accent=blur" << endl;
 
-		configstream << endl;
-		configstream << L"; Color and opacity of the taskbar." << endl;
+		if (shouldsaveconfig == SaveAll)
+		{
 
-		// TODO include the alpha channel here or not?
-		unsigned int bitreversed =
-			(opt.color & 0xFF000000) +
-			((opt.color & 0x00FF0000) >> 16) +
-			(opt.color & 0x0000FF00) +
-			((opt.color & 0x000000FF) << 16);
-		configstream << L"color=" << hex << bitreversed << L"    ; A color in hexadecimal notation. Described in usage.md." << endl;
-		configstream << L"opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << L"    ; A value in the range 0 to 255." << endl;
+			if (opt.dynamic)
+			{
+				configstream << L"; Dynamic states: Window States and (WIP) Start Menu" << endl;
+				configstream << L"dynamic-ws=enable" << endl;
+			}
+
+			configstream << endl;
+			configstream << L"; Color and opacity of the taskbar." << endl;
+
+			// TODO include the alpha channel here or not?
+			unsigned int bitreversed =
+				(opt.color & 0xFF000000) +
+				((opt.color & 0x00FF0000) >> 16) +
+				(opt.color & 0x0000FF00) +
+				((opt.color & 0x000000FF) << 16);
+			configstream << L"color=" << hex << bitreversed << L"    ; A color in hexadecimal notation. Described in usage.md." << endl;
+			configstream << L"opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << L"    ; A value in the range 0 to 255." << endl;
+		}
 	}
 }
 
@@ -288,6 +335,10 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 		// Ignore - this was handled in a previous iteration
 		// over the arguments.
 	}
+	else if (arg == L"--save-all")
+	{
+		shouldsaveconfig = SaveAll;
+	}
 	else if (arg == L"--blur")
 	{
 		opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
@@ -299,6 +350,11 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	else if (arg == L"--transparent")
 	{
 		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+	}
+	else if (arg == L"--dynamic-ws")
+	{
+			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+			opt.dynamic = true;
 	}
 	else if (arg == L"--tint")
 	{
@@ -330,7 +386,7 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 void ParseCmdOptions()
 {
 	// Set default values
-	shouldsaveconfig = false;
+	shouldsaveconfig = DoNotSave;
 	explicitconfig = false;
 	configfile = L"config.cfg";
 	forcedtransparency = -1;
@@ -386,8 +442,22 @@ void ParseCmdOptions()
 
 void RefreshHandles()
 {
-	taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
-	secondtaskbar = FindWindow(L"Shell_SecondaryTrayWnd", NULL); // we use this for the taskbars on other monitors.
+	HWND _taskbar;
+	HMONITOR _monitor;
+	TASKBARPROPERTIES _properties;
+
+	taskbars.clear();
+	_taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
+
+	_properties.hmon = MonitorFromWindow(_taskbar, MONITOR_DEFAULTTOPRIMARY);
+	_properties.state = Normal;
+	taskbars.insert(std::make_pair(_taskbar, _properties));
+	while (secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", NULL))
+	{
+		_properties.hmon = MonitorFromWindow(secondtaskbar, MONITOR_DEFAULTTOPRIMARY);
+		_properties.state = Normal;
+		taskbars.insert(std::make_pair(secondtaskbar, _properties));
+	}
 }
 
 #pragma endregion
@@ -418,12 +488,16 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			case IDM_BLUR:
 				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_BLUR, MF_BYCOMMAND);
 				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-				shouldsaveconfig = true;
+				opt.dynamic = false;
+				if (shouldsaveconfig == DoNotSave)
+					shouldsaveconfig = SaveTransparency;
 				break;
 			case IDM_CLEAR:
 				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_CLEAR, MF_BYCOMMAND);
 				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-				shouldsaveconfig = true;
+				opt.dynamic = false;
+				if (shouldsaveconfig == DoNotSave)
+					shouldsaveconfig = SaveTransparency;
 				break;
 			case IDM_EXIT:
 				run = false;
@@ -436,6 +510,55 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 		RefreshHandles();
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
+}
+
+BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam) 
+{
+	HMONITOR _monitor;
+
+	WINDOWPLACEMENT result = {};
+	::GetWindowPlacement(hWnd, &result);
+	if(result.showCmd == 3) { 
+		_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
+		for (auto &taskbar: taskbars)
+		{
+			if (taskbar.second.hmon == _monitor)
+			{
+				taskbar.second.state = WindowMaximised;
+			}
+		}
+	}
+
+	return true;
+}
+
+void SetTaskbarBlur()
+{
+	if (opt.dynamic) {
+		if (counter >= 5)   // Change this if you want to change the time it takes for the program to update
+		{                   // 100 = 1 second; we use 5, because the difference is less noticeable and it has
+							// no large impact on CPU. We can change this if we feel that CPU is more important
+							// than response time.
+			counter = 0;
+			for (auto &taskbar: taskbars)
+			{
+				taskbar.second.state = Normal; // Reset taskbar state
+			}
+			EnumWindows(&EnumWindowsProcess, NULL);
+		}
+	}
+	
+	for (auto const &taskbar: taskbars)
+	{
+		if (taskbar.second.state == WindowMaximised)
+		{
+			SetWindowBlur(taskbar.first, ACCENT_ENABLE_BLURBEHIND);
+											// A window is maximised; let's make sure that we blur the window.
+		} else if (taskbar.second.state == Normal) {
+			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
+		}
+	} 
+	counter++;
 }
 
 NOTIFYICONDATA Tray;
@@ -476,8 +599,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		// Still, we check the --config parameter on the command line, so that should be handled
 		// before the config file. Needs two passes on the command line arguments, lets leave that
 		// for later.
+		ParseConfigFile(L"config.cfg"); //config file settings
 		ParseCmdOptions(); //command line argument settings
-		ParseConfigFile(); //config file settings
 
 		MSG msg; // for message translation and dispatch
 		popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
@@ -511,22 +634,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		}
 
 		RefreshHandles();
+		if (opt.dynamic)
+		{
+			EnumWindows(&EnumWindowsProcess, NULL); // Putting this here so there isn't a 
+			                                        // delay between when you start the 
+													// program and when the taskbar goes blurry
+		}
 		WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
 		while (run) {
-			SetWindowBlur(taskbar);
 			if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
-			while (secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", L""))
-			{
-				SetWindowBlur(secondtaskbar);
-			}
+			SetTaskbarBlur();
 			Sleep(10);
 		}
 		Shell_NotifyIcon(NIM_DELETE, &Tray);
 
-		if (shouldsaveconfig)
+		if (shouldsaveconfig != DoNotSave)
 			SaveConfigFile();
 	}
 	CloseHandle(ev);
