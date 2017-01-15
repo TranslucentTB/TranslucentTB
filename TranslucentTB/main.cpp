@@ -61,6 +61,7 @@ enum SAVECONFIGSTATES { DoNotSave, SaveTransparency, SaveAll } shouldsaveconfig;
 			// SaveTransparency | Save opt.taskbar_appearance
 			// SaveAll          | Save all options
 
+
 struct READFROMCONFIG
 {
 	bool dynamicws;
@@ -223,9 +224,10 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 	}
 	else if (arg == L"dynamic-ws")
 	{
-		if (value == L"enable")
+		if (value == L"true" ||
+			value == L"enable")
 			{
-				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
 				opt.dynamic = true;
 			}
 	}
@@ -539,6 +541,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 
 void SetTaskbarBlur()
 {
+
 	std::cout << opt.dynamic << std::endl;
 	if (opt.dynamic) {
 		if (counter >= 5)   // Change this if you want to change the time it takes for the program to update
@@ -548,6 +551,7 @@ void SetTaskbarBlur()
 			counter = 0;
 			for (auto &taskbar: taskbars)
 		 	{
+
 				taskbar.second.state = Normal; // Reset taskbar state
 			}
 			EnumWindows(&EnumWindowsProcess, NULL);
@@ -563,6 +567,7 @@ void SetTaskbarBlur()
 		} else if (taskbar.second.state == Normal) {
 			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
 		}
+
 	}
 	counter++;
 }
@@ -608,6 +613,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		// for later.
 		ParseCmdOptions(); //command line argument settings
 		ParseConfigFile(L"config.cfg"); //config file settings
+
 
 		MSG msg; // for message translation and dispatch
 		popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
