@@ -18,7 +18,6 @@ bool run = true;
 std::wstring configfile;
 // holds whether the user passed a --config parameter on the command line
 bool explicitconfig;
-bool shouldsaveconfig;
 
 // holds the alpha channel value between 0 or 255,
 // defaults to -1 (not set).
@@ -53,9 +52,14 @@ struct OPTIONS
 
 enum TASKBARSTATE { Normal, WindowMaximised, StartMenuOpen }; // Create a state to store all 
 															  // states of the Taskbar
-			// Normal          | Proceed as normal. If no dynamic options are set, act as it says in opt.taskbar_appearance
-			// WindowMaximised | There is a window which is maximised on the monitor this HWND is in. Display as blurred.
-			// StartMenuOpen   | The Start Menu is open on the monitor this HWND is in. Display as it would be without TranslucentTB active.
+			// Normal           | Proceed as normal. If no dynamic options are set, act as it says in opt.taskbar_appearance
+			// WindowMaximised  | There is a window which is maximised on the monitor this HWND is in. Display as blurred.
+			// StartMenuOpen    | The Start Menu is open on the monitor this HWND is in. Display as it would be without TranslucentTB active.
+
+enum SAVECONFIGSTATES { DoNotSave, SaveTransparency, SaveAll } shouldsaveconfig;  // Create an enum to store all config states
+			// DoNotSave        | Fairly self-explanatory
+			// SaveTransparency | Save opt.taskbar_appearance
+			// SaveAll          | Save all options
 
 struct TASKBARPROPERTIES
 {
@@ -161,8 +165,9 @@ void PrintHelp()
 			cout << "                  see explanation below. This will not affect the blur mode. If COLOR is zero in" << endl;
 			cout << "                  combination with --transparent the taskbar becomes opaque and uses the selected" << endl;
 			cout << "                  system color scheme." << endl;
-			cout << "  --dynamic-ws     | will make the taskbar transparent when no windows are maximised in the current" << endl;
+			cout << "  --dynamic-ws  | will make the taskbar transparent when no windows are maximised in the current" << endl;
 			cout << "                  monitor, otherwise blurry." << endl;
+			cout << "  --save-all    | will save all of the above settings into config.cfg on program exit." << endl;
 			cout << "  --help        | Displays this help message." << endl;
 			cout << endl;
 
@@ -294,22 +299,27 @@ void SaveConfigFile()
 		else if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
 			configstream << L"accent=blur" << endl;
 
-		configstream << L"; Dynamic states: Window States and (WIP) Start Menu";
+		if (shouldsaveconfig == SaveAll)
+		{
 
-		if (opt.dynamic)
-			configstream << L"dynamic-ws=enable" << endl;
+			if (opt.dynamic)
+			{
+				configstream << L"; Dynamic states: Window States and (WIP) Start Menu" << endl;
+				configstream << L"dynamic-ws=enable" << endl;
+			}
 
-		configstream << endl;
-		configstream << L"; Color and opacity of the taskbar." << endl;
+			configstream << endl;
+			configstream << L"; Color and opacity of the taskbar." << endl;
 
-		// TODO include the alpha channel here or not?
-		unsigned int bitreversed =
-			(opt.color & 0xFF000000) +
-			((opt.color & 0x00FF0000) >> 16) +
-			(opt.color & 0x0000FF00) +
-			((opt.color & 0x000000FF) << 16);
-		configstream << L"color=" << hex << bitreversed << L"    ; A color in hexadecimal notation. Described in usage.md." << endl;
-		configstream << L"opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << L"    ; A value in the range 0 to 255." << endl;
+			// TODO include the alpha channel here or not?
+			unsigned int bitreversed =
+				(opt.color & 0xFF000000) +
+				((opt.color & 0x00FF0000) >> 16) +
+				(opt.color & 0x0000FF00) +
+				((opt.color & 0x000000FF) << 16);
+			configstream << L"color=" << hex << bitreversed << L"    ; A color in hexadecimal notation. Described in usage.md." << endl;
+			configstream << L"opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << L"    ; A value in the range 0 to 255." << endl;
+		}
 	}
 }
 
@@ -325,6 +335,10 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 		// Ignore - this was handled in a previous iteration
 		// over the arguments.
 	}
+	else if (arg == L"--save-all")
+	{
+		shouldsaveconfig = SaveAll;
+	}
 	else if (arg == L"--blur")
 	{
 		opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
@@ -337,11 +351,11 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	{
 		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 	}
-	else if (arg == L"--dynamic")
-		{
+	else if (arg == L"--dynamic-ws")
+	{
 			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 			opt.dynamic = true;
-		}
+	}
 	else if (arg == L"--tint")
 	{
 		// The next argument should be a color in hex format
@@ -372,7 +386,7 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 void ParseCmdOptions()
 {
 	// Set default values
-	shouldsaveconfig = false;
+	shouldsaveconfig = DoNotSave;
 	explicitconfig = false;
 	configfile = L"config.cfg";
 	forcedtransparency = -1;
@@ -474,12 +488,16 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			case IDM_BLUR:
 				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_BLUR, MF_BYCOMMAND);
 				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-				shouldsaveconfig = true;
+				opt.dynamic = false;
+				if (shouldsaveconfig == DoNotSave)
+					shouldsaveconfig = SaveTransparency;
 				break;
 			case IDM_CLEAR:
 				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_CLEAR, MF_BYCOMMAND);
 				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-				shouldsaveconfig = true;
+				opt.dynamic = false;
+				if (shouldsaveconfig == DoNotSave)
+					shouldsaveconfig = SaveTransparency;
 				break;
 			case IDM_EXIT:
 				run = false;
@@ -581,8 +599,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		// Still, we check the --config parameter on the command line, so that should be handled
 		// before the config file. Needs two passes on the command line arguments, lets leave that
 		// for later.
-		ParseCmdOptions(); //command line argument settings
 		ParseConfigFile(L"config.cfg"); //config file settings
+		ParseCmdOptions(); //command line argument settings
 
 		MSG msg; // for message translation and dispatch
 		popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
@@ -633,7 +651,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		}
 		Shell_NotifyIcon(NIM_DELETE, &Tray);
 
-		if (shouldsaveconfig)
+		if (shouldsaveconfig != DoNotSave)
 			SaveConfigFile();
 	}
 	CloseHandle(ev);
