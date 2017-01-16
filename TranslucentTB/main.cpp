@@ -61,6 +61,13 @@ enum SAVECONFIGSTATES { DoNotSave, SaveTransparency, SaveAll } shouldsaveconfig;
 			// SaveTransparency | Save opt.taskbar_appearance
 			// SaveAll          | Save all options
 
+
+struct READFROMCONFIG
+{
+	bool dynamicws;
+	bool tint;
+} configfileoptions; // Keep a struct, as we will need to save them later
+
 struct TASKBARPROPERTIES
 {
 	HMONITOR hmon;
@@ -299,15 +306,15 @@ void SaveConfigFile()
 		else if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
 			configstream << L"accent=blur" << endl;
 
-		if (shouldsaveconfig == SaveAll)
+		if (configfileoptions.dynamicws == true || 
+			shouldsaveconfig == SaveAll)
 		{
-
-			if (opt.dynamic)
-			{
-				configstream << L"; Dynamic states: Window States and (WIP) Start Menu" << endl;
-				configstream << L"dynamic-ws=enable" << endl;
-			}
-
+			configstream << L"; Dynamic states: Window States and (WIP) Start Menu" << endl;
+			configstream << L"dynamic-ws=enable" << endl;
+		}
+		if (configfileoptions.tint == true ||
+			shouldsaveconfig == SaveAll)
+		{
 			configstream << endl;
 			configstream << L"; Color and opacity of the taskbar." << endl;
 
@@ -353,11 +360,13 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	}
 	else if (arg == L"--dynamic-ws")
 	{
-			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-			opt.dynamic = true;
+		configfileoptions.dynamicws = true;
+		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+		opt.dynamic = true;
 	}
 	else if (arg == L"--tint")
 	{
+		configfileoptions.tint = true;
 		// The next argument should be a color in hex format
 		if (value.length() > 0)
 		{
@@ -383,16 +392,19 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	}
 }
 
-void ParseCmdOptions()
+void ParseCmdOptions(bool configonly=false)
 {
 	// Set default values
-	shouldsaveconfig = DoNotSave;
-	explicitconfig = false;
-	configfile = L"config.cfg";
-	forcedtransparency = -1;
+	if (configonly)
+	{
+		shouldsaveconfig = DoNotSave;
+		explicitconfig = false;
+		configfile = L"config.cfg";
+		forcedtransparency = -1;
 
-	opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-	opt.color = 0x00000000;
+		opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+		opt.color = 0x00000000;
+	}
 
 	// Loop through command line arguments
 	LPWSTR *szArglist;
@@ -426,15 +438,18 @@ void ParseCmdOptions()
 
 	// Iterate over the rest of the arguments 
 	// Those options override the config files.
-	for (int i = 0; i < nArgs; i++)
+	if (configonly == false) // If configonly is false
 	{
-		LPWSTR lparg = szArglist[i];
-		LPWSTR lpvalue = (i + 1 < nArgs) ? szArglist[i + 1] : L"";
+		for (int i = 0; i < nArgs; i++)
+		{
+			LPWSTR lparg = szArglist[i];
+			LPWSTR lpvalue = (i + 1 < nArgs) ? szArglist[i + 1] : L"";
 
-		std::wstring arg = std::wstring(lparg);
-		std::wstring value = std::wstring(lpvalue);
+			std::wstring arg = std::wstring(lparg);
+			std::wstring value = std::wstring(lpvalue);
 
-		ParseSingleOption(arg, value);
+			ParseSingleOption(arg, value);
+		}
 	}
 
 	LocalFree(szArglist);
@@ -487,16 +502,24 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			{
 			case IDM_BLUR:
 				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_BLUR, MF_BYCOMMAND);
+				if (opt.dynamic)
+				{
+					break;
+				}
 				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-				opt.dynamic = false;
-				if (shouldsaveconfig == DoNotSave)
+				if (shouldsaveconfig == DoNotSave &&
+					shouldsaveconfig != SaveAll)
 					shouldsaveconfig = SaveTransparency;
 				break;
 			case IDM_CLEAR:
 				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_CLEAR, MF_BYCOMMAND);
+				if (opt.dynamic)
+				{
+					break;
+				}
 				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-				opt.dynamic = false;
-				if (shouldsaveconfig == DoNotSave)
+				if (shouldsaveconfig == DoNotSave &&
+					shouldsaveconfig != SaveAll)
 					shouldsaveconfig = SaveTransparency;
 				break;
 			case IDM_EXIT:
@@ -534,6 +557,8 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 
 void SetTaskbarBlur()
 {
+
+	std::cout << opt.dynamic << std::endl;
 	if (opt.dynamic) {
 		if (counter >= 5)   // Change this if you want to change the time it takes for the program to update
 		{                   // 100 = 1 second; we use 5, because the difference is less noticeable and it has
@@ -541,7 +566,8 @@ void SetTaskbarBlur()
 							// than response time.
 			counter = 0;
 			for (auto &taskbar: taskbars)
-			{
+		 	{
+
 				taskbar.second.state = Normal; // Reset taskbar state
 			}
 			EnumWindows(&EnumWindowsProcess, NULL);
@@ -557,7 +583,8 @@ void SetTaskbarBlur()
 		} else if (taskbar.second.state == Normal) {
 			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
 		}
-	} 
+
+	}
 	counter++;
 }
 
@@ -595,12 +622,10 @@ bool singleProc()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
 {
 	if (singleProc()) {
-		// TODO Usually the command line overrides the config file, so these should be reversed.
-		// Still, we check the --config parameter on the command line, so that should be handled
-		// before the config file. Needs two passes on the command line arguments, lets leave that
-		// for later.
-		ParseConfigFile(L"config.cfg"); //config file settings
-		ParseCmdOptions(); //command line argument settings
+		ParseCmdOptions(true); // Command line argument settings, config file only
+		ParseConfigFile(L"config.cfg"); // Config file settings
+		ParseCmdOptions(false); // Command line argument settings, all lines
+
 
 		MSG msg; // for message translation and dispatch
 		popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
