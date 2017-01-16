@@ -392,16 +392,19 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	}
 }
 
-void ParseCmdOptions()
+void ParseCmdOptions(bool configonly=false)
 {
 	// Set default values
-	shouldsaveconfig = DoNotSave;
-	explicitconfig = false;
-	configfile = L"config.cfg";
-	forcedtransparency = -1;
+	if (configonly)
+	{
+		shouldsaveconfig = DoNotSave;
+		explicitconfig = false;
+		configfile = L"config.cfg";
+		forcedtransparency = -1;
 
-	opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-	opt.color = 0x00000000;
+		opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+		opt.color = 0x00000000;
+	}
 
 	// Loop through command line arguments
 	LPWSTR *szArglist;
@@ -435,15 +438,18 @@ void ParseCmdOptions()
 
 	// Iterate over the rest of the arguments 
 	// Those options override the config files.
-	for (int i = 0; i < nArgs; i++)
+	if (configonly == false) // If configonly is false
 	{
-		LPWSTR lparg = szArglist[i];
-		LPWSTR lpvalue = (i + 1 < nArgs) ? szArglist[i + 1] : L"";
+		for (int i = 0; i < nArgs; i++)
+		{
+			LPWSTR lparg = szArglist[i];
+			LPWSTR lpvalue = (i + 1 < nArgs) ? szArglist[i + 1] : L"";
 
-		std::wstring arg = std::wstring(lparg);
-		std::wstring value = std::wstring(lpvalue);
+			std::wstring arg = std::wstring(lparg);
+			std::wstring value = std::wstring(lpvalue);
 
-		ParseSingleOption(arg, value);
+			ParseSingleOption(arg, value);
+		}
 	}
 
 	LocalFree(szArglist);
@@ -496,14 +502,24 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			{
 			case IDM_BLUR:
 				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_BLUR, MF_BYCOMMAND);
+				if (opt.dynamic)
+				{
+					break;
+				}
 				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-				if (shouldsaveconfig == DoNotSave)
+				if (shouldsaveconfig == DoNotSave &&
+					shouldsaveconfig != SaveAll)
 					shouldsaveconfig = SaveTransparency;
 				break;
 			case IDM_CLEAR:
 				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_CLEAR, MF_BYCOMMAND);
+				if (opt.dynamic)
+				{
+					break;
+				}
 				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-				if (shouldsaveconfig == DoNotSave)
+				if (shouldsaveconfig == DoNotSave &&
+					shouldsaveconfig != SaveAll)
 					shouldsaveconfig = SaveTransparency;
 				break;
 			case IDM_EXIT:
@@ -606,13 +622,9 @@ bool singleProc()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
 {
 	if (singleProc()) {
-
-		// TODO Usually the command line overrides the config file, so these should be reversed.
-		// Still, we check the --config parameter on the command line, so that should be handled
-		// before the config file. Needs two passes on the command line arguments, lets leave that
-		// for later.
-		ParseCmdOptions(); //command line argument settings
-		ParseConfigFile(L"config.cfg"); //config file settings
+		ParseCmdOptions(true); // Command line argument settings, config file only
+		ParseConfigFile(L"config.cfg"); // Config file settings
+		ParseCmdOptions(false); // Command line argument settings, all lines
 
 
 		MSG msg; // for message translation and dispatch
