@@ -27,6 +27,8 @@ Dynamic taskbar states (these can be used together):
 
 TranslucentTB also supports custom tints, which make your taskbar any color you want.
 
+You can see it in action [here](https://gfycat.com/EverlastingCreamyIlladopsis) (Thanks @Gunny123!).
+
 ##Download
 You can download the program (prebuilt executables and source snapshots) [via the releases tab](https://github.com/ethanhs/TranslucentTB/releases).
 
