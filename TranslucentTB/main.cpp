@@ -545,7 +545,9 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 		_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
 		for (auto &taskbar: taskbars)
 		{
-			if (taskbar.second.hmon == _monitor)
+			char windowHandle[1024]; 
+			GetClassNameA(hWnd, windowHandle, 1023);
+			if (taskbar.second.hmon == _monitor && windowHandle != "DESKSCAPES") // Perhaps we should implement a user-configurable blacklist instead of hard-coding it
 			{
 				taskbar.second.state = WindowMaximised;
 			}
