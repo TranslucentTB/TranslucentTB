@@ -601,27 +601,37 @@ void SetTaskbarBlur()
 		}
 	}
 	
-	for (auto const &taskbar: taskbars)
+	if (opt.dynamicstart)
 	{
-		if (opt.dynamicstart)
+		HWND foreground;
+		TCHAR ForehWndClass[MAX_PATH];
+		TCHAR ForehWndName[MAX_PATH];
+
+		foreground = GetForegroundWindow();
+		GetWindowText(foreground, ForehWndName, _countof(ForehWndName));
+		GetClassName(foreground, ForehWndClass, _countof(ForehWndClass));
+
+		if (!_tcscmp(ForehWndClass, _T("Windows.UI.Core.CoreWindow")))
 		{
-			HWND foreground;
-			TCHAR ForehWndClass[MAX_PATH];
-			TCHAR ForehWndName[MAX_PATH];
-
-			foreground = GetForegroundWindow();
-			GetWindowText(foreground, ForehWndName, _countof(ForehWndName));
-			GetClassName(foreground, ForehWndClass, _countof(ForehWndClass));
-
-			if (!_tcscmp(ForehWndClass, _T("Windows.UI.Core.CoreWindow")))
+			if (!_tcscmp(ForehWndName, _T("Search")))
 			{
-				if (!_tcscmp(ForehWndName, _T("Search")))
+				// Detect monitor Start Menu is open on
+				HMONITOR _monitor;
+				_monitor = MonitorFromWindow(foreground, MONITOR_DEFAULTTOPRIMARY);
+				for (auto &taskbar: taskbars)
 				{
-					OutputDebugString(TEXT("START MENU OPEN!")); // Start menu is open! Do stuff here.
+					if (taskbar.second.hmon == _monitor)
+					{
+						taskbar.second.state = StartMenuOpen;
+					}
 				}
 			}
+		}
+	}
 
-		} else if (taskbar.second.state == WindowMaximised)
+	for (auto const &taskbar: taskbars)
+	{
+		if (taskbar.second.state == WindowMaximised)
 		{
 			SetWindowBlur(taskbar.first, ACCENT_ENABLE_BLURBEHIND);
 											// A window is maximised; let's make sure that we blur the window.
