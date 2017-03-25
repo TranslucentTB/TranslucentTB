@@ -99,8 +99,9 @@ void SetWindowBlur(HWND hWnd, int appearance = 0) // `appearance` can be 0, whic
 		{
 			if (appearance == DISABLE_TTB)
 			{
-				InvalidateRect(hWnd, NULL, TRUE);
-				UpdateWindow(hWnd);
+				//InvalidateRect(hWnd, NULL, TRUE);
+				//UpdateWindow(hWnd);
+				RedrawWindow(hWnd, NULL, NULL, (RDW_INTERNALPAINT, RDW_ERASENOW));
 				return;
 			} else {
 				policy = { appearance, 2, opt.color, 0 };
@@ -109,7 +110,6 @@ void SetWindowBlur(HWND hWnd, int appearance = 0) // `appearance` can be 0, whic
 			policy = { opt.taskbar_appearance, 2, opt.color, 0 };
 		}
 		
-
 		WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) }; // WCA_ACCENT_POLICY=19
 		SetWindowCompositionAttribute(hWnd, &data);
 	}
@@ -619,33 +619,41 @@ void SetTaskbarBlur()
 		GetWindowText(foreground, ForehWndName, _countof(ForehWndName));
 		GetClassName(foreground, ForehWndClass, _countof(ForehWndClass));
 
-		if (!_tcscmp(ForehWndClass, _T("Windows.UI.Core.CoreWindow")))
+		//OutputDebugString(ForehWndName);
+		//OutputDebugString(ForehWndClass);
+
+		if (!_tcscmp(ForehWndClass, _T("Windows.UI.Core.CoreWindow")) &&
+			!_tcscmp(ForehWndName, _T("Search")))
 		{
-			if (!_tcscmp(ForehWndName, _T("Search")))
+			// Detect monitor Start Menu is open on
+			HMONITOR _monitor;
+			_monitor = MonitorFromWindow(foreground, MONITOR_DEFAULTTOPRIMARY);
+			for (auto &taskbar: taskbars)
 			{
-				// Detect monitor Start Menu is open on
-				HMONITOR _monitor;
-				_monitor = MonitorFromWindow(foreground, MONITOR_DEFAULTTOPRIMARY);
-				for (auto &taskbar: taskbars)
+				if (taskbar.second.hmon == _monitor)
 				{
-					if (taskbar.second.hmon == _monitor)
-					{
-						taskbar.second.state = StartMenuOpen;
-					}
+					taskbar.second.state = StartMenuOpen;
 				}
+			}
+		}
+
+		if (!_tcscmp(ForehWndClass, _T("MultitaskingViewFrame")) &&
+			 !_tcscmp(ForehWndName, _T("Task View")))
+	    {
+			for (auto &taskbar: taskbars)
+			{
+				taskbar.second.state = StartMenuOpen;
 			}
 		}
 	}
 
 	for (auto const &taskbar: taskbars)
 	{
-		if (taskbar.second.state == WindowMaximised)
-		{
+		if (taskbar.second.state == StartMenuOpen) {
+			SetWindowBlur(taskbar.first, DISABLE_TTB);
+		} else if (taskbar.second.state == WindowMaximised) {
 			SetWindowBlur(taskbar.first, ACCENT_ENABLE_BLURBEHIND);
 											// A window is maximised; let's make sure that we blur the window.
-		} else if (taskbar.second.state == StartMenuOpen)
-		{
-			SetWindowBlur(taskbar.first, DISABLE_TTB);
 		} else if (taskbar.second.state == Normal) {
 			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
 		}
