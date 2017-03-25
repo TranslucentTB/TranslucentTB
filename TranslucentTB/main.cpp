@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <tchar.h>
 #include <map>
 
 //used for the tray things
@@ -47,7 +48,8 @@ struct OPTIONS
 {
 	int taskbar_appearance;
 	int color;
-	bool dynamic;
+	bool dynamicws;
+	bool dynamicstart;
 } opt;
 
 enum TASKBARSTATE { Normal, WindowMaximised, StartMenuOpen }; // Create a state to store all 
@@ -65,6 +67,7 @@ enum SAVECONFIGSTATES { DoNotSave, SaveTransparency, SaveAll } shouldsaveconfig;
 struct READFROMCONFIG
 {
 	bool dynamicws;
+	bool dynamicstart;
 	bool tint;
 } configfileoptions; // Keep a struct, as we will need to save them later
 
@@ -164,18 +167,20 @@ void PrintHelp()
 			cout << "TranslucentTB by /u/IronManMark20" << endl;
 			cout << "This program modifies the apperance of the windows taskbar" << endl;
 			cout << "You can modify its behaviour by using the following parameters when launching the program:" << endl;
-			cout << "  --blur        | will make the taskbar a blurry overlay of the background (default)." << endl;
-			cout << "  --opaque      | will make the taskbar a solid color specified by the tint parameter." << endl;
-			cout << "  --transparent | will make the taskbar a transparent color specified by the tint parameter. " << endl;
-			cout << "                  the value of the alpha channel determines the opacity of the taskbar." << endl;
-			cout << "  --tint COLOR  | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format," << endl;
-			cout << "                  see explanation below. This will not affect the blur mode. If COLOR is zero in" << endl;
-			cout << "                  combination with --transparent the taskbar becomes opaque and uses the selected" << endl;
-			cout << "                  system color scheme." << endl;
-			cout << "  --dynamic-ws  | will make the taskbar transparent when no windows are maximised in the current" << endl;
-			cout << "                  monitor, otherwise blurry." << endl;
-			cout << "  --save-all    | will save all of the above settings into config.cfg on program exit." << endl;
-			cout << "  --help        | Displays this help message." << endl;
+			cout << "  --blur          | will make the taskbar a blurry overlay of the background (default)." << endl;
+			cout << "  --opaque        | will make the taskbar a solid color specified by the tint parameter." << endl;
+			cout << "  --transparent   | will make the taskbar a transparent color specified by the tint parameter. " << endl;
+			cout << "                    the value of the alpha channel determines the opacity of the taskbar." << endl;
+			cout << "  --tint COLOR    | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format," << endl;
+			cout << "                    see explanation below. This will not affect the blur mode. If COLOR is zero in" << endl;
+			cout << "                    combination with --transparent the taskbar becomes opaque and uses the selected" << endl;
+			cout << "                    system color scheme." << endl;
+			cout << "  --dynamic-ws    | will make the taskbar transparent when no windows are maximised in the current" << endl;
+			cout << "                    monitor, otherwise blurry." << endl;
+			cout << "  --dynamic-start | will make the taskbar return to it's normal state when the start menu is opened," << endl;
+			cout << "                    normal otherwise." << endl;
+			cout << "  --save-all      | will save all of the above settings into config.cfg on program exit." << endl;
+			cout << "  --help          | Displays this help message." << endl;
 			cout << endl;
 
 			cout << "Color format:" << endl;
@@ -228,7 +233,15 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 			value == L"enable")
 			{
 				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-				opt.dynamic = true;
+				opt.dynamicws = true;
+			}
+	}
+	else if (arg == L"dynamic-start")
+	{
+		if (value == L"true" ||
+			value == L"enable")
+			{
+				opt.dynamicstart = true;
 			}
 	}
 	else if (arg == L"color" ||
@@ -312,6 +325,11 @@ void SaveConfigFile()
 			configstream << L"; Dynamic states: Window States and (WIP) Start Menu" << endl;
 			configstream << L"dynamic-ws=enable" << endl;
 		}
+		if (configfileoptions.dynamicstart == true ||
+			shouldsaveconfig == SaveAll)
+		{
+			configstream << L"dynamic-start=enable" << endl;
+		}
 		if (configfileoptions.tint == true ||
 			shouldsaveconfig == SaveAll)
 		{
@@ -362,7 +380,12 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	{
 		configfileoptions.dynamicws = true;
 		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-		opt.dynamic = true;
+		opt.dynamicws = true;
+	}
+	else if (arg == L"--dynamic-start")
+	{
+		configfileoptions.dynamicstart = true;
+		opt.dynamicstart = true;
 	}
 	else if (arg == L"--tint")
 	{
@@ -502,7 +525,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			{
 			case IDM_BLUR:
 				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_BLUR, MF_BYCOMMAND);
-				if (opt.dynamic)
+				if (opt.dynamicws)
 				{
 					break;
 				}
@@ -513,7 +536,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				break;
 			case IDM_CLEAR:
 				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_CLEAR, MF_BYCOMMAND);
-				if (opt.dynamic)
+				if (opt.dynamicws)
 				{
 					break;
 				}
@@ -539,27 +562,31 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 {
 	HMONITOR _monitor;
 
-	WINDOWPLACEMENT result = {};
-	::GetWindowPlacement(hWnd, &result);
-	if(result.showCmd == 3) { 
-		_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
-		for (auto &taskbar: taskbars)
-		{
-			if (taskbar.second.hmon == _monitor)
+	if (opt.dynamicws)
+	{
+		WINDOWPLACEMENT result = {};
+		::GetWindowPlacement(hWnd, &result);
+		if (result.showCmd == 3) { 
+			_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
+			for (auto &taskbar: taskbars)
 			{
-				taskbar.second.state = WindowMaximised;
+				if (taskbar.second.hmon == _monitor)
+				{
+					taskbar.second.state = WindowMaximised;
+				}
 			}
 		}
 	}
+
+
 
 	return true;
 }
 
 void SetTaskbarBlur()
 {
-
-	std::cout << opt.dynamic << std::endl;
-	if (opt.dynamic) {
+	// std::cout << opt.dynamicws << std::endl;
+	if (opt.dynamicws) {
 		if (counter >= 5)   // Change this if you want to change the time it takes for the program to update
 		{                   // 100 = 1 second; we use 5, because the difference is less noticeable and it has
 							// no large impact on CPU. We can change this if we feel that CPU is more important
@@ -567,19 +594,41 @@ void SetTaskbarBlur()
 			counter = 0;
 			for (auto &taskbar: taskbars)
 		 	{
-
 				taskbar.second.state = Normal; // Reset taskbar state
 			}
+
 			EnumWindows(&EnumWindowsProcess, NULL);
 		}
 	}
 	
 	for (auto const &taskbar: taskbars)
 	{
-		if (taskbar.second.state == WindowMaximised)
+		if (opt.dynamicstart)
+		{
+			HWND foreground;
+			TCHAR ForehWndClass[MAX_PATH];
+			TCHAR ForehWndName[MAX_PATH];
+
+			foreground = GetForegroundWindow();
+			GetWindowText(foreground, ForehWndName, _countof(ForehWndName));
+			GetClassName(foreground, ForehWndClass, _countof(ForehWndClass));
+
+			if (!_tcscmp(ForehWndClass, _T("Windows.UI.Core.CoreWindow")))
+			{
+				if (!_tcscmp(ForehWndName, _T("Search")))
+				{
+					OutputDebugString(TEXT("START MENU OPEN!")); // Start menu is open! Do stuff here.
+				}
+			}
+
+		} else if (taskbar.second.state == WindowMaximised)
 		{
 			SetWindowBlur(taskbar.first, ACCENT_ENABLE_BLURBEHIND);
 											// A window is maximised; let's make sure that we blur the window.
+		} else if (taskbar.second.state == StartMenuOpen)
+		{
+			SetWindowBlur(taskbar.first, ACCENT_ENABLE_GRADIENT);
+
 		} else if (taskbar.second.state == Normal) {
 			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
 		}
@@ -659,7 +708,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		}
 
 		RefreshHandles();
-		if (opt.dynamic)
+		if (opt.dynamicws)
 		{
 			EnumWindows(&EnumWindowsProcess, NULL); // Putting this here so there isn't a 
 			                                        // delay between when you start the 
