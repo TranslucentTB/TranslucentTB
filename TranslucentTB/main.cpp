@@ -81,6 +81,7 @@ int counter = 0;
 const int ACCENT_ENABLE_GRADIENT = 1; // Makes the taskbar a solid color specified by nColor. This mode doesn't care about the alpha channel.
 const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2; // Makes the taskbar a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
 const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry overlay. nColor is same as above.
+const int DISABLE_TTB = 4; // Disables TTB for that taskbar
 unsigned int WM_TASKBARCREATED;
 std::map<HWND, TASKBARPROPERTIES> taskbars; // Create a map for all taskbars
 
@@ -96,7 +97,14 @@ void SetWindowBlur(HWND hWnd, int appearance = 0) // `appearance` can be 0, whic
 
 		if (appearance) // Custom taskbar appearance is set
 		{
-			policy = { appearance, 2, opt.color, 0 };
+			if (appearance == DISABLE_TTB)
+			{
+				InvalidateRect(hWnd, NULL, TRUE);
+				UpdateWindow(hWnd);
+				return;
+			} else {
+				policy = { appearance, 2, opt.color, 0 };
+			}
 		} else { // Use the defaults
 			policy = { opt.taskbar_appearance, 2, opt.color, 0 };
 		}
@@ -637,8 +645,7 @@ void SetTaskbarBlur()
 											// A window is maximised; let's make sure that we blur the window.
 		} else if (taskbar.second.state == StartMenuOpen)
 		{
-			SetWindowBlur(taskbar.first, ACCENT_ENABLE_GRADIENT);
-
+			SetWindowBlur(taskbar.first, DISABLE_TTB);
 		} else if (taskbar.second.state == Normal) {
 			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
 		}
