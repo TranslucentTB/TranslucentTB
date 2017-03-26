@@ -103,6 +103,8 @@ void SetWindowBlur(HWND hWnd, int appearance = 0) // `appearance` can be 0, whic
 				//UpdateWindow(hWnd);
 				RedrawWindow(hWnd, NULL, NULL, (RDW_INTERNALPAINT, RDW_ERASENOW));
 				return;
+
+				// policy = { ACCENT_ENABLE_GRADIENT, 2, opt.color, 0}; // Testing
 			} else {
 				policy = { appearance, 2, opt.color, 0 };
 			}
@@ -578,7 +580,8 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 			_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
 			for (auto &taskbar: taskbars)
 			{
-				if (taskbar.second.hmon == _monitor)
+				if (taskbar.second.hmon == _monitor &&
+					taskbar.second.state != StartMenuOpen)
 				{
 					taskbar.second.state = WindowMaximised;
 				}
@@ -593,56 +596,59 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 
 void SetTaskbarBlur()
 {
-	// std::cout << opt.dynamicws << std::endl;
-	if (opt.dynamicws) {
-		if (counter >= 5)   // Change this if you want to change the time it takes for the program to update
-		{                   // 100 = 1 second; we use 5, because the difference is less noticeable and it has
-							// no large impact on CPU. We can change this if we feel that CPU is more important
-							// than response time.
-			counter = 0;
-			for (auto &taskbar: taskbars)
-		 	{
-				taskbar.second.state = Normal; // Reset taskbar state
-			}
+	// std::cout << opt.dynamicws << std::endl;	
 
+	
+	if (counter >= 5)   // Change this if you want to change the time it takes for the program to update
+	{                   // 100 = 1 second; we use 5, because the difference is less noticeable and it has
+						// no large impact on CPU. We can change this if we feel that CPU is more important
+						// than response time.
+		for (auto &taskbar: taskbars)
+		{
+			taskbar.second.state = Normal; // Reset taskbar state
+		}
+		if (opt.dynamicws) {
+			counter = 0;
 			EnumWindows(&EnumWindowsProcess, NULL);
 		}
-	}
 	
-	if (opt.dynamicstart)
-	{
-		HWND foreground;
-		TCHAR ForehWndClass[MAX_PATH];
-		TCHAR ForehWndName[MAX_PATH];
-
-		foreground = GetForegroundWindow();
-		GetWindowText(foreground, ForehWndName, _countof(ForehWndName));
-		GetClassName(foreground, ForehWndClass, _countof(ForehWndClass));
-
-		//OutputDebugString(ForehWndName);
-		//OutputDebugString(ForehWndClass);
-
-		if (!_tcscmp(ForehWndClass, _T("Windows.UI.Core.CoreWindow")) &&
-			!_tcscmp(ForehWndName, _T("Search")))
+		if (opt.dynamicstart)
 		{
-			// Detect monitor Start Menu is open on
-			HMONITOR _monitor;
-			_monitor = MonitorFromWindow(foreground, MONITOR_DEFAULTTOPRIMARY);
-			for (auto &taskbar: taskbars)
+			HWND foreground;
+			TCHAR ForehWndClass[MAX_PATH];
+			TCHAR ForehWndName[MAX_PATH];
+
+			foreground = GetForegroundWindow();
+			GetWindowText(foreground, ForehWndName, _countof(ForehWndName));
+			GetClassName(foreground, ForehWndClass, _countof(ForehWndClass));
+
+			//OutputDebugString(ForehWndName);
+			//OutputDebugString(ForehWndClass);
+
+			if (!_tcscmp(ForehWndClass, _T("Windows.UI.Core.CoreWindow")) &&
+				!_tcscmp(ForehWndName, _T("Search")))
 			{
-				if (taskbar.second.hmon == _monitor)
+				// Detect monitor Start Menu is open on
+				HMONITOR _monitor;
+				_monitor = MonitorFromWindow(foreground, MONITOR_DEFAULTTOPRIMARY);
+				for (auto &taskbar: taskbars)
+				{
+					if (taskbar.second.hmon == _monitor)
+					{
+						taskbar.second.state = StartMenuOpen;
+					} else {
+						taskbar.second.state = Normal;
+					}
+				}
+			}
+
+			if (!_tcscmp(ForehWndClass, _T("MultitaskingViewFrame")) &&
+				!_tcscmp(ForehWndName, _T("Task View")))
+			{
+				for (auto &taskbar: taskbars)
 				{
 					taskbar.second.state = StartMenuOpen;
 				}
-			}
-		}
-
-		if (!_tcscmp(ForehWndClass, _T("MultitaskingViewFrame")) &&
-			 !_tcscmp(ForehWndName, _T("Task View")))
-	    {
-			for (auto &taskbar: taskbars)
-			{
-				taskbar.second.state = StartMenuOpen;
 			}
 		}
 	}
