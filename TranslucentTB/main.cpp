@@ -402,8 +402,19 @@ void ParseCmdOptions(bool configonly=false)
 		configfile = L"config.cfg";
 		forcedtransparency = -1;
 
-		opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 		opt.color = 0x00000000;
+
+		//AutoStart
+		TCHAR pwd[MAX_PATH];
+		GetCurrentDirectory(MAX_PATH, pwd);
+		std::wstring progPath = pwd;
+		std::wstring progFixPath = L" /onboot";
+		std::wstring progname = L"\\TranslucentTB.exe";
+		progPath += progname + progFixPath;
+		HKEY hkey = NULL;
+		LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey); //Creates a key       
+		LONG status = RegSetValueEx(hkey, L"TranslucentTB", 0, REG_SZ, (BYTE *)progPath.c_str(), (progPath.size() + 1) * sizeof(wchar_t));
 	}
 
 	// Loop through command line arguments
