@@ -9,10 +9,10 @@ You can see how to use the command line in the [usage file](usage.md).
 You can see examples of the customizations you can make in the image below:
 ![taskbar images](https://i.imgur.com/QMnfswp.png)
 
-##Add to Startup
+## Add to Startup
 To add TTB to startup, run the application through the command line with `TranslucentTB.exe --startup` to automatically add it to the Windows Registry and thus make it start automatically at subsequent boots. We\'re working on making the process easier.
 
-##Features
+## Features
 TranslucentTB supports multiple taskbar states and dynamic taskbar states.
 
 Normal taskbar states (choose one):
@@ -28,15 +28,15 @@ TranslucentTB also supports custom tints, which make your taskbar any color you 
 
 You can see it in action [here](https://gfycat.com/EverlastingCreamyIlladopsis) (Thanks @Gunny123!).
 
-##Download
+## Download
 You can download the program (prebuilt executables and source snapshots) [via the releases tab](https://github.com/ethanhs/TranslucentTB/releases).
 
-##Security
+## Security
 Some antiviruses are over eager, so they might flag this program as malicious. IT IS NOT! The source is open, you can compile yourself, and I welcome any and all security reviews.
 
 Speaking of compiling...
 
-##Building from source
+## Building from source
 
 You have two options here: you can checkout either of the `develop` or `master` branches. It is highly recommended that you checkout `master` as it is stable, and `develop` may contain non-working code.
  Via [git](https://git-scm.com):
@@ -53,7 +53,7 @@ The output will be in either the Release or Debug folder.
 If you don't want to open Visual Studio (or install it), you can (if you haven't installed VS) install the [Visual C++ Build Tools from Microsoft](http://landinghub.visualstudio.com/visual-cpp-build-tools). 
 Then open the `Visual C++ MSBuild Command Prompt` and `cd` into the root directory of this project, before running `msbuild`.
 
-##Thanks
+## Thanks
 
 I definitly could not have done this without the help of several people:
 @charlesmilette, @MrAksel, @olliethepikachu, and last but certainly not least @PFCKrutonium.
@@ -62,7 +62,7 @@ If you would like to contribute, everyone is welcome to! If you are considering 
 or want to talk an idea out, don't hesitate to jump on Gitter (see above), or file an issue. I am often on Gitter and Github, so I should reply fairly quickly.
 Also, at this time I have no plans of expanding this beyond the taskbar.
 
-###Similar programs
+### Similar programs
 If you are looking for something that modifies more than just the taskbar, there are several programs out there.
 
 [Taskbar Tools](https://github.com/Elestriel/TaskbarTools) is a similar program written in C#. Elestriel plans on expanding beyond the taskbar, to Explorer and Start last I heard.
@@ -70,11 +70,11 @@ If you are looking for something that modifies more than just the taskbar, there
 You may have seen similar translucency abilities from programs such as Start is Back++ and Classic Shell. Both of these are great programs, but I don't need the start-replacement features, so I wrote this.
 Also Dynamic States allow for more customisability over the taskbar.
 
-###Known issues
+### Known issues
 
 On build 14986, Windows Defender's real time protection sometimes seems to cause Explorer to freeze. There are two work-arounds: temporarily disable Defender when starting it, or start it via the command line.
 I do not know if this is fixed in build 15002.
 
-###License
+### License
 
 This program is free software under the GPL v3. Please see the COPYING file for more.
