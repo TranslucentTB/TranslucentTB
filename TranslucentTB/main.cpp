@@ -176,6 +176,7 @@ void PrintHelp()
 			cout << "                  monitor, otherwise blurry." << endl;
 			cout << "  --save-all    | will save all of the above settings into config.cfg on program exit." << endl;
 			cout << "  --help        | Displays this help message." << endl;
+			cout << "  --startup     | Adds TranslucentTB to startup, via changing the registry." << endl;
 			cout << endl;
 
 			cout << "Color format:" << endl;
@@ -208,6 +209,19 @@ void PrintHelp()
 			fclose(outstream);
 		}
 	}
+}
+
+void add_to_startup()
+{
+	TCHAR pwd[MAX_PATH];
+	GetCurrentDirectory(MAX_PATH, pwd);
+	std::wstring progPath = pwd;
+	std::wstring progFixPath = L" /onboot";
+	std::wstring progname = L"\\TranslucentTB.exe";
+	progPath += progname + progFixPath;
+	HKEY hkey = NULL;
+	LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey); //Creates a key       
+	LONG status = RegSetValueEx(hkey, L"TranslucentTB", 0, REG_SZ, (BYTE *)progPath.c_str(), (progPath.size() + 1) * sizeof(wchar_t));
 }
 
 void ParseSingleConfigOption(std::wstring arg, std::wstring value)
@@ -364,6 +378,10 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 		opt.dynamic = true;
 	}
+	else if (arg == L"--startup")
+	{
+		add_to_startup();
+	}
 	else if (arg == L"--tint")
 	{
 		configfileoptions.tint = true;
@@ -405,17 +423,7 @@ void ParseCmdOptions(bool configonly=false)
 		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 		opt.color = 0x00000000;
 
-		//AutoStart
-		TCHAR pwd[MAX_PATH];
-		GetCurrentDirectory(MAX_PATH, pwd);
-		std::wstring progPath = pwd;
-		std::wstring progFixPath = L" /onboot";
-		std::wstring progname = L"\\TranslucentTB.exe";
-		progPath += progname + progFixPath;
-		HKEY hkey = NULL;
-		LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey); //Creates a key       
-		LONG status = RegSetValueEx(hkey, L"TranslucentTB", 0, REG_SZ, (BYTE *)progPath.c_str(), (progPath.size() + 1) * sizeof(wchar_t));
-	}
+		}
 
 	// Loop through command line arguments
 	LPWSTR *szArglist;
