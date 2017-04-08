@@ -422,8 +422,7 @@ void ParseCmdOptions(bool configonly=false)
 
 		opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
 		opt.color = 0x00000000;
-
-		}
+	}
 
 	// Loop through command line arguments
 	LPWSTR *szArglist;
