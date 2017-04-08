@@ -10,7 +10,7 @@ You can see examples of the customizations you can make in the image below:
 ![taskbar images](https://i.imgur.com/QMnfswp.png)
 
 ##Add to Startup
-After launch, TranslucentTB.exe is automatically add to the Windows registry, and with next boot runs automatically.
+When launched, `TranslucentTB.exe` is automatically added to the Windows Registry and will start automatically at subsequent boots.
 
 ##Features
 TranslucentTB supports multiple taskbar states and dynamic taskbar states.
