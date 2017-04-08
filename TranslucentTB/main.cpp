@@ -420,7 +420,7 @@ void ParseCmdOptions(bool configonly=false)
 		configfile = L"config.cfg";
 		forcedtransparency = -1;
 
-		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+		opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
 		opt.color = 0x00000000;
 
 		}
@@ -540,6 +540,18 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				if (shouldsaveconfig == DoNotSave &&
 					shouldsaveconfig != SaveAll)
 					shouldsaveconfig = SaveTransparency;
+				break;
+			case IDM_AUTOSTART:
+				if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
+				{
+					HKEY hkey = NULL;
+					RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
+					RegDeleteValue(hkey, L"TranslucentTB");
+					CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_UNCHECKED);
+				} else {
+					add_to_startup();
+					CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_CHECKED);
+				}
 				break;
 			case IDM_EXIT:
 				run = false;
@@ -675,6 +687,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
 		{
 			CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_CLEAR, MF_BYCOMMAND);
+		}
+
+		if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
+		{
+			CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_CHECKED);
 		}
 
 		RefreshHandles();
