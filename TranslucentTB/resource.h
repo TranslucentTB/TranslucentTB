@@ -8,6 +8,7 @@
 #define IDM_CLEAR                       204
 // reserved for future use
 //#define IDM_ACCENT						205
+#define IDM_AUTOSTART                   207
 #define IDM_EXIT                        206
 
 
