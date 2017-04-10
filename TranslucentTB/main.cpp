@@ -189,6 +189,7 @@ void PrintHelp()
 			cout << "                    normal otherwise." << endl;
 			cout << "  --save-all      | will save all of the above settings into config.cfg on program exit." << endl;
 			cout << "  --help          | Displays this help message." << endl;
+			cout << "  --startup       | Adds TranslucentTB to startup, via changing the registry." << endl;
 			cout << endl;
 
 			cout << "Color format:" << endl;
@@ -221,6 +222,18 @@ void PrintHelp()
 			fclose(outstream);
 		}
 	}
+}
+
+void add_to_startup()
+{
+	HMODULE hModule = GetModuleHandle(NULL);
+	TCHAR path[MAX_PATH];
+	GetModuleFileName(hModule, path, MAX_PATH);
+	std::wstring unsafePath = path;
+	std::wstring progPath = L"\"" + unsafePath + L"\"";
+	HKEY hkey = NULL;
+	LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey); //Creates a key       
+	LONG status = RegSetValueEx(hkey, L"TranslucentTB", 0, REG_SZ, (BYTE *)progPath.c_str(), (progPath.size() + 1) * sizeof(wchar_t));
 }
 
 void ParseSingleConfigOption(std::wstring arg, std::wstring value)
@@ -395,6 +408,10 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 		configfileoptions.dynamicstart = true;
 		opt.dynamicstart = true;
 	}
+	else if (arg == L"--startup")
+	{
+		add_to_startup();
+	}
 	else if (arg == L"--tint")
 	{
 		configfileoptions.tint = true;
@@ -552,6 +569,18 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				if (shouldsaveconfig == DoNotSave &&
 					shouldsaveconfig != SaveAll)
 					shouldsaveconfig = SaveTransparency;
+				break;
+			case IDM_AUTOSTART:
+				if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
+				{
+					HKEY hkey = NULL;
+					RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
+					RegDeleteValue(hkey, L"TranslucentTB");
+					CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_UNCHECKED);
+				} else {
+					add_to_startup();
+					CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_CHECKED);
+				}
 				break;
 			case IDM_EXIT:
 				run = false;
@@ -730,6 +759,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
 		{
 			CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_CLEAR, MF_BYCOMMAND);
+		}
+
+		if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
+		{
+			CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_CHECKED);
 		}
 
 		RefreshHandles();
