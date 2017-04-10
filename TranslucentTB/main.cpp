@@ -627,7 +627,7 @@ void SetTaskbarBlur()
 			//OutputDebugString(ForehWndClass);
 
 			if (!_tcscmp(ForehWndClass, _T("Windows.UI.Core.CoreWindow")) &&
-				!_tcscmp(ForehWndName, _T("Search")))
+			    !_tcscmp(ForehWndName, _T("Search")) || !_tcscmp(ForehWndName, _T("Cortana")))
 			{
 				// Detect monitor Start Menu is open on
 				HMONITOR _monitor;
