@@ -1,5 +1,6 @@
 # TranslucentTB
 
+[![Join on Discord](https://discordapp.com/api/guilds/304387206552879116/widget.png)](https://discord.gg/w95DGTK)  
 [![Join the chat at https://gitter.im/TranslucentTB/Lobby](https://badges.gitter.im/TranslucentTB/Lobby.svg)](https://gitter.im/TranslucentTB/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 A lightweight (uses <2MB of RAM and almost no CPU) utility that makes the Windows taskbar translucent/transparent. Sadly only compatible with Windows 10, as TTB uses new Windows 10 APIs.
@@ -60,7 +61,7 @@ I definitly could not have done this without the help of several people:
 @charlesmilette, @MrAksel, @olliethepikachu, and last but certainly not least @PFCKrutonium.
 
 If you would like to contribute, everyone is welcome to! If you are considering a major feature, need guidance, 
-or want to talk an idea out, don't hesitate to jump on Gitter (see above), or file an issue. I am often on Gitter and Github, so I should reply fairly quickly.
+or want to talk an idea out, don't hesitate to jump on Discord or Gitter(see above), or file an issue. The main contributors are often on Discord, Gitter and Github, so we should reply fairly quickly.
 Also, at this time I have no plans of expanding this beyond the taskbar.
 
 ###Similar programs
