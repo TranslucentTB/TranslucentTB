@@ -12,7 +12,8 @@ You can see examples of the customizations you can make in the image below:
 
 ## Add to Startup
 
-To add TranslucentTB to startup (so it opens as soon as you open Windows), first right click `TranslucentTB.exe` and click `Create Shortcut`. Then press <kbd>Win</kbd>+<kbd>R</kbd> and type `shell:startup` click "OK". Then copy your shortcut and paste it in the folder which opens. Voila!
+To add TTB to startup, run the application through the command line with TranslucentTB.exe --startup to automatically add it to the Windows Registry and thus make it start automatically at subsequent boots.
+It also possible to do so via the tray icon's context menu.
 
 ## Features
 TranslucentTB supports multiple taskbar states and dynamic taskbar states.
