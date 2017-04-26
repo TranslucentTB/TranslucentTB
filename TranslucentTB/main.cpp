@@ -723,6 +723,7 @@ bool singleProc()
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
 {
+  ParseCmdOptions(false);
 	if (singleProc()) {
 		ParseCmdOptions(true); // Command line argument settings, config file only
 		ParseConfigFile(L"config.cfg"); // Config file settings
