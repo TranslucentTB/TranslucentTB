@@ -12,7 +12,7 @@ You can see examples of the customizations you can make in the image below:
 
 ## Add to Startup
 
-To add TTB to startup, run the application through the command line with TranslucentTB.exe --startup to automatically add it to the Windows Registry and thus make it start automatically at subsequent boots.
+To add TTB to startup, run the application through the command line with `TranslucentTB.exe --startup` to automatically add it to the Windows Registry and thus make it start automatically at subsequent boots.  
 It also possible to do so via the tray icon's context menu.
 
 ## Features
