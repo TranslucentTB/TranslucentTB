@@ -233,7 +233,7 @@ void add_to_startup()
 	std::wstring progPath = L"\"" + unsafePath + L"\"";
 	HKEY hkey = NULL;
 	LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey); //Creates a key       
-	LONG status = RegSetValueEx(hkey, L"TranslucentTB", 0, REG_SZ, (BYTE *)progPath.c_str(), (progPath.size() + 1) * sizeof(wchar_t));
+	LONG status = RegSetValueEx(hkey, L"TranslucentTB", 0, REG_SZ, (BYTE *)progPath.c_str(), (DWORD)((progPath.size() + 1) * sizeof(wchar_t)));
 }
 
 void ParseSingleConfigOption(std::wstring arg, std::wstring value)
@@ -506,7 +506,6 @@ void ParseCmdOptions(bool configonly=false)
 void RefreshHandles()
 {
 	HWND _taskbar;
-	HMONITOR _monitor;
 	TASKBARPROPERTIES _properties;
 
 	taskbars.clear();
