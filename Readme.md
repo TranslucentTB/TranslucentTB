@@ -1,10 +1,8 @@
 # TranslucentTB
 
-[![Build status](https://ci.appveyor.com/api/projects/status/9yym3vr6s5gc7vk3/branch/develop?svg=true)](https://ci.appveyor.com/project/charlesmilette/translucenttb/branch/develop)  
-[![Join on Discord](https://discordapp.com/api/guilds/304387206552879116/widget.png)](https://discord.gg/w95DGTK)  
-[![Join the chat at https://gitter.im/TranslucentTB/Lobby](https://badges.gitter.im/TranslucentTB/Lobby.svg)](https://gitter.im/TranslucentTB/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build status](https://ci.appveyor.com/api/projects/status/9yym3vr6s5gc7vk3/branch/develop?svg=true)](https://ci.appveyor.com/project/charlesmilette/translucenttb/branch/develop) | [![Join on Discord](https://discordapp.com/api/guilds/304387206552879116/widget.png)](https://discord.gg/w95DGTK) | [![Join the chat at https://gitter.im/TranslucentTB/Lobby](https://badges.gitter.im/TranslucentTB/Lobby.svg)](https://gitter.im/TranslucentTB/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) | ![Total downloads](https://img.shields.io/github/downloads/TranslucentTB/TranslucentTB/total.svg)
 
-A lightweight (uses <2MB of RAM and almost no CPU) utility that makes the Windows taskbar translucent/transparent. Sadly only compatible with Windows 10, as TTB uses new Windows 10 APIs.
+A lightweight (uses <2MB of RAM and almost no CPU) utility that makes the Windows taskbar translucent/transparent. Sadly only compatible with Windows 10, as TranslucentTB uses new Windows 10 APIs.
 
 You can see how to use the command line in the [usage file](usage.md).
 
@@ -26,15 +24,15 @@ Normal taskbar states (choose one):
 
 Dynamic taskbar states (these can be used together):
  - Dynamic Window States (dynamic-ws), which will make the taskbar blurred when a window is maximised on the current monitor and transparent otherwise.
- - Dynamic Start Menu (dynamic-sm), which will make your taskbar match the system theme when the Start Menu is open. Does not change the Start Menu. WIP.
+ - Dynamic Start Menu (dynamic-sm), which will make your taskbar match the system theme when the Start Menu is open. Does not change the Start Menu.
 
 TranslucentTB also supports custom tints, which make your taskbar any color you want.
 
 You can see it in action [here](https://gfycat.com/EverlastingCreamyIlladopsis) (Thanks @Gunny123!).
 
 ## Download
-You can download the program (prebuilt executables and source snapshots) [via the releases tab](https://github.com/ethanhs/TranslucentTB/releases).  
-If you want to get the latest bleedging edge build, you can grab it over at the [AppVeyor artifacts](https://ci.appveyor.com/project/charlesmilette/translucenttb/build/artifacts).
+You can download the program (prebuilt executables and source snapshots) [via the releases tab](https://github.com/ethanhs/TranslucentTB/releases).
+If you want to get the latest bleedging edge build, you can grab it over at the [AppVeyor artifacts](https://ci.appveyor.com/project/charlesmilette/translucenttb/build/artifacts). Note that these build may not work, or include features that are partially complete. Use at your own risk.
 
 ## Security
 Some antiviruses are over eager, so they might flag this program as malicious. IT IS NOT! The source is open, you can compile yourself, and I welcome any and all security reviews.
@@ -46,7 +44,7 @@ Speaking of compiling...
 You have two options here: you can checkout either of the `develop` or `master` branches. It is highly recommended that you checkout `master` as it is stable, and `develop` may contain non-working code.
  Via [git](https://git-scm.com):
 ```
-$ git clone -b master https://github.com/ethanhs/TranslucentTB.git
+$ git clone -b master https://github.com/TranslucentTB/TranslucentTB.git
 ```
 
 You can also download a zip of each branch by clicking on the `Clone or Download` button.
@@ -64,7 +62,7 @@ I definitly could not have done this without the help of several people:
 @charlesmilette, @MrAksel, @olliethepikachu, and last but certainly not least @PFCKrutonium.
 
 If you would like to contribute, everyone is welcome to! If you are considering a major feature, need guidance, 
-or want to talk an idea out, don't hesitate to jump on Discord or Gitter(see above), or file an issue. The main contributors are often on Discord, Gitter and Github, so we should reply fairly quickly.
+or want to talk an idea out, don't hesitate to jump on Discord or Gitter (see above), or file an issue. The main contributors are often on Discord, Gitter and Github, so we should reply fairly quickly.
 Also, at this time I have no plans of expanding this beyond the taskbar.
 
 ### Similar programs
