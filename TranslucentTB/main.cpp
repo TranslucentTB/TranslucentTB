@@ -183,9 +183,7 @@ void PrintHelp()
 			cout << "  --transparent   | will make the taskbar a transparent color specified by the tint parameter. " << endl;
 			cout << "                    the value of the alpha channel determines the opacity of the taskbar." << endl;
 			cout << "  --tint COLOR    | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format," << endl;
-			cout << "                    see explanation below. This will not affect the blur mode. If COLOR is zero in" << endl;
-			cout << "                    combination with --transparent the taskbar becomes opaque and uses the selected" << endl;
-			cout << "                    system color scheme." << endl;
+			cout << "                    see explanation below." << endl;
 			cout << "  --dynamic-ws    | will make the taskbar transparent when no windows are maximised in the current" << endl;
 			cout << "                    monitor, otherwise blurry." << endl;
 			cout << "  --dynamic-start | will make the taskbar return to it's normal state when the start menu is opened," << endl;

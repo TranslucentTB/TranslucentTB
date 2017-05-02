@@ -7,7 +7,7 @@ Option | Explanation
 --blur        | will make the taskbar a blurry overlay of the background (default). 
 --opaque      | will make the taskbar a solid color specified by the tint parameter. 
 --transparent | will make the taskbar a transparent color specified by the tint parameter.  The value of the alpha channel determines the opacity of the taskbar. 
---tint COLOR  | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format, see explanation below. This will not affect the blur mode. If COLOR is zero in combination with --transparent the taskbar becomes opaque and uses the selected system color scheme. 
+--tint COLOR  | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format, see explanation below. 
 --help        | Displays this help message.
 
 ### Color format
