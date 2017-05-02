@@ -1,5 +1,6 @@
 # TranslucentTB
 
+[![Build status](https://ci.appveyor.com/api/projects/status/9yym3vr6s5gc7vk3/branch/develop?svg=true)](https://ci.appveyor.com/project/charlesmilette/translucenttb/branch/develop)  
 [![Join on Discord](https://discordapp.com/api/guilds/304387206552879116/widget.png)](https://discord.gg/w95DGTK)  
 [![Join the chat at https://gitter.im/TranslucentTB/Lobby](https://badges.gitter.im/TranslucentTB/Lobby.svg)](https://gitter.im/TranslucentTB/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -32,7 +33,8 @@ TranslucentTB also supports custom tints, which make your taskbar any color you 
 You can see it in action [here](https://gfycat.com/EverlastingCreamyIlladopsis) (Thanks @Gunny123!).
 
 ## Download
-You can download the program (prebuilt executables and source snapshots) [via the releases tab](https://github.com/ethanhs/TranslucentTB/releases).
+You can download the program (prebuilt executables and source snapshots) [via the releases tab](https://github.com/ethanhs/TranslucentTB/releases).  
+If you want to get the latest bleedging edge build, you can grab it over at the [AppVeyor artifacts](https://ci.appveyor.com/project/charlesmilette/translucenttb/build/artifacts).
 
 ## Security
 Some antiviruses are over eager, so they might flag this program as malicious. IT IS NOT! The source is open, you can compile yourself, and I welcome any and all security reviews.
