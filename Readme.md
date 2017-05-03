@@ -1,6 +1,6 @@
 # TranslucentTB
 
-[![Build status](https://ci.appveyor.com/api/projects/status/9yym3vr6s5gc7vk3/branch/develop?svg=true)](https://ci.appveyor.com/project/charlesmilette/translucenttb/branch/develop) | [![Join on Discord](https://discordapp.com/api/guilds/304387206552879116/widget.png)](https://discord.gg/w95DGTK) | [![Join the chat at https://gitter.im/TranslucentTB/Lobby](https://badges.gitter.im/TranslucentTB/Lobby.svg)](https://gitter.im/TranslucentTB/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) | ![Total downloads](https://img.shields.io/github/downloads/TranslucentTB/TranslucentTB/total.svg)
+[![Build status](https://ci.appveyor.com/api/projects/status/9yym3vr6s5gc7vk3/branch/develop?svg=true)](https://ci.appveyor.com/project/charlesmilette/translucenttb/branch/develop) | [![Join on Discord](https://discordapp.com/api/guilds/304387206552879116/widget.png)](https://discord.gg/w95DGTK) | [![Join the chat at https://gitter.im/TranslucentTB/Lobby](https://badges.gitter.im/TranslucentTB/Lobby.svg)](https://gitter.im/TranslucentTB/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) | ![Total downloads](https://img.shields.io/github/downloads/TranslucentTB/TranslucentTB/total.svg)(https://github.com/TranslucentTB/TranslucentTB/releases)
 
 A lightweight (uses <2MB of RAM and almost no CPU) utility that makes the Windows taskbar translucent/transparent. Sadly only compatible with Windows 10, as TranslucentTB uses new Windows 10 APIs.
 
