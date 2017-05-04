@@ -530,6 +530,22 @@ void RefreshHandles()
 #define WM_NOTIFY_TB 3141
 
 HMENU menu;
+NOTIFYICONDATA Tray;
+HWND tray_hwnd;
+
+void initTray(HWND parent)
+{
+
+	Tray.cbSize = sizeof(Tray);
+	Tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
+	Tray.hWnd = parent;
+	wcscpy_s(Tray.szTip, L"TransparentTB");
+	Tray.uCallbackMessage = WM_NOTIFY_TB;
+	Tray.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
+	Tray.uID = 101;
+	Shell_NotifyIcon(NIM_ADD, &Tray);
+	Shell_NotifyIcon(NIM_SETVERSION, &Tray);
+}
 
 LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -591,6 +607,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 	if (message == WM_TASKBARCREATED) // Unfortunately, WM_TASKBARCREATED is not a constant, so I can't include it in the switch.
 	{
 		RefreshHandles();
+		initTray(tray_hwnd);
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
@@ -696,22 +713,6 @@ void SetTaskbarBlur()
 	counter++;
 }
 
-NOTIFYICONDATA Tray;
-
-void initTray(HWND parent)
-{
-
-	Tray.cbSize = sizeof(Tray);
-	Tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
-	Tray.hWnd = parent;
-	wcscpy_s(Tray.szTip, L"TransparentTB");
-	Tray.uCallbackMessage = WM_NOTIFY_TB;
-	Tray.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
-	Tray.uID = 101;
-	Shell_NotifyIcon(NIM_ADD, &Tray);
-	Shell_NotifyIcon(NIM_SETVERSION, &Tray);
-}
-
 #pragma endregion
 
 HANDLE ev;
@@ -752,7 +753,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		wnd.hbrBackground = (HBRUSH)BLACK_BRUSH;
 		RegisterClassEx(&wnd);
 
-		HWND tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"TranslucentTB", L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
+		tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"TranslucentTB", L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
 			400, 400, NULL, NULL, hInstance, NULL);
 
 		initTray(tray_hwnd);
