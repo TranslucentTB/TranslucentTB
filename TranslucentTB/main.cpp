@@ -13,7 +13,8 @@
 const static LPCWSTR singleProcName = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
 
 //needed for tray exit
-bool run = true; 
+bool run = true;
+bool hastray = true;
 
 // config file path (defaults to ./config.cfg)
 std::wstring configfile;
@@ -189,8 +190,10 @@ void PrintHelp()
 			cout << "  --dynamic-start | will make the taskbar return to it's normal state when the start menu is opened," << endl;
 			cout << "                    normal otherwise." << endl;
 			cout << "  --save-all      | will save all of the above settings into config.cfg on program exit." << endl;
+			cout << "  --config FILE   | will load settings from a specified configuration file. (if this parameter is ignored, it will attempt to load from config.cfg)" << endl;
 			cout << "  --help          | Displays this help message." << endl;
 			cout << "  --startup       | Adds TranslucentTB to startup, via changing the registry." << endl;
+			cout << "  --no-tray       | will hide the taskbar tray icon." << endl;
 			cout << endl;
 
 			cout << "Color format:" << endl;
@@ -439,6 +442,10 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 			// output streams, and opening a window seems overkill.
 		}
 	}
+	else if (arg == L"--no-tray")
+	{
+		hastray = false;
+	}
 }
 
 void ParseCmdOptions(bool configonly=false)
@@ -535,16 +542,18 @@ HWND tray_hwnd;
 
 void initTray(HWND parent)
 {
-
-	Tray.cbSize = sizeof(Tray);
-	Tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
-	Tray.hWnd = parent;
-	wcscpy_s(Tray.szTip, L"TransparentTB");
-	Tray.uCallbackMessage = WM_NOTIFY_TB;
-	Tray.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
-	Tray.uID = 101;
-	Shell_NotifyIcon(NIM_ADD, &Tray);
-	Shell_NotifyIcon(NIM_SETVERSION, &Tray);
+	if(hastray)
+	{
+		Tray.cbSize = sizeof(Tray);
+		Tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
+		Tray.hWnd = parent;
+		wcscpy_s(Tray.szTip, L"TransparentTB");
+		Tray.uCallbackMessage = WM_NOTIFY_TB;
+		Tray.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
+		Tray.uID = 101;
+		Shell_NotifyIcon(NIM_ADD, &Tray);
+		Shell_NotifyIcon(NIM_SETVERSION, &Tray);
+	}
 }
 
 LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
