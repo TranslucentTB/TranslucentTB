@@ -397,7 +397,7 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	{
 		opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
 	}
-	else if (arg == L"--transparent")
+	else if (arg == L"--transparent" || arg == L"--clear")
 	{
 		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 	}
@@ -416,7 +416,7 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	{
 		add_to_startup();
 	}
-	else if (arg == L"--tint")
+	else if (arg == L"--tint" || arg == L"--color")
 	{
 		configfileoptions.tint = true;
 		// The next argument should be a color in hex format
