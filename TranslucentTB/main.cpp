@@ -540,6 +540,27 @@ HMENU menu;
 NOTIFYICONDATA Tray;
 HWND tray_hwnd;
 
+void RefreshMenu()
+{
+	if (opt.dynamicws)
+	{
+		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMIC, IDM_DYNAMIC, MF_BYCOMMAND);
+	}
+	else if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
+	{
+		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMIC, IDM_BLUR, MF_BYCOMMAND);
+	}
+	else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
+	{
+		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMIC, IDM_CLEAR, MF_BYCOMMAND);
+	}
+
+	if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
+	{
+		CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_CHECKED);
+	}
+}
+
 void initTray(HWND parent)
 {
 	if(hastray)
@@ -553,72 +574,8 @@ void initTray(HWND parent)
 		Tray.uID = 101;
 		Shell_NotifyIcon(NIM_ADD, &Tray);
 		Shell_NotifyIcon(NIM_SETVERSION, &Tray);
+		RefreshMenu();
 	}
-}
-
-LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-
-	switch (message)
-	{
-	case WM_CLOSE:
-		PostQuitMessage(0);
-		break;
-	case WM_NOTIFY_TB:
-		if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
-		{
-			POINT pt;
-			GetCursorPos(&pt);
-			SetForegroundWindow(hWnd);
-			UINT tray = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
-			switch (tray)
-			{
-			case IDM_BLUR:
-				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_BLUR, MF_BYCOMMAND);
-				if (opt.dynamicws)
-				{
-					break;
-				}
-				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-				if (shouldsaveconfig == DoNotSave &&
-					shouldsaveconfig != SaveAll)
-					shouldsaveconfig = SaveTransparency;
-				break;
-			case IDM_CLEAR:
-				CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_CLEAR, MF_BYCOMMAND);
-				if (opt.dynamicws)
-				{
-					break;
-				}
-				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-				if (shouldsaveconfig == DoNotSave &&
-					shouldsaveconfig != SaveAll)
-					shouldsaveconfig = SaveTransparency;
-				break;
-			case IDM_AUTOSTART:
-				if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
-				{
-					HKEY hkey = NULL;
-					RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
-					RegDeleteValue(hkey, L"TranslucentTB");
-					CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_UNCHECKED);
-				} else {
-					add_to_startup();
-					CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_CHECKED);
-				}
-				break;
-			case IDM_EXIT:
-				run = false;
-				break;
-			}
-		}
-	}
-	if (message == WM_TASKBARCREATED) // Unfortunately, WM_TASKBARCREATED is not a constant, so I can't include it in the switch.
-	{
-		RefreshHandles();
-		initTray(tray_hwnd);
-	}
-	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
 BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam) 
@@ -645,6 +602,71 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 
 
 	return true;
+}
+
+LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+
+	switch (message)
+	{
+	case WM_CLOSE:
+		PostQuitMessage(0);
+		break;
+	case WM_NOTIFY_TB:
+		if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
+		{
+			POINT pt;
+			GetCursorPos(&pt);
+			SetForegroundWindow(hWnd);
+			UINT tray = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
+			switch (tray)
+			{
+			case IDM_BLUR:
+				opt.dynamicws = false;
+				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+				if (shouldsaveconfig == DoNotSave &&
+					shouldsaveconfig != SaveAll)
+					shouldsaveconfig = SaveTransparency;
+				RefreshMenu();
+				break;
+			case IDM_CLEAR:
+				opt.dynamicws = false;
+				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+				if (shouldsaveconfig == DoNotSave &&
+					shouldsaveconfig != SaveAll)
+					shouldsaveconfig = SaveTransparency;
+				RefreshMenu();
+				break;
+			case IDM_DYNAMIC:
+				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+				opt.dynamicws = true;
+				EnumWindows(&EnumWindowsProcess, NULL);
+				// TODO: shouldsaveconfig implementation
+				RefreshMenu();
+			case IDM_AUTOSTART:
+				if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
+				{
+					HKEY hkey = NULL;
+					RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
+					RegDeleteValue(hkey, L"TranslucentTB");
+					RefreshMenu();
+				} else {
+					add_to_startup();
+					RefreshMenu();
+				}
+				break;
+			case IDM_EXIT:
+				run = false;
+				break;
+			}
+		}
+	}
+	if (message == WM_TASKBARCREATED) // Unfortunately, WM_TASKBARCREATED is not a constant, so I can't include it in the switch.
+	{
+		RefreshHandles();
+		initTray(tray_hwnd);
+	}
+	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
 void SetTaskbarBlur()
@@ -768,19 +790,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		initTray(tray_hwnd);
 
 		ShowWindow(tray_hwnd, WM_SHOWWINDOW);
-		if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
-		{
-			CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_BLUR, MF_BYCOMMAND);
-		}
-		else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
-		{
-			CheckMenuRadioItem(popup, IDM_BLUR, IDM_CLEAR, IDM_CLEAR, MF_BYCOMMAND);
-		}
-
-		if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
-		{
-			CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_CHECKED);
-		}
 
 		RefreshHandles();
 		if (opt.dynamicws)
