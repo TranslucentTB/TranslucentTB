@@ -544,15 +544,20 @@ void RefreshMenu()
 {
 	if (opt.dynamicws)
 	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMIC, IDM_DYNAMIC, MF_BYCOMMAND);
+		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_DYNAMICWS, MF_BYCOMMAND);
 	}
 	else if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
 	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMIC, IDM_BLUR, MF_BYCOMMAND);
+		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_BLUR, MF_BYCOMMAND);
 	}
 	else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
 	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMIC, IDM_CLEAR, MF_BYCOMMAND);
+		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_CLEAR, MF_BYCOMMAND);
+	}
+
+	if (opt.dynamicstart)
+	{
+		CheckMenuItem(popup, IDM_DYNAMICSTART, MF_BYCOMMAND | MF_CHECKED);
 	}
 
 	if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
@@ -637,10 +642,14 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 					shouldsaveconfig = SaveTransparency;
 				RefreshMenu();
 				break;
-			case IDM_DYNAMIC:
+			case IDM_DYNAMICWS:
 				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 				opt.dynamicws = true;
 				EnumWindows(&EnumWindowsProcess, NULL);
+				// TODO: shouldsaveconfig implementation
+				RefreshMenu();
+			case IDM_DYNAMICSTART:
+				opt.dynamicstart = true;
 				// TODO: shouldsaveconfig implementation
 				RefreshMenu();
 			case IDM_AUTOSTART:

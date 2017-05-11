@@ -6,7 +6,8 @@
 #define IDR_POPUP_MENU                  202
 #define IDM_BLUR                        203
 #define IDM_CLEAR                       204
-#define IDM_DYNAMIC                     208
+#define IDM_DYNAMICWS                   208
+#define IDM_DYNAMICSTART                209
 // reserved for future use
 //#define IDM_ACCENT						205
 #define IDM_AUTOSTART                   207
