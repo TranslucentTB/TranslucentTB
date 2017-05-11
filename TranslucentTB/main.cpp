@@ -658,11 +658,10 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 					HKEY hkey = NULL;
 					RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
 					RegDeleteValue(hkey, L"TranslucentTB");
-					RefreshMenu();
 				} else {
 					add_to_startup();
-					RefreshMenu();
 				}
+				RefreshMenu();
 				break;
 			case IDM_EXIT:
 				run = false;
