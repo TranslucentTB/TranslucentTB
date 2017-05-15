@@ -648,10 +648,12 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				EnumWindows(&EnumWindowsProcess, NULL);
 				// TODO: shouldsaveconfig implementation
 				RefreshMenu();
+				break;
 			case IDM_DYNAMICSTART:
 				opt.dynamicstart = true;
 				// TODO: shouldsaveconfig implementation
 				RefreshMenu();
+				break;
 			case IDM_AUTOSTART:
 				if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
 				{
