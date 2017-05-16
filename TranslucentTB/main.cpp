@@ -591,7 +591,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 	{
 		WINDOWPLACEMENT result = {};
 		::GetWindowPlacement(hWnd, &result);
-		if (result.showCmd == 3) { 
+		if (result.showCmd == 3 && IsWindowVisible(hWnd)) { 
 			_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
 			for (auto &taskbar: taskbars)
 			{
