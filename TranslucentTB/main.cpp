@@ -91,8 +91,6 @@ const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry ove
 unsigned int WM_TASKBARCREATED;
 std::map<HWND, TASKBARPROPERTIES> taskbars; // Create a map for all taskbars
 
-WINCOMPATTRDATA DEFAULT_TASKBAR_STATE;
-
 typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
 static pSetWindowCompositionAttribute SetWindowCompositionAttribute = (pSetWindowCompositionAttribute)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowCompositionAttribute");
 
@@ -107,11 +105,6 @@ void SetWindowBlur(HWND hWnd, int appearance = 0) // `appearance` can be 0, whic
 
 		if (appearance) // Custom taskbar appearance is set
 		{
-			if (appearance == ACCENT_DISABLED)
-			{
-				SetWindowCompositionAttribute(hWnd, &DEFAULT_TASKBAR_STATE);
-				return;
-			}
 			policy = { appearance, 2, opt.color, 0 };
 		} else { // Use the defaults
 			policy = { opt.taskbar_appearance, 2, opt.color, 0 };
@@ -756,10 +749,7 @@ void SetTaskbarBlur()
 
 	for (auto const &taskbar: taskbars)
 	{
-		if (taskbar.second.state == StartMenuOpen) {
-			OutputDebugString(TEXT("ACCENT_DISABLED"));
-			SetWindowBlur(taskbar.first, ACCENT_DISABLED);
-		} else if (taskbar.second.state == WindowMaximised) {
+		if (taskbar.second.state == WindowMaximised) {
 			SetWindowBlur(taskbar.first, ACCENT_ENABLE_BLURBEHIND);
 											// A window is maximised; let's make sure that we blur the window.
 		} else if (taskbar.second.state == Normal) {
@@ -828,10 +818,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 													// program and when the taskbar goes blurry
 		}
 		WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
-
-		HWND _taskbar;
-		_taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
-		GetWindowCompositionAttribute(_taskbar, &DEFAULT_TASKBAR_STATE);
 
 		while (run) {
 			if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
