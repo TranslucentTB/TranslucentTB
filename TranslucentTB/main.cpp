@@ -831,9 +831,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 
 		if (shouldsaveconfig != DoNotSave)
 			SaveConfigFile();
+
+		opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
+		SetTaskbarBlur();
 	}
-	opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
-	SetTaskbarBlur();
 	CloseHandle(ev);
 	return 0;
 }
