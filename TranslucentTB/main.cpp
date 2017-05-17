@@ -5,6 +5,9 @@
 #include <tchar.h>
 #include <map>
 
+// for making the menu show up better
+#include <ShellScalingAPI.h>
+
 //used for the tray things
 #include <shellapi.h>
 #include "resource.h"
@@ -553,6 +556,10 @@ void RefreshMenu()
 	else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
 	{
 		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_CLEAR, MF_BYCOMMAND);
+	} 
+	else if (opt.taskbar_appearance == ACCENT_ENABLE_GRADIENT)
+	{
+		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_NORMAL, MF_BYCOMMAND);
 	}
 
 	if (opt.dynamicstart)
@@ -644,6 +651,12 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 					shouldsaveconfig != SaveAll)
 					shouldsaveconfig = SaveTransparency;
 				RefreshMenu();
+				break;
+			case IDM_NORMAL:
+				opt.dynamicws = false;
+				opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
+				RefreshMenu();
+				// TODO: shouldsaveconfig implementation
 				break;
 			case IDM_DYNAMICWS:
 				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
@@ -776,6 +789,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 {
   ParseCmdOptions(false);
 	if (singleProc()) {
+		HRESULT dpi_success = SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
+		if (!dpi_success) { OutputDebugStringW(L"Per-monitor DPI scaling failed");}
+
 		ParseCmdOptions(true); // Command line argument settings, config file only
 		ParseConfigFile(L"config.cfg"); // Config file settings
 		ParseCmdOptions(false); // Command line argument settings, all lines
