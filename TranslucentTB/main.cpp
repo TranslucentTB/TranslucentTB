@@ -558,6 +558,9 @@ void RefreshMenu()
 	if (opt.dynamicstart)
 	{
 		CheckMenuItem(popup, IDM_DYNAMICSTART, MF_BYCOMMAND | MF_CHECKED);
+	} else
+	{
+		CheckMenuItem(popup, IDM_DYNAMICSTART, MF_BYCOMMAND | MF_UNCHECKED);
 	}
 
 	if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
@@ -650,7 +653,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				RefreshMenu();
 				break;
 			case IDM_DYNAMICSTART:
-				opt.dynamicstart = true;
+				opt.dynamicstart = !opt.dynamicstart;
 				// TODO: shouldsaveconfig implementation
 				RefreshMenu();
 				break;
