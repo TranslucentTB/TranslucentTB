@@ -7,7 +7,6 @@
 #include <map>
 #include <psapi.h>
 #include <dwmapi.h>
-#pragma comment(lib, "dwmapi.lib")
 
 #include <algorithm>
 
