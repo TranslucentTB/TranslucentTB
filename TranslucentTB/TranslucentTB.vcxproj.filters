@@ -36,5 +36,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="config.cfg" />
+    <None Include="dynamic-ws-exclude.csv" />
   </ItemGroup>
 </Project>

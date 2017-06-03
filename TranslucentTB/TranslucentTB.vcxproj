@@ -162,8 +162,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="config.cfg" />
+    <None Include="dynamic-ws-exclude.csv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <Target Name="AfterBuild">
+    <Copy SourceFiles="config.cfg" DestinationFolder="$(TargetDir)" />
+    <Copy SourceFiles="dynamic-ws-exclude.csv" DestinationFolder="$(TargetDir)" />
+  </Target>
 </Project>
