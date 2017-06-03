@@ -6,7 +6,7 @@
 #include <tchar.h>
 #include <map>
 #include <psapi.h>
-#include <dwmapi.h>
+#include <ShlObj.h>
 
 #include <algorithm>
 
@@ -99,6 +99,8 @@ unsigned int WM_TASKBARCREATED;
 std::map<HWND, TASKBARPROPERTIES> taskbars; // Create a map for all taskbars
 
 std::wstring ExcludeFile = L"dynamic-ws-exclude.csv";
+
+IVirtualDesktopManager *desktop_manager;
 
 typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
 static pSetWindowCompositionAttribute SetWindowCompositionAttribute = (pSetWindowCompositionAttribute)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowCompositionAttribute");
@@ -718,7 +720,9 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 	{
 		WINDOWPLACEMENT result = {};
 		::GetWindowPlacement(hWnd, &result);
-		if (result.showCmd == 3 && IsWindowVisible(hWnd)) {
+		BOOL on_current_desktop;
+		desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
+		if (result.showCmd == 3 && IsWindowVisible(hWnd) && on_current_desktop) {
 			
 			// This marks the start of the exclusion-detection part of the script
 			// Get respective attributes
@@ -771,12 +775,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 				if (taskbar.second.hmon == _monitor &&
 					taskbar.second.state != StartMenuOpen)
 				{
-					DWORD windowDesktopStatus;
-					DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, &windowDesktopStatus, sizeof(DWORD)); // The Dwm APIs are outdated, need to properly implement use of IVirtualDesktopManager!
-					if (windowDesktopStatus != 2) // On the current Virtual Desktop
-					{
-						taskbar.second.state = WindowMaximised;
-					}
+					taskbar.second.state = WindowMaximised;
 				}
 			}
 		}
@@ -979,6 +978,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		initTray(tray_hwnd);
 
 		ShowWindow(tray_hwnd, WM_SHOWWINDOW);
+		
+		//Virtual Desktop stuff
+		::CoInitialize(NULL);
+		HRESULT desktop_success = ::CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, (void **)&desktop_manager);
+		if (!desktop_success) { OutputDebugStringW(L"Initialization of VirtualDesktopManager failed"); }
 
 		RefreshHandles();
 		if (opt.dynamicws)
