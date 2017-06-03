@@ -718,7 +718,6 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 		WINDOWPLACEMENT result = {};
 		::GetWindowPlacement(hWnd, &result);
 		if (result.showCmd == 3 && IsWindowVisible(hWnd)) {
-			return true; // DEBUG
 			
 			// This marks the start of the exclusion-detection part of the script
 			// Get respective attributes
