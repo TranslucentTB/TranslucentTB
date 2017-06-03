@@ -2,8 +2,12 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 #include <tchar.h>
 #include <map>
+#include <psapi.h>
+
+#include <algorithm>
 
 // for making the menu show up better
 #include <ShellScalingAPI.h>
@@ -81,7 +85,9 @@ struct TASKBARPROPERTIES
 	TASKBARSTATE state;
 };
 
-
+std::vector<std::wstring> IgnoredClassNames;
+std::vector<std::wstring> IgnoredExeNames;
+std::vector<std::wstring> IgnoredWindowTitles;
 
 int counter = 0;
 const int ACCENT_DISABLED = 4; // Disables TTB for that taskbar
@@ -90,6 +96,8 @@ const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2; // Makes the taskbar a tinted t
 const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry overlay. nColor is same as above.
 unsigned int WM_TASKBARCREATED;
 std::map<HWND, TASKBARPROPERTIES> taskbars; // Create a map for all taskbars
+
+std::wstring ExcludeFile = L"dynamic-ws-exclude.csv";
 
 typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
 static pSetWindowCompositionAttribute SetWindowCompositionAttribute = (pSetWindowCompositionAttribute)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowCompositionAttribute");
@@ -172,24 +180,28 @@ void PrintHelp()
 		{
 			using namespace std;
 			cout << endl;
-			cout << "TranslucentTB by /u/IronManMark20" << endl;
+			cout << "TranslucentTB by ethanhs & friends" << endl;
+			cout << "Source: https://github.com/TranslucentTB/TranslucentTB" << endl;
+			cout << "    TranslucentTB is freeware and is distributed under thte open-source GPL3 license." << endl;
 			cout << "This program modifies the apperance of the windows taskbar" << endl;
 			cout << "You can modify its behaviour by using the following parameters when launching the program:" << endl;
-			cout << "  --blur          | will make the taskbar a blurry overlay of the background (default)." << endl;
-			cout << "  --opaque        | will make the taskbar a solid color specified by the tint parameter." << endl;
-			cout << "  --transparent   | will make the taskbar a transparent color specified by the tint parameter. " << endl;
-			cout << "                    the value of the alpha channel determines the opacity of the taskbar." << endl;
-			cout << "  --tint COLOR    | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format," << endl;
-			cout << "                    see explanation below." << endl;
-			cout << "  --dynamic-ws    | will make the taskbar transparent when no windows are maximised in the current" << endl;
-			cout << "                    monitor, otherwise blurry." << endl;
-			cout << "  --dynamic-start | will make the taskbar return to it's normal state when the start menu is opened," << endl;
-			cout << "                    normal otherwise." << endl;
-			cout << "  --save-all      | will save all of the above settings into config.cfg on program exit." << endl;
-			cout << "  --config FILE   | will load settings from a specified configuration file. (if this parameter is ignored, it will attempt to load from config.cfg)" << endl;
-			cout << "  --help          | Displays this help message." << endl;
-			cout << "  --startup       | Adds TranslucentTB to startup, via changing the registry." << endl;
-			cout << "  --no-tray       | will hide the taskbar tray icon." << endl;
+			cout << "  --blur                | will make the taskbar a blurry overlay of the background (default)." << endl;
+			cout << "  --opaque              | will make the taskbar a solid color specified by the tint parameter." << endl;
+			cout << "  --transparent         | will make the taskbar a transparent color specified by the tint parameter. " << endl;
+			cout << "                          the value of the alpha channel determines the opacity of the taskbar." << endl;
+			cout << "  --tint COLOR          | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format," << endl;
+			cout << "                          see explanation below." << endl;
+			cout << "  --dynamic-ws          | will make the taskbar transparent when no windows are maximised in the current" << endl;
+			cout << "                          monitor, otherwise blurry." << endl;
+			cout << "  --dynamic-start       | will make the taskbar return to it's normal state when the start menu is opened," << endl;
+			cout << "                          normal otherwise." << endl;
+			cout << "  --exclude-file <file> | CSV-format file (example included in repo) to specify applications to exclude from dynamic-ws" << endl;
+			cout << "                          (only applies when --dynamic-ws is specified)" << endl;
+			cout << "  --save-all            | will save all of the above settings into config.cfg on program exit." << endl;
+			cout << "  --config FILE         | will load settings from a specified configuration file. (if this parameter is ignored, it will attempt to load from config.cfg)" << endl;
+			cout << "  --help                | Displays this help message." << endl;
+			cout << "  --startup             | Adds TranslucentTB to startup, via changing the registry." << endl;
+			cout << "  --no-tray             | will hide the taskbar tray icon." << endl;
 			cout << endl;
 
 			cout << "Color format:" << endl;
@@ -412,6 +424,58 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	{
 		add_to_startup();
 	}
+	else if (arg == L"--exclude-file")
+	{
+		OutputDebugString(value.c_str());
+		std::ifstream infile(value);
+		if (!infile.good())
+		{
+			BOOL hasconsole = true;
+			BOOL createdconsole = false;
+			// Try to attach to the parent console,
+			// allocate a new one if that isn't successful
+			if (!AttachConsole(ATTACH_PARENT_PROCESS))
+			{
+				if (!AllocConsole())
+				{
+					hasconsole = false;
+				}
+				else
+				{
+					createdconsole = true;
+				}
+			}
+			if (hasconsole)
+			{
+				FILE* outstream;
+				FILE* instream;
+				freopen_s(&outstream, "CONOUT$", "w", stdout);
+				freopen_s(&instream, "CONIN$", "w", stdin);
+				if (outstream)
+				{
+					std::cout << "Invalid File." << std::endl;
+					exit(0);
+				}
+				if (createdconsole && instream)
+				{
+					std::string wait;
+
+					std::cout << "Press enter to exit the program." << std::endl;
+					if (!getline(std::cin, wait))
+					{
+						// Couldn't wait for user input, make the user close
+						// the program themselves so they can see the output.
+						std::cout << "Press Ctrl + C, Alt + F4, or click the close button to exit the program." << std::endl;
+						Sleep(INFINITE);
+					}
+
+					FreeConsole();
+				}
+				fclose(outstream);
+			} // Temporary until we fix shell stdout
+		}
+		ExcludeFile = value;
+	}
 	else if (arg == L"--tint" || arg == L"--color")
 	{
 		configfileoptions.tint = true;
@@ -526,6 +590,65 @@ void RefreshHandles()
 	}
 }
 
+std::wstring trim(std::wstring& str)
+{
+    size_t first = str.find_first_not_of(' ');
+    size_t last = str.find_last_not_of(' ');
+
+	if (first == std::wstring::npos)
+	{ return std::wstring(L""); }
+    return str.substr(first, (last-first+1));
+}
+
+std::vector<std::wstring> ParseByDelimiter(std::wstring row, std::wstring delimiter=L",")
+{
+	std::vector<std::wstring> result;
+	std::wstring token;
+	size_t pos = 0;
+	while ((pos = row.find(delimiter)) != std::string::npos)
+	{
+		token = trim(row.substr(0, pos));
+		result.push_back(token);
+		row.erase(0, pos + delimiter.length());
+	}
+	return result;
+}
+
+void ParseDWSExcludesFile(std::wstring filename)
+{
+	std::wifstream excludesfilestream(filename);
+
+	std::wstring delimiter = L","; // Change to change the char(s) used to split,
+
+	for (std::wstring line; std::getline(excludesfilestream, line); )
+	{
+		if (line.length() > delimiter.length())
+		{
+			if (line.compare(line.length() - delimiter.length(), delimiter.length(), delimiter))
+			{
+				line.append(delimiter);
+			}
+		}
+		std::transform(line.begin(), line.end(), line.begin(), tolower);
+		if (line.substr(0, 5) == L"class")
+		{
+			IgnoredClassNames = ParseByDelimiter(line, delimiter);
+			IgnoredClassNames.erase(IgnoredClassNames.begin());
+		}
+		else if (line.substr(0, 5) == L"title" ||
+				 line.substr(0, 13) == L"windowtitle")
+		{
+			IgnoredWindowTitles = ParseByDelimiter(line, delimiter);
+			IgnoredWindowTitles.erase(IgnoredWindowTitles.begin());
+		}
+		else if (line.substr(0, 7) == L"exename")
+		{
+			IgnoredExeNames = ParseByDelimiter(line, delimiter);
+			IgnoredExeNames.erase(IgnoredExeNames.begin());
+		}
+	}
+}
+
 #pragma endregion
 
 #pragma region tray
@@ -594,7 +717,54 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 	{
 		WINDOWPLACEMENT result = {};
 		::GetWindowPlacement(hWnd, &result);
-		if (result.showCmd == 3 && IsWindowVisible(hWnd)) { 
+		if (result.showCmd == 3 && IsWindowVisible(hWnd)) {
+			return true; // DEBUG
+			
+			// This marks the start of the exclusion-detection part of the script
+			// Get respective attributes
+			TCHAR className[MAX_PATH];
+			TCHAR exeName[MAX_PATH];
+			TCHAR windowTitle[MAX_PATH];
+			GetClassName(hWnd, className, _countof(className));
+			GetClassName(hWnd, windowTitle, _countof(windowTitle));
+
+			DWORD ProcessId;
+			GetWindowThreadProcessId(hWnd, &ProcessId);
+			HANDLE processhandle = OpenProcess(0x0410, false, ProcessId);
+			GetModuleFileNameEx(processhandle, NULL, exeName, _countof(exeName));
+
+			// Do conversions to std::wstring and lowercase
+			std::wstring exeName_str = std::wstring(exeName);
+			exeName_str.append(L"\\");
+			exeName_str = ParseByDelimiter(exeName_str,
+										   std::wstring(L"\\")).back();
+			std::transform(exeName_str.begin(),
+						exeName_str.end(),
+						exeName_str.begin(),
+						tolower);
+
+			std::wstring className_str = std::wstring(className);
+			std::transform(className_str.begin(),
+						className_str.end(),
+						className_str.begin(),
+						tolower);
+
+			std::wstring windowTitle_str = std::wstring(className);
+			std::transform(className_str.begin(),
+						className_str.end(),
+						className_str.begin(),
+						tolower);
+
+			// Check if the different vars are in their respective vectors
+			for (auto & value: IgnoredClassNames) 
+			{ if (className_str == value) { return true; } }
+			for (auto & value: IgnoredExeNames) 
+			{ if (exeName_str == value) { return true; } }
+			for (auto & value: IgnoredWindowTitles) 
+			{ if (windowTitle_str == value) { return true; } }
+
+			// Finished detecting if the window should be excluded
+
 			_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
 			for (auto &taskbar: taskbars)
 			{
@@ -606,9 +776,6 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 			}
 		}
 	}
-
-
-
 	return true;
 }
 
@@ -716,11 +883,8 @@ void SetTaskbarBlur()
 			GetWindowText(foreground, ForehWndName, _countof(ForehWndName));
 			GetClassName(foreground, ForehWndClass, _countof(ForehWndClass));
 
-			//OutputDebugString(ForehWndName);
-			//OutputDebugString(ForehWndClass);
-
 			if (!_tcscmp(ForehWndClass, _T("Windows.UI.Core.CoreWindow")) &&
-			    !_tcscmp(ForehWndName, _T("Search")) || !_tcscmp(ForehWndName, _T("Cortana")))
+			(!_tcscmp(ForehWndName, _T("Search")) || !_tcscmp(ForehWndName, _T("Cortana"))))
 			{
 				// Detect monitor Start Menu is open on
 				HMONITOR _monitor;
@@ -780,11 +944,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
   ParseCmdOptions(false);
 	if (singleProc()) {
 		HRESULT dpi_success = SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
-		if (!dpi_success) { OutputDebugStringW(L"Per-monitor DPI scaling failed");}
+		if (!dpi_success) { OutputDebugStringW(L"Per-monitor DPI scaling failed"); }
 
 		ParseCmdOptions(true); // Command line argument settings, config file only
 		ParseConfigFile(L"config.cfg"); // Config file settings
 		ParseCmdOptions(false); // Command line argument settings, all lines
+		ParseDWSExcludesFile(ExcludeFile);
 
 
 		MSG msg; // for message translation and dispatch
