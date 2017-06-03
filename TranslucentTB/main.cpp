@@ -96,6 +96,7 @@ const int ACCENT_ENABLE_GRADIENT = 1; // Makes the taskbar a solid color specifi
 const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2; // Makes the taskbar a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
 const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry overlay. nColor is same as above.
 unsigned int WM_TASKBARCREATED;
+unsigned int NEW_TTB_INSTANCE;
 std::map<HWND, TASKBARPROPERTIES> taskbars; // Create a map for all taskbars
 
 std::wstring ExcludeFile = L"dynamic-ws-exclude.csv";
@@ -855,6 +856,9 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 	{
 		RefreshHandles();
 		initTray(tray_hwnd);
+	} else if (message == NEW_TTB_INSTANCE){
+		shouldsaveconfig = DoNotSave;
+		run = false;
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
@@ -945,70 +949,72 @@ bool singleProc()
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
 {
-  ParseCmdOptions(false);
-	if (singleProc()) {
-		HRESULT dpi_success = SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
-		if (!dpi_success) { OutputDebugStringW(L"Per-monitor DPI scaling failed"); }
+	HRESULT dpi_success = SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
+	if (!dpi_success) { OutputDebugStringW(L"Per-monitor DPI scaling failed"); }
 
-		ParseCmdOptions(true); // Command line argument settings, config file only
-		ParseConfigFile(L"config.cfg"); // Config file settings
-		ParseCmdOptions(false); // Command line argument settings, all lines
-		ParseDWSExcludesFile(ExcludeFile);
+	ParseCmdOptions(true); // Command line argument settings, config file only
+	ParseConfigFile(L"config.cfg"); // Config file settings
+	ParseCmdOptions(false); // Command line argument settings, all lines
+	ParseDWSExcludesFile(ExcludeFile);
 
-
-		MSG msg; // for message translation and dispatch
-		popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
-		menu = GetSubMenu(popup, 0);
-		WNDCLASSEX wnd = { 0 };
-
-		wnd.hInstance = hInstance;
-		wnd.lpszClassName = L"TranslucentTB";
-		wnd.lpfnWndProc = TBPROCWND;
-		wnd.style = CS_HREDRAW | CS_VREDRAW;
-		wnd.cbSize = sizeof(WNDCLASSEX);
-
-		wnd.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-		wnd.hCursor = LoadCursor(NULL, IDC_ARROW);
-		wnd.hbrBackground = (HBRUSH)BLACK_BRUSH;
-		RegisterClassEx(&wnd);
-
-		tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"TranslucentTB", L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
-			400, 400, NULL, NULL, hInstance, NULL);
-
-		initTray(tray_hwnd);
-
-		ShowWindow(tray_hwnd, WM_SHOWWINDOW);
-		
-		//Virtual Desktop stuff
-		::CoInitialize(NULL);
-		HRESULT desktop_success = ::CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, (void **)&desktop_manager);
-		if (!desktop_success) { OutputDebugStringW(L"Initialization of VirtualDesktopManager failed"); }
-
-		RefreshHandles();
-		if (opt.dynamicws)
-		{
-			EnumWindows(&EnumWindowsProcess, NULL); // Putting this here so there isn't a 
-			                                        // delay between when you start the 
-													// program and when the taskbar goes blurry
-		}
-		WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
-
-		while (run) {
-			if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-			SetTaskbarBlur();
-			Sleep(10);
-		}
-		Shell_NotifyIcon(NIM_DELETE, &Tray);
-
-		if (shouldsaveconfig != DoNotSave)
-			SaveConfigFile();
-
-		opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
-		SetTaskbarBlur();
+	NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");
+	if (!singleProc()) {
+		HWND oldInstance = FindWindow(L"TranslucentTB", L"TrayWindow");
+		SendMessage(oldInstance, NEW_TTB_INSTANCE, NULL, NULL);
 	}
+
+	MSG msg; // for message translation and dispatch
+	popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
+	menu = GetSubMenu(popup, 0);
+	WNDCLASSEX wnd = { 0 };
+
+	wnd.hInstance = hInstance;
+	wnd.lpszClassName = L"TranslucentTB";
+	wnd.lpfnWndProc = TBPROCWND;
+	wnd.style = CS_HREDRAW | CS_VREDRAW;
+	wnd.cbSize = sizeof(WNDCLASSEX);
+
+	wnd.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wnd.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wnd.hbrBackground = (HBRUSH)BLACK_BRUSH;
+	RegisterClassEx(&wnd);
+
+	tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"TranslucentTB", L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
+		400, 400, NULL, NULL, hInstance, NULL);
+
+	initTray(tray_hwnd);
+
+	ShowWindow(tray_hwnd, WM_SHOWWINDOW);
+	
+	//Virtual Desktop stuff
+	::CoInitialize(NULL);
+	HRESULT desktop_success = ::CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, (void **)&desktop_manager);
+	if (!desktop_success) { OutputDebugStringW(L"Initialization of VirtualDesktopManager failed"); }
+
+	RefreshHandles();
+	if (opt.dynamicws)
+	{
+		EnumWindows(&EnumWindowsProcess, NULL); // Putting this here so there isn't a
+												// delay between when you start the
+												// program and when the taskbar goes blurry
+	}
+	WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
+
+	while (run) {
+		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		SetTaskbarBlur();
+		Sleep(10);
+	}
+	Shell_NotifyIcon(NIM_DELETE, &Tray);
+
+	if (shouldsaveconfig != DoNotSave)
+		SaveConfigFile();
+
+	opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
+	SetTaskbarBlur();
 	CloseHandle(ev);
 	return 0;
 }
