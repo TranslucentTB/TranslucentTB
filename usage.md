@@ -4,17 +4,18 @@ You can modify its behaviour by using the following parameters when launching th
 
 Option | Explanation
 ------------ | -------
---blur          | will make the taskbar a blurry overlay of the background (default). 
---opaque        | will make the taskbar a solid color specified by the tint parameter. 
---transparent   | will make the taskbar a transparent color specified by the tint parameter.  The value of the alpha channel determines the opacity of the taskbar. 
---tint COLOR    | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format, see explanation below. 
---dynamic-ws    | will make the taskbar transparent when no windows are maximised in the current monitor, otherwise blurry.
---dynamic-start | will make the taskbar return to it's normal state when the start menu is opened, normal otherwise.
---save-all      | will save all of the above settings into config.cfg on program exit.
---config FILE   | will load settings from a specified configuration file. (if this parameter is ignored, it will attempt to load from config.cfg)
---help          | Displays this help message.
---startup       | Adds TranslucentTB to startup, via changing the registry.
---no-tray       | will hide the taskbar tray icon.
+--blur              | will make the taskbar a blurry overlay of the background (default).
+--opaque            | will make the taskbar a solid color specified by the tint parameter.
+--transparent       | will make the taskbar a transparent color specified by the tint parameter. The value of the alpha channel determines the opacity of the taskbar.
+--tint COLOR        | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format, see explanation below.
+--dynamic-ws        | will make the taskbar transparent when no windows are maximised in the current monitor, otherwise blurry.
+--exclude-file FILE | CSV-format file to specify applications to exclude from dynamic-ws (if this parameter is ignored, it will attempt to load from dynamic-ws-exclude.csv)
+--dynamic-start     | will make the taskbar return to it's normal state when the start menu is opened, normal otherwise.
+--save-all          | will save all of the above settings into config.cfg on program exit.
+--config FILE       | will load settings from a specified configuration file. (if this parameter is ignored, it will attempt to load from config.cfg)
+--help              | Displays this help message.
+--startup           | Adds TranslucentTB to startup, via changing the registry.
+--no-tray           | will hide the taskbar tray icon.
 
 ### Color format
 The color parameter is interpreted as a three or four byte long number in hexadecimal format that 

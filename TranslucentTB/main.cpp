@@ -191,18 +191,19 @@ void PrintHelp()
 			cout << "You can modify its behaviour by using the following parameters when launching the program:" << endl;
 			cout << "  --blur                | will make the taskbar a blurry overlay of the background (default)." << endl;
 			cout << "  --opaque              | will make the taskbar a solid color specified by the tint parameter." << endl;
-			cout << "  --transparent         | will make the taskbar a transparent color specified by the tint parameter. " << endl;
-			cout << "                          the value of the alpha channel determines the opacity of the taskbar." << endl;
+			cout << "  --transparent         | will make the taskbar a transparent color specified by the tint parameter." << endl;
+			cout << "                          The value of the alpha channel determines the opacity of the taskbar." << endl;
 			cout << "  --tint COLOR          | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format," << endl;
 			cout << "                          see explanation below." << endl;
 			cout << "  --dynamic-ws          | will make the taskbar transparent when no windows are maximised in the current" << endl;
 			cout << "                          monitor, otherwise blurry." << endl;
 			cout << "  --dynamic-start       | will make the taskbar return to it's normal state when the start menu is opened," << endl;
 			cout << "                          normal otherwise." << endl;
-			cout << "  --exclude-file <file> | CSV-format file (example included in repo) to specify applications to exclude from dynamic-ws" << endl;
-			cout << "                          (only applies when --dynamic-ws is specified)" << endl;
+			cout << "  --exclude-file FILE   | CSV-format file to specify applications to exclude from dynamic-ws (if this" << endl;
+			cout << "                          parameter is ignored, it will attempt to load from dynamic-ws-exclude.csv)" << endl;
 			cout << "  --save-all            | will save all of the above settings into config.cfg on program exit." << endl;
-			cout << "  --config FILE         | will load settings from a specified configuration file. (if this parameter is ignored, it will attempt to load from config.cfg)" << endl;
+			cout << "  --config FILE         | will load settings from a specified configuration file. (if this parameter is" << endl;
+			cout << "                          ignored, it will attempt to load from config.cfg)" << endl;
 			cout << "  --help                | Displays this help message." << endl;
 			cout << "  --startup             | Adds TranslucentTB to startup, via changing the registry." << endl;
 			cout << "  --no-tray             | will hide the taskbar tray icon." << endl;
@@ -391,11 +392,6 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	{
 		PrintHelp();
 		exit(0);
-	}
-	else if (arg == L"--config")
-	{
-		// Ignore - this was handled in a previous iteration
-		// over the arguments.
 	}
 	else if (arg == L"--save-all")
 	{
