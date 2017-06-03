@@ -13,6 +13,10 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Configuration Files">
+      <UniqueIdentifier>{8a3034e1-4c07-4ca8-a036-8cfc161a562d}</UniqueIdentifier>
+      <Extensions>cfg;csv</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -35,7 +39,11 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="config.cfg" />
-    <None Include="dynamic-ws-exclude.csv" />
+    <None Include="config.cfg">
+      <Filter>Configuration Files</Filter>
+    </None>
+    <None Include="dynamic-ws-exclude.csv">
+      <Filter>Configuration Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
