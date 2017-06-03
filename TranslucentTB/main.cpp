@@ -6,6 +6,8 @@
 #include <tchar.h>
 #include <map>
 #include <psapi.h>
+#include <dwmapi.h>
+#pragma comment(lib, "dwmapi.lib")
 
 #include <algorithm>
 
@@ -770,7 +772,12 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 				if (taskbar.second.hmon == _monitor &&
 					taskbar.second.state != StartMenuOpen)
 				{
-					taskbar.second.state = WindowMaximised;
+					DWORD windowDesktopStatus;
+					DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, &windowDesktopStatus, sizeof(DWORD)); // The Dwm APIs are outdated, need to properly implement use of IVirtualDesktopManager!
+					if (windowDesktopStatus != 2) // On the current Virtual Desktop
+					{
+						taskbar.second.state = WindowMaximised;
+					}
 				}
 			}
 		}
