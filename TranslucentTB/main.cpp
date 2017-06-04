@@ -848,8 +848,8 @@ void SetTaskbarBlur()
 	// std::cout << opt.dynamicws << std::endl;	
 
 	
-	if (counter >= 5)   // Change this if you want to change the time it takes for the program to update
-	{                   // 100 = 1 second; we use 5, because the difference is less noticeable and it has
+	if (counter >= 10)   // Change this if you want to change the time it takes for the program to update
+	{                   // 100 = 1 second; we use 10, because the difference is less noticeable and it has
 						// no large impact on CPU. We can change this if we feel that CPU is more important
 						// than response time.
 		for (auto &taskbar: taskbars)
