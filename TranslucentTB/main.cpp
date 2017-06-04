@@ -730,7 +730,7 @@ void initTray(HWND parent)
 		Tray.cbSize = sizeof(Tray);
 		Tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
 		Tray.hWnd = parent;
-		wcscpy_s(Tray.szTip, L"TransparentTB");
+		wcscpy_s(Tray.szTip, L"TranslucentTB");
 		Tray.uCallbackMessage = WM_NOTIFY_TB;
 		Tray.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 		Tray.uID = 101;
