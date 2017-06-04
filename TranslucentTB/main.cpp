@@ -196,7 +196,7 @@ void PrintHelp()
 			cout << "TranslucentTB by ethanhs & friends" << endl;
 			cout << "Source: https://github.com/TranslucentTB/TranslucentTB" << endl;
 			cout << "    TranslucentTB is freeware and is distributed under thte open-source GPL3 license." << endl;
-			cout << "This program modifies the apperance of the windows taskbar" << endl;
+			cout << "This program modifies the appearance of the windows taskbar" << endl;
 			cout << "You can modify its behaviour by using the following parameters when launching the program:" << endl;
 			cout << "  --blur                | will make the taskbar a blurry overlay of the background (default)." << endl;
 			cout << "  --opaque              | will make the taskbar a solid color specified by the tint parameter." << endl;
@@ -204,7 +204,7 @@ void PrintHelp()
 			cout << "                          The value of the alpha channel determines the opacity of the taskbar." << endl;
 			cout << "  --tint COLOR          | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format," << endl;
 			cout << "                          see explanation below." << endl;
-			cout << "  --dynamic-ws <state>  | will make the taskbar transparent when no windows are maximised in the current" << endl;
+			cout << "  --dynamic-ws STATE    | will make the taskbar transparent when no windows are maximised in the current" << endl;
 			cout << "                          monitor, otherwise blurry. State can be from: (blur, opaque, tint)." << endl;
 			cout << "  --dynamic-start       | will make the taskbar return to it's normal state when the start menu is opened," << endl;
 			cout << "                          normal otherwise." << endl;
@@ -754,7 +754,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 	{
 		WINDOWPLACEMENT result = {};
 		::GetWindowPlacement(hWnd, &result);
-		if (result.showCmd == 3) {
+		if (result.showCmd == SW_MAXIMIZE) {
 			BOOL on_current_desktop;
 			desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
 			if (IsWindowVisible(hWnd) && on_current_desktop)
@@ -782,7 +782,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 				{ if (exeName == value) { return true; } }
 				for (auto & value: IgnoredWindowTitles) 
 				{
-					if (w_WindowTitle.find(value) != -1)
+					if (w_WindowTitle.find(value) != std::wstring::npos)
 					{
 						return true;
 					}

@@ -1,5 +1,5 @@
 ## Usage
-This program modifies the apperance of the windows taskbar.
+This program modifies the appearance of the windows taskbar.
 You can modify its behaviour by using the following parameters when launching the program:
 
 Option | Explanation
