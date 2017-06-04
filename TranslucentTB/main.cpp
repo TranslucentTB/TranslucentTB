@@ -96,8 +96,10 @@ const int ACCENT_DISABLED = 4; // Disables TTB for that taskbar
 const int ACCENT_ENABLE_GRADIENT = 1; // Makes the taskbar a solid color specified by nColor. This mode doesn't care about the alpha channel.
 const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2; // Makes the taskbar a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
 const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry overlay. nColor is same as above.
+const int ACCENT_ENABLE_TINTED = 5; // This is not a real state. We will handle it later.
 unsigned int WM_TASKBARCREATED;
 unsigned int NEW_TTB_INSTANCE;
+int DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND; // State to activate when d-ws is enabled
 std::map<HWND, TASKBARPROPERTIES> taskbars; // Create a map for all taskbars
 
 std::wstring ExcludeFile = L"dynamic-ws-exclude.csv";
@@ -118,9 +120,15 @@ void SetWindowBlur(HWND hWnd, int appearance = 0) // `appearance` can be 0, whic
 
 		if (appearance) // Custom taskbar appearance is set
 		{
-			policy = { appearance, 2, opt.color, 0 };
+			if (DYNAMIC_WS_STATE == ACCENT_ENABLE_TINTED)
+			{ // dynamic-ws is set to tint
+				if (appearance == ACCENT_ENABLE_TINTED) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, opt.color, 0 }; } // Window is maximised
+				else { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 }; } // Desktop is shown (this shouldn't ever be called tho, just in case)
+			}
+			else {  policy = { appearance, 2, opt.color, 0 };  }
 		} else { // Use the defaults
-			policy = { opt.taskbar_appearance, 2, opt.color, 0 };
+			if (DYNAMIC_WS_STATE == ACCENT_ENABLE_TINTED) { policy = {ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0}; } // dynamic-ws is tint and desktop is shown
+			else { policy = { opt.taskbar_appearance, 2, opt.color, 0 }; }
 		}
 		
 		WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) }; // WCA_ACCENT_POLICY=19
@@ -196,8 +204,8 @@ void PrintHelp()
 			cout << "                          The value of the alpha channel determines the opacity of the taskbar." << endl;
 			cout << "  --tint COLOR          | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format," << endl;
 			cout << "                          see explanation below." << endl;
-			cout << "  --dynamic-ws          | will make the taskbar transparent when no windows are maximised in the current" << endl;
-			cout << "                          monitor, otherwise blurry." << endl;
+			cout << "  --dynamic-ws <state>  | will make the taskbar transparent when no windows are maximised in the current" << endl;
+			cout << "                          monitor, otherwise blurry. State can be from: (blur, opaque, tint)." << endl;
 			cout << "  --dynamic-start       | will make the taskbar return to it's normal state when the start menu is opened," << endl;
 			cout << "                          normal otherwise." << endl;
 			cout << "  --exclude-file FILE   | CSV-format file to specify applications to exclude from dynamic-ws (if this" << endl;
@@ -271,9 +279,27 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		if (value == L"true" ||
 			value == L"enable")
 			{
-				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 				opt.dynamicws = true;
 			}
+		else if (value == L"tint")
+		{
+			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+			opt.dynamicws = true;
+			DYNAMIC_WS_STATE = ACCENT_ENABLE_TINTED;
+		}
+		else if (value == L"blur")
+		{
+			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+			opt.dynamicws = true;
+			DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND;
+		}
+		else if (value == L"opaque")
+		{
+			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+			opt.dynamicws = true;
+			DYNAMIC_WS_STATE = ACCENT_ENABLE_GRADIENT;
+		}
 	}
 	else if (arg == L"dynamic-start")
 	{
@@ -415,6 +441,9 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 		configfileoptions.dynamicws = true;
 		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 		opt.dynamicws = true;
+		if (value == L"tint") { DYNAMIC_WS_STATE = ACCENT_ENABLE_TINTED; }
+		else if (value == L"blur") { DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND; }
+		else if (value == L"opaque") { DYNAMIC_WS_STATE = ACCENT_ENABLE_GRADIENT; }
 	}
 	else if (arg == L"--dynamic-start")
 	{
@@ -902,7 +931,7 @@ void SetTaskbarBlur()
 	for (auto const &taskbar: taskbars)
 	{
 		if (taskbar.second.state == WindowMaximised) {
-			SetWindowBlur(taskbar.first, ACCENT_ENABLE_BLURBEHIND);
+			SetWindowBlur(taskbar.first, DYNAMIC_WS_STATE);
 											// A window is maximised; let's make sure that we blur the window.
 		} else if (taskbar.second.state == Normal) {
 			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
