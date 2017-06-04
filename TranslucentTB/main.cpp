@@ -728,7 +728,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 				TCHAR exeName[MAX_PATH];
 				TCHAR windowTitle[MAX_PATH];
 				GetClassName(hWnd, className, _countof(className));
-				GetClassName(hWnd, windowTitle, _countof(windowTitle));
+				GetWindowText(hWnd, windowTitle, _countof(windowTitle));
 
 				DWORD ProcessId;
 				GetWindowThreadProcessId(hWnd, &ProcessId);
