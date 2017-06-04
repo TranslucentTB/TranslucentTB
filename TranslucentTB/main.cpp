@@ -773,6 +773,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 				GetModuleFileNameEx(processhandle, NULL, exeName_path, _countof(exeName_path));
 
 				std::wstring exeName = PathFindFileNameW(exeName_path);
+				std::wstring w_WindowTitle = windowTitle;
 
 				// Check if the different vars are in their respective vectors
 				for (auto & value: IgnoredClassNames) 
@@ -780,7 +781,12 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 				for (auto & value: IgnoredExeNames) 
 				{ if (exeName == value) { return true; } }
 				for (auto & value: IgnoredWindowTitles) 
-				{ if (windowTitle == value.c_str()) { return true; } }
+				{
+					if (w_WindowTitle.find(value) != -1)
+					{
+						return true;
+					}
+				}
 
 				// Finished detecting if the window should be excluded
 
