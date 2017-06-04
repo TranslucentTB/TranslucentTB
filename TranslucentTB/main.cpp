@@ -717,62 +717,64 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 	{
 		WINDOWPLACEMENT result = {};
 		::GetWindowPlacement(hWnd, &result);
-		BOOL on_current_desktop;
-		desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
-		if (result.showCmd == 3 && IsWindowVisible(hWnd) && on_current_desktop) {
-			
-			// This marks the start of the exclusion-detection part of the script
-			// Get respective attributes
-			TCHAR className[MAX_PATH];
-			TCHAR exeName[MAX_PATH];
-			TCHAR windowTitle[MAX_PATH];
-			GetClassName(hWnd, className, _countof(className));
-			GetClassName(hWnd, windowTitle, _countof(windowTitle));
-
-			DWORD ProcessId;
-			GetWindowThreadProcessId(hWnd, &ProcessId);
-			HANDLE processhandle = OpenProcess(0x0410, false, ProcessId);
-			GetModuleFileNameEx(processhandle, NULL, exeName, _countof(exeName));
-
-			// Do conversions to std::wstring and lowercase
-			std::wstring exeName_str = std::wstring(exeName);
-			exeName_str.append(L"\\");
-			exeName_str = ParseByDelimiter(exeName_str,
-										   std::wstring(L"\\")).back();
-			std::transform(exeName_str.begin(),
-						exeName_str.end(),
-						exeName_str.begin(),
-						tolower);
-
-			std::wstring className_str = std::wstring(className);
-			std::transform(className_str.begin(),
-						className_str.end(),
-						className_str.begin(),
-						tolower);
-
-			std::wstring windowTitle_str = std::wstring(className);
-			std::transform(className_str.begin(),
-						className_str.end(),
-						className_str.begin(),
-						tolower);
-
-			// Check if the different vars are in their respective vectors
-			for (auto & value: IgnoredClassNames) 
-			{ if (className_str == value) { return true; } }
-			for (auto & value: IgnoredExeNames) 
-			{ if (exeName_str == value) { return true; } }
-			for (auto & value: IgnoredWindowTitles) 
-			{ if (windowTitle_str == value) { return true; } }
-
-			// Finished detecting if the window should be excluded
-
-			_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
-			for (auto &taskbar: taskbars)
+		if (result.showCmd == 3) {
+			BOOL on_current_desktop;
+			desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
+			if (IsWindowVisible(hWnd) && on_current_desktop)
 			{
-				if (taskbar.second.hmon == _monitor &&
-					taskbar.second.state != StartMenuOpen)
+				// This marks the start of the exclusion-detection part of the script
+				// Get respective attributes
+				TCHAR className[MAX_PATH];
+				TCHAR exeName[MAX_PATH];
+				TCHAR windowTitle[MAX_PATH];
+				GetClassName(hWnd, className, _countof(className));
+				GetClassName(hWnd, windowTitle, _countof(windowTitle));
+
+				DWORD ProcessId;
+				GetWindowThreadProcessId(hWnd, &ProcessId);
+				HANDLE processhandle = OpenProcess(0x0410, false, ProcessId);
+				GetModuleFileNameEx(processhandle, NULL, exeName, _countof(exeName));
+
+				// Do conversions to std::wstring and lowercase
+				std::wstring exeName_str = std::wstring(exeName);
+				exeName_str.append(L"\\");
+				exeName_str = ParseByDelimiter(exeName_str,
+											std::wstring(L"\\")).back();
+				std::transform(exeName_str.begin(),
+							exeName_str.end(),
+							exeName_str.begin(),
+							tolower);
+
+				std::wstring className_str = std::wstring(className);
+				std::transform(className_str.begin(),
+							className_str.end(),
+							className_str.begin(),
+							tolower);
+
+				std::wstring windowTitle_str = std::wstring(className);
+				std::transform(className_str.begin(),
+							className_str.end(),
+							className_str.begin(),
+							tolower);
+
+				// Check if the different vars are in their respective vectors
+				for (auto & value: IgnoredClassNames) 
+				{ if (className_str == value) { return true; } }
+				for (auto & value: IgnoredExeNames) 
+				{ if (exeName_str == value) { return true; } }
+				for (auto & value: IgnoredWindowTitles) 
+				{ if (windowTitle_str == value) { return true; } }
+
+				// Finished detecting if the window should be excluded
+
+				_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
+				for (auto &taskbar: taskbars)
 				{
-					taskbar.second.state = WindowMaximised;
+					if (taskbar.second.hmon == _monitor &&
+						taskbar.second.state != StartMenuOpen)
+					{
+						taskbar.second.state = WindowMaximised;
+					}
 				}
 			}
 		}
