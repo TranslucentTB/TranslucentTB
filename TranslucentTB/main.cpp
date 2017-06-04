@@ -652,6 +652,12 @@ void ParseDWSExcludesFile(std::wstring filename)
 
 	for (std::wstring line; std::getline(excludesfilestream, line); )
 	{
+		size_t comment_index = line.find(L';');
+		if (comment_index == 0)
+			continue;
+		else
+			line = line.substr(0, comment_index);
+
 		if (line.length() > delimiter.length())
 		{
 			if (line.compare(line.length() - delimiter.length(), delimiter.length(), delimiter))

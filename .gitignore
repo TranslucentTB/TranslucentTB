@@ -244,4 +244,3 @@ ModelManifest.xml
 # Visual Studio Code configuration
 .vscode/
 *.lnk
-TranslucentTB/dynamic-ws-exclude.csv
