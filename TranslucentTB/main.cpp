@@ -763,7 +763,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 
 				DWORD ProcessId;
 				GetWindowThreadProcessId(hWnd, &ProcessId);
-				HANDLE processhandle = OpenProcess(0x0410, false, ProcessId);
+				HANDLE processhandle = OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId);
 				GetModuleFileNameEx(processhandle, NULL, exeName_path, _countof(exeName_path));
 
 				std::wstring exeName = PathFindFileNameW(exeName_path);
