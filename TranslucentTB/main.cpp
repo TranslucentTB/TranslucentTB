@@ -7,6 +7,7 @@
 #include <map>
 #include <psapi.h>
 #include <ShlObj.h>
+#include "Shlwapi.h"
 
 #include <algorithm>
 
@@ -629,19 +630,20 @@ void ParseDWSExcludesFile(std::wstring filename)
 				line.append(delimiter);
 			}
 		}
-		std::transform(line.begin(), line.end(), line.begin(), tolower);
-		if (line.substr(0, 5) == L"class")
+		std::wstring line_lowercase = line;
+		std::transform(line_lowercase.begin(), line_lowercase.end(), line_lowercase.begin(), tolower);
+		if (line_lowercase.substr(0, 5) == L"class")
 		{
 			IgnoredClassNames = ParseByDelimiter(line, delimiter);
 			IgnoredClassNames.erase(IgnoredClassNames.begin());
 		}
-		else if (line.substr(0, 5) == L"title" ||
+		else if (line_lowercase.substr(0, 5) == L"title" ||
 				 line.substr(0, 13) == L"windowtitle")
 		{
 			IgnoredWindowTitles = ParseByDelimiter(line, delimiter);
 			IgnoredWindowTitles.erase(IgnoredWindowTitles.begin());
 		}
-		else if (line.substr(0, 7) == L"exename")
+		else if (line_lowercase.substr(0, 7) == L"exename")
 		{
 			IgnoredExeNames = ParseByDelimiter(line, delimiter);
 			IgnoredExeNames.erase(IgnoredExeNames.begin());
@@ -725,7 +727,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 				// This marks the start of the exclusion-detection part of the script
 				// Get respective attributes
 				TCHAR className[MAX_PATH];
-				TCHAR exeName[MAX_PATH];
+				TCHAR exeName_path[MAX_PATH];
 				TCHAR windowTitle[MAX_PATH];
 				GetClassName(hWnd, className, _countof(className));
 				GetWindowText(hWnd, windowTitle, _countof(windowTitle));
@@ -733,37 +735,17 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 				DWORD ProcessId;
 				GetWindowThreadProcessId(hWnd, &ProcessId);
 				HANDLE processhandle = OpenProcess(0x0410, false, ProcessId);
-				GetModuleFileNameEx(processhandle, NULL, exeName, _countof(exeName));
+				GetModuleFileNameEx(processhandle, NULL, exeName_path, _countof(exeName_path));
 
-				// Do conversions to std::wstring and lowercase
-				std::wstring exeName_str = std::wstring(exeName);
-				exeName_str.append(L"\\");
-				exeName_str = ParseByDelimiter(exeName_str,
-											std::wstring(L"\\")).back();
-				std::transform(exeName_str.begin(),
-							exeName_str.end(),
-							exeName_str.begin(),
-							tolower);
-
-				std::wstring className_str = std::wstring(className);
-				std::transform(className_str.begin(),
-							className_str.end(),
-							className_str.begin(),
-							tolower);
-
-				std::wstring windowTitle_str = std::wstring(className);
-				std::transform(className_str.begin(),
-							className_str.end(),
-							className_str.begin(),
-							tolower);
+				std::wstring exeName = PathFindFileNameW(exeName_path);
 
 				// Check if the different vars are in their respective vectors
 				for (auto & value: IgnoredClassNames) 
-				{ if (className_str == value) { return true; } }
+				{ if (className == value.c_str()) { return true; } }
 				for (auto & value: IgnoredExeNames) 
-				{ if (exeName_str == value) { return true; } }
+				{ if (exeName == value) { return true; } }
 				for (auto & value: IgnoredWindowTitles) 
-				{ if (windowTitle_str == value) { return true; } }
+				{ if (windowTitle == value.c_str()) { return true; } }
 
 				// Finished detecting if the window should be excluded
 
