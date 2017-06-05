@@ -19,6 +19,7 @@
     </Filter>
     <Filter Include="Documentation">
       <UniqueIdentifier>{8a2e107d-81ab-4fd9-8067-e994a63ded11}</UniqueIdentifier>
+      <Extensions>txt;md</Extensions>
     </Filter>
     <Filter Include="LICENSE">
       <UniqueIdentifier>{a96f464f-6d8c-4b19-81dd-c68fbaf1882e}</UniqueIdentifier>

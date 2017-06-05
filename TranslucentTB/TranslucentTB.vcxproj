@@ -175,5 +175,6 @@
   </ImportGroup>
   <Target Name="PostBuildEvent">
     <Copy SourceFiles="@(None)" DestinationFolder="$(TargetDir)" />
+    <Copy SourceFiles="@(Text)" DestinationFolder="$(TargetDir)" />
   </Target>
 </Project>
