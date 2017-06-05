@@ -204,11 +204,11 @@ void PrintHelp()
 			cout << "  --tint COLOR          | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format," << endl;
 			cout << "                          see explanation below." << endl;
 			cout << "  --dynamic-ws STATE    | will make the taskbar transparent when no windows are maximised in the current" << endl;
-			cout << "                          monitor, otherwise blurry. State can be from: (blur, opaque, tint)." << endl;
+			cout << "                          monitor, otherwise blurry. State can be from: (blur, opaque, tint). Blur is default." << endl;
 			cout << "  --dynamic-start       | will make the taskbar return to it's normal state when the start menu is opened," << endl;
-			cout << "                          normal otherwise." << endl;
-			cout << "  --exclude-file FILE   | CSV-format file to specify applications to exclude from dynamic-ws (if this" << endl;
-			cout << "                          parameter is ignored, it will attempt to load from dynamic-ws-exclude.csv)" << endl;
+			cout << "                          current setting otherwise." << endl;
+			cout << "  --exclude-file FILE   | CSV-format file to specify applications to exclude from dynamic-ws (By default" << endl;
+            cout << "						   it will attempt to load from dynamic-ws-exclude.csv)" << endl;
 			cout << "  --save-all            | will save all of the above settings into config.cfg on program exit." << endl;
 			cout << "  --config FILE         | will load settings from a specified configuration file. (if this parameter is" << endl;
 			cout << "                          ignored, it will attempt to load from config.cfg)" << endl;
@@ -227,7 +227,13 @@ void PrintHelp()
 			cout << "  If the converter doesn't include alpha values (opacity), you can append them yourself at the start" << endl;
 			cout << "  of the number. Just convert a value between 0 and 255 to its hexadecimal value before you append it." << endl;
 			cout << endl;
-			cout << "For examples, please see usage.md." << endl;
+			cout << "Examples:" << endl;
+			cout << "# start with Windows, start transparent" << endl;
+			cout << "TranslucentTB.exe --startup --transparent --save-all" << endl;
+			cout << "# run dynamic windows mode, with the supplied color" << endl;
+			cout << "TranslucentTB.exe --tint 80fe10a4 --dynamic-ws tint" << endl;
+			cout << "# Will be normal when start is open, transparent otherwise." << endl;
+			cout << "TranslucentTB.exe --dynamic-start" << endl;
 			cout << endl;
 
 			if (createdconsole && instream)
