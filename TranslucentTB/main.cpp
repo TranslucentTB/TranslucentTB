@@ -745,6 +745,38 @@ void initTray(HWND parent)
 	}
 }
 
+BOOL isBlacklisted(HWND hWnd)
+{
+	// Get respective attributes
+	TCHAR className[MAX_PATH];
+	TCHAR exeName_path[MAX_PATH];
+	TCHAR windowTitle[MAX_PATH];
+	GetClassName(hWnd, className, _countof(className));
+	GetWindowText(hWnd, windowTitle, _countof(windowTitle));
+
+	DWORD ProcessId;
+	GetWindowThreadProcessId(hWnd, &ProcessId);
+	HANDLE processhandle = OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId);
+	GetModuleFileNameEx(processhandle, NULL, exeName_path, _countof(exeName_path));
+
+	std::wstring exeName = PathFindFileNameW(exeName_path);
+	std::wstring w_WindowTitle = windowTitle;
+
+	// Check if the different vars are in their respective vectors
+	for (auto & value: IgnoredClassNames)
+	{ if (className == value.c_str()) { return true; } }
+	for (auto & value: IgnoredExeNames)
+	{ if (exeName == value) { return true; } }
+	for (auto & value: IgnoredWindowTitles)
+	{
+		if (w_WindowTitle.find(value) != std::wstring::npos)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam) 
 {
 	HMONITOR _monitor;
@@ -758,44 +790,16 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 			desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
 			if (IsWindowVisible(hWnd) && on_current_desktop)
 			{
-				// This marks the start of the exclusion-detection part of the script
-				// Get respective attributes
-				TCHAR className[MAX_PATH];
-				TCHAR exeName_path[MAX_PATH];
-				TCHAR windowTitle[MAX_PATH];
-				GetClassName(hWnd, className, _countof(className));
-				GetWindowText(hWnd, windowTitle, _countof(windowTitle));
-
-				DWORD ProcessId;
-				GetWindowThreadProcessId(hWnd, &ProcessId);
-				HANDLE processhandle = OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId);
-				GetModuleFileNameEx(processhandle, NULL, exeName_path, _countof(exeName_path));
-
-				std::wstring exeName = PathFindFileNameW(exeName_path);
-				std::wstring w_WindowTitle = windowTitle;
-
-				// Check if the different vars are in their respective vectors
-				for (auto & value: IgnoredClassNames) 
-				{ if (className == value.c_str()) { return true; } }
-				for (auto & value: IgnoredExeNames) 
-				{ if (exeName == value) { return true; } }
-				for (auto & value: IgnoredWindowTitles) 
+				if (!isBlacklisted(hWnd))
 				{
-					if (w_WindowTitle.find(value) != std::wstring::npos)
+					_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
+					for (auto &taskbar: taskbars)
 					{
-						return true;
-					}
-				}
-
-				// Finished detecting if the window should be excluded
-
-				_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
-				for (auto &taskbar: taskbars)
-				{
-					if (taskbar.second.hmon == _monitor &&
-						taskbar.second.state != StartMenuOpen)
-					{
-						taskbar.second.state = WindowMaximised;
+						if (taskbar.second.hmon == _monitor &&
+							taskbar.second.state != StartMenuOpen)
+						{
+							taskbar.second.state = WindowMaximised;
+						}
 					}
 				}
 			}
