@@ -1,0 +1,9 @@
+version: 'Build #{build}'
+image: Visual Studio 2015
+configuration: Release
+platform: x86
+test: off
+artifacts:
+- path: Release
+  name: Build artifacts
+deploy: off
