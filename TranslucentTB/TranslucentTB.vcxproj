@@ -161,10 +161,14 @@
     <Image Include="E_Square_small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\COPYING" />
     <None Include="..\Readme.md" />
     <None Include="..\usage.md" />
     <None Include="config.cfg" />
     <None Include="dynamic-ws-exclude.csv" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="SetWindowCompositionAttribute-description.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

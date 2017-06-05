@@ -20,6 +20,9 @@
     <Filter Include="Documentation">
       <UniqueIdentifier>{8a2e107d-81ab-4fd9-8067-e994a63ded11}</UniqueIdentifier>
     </Filter>
+    <Filter Include="LICENSE">
+      <UniqueIdentifier>{a96f464f-6d8c-4b19-81dd-c68fbaf1882e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -54,5 +57,13 @@
     <None Include="..\Readme.md">
       <Filter>Documentation</Filter>
     </None>
+    <None Include="..\COPYING">
+      <Filter>LICENSE</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="SetWindowCompositionAttribute-description.txt">
+      <Filter>Documentation</Filter>
+    </Text>
   </ItemGroup>
 </Project>
