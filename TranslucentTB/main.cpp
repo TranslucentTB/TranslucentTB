@@ -97,6 +97,7 @@ const int ACCENT_ENABLE_GRADIENT = 1; // Makes the taskbar a solid color specifi
 const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2; // Makes the taskbar a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
 const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry overlay. nColor is same as above.
 const int ACCENT_ENABLE_TINTED = 5; // This is not a real state. We will handle it later.
+const int ACCENT_NORMAL_GRADIENT = 6; // Another fake value, handles the 
 unsigned int WM_TASKBARCREATED;
 unsigned int NEW_TTB_INSTANCE;
 int DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND; // State to activate when d-ws is enabled
@@ -125,6 +126,7 @@ void SetWindowBlur(HWND hWnd, int appearance = 0) // `appearance` can be 0, whic
 			else {  policy = { appearance, 2, opt.color, 0 };  }
 		} else { // Use the defaults
 			if (DYNAMIC_WS_STATE == ACCENT_ENABLE_TINTED) { policy = {ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0}; } // dynamic-ws is tint and desktop is shown
+			else if (opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, (int)0xd9000000, 0 }; } // normal gradient color
 			else { policy = { opt.taskbar_appearance, 2, opt.color, 0 }; }
 		}
 		
@@ -707,7 +709,7 @@ void RefreshMenu()
 	{
 		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_CLEAR, MF_BYCOMMAND);
 	} 
-	else if (opt.taskbar_appearance == ACCENT_ENABLE_GRADIENT)
+	else if (opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT)
 	{
 		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_NORMAL, MF_BYCOMMAND);
 	}
@@ -837,8 +839,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				break;
 			case IDM_NORMAL:
 				opt.dynamicws = false;
-				opt.color = 0xd9000000;
-				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+				opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
 				RefreshMenu();
 				// TODO: shouldsaveconfig implementation
 				break;
@@ -1023,8 +1024,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 	if (shouldsaveconfig != DoNotSave)
 		SaveConfigFile();
 
-	opt.color = 0xd9000000;
-	opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+	opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
 	SetTaskbarBlur();
 	CloseHandle(ev);
 	return 0;

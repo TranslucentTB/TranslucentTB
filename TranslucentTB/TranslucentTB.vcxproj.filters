@@ -17,6 +17,9 @@
       <UniqueIdentifier>{8a3034e1-4c07-4ca8-a036-8cfc161a562d}</UniqueIdentifier>
       <Extensions>cfg;csv</Extensions>
     </Filter>
+    <Filter Include="Documentation">
+      <UniqueIdentifier>{8a2e107d-81ab-4fd9-8067-e994a63ded11}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -44,6 +47,12 @@
     </None>
     <None Include="dynamic-ws-exclude.csv">
       <Filter>Configuration Files</Filter>
+    </None>
+    <None Include="..\usage.md">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="..\Readme.md">
+      <Filter>Documentation</Filter>
     </None>
   </ItemGroup>
 </Project>
