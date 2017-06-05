@@ -109,9 +109,6 @@ IVirtualDesktopManager *desktop_manager;
 typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
 static pSetWindowCompositionAttribute SetWindowCompositionAttribute = (pSetWindowCompositionAttribute)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowCompositionAttribute");
 
-typedef BOOL(WINAPI*pGetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
-static pGetWindowCompositionAttribute GetWindowCompositionAttribute = (pGetWindowCompositionAttribute)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "GetWindowCompositionAttribute");
-
 void SetWindowBlur(HWND hWnd, int appearance = 0) // `appearance` can be 0, which means 'follow opt.taskbar_appearance'
 {
 	if (SetWindowCompositionAttribute)
@@ -927,15 +924,6 @@ void SetTaskbarBlur()
 					} else {
 						taskbar.second.state = Normal;
 					}
-				}
-			}
-
-			if (!_tcscmp(ForehWndClass, _T("MultitaskingViewFrame")) &&
-				!_tcscmp(ForehWndName, _T("Task View")))
-			{
-				for (auto &taskbar: taskbars)
-				{
-					taskbar.second.state = StartMenuOpen;
 				}
 			}
 		}
