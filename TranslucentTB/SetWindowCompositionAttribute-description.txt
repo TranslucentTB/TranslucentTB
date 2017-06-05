@@ -13,3 +13,9 @@ ACCENT_ENABLE_BLURBEHIND
   Applies a blur to the content behind the taskbar. Inconsistent results in this mode too. 
   @MrAksel saw no effect from the nColor field (on one computer), no matter the value, but @charlesmilette saw a tint applied,
   as expected.
+
+ACCENT_ENABLE_TINTED
+  An internal helper for dynamic-ws which allows for dynamic windows to have tint and transparency simultaneously.
+
+ACCENT_NORMAL_GRADIENT
+  An internal helper that tells TranslucentTB to restore to the generic black translucent taskbar.

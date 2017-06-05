@@ -143,7 +143,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Label="Globals">
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);shcore.lib</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);shcore.lib;shlwapi.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -161,9 +161,19 @@
     <Image Include="E_Square_small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\COPYING" />
+    <None Include="..\Readme.md" />
+    <None Include="..\usage.md" />
     <None Include="config.cfg" />
+    <None Include="dynamic-ws-exclude.csv" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="SetWindowCompositionAttribute-description.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <Target Name="PostBuildEvent">
+    <Copy SourceFiles="@(None)" DestinationFolder="$(TargetDir)" />
+  </Target>
 </Project>

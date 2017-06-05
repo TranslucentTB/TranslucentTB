@@ -1,0 +1,18 @@
+; There are 3 possible ways to exclude windows from the dynamic feature:
+;
+; Title of the window. This one checks if the title contains the substring instead of searching for an exact match
+; example:
+; title, Command Prompt
+;
+; Name of the .exe file
+; example:
+; exename, cmd.exe
+;
+; Window class name. Can be found with programs like Window Spy from AutoHotKeys or Spy++
+; example
+; class, ConsoleWindowClass
+;
+; As you might have noticed, all lines beginning with ";" is a comment.
+; if you find dynamic windows is not working correctly
+; uncomment the line below. Note: this will make dynamic windows not work for UWP apps
+; exename, ApplicationFrameHost.exe

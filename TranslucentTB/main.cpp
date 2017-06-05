@@ -2,8 +2,14 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 #include <tchar.h>
 #include <map>
+#include <psapi.h>
+#include <ShlObj.h>
+#include "Shlwapi.h"
+
+#include <algorithm>
 
 // for making the menu show up better
 #include <ShellScalingAPI.h>
@@ -81,21 +87,28 @@ struct TASKBARPROPERTIES
 	TASKBARSTATE state;
 };
 
-
+std::vector<std::wstring> IgnoredClassNames;
+std::vector<std::wstring> IgnoredExeNames;
+std::vector<std::wstring> IgnoredWindowTitles;
 
 int counter = 0;
 const int ACCENT_DISABLED = 4; // Disables TTB for that taskbar
 const int ACCENT_ENABLE_GRADIENT = 1; // Makes the taskbar a solid color specified by nColor. This mode doesn't care about the alpha channel.
 const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2; // Makes the taskbar a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
 const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry overlay. nColor is same as above.
+const int ACCENT_ENABLE_TINTED = 5; // This is not a real state. We will handle it later.
+const int ACCENT_NORMAL_GRADIENT = 6; // Another fake value, handles the 
 unsigned int WM_TASKBARCREATED;
+unsigned int NEW_TTB_INSTANCE;
+int DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND; // State to activate when d-ws is enabled
 std::map<HWND, TASKBARPROPERTIES> taskbars; // Create a map for all taskbars
+
+std::wstring ExcludeFile = L"dynamic-ws-exclude.csv";
+
+IVirtualDesktopManager *desktop_manager;
 
 typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
 static pSetWindowCompositionAttribute SetWindowCompositionAttribute = (pSetWindowCompositionAttribute)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowCompositionAttribute");
-
-typedef BOOL(WINAPI*pGetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
-static pGetWindowCompositionAttribute GetWindowCompositionAttribute = (pGetWindowCompositionAttribute)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "GetWindowCompositionAttribute");
 
 void SetWindowBlur(HWND hWnd, int appearance = 0) // `appearance` can be 0, which means 'follow opt.taskbar_appearance'
 {
@@ -105,9 +118,16 @@ void SetWindowBlur(HWND hWnd, int appearance = 0) // `appearance` can be 0, whic
 
 		if (appearance) // Custom taskbar appearance is set
 		{
-			policy = { appearance, 2, opt.color, 0 };
+			if (DYNAMIC_WS_STATE == ACCENT_ENABLE_TINTED)
+			{ // dynamic-ws is set to tint
+				if (appearance == ACCENT_ENABLE_TINTED) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, opt.color, 0 }; } // Window is maximised
+				else { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 }; } // Desktop is shown (this shouldn't ever be called tho, just in case)
+			}
+			else {  policy = { appearance, 2, opt.color, 0 };  }
 		} else { // Use the defaults
-			policy = { opt.taskbar_appearance, 2, opt.color, 0 };
+			if (DYNAMIC_WS_STATE == ACCENT_ENABLE_TINTED) { policy = {ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0}; } // dynamic-ws is tint and desktop is shown
+			else if (opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, (int)0xd9000000, 0 }; } // normal gradient color
+			else { policy = { opt.taskbar_appearance, 2, opt.color, 0 }; }
 		}
 		
 		WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) }; // WCA_ACCENT_POLICY=19
@@ -172,35 +192,42 @@ void PrintHelp()
 		{
 			using namespace std;
 			cout << endl;
-			cout << "TranslucentTB by /u/IronManMark20" << endl;
-			cout << "This program modifies the apperance of the windows taskbar" << endl;
+			cout << "TranslucentTB by ethanhs & friends" << endl;
+			cout << "Source: https://github.com/TranslucentTB/TranslucentTB" << endl;
+			cout << "    TranslucentTB is freeware and is distributed under thte open-source GPL3 license." << endl;
+			cout << "This program modifies the appearance of the windows taskbar" << endl;
 			cout << "You can modify its behaviour by using the following parameters when launching the program:" << endl;
-			cout << "  --blur          | will make the taskbar a blurry overlay of the background (default)." << endl;
-			cout << "  --opaque        | will make the taskbar a solid color specified by the tint parameter." << endl;
-			cout << "  --transparent   | will make the taskbar a transparent color specified by the tint parameter. " << endl;
-			cout << "                    the value of the alpha channel determines the opacity of the taskbar." << endl;
-			cout << "  --tint COLOR    | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format," << endl;
-			cout << "                    see explanation below." << endl;
-			cout << "  --dynamic-ws    | will make the taskbar transparent when no windows are maximised in the current" << endl;
-			cout << "                    monitor, otherwise blurry." << endl;
-			cout << "  --dynamic-start | will make the taskbar return to it's normal state when the start menu is opened," << endl;
-			cout << "                    normal otherwise." << endl;
-			cout << "  --save-all      | will save all of the above settings into config.cfg on program exit." << endl;
-			cout << "  --config FILE   | will load settings from a specified configuration file. (if this parameter is ignored, it will attempt to load from config.cfg)" << endl;
-			cout << "  --help          | Displays this help message." << endl;
-			cout << "  --startup       | Adds TranslucentTB to startup, via changing the registry." << endl;
-			cout << "  --no-tray       | will hide the taskbar tray icon." << endl;
+			cout << "  --blur                | will make the taskbar a blurry overlay of the background (default)." << endl;
+			cout << "  --opaque              | will make the taskbar a solid color specified by the tint parameter." << endl;
+			cout << "  --transparent         | will make the taskbar a transparent color specified by the tint parameter." << endl;
+			cout << "                          The value of the alpha channel determines the opacity of the taskbar." << endl;
+			cout << "  --tint COLOR          | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format," << endl;
+			cout << "                          see explanation below." << endl;
+			cout << "  --dynamic-ws STATE    | will make the taskbar transparent when no windows are maximised in the current" << endl;
+			cout << "                          monitor, otherwise blurry. State can be from: (blur, opaque, tint)." << endl;
+			cout << "  --dynamic-start       | will make the taskbar return to it's normal state when the start menu is opened," << endl;
+			cout << "                          normal otherwise." << endl;
+			cout << "  --exclude-file FILE   | CSV-format file to specify applications to exclude from dynamic-ws (if this" << endl;
+			cout << "                          parameter is ignored, it will attempt to load from dynamic-ws-exclude.csv)" << endl;
+			cout << "  --save-all            | will save all of the above settings into config.cfg on program exit." << endl;
+			cout << "  --config FILE         | will load settings from a specified configuration file. (if this parameter is" << endl;
+			cout << "                          ignored, it will attempt to load from config.cfg)" << endl;
+			cout << "  --help                | Displays this help message." << endl;
+			cout << "  --startup             | Adds TranslucentTB to startup, via changing the registry." << endl;
+			cout << "  --no-tray             | will hide the taskbar tray icon." << endl;
 			cout << endl;
 
 			cout << "Color format:" << endl;
 			cout << "  The parameter is interpreted as a three or four byte long number in hexadecimal format that" << endl;
-			cout << "  describes the four color channels ([alpha,] red, green and blue). These look like this:" << endl;
+			cout << "  describes the four color channels 0xAARRGGBB ([alpha,] red, green and blue). These look like this:" << endl;
 			cout << "  0x80fe10a4 (the '0x' is optional). You often find colors in this format in the context of HTML and" << endl;
 			cout << "  web design, and there are many online tools to convert from familiar names to this format. These" << endl;
 			cout << "  tools might give you numbers starting with '#', in that case you can just remove the leading '#'." << endl;
 			cout << "  You should be able to find online tools by searching for \"color to hex\" or something similar." << endl;
 			cout << "  If the converter doesn't include alpha values (opacity), you can append them yourself at the start" << endl;
 			cout << "  of the number. Just convert a value between 0 and 255 to its hexadecimal value before you append it." << endl;
+			cout << endl;
+			cout << "For examples, please see usage.md." << endl;
 			cout << endl;
 
 			if (createdconsole && instream)
@@ -253,9 +280,27 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		if (value == L"true" ||
 			value == L"enable")
 			{
-				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 				opt.dynamicws = true;
 			}
+		else if (value == L"tint")
+		{
+			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+			opt.dynamicws = true;
+			DYNAMIC_WS_STATE = ACCENT_ENABLE_TINTED;
+		}
+		else if (value == L"blur")
+		{
+			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+			opt.dynamicws = true;
+			DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND;
+		}
+		else if (value == L"opaque")
+		{
+			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+			opt.dynamicws = true;
+			DYNAMIC_WS_STATE = ACCENT_ENABLE_GRADIENT;
+		}
 	}
 	else if (arg == L"dynamic-start")
 	{
@@ -376,11 +421,6 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 		PrintHelp();
 		exit(0);
 	}
-	else if (arg == L"--config")
-	{
-		// Ignore - this was handled in a previous iteration
-		// over the arguments.
-	}
 	else if (arg == L"--save-all")
 	{
 		shouldsaveconfig = SaveAll;
@@ -402,6 +442,9 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 		configfileoptions.dynamicws = true;
 		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 		opt.dynamicws = true;
+		if (value == L"tint") { DYNAMIC_WS_STATE = ACCENT_ENABLE_TINTED; }
+		else if (value == L"blur") { DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND; }
+		else if (value == L"opaque") { DYNAMIC_WS_STATE = ACCENT_ENABLE_GRADIENT; }
 	}
 	else if (arg == L"--dynamic-start")
 	{
@@ -411,6 +454,58 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	else if (arg == L"--startup")
 	{
 		add_to_startup();
+	}
+	else if (arg == L"--exclude-file")
+	{
+		OutputDebugString(value.c_str());
+		std::ifstream infile(value);
+		if (!infile.good())
+		{
+			BOOL hasconsole = true;
+			BOOL createdconsole = false;
+			// Try to attach to the parent console,
+			// allocate a new one if that isn't successful
+			if (!AttachConsole(ATTACH_PARENT_PROCESS))
+			{
+				if (!AllocConsole())
+				{
+					hasconsole = false;
+				}
+				else
+				{
+					createdconsole = true;
+				}
+			}
+			if (hasconsole)
+			{
+				FILE* outstream;
+				FILE* instream;
+				freopen_s(&outstream, "CONOUT$", "w", stdout);
+				freopen_s(&instream, "CONIN$", "w", stdin);
+				if (outstream)
+				{
+					std::cout << "Invalid File." << std::endl;
+					exit(0);
+				}
+				if (createdconsole && instream)
+				{
+					std::string wait;
+
+					std::cout << "Press enter to exit the program." << std::endl;
+					if (!getline(std::cin, wait))
+					{
+						// Couldn't wait for user input, make the user close
+						// the program themselves so they can see the output.
+						std::cout << "Press Ctrl + C, Alt + F4, or click the close button to exit the program." << std::endl;
+						Sleep(INFINITE);
+					}
+
+					FreeConsole();
+				}
+				fclose(outstream);
+			} // Temporary until we fix shell stdout
+		}
+		ExcludeFile = value;
 	}
 	else if (arg == L"--tint" || arg == L"--color")
 	{
@@ -526,6 +621,72 @@ void RefreshHandles()
 	}
 }
 
+std::wstring trim(std::wstring& str)
+{
+    size_t first = str.find_first_not_of(' ');
+    size_t last = str.find_last_not_of(' ');
+
+	if (first == std::wstring::npos)
+	{ return std::wstring(L""); }
+    return str.substr(first, (last-first+1));
+}
+
+std::vector<std::wstring> ParseByDelimiter(std::wstring row, std::wstring delimiter=L",")
+{
+	std::vector<std::wstring> result;
+	std::wstring token;
+	size_t pos = 0;
+	while ((pos = row.find(delimiter)) != std::string::npos)
+	{
+		token = trim(row.substr(0, pos));
+		result.push_back(token);
+		row.erase(0, pos + delimiter.length());
+	}
+	return result;
+}
+
+void ParseDWSExcludesFile(std::wstring filename)
+{
+	std::wifstream excludesfilestream(filename);
+
+	std::wstring delimiter = L","; // Change to change the char(s) used to split,
+
+	for (std::wstring line; std::getline(excludesfilestream, line); )
+	{
+		size_t comment_index = line.find(L';');
+		if (comment_index == 0)
+			continue;
+		else
+			line = line.substr(0, comment_index);
+
+		if (line.length() > delimiter.length())
+		{
+			if (line.compare(line.length() - delimiter.length(), delimiter.length(), delimiter))
+			{
+				line.append(delimiter);
+			}
+		}
+		std::wstring line_lowercase = line;
+		std::transform(line_lowercase.begin(), line_lowercase.end(), line_lowercase.begin(), tolower);
+		if (line_lowercase.substr(0, 5) == L"class")
+		{
+			IgnoredClassNames = ParseByDelimiter(line, delimiter);
+			IgnoredClassNames.erase(IgnoredClassNames.begin());
+		}
+		else if (line_lowercase.substr(0, 5) == L"title" ||
+				 line.substr(0, 13) == L"windowtitle")
+		{
+			IgnoredWindowTitles = ParseByDelimiter(line, delimiter);
+			IgnoredWindowTitles.erase(IgnoredWindowTitles.begin());
+		}
+		else if (line_lowercase.substr(0, 7) == L"exename")
+		{
+			IgnoredExeNames = ParseByDelimiter(line, delimiter);
+			IgnoredExeNames.erase(IgnoredExeNames.begin());
+		}
+	}
+}
+
 #pragma endregion
 
 #pragma region tray
@@ -550,7 +711,7 @@ void RefreshMenu()
 	{
 		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_CLEAR, MF_BYCOMMAND);
 	} 
-	else if (opt.taskbar_appearance == ACCENT_ENABLE_GRADIENT)
+	else if (opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT)
 	{
 		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_NORMAL, MF_BYCOMMAND);
 	}
@@ -576,7 +737,7 @@ void initTray(HWND parent)
 		Tray.cbSize = sizeof(Tray);
 		Tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
 		Tray.hWnd = parent;
-		wcscpy_s(Tray.szTip, L"TransparentTB");
+		wcscpy_s(Tray.szTip, L"TranslucentTB");
 		Tray.uCallbackMessage = WM_NOTIFY_TB;
 		Tray.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 		Tray.uID = 101;
@@ -584,6 +745,38 @@ void initTray(HWND parent)
 		Shell_NotifyIcon(NIM_SETVERSION, &Tray);
 		RefreshMenu();
 	}
+}
+
+BOOL isBlacklisted(HWND hWnd)
+{
+	// Get respective attributes
+	TCHAR className[MAX_PATH];
+	TCHAR exeName_path[MAX_PATH];
+	TCHAR windowTitle[MAX_PATH];
+	GetClassName(hWnd, className, _countof(className));
+	GetWindowText(hWnd, windowTitle, _countof(windowTitle));
+
+	DWORD ProcessId;
+	GetWindowThreadProcessId(hWnd, &ProcessId);
+	HANDLE processhandle = OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId);
+	GetModuleFileNameEx(processhandle, NULL, exeName_path, _countof(exeName_path));
+
+	std::wstring exeName = PathFindFileNameW(exeName_path);
+	std::wstring w_WindowTitle = windowTitle;
+
+	// Check if the different vars are in their respective vectors
+	for (auto & value: IgnoredClassNames)
+	{ if (className == value.c_str()) { return true; } }
+	for (auto & value: IgnoredExeNames)
+	{ if (exeName == value) { return true; } }
+	for (auto & value: IgnoredWindowTitles)
+	{
+		if (w_WindowTitle.find(value) != std::wstring::npos)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam) 
@@ -594,21 +787,26 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 	{
 		WINDOWPLACEMENT result = {};
 		::GetWindowPlacement(hWnd, &result);
-		if (result.showCmd == 3 && IsWindowVisible(hWnd)) { 
-			_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
-			for (auto &taskbar: taskbars)
+		if (result.showCmd == SW_MAXIMIZE) {
+			BOOL on_current_desktop;
+			desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
+			if (IsWindowVisible(hWnd) && on_current_desktop)
 			{
-				if (taskbar.second.hmon == _monitor &&
-					taskbar.second.state != StartMenuOpen)
+				if (!isBlacklisted(hWnd))
 				{
-					taskbar.second.state = WindowMaximised;
+					_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
+					for (auto &taskbar: taskbars)
+					{
+						if (taskbar.second.hmon == _monitor &&
+							taskbar.second.state != StartMenuOpen)
+						{
+							taskbar.second.state = WindowMaximised;
+						}
+					}
 				}
 			}
 		}
 	}
-
-
-
 	return true;
 }
 
@@ -647,7 +845,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				break;
 			case IDM_NORMAL:
 				opt.dynamicws = false;
-				opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
+				opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
 				RefreshMenu();
 				// TODO: shouldsaveconfig implementation
 				break;
@@ -684,6 +882,9 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 	{
 		RefreshHandles();
 		initTray(tray_hwnd);
+	} else if (message == NEW_TTB_INSTANCE){
+		shouldsaveconfig = DoNotSave;
+		run = false;
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
@@ -693,8 +894,8 @@ void SetTaskbarBlur()
 	// std::cout << opt.dynamicws << std::endl;	
 
 	
-	if (counter >= 5)   // Change this if you want to change the time it takes for the program to update
-	{                   // 100 = 1 second; we use 5, because the difference is less noticeable and it has
+	if (counter >= 10)   // Change this if you want to change the time it takes for the program to update
+	{                   // 100 = 1 second; we use 10, because the difference is less noticeable and it has
 						// no large impact on CPU. We can change this if we feel that CPU is more important
 						// than response time.
 		for (auto &taskbar: taskbars)
@@ -716,11 +917,8 @@ void SetTaskbarBlur()
 			GetWindowText(foreground, ForehWndName, _countof(ForehWndName));
 			GetClassName(foreground, ForehWndClass, _countof(ForehWndClass));
 
-			//OutputDebugString(ForehWndName);
-			//OutputDebugString(ForehWndClass);
-
 			if (!_tcscmp(ForehWndClass, _T("Windows.UI.Core.CoreWindow")) &&
-			    !_tcscmp(ForehWndName, _T("Search")) || !_tcscmp(ForehWndName, _T("Cortana")))
+			(!_tcscmp(ForehWndName, _T("Search")) || !_tcscmp(ForehWndName, _T("Cortana"))))
 			{
 				// Detect monitor Start Menu is open on
 				HMONITOR _monitor;
@@ -735,22 +933,13 @@ void SetTaskbarBlur()
 					}
 				}
 			}
-
-			if (!_tcscmp(ForehWndClass, _T("MultitaskingViewFrame")) &&
-				!_tcscmp(ForehWndName, _T("Task View")))
-			{
-				for (auto &taskbar: taskbars)
-				{
-					taskbar.second.state = StartMenuOpen;
-				}
-			}
 		}
 	}
 
 	for (auto const &taskbar: taskbars)
 	{
 		if (taskbar.second.state == WindowMaximised) {
-			SetWindowBlur(taskbar.first, ACCENT_ENABLE_BLURBEHIND);
+			SetWindowBlur(taskbar.first, DYNAMIC_WS_STATE);
 											// A window is maximised; let's make sure that we blur the window.
 		} else if (taskbar.second.state == Normal) {
 			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
@@ -777,64 +966,72 @@ bool singleProc()
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
 {
-  ParseCmdOptions(false);
-	if (singleProc()) {
-		HRESULT dpi_success = SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
-		if (!dpi_success) { OutputDebugStringW(L"Per-monitor DPI scaling failed");}
+	HRESULT dpi_success = SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
+	if (!dpi_success) { OutputDebugStringW(L"Per-monitor DPI scaling failed"); }
 
-		ParseCmdOptions(true); // Command line argument settings, config file only
-		ParseConfigFile(L"config.cfg"); // Config file settings
-		ParseCmdOptions(false); // Command line argument settings, all lines
+	ParseCmdOptions(true); // Command line argument settings, config file only
+	ParseConfigFile(L"config.cfg"); // Config file settings
+	ParseCmdOptions(false); // Command line argument settings, all lines
+	ParseDWSExcludesFile(ExcludeFile);
 
-
-		MSG msg; // for message translation and dispatch
-		popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
-		menu = GetSubMenu(popup, 0);
-		WNDCLASSEX wnd = { 0 };
-
-		wnd.hInstance = hInstance;
-		wnd.lpszClassName = L"TranslucentTB";
-		wnd.lpfnWndProc = TBPROCWND;
-		wnd.style = CS_HREDRAW | CS_VREDRAW;
-		wnd.cbSize = sizeof(WNDCLASSEX);
-
-		wnd.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-		wnd.hCursor = LoadCursor(NULL, IDC_ARROW);
-		wnd.hbrBackground = (HBRUSH)BLACK_BRUSH;
-		RegisterClassEx(&wnd);
-
-		tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"TranslucentTB", L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
-			400, 400, NULL, NULL, hInstance, NULL);
-
-		initTray(tray_hwnd);
-
-		ShowWindow(tray_hwnd, WM_SHOWWINDOW);
-
-		RefreshHandles();
-		if (opt.dynamicws)
-		{
-			EnumWindows(&EnumWindowsProcess, NULL); // Putting this here so there isn't a 
-			                                        // delay between when you start the 
-													// program and when the taskbar goes blurry
-		}
-		WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
-
-		while (run) {
-			if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-			SetTaskbarBlur();
-			Sleep(10);
-		}
-		Shell_NotifyIcon(NIM_DELETE, &Tray);
-
-		if (shouldsaveconfig != DoNotSave)
-			SaveConfigFile();
-
-		opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
-		SetTaskbarBlur();
+	NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");
+	if (!singleProc()) {
+		HWND oldInstance = FindWindow(L"TranslucentTB", L"TrayWindow");
+		SendMessage(oldInstance, NEW_TTB_INSTANCE, NULL, NULL);
 	}
+
+	MSG msg; // for message translation and dispatch
+	popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
+	menu = GetSubMenu(popup, 0);
+	WNDCLASSEX wnd = { 0 };
+
+	wnd.hInstance = hInstance;
+	wnd.lpszClassName = L"TranslucentTB";
+	wnd.lpfnWndProc = TBPROCWND;
+	wnd.style = CS_HREDRAW | CS_VREDRAW;
+	wnd.cbSize = sizeof(WNDCLASSEX);
+
+	wnd.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wnd.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wnd.hbrBackground = (HBRUSH)BLACK_BRUSH;
+	RegisterClassEx(&wnd);
+
+	tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"TranslucentTB", L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
+		400, 400, NULL, NULL, hInstance, NULL);
+
+	initTray(tray_hwnd);
+
+	ShowWindow(tray_hwnd, WM_SHOWWINDOW);
+	
+	//Virtual Desktop stuff
+	::CoInitialize(NULL);
+	HRESULT desktop_success = ::CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, (void **)&desktop_manager);
+	if (!desktop_success) { OutputDebugStringW(L"Initialization of VirtualDesktopManager failed"); }
+
+	RefreshHandles();
+	if (opt.dynamicws)
+	{
+		EnumWindows(&EnumWindowsProcess, NULL); // Putting this here so there isn't a
+												// delay between when you start the
+												// program and when the taskbar goes blurry
+	}
+	WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
+
+	while (run) {
+		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		SetTaskbarBlur();
+		Sleep(10);
+	}
+	Shell_NotifyIcon(NIM_DELETE, &Tray);
+
+	if (shouldsaveconfig != DoNotSave)
+		SaveConfigFile();
+
+	opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
+	SetTaskbarBlur();
 	CloseHandle(ev);
 	return 0;
 }
