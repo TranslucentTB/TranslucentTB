@@ -840,7 +840,8 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				break;
 			case IDM_NORMAL:
 				opt.dynamicws = false;
-				opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
+				opt.color = 0xd9000000;
+				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 				RefreshMenu();
 				// TODO: shouldsaveconfig implementation
 				break;
@@ -1034,7 +1035,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 	if (shouldsaveconfig != DoNotSave)
 		SaveConfigFile();
 
-	opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
+	opt.color = 0xd9000000;
+	opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 	SetTaskbarBlur();
 	CloseHandle(ev);
 	return 0;
