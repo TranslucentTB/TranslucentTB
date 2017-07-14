@@ -734,6 +734,9 @@ void RefreshMenu()
 	{
 		CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_CHECKED);
 	}
+	else {
+		CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_UNCHECKED);
+	}
 }
 
 void initTray(HWND parent)
@@ -839,7 +842,6 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				if (shouldsaveconfig == DoNotSave &&
 					shouldsaveconfig != SaveAll)
 					shouldsaveconfig = SaveTransparency;
-				RefreshMenu();
 				break;
 			case IDM_CLEAR:
 				opt.dynamicws = false;
@@ -847,12 +849,10 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				if (shouldsaveconfig == DoNotSave &&
 					shouldsaveconfig != SaveAll)
 					shouldsaveconfig = SaveTransparency;
-				RefreshMenu();
 				break;
 			case IDM_NORMAL:
 				opt.dynamicws = false;
 				opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
-				RefreshMenu();
 				// TODO: shouldsaveconfig implementation
 				break;
 			case IDM_DYNAMICWS:
@@ -860,12 +860,10 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				opt.dynamicws = true;
 				EnumWindows(&EnumWindowsProcess, NULL);
 				// TODO: shouldsaveconfig implementation
-				RefreshMenu();
 				break;
 			case IDM_DYNAMICSTART:
 				opt.dynamicstart = !opt.dynamicstart;
 				// TODO: shouldsaveconfig implementation
-				RefreshMenu();
 				break;
 			case IDM_AUTOSTART:
 				if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
@@ -876,12 +874,12 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				} else {
 					add_to_startup();
 				}
-				RefreshMenu();
 				break;
 			case IDM_EXIT:
 				run = false;
 				break;
 			}
+			RefreshMenu();
 		}
 	}
 	if (message == WM_TASKBARCREATED) // Unfortunately, WM_TASKBARCREATED is not a constant, so I can't include it in the switch.
@@ -972,8 +970,7 @@ bool singleProc()
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
 {
-	HRESULT dpi_success = SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
-	if (!dpi_success) { OutputDebugStringW(L"Per-monitor DPI scaling failed"); }
+	if (FAILED(SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE))) { OutputDebugStringW(L"Per-monitor DPI scaling failed\n"); }
 
 	ParseCmdOptions(true); // Command line argument settings, config file only
 	ParseConfigFile(L"config.cfg"); // Config file settings
@@ -1010,9 +1007,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 	ShowWindow(tray_hwnd, WM_SHOWWINDOW);
 	
 	//Virtual Desktop stuff
-	::CoInitialize(NULL);
+	if (FAILED(::CoInitialize(NULL))) { OutputDebugStringW(L"Initialization of COM failed, VirtualDesktopManager will probably fail too.\n"); }
 	HRESULT desktop_success = ::CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, (void **)&desktop_manager);
-	if (!desktop_success) { OutputDebugStringW(L"Initialization of VirtualDesktopManager failed"); }
+	if (FAILED(desktop_success)) { OutputDebugStringW(L"Initialization of VirtualDesktopManager failed\n"); }
 
 	RefreshHandles();
 	if (opt.dynamicws)
