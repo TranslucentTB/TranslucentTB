@@ -410,6 +410,7 @@ void SaveConfigFile()
 			configstream << L"dynamic-ws=enable" << endl;
 
 		configstream << L"; dynamic windows can be used in conjunction with a custom color and non-zero opacity!" << endl;
+		configstream << L"; you can also set an accent value, which will represent the state of dynamic windows when there is no window maximised" << endl;
 
 		if (opt.dynamicstart)
 			configstream << L"dynamic-start=enable" << endl;
@@ -637,6 +638,10 @@ void RefreshMenu()
 	{
 		CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, IDM_NORMAL, MF_BYCOMMAND);
 	}
+	else
+	{
+		// TODO
+	}
 
 	if (opt.dynamicws)
 	{
@@ -764,7 +769,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			GetCursorPos(&pt);
 			SetForegroundWindow(hWnd);
 			UINT tray = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
-			switch (tray) // TODO: Add menu items for colors, and one to open config file locations
+			switch (tray) // TODO: Add menu items for colors, and one to open config file locations, and one to reset ApplicationFrameHost (after reset if there is still a bad window, show details to help in bug report)
 			{
 			case IDM_BLUR:
 				if (opt.dynamicws)
