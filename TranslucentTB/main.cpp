@@ -281,26 +281,25 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		if (value == L"true" ||
 			value == L"enable")
 		{
-			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 			opt.dynamicws = true;
 		}
 		else if (value == L"tint")
 		{
-			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 			opt.dynamicws = true;
 			DYNAMIC_WS_STATE = ACCENT_ENABLE_TINTED;
 		}
 		else if (value == L"blur")
 		{
-			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 			opt.dynamicws = true;
 			DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND;
 		}
 		else if (value == L"opaque")
 		{
-			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 			opt.dynamicws = true;
 			DYNAMIC_WS_STATE = ACCENT_ENABLE_GRADIENT;
+		}
+		if (!opt.taskbar_appearance && opt.dynamicws) {
+			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 		}
 	}
 	else if (arg == L"dynamic-start")
