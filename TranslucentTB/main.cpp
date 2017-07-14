@@ -908,6 +908,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 	if (FAILED(SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE))) { OutputDebugStringW(L"Per-monitor DPI scaling failed\n"); }
 
 	// Find user's localappdata folder
+	// configfile = %LocalAppData%\TranslucentTB\config.cfg
 	// If !%localappdata%\TranslucentTB exists
 	//     MessageBox(NULL, L"test", L"test", MB_ICONQUESTION | MB_OK);
 	//
@@ -916,8 +917,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 	//
 	// if !exclude file exists
 	//     copy from appx
-	//
-	// configfile = %LocalAppData%\TranslucentTB\config.cfg
 	ParseConfigFile(configfile); // Config file settings
 	ParseCmdOptions(); // Command line argument settings
 	// ParseDWSExcludesFile(L"%LocalAppData%\TranslucentTB\dynamic-ws-exclude.csv");
