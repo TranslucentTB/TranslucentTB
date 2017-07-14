@@ -103,8 +103,6 @@ unsigned int NEW_TTB_INSTANCE;
 int DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND; // State to activate when d-ws is enabled
 std::map<HWND, TASKBARPROPERTIES> taskbars; // Create a map for all taskbars
 
-std::wstring ExcludeFile = L"dynamic-ws-exclude.csv";
-
 IVirtualDesktopManager *desktop_manager;
 
 typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
@@ -207,14 +205,9 @@ void PrintHelp()
 			cout << "                          monitor, otherwise blurry. State can be from: (blur, opaque, tint). Blur is default." << endl;
 			cout << "  --dynamic-start       | will make the taskbar return to it's normal state when the start menu is opened," << endl;
 			cout << "                          current setting otherwise." << endl;
-			cout << "  --exclude-file FILE   | CSV-format file to specify applications to exclude from dynamic-ws (By default" << endl;
-            cout << "						   it will attempt to load from dynamic-ws-exclude.csv)" << endl;
-			cout << "  --save-all            | will save all of the above settings into config.cfg on program exit." << endl;
-			cout << "  --config FILE         | will load settings from a specified configuration file. (if this parameter is" << endl;
-			cout << "                          ignored, it will attempt to load from config.cfg)" << endl;
 			cout << "  --help                | Displays this help message." << endl;
-			cout << "  --startup             | Adds TranslucentTB to startup, via changing the registry." << endl;
 			cout << "  --no-tray             | will hide the taskbar tray icon." << endl;
+			cout << "  --with-tray           | Ignore no-tray in config file." << endl;
 			cout << endl;
 
 			cout << "Color format:" << endl;
@@ -234,6 +227,16 @@ void PrintHelp()
 			cout << "TranslucentTB.exe --tint 80fe10a4 --dynamic-ws tint" << endl;
 			cout << "# Will be normal when start is open, transparent otherwise." << endl;
 			cout << "TranslucentTB.exe --dynamic-start" << endl;
+			cout << endl;
+			cout << "Config files and startup settings for Windows Store edition" << endl;
+			cout << "The config and dynamic exclude files are located under %LocalAppData%\\TranslucentTB and will always be loaded" << endl;
+			cout << "when the program starts and the config file will be saved on exit. --config, --exclude-file --save-all" << endl;
+			cout << "have been disabled." << endl;
+			cout << endl;
+			cout << "Startup settings for Windows Store Edition" << endl;
+			cout << "Centennial applications must use a special API for registering themselves at startup. The user can" << endl;
+			cout << "manage the startup state from either task manager or the tray icon. If disabled from task manager, the" << endl;
+			cout << "option in the tray icon will be greyed out." << endl;
 			cout << endl;
 
 			if (createdconsole && instream)
@@ -346,6 +349,14 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 
 		forcedtransparency = parsed;
 	}
+	else if (arg == L"no-tray")
+	{
+		if (value == L"true" ||
+			value == L"enable")
+		{
+			hastray = false;
+		}
+	}
 }
 
 void ParseConfigFile(std::wstring path)
@@ -391,32 +402,34 @@ void SaveConfigFile()
 		else if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
 			configstream << L"accent=blur" << endl;
 
-		if (configfileoptions.dynamicws == true || 
-			shouldsaveconfig == SaveAll)
-		{
-			configstream << L"; Dynamic states: Window States and (WIP) Start Menu" << endl;
+		configstream << endl;
+		configstream << L"; Dynamic states: Window States and (WIP) Start Menu" << endl;
+		if (opt.dynamicws)
 			configstream << L"dynamic-ws=enable" << endl;
-		}
-		if (configfileoptions.dynamicstart == true ||
-			shouldsaveconfig == SaveAll)
-		{
-			configstream << L"dynamic-start=enable" << endl;
-		}
-		if (configfileoptions.tint == true ||
-			shouldsaveconfig == SaveAll)
-		{
-			configstream << endl;
-			configstream << L"; Color and opacity of the taskbar." << endl;
+		else
+			configstream << L"; dynamic-ws=enable" << endl;
 
-			// TODO include the alpha channel here or not?
-			unsigned int bitreversed =
-				(opt.color & 0xFF000000) +
-				((opt.color & 0x00FF0000) >> 16) +
-				(opt.color & 0x0000FF00) +
-				((opt.color & 0x000000FF) << 16);
-			configstream << L"color=" << hex << bitreversed << L"    ; A color in hexadecimal notation. Described in usage.md." << endl;
-			configstream << L"opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << L"    ; A value in the range 0 to 255." << endl;
-		}
+		if (opt.dynamicstart)
+			configstream << L"dynamic-start=enable" << endl;
+		else
+			configstream << L"; dynamic-start=enable" << endl;
+
+		configstream << endl;
+		configstream << L"; Color and opacity of the taskbar." << endl;
+
+		unsigned int bitreversed =
+			(opt.color & 0xFF000000) +
+			((opt.color & 0x00FF0000) >> 16) +
+			(opt.color & 0x0000FF00) +
+			((opt.color & 0x000000FF) << 16);
+		configstream << L"color=" << hex << bitreversed << L"    ; A color in hexadecimal notation." << endl;
+		configstream << L"opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << L"    ; A value in the range 0 to 255." << endl;
+		configstream << endl;
+		configstream << L"; If this is enabled, there will be no tray icon" << endl;
+		if (hastray)
+			configstream << L"; no-tray=enable" << endl;
+		else
+			configstream << L"no-tray=enable" << endl;
 	}
 }
 
@@ -426,10 +439,6 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	{
 		PrintHelp();
 		exit(0);
-	}
-	else if (arg == L"--save-all")
-	{
-		shouldsaveconfig = SaveAll;
 	}
 	else if (arg == L"--blur")
 	{
@@ -456,62 +465,6 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	{
 		configfileoptions.dynamicstart = true;
 		opt.dynamicstart = true;
-	}
-	else if (arg == L"--startup")
-	{
-		add_to_startup();
-	}
-	else if (arg == L"--exclude-file")
-	{
-		OutputDebugString(value.c_str());
-		std::ifstream infile(value);
-		if (!infile.good())
-		{
-			BOOL hasconsole = true;
-			BOOL createdconsole = false;
-			// Try to attach to the parent console,
-			// allocate a new one if that isn't successful
-			if (!AttachConsole(ATTACH_PARENT_PROCESS))
-			{
-				if (!AllocConsole())
-				{
-					hasconsole = false;
-				}
-				else
-				{
-					createdconsole = true;
-				}
-			}
-			if (hasconsole)
-			{
-				FILE* outstream;
-				FILE* instream;
-				freopen_s(&outstream, "CONOUT$", "w", stdout);
-				freopen_s(&instream, "CONIN$", "w", stdin);
-				if (outstream)
-				{
-					std::cout << "Invalid File." << std::endl;
-					exit(0);
-				}
-				if (createdconsole && instream)
-				{
-					std::string wait;
-
-					std::cout << "Press enter to exit the program." << std::endl;
-					if (!getline(std::cin, wait))
-					{
-						// Couldn't wait for user input, make the user close
-						// the program themselves so they can see the output.
-						std::cout << "Press Ctrl + C, Alt + F4, or click the close button to exit the program." << std::endl;
-						Sleep(INFINITE);
-					}
-
-					FreeConsole();
-				}
-				fclose(outstream);
-			} // Temporary until we fix shell stdout
-		}
-		ExcludeFile = value;
 	}
 	else if (arg == L"--tint" || arg == L"--color")
 	{
@@ -543,30 +496,20 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	{
 		hastray = false;
 	}
+	else if (arg == L"--with-tray")
+	{
+		hastray = true;
+	}
 }
 
-void ParseCmdOptions(bool configonly=false)
+void ParseCmdOptions()
 {
-	// Set default values
-	if (configonly)
-	{
-		shouldsaveconfig = DoNotSave;
-		explicitconfig = false;
-		configfile = L"config.cfg";
-		forcedtransparency = -1;
-
-		opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-		opt.color = 0x00000000;
-	}
-
 	// Loop through command line arguments
 	LPWSTR *szArglist;
 	int nArgs;
 
 	szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
 
-
-	// Find the --config option if provided
 	for (int i = 0; i < nArgs; i++)
 	{
 		LPWSTR lparg = szArglist[i];
@@ -575,34 +518,7 @@ void ParseCmdOptions(bool configonly=false)
 		std::wstring arg = std::wstring(lparg);
 		std::wstring value = std::wstring(lpvalue);
 
-		if (arg == L"--config")
-		{
-			// We allow multiple --config options. The later ones will override the previous ones.
-			// The lates will be assigned to configfile, and that's where changes are saved.
-			if (value.length() > 0 &&
-				file_exists(value))
-			{
-				configfile = value;
-				ParseConfigFile(value);
-			}
-			// TODO else? Missing or invalid parameter, should log
-		}
-	}
-
-	// Iterate over the rest of the arguments 
-	// Those options override the config files.
-	if (configonly == false) // If configonly is false
-	{
-		for (int i = 0; i < nArgs; i++)
-		{
-			LPWSTR lparg = szArglist[i];
-			LPWSTR lpvalue = (i + 1 < nArgs) ? szArglist[i + 1] : L"";
-
-			std::wstring arg = std::wstring(lparg);
-			std::wstring value = std::wstring(lpvalue);
-
-			ParseSingleOption(arg, value);
-		}
+		ParseSingleOption(arg, value);
 	}
 
 	LocalFree(szArglist);
@@ -839,31 +755,22 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			case IDM_BLUR:
 				opt.dynamicws = false;
 				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-				if (shouldsaveconfig == DoNotSave &&
-					shouldsaveconfig != SaveAll)
-					shouldsaveconfig = SaveTransparency;
 				break;
 			case IDM_CLEAR:
 				opt.dynamicws = false;
 				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-				if (shouldsaveconfig == DoNotSave &&
-					shouldsaveconfig != SaveAll)
-					shouldsaveconfig = SaveTransparency;
 				break;
 			case IDM_NORMAL:
 				opt.dynamicws = false;
 				opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
-				// TODO: shouldsaveconfig implementation
 				break;
 			case IDM_DYNAMICWS:
 				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 				opt.dynamicws = true;
 				EnumWindows(&EnumWindowsProcess, NULL);
-				// TODO: shouldsaveconfig implementation
 				break;
 			case IDM_DYNAMICSTART:
 				opt.dynamicstart = !opt.dynamicstart;
-				// TODO: shouldsaveconfig implementation
 				break;
 			case IDM_AUTOSTART:
 				if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
@@ -972,10 +879,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 {
 	if (FAILED(SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE))) { OutputDebugStringW(L"Per-monitor DPI scaling failed\n"); }
 
-	ParseCmdOptions(true); // Command line argument settings, config file only
+	// TODO: Find user's localappdata folder, check if the file exists. If they do not, create a welcome window
 	ParseConfigFile(L"config.cfg"); // Config file settings
-	ParseCmdOptions(false); // Command line argument settings, all lines
-	ParseDWSExcludesFile(ExcludeFile);
+	ParseCmdOptions(); // Command line argument settings
+	ParseDWSExcludesFile(L"dynamic-ws-exclude.csv");
+
+	shouldsaveconfig = SaveAll; // TODO: If they did not exist, create them.
 
 	NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");
 	if (!singleProc()) {
