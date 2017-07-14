@@ -68,18 +68,9 @@ enum TASKBARSTATE { Normal, WindowMaximised, StartMenuOpen }; // Create a state 
 			// WindowMaximised  | There is a window which is maximised on the monitor this HWND is in. Display as blurred.
 			// StartMenuOpen    | The Start Menu is open on the monitor this HWND is in. Display as it would be without TranslucentTB active.
 
-enum SAVECONFIGSTATES { DoNotSave, SaveTransparency, SaveAll } shouldsaveconfig;  // Create an enum to store all config states
+enum SAVECONFIGSTATES { DoNotSave, SaveAll } shouldsaveconfig;  // Create an enum to store all config states
 			// DoNotSave        | Fairly self-explanatory
-			// SaveTransparency | Save opt.taskbar_appearance
 			// SaveAll          | Save all options
-
-
-struct READFROMCONFIG
-{
-	bool dynamicws;
-	bool dynamicstart;
-	bool tint;
-} configfileoptions; // Keep a struct, as we will need to save them later
 
 struct TASKBARPROPERTIES
 {
@@ -454,7 +445,6 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	}
 	else if (arg == L"--dynamic-ws")
 	{
-		configfileoptions.dynamicws = true;
 		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 		opt.dynamicws = true;
 		if (value == L"tint") { DYNAMIC_WS_STATE = ACCENT_ENABLE_TINTED; }
@@ -463,12 +453,10 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	}
 	else if (arg == L"--dynamic-start")
 	{
-		configfileoptions.dynamicstart = true;
 		opt.dynamicstart = true;
 	}
 	else if (arg == L"--tint" || arg == L"--color")
 	{
-		configfileoptions.tint = true;
 		// The next argument should be a color in hex format
 		if (value.length() > 0)
 		{
