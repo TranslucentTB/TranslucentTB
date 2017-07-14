@@ -622,21 +622,29 @@ HWND tray_hwnd;
 
 void RefreshMenu()
 {
+	if ((!opt.dynamicws && opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND) ||
+		(opt.dynamicws && DYNAMIC_WS_STATE == ACCENT_ENABLE_BLURBEHIND))
+	{
+		CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, IDM_BLUR, MF_BYCOMMAND);
+	}
+	else if ((!opt.dynamicws && opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT) ||
+		(opt.dynamicws && DYNAMIC_WS_STATE == ACCENT_ENABLE_TRANSPARENTGRADIENT))
+	{
+		CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, IDM_CLEAR, MF_BYCOMMAND);
+	}
+	else if ((!opt.dynamicws && opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT) ||
+		(opt.dynamicws && DYNAMIC_WS_STATE == ACCENT_ENABLE_GRADIENT))
+	{
+		CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, IDM_NORMAL, MF_BYCOMMAND);
+	}
+
 	if (opt.dynamicws)
 	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_DYNAMICWS, MF_BYCOMMAND);
+		CheckMenuItem(popup, IDM_DYNAMICWS, MF_BYCOMMAND | MF_CHECKED);
 	}
-	else if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
+	else
 	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_BLUR, MF_BYCOMMAND);
-	}
-	else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
-	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_CLEAR, MF_BYCOMMAND);
-	}
-	else if (opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT)
-	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_NORMAL, MF_BYCOMMAND);
+		CheckMenuItem(popup, IDM_DYNAMICWS, MF_BYCOMMAND | MF_UNCHECKED);
 	}
 
 	if (opt.dynamicstart)
@@ -759,18 +767,25 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			switch (tray) // TODO: Add menu items for colors, and one to open config file locations
 			{
 			case IDM_BLUR:
-				opt.dynamicws = false;
-				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+				if (opt.dynamicws)
+					DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND;
+				else
+					opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
 				break;
 			case IDM_CLEAR:
-				opt.dynamicws = false;
-				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+				if (opt.dynamicws)
+					DYNAMIC_WS_STATE = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+				else
+					opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 				break;
 			case IDM_NORMAL:
-				opt.dynamicws = false;
-				opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
+				if (opt.dynamicws)
+					DYNAMIC_WS_STATE = ACCENT_ENABLE_GRADIENT;
+				else
+					opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
 				break;
 			case IDM_DYNAMICWS:
+				DYNAMIC_WS_STATE = opt.taskbar_appearance;
 				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 				opt.dynamicws = true;
 				EnumWindows(&EnumWindowsProcess, NULL);
