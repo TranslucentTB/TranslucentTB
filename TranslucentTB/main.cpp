@@ -112,13 +112,14 @@ void SetWindowBlur(HWND hWnd, int appearance = 0) // `appearance` can be 0, whic
 				if (appearance == ACCENT_ENABLE_TINTED) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, opt.color, 0 }; } // Window is maximised
 				else { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 }; } // Desktop is shown (this shouldn't ever be called tho, just in case)
 			}
-			else {  policy = { appearance, 2, opt.color, 0 };  }
-		} else { // Use the defaults
-			if (DYNAMIC_WS_STATE == ACCENT_ENABLE_TINTED) { policy = {ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0}; } // dynamic-ws is tint and desktop is shown
+			else { policy = { appearance, 2, opt.color, 0 }; }
+		}
+		else { // Use the defaults
+			if (DYNAMIC_WS_STATE == ACCENT_ENABLE_TINTED) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 }; } // dynamic-ws is tint and desktop is shown
 			else if (opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, (int)0xd9000000, 0 }; } // normal gradient color
 			else { policy = { opt.taskbar_appearance, 2, opt.color, 0 }; }
 		}
-		
+
 		WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) }; // WCA_ACCENT_POLICY=19
 		SetWindowCompositionAttribute(hWnd, &data);
 	}
@@ -272,17 +273,17 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		else if (value == L"opaque")
 			opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
 		else if (value == L"transparent" ||
-				 value == L"translucent")
+			value == L"translucent")
 			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 	}
 	else if (arg == L"dynamic-ws")
 	{
 		if (value == L"true" ||
 			value == L"enable")
-			{
-				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-				opt.dynamicws = true;
-			}
+		{
+			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+			opt.dynamicws = true;
+		}
 		else if (value == L"tint")
 		{
 			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
@@ -306,12 +307,12 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 	{
 		if (value == L"true" ||
 			value == L"enable")
-			{
-				opt.dynamicstart = true;
-			}
+		{
+			opt.dynamicstart = true;
+		}
 	}
 	else if (arg == L"color" ||
-			 arg == L"tint")
+		arg == L"tint")
 	{
 		if (value.find(L'#') == 0)
 			value = value.substr(1, value.length() - 1);
@@ -373,7 +374,7 @@ void ParseConfigFile(std::wstring path)
 	if (forcedtransparency >= 0)
 	{
 		opt.color = (forcedtransparency << 24) +
-					(opt.color & 0x00FFFFFF);
+			(opt.color & 0x00FFFFFF);
 	}
 }
 
@@ -464,7 +465,7 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 			size_t numchars;
 
 			colval = stoul(value, &numchars, 16);
-			
+
 			// ACCENTPOLICY.nColor expects the byte order to be ABGR,
 			// fiddle some bits to make it intuitive for the user.
 			opt.color =
@@ -533,15 +534,17 @@ void RefreshHandles()
 
 std::wstring trim(std::wstring& str)
 {
-    size_t first = str.find_first_not_of(' ');
-    size_t last = str.find_last_not_of(' ');
+	size_t first = str.find_first_not_of(' ');
+	size_t last = str.find_last_not_of(' ');
 
 	if (first == std::wstring::npos)
-	{ return std::wstring(L""); }
-    return str.substr(first, (last-first+1));
+	{
+		return std::wstring(L"");
+	}
+	return str.substr(first, (last - first + 1));
 }
 
-std::vector<std::wstring> ParseByDelimiter(std::wstring row, std::wstring delimiter=L",")
+std::vector<std::wstring> ParseByDelimiter(std::wstring row, std::wstring delimiter = L",")
 {
 	std::vector<std::wstring> result;
 	std::wstring token;
@@ -584,7 +587,7 @@ void ParseDWSExcludesFile(std::wstring filename)
 			IgnoredClassNames.erase(IgnoredClassNames.begin());
 		}
 		else if (line_lowercase.substr(0, 5) == L"title" ||
-				 line.substr(0, 13) == L"windowtitle")
+			line.substr(0, 13) == L"windowtitle")
 		{
 			IgnoredWindowTitles = ParseByDelimiter(line, delimiter);
 			IgnoredWindowTitles.erase(IgnoredWindowTitles.begin());
@@ -620,7 +623,7 @@ void RefreshMenu()
 	else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
 	{
 		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_CLEAR, MF_BYCOMMAND);
-	} 
+	}
 	else if (opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT)
 	{
 		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_NORMAL, MF_BYCOMMAND);
@@ -629,12 +632,13 @@ void RefreshMenu()
 	if (opt.dynamicstart)
 	{
 		CheckMenuItem(popup, IDM_DYNAMICSTART, MF_BYCOMMAND | MF_CHECKED);
-	} else
+	}
+	else
 	{
 		CheckMenuItem(popup, IDM_DYNAMICSTART, MF_BYCOMMAND | MF_UNCHECKED);
 	}
 
-	if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
+	if (RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
 	{
 		CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_CHECKED);
 	}
@@ -645,7 +649,7 @@ void RefreshMenu()
 
 void initTray(HWND parent)
 {
-	if(hastray)
+	if (hastray)
 	{
 		Tray.cbSize = sizeof(Tray);
 		Tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
@@ -678,11 +682,15 @@ BOOL isBlacklisted(HWND hWnd)
 	std::wstring w_WindowTitle = windowTitle;
 
 	// Check if the different vars are in their respective vectors
-	for (auto & value: IgnoredClassNames)
-	{ if (className == value.c_str()) { return true; } }
-	for (auto & value: IgnoredExeNames)
-	{ if (exeName == value) { return true; } }
-	for (auto & value: IgnoredWindowTitles)
+	for (auto & value : IgnoredClassNames)
+	{
+		if (className == value.c_str()) { return true; }
+	}
+	for (auto & value : IgnoredExeNames)
+	{
+		if (exeName == value) { return true; }
+	}
+	for (auto & value : IgnoredWindowTitles)
 	{
 		if (w_WindowTitle.find(value) != std::wstring::npos)
 		{
@@ -692,7 +700,7 @@ BOOL isBlacklisted(HWND hWnd)
 	return false;
 }
 
-BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam) 
+BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 {
 	HMONITOR _monitor;
 
@@ -708,7 +716,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 				if (!isBlacklisted(hWnd))
 				{
 					_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
-					for (auto &taskbar: taskbars)
+					for (auto &taskbar : taskbars)
 					{
 						if (taskbar.second.hmon == _monitor &&
 							taskbar.second.state != StartMenuOpen)
@@ -761,12 +769,13 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				opt.dynamicstart = !opt.dynamicstart;
 				break;
 			case IDM_AUTOSTART: // TODO: Use UWP Apis
-				if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
+				if (RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
 				{
 					HKEY hkey = NULL;
 					RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
 					RegDeleteValue(hkey, L"TranslucentTB");
-				} else {
+				}
+				else {
 					add_to_startup();
 				}
 				break;
@@ -781,7 +790,8 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 	{
 		RefreshHandles();
 		initTray(tray_hwnd);
-	} else if (message == NEW_TTB_INSTANCE){
+	}
+	else if (message == NEW_TTB_INSTANCE) {
 		shouldsaveconfig = DoNotSave;
 		run = false;
 	}
@@ -792,12 +802,12 @@ void SetTaskbarBlur()
 {
 	// std::cout << opt.dynamicws << std::endl;	
 
-	
+
 	if (counter >= 10)   // Change this if you want to change the time it takes for the program to update
 	{                   // 100 = 1 second; we use 10, because the difference is less noticeable and it has
 						// no large impact on CPU. We can change this if we feel that CPU is more important
 						// than response time.
-		for (auto &taskbar: taskbars)
+		for (auto &taskbar : taskbars)
 		{
 			taskbar.second.state = Normal; // Reset taskbar state
 		}
@@ -805,7 +815,7 @@ void SetTaskbarBlur()
 			counter = 0;
 			EnumWindows(&EnumWindowsProcess, NULL);
 		}
-	
+
 		if (opt.dynamicstart)
 		{
 			HWND foreground;
@@ -817,17 +827,18 @@ void SetTaskbarBlur()
 			GetClassName(foreground, ForehWndClass, _countof(ForehWndClass));
 
 			if (!_tcscmp(ForehWndClass, _T("Windows.UI.Core.CoreWindow")) &&
-			(!_tcscmp(ForehWndName, _T("Search")) || !_tcscmp(ForehWndName, _T("Cortana"))))
+				(!_tcscmp(ForehWndName, _T("Search")) || !_tcscmp(ForehWndName, _T("Cortana"))))
 			{
 				// Detect monitor Start Menu is open on
 				HMONITOR _monitor;
 				_monitor = MonitorFromWindow(foreground, MONITOR_DEFAULTTOPRIMARY);
-				for (auto &taskbar: taskbars)
+				for (auto &taskbar : taskbars)
 				{
 					if (taskbar.second.hmon == _monitor)
 					{
 						taskbar.second.state = StartMenuOpen;
-					} else {
+					}
+					else {
 						taskbar.second.state = Normal;
 					}
 				}
@@ -835,12 +846,13 @@ void SetTaskbarBlur()
 		}
 	}
 
-	for (auto const &taskbar: taskbars)
+	for (auto const &taskbar : taskbars)
 	{
 		if (taskbar.second.state == WindowMaximised) {
 			SetWindowBlur(taskbar.first, DYNAMIC_WS_STATE);
-											// A window is maximised; let's make sure that we blur the window.
-		} else if (taskbar.second.state == Normal) {
+			// A window is maximised; let's make sure that we blur the window.
+		}
+		else if (taskbar.second.state == Normal) {
 			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
 		}
 
@@ -902,7 +914,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 	initTray(tray_hwnd);
 
 	ShowWindow(tray_hwnd, WM_SHOWWINDOW);
-	
+
 	//Virtual Desktop stuff
 	if (FAILED(::CoInitialize(NULL))) { OutputDebugStringW(L"Initialization of COM failed, VirtualDesktopManager will probably fail too.\n"); }
 	HRESULT desktop_success = ::CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, (void **)&desktop_manager);
