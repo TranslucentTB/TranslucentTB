@@ -790,8 +790,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				break;
 			case IDM_DYNAMICWS:
 				DYNAMIC_WS_STATE = opt.taskbar_appearance;
-				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-				opt.dynamicws = true;
+				opt.dynamicws = !opt.dynamicws;
 				EnumWindows(&EnumWindowsProcess, NULL);
 				break;
 			case IDM_DYNAMICSTART:
