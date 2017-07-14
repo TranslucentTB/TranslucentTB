@@ -750,7 +750,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			GetCursorPos(&pt);
 			SetForegroundWindow(hWnd);
 			UINT tray = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
-			switch (tray)
+			switch (tray) // TODO: Add menu items for colors, and one to open config file locations
 			{
 			case IDM_BLUR:
 				opt.dynamicws = false;
@@ -772,7 +772,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			case IDM_DYNAMICSTART:
 				opt.dynamicstart = !opt.dynamicstart;
 				break;
-			case IDM_AUTOSTART:
+			case IDM_AUTOSTART: // TODO: Use UWP Apis
 				if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
 				{
 					HKEY hkey = NULL;
@@ -879,12 +879,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 {
 	if (FAILED(SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE))) { OutputDebugStringW(L"Per-monitor DPI scaling failed\n"); }
 
-	// TODO: Find user's localappdata folder, check if the file exists. If they do not, create a welcome window
+	// TODO: Find user's localappdata folder, check if the config file exists. If it did not, create a welcome window and copy exclude file and config file from appx folder
 	ParseConfigFile(L"config.cfg"); // Config file settings
 	ParseCmdOptions(); // Command line argument settings
 	ParseDWSExcludesFile(L"dynamic-ws-exclude.csv");
 
-	shouldsaveconfig = SaveAll; // TODO: If they did not exist, create them.
+	shouldsaveconfig = SaveAll;
 
 	NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");
 	if (!singleProc()) {
