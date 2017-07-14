@@ -396,10 +396,20 @@ void SaveConfigFile()
 
 		configstream << endl;
 		configstream << L"; Dynamic states: Window States and (WIP) Start Menu" << endl;
-		if (opt.dynamicws)
-			configstream << L"dynamic-ws=enable" << endl;
+		configstream << L"; dynamic windows: opaque, transparent, or blur (default)." << endl;
+		if (!opt.dynamicws)
+			configstream << L"; ";
+
+		if (DYNAMIC_WS_STATE == ACCENT_ENABLE_BLURBEHIND)
+			configstream << L"dynamic-ws=blur" << endl;
+		else if (DYNAMIC_WS_STATE == ACCENT_ENABLE_TRANSPARENTGRADIENT)
+			configstream << L"dynamic-ws=transparent" << endl;
+		else if (DYNAMIC_WS_STATE == ACCENT_ENABLE_GRADIENT)
+			configstream << L"dynamic-ws=opaque" << endl;
 		else
-			configstream << L"; dynamic-ws=enable" << endl;
+			configstream << L"dynamic-ws=enable" << endl;
+
+		configstream << L"; dynamic windows can be used in conjunction with a custom color and non-zero opacity!" << endl;
 
 		if (opt.dynamicstart)
 			configstream << L"dynamic-start=enable" << endl;
@@ -879,10 +889,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 {
 	if (FAILED(SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE))) { OutputDebugStringW(L"Per-monitor DPI scaling failed\n"); }
 
-	// TODO: Find user's localappdata folder, check if the config file exists. If it did not, create a welcome window and copy exclude file and config file from appx folder
-	ParseConfigFile(L"config.cfg"); // Config file settings
+	// Find user's localappdata folder
+	// If !%localappdata%\TranslucentTB exists
+	//     MessageBox(NULL, L"test", L"test", MB_ICONQUESTION | MB_OK);
+	//
+	// if !configfile exists
+	//     copy from appx
+	//
+	// if !exclude file exists
+	//     copy from appx
+	//
+	// configfile = %LocalAppData%\TranslucentTB\config.cfg
+	ParseConfigFile(configfile); // Config file settings
 	ParseCmdOptions(); // Command line argument settings
-	ParseDWSExcludesFile(L"dynamic-ws-exclude.csv");
+	// ParseDWSExcludesFile(L"%LocalAppData%\TranslucentTB\dynamic-ws-exclude.csv");
 
 	shouldsaveconfig = SaveAll;
 
