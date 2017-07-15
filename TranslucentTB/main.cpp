@@ -29,10 +29,8 @@ const static LPCWSTR singleProcName = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
 bool run = true;
 bool hastray = true;
 
-// config file path (defaults to ./config.cfg)
+// config file path
 std::wstring configfile;
-// holds whether the user passed a --config parameter on the command line
-bool explicitconfig;
 
 // holds the alpha channel value between 0 or 255,
 // defaults to -1 (not set).
