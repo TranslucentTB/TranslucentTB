@@ -199,7 +199,7 @@ void PrintHelp()
 			cout << "                          see explanation below." << endl;
 			cout << "  --dynamic-ws STATE    | will make the taskbar transparent when no windows are maximised in the current" << endl;
 			cout << "                          monitor, otherwise blurry. State can be from: (blur, opaque, tint). Blur is default." << endl;
-			cout << "  --dynamic-start       | will make the taskbar return to it's normal state when the start menu is opened," << endl;
+			cout << "  --dynamic-start       | will make the taskbar return to its normal state when the start menu is opened," << endl;
 			cout << "                          current setting otherwise." << endl;
 			cout << "  --help                | Displays this help message." << endl;
 			cout << "  --no-tray             | will hide the taskbar tray icon." << endl;
