@@ -8,6 +8,7 @@
 #include <psapi.h>
 #include <ShlObj.h>
 #include <Shlwapi.h>
+#include <roapi.h>
 
 #include <algorithm>
 
