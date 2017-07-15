@@ -964,7 +964,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 
 	// Store stuff
 	if (FAILED(Initialize())) { OutputDebugStringW(L"Initialization of UWP APIs failed. Unable to manipulate startup entry."); }
-	Windows::ApplicationModel::StartupTask::GetForCurrentPackageAsync();
+	//Windows::ApplicationModel::StartupTask::GetForCurrentPackageAsync();
+	// This should not make it crash once it gets packaged into an APPX.
 
 	//Virtual Desktop stuff
 	if (FAILED(::CoInitialize(NULL))) { OutputDebugStringW(L"Initialization of COM failed, VirtualDesktopManager will probably fail too.\n"); }
