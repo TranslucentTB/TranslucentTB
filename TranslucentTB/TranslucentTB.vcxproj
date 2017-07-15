@@ -148,7 +148,7 @@
       <AdditionalDependencies>user32.lib;advapi32.lib;shell32.lib;ole32.lib;shcore.lib;shlwapi.lib</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <AdditionalUsingDirectories>%VCIDEInstallDir%\vcpackages;%WindowsSdkDir%\UnionMetadata\10.0.15063.0</AdditionalUsingDirectories>
+      <AdditionalUsingDirectories>%VCIDEInstallDir%\vcpackages;%WindowsSdkDir%\UnionMetadata</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
     </ClCompile>
   </ItemDefinitionGroup>
