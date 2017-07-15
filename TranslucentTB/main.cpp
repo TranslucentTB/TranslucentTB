@@ -19,6 +19,9 @@
 #include <shellapi.h>
 #include "resource.h"
 
+// UWP usings.
+using namespace Windows::Foundation;
+
 //we use a GUID for uniqueness
 const static LPCWSTR singleProcName = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
 
@@ -958,6 +961,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 	initTray(tray_hwnd);
 
 	ShowWindow(tray_hwnd, WM_SHOWWINDOW);
+
+	// Store stuff
+	if (FAILED(Initialize())) { OutputDebugStringW(L"Initialization of UWP APIs failed. Unable to manipulate startup entry."); }
+	Windows::ApplicationModel::StartupTask::GetForCurrentPackageAsync();
 
 	//Virtual Desktop stuff
 	if (FAILED(::CoInitialize(NULL))) { OutputDebugStringW(L"Initialization of COM failed, VirtualDesktopManager will probably fail too.\n"); }
