@@ -188,7 +188,7 @@ void PrintHelp()
 			cout << endl;
 			cout << "TranslucentTB by ethanhs & friends" << endl;
 			cout << "Source: https://github.com/TranslucentTB/TranslucentTB" << endl;
-			cout << "    TranslucentTB is freeware and is distributed under thte open-source GPL3 license." << endl;
+			cout << "    TranslucentTB is freeware and is distributed under the open-source GPL3 license." << endl;
 			cout << "This program modifies the appearance of the windows taskbar" << endl;
 			cout << "You can modify its behaviour by using the following parameters when launching the program:" << endl;
 			cout << "  --blur                | will make the taskbar a blurry overlay of the background (default)." << endl;
@@ -217,8 +217,6 @@ void PrintHelp()
 			cout << "  of the number. Just convert a value between 0 and 255 to its hexadecimal value before you append it." << endl;
 			cout << endl;
 			cout << "Examples:" << endl;
-			cout << "# start with Windows, start transparent" << endl;
-			cout << "TranslucentTB.exe --startup --transparent --save-all" << endl;
 			cout << "# run dynamic windows mode, with the supplied color" << endl;
 			cout << "TranslucentTB.exe --tint 80fe10a4 --dynamic-ws tint" << endl;
 			cout << "# Will be normal when start is open, transparent otherwise." << endl;
@@ -405,14 +403,14 @@ void SaveConfigFile()
 
 		configstream << endl;
 		configstream << L"; Dynamic states: Window States and (WIP) Start Menu" << endl;
-		configstream << L"; dynamic windows: opaque, transparent, or blur (default)." << endl;
+		configstream << L"; dynamic windows: opaque, tint, or blur (default)." << endl;
 		if (!opt.dynamicws)
 			configstream << L"; ";
 
 		if (DYNAMIC_WS_STATE == ACCENT_ENABLE_BLURBEHIND)
 			configstream << L"dynamic-ws=blur" << endl;
-		else if (DYNAMIC_WS_STATE == ACCENT_ENABLE_TRANSPARENTGRADIENT)
-			configstream << L"dynamic-ws=transparent" << endl;
+		else if (DYNAMIC_WS_STATE == ACCENT_ENABLE_TINTED)
+			configstream << L"dynamic-ws=tint" << endl;
 		else if (DYNAMIC_WS_STATE == ACCENT_ENABLE_GRADIENT)
 			configstream << L"dynamic-ws=opaque" << endl;
 		else
@@ -638,7 +636,7 @@ void RefreshMenu()
 		CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, IDM_BLUR, MF_BYCOMMAND);
 	}
 	else if ((!opt.dynamicws && opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT) ||
-		(opt.dynamicws && DYNAMIC_WS_STATE == ACCENT_ENABLE_TRANSPARENTGRADIENT))
+		(opt.dynamicws && DYNAMIC_WS_STATE == ACCENT_ENABLE_TINTED))
 	{
 		CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, IDM_CLEAR, MF_BYCOMMAND);
 	}
@@ -788,7 +786,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				break;
 			case IDM_CLEAR:
 				if (opt.dynamicws)
-					DYNAMIC_WS_STATE = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+					DYNAMIC_WS_STATE = ACCENT_ENABLE_TINTED;
 				else
 					opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 				break;
