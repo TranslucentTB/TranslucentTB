@@ -384,6 +384,12 @@ void SaveConfigFile()
 		using namespace std;
 		wofstream configstream(configfile);
 
+		configstream << L"; ===========================================================================" << endl;
+		configstream << L"; Warning" << endl;
+		configstream << L"; File gets overwritten on exit. Only edit when TranslucentTB is not running." << endl;
+		configstream << L"; ===========================================================================" << endl;
+		configstream << endl;
+
 		configstream << L"; Taskbar appearance: opaque, transparent, or blur (default)." << endl;
 
 		if (opt.taskbar_appearance == ACCENT_ENABLE_GRADIENT)
