@@ -150,6 +150,7 @@
     <ClCompile>
       <AdditionalUsingDirectories>%VCIDEInstallDir%\vcpackages;%WindowsSdkDir%\UnionMetadata</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
+      <DisableSpecificWarnings>4447</DisableSpecificWarnings>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
