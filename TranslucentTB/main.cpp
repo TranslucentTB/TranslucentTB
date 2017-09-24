@@ -29,9 +29,6 @@ const static LPCWSTR singleProcName = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
 bool run = true;
 bool hastray = true;
 
-// config file path
-std::wstring configfile;
-
 // holds the alpha channel value between 0 or 255,
 // defaults to -1 (not set).
 int forcedtransparency;
@@ -387,7 +384,7 @@ void ParseConfigFile(std::wstring path)
 	}
 }
 
-void SaveConfigFile()
+void SaveConfigFile(std::wstring configfile)
 {
 	if (!configfile.empty())
 	{
@@ -966,19 +963,50 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 {
 	if (FAILED(SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE))) { OutputDebugStringW(L"Per-monitor DPI scaling failed\n"); }
 
-	// Find user's localappdata folder
-	// configfile = %LocalAppData%\TranslucentTB\config.cfg
-	// If !%localappdata%\TranslucentTB exists
-	//     MessageBox(NULL, L"test", L"test", MB_ICONQUESTION | MB_OK);
-	//
-	// if !configfile exists
-	//     copy from appx
-	//
-	// if !exclude file exists
-	//     copy from appx
-	ParseConfigFile(configfile); // Config file settings
+	LPWSTR localAppData;
+
+	if (FAILED(SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_DEFAULT, NULL, &localAppData)))
+	{
+		MessageBox(NULL, L"Failed to get LocalAppData folder location!\n\nProgram will exit.", L"Fatal error", MB_ICONERROR | MB_OK);
+		exit(1);
+	}
+
+	TCHAR configFolder[MAX_PATH];
+	TCHAR excludeFile[MAX_PATH];
+	TCHAR configFile[MAX_PATH];
+	TCHAR exeFolder[MAX_PATH];
+	TCHAR stockConfigFile[MAX_PATH];
+	TCHAR stockExcludeFile[MAX_PATH];
+
+	PathCombine(configFolder, localAppData, L"TranslucentTB");
+	PathCombine(configFile, configFolder, L"config.cfg");
+	PathCombine(excludeFile, configFolder, L"dynamic-ws-exclude.csv");
+
+	HMODULE hModule = GetModuleHandle(NULL);
+	GetModuleFileName(hModule, exeFolder, MAX_PATH);
+	PathRemoveFileSpec(exeFolder);
+	
+	PathCombine(stockConfigFile, exeFolder, L"config.cfg");
+	PathCombine(stockExcludeFile, exeFolder, L"dynamic-ws-exclude.csv");
+
+	if (!PathFileExists(configFolder))
+	{
+		// First run experience
+		CreateDirectory(configFolder, NULL);
+	}
+
+	if (!PathFileExists(configFile))
+	{
+		CopyFile(stockConfigFile, configFile, FALSE);
+	}
+	if (!PathFileExists(excludeFile))
+	{
+		CopyFile(stockExcludeFile, excludeFile, FALSE);
+	}
+
+	ParseConfigFile(configFile); // Config file settings
 	ParseCmdOptions(); // Command line argument settings
-	// ParseDWSExcludesFile(L"%LocalAppData%\TranslucentTB\dynamic-ws-exclude.csv");
+	ParseDWSExcludesFile(excludeFile);
 
 	shouldsaveconfig = SaveAll;
 
@@ -1042,9 +1070,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 	Shell_NotifyIcon(NIM_DELETE, &Tray);
 
 	if (shouldsaveconfig != DoNotSave)
-		SaveConfigFile();
+		SaveConfigFile(configFile);
 
 	opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
+	opt.no_peek = false;
+	HidePeek();
 	SetTaskbarBlur();
 	CloseHandle(ev);
 	return 0;
