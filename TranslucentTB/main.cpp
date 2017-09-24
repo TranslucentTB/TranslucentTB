@@ -62,6 +62,7 @@ struct OPTIONS
 	int color;
 	bool dynamicws;
 	bool dynamicstart;
+	bool peek;
 } opt;
 
 enum TASKBARSTATE { Normal, WindowMaximised, StartMenuOpen }; // Create a state to store all 
@@ -187,7 +188,7 @@ void PrintHelp()
 			cout << "TranslucentTB by ethanhs & friends" << endl;
 			cout << "Source: https://github.com/TranslucentTB/TranslucentTB" << endl;
 			cout << "    TranslucentTB is freeware and is distributed under the open-source GPL3 license." << endl;
-			cout << "This program modifies the appearance of the windows taskbar" << endl;
+			cout << "This program modifies the appearance of the Windows taskbar" << endl;
 			cout << "You can modify its behaviour by using the following parameters when launching the program:" << endl;
 			cout << "  --blur                | will make the taskbar a blurry overlay of the background (default)." << endl;
 			cout << "  --opaque              | will make the taskbar a solid color specified by the tint parameter." << endl;
@@ -202,6 +203,7 @@ void PrintHelp()
 			cout << "  --help                | Displays this help message." << endl;
 			cout << "  --no-tray             | will hide the taskbar tray icon." << endl;
 			cout << "  --with-tray           | Ignore no-tray in config file." << endl;
+			cout << "  --no-peek             | Hides Aero Peek button." << endl;
 			cout << endl;
 
 			cout << "Color format:" << endl;
@@ -348,6 +350,14 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 			hastray = false;
 		}
 	}
+	else if (arg == L"nopeek")
+	{
+		if (value == L"true" ||
+			value == L"enable")
+		{
+			opt.peek = false;
+		}
+	}
 }
 
 void ParseConfigFile(std::wstring path)
@@ -438,6 +448,12 @@ void SaveConfigFile()
 			configstream << L"; no-tray=enable" << endl;
 		else
 			configstream << L"no-tray=enable" << endl;
+		configstream << endl;
+		configstream << L"; Hides the Aero Peek button" << endl;
+		if (opt.peek)
+			configstream << L"; nopeek=enable" << endl;
+		else
+			configstream << L"nopeek=enable" << endl;
 	}
 }
 
@@ -504,6 +520,10 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	else if (arg == L"--with-tray")
 	{
 		hastray = true;
+	}
+	else if (arg == L"--no-peek")
+	{
+		opt.peek = false;
 	}
 }
 
@@ -673,6 +693,14 @@ void RefreshMenu()
 	else {
 		CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_UNCHECKED);
 	}
+
+	if (!opt.peek)
+	{
+		CheckMenuItem(popup, IDM_PEEK, MF_BYCOMMAND | MF_CHECKED);
+	}
+	else {
+		CheckMenuItem(popup, IDM_PEEK, MF_BYCOMMAND | MF_UNCHECKED);
+	}
 }
 
 void initTray(HWND parent)
@@ -759,6 +787,18 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 	return true;
 }
 
+void HidePeek()
+{
+	if (!opt.peek)
+	{
+		// Hide
+	}
+	else
+	{
+		// Show
+	}
+}
+
 LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 
@@ -802,6 +842,10 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			case IDM_DYNAMICSTART:
 				opt.dynamicstart = !opt.dynamicstart;
 				break;
+			case IDM_PEEK:
+				opt.peek = !opt.peek;
+				HidePeek();
+				break;
 			case IDM_AUTOSTART: // TODO: Use UWP Apis
 				if (RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
 				{
@@ -824,6 +868,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 	{
 		RefreshHandles();
 		initTray(tray_hwnd);
+		HidePeek();
 	}
 	else if (message == NEW_TTB_INSTANCE) {
 		shouldsaveconfig = DoNotSave;
@@ -975,6 +1020,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 												// delay between when you start the
 												// program and when the taskbar goes blurry
 	}
+	HidePeek();
 	WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
 
 	while (run) {
