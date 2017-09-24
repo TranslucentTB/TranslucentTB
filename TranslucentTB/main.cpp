@@ -62,7 +62,7 @@ struct OPTIONS
 	int color;
 	bool dynamicws;
 	bool dynamicstart;
-	bool peek;
+	bool no_peek;
 } opt;
 
 enum TASKBARSTATE { Normal, WindowMaximised, StartMenuOpen }; // Create a state to store all 
@@ -355,7 +355,7 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		if (value == L"true" ||
 			value == L"enable")
 		{
-			opt.peek = false;
+			opt.no_peek = true;
 		}
 	}
 }
@@ -450,7 +450,7 @@ void SaveConfigFile()
 			configstream << L"no-tray=enable" << endl;
 		configstream << endl;
 		configstream << L"; Hides the Aero Peek button" << endl;
-		if (opt.peek)
+		if (!opt.no_peek)
 			configstream << L"; nopeek=enable" << endl;
 		else
 			configstream << L"nopeek=enable" << endl;
@@ -523,7 +523,7 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	}
 	else if (arg == L"--no-peek")
 	{
-		opt.peek = false;
+		opt.no_peek = true;
 	}
 }
 
@@ -694,7 +694,7 @@ void RefreshMenu()
 		CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_UNCHECKED);
 	}
 
-	if (!opt.peek)
+	if (opt.no_peek)
 	{
 		CheckMenuItem(popup, IDM_PEEK, MF_BYCOMMAND | MF_CHECKED);
 	}
@@ -789,7 +789,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 
 void HidePeek()
 {
-	if (!opt.peek)
+	if (opt.no_peek)
 	{
 		// Hide
 	}
@@ -843,7 +843,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				opt.dynamicstart = !opt.dynamicstart;
 				break;
 			case IDM_PEEK:
-				opt.peek = !opt.peek;
+				opt.no_peek = !opt.no_peek;
 				HidePeek();
 				break;
 			case IDM_AUTOSTART: // TODO: Use UWP Apis
