@@ -789,14 +789,22 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 
 void HidePeek()
 {
+	HWND _taskbar = FindWindow(L"Shell_TrayWnd", NULL);
+	HWND _tray = FindWindowEx(_taskbar, NULL, L"TrayNotifyWnd", NULL);
+	HWND _peek = FindWindowEx(_tray, NULL, L"TrayShowDesktopButtonWClass", NULL);
+
+	int _CmdShow;
+
 	if (opt.no_peek)
 	{
-		// Hide
+		_CmdShow = SW_HIDE;
 	}
 	else
 	{
-		// Show
+		_CmdShow = SW_SHOWNORMAL; // Using SW_SHOW causes weird layout changes, and causes the button to reappear only after opening the tray.
 	}
+
+	ShowWindow(_peek, _CmdShow);
 }
 
 LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
