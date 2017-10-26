@@ -351,7 +351,7 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		if (value == L"true" ||
 			value == L"enable")
 		{
-			opt.no_peek = true;
+			opt.peek = false;
 		}
 	}
 }
