@@ -59,7 +59,7 @@ struct OPTIONS
 	bool dynamicws;
 	bool dynamicstart;
 	bool peek;
-	bool tray;
+	bool tray = true;
 } opt;
 
 enum TASKBARSTATE { Normal, WindowMaximised, StartMenuOpen }; // Create a state to store all
@@ -789,18 +789,7 @@ void HidePeek()
 	HWND _tray = FindWindowEx(_taskbar, NULL, L"TrayNotifyWnd", NULL);
 	HWND _peek = FindWindowEx(_tray, NULL, L"TrayShowDesktopButtonWClass", NULL);
 
-	int _CmdShow;
-
-	if (!opt.peek)
-	{
-		_CmdShow = SW_HIDE;
-	}
-	else
-	{
-		_CmdShow = SW_SHOWNORMAL; // Using SW_SHOW causes weird layout changes, and causes the button to reappear only after opening the tray.
-	}
-
-	ShowWindow(_peek, _CmdShow);
+	ShowWindow(_peek, opt.peek ? SW_SHOWNORMAL : SW_HIDE); // Using SW_SHOW causes weird layout changes, and causes the button to reappear only after opening the tray.
 }
 
 LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -1042,7 +1031,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 	//Virtual Desktop stuff
 	if (FAILED(::CoInitialize(NULL))) { OutputDebugStringW(L"Initialization of COM failed, VirtualDesktopManager will probably fail too.\n"); }
 	HRESULT desktop_success = ::CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, (void **)&desktop_manager);
-	if (FAILED(desktop_success)) { OutputDebugStringW(L"Initialization of VirtualDesktopManager failed\n"); }
+	if (FAILED(desktop_success)) { OutputDebugStringW(L"Initialization of VirtualDesktopManager failed, dynamic windows will not support Windows virtual desktops.\n"); }
 
 	RefreshHandles();
 	if (opt.dynamicws)
