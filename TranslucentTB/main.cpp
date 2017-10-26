@@ -962,8 +962,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 
 	if (FAILED(SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_DEFAULT, NULL, &localAppData)))
 	{
-		MessageBox(NULL, L"Failed to get LocalAppData folder location!\n\nProgram will exit.", L"Fatal error", MB_ICONERROR | MB_OK);
-		exit(1);
+		MessageBox(NULL, L"Failed to get LocalAppData folder location!\n\nProgram will exit.", L"TranslucentTB - Fatal error", MB_ICONERROR | MB_OK);
+		return 1;
 	}
 
 	TCHAR configFolder[MAX_PATH];

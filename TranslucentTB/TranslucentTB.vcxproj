@@ -145,7 +145,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Label="Globals">
     <Link>
-      <AdditionalDependencies>user32.lib;advapi32.lib;shell32.lib;ole32.lib;shcore.lib;shlwapi.lib</AdditionalDependencies>
+      <AdditionalDependencies>advapi32.lib;comctl32.lib;ole32.lib;shcore.lib;shell32.lib;shlwapi.lib;user32.lib</AdditionalDependencies>
+      <AdditionalManifestDependencies>"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'"</AdditionalManifestDependencies>
     </Link>
     <ClCompile>
       <AdditionalUsingDirectories>%VCIDEInstallDir%\vcpackages;%WindowsSdkDir%\UnionMetadata</AdditionalUsingDirectories>
