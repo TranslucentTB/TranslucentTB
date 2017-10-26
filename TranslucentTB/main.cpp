@@ -27,7 +27,6 @@ const static LPCWSTR singleProcName = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
 
 //needed for tray exit
 bool run = true;
-bool hastray = true;
 
 // holds the alpha channel value between 0 or 255,
 // defaults to -1 (not set).
@@ -59,10 +58,11 @@ struct OPTIONS
 	int color;
 	bool dynamicws;
 	bool dynamicstart;
-	bool no_peek;
+	bool peek;
+	bool tray;
 } opt;
 
-enum TASKBARSTATE { Normal, WindowMaximised, StartMenuOpen }; // Create a state to store all 
+enum TASKBARSTATE { Normal, WindowMaximised, StartMenuOpen }; // Create a state to store all
 															  // states of the Taskbar
 			// Normal           | Proceed as normal. If no dynamic options are set, act as it says in opt.taskbar_appearance
 			// WindowMaximised  | There is a window which is maximised on the monitor this HWND is in. Display as blurred.
@@ -88,7 +88,7 @@ const int ACCENT_ENABLE_GRADIENT = 1; // Makes the taskbar a solid color specifi
 const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2; // Makes the taskbar a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
 const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry overlay. nColor is same as above.
 const int ACCENT_ENABLE_TINTED = 5; // This is not a real state. We will handle it later.
-const int ACCENT_NORMAL_GRADIENT = 6; // Another fake value, handles the 
+const int ACCENT_NORMAL_GRADIENT = 6; // Another fake value, handles the
 unsigned int WM_TASKBARCREATED;
 unsigned int NEW_TTB_INSTANCE;
 int DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND; // State to activate when d-ws is enabled
@@ -123,10 +123,9 @@ void SetWindowBlur(HWND hWnd, int appearance = 0) // `appearance` can be 0, whic
 		WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) }; // WCA_ACCENT_POLICY=19
 		SetWindowCompositionAttribute(hWnd, &data);
 	}
-
 }
 
-#pragma endregion 
+#pragma endregion
 
 #pragma region IO help
 
@@ -141,18 +140,18 @@ bool file_exists(std::wstring path)
 #pragma region command line
 void PrintHelp()
 {
-	// BUG - 
+	// BUG -
 	// For some reason, when launching this program in cmd.exe, it won't properly "notice"
 	// when the program has exited, and will not automatically write a new prompt to the console.
 	// Instead of printing the current directory as usual before it waits for a new command,
 	// it doesn't print anything, leading to a cluttered console.
-	// It's even worse in Powershell, where it actually WILL print the PS prompt before waiting for 
-	// a new command, but it does so on the line after "./TranslucentTB.exe --help", overwriting the 
+	// It's even worse in Powershell, where it actually WILL print the PS prompt before waiting for
+	// a new command, but it does so on the line after "./TranslucentTB.exe --help", overwriting the
 	// first line of output from this function, and gradually overwriting the following lines as you
 	// press enter. The PS shell just doesn't notice that anything gets printed to the console, and
-	// therefore it prints the PS prompt over this output instead of after. I don't know of any 
+	// therefore it prints the PS prompt over this output instead of after. I don't know of any
 	// solution to this, but I expect that setting the project type to SUBSYSTEM:CONSOLE would solve
-	// those issues. Again - I think a help file would be the best solution, so I'll do that in my 
+	// those issues. Again - I think a help file would be the best solution, so I'll do that in my
 	// next commit.
 
 	BOOL hasconsole = true;
@@ -259,7 +258,7 @@ void add_to_startup()
 	std::wstring unsafePath = path;
 	std::wstring progPath = L"\"" + unsafePath + L"\"";
 	HKEY hkey = NULL;
-	LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey); //Creates a key       
+	LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey); //Creates a key
 	LONG status = RegSetValueEx(hkey, L"TranslucentTB", 0, REG_SZ, (BYTE *)progPath.c_str(), (DWORD)((progPath.size() + 1) * sizeof(wchar_t)));
 }
 
@@ -316,7 +315,7 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 			value = value.substr(1, value.length() - 1);
 
 		size_t numchars = 0;
-		// heh make sure we don't run into overflow errors 
+		// heh make sure we don't run into overflow errors
 		// TODO use proper range here and check for overflows. Write to logfile and warn user of error.
 		unsigned long long parsed = std::stoull(value, &numchars, 16);
 
@@ -344,7 +343,7 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		if (value == L"true" ||
 			value == L"enable")
 		{
-			hastray = false;
+			opt.tray = false;
 		}
 	}
 	else if (arg == L"nopeek")
@@ -441,13 +440,13 @@ void SaveConfigFile(std::wstring configfile)
 		configstream << L"opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << L"    ; A value in the range 0 to 255." << endl;
 		configstream << endl;
 		configstream << L"; If this is enabled, there will be no tray icon" << endl;
-		if (hastray)
+		if (opt.tray)
 			configstream << L"; no-tray=enable" << endl;
 		else
 			configstream << L"no-tray=enable" << endl;
 		configstream << endl;
 		configstream << L"; Hides the Aero Peek button" << endl;
-		if (!opt.no_peek)
+		if (opt.peek)
 			configstream << L"; nopeek=enable" << endl;
 		else
 			configstream << L"nopeek=enable" << endl;
@@ -512,15 +511,15 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	}
 	else if (arg == L"--no-tray")
 	{
-		hastray = false;
+		opt.tray = false;
 	}
 	else if (arg == L"--with-tray")
 	{
-		hastray = true;
+		opt.tray = true;
 	}
 	else if (arg == L"--no-peek")
 	{
-		opt.no_peek = true;
+		opt.peek = false;
 	}
 }
 
@@ -691,7 +690,7 @@ void RefreshMenu()
 		CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_UNCHECKED);
 	}
 
-	if (opt.no_peek)
+	if (!opt.peek)
 	{
 		CheckMenuItem(popup, IDM_PEEK, MF_BYCOMMAND | MF_CHECKED);
 	}
@@ -702,7 +701,7 @@ void RefreshMenu()
 
 void initTray(HWND parent)
 {
-	if (hastray)
+	if (opt.tray)
 	{
 		Tray.cbSize = sizeof(Tray);
 		Tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
@@ -792,7 +791,7 @@ void HidePeek()
 
 	int _CmdShow;
 
-	if (opt.no_peek)
+	if (!opt.peek)
 	{
 		_CmdShow = SW_HIDE;
 	}
@@ -806,7 +805,6 @@ void HidePeek()
 
 LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-
 	switch (message)
 	{
 	case WM_CLOSE:
@@ -848,7 +846,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				opt.dynamicstart = !opt.dynamicstart;
 				break;
 			case IDM_PEEK:
-				opt.no_peek = !opt.no_peek;
+				opt.peek = !opt.peek;
 				HidePeek();
 				break;
 			case IDM_AUTOSTART: // TODO: Use UWP Apis
@@ -884,8 +882,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 
 void SetTaskbarBlur()
 {
-	// std::cout << opt.dynamicws << std::endl;	
-
+	// std::cout << opt.dynamicws << std::endl;
 
 	if (counter >= 10)   // Change this if you want to change the time it takes for the program to update
 	{                   // 100 = 1 second; we use 10, because the difference is less noticeable and it has
@@ -939,7 +936,6 @@ void SetTaskbarBlur()
 		else if (taskbar.second.state == Normal) {
 			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
 		}
-
 	}
 	counter++;
 }
@@ -953,7 +949,6 @@ bool singleProc()
 	ev = CreateEvent(NULL, TRUE, FALSE, singleProcName);
 	if (GetLastError() == ERROR_ALREADY_EXISTS)
 	{
-
 		return false;
 	}
 	return true;
@@ -985,7 +980,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 	HMODULE hModule = GetModuleHandle(NULL);
 	GetModuleFileName(hModule, exeFolder, MAX_PATH);
 	PathRemoveFileSpec(exeFolder);
-	
+
 	PathCombine(stockConfigFile, exeFolder, L"config.cfg");
 	PathCombine(stockExcludeFile, exeFolder, L"dynamic-ws-exclude.csv");
 
@@ -1073,7 +1068,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 		SaveConfigFile(configFile);
 
 	opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
-	opt.no_peek = false;
+	opt.peek = true;
 	HidePeek();
 	SetTaskbarBlur();
 	CloseHandle(ev);
