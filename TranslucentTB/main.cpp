@@ -644,12 +644,12 @@ HWND tray_hwnd;
 
 BOOL CheckPopupItem(UINT item_to_check, BOOL state)
 {
-	return CheckMenuItem(popup, item_to_check, MF_BYCOMMAND | state ? MF_CHECKED : MF_UNCHECKED);
+	return CheckMenuItem(popup, item_to_check, MF_BYCOMMAND | (state ? MF_CHECKED : MF_UNCHECKED));
 }
 
 void RefreshMenu()
 {
-	UINT radio_to_check;
+	UINT radio_to_check = NULL;
 
 	if ((!opt.dynamicws && opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND) ||
 		(opt.dynamicws && DYNAMIC_WS_STATE == ACCENT_ENABLE_BLURBEHIND))
@@ -668,7 +668,7 @@ void RefreshMenu()
 	}
 	else
 	{
-		// TODO
+		OutputDebugString(L"Unable to determine which radio item to check!");
 	}
 
 	CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, radio_to_check, MF_BYCOMMAND);
@@ -923,7 +923,7 @@ bool singleProc()
 	return true;
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
+int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ LPSTR pCmdLine, _In_ int nCmdShow)
 {
 	if (FAILED(SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE))) { OutputDebugStringW(L"Per-monitor DPI scaling failed\n"); }
 
@@ -955,7 +955,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 
 	if (!PathFileExists(configFolder))
 	{
-		// First run experience
+		// TODO: First run experience
 		CreateDirectory(configFolder, NULL);
 	}
 
