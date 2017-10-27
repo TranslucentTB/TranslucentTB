@@ -644,34 +644,55 @@ HWND tray_hwnd;
 
 BOOL CheckPopupItem(UINT item_to_check, BOOL state)
 {
-	return CheckMenuItem(popup, item_to_check, MF_BYCOMMAND | (state ? MF_CHECKED : MF_UNCHECKED));
+	return CheckMenuItem(popup, item_to_check, MF_BYCOMMAND | (state ? MF_CHECKED : MF_UNCHECKED) | MF_ENABLED);
 }
 
 void RefreshMenu()
 {
-	UINT radio_to_check = NULL;
+	UINT radio_to_check_regular = NULL;
+	UINT radio_to_check_dynamic = NULL;
 
-	if ((!opt.dynamicws && opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND) ||
-		(opt.dynamicws && DYNAMIC_WS_STATE == ACCENT_ENABLE_BLURBEHIND))
+	if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
 	{
-		radio_to_check = IDM_BLUR;
+		radio_to_check_regular = IDM_BLUR;
 	}
-	else if ((!opt.dynamicws && opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT) ||
-		(opt.dynamicws && DYNAMIC_WS_STATE == ACCENT_ENABLE_TINTED))
+	else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
 	{
-		radio_to_check = IDM_CLEAR;
+		radio_to_check_regular = IDM_CLEAR;
 	}
-	else if ((!opt.dynamicws && opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT) ||
-		(opt.dynamicws && DYNAMIC_WS_STATE == ACCENT_ENABLE_GRADIENT))
+	else if (opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT)
 	{
-		radio_to_check = IDM_NORMAL;
+		radio_to_check_regular = IDM_NORMAL;
 	}
 	else
 	{
-		OutputDebugString(L"Unable to determine which radio item to check!");
+		OutputDebugString(L"Unable to determine which radio item to check for regular state!");
 	}
 
-	CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, radio_to_check, MF_BYCOMMAND);
+	if (DYNAMIC_WS_STATE == ACCENT_ENABLE_BLURBEHIND)
+	{
+		radio_to_check_dynamic = IDM_DYNAMICWS_BLUR;
+	}
+	else if (DYNAMIC_WS_STATE == ACCENT_ENABLE_TINTED)
+	{
+		radio_to_check_dynamic = IDM_DYNAMICWS_CLEAR;
+	}
+	else if (DYNAMIC_WS_STATE == ACCENT_ENABLE_GRADIENT)
+	{
+		radio_to_check_dynamic = IDM_DYNAMICWS_NORMAL;
+	}
+	else
+	{
+		OutputDebugString(L"Unable to determine which radio item to check for dynamic state!");
+	}
+
+	CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, radio_to_check_regular, MF_BYCOMMAND);
+	CheckMenuRadioItem(popup, IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_NORMAL, radio_to_check_dynamic, MF_BYCOMMAND);
+
+	INT items_to_enable[] = { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL };
+	for (INT item : items_to_enable)
+		EnableMenuItem(popup, item, MF_BYCOMMAND | (opt.dynamicws ? MF_ENABLED : MF_GRAYED));
+
 	CheckPopupItem(IDM_DYNAMICWS, opt.dynamicws);
 	CheckPopupItem(IDM_DYNAMICSTART, opt.dynamicstart);
 	CheckPopupItem(IDM_AUTOSTART, RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS);
@@ -789,27 +810,26 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			switch (tray) // TODO: Add menu items for colors, and one to open config file locations, and one to reset ApplicationFrameHost (after reset if there is still a bad window, show details to help in bug report)
 			{
 			case IDM_BLUR:
-				if (opt.dynamicws)
-					DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND;
-				else
-					opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
 				break;
 			case IDM_CLEAR:
-				if (opt.dynamicws)
-					DYNAMIC_WS_STATE = ACCENT_ENABLE_TINTED;
-				else
-					opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 				break;
 			case IDM_NORMAL:
-				if (opt.dynamicws)
-					DYNAMIC_WS_STATE = ACCENT_ENABLE_GRADIENT;
-				else
-					opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
+				opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
 				break;
 			case IDM_DYNAMICWS:
-				DYNAMIC_WS_STATE = opt.taskbar_appearance;
 				opt.dynamicws = !opt.dynamicws;
 				EnumWindows(&EnumWindowsProcess, NULL);
+				break;
+			case IDM_DYNAMICWS_BLUR:
+				DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND;
+				break;
+			case IDM_DYNAMICWS_CLEAR:
+				DYNAMIC_WS_STATE = ACCENT_ENABLE_TINTED;
+				break;
+			case IDM_DYNAMICWS_NORMAL:
+				DYNAMIC_WS_STATE = ACCENT_ENABLE_GRADIENT;
 				break;
 			case IDM_DYNAMICSTART:
 				opt.dynamicstart = !opt.dynamicstart;
