@@ -94,7 +94,7 @@ unsigned int NEW_TTB_INSTANCE;
 int DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND; // State to activate when d-ws is enabled
 std::map<HWND, TASKBARPROPERTIES> taskbars; // Create a map for all taskbars
 
-IVirtualDesktopManager *desktop_manager;
+IVirtualDesktopManager *desktop_manager = NULL;
 
 typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
 static pSetWindowCompositionAttribute SetWindowCompositionAttribute = (pSetWindowCompositionAttribute)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowCompositionAttribute");
@@ -740,8 +740,9 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 		WINDOWPLACEMENT result = {};
 		::GetWindowPlacement(hWnd, &result);
 		if (result.showCmd == SW_MAXIMIZE) {
-			BOOL on_current_desktop;
-			desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
+			BOOL on_current_desktop = TRUE;
+			if (desktop_manager)
+				desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
 			if (IsWindowVisible(hWnd) && on_current_desktop)
 			{
 				if (!isBlacklisted(hWnd))
