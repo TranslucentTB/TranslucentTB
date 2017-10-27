@@ -642,61 +642,40 @@ HMENU menu;
 NOTIFYICONDATA Tray;
 HWND tray_hwnd;
 
+BOOL CheckPopupItem(UINT item_to_check, BOOL state)
+{
+	return CheckMenuItem(popup, item_to_check, MF_BYCOMMAND | state ? MF_CHECKED : MF_UNCHECKED);
+}
+
 void RefreshMenu()
 {
+	UINT radio_to_check;
+
 	if ((!opt.dynamicws && opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND) ||
 		(opt.dynamicws && DYNAMIC_WS_STATE == ACCENT_ENABLE_BLURBEHIND))
 	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, IDM_BLUR, MF_BYCOMMAND);
+		radio_to_check = IDM_BLUR;
 	}
 	else if ((!opt.dynamicws && opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT) ||
 		(opt.dynamicws && DYNAMIC_WS_STATE == ACCENT_ENABLE_TINTED))
 	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, IDM_CLEAR, MF_BYCOMMAND);
+		radio_to_check = IDM_CLEAR;
 	}
 	else if ((!opt.dynamicws && opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT) ||
 		(opt.dynamicws && DYNAMIC_WS_STATE == ACCENT_ENABLE_GRADIENT))
 	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, IDM_NORMAL, MF_BYCOMMAND);
+		radio_to_check = IDM_NORMAL;
 	}
 	else
 	{
 		// TODO
 	}
 
-	if (opt.dynamicws)
-	{
-		CheckMenuItem(popup, IDM_DYNAMICWS, MF_BYCOMMAND | MF_CHECKED);
-	}
-	else
-	{
-		CheckMenuItem(popup, IDM_DYNAMICWS, MF_BYCOMMAND | MF_UNCHECKED);
-	}
-
-	if (opt.dynamicstart)
-	{
-		CheckMenuItem(popup, IDM_DYNAMICSTART, MF_BYCOMMAND | MF_CHECKED);
-	}
-	else
-	{
-		CheckMenuItem(popup, IDM_DYNAMICSTART, MF_BYCOMMAND | MF_UNCHECKED);
-	}
-
-	if (RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
-	{
-		CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_CHECKED);
-	}
-	else {
-		CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_UNCHECKED);
-	}
-
-	if (!opt.peek)
-	{
-		CheckMenuItem(popup, IDM_PEEK, MF_BYCOMMAND | MF_CHECKED);
-	}
-	else {
-		CheckMenuItem(popup, IDM_PEEK, MF_BYCOMMAND | MF_UNCHECKED);
-	}
+	CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, radio_to_check, MF_BYCOMMAND);
+	CheckPopupItem(IDM_DYNAMICWS, opt.dynamicws);
+	CheckPopupItem(IDM_DYNAMICSTART, opt.dynamicstart);
+	CheckPopupItem(IDM_AUTOSTART, RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS);
+	CheckPopupItem(IDM_PEEK, !opt.peek);
 }
 
 void initTray(HWND parent)
