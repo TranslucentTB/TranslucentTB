@@ -52,17 +52,6 @@ struct WINCOMPATTRDATA
 	ULONG ulDataSize;
 };
 
-struct OPTIONS
-{
-	int taskbar_appearance;
-	int color;
-	bool dynamicws;
-	int dynamic_ws_state = ACCENT_ENABLE_BLURBEHIND; // State to activate when d-ws is enabled
-	bool dynamicstart;
-	bool peek;
-	bool tray = true;
-} opt;
-
 enum TASKBARSTATE { Normal, WindowMaximised, StartMenuOpen }; // Create a state to store all
 															  // states of the Taskbar
 			// Normal           | Proceed as normal. If no dynamic options are set, act as it says in opt.taskbar_appearance
@@ -93,6 +82,17 @@ const int ACCENT_NORMAL_GRADIENT = 6; // Another fake value, handles the
 unsigned int WM_TASKBARCREATED;
 unsigned int NEW_TTB_INSTANCE;
 std::map<HWND, TASKBARPROPERTIES> taskbars; // Create a map for all taskbars
+
+struct OPTIONS
+{
+	int taskbar_appearance;
+	int color;
+	bool dynamicws;
+	int dynamic_ws_state = ACCENT_ENABLE_BLURBEHIND; // State to activate when d-ws is enabled
+	bool dynamicstart;
+	bool peek;
+	bool tray = true;
+} opt;
 
 IVirtualDesktopManager *desktop_manager = NULL;
 
