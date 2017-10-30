@@ -789,8 +789,14 @@ void HidePeek()
 	HWND _taskbar = FindWindow(L"Shell_TrayWnd", NULL);
 	HWND _tray = FindWindowEx(_taskbar, NULL, L"TrayNotifyWnd", NULL);
 	HWND _peek = FindWindowEx(_tray, NULL, L"TrayShowDesktopButtonWClass", NULL);
+	HWND _overflow = FindWindowEx(_tray, NULL, L"Button", NULL);
 
-	ShowWindow(_peek, opt.peek ? SW_SHOWNORMAL : SW_HIDE); // Using SW_SHOW causes weird layout changes, and causes the button to reappear only after opening the tray.
+	ShowWindow(_peek, opt.peek ? SW_SHOWNORMAL : SW_HIDE);
+
+	// This is a really terrible hack, but it's the only way I found to make the changes reflect instantly.
+	// Toggles the overflow area popup twice. Nealy imperceptible.
+	SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
+	SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
 }
 
 LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
