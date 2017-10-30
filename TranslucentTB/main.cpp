@@ -794,7 +794,7 @@ void HidePeek()
 	ShowWindow(_peek, opt.peek ? SW_SHOWNORMAL : SW_HIDE);
 
 	// This is a really terrible hack, but it's the only way I found to make the changes reflect instantly.
-	// Toggles the overflow area popup twice. Nealy imperceptible.
+	// Toggles the overflow area popup twice. Nearly imperceptible.
 	SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
 	SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
 }
