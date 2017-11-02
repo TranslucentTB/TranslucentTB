@@ -12,7 +12,7 @@ You can see examples of the customizations you can make in the image below:
 ## Add to Startup
 
 To add TranslucentTB to startup, run the application through the command line with `TranslucentTB.exe --startup` to automatically add it to the Windows Registry and thus make it start automatically at subsequent boots.  
-It also possible to do so via the tray icon's context menu.
+It's also possible to do so via the tray icon's context menu.
 
 ## Features
 TranslucentTB supports multiple taskbar states and dynamic taskbar states.
@@ -26,7 +26,7 @@ Dynamic taskbar states (these can be used together):
  - Dynamic Window States (dynamic-ws), which will make the taskbar blurred when a window is maximised on the current monitor and transparent otherwise.
  - Dynamic Start Menu (dynamic-sm), which will make your taskbar match the system theme when the Start Menu is open. Does not change the Start Menu.
 
-TranslucentTB also supports custom tints, which make your taskbar any color you want.
+TranslucentTB also supports custom tints, which makes your taskbar any color you want.
 
 You can see it in action [here](https://gfycat.com/EverlastingCreamyIlladopsis) (Thanks @Gunny123!).
 
