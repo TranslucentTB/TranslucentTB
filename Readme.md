@@ -26,7 +26,7 @@ Dynamic taskbar states (these can be used together):
  - Dynamic Window States (dynamic-ws), which will make the taskbar blurred when a window is maximised on the current monitor and transparent otherwise.
  - Dynamic Start Menu (dynamic-sm), which will make your taskbar match the system theme when the Start Menu is open. Does not change the Start Menu.
 
-TranslucentTB also supports custom tints, which make your taskbar any color you want.
+TranslucentTB also supports custom tints, which makes your taskbar any color you want.
 
 You can see it in action [here](https://gfycat.com/EverlastingCreamyIlladopsis) (Thanks @Gunny123!).
 
