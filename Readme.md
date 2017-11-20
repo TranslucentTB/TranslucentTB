@@ -35,7 +35,7 @@ You can see it in action [here](https://gfycat.com/EverlastingCreamyIlladopsis) 
 
 ## Download
 You can download the program (prebuilt executables and source snapshots) [via the releases tab](https://github.com/ethanhs/TranslucentTB/releases).
-If you want to get the latest bleedging edge build, you can grab it over at the [AppVeyor artifacts](https://ci.appveyor.com/project/charlesmilette/translucenttb/build/artifacts). Note that these build may not work, or include features that are partially complete. Use at your own risk.
+If you want to get the latest bleedging edge build, you can grab it over at the [AppVeyor artifacts](https://ci.appveyor.com/project/sylveon/translucenttb/build/artifacts). Note that these build may not work, or include features that are partially complete. Use at your own risk.
 
 ## Security
 Some antiviruses are over eager, so they might flag this program as malicious. IT IS NOT! Over 50 thousand users have downloaded this program safely. The source is open, you can compile yourself, and I welcome any and all security reviews.
