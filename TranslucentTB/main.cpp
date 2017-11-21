@@ -973,7 +973,7 @@ bool singleProc()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
 {
 	HRESULT dpi_success = SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
-	if (!dpi_success) { OutputDebugStringW(L"Per-monitor DPI scaling failed"); }
+	if (FAILED(dpi_success)) { OutputDebugStringW(L"Per-monitor DPI scaling failed"); return 1; }
 
 	ParseCmdOptions(true); // Command line argument settings, config file only
 	ParseConfigFile(L"config.cfg"); // Config file settings
@@ -1012,7 +1012,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 	//Virtual Desktop stuff
 	::CoInitialize(NULL);
 	HRESULT desktop_success = ::CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, (void **)&desktop_manager);
-	if (!desktop_success) { OutputDebugStringW(L"Initialization of VirtualDesktopManager failed"); }
+	if (FAILED(desktop_success)) { OutputDebugStringW(L"Initialization of VirtualDesktopManager failed"); return 1; }
 
 	RefreshHandles();
 	if (opt.dynamicws)
