@@ -41,8 +41,8 @@ enum ACCENTSTATE {                             // Values passed to SetWindowComp
 	ACCENT_ENABLE_BLURBEHIND = 3,              // Use a tinted blurry overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
 
 	ACCENT_FOLLOW_OPT = 149,                   // (Fake value) Respect what defined in opt.taskbar_appearance
-	ACCENT_ENABLE_TINTED = 150,                // (Fake value) We will handle it later.
-	ACCENT_NORMAL_GRADIENT = 151               // (Fake value) Another fake value, handles the
+	ACCENT_ENABLE_TINTED = 150,                // (Fake value) Dynamic windows tinted
+	ACCENT_NORMAL_GRADIENT = 151               // (Fake value) Regular taskbar appearance
 };
 
 #pragma endregion
@@ -98,6 +98,7 @@ struct RUNTIME                                                                 /
 	const LPCWSTR guid = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";              // Used to prevent two instances running at the same time
 	HMENU popup;                                                               // Tray icon context menu
 	int opacity;                                                               // Opacity override. Later stored in opt.color
+	HANDLE ev;                                                                 // Handle to an event. Used for uniqueness
 } run;
 
 #pragma endregion
@@ -234,17 +235,17 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		else if (parsed > 255)
 			parsed = 255;
 
-		forcedtransparency = parsed;
+		run.opacity = parsed;
 	}
 	else if (arg == L"peek")
 	{
 		if (value == L"hide")
 		{
-			opt.peek = PEEK_DISABLED;
+			opt.peek = Disabled;
 		}
 		else if (value == L"dynamic")
 		{
-			opt.peek = PEEK_DYNAMIC;
+			opt.peek = Dynamic;
 		}
 	}
 }
@@ -269,9 +270,9 @@ void ParseConfigFile(std::wstring path)
 		ParseSingleConfigOption(key, val);
 	}
 
-	if (forcedtransparency >= 0)
+	if (run.opacity >= 0)
 	{
-		opt.color = (forcedtransparency << 24) +
+		opt.color = (run.opacity << 24) +
 			(opt.color & 0x00FFFFFF);
 	}
 }
@@ -335,9 +336,9 @@ void SaveConfigFile(std::wstring configfile)
 		configstream << L"; If this is enabled, there will be no tray icon" << endl;
 		configstream << endl;
 		configstream << L"; Controls how the Aero Peek button behaves" << endl;
-		if (opt.peek == PEEK_DISABLED)
+		if (opt.peek == Disabled)
 			configstream << L"peek=hide" << endl;
-		else if (opt.peek == PEEK_DYNAMIC)
+		else if (opt.peek == Dynamic)
 			configstream << L"peek=dynamic" << endl;
 		else
 			configstream << L"peek=show" << endl;
@@ -395,19 +396,19 @@ void ParseDWSExcludesFile(std::wstring filename)
 		std::transform(line_lowercase.begin(), line_lowercase.end(), line_lowercase.begin(), tolower);
 		if (line_lowercase.substr(0, 5) == L"class")
 		{
-			IgnoredClassNames = ParseByDelimiter(line, delimiter);
-			IgnoredClassNames.erase(IgnoredClassNames.begin());
+			opt.blacklisted_classes = ParseByDelimiter(line, delimiter);
+			opt.blacklisted_classes.erase(opt.blacklisted_classes.begin());
 		}
 		else if (line_lowercase.substr(0, 5) == L"title" ||
 			line.substr(0, 13) == L"windowtitle")
 		{
-			IgnoredWindowTitles = ParseByDelimiter(line, delimiter);
-			IgnoredWindowTitles.erase(IgnoredWindowTitles.begin());
+			opt.blacklisted_titles = ParseByDelimiter(line, delimiter);
+			opt.blacklisted_titles.erase(opt.blacklisted_titles.begin());
 		}
 		else if (line_lowercase.substr(0, 7) == L"exename")
 		{
-			IgnoredExeNames = ParseByDelimiter(line, delimiter);
-			IgnoredExeNames.erase(IgnoredExeNames.begin());
+			opt.blacklisted_filenames = ParseByDelimiter(line, delimiter);
+			opt.blacklisted_filenames.erase(opt.blacklisted_filenames.begin());
 		}
 	}
 }
@@ -419,17 +420,17 @@ void RefreshHandles()
 	HWND secondtaskbar;
 	TASKBARPROPERTIES _properties;
 
-	taskbars.clear();
-	main_taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
+	run.taskbars.clear();
+	run.main_taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
 
-	_properties.hmon = MonitorFromWindow(main_taskbar, MONITOR_DEFAULTTOPRIMARY);
+	_properties.hmon = MonitorFromWindow(run.main_taskbar, MONITOR_DEFAULTTOPRIMARY);
 	_properties.state = Normal;
-	taskbars.insert(std::make_pair(main_taskbar, _properties));
+	run.taskbars.insert(std::make_pair(run.main_taskbar, _properties));
 	while (secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", NULL))
 	{
 		_properties.hmon = MonitorFromWindow(secondtaskbar, MONITOR_DEFAULTTOPRIMARY);
 		_properties.state = Normal;
-		taskbars.insert(std::make_pair(secondtaskbar, _properties));
+		run.taskbars.insert(std::make_pair(secondtaskbar, _properties));
 	}
 }
 
@@ -443,7 +444,7 @@ HWND tray_hwnd;
 
 bool CheckPopupItem(UINT item_to_check, bool state)
 {
-	return CheckMenuItem(popup, item_to_check, MF_BYCOMMAND | (state ? MF_CHECKED : MF_UNCHECKED) | MF_ENABLED);
+	return CheckMenuItem(run.popup, item_to_check, MF_BYCOMMAND | (state ? MF_CHECKED : MF_UNCHECKED) | MF_ENABLED);
 }
 
 void RefreshMenu()
@@ -477,7 +478,7 @@ void RefreshMenu()
 	{
 		radio_to_check_dynamic = IDM_DYNAMICWS_CLEAR;
 	}
-	else if (opt.dynamic_ws_state == ACCENT_ENABLE_GRADIENT)
+	else if (opt.dynamic_ws_state == ACCENT_NORMAL_GRADIENT)
 	{
 		radio_to_check_dynamic = IDM_DYNAMICWS_NORMAL;
 	}
@@ -488,15 +489,15 @@ void RefreshMenu()
 
 
 
-	if (opt.peek == PEEK_ENABLED)
+	if (opt.peek == Enabled)
 	{
 		radio_to_check_peek = IDM_PEEK;
 	}
-	else if (opt.peek == PEEK_DYNAMIC)
+	else if (opt.peek == Dynamic)
 	{
 		radio_to_check_peek = IDM_DPEEK;
 	}
-	else if (opt.peek == PEEK_DISABLED)
+	else if (opt.peek == Disabled)
 	{
 		radio_to_check_peek = IDM_NOPEEK;
 	}
@@ -505,13 +506,13 @@ void RefreshMenu()
 		OutputDebugString(L"Unable to determine which radio item to check for peek!");
 	}
 
-	CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, radio_to_check_regular, MF_BYCOMMAND);
-	CheckMenuRadioItem(popup, IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_NORMAL, radio_to_check_dynamic, MF_BYCOMMAND);
-	CheckMenuRadioItem(popup, IDM_PEEK, IDM_NOPEEK, radio_to_check_peek, MF_BYCOMMAND);
+	CheckMenuRadioItem(run.popup, IDM_BLUR, IDM_NORMAL, radio_to_check_regular, MF_BYCOMMAND);
+	CheckMenuRadioItem(run.popup, IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_NORMAL, radio_to_check_dynamic, MF_BYCOMMAND);
+	CheckMenuRadioItem(run.popup, IDM_PEEK, IDM_NOPEEK, radio_to_check_peek, MF_BYCOMMAND);
 
 	INT items_to_enable[] = { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL };
 	for (INT item : items_to_enable)
-		EnableMenuItem(popup, item, MF_BYCOMMAND | (opt.dynamicws ? MF_ENABLED : MF_GRAYED));
+		EnableMenuItem(run.popup, item, MF_BYCOMMAND | (opt.dynamicws ? MF_ENABLED : MF_GRAYED));
 
 	CheckPopupItem(IDM_DYNAMICWS, opt.dynamicws);
 	CheckPopupItem(IDM_DYNAMICSTART, opt.dynamicstart);
@@ -550,15 +551,15 @@ bool isBlacklisted(HWND hWnd)
 	std::wstring w_WindowTitle = windowTitle;
 
 	// Check if the different vars are in their respective vectors
-	for (auto & value : IgnoredClassNames)
+	for (auto & value : opt.blacklisted_classes)
 	{
 		if (className == value.c_str()) { return true; }
 	}
-	for (auto & value : IgnoredExeNames)
+	for (auto & value : opt.blacklisted_filenames)
 	{
 		if (exeName == value) { return true; }
 	}
-	for (auto & value : IgnoredWindowTitles)
+	for (auto & value : opt.blacklisted_titles)
 	{
 		if (w_WindowTitle.find(value) != std::wstring::npos)
 		{
@@ -570,9 +571,9 @@ bool isBlacklisted(HWND hWnd)
 
 void TogglePeek(bool status)
 {
-	if (status != cached_peek)
+	if (status != run.cached_peek)
 	{
-		HWND _tray = FindWindowEx(main_taskbar, NULL, L"TrayNotifyWnd", NULL);
+		HWND _tray = FindWindowEx(run.main_taskbar, NULL, L"TrayNotifyWnd", NULL);
 		HWND _peek = FindWindowEx(_tray, NULL, L"TrayShowDesktopButtonWClass", NULL);
 		HWND _overflow = FindWindowEx(_tray, NULL, L"Button", NULL);
 
@@ -583,7 +584,7 @@ void TogglePeek(bool status)
 		SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
 		SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
 
-		cached_peek = status;
+		run.cached_peek = status;
 	}
 }
 
@@ -591,26 +592,25 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 {
 	HMONITOR _monitor;
 
-	if (opt.dynamicws || opt.peek == PEEK_DYNAMIC)
+	if (opt.dynamicws || opt.peek == Dynamic)
 	{
 		WINDOWPLACEMENT result = {};
 		::GetWindowPlacement(hWnd, &result);
 		if (result.showCmd == SW_MAXIMIZE) {
 			BOOL on_current_desktop = true;
-			if (desktop_manager)
-				desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
+			if (run.desktop_manager)
+				run.desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
 			if (IsWindowVisible(hWnd) && on_current_desktop)
 			{
 				if (!isBlacklisted(hWnd))
 				{
 					_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
-					for (auto &taskbar : taskbars)
+					for (auto &taskbar : run.taskbars)
 					{
-						if (taskbar.first == main_taskbar &&
-							taskbar.second.hmon == _monitor &&
-							opt.peek == PEEK_DYNAMIC)
+						if (taskbar.first == run.main_taskbar &&
+							taskbar.second.hmon == _monitor)
 						{
-							should_show_peek = true;
+							run.should_show_peek = true;
 						}
 
 						if (taskbar.second.hmon == _monitor &&
@@ -663,19 +663,19 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				opt.dynamic_ws_state = ACCENT_ENABLE_TINTED;
 				break;
 			case IDM_DYNAMICWS_NORMAL:
-				opt.dynamic_ws_state = ACCENT_ENABLE_GRADIENT;
+				opt.dynamic_ws_state = ACCENT_NORMAL_GRADIENT;
 				break;
 			case IDM_DYNAMICSTART:
 				opt.dynamicstart = !opt.dynamicstart;
 				break;
 			case IDM_PEEK:
-				opt.peek = PEEK_ENABLED;
+				opt.peek = Enabled;
 				break;
 			case IDM_DPEEK:
-				opt.peek = PEEK_DYNAMIC;
+				opt.peek = Dynamic;
 				break;
 			case IDM_NOPEEK:
-				opt.peek = PEEK_DISABLED;
+				opt.peek = Disabled;
 				break;
 			case IDM_AUTOSTART: // TODO: Use UWP Apis
 				if (RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
@@ -689,20 +689,20 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				}
 				break;
 			case IDM_EXIT:
-				run = false;
+				run.run = false;
 				break;
 			}
 			RefreshMenu();
 		}
 	}
-	if (message == WM_TASKBARCREATED) // Unfortunately, WM_TASKBARCREATED is not a constant, so I can't include it in the switch.
+	if (message == run.WM_TASKBARCREATED) // Unfortunately, WM_TASKBARCREATED is not a constant, so I can't include it in the switch.
 	{
 		RefreshHandles();
 		initTray(tray_hwnd);
 	}
-	else if (message == NEW_TTB_INSTANCE) {
-		shouldsaveconfig = DoNotSave;
-		run = false;
+	else if (message == run.NEW_TTB_INSTANCE) {
+		run.should_save_config = DoNotSave;
+		run.run = false;
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
@@ -711,18 +711,18 @@ void SetTaskbarBlur()
 {
 	// std::cout << opt.dynamicws << std::endl;
 
-	if (counter >= 10)   // Change this if you want to change the time it takes for the program to update
+	if (run.counter >= 10)   // Change this if you want to change the time it takes for the program to update
 	{                   // 100 = 1 second; we use 10, because the difference is less noticeable and it has
 						// no large impact on CPU. We can change this if we feel that CPU is more important
 						// than response time.
-		should_show_peek = (opt.peek == PEEK_ENABLED);
+		run.should_show_peek = (opt.peek == Enabled);
 
-		for (auto &taskbar : taskbars)
+		for (auto &taskbar : run.taskbars)
 		{
 			taskbar.second.state = Normal; // Reset taskbar state
 		}
-		if (opt.dynamicws || opt.peek == PEEK_DYNAMIC) {
-			counter = 0;
+		if (opt.dynamicws || opt.peek == Dynamic) {
+			run.counter = 0;
 			EnumWindows(&EnumWindowsProcess, NULL);
 		}
 
@@ -742,7 +742,7 @@ void SetTaskbarBlur()
 				// Detect monitor Start Menu is open on
 				HMONITOR _monitor;
 				_monitor = MonitorFromWindow(foreground, MONITOR_DEFAULTTOPRIMARY);
-				for (auto &taskbar : taskbars)
+				for (auto &taskbar : run.taskbars)
 				{
 					if (taskbar.second.hmon == _monitor)
 					{
@@ -756,7 +756,7 @@ void SetTaskbarBlur()
 		}
 	}
 
-	for (auto const &taskbar : taskbars)
+	for (auto const &taskbar : run.taskbars)
 	{
 		if (taskbar.second.state == WindowMaximised) {
 			SetWindowBlur(taskbar.first, opt.dynamic_ws_state);
@@ -766,17 +766,15 @@ void SetTaskbarBlur()
 			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
 		}
 	}
-	TogglePeek(should_show_peek);
-	counter++;
+	TogglePeek(run.should_show_peek);
+	run.counter++;
 }
 
 #pragma endregion
 
-HANDLE ev;
-
 bool singleProc()
 {
-	ev = CreateEvent(NULL, TRUE, FALSE, singleProcName);
+	run.ev = CreateEvent(NULL, TRUE, FALSE, run.guid);
 	if (GetLastError() == ERROR_ALREADY_EXISTS)
 	{
 		return false;
@@ -832,15 +830,15 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 	ParseConfigFile(configFile); // Config file settings
 	ParseDWSExcludesFile(excludeFile);
 
-	NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");
+	run.NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");
 	if (!singleProc()) {
 		HWND oldInstance = FindWindow(L"TranslucentTB", L"TrayWindow");
-		SendMessage(oldInstance, NEW_TTB_INSTANCE, NULL, NULL);
+		SendMessage(oldInstance, run.NEW_TTB_INSTANCE, NULL, NULL);
 	}
 
 	MSG msg; // for message translation and dispatch
-	popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
-	menu = GetSubMenu(popup, 0);
+	run.popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
+	menu = GetSubMenu(run.popup, 0);
 	WNDCLASSEX wnd = { 0 };
 
 	wnd.hInstance = hInstance;
@@ -868,7 +866,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 
 	//Virtual Desktop stuff
 	if (FAILED(::CoInitialize(NULL))) { OutputDebugStringW(L"Initialization of COM failed, VirtualDesktopManager will probably fail too.\n"); }
-	HRESULT desktop_success = ::CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, (void **)&desktop_manager);
+	HRESULT desktop_success = ::CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, (void **)&run.desktop_manager);
 	if (FAILED(desktop_success)) { OutputDebugStringW(L"Initialization of VirtualDesktopManager failed, dynamic windows will not support Windows virtual desktops.\n"); }
 
 	RefreshHandles();
@@ -878,9 +876,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 												// delay between when you start the
 												// program and when the taskbar goes blurry
 	}
-	WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
+	run.WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
 
-	while (run) {
+	while (run.run) {
 		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
@@ -890,12 +888,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 	}
 	Shell_NotifyIcon(NIM_DELETE, &Tray);
 
-	if (shouldsaveconfig != DoNotSave)
+	if (run.should_save_config != DoNotSave)
 		SaveConfigFile(configFile);
 
 	opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
 	TogglePeek(true);
 	SetTaskbarBlur();
-	CloseHandle(ev);
+	CloseHandle(run.ev);
 	return 0;
 }
