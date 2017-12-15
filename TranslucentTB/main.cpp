@@ -42,7 +42,7 @@ enum ACCENTSTATE {                             // Values passed to SetWindowComp
 
 	ACCENT_FOLLOW_OPT = 149,                   // (Fake value) Respect what defined in opt.taskbar_appearance
 	ACCENT_ENABLE_TINTED = 150,                // (Fake value) Dynamic windows tinted
-	ACCENT_NORMAL_GRADIENT = 151               // (Fake value) Regular taskbar appearance
+	ACCENT_NORMAL_GRADIENT = 151               // (Fake value) Emulate regular taskbar appearance
 };
 
 #pragma endregion
@@ -172,6 +172,8 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		else if (value == L"transparent" ||
 			value == L"translucent")
 			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+		else if (value == L"normal")
+			opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
 	}
 	else if (arg == L"dynamic-ws")
 	{
@@ -195,8 +197,10 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 			opt.dynamicws = true;
 			opt.dynamic_ws_state = ACCENT_ENABLE_GRADIENT;
 		}
-		if (!opt.taskbar_appearance && opt.dynamicws) {
-			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+		else if (value == L"normal")
+		{
+			opt.dynamicws = true;
+			opt.dynamic_ws_state = ACCENT_NORMAL_GRADIENT;
 		}
 	}
 	else if (arg == L"dynamic-start")
@@ -290,37 +294,45 @@ void SaveConfigFile(std::wstring configfile)
 		configstream << L"; ===========================================================================" << endl;
 		configstream << endl;
 
-		configstream << L"; Taskbar appearance: opaque, transparent, or blur (default)." << endl;
+		configstream << L"; Taskbar appearance: opaque, transparent, normal, or blur (default)." << endl;
+
+		configstream << L"accent=";
 
 		if (opt.taskbar_appearance == ACCENT_ENABLE_GRADIENT)
-			configstream << L"accent=opaque" << endl;
+			configstream << L"opaque" << endl;
 		else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
-			configstream << L"accent=transparent" << endl;
+			configstream << L"transparent" << endl;
 		else if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
-			configstream << L"accent=blur" << endl;
+			configstream << L"blur" << endl;
+		else if (opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT)
+			configstream << L"normal" << endl;
 
 		configstream << endl;
 		configstream << L"; Dynamic states: Window States and (WIP) Start Menu" << endl;
-		configstream << L"; dynamic windows: opaque, tint, or blur (default)." << endl;
-		if (!opt.dynamicws)
-			configstream << L"; ";
-
-		if (opt.dynamic_ws_state == ACCENT_ENABLE_BLURBEHIND)
-			configstream << L"dynamic-ws=blur" << endl;
-		else if (opt.dynamic_ws_state == ACCENT_ENABLE_TINTED)
-			configstream << L"dynamic-ws=tint" << endl;
-		else if (opt.dynamic_ws_state == ACCENT_ENABLE_GRADIENT)
-			configstream << L"dynamic-ws=opaque" << endl;
-		else
-			configstream << L"dynamic-ws=enable" << endl;
-
+		configstream << L"; dynamic windows: opaque, tint, normal, or blur (default)." << endl;
 		configstream << L"; dynamic windows can be used in conjunction with a custom color and non-zero opacity!" << endl;
 		configstream << L"; you can also set an accent value, which will represent the state of dynamic windows when there is no window maximised" << endl;
 
-		if (opt.dynamicstart)
-			configstream << L"dynamic-start=enable" << endl;
+		if (!opt.dynamicws)
+			configstream << L"; ";
+
+		configstream << L"dynamic-ws=";
+
+		if (opt.dynamic_ws_state == ACCENT_ENABLE_BLURBEHIND)
+			configstream << L"blur" << endl;
+		else if (opt.dynamic_ws_state == ACCENT_ENABLE_TINTED)
+			configstream << L"tint" << endl;
+		else if (opt.dynamic_ws_state == ACCENT_ENABLE_GRADIENT)
+			configstream << L"opaque" << endl;
+		else if (opt.dynamic_ws_state == ACCENT_NORMAL_GRADIENT)
+			configstream << L"normal" << endl;
 		else
-			configstream << L"; dynamic-start=enable" << endl;
+			configstream << L"enable" << endl;
+
+		if (!opt.dynamicstart)
+			configstream << L"; ";
+
+		configstream << L"dynamic-start=enable" << endl;
 
 		configstream << endl;
 		configstream << L"; Color and opacity of the taskbar." << endl;
@@ -332,8 +344,6 @@ void SaveConfigFile(std::wstring configfile)
 			((opt.color & 0x000000FF) << 16);
 		configstream << L"color=" << hex << bitreversed << L"    ; A color in hexadecimal notation." << endl;
 		configstream << L"opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << L"    ; A value in the range 0 to 255." << endl;
-		configstream << endl;
-		configstream << L"; If this is enabled, there will be no tray icon" << endl;
 		configstream << endl;
 		configstream << L"; Controls how the Aero Peek button behaves" << endl;
 		if (opt.peek == Disabled)
@@ -417,7 +427,7 @@ void ParseDWSExcludesFile(std::wstring filename)
 
 void RefreshHandles()
 {
-	HWND secondtaskbar;
+	HWND secondtaskbar = NULL;
 	TASKBARPROPERTIES _properties;
 
 	run.taskbars.clear();
@@ -465,6 +475,10 @@ void RefreshMenu()
 	{
 		radio_to_check_regular = IDM_NORMAL;
 	}
+	else if (opt.taskbar_appearance == ACCENT_ENABLE_GRADIENT)
+	{
+		radio_to_check_regular = IDM_OPAQUE;
+	}
 	else
 	{
 		OutputDebugString(L"Unable to determine which radio item to check for regular state!");
@@ -481,6 +495,10 @@ void RefreshMenu()
 	else if (opt.dynamic_ws_state == ACCENT_NORMAL_GRADIENT)
 	{
 		radio_to_check_dynamic = IDM_DYNAMICWS_NORMAL;
+	}
+	else if (opt.dynamic_ws_state == ACCENT_ENABLE_GRADIENT)
+	{
+		radio_to_check_dynamic = IDM_DYNAMICWS_OPAQUE;
 	}
 	else
 	{
@@ -506,11 +524,11 @@ void RefreshMenu()
 		OutputDebugString(L"Unable to determine which radio item to check for peek!");
 	}
 
-	CheckMenuRadioItem(run.popup, IDM_BLUR, IDM_NORMAL, radio_to_check_regular, MF_BYCOMMAND);
-	CheckMenuRadioItem(run.popup, IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_NORMAL, radio_to_check_dynamic, MF_BYCOMMAND);
+	CheckMenuRadioItem(run.popup, IDM_BLUR, IDM_OPAQUE, radio_to_check_regular, MF_BYCOMMAND);
+	CheckMenuRadioItem(run.popup, IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_OPAQUE, radio_to_check_dynamic, MF_BYCOMMAND);
 	CheckMenuRadioItem(run.popup, IDM_PEEK, IDM_NOPEEK, radio_to_check_peek, MF_BYCOMMAND);
 
-	INT items_to_enable[] = { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL };
+	INT items_to_enable[] = { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL, IDM_DYNAMICWS_OPAQUE };
 	for (INT item : items_to_enable)
 		EnableMenuItem(run.popup, item, MF_BYCOMMAND | (opt.dynamicws ? MF_ENABLED : MF_GRAYED));
 
@@ -652,9 +670,11 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			case IDM_NORMAL:
 				opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
 				break;
+			case IDM_OPAQUE:
+				opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
+				break;
 			case IDM_DYNAMICWS:
 				opt.dynamicws = !opt.dynamicws;
-				EnumWindows(&EnumWindowsProcess, NULL);
 				break;
 			case IDM_DYNAMICWS_BLUR:
 				opt.dynamic_ws_state = ACCENT_ENABLE_BLURBEHIND;
@@ -664,6 +684,9 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				break;
 			case IDM_DYNAMICWS_NORMAL:
 				opt.dynamic_ws_state = ACCENT_NORMAL_GRADIENT;
+				break;
+			case IDM_DYNAMICWS_OPAQUE:
+				opt.dynamic_ws_state = ACCENT_ENABLE_GRADIENT;
 				break;
 			case IDM_DYNAMICSTART:
 				opt.dynamicstart = !opt.dynamicstart;
@@ -870,7 +893,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 	if (FAILED(desktop_success)) { OutputDebugStringW(L"Initialization of VirtualDesktopManager failed, dynamic windows will not support Windows virtual desktops.\n"); }
 
 	RefreshHandles();
-	if (opt.dynamicws)
+	if (opt.dynamicws || opt.peek == Dynamic)
 	{
 		EnumWindows(&EnumWindowsProcess, NULL); // Putting this here so there isn't a
 												// delay between when you start the
