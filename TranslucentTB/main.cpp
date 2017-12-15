@@ -42,7 +42,7 @@ enum ACCENTSTATE {                             // Values passed to SetWindowComp
 
 	ACCENT_FOLLOW_OPT = 149,                   // (Fake value) Respect what defined in opt.taskbar_appearance
 	ACCENT_ENABLE_TINTED = 150,                // (Fake value) Dynamic windows tinted
-	ACCENT_NORMAL_GRADIENT = 151               // (Fake value) Emulate regular taskbar appearance
+	ACCENT_NORMAL = 151                        // (Fake value) Emulate regular taskbar appearance
 };
 
 #pragma endregion
@@ -125,7 +125,7 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 		}
 		else { // Use the defaults
 			if (opt.dynamic_ws_state == ACCENT_ENABLE_TINTED) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 }; } // dynamic-ws is tint and desktop is shown
-			else if (opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, (int)0xd9000000, 0 }; } // normal gradient color
+			else if (opt.taskbar_appearance == ACCENT_NORMAL) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, (int)0xd9000000, 0 }; } // normal gradient color
 			else { policy = { opt.taskbar_appearance, 2, opt.color, 0 }; }
 		}
 
@@ -170,10 +170,11 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		else if (value == L"opaque")
 			opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
 		else if (value == L"transparent" ||
-			value == L"translucent")
+			value == L"translucent" ||
+			value == L"clear")
 			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 		else if (value == L"normal")
-			opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
+			opt.taskbar_appearance = ACCENT_NORMAL;
 	}
 	else if (arg == L"dynamic-ws")
 	{
@@ -200,7 +201,7 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		else if (value == L"normal")
 		{
 			opt.dynamicws = true;
-			opt.dynamic_ws_state = ACCENT_NORMAL_GRADIENT;
+			opt.dynamic_ws_state = ACCENT_NORMAL;
 		}
 	}
 	else if (arg == L"dynamic-start")
@@ -294,17 +295,17 @@ void SaveConfigFile(std::wstring configfile)
 		configstream << L"; ===========================================================================" << endl;
 		configstream << endl;
 
-		configstream << L"; Taskbar appearance: opaque, transparent, normal, or blur (default)." << endl;
+		configstream << L"; Taskbar appearance: opaque, clear, normal, or blur (default)." << endl;
 
 		configstream << L"accent=";
 
 		if (opt.taskbar_appearance == ACCENT_ENABLE_GRADIENT)
 			configstream << L"opaque" << endl;
 		else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
-			configstream << L"transparent" << endl;
+			configstream << L"clear" << endl;
 		else if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
 			configstream << L"blur" << endl;
-		else if (opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT)
+		else if (opt.taskbar_appearance == ACCENT_NORMAL)
 			configstream << L"normal" << endl;
 
 		configstream << endl;
@@ -324,7 +325,7 @@ void SaveConfigFile(std::wstring configfile)
 			configstream << L"tint" << endl;
 		else if (opt.dynamic_ws_state == ACCENT_ENABLE_GRADIENT)
 			configstream << L"opaque" << endl;
-		else if (opt.dynamic_ws_state == ACCENT_NORMAL_GRADIENT)
+		else if (opt.dynamic_ws_state == ACCENT_NORMAL)
 			configstream << L"normal" << endl;
 		else
 			configstream << L"enable" << endl;
@@ -471,7 +472,7 @@ void RefreshMenu()
 	{
 		radio_to_check_regular = IDM_CLEAR;
 	}
-	else if (opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT)
+	else if (opt.taskbar_appearance == ACCENT_NORMAL)
 	{
 		radio_to_check_regular = IDM_NORMAL;
 	}
@@ -492,7 +493,7 @@ void RefreshMenu()
 	{
 		radio_to_check_dynamic = IDM_DYNAMICWS_CLEAR;
 	}
-	else if (opt.dynamic_ws_state == ACCENT_NORMAL_GRADIENT)
+	else if (opt.dynamic_ws_state == ACCENT_NORMAL)
 	{
 		radio_to_check_dynamic = IDM_DYNAMICWS_NORMAL;
 	}
@@ -668,7 +669,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 				break;
 			case IDM_NORMAL:
-				opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
+				opt.taskbar_appearance = ACCENT_NORMAL;
 				break;
 			case IDM_OPAQUE:
 				opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
@@ -683,7 +684,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				opt.dynamic_ws_state = ACCENT_ENABLE_TINTED;
 				break;
 			case IDM_DYNAMICWS_NORMAL:
-				opt.dynamic_ws_state = ACCENT_NORMAL_GRADIENT;
+				opt.dynamic_ws_state = ACCENT_NORMAL;
 				break;
 			case IDM_DYNAMICWS_OPAQUE:
 				opt.dynamic_ws_state = ACCENT_ENABLE_GRADIENT;
@@ -914,7 +915,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 	if (run.should_save_config != DoNotSave)
 		SaveConfigFile(configFile);
 
-	opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
+	opt.taskbar_appearance = ACCENT_NORMAL;
 	TogglePeek(true);
 	SetTaskbarBlur();
 	CloseHandle(run.ev);
