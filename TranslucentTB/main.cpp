@@ -152,7 +152,6 @@ bool file_exists(std::wstring path)
 
 #pragma endregion
 
-
 #pragma region Configuration
 
 void add_to_startup()
@@ -432,6 +431,8 @@ void ParseDWSExcludesFile(std::wstring filename)
 
 #pragma endregion
 
+#pragma region Utilities
+
 void RefreshHandles()
 {
 	HWND secondtaskbar = NULL;
@@ -451,7 +452,64 @@ void RefreshHandles()
 	}
 }
 
-#pragma region tray
+void TogglePeek(bool status)
+{
+	if (status != run.cached_peek)
+	{
+		HWND _tray = FindWindowEx(run.main_taskbar, NULL, L"TrayNotifyWnd", NULL);
+		HWND _peek = FindWindowEx(_tray, NULL, L"TrayShowDesktopButtonWClass", NULL);
+		HWND _overflow = FindWindowEx(_tray, NULL, L"Button", NULL);
+
+		ShowWindow(_peek, status ? SW_SHOWNORMAL : SW_HIDE);
+
+		// This is a really terrible hack, but it's the only way I found to make the changes reflect instantly.
+		// Toggles the overflow area popup twice. Nearly imperceptible.
+		SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
+		SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
+
+		run.cached_peek = status;
+	}
+}
+
+bool isBlacklisted(HWND hWnd)
+{
+	// Get respective attributes
+	TCHAR className[MAX_PATH];
+	TCHAR exeName_path[MAX_PATH];
+	TCHAR windowTitle[MAX_PATH];
+	GetClassName(hWnd, className, _countof(className));
+	GetWindowText(hWnd, windowTitle, _countof(windowTitle));
+
+	DWORD ProcessId;
+	GetWindowThreadProcessId(hWnd, &ProcessId);
+	HANDLE processhandle = OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId);
+	GetModuleFileNameEx(processhandle, NULL, exeName_path, _countof(exeName_path));
+
+	std::wstring exeName = PathFindFileNameW(exeName_path);
+	std::wstring w_WindowTitle = windowTitle;
+
+	// Check if the different vars are in their respective vectors
+	for (auto & value : opt.blacklisted_classes)
+	{
+		if (className == value.c_str()) { return true; }
+	}
+	for (auto & value : opt.blacklisted_filenames)
+	{
+		if (exeName == value) { return true; }
+	}
+	for (auto & value : opt.blacklisted_titles)
+	{
+		if (w_WindowTitle.find(value) != std::wstring::npos)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+#pragma endregion
+
+#pragma region Tray
 
 #define WM_NOTIFY_TB 3141
 
@@ -558,99 +616,6 @@ void initTray(HWND parent)
 	RefreshMenu();
 }
 
-bool isBlacklisted(HWND hWnd)
-{
-	// Get respective attributes
-	TCHAR className[MAX_PATH];
-	TCHAR exeName_path[MAX_PATH];
-	TCHAR windowTitle[MAX_PATH];
-	GetClassName(hWnd, className, _countof(className));
-	GetWindowText(hWnd, windowTitle, _countof(windowTitle));
-
-	DWORD ProcessId;
-	GetWindowThreadProcessId(hWnd, &ProcessId);
-	HANDLE processhandle = OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId);
-	GetModuleFileNameEx(processhandle, NULL, exeName_path, _countof(exeName_path));
-
-	std::wstring exeName = PathFindFileNameW(exeName_path);
-	std::wstring w_WindowTitle = windowTitle;
-
-	// Check if the different vars are in their respective vectors
-	for (auto & value : opt.blacklisted_classes)
-	{
-		if (className == value.c_str()) { return true; }
-	}
-	for (auto & value : opt.blacklisted_filenames)
-	{
-		if (exeName == value) { return true; }
-	}
-	for (auto & value : opt.blacklisted_titles)
-	{
-		if (w_WindowTitle.find(value) != std::wstring::npos)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-void TogglePeek(bool status)
-{
-	if (status != run.cached_peek)
-	{
-		HWND _tray = FindWindowEx(run.main_taskbar, NULL, L"TrayNotifyWnd", NULL);
-		HWND _peek = FindWindowEx(_tray, NULL, L"TrayShowDesktopButtonWClass", NULL);
-		HWND _overflow = FindWindowEx(_tray, NULL, L"Button", NULL);
-
-		ShowWindow(_peek, status ? SW_SHOWNORMAL : SW_HIDE);
-
-		// This is a really terrible hack, but it's the only way I found to make the changes reflect instantly.
-		// Toggles the overflow area popup twice. Nearly imperceptible.
-		SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
-		SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
-
-		run.cached_peek = status;
-	}
-}
-
-BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
-{
-	HMONITOR _monitor;
-
-	if (opt.dynamicws || opt.peek == Dynamic)
-	{
-		WINDOWPLACEMENT result = {};
-		::GetWindowPlacement(hWnd, &result);
-		if (result.showCmd == SW_MAXIMIZE) {
-			BOOL on_current_desktop = true;
-			if (run.desktop_manager)
-				run.desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
-			if (IsWindowVisible(hWnd) && on_current_desktop)
-			{
-				if (!isBlacklisted(hWnd))
-				{
-					_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
-					for (auto &taskbar : run.taskbars)
-					{
-						if (taskbar.first == run.main_taskbar &&
-							taskbar.second.hmon == _monitor)
-						{
-							run.should_show_peek = true;
-						}
-
-						if (taskbar.second.hmon == _monitor &&
-							taskbar.second.state != StartMenuOpen)
-						{
-							taskbar.second.state = WindowMaximised;
-						}
-					}
-				}
-			}
-		}
-	}
-	return true;
-}
-
 LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
@@ -736,14 +701,54 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
+#pragma endregion
+
+#pragma region Main logic
+
+BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
+{
+	HMONITOR _monitor;
+
+	if (opt.dynamicws || opt.peek == Dynamic)
+	{
+		WINDOWPLACEMENT result = {};
+		::GetWindowPlacement(hWnd, &result);
+		if (result.showCmd == SW_MAXIMIZE) {
+			BOOL on_current_desktop = true;
+			if (run.desktop_manager)
+				run.desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
+			if (IsWindowVisible(hWnd) && on_current_desktop)
+			{
+				if (!isBlacklisted(hWnd))
+				{
+					_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
+					for (auto &taskbar : run.taskbars)
+					{
+						if (taskbar.first == run.main_taskbar &&
+							taskbar.second.hmon == _monitor)
+						{
+							run.should_show_peek = true;
+						}
+
+						if (taskbar.second.hmon == _monitor &&
+							taskbar.second.state != StartMenuOpen)
+						{
+							taskbar.second.state = WindowMaximised;
+						}
+					}
+				}
+			}
+		}
+	}
+	return true;
+}
+
 void SetTaskbarBlur()
 {
-	// std::cout << opt.dynamicws << std::endl;
-
 	if (run.counter >= 10)   // Change this if you want to change the time it takes for the program to update
-	{                   // 100 = 1 second; we use 10, because the difference is less noticeable and it has
-						// no large impact on CPU. We can change this if we feel that CPU is more important
-						// than response time.
+	{                        // 100 = 1 second; we use 10, because the difference is less noticeable and it has
+							 // no large impact on CPU. We can change this if we feel that CPU is more important
+							 // than response time.
 		run.should_show_peek = (opt.peek == Enabled);
 
 		for (auto &taskbar : run.taskbars)
@@ -800,6 +805,8 @@ void SetTaskbarBlur()
 }
 
 #pragma endregion
+
+#pragma region Startup
 
 bool singleProc()
 {
@@ -926,3 +933,5 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 	CloseHandle(run.ev);
 	return 0;
 }
+
+#pragma endregion
