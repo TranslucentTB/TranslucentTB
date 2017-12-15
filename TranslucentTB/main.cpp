@@ -644,7 +644,6 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 							taskbar.second.state = WindowMaximised;
 						}
 					}
-					
 				}
 			}
 		}
