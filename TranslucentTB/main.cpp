@@ -40,7 +40,7 @@ HMENU popup;
 #define PEEK_ENABLED  1
 #define PEEK_DYNAMIC  2
 
-bool cached_peek = 0;
+bool cached_peek = true;
 bool should_show_peek;
 
 #pragma region composition
@@ -439,7 +439,7 @@ HMENU menu;
 NOTIFYICONDATA Tray;
 HWND tray_hwnd;
 
-BOOL CheckPopupItem(UINT item_to_check, BOOL state)
+bool CheckPopupItem(UINT item_to_check, bool state)
 {
 	return CheckMenuItem(popup, item_to_check, MF_BYCOMMAND | (state ? MF_CHECKED : MF_UNCHECKED) | MF_ENABLED);
 }
@@ -530,7 +530,7 @@ void initTray(HWND parent)
 	RefreshMenu();
 }
 
-BOOL isBlacklisted(HWND hWnd)
+bool isBlacklisted(HWND hWnd)
 {
 	// Get respective attributes
 	TCHAR className[MAX_PATH];
@@ -595,7 +595,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 		WINDOWPLACEMENT result = {};
 		::GetWindowPlacement(hWnd, &result);
 		if (result.showCmd == SW_MAXIMIZE) {
-			BOOL on_current_desktop = TRUE;
+			BOOL on_current_desktop = true;
 			if (desktop_manager)
 				desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
 			if (IsWindowVisible(hWnd) && on_current_desktop)
