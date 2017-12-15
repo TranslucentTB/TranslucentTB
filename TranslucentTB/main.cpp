@@ -36,6 +36,13 @@ HWND taskbar;
 HWND secondtaskbar;
 HMENU popup;
 
+#define PEEK_DISABLED 0
+#define PEEK_ENABLED  1
+#define PEEK_DYNAMIC  2
+
+bool cached_peek = 0;
+bool should_show_peek;
+
 #pragma region composition
 
 struct ACCENTPOLICY
@@ -85,13 +92,12 @@ std::map<HWND, TASKBARPROPERTIES> taskbars; // Create a map for all taskbars
 
 struct OPTIONS
 {
-	int taskbar_appearance;
-	int color;
-	bool dynamicws;
+	int taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+	int color = 0x00000000;
+	bool dynamicws = false;
 	int dynamic_ws_state = ACCENT_ENABLE_BLURBEHIND; // State to activate when d-ws is enabled
-	bool dynamicstart;
-	bool peek;
-	bool tray = true;
+	bool dynamicstart = false;
+	int peek = PEEK_ENABLED;
 } opt;
 
 IVirtualDesktopManager *desktop_manager = NULL;
@@ -137,118 +143,8 @@ bool file_exists(std::wstring path)
 
 #pragma endregion
 
-#pragma region command line
-void PrintHelp()
-{
-	// BUG -
-	// For some reason, when launching this program in cmd.exe, it won't properly "notice"
-	// when the program has exited, and will not automatically write a new prompt to the console.
-	// Instead of printing the current directory as usual before it waits for a new command,
-	// it doesn't print anything, leading to a cluttered console.
-	// It's even worse in Powershell, where it actually WILL print the PS prompt before waiting for
-	// a new command, but it does so on the line after "./TranslucentTB.exe --help", overwriting the
-	// first line of output from this function, and gradually overwriting the following lines as you
-	// press enter. The PS shell just doesn't notice that anything gets printed to the console, and
-	// therefore it prints the PS prompt over this output instead of after. I don't know of any
-	// solution to this, but I expect that setting the project type to SUBSYSTEM:CONSOLE would solve
-	// those issues. Again - I think a help file would be the best solution, so I'll do that in my
-	// next commit.
 
-	BOOL hasconsole = true;
-	BOOL createdconsole = false;
-	// Try to attach to the parent console,
-	// allocate a new one if that isn't successful
-	if (!AttachConsole(ATTACH_PARENT_PROCESS))
-	{
-		if (!AllocConsole())
-		{
-			hasconsole = false;
-		}
-		else
-		{
-			createdconsole = true;
-		}
-	}
-
-	if (hasconsole)
-	{
-		FILE* outstream;
-		FILE* instream;
-		freopen_s(&outstream, "CONOUT$", "w", stdout);
-		freopen_s(&instream, "CONIN$", "w", stdin);
-
-		if (outstream)
-		{
-			using namespace std;
-			cout << endl;
-			cout << "TranslucentTB by ethanhs & friends" << endl;
-			cout << "Source: https://github.com/TranslucentTB/TranslucentTB" << endl;
-			cout << "    TranslucentTB is freeware and is distributed under the open-source GPL3 license." << endl;
-			cout << "This program modifies the appearance of the Windows taskbar" << endl;
-			cout << "You can modify its behaviour by using the following parameters when launching the program:" << endl;
-			cout << "  --blur                | will make the taskbar a blurry overlay of the background (default)." << endl;
-			cout << "  --opaque              | will make the taskbar a solid color specified by the tint parameter." << endl;
-			cout << "  --transparent         | will make the taskbar a transparent color specified by the tint parameter." << endl;
-			cout << "                          The value of the alpha channel determines the opacity of the taskbar." << endl;
-			cout << "  --tint COLOR          | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format," << endl;
-			cout << "                          see explanation below." << endl;
-			cout << "  --dynamic-ws STATE    | will make the taskbar transparent when no windows are maximised in the current" << endl;
-			cout << "                          monitor, otherwise blurry. State can be from: (blur, opaque, tint). Blur is default." << endl;
-			cout << "  --dynamic-start       | will make the taskbar return to its normal state when the start menu is opened," << endl;
-			cout << "                          current setting otherwise." << endl;
-			cout << "  --help                | Displays this help message." << endl;
-			cout << "  --no-tray             | will hide the taskbar tray icon." << endl;
-			cout << "  --with-tray           | Ignore no-tray in config file." << endl;
-			cout << "  --no-peek             | Hides Aero Peek button." << endl;
-			cout << endl;
-
-			cout << "Color format:" << endl;
-			cout << "  The parameter is interpreted as a three or four byte long number in hexadecimal format that" << endl;
-			cout << "  describes the four color channels 0xAARRGGBB ([alpha,] red, green and blue). These look like this:" << endl;
-			cout << "  0x80fe10a4 (the '0x' is optional). You often find colors in this format in the context of HTML and" << endl;
-			cout << "  web design, and there are many online tools to convert from familiar names to this format. These" << endl;
-			cout << "  tools might give you numbers starting with '#', in that case you can just remove the leading '#'." << endl;
-			cout << "  You should be able to find online tools by searching for \"color to hex\" or something similar." << endl;
-			cout << "  If the converter doesn't include alpha values (opacity), you can append them yourself at the start" << endl;
-			cout << "  of the number. Just convert a value between 0 and 255 to its hexadecimal value before you append it." << endl;
-			cout << endl;
-			cout << "Examples:" << endl;
-			cout << "# run dynamic windows mode, with the supplied color" << endl;
-			cout << "TranslucentTB.exe --tint 80fe10a4 --dynamic-ws tint" << endl;
-			cout << "# Will be normal when start is open, transparent otherwise." << endl;
-			cout << "TranslucentTB.exe --dynamic-start" << endl;
-			cout << endl;
-			cout << "Config files and startup settings for Windows Store edition" << endl;
-			cout << "The config and dynamic exclude files are located under %LocalAppData%\\TranslucentTB and will always be loaded" << endl;
-			cout << "when the program starts and the config file will be saved on exit. --config, --exclude-file --save-all" << endl;
-			cout << "have been disabled." << endl;
-			cout << endl;
-			cout << "Startup settings for Windows Store Edition" << endl;
-			cout << "Centennial applications must use a special API for registering themselves at startup. The user can" << endl;
-			cout << "manage the startup state from either task manager or the tray icon. If disabled from task manager, the" << endl;
-			cout << "option in the tray icon will be greyed out." << endl;
-			cout << endl;
-
-			if (createdconsole && instream)
-			{
-				string wait;
-
-				cout << "Press enter to exit the program." << endl;
-				if (!getline(cin, wait))
-				{
-					// Couldn't wait for user input, make the user close
-					// the program themselves so they can see the output.
-					cout << "Press Ctrl + C, Alt + F4, or click the close button to exit the program." << endl;
-					Sleep(INFINITE);
-				}
-
-				FreeConsole();
-			}
-
-			fclose(outstream);
-		}
-	}
-}
+#pragma region Configuration
 
 void add_to_startup()
 {
@@ -338,20 +234,15 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 
 		forcedtransparency = parsed;
 	}
-	else if (arg == L"no-tray")
+	else if (arg == L"peek")
 	{
-		if (value == L"true" ||
-			value == L"enable")
+		if (value == L"hide")
 		{
-			opt.tray = false;
+			opt.peek = PEEK_DISABLED;
 		}
-	}
-	else if (arg == L"nopeek")
-	{
-		if (value == L"true" ||
-			value == L"enable")
+		else if (value == L"dynamic")
 		{
-			opt.peek = false;
+			opt.peek = PEEK_DYNAMIC;
 		}
 	}
 }
@@ -440,127 +331,14 @@ void SaveConfigFile(std::wstring configfile)
 		configstream << L"opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << L"    ; A value in the range 0 to 255." << endl;
 		configstream << endl;
 		configstream << L"; If this is enabled, there will be no tray icon" << endl;
-		if (opt.tray)
-			configstream << L"; no-tray=enable" << endl;
-		else
-			configstream << L"no-tray=enable" << endl;
 		configstream << endl;
-		configstream << L"; Hides the Aero Peek button" << endl;
-		if (opt.peek)
-			configstream << L"; nopeek=enable" << endl;
+		configstream << L"; Controls how the Aero Peek button behaves" << endl;
+		if (opt.peek == PEEK_DISABLED)
+			configstream << L"peek=hide" << endl;
+		else if (opt.peek == PEEK_DYNAMIC)
+			configstream << L"peek=dynamic" << endl;
 		else
-			configstream << L"nopeek=enable" << endl;
-	}
-}
-
-void ParseSingleOption(std::wstring arg, std::wstring value)
-{
-	if (arg == L"--help")
-	{
-		PrintHelp();
-		exit(0);
-	}
-	else if (arg == L"--blur")
-	{
-		opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-	}
-	else if (arg == L"--opaque")
-	{
-		opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
-	}
-	else if (arg == L"--transparent" || arg == L"--clear")
-	{
-		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-	}
-	else if (arg == L"--dynamic-ws")
-	{
-		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-		opt.dynamicws = true;
-		if (value == L"tint") { opt.dynamic_ws_state = ACCENT_ENABLE_TINTED; }
-		else if (value == L"blur") { opt.dynamic_ws_state = ACCENT_ENABLE_BLURBEHIND; }
-		else if (value == L"opaque") { opt.dynamic_ws_state = ACCENT_ENABLE_GRADIENT; }
-	}
-	else if (arg == L"--dynamic-start")
-	{
-		opt.dynamicstart = true;
-	}
-	else if (arg == L"--tint" || arg == L"--color")
-	{
-		// The next argument should be a color in hex format
-		if (value.length() > 0)
-		{
-			unsigned long colval = 0;
-			size_t numchars;
-
-			colval = stoul(value, &numchars, 16);
-
-			// ACCENTPOLICY.nColor expects the byte order to be ABGR,
-			// fiddle some bits to make it intuitive for the user.
-			opt.color =
-				(colval & 0xFF000000) +
-				((colval & 0x00FF0000) >> 16) +
-				(colval & 0x0000FF00) +
-				((colval & 0x000000FF) << 16);
-		}
-		else
-		{
-			// TODO error handling for missing value
-			// Really not much to do as we don't have functional
-			// output streams, and opening a window seems overkill.
-		}
-	}
-	else if (arg == L"--no-tray")
-	{
-		opt.tray = false;
-	}
-	else if (arg == L"--with-tray")
-	{
-		opt.tray = true;
-	}
-	else if (arg == L"--no-peek")
-	{
-		opt.peek = false;
-	}
-}
-
-void ParseCmdOptions()
-{
-	// Loop through command line arguments
-	LPWSTR *szArglist;
-	int nArgs;
-
-	szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
-
-	for (int i = 0; i < nArgs; i++)
-	{
-		LPWSTR lparg = szArglist[i];
-		LPWSTR lpvalue = (i + 1 < nArgs) ? szArglist[i + 1] : L"";
-
-		std::wstring arg = std::wstring(lparg);
-		std::wstring value = std::wstring(lpvalue);
-
-		ParseSingleOption(arg, value);
-	}
-
-	LocalFree(szArglist);
-}
-
-void RefreshHandles()
-{
-	HWND _taskbar;
-	TASKBARPROPERTIES _properties;
-
-	taskbars.clear();
-	_taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
-
-	_properties.hmon = MonitorFromWindow(_taskbar, MONITOR_DEFAULTTOPRIMARY);
-	_properties.state = Normal;
-	taskbars.insert(std::make_pair(_taskbar, _properties));
-	while (secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", NULL))
-	{
-		_properties.hmon = MonitorFromWindow(secondtaskbar, MONITOR_DEFAULTTOPRIMARY);
-		_properties.state = Normal;
-		taskbars.insert(std::make_pair(secondtaskbar, _properties));
+			configstream << L"peek=show" << endl;
 	}
 }
 
@@ -634,6 +412,25 @@ void ParseDWSExcludesFile(std::wstring filename)
 
 #pragma endregion
 
+void RefreshHandles()
+{
+	HWND _taskbar;
+	TASKBARPROPERTIES _properties;
+
+	taskbars.clear();
+	_taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
+
+	_properties.hmon = MonitorFromWindow(_taskbar, MONITOR_DEFAULTTOPRIMARY);
+	_properties.state = Normal;
+	taskbars.insert(std::make_pair(_taskbar, _properties));
+	while (secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", NULL))
+	{
+		_properties.hmon = MonitorFromWindow(secondtaskbar, MONITOR_DEFAULTTOPRIMARY);
+		_properties.state = Normal;
+		taskbars.insert(std::make_pair(secondtaskbar, _properties));
+	}
+}
+
 #pragma region tray
 
 #define WM_NOTIFY_TB 3141
@@ -651,6 +448,7 @@ void RefreshMenu()
 {
 	UINT radio_to_check_regular = NULL;
 	UINT radio_to_check_dynamic = NULL;
+	UINT radio_to_check_peek    = NULL;
 
 	if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
 	{
@@ -686,8 +484,28 @@ void RefreshMenu()
 		OutputDebugString(L"Unable to determine which radio item to check for dynamic state!");
 	}
 
+
+
+	if (opt.peek == PEEK_ENABLED)
+	{
+		radio_to_check_peek = IDM_PEEK;
+	}
+	else if (opt.peek == PEEK_DYNAMIC)
+	{
+		radio_to_check_peek = IDM_DPEEK;
+	}
+	else if (opt.peek == PEEK_DISABLED)
+	{
+		radio_to_check_peek = IDM_NOPEEK;
+	}
+	else
+	{
+		OutputDebugString(L"Unable to determine which radio item to check for peek!");
+	}
+
 	CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, radio_to_check_regular, MF_BYCOMMAND);
 	CheckMenuRadioItem(popup, IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_NORMAL, radio_to_check_dynamic, MF_BYCOMMAND);
+	CheckMenuRadioItem(popup, IDM_PEEK, IDM_NOPEEK, radio_to_check_peek, MF_BYCOMMAND);
 
 	INT items_to_enable[] = { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL };
 	for (INT item : items_to_enable)
@@ -696,24 +514,20 @@ void RefreshMenu()
 	CheckPopupItem(IDM_DYNAMICWS, opt.dynamicws);
 	CheckPopupItem(IDM_DYNAMICSTART, opt.dynamicstart);
 	CheckPopupItem(IDM_AUTOSTART, RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS);
-	CheckPopupItem(IDM_PEEK, !opt.peek);
 }
 
 void initTray(HWND parent)
 {
-	if (opt.tray)
-	{
-		Tray.cbSize = sizeof(Tray);
-		Tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
-		Tray.hWnd = parent;
-		wcscpy_s(Tray.szTip, L"TranslucentTB");
-		Tray.uCallbackMessage = WM_NOTIFY_TB;
-		Tray.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
-		Tray.uID = 101;
-		Shell_NotifyIcon(NIM_ADD, &Tray);
-		Shell_NotifyIcon(NIM_SETVERSION, &Tray);
-		RefreshMenu();
-	}
+	Tray.cbSize = sizeof(Tray);
+	Tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
+	Tray.hWnd = parent;
+	wcscpy_s(Tray.szTip, L"TranslucentTB");
+	Tray.uCallbackMessage = WM_NOTIFY_TB;
+	Tray.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
+	Tray.uID = 101;
+	Shell_NotifyIcon(NIM_ADD, &Tray);
+	Shell_NotifyIcon(NIM_SETVERSION, &Tray);
+	RefreshMenu();
 }
 
 BOOL isBlacklisted(HWND hWnd)
@@ -752,11 +566,31 @@ BOOL isBlacklisted(HWND hWnd)
 	return false;
 }
 
+void TogglePeek(bool status)
+{
+	if (status != cached_peek)
+	{
+		HWND _taskbar = FindWindow(L"Shell_TrayWnd", NULL);
+		HWND _tray = FindWindowEx(_taskbar, NULL, L"TrayNotifyWnd", NULL);
+		HWND _peek = FindWindowEx(_tray, NULL, L"TrayShowDesktopButtonWClass", NULL);
+		HWND _overflow = FindWindowEx(_tray, NULL, L"Button", NULL);
+
+		ShowWindow(_peek, status ? SW_SHOWNORMAL : SW_HIDE);
+
+		// This is a really terrible hack, but it's the only way I found to make the changes reflect instantly.
+		// Toggles the overflow area popup twice. Nearly imperceptible.
+		SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
+		SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
+
+		cached_peek = status;
+	}
+}
+
 BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 {
 	HMONITOR _monitor;
 
-	if (opt.dynamicws)
+	if (opt.dynamicws || opt.peek == PEEK_DYNAMIC)
 	{
 		WINDOWPLACEMENT result = {};
 		::GetWindowPlacement(hWnd, &result);
@@ -769,34 +603,28 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 				if (!isBlacklisted(hWnd))
 				{
 					_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
+					HWND main_taskbar = FindWindow(L"Shell_TrayWnd", NULL);
 					for (auto &taskbar : taskbars)
 					{
+						if (taskbar.first == main_taskbar &&
+							taskbar.second.hmon == _monitor &&
+							opt.peek == PEEK_DYNAMIC)
+						{
+							should_show_peek = true;
+						}
+
 						if (taskbar.second.hmon == _monitor &&
 							taskbar.second.state != StartMenuOpen)
 						{
 							taskbar.second.state = WindowMaximised;
 						}
 					}
+					
 				}
 			}
 		}
 	}
 	return true;
-}
-
-void HidePeek()
-{
-	HWND _taskbar = FindWindow(L"Shell_TrayWnd", NULL);
-	HWND _tray = FindWindowEx(_taskbar, NULL, L"TrayNotifyWnd", NULL);
-	HWND _peek = FindWindowEx(_tray, NULL, L"TrayShowDesktopButtonWClass", NULL);
-	HWND _overflow = FindWindowEx(_tray, NULL, L"Button", NULL);
-
-	ShowWindow(_peek, opt.peek ? SW_SHOWNORMAL : SW_HIDE);
-
-	// This is a really terrible hack, but it's the only way I found to make the changes reflect instantly.
-	// Toggles the overflow area popup twice. Nearly imperceptible.
-	SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
-	SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
 }
 
 LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -841,8 +669,13 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				opt.dynamicstart = !opt.dynamicstart;
 				break;
 			case IDM_PEEK:
-				opt.peek = !opt.peek;
-				HidePeek();
+				opt.peek = PEEK_ENABLED;
+				break;
+			case IDM_DPEEK:
+				opt.peek = PEEK_DYNAMIC;
+				break;
+			case IDM_NOPEEK:
+				opt.peek = PEEK_DISABLED;
 				break;
 			case IDM_AUTOSTART: // TODO: Use UWP Apis
 				if (RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
@@ -866,7 +699,6 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 	{
 		RefreshHandles();
 		initTray(tray_hwnd);
-		HidePeek();
 	}
 	else if (message == NEW_TTB_INSTANCE) {
 		shouldsaveconfig = DoNotSave;
@@ -883,11 +715,13 @@ void SetTaskbarBlur()
 	{                   // 100 = 1 second; we use 10, because the difference is less noticeable and it has
 						// no large impact on CPU. We can change this if we feel that CPU is more important
 						// than response time.
+		should_show_peek = (opt.peek == PEEK_ENABLED);
+
 		for (auto &taskbar : taskbars)
 		{
 			taskbar.second.state = Normal; // Reset taskbar state
 		}
-		if (opt.dynamicws) {
+		if (opt.dynamicws || opt.peek == PEEK_DYNAMIC) {
 			counter = 0;
 			EnumWindows(&EnumWindowsProcess, NULL);
 		}
@@ -932,6 +766,7 @@ void SetTaskbarBlur()
 			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
 		}
 	}
+	TogglePeek(should_show_peek);
 	counter++;
 }
 
@@ -995,7 +830,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 	}
 
 	ParseConfigFile(configFile); // Config file settings
-	ParseCmdOptions(); // Command line argument settings
 	ParseDWSExcludesFile(excludeFile);
 
 	shouldsaveconfig = SaveAll;
@@ -1046,7 +880,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 												// delay between when you start the
 												// program and when the taskbar goes blurry
 	}
-	HidePeek();
 	WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
 
 	while (run) {
@@ -1063,8 +896,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 		SaveConfigFile(configFile);
 
 	opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
-	opt.peek = true;
-	HidePeek();
+	TogglePeek(true);
 	SetTaskbarBlur();
 	CloseHandle(ev);
 	return 0;
