@@ -45,6 +45,12 @@ enum ACCENTSTATE {                             // Values passed to SetWindowComp
 	ACCENT_NORMAL = 151                        // (Fake value) Emulate regular taskbar appearance
 };
 
+enum WindowCompositionAttribute {              // Possible kinds of data sent to SetWindowCompositionAttribute
+	// ...
+	WCA_ACCENT_POLICY = 19                     // The data sent is an ACCENTPOLICY struct
+	// ...
+};
+
 #pragma endregion
 
 #pragma region Structures
@@ -53,15 +59,15 @@ struct ACCENTPOLICY              // Determines how a window's transparent region
 {
 	ACCENTSTATE nAccentState;    // Appearance
 	int nFlags;                  // Nobody knows how this value works
-	int nColor;                  // A color in the format AABBGGRR
+	UINT nColor;                 // A color in the format AABBGGRR
 	int nAnimationId;            // Nobody knows how this value works
 };
 
-struct WINCOMPATTRDATA          // Composition Attributes
+struct WINCOMPATTRDATA                        // Composition Attributes
 {
-	int nAttribute;             // Some data
-	PVOID pData;                // Type of the data passed in nAttribute
-	ULONG ulDataSize;           // Size of the data passed in nAttribute
+	WindowCompositionAttribute nAttribute;    // Type of the data passed in nAttribute
+	PVOID pData;                              // Some data
+	ULONG ulDataSize;                         // Size of the data passed in nAttribute
 };
 
 struct TASKBARPROPERTIES // Relevant info on a taskbar
@@ -73,7 +79,7 @@ struct TASKBARPROPERTIES // Relevant info on a taskbar
 struct OPTIONS                                                  // User settings
 {
 	ACCENTSTATE taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;  // Appearance of the taskbar
-	int color = 0x00000000;                                     // Color to apply to the taskbar
+	UINT color = 0x00000000;                                    // Color to apply to the taskbar
 	bool dynamicws = false;                                     // Wether dynamic windows are enabled
 	ACCENTSTATE dynamic_ws_state = ACCENT_ENABLE_BLURBEHIND;    // State to activate when a window is maximised
 	bool dynamicstart = false;                                  // Wether dynamic start is enabled
@@ -125,11 +131,11 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 		}
 		else { // Use the defaults
 			if (opt.dynamic_ws_state == ACCENT_ENABLE_TINTED) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 }; } // dynamic-ws is tint and desktop is shown
-			else if (opt.taskbar_appearance == ACCENT_NORMAL) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, (int)0xd9000000, 0 }; } // normal gradient color
+			else if (opt.taskbar_appearance == ACCENT_NORMAL) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0xd9000000, 0 }; } // normal gradient color
 			else { policy = { opt.taskbar_appearance, 2, opt.color, 0 }; }
 		}
 
-		WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) }; // WCA_ACCENT_POLICY=19
+		WINCOMPATTRDATA data = { WCA_ACCENT_POLICY, &policy, sizeof(ACCENTPOLICY) };
 		SetWindowCompositionAttribute(hWnd, &data);
 	}
 }
