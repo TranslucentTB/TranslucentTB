@@ -89,6 +89,7 @@ const int ACCENT_NORMAL_GRADIENT = 6; // Another fake value, handles the
 unsigned int WM_TASKBARCREATED;
 unsigned int NEW_TTB_INSTANCE;
 std::map<HWND, TASKBARPROPERTIES> taskbars; // Create a map for all taskbars
+HWND main_taskbar;
 
 struct OPTIONS
 {
@@ -414,15 +415,14 @@ void ParseDWSExcludesFile(std::wstring filename)
 
 void RefreshHandles()
 {
-	HWND _taskbar;
 	TASKBARPROPERTIES _properties;
 
 	taskbars.clear();
-	_taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
+	main_taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
 
-	_properties.hmon = MonitorFromWindow(_taskbar, MONITOR_DEFAULTTOPRIMARY);
+	_properties.hmon = MonitorFromWindow(main_taskbar, MONITOR_DEFAULTTOPRIMARY);
 	_properties.state = Normal;
-	taskbars.insert(std::make_pair(_taskbar, _properties));
+	taskbars.insert(std::make_pair(main_taskbar, _properties));
 	while (secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", NULL))
 	{
 		_properties.hmon = MonitorFromWindow(secondtaskbar, MONITOR_DEFAULTTOPRIMARY);
@@ -570,8 +570,7 @@ void TogglePeek(bool status)
 {
 	if (status != cached_peek)
 	{
-		HWND _taskbar = FindWindow(L"Shell_TrayWnd", NULL);
-		HWND _tray = FindWindowEx(_taskbar, NULL, L"TrayNotifyWnd", NULL);
+		HWND _tray = FindWindowEx(main_taskbar, NULL, L"TrayNotifyWnd", NULL);
 		HWND _peek = FindWindowEx(_tray, NULL, L"TrayShowDesktopButtonWClass", NULL);
 		HWND _overflow = FindWindowEx(_tray, NULL, L"Button", NULL);
 
@@ -603,7 +602,6 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 				if (!isBlacklisted(hWnd))
 				{
 					_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
-					HWND main_taskbar = FindWindow(L"Shell_TrayWnd", NULL);
 					for (auto &taskbar : taskbars)
 					{
 						if (taskbar.first == main_taskbar &&
