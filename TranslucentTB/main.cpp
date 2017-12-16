@@ -150,7 +150,7 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 
 #pragma region IO help
 
-bool file_exists(std::wstring path)
+bool FileExists(std::wstring path)
 {
 	std::ifstream infile(path);
 	return infile.good();
@@ -160,7 +160,7 @@ bool file_exists(std::wstring path)
 
 #pragma region Configuration
 
-void add_to_startup()
+void AddToStartup()
 {
 	HMODULE hModule = GetModuleHandle(NULL);
 	TCHAR path[MAX_PATH];
@@ -367,7 +367,7 @@ void SaveConfigFile(std::wstring configfile)
 	}
 }
 
-std::wstring trim(std::wstring& str)
+std::wstring Trim(std::wstring& str)
 {
 	size_t first = str.find_first_not_of(' ');
 	size_t last = str.find_last_not_of(' ');
@@ -386,14 +386,14 @@ std::vector<std::wstring> ParseByDelimiter(std::wstring row, std::wstring delimi
 	size_t pos = 0;
 	while ((pos = row.find(delimiter)) != std::string::npos)
 	{
-		token = trim(row.substr(0, pos));
+		token = Trim(row.substr(0, pos));
 		result.push_back(token);
 		row.erase(0, pos + delimiter.length());
 	}
 	return result;
 }
 
-void ParseDWSExcludesFile(std::wstring filename)
+void ParseBlacklistFile(std::wstring filename)
 {
 	std::wifstream excludesfilestream(filename);
 
@@ -479,7 +479,7 @@ void TogglePeek(bool status)
 	}
 }
 
-bool isBlacklisted(HWND hWnd)
+bool IsWindowBlacklisted(HWND hWnd)
 {
 	// Get respective attributes
 	TCHAR className[MAX_PATH];
@@ -604,7 +604,7 @@ void RefreshMenu()
 	CheckPopupItem(IDM_AUTOSTART, RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS);
 }
 
-void initTray(HWND parent)
+void InitializeTray(HWND parent)
 {
 	run.tray.cbSize = sizeof(run.tray);
 	run.tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
@@ -618,7 +618,7 @@ void initTray(HWND parent)
 	RefreshMenu();
 }
 
-LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if (message == WM_CLOSE)
 	{
@@ -681,7 +681,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 					RegDeleteValue(hkey, L"TranslucentTB");
 				}
 				else {
-					add_to_startup();
+					AddToStartup();
 				}
 				break;
 			case IDM_EXIT:
@@ -694,7 +694,7 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 	else if (message == run.WM_TASKBARCREATED)
 	{
 		RefreshHandles();
-		initTray(run.tray_hwnd);
+		InitializeTray(run.tray_hwnd);
 	}
 	else if (message == run.NEW_TTB_INSTANCE) {
 		run.should_save_config = DoNotSave;
@@ -721,7 +721,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 				run.desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
 			if (IsWindowVisible(hWnd) && on_current_desktop)
 			{
-				if (!isBlacklisted(hWnd))
+				if (!IsWindowBlacklisted(hWnd))
 				{
 					_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
 					for (auto &taskbar : run.taskbars)
@@ -812,7 +812,7 @@ void SetTaskbarBlur()
 
 #pragma region Startup
 
-bool singleProc()
+bool SingleInstance()
 {
 	run.ev = CreateEvent(NULL, TRUE, FALSE, cnst.guid);
 	if (GetLastError() == ERROR_ALREADY_EXISTS)
@@ -868,10 +868,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 	}
 
 	ParseConfigFile(configFile); // Config file settings
-	ParseDWSExcludesFile(excludeFile);
+	ParseBlacklistFile(excludeFile);
 
 	run.NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");
-	if (!singleProc()) {
+	if (!SingleInstance()) {
 		HWND oldInstance = FindWindow(L"TranslucentTB", L"TrayWindow");
 		SendMessage(oldInstance, run.NEW_TTB_INSTANCE, NULL, NULL);
 	}
@@ -883,7 +883,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 
 	wnd.hInstance = hInstance;
 	wnd.lpszClassName = L"TranslucentTB";
-	wnd.lpfnWndProc = TBPROCWND;
+	wnd.lpfnWndProc = TrayCallback;
 	wnd.style = CS_HREDRAW | CS_VREDRAW;
 	wnd.cbSize = sizeof(WNDCLASSEX);
 
@@ -895,7 +895,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 	run.tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"TranslucentTB", L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
 		400, 400, NULL, NULL, hInstance, NULL);
 
-	initTray(run.tray_hwnd);
+	InitializeTray(run.tray_hwnd);
 
 	ShowWindow(run.tray_hwnd, WM_SHOWWINDOW);
 
