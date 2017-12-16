@@ -76,7 +76,7 @@ struct TASKBARPROPERTIES // Relevant info on a taskbar
 	TASKBARSTATE state;  // How we should handle it
 };
 
-struct OPTIONS                                                  // User settings
+static struct OPTIONS                                           // User settings
 {
 	ACCENTSTATE taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;  // Appearance of the taskbar
 	UINT color = 0x00000000;                                    // Color to apply to the taskbar
@@ -89,7 +89,7 @@ struct OPTIONS                                                  // User settings
 	std::vector<std::wstring> blacklisted_titles;               // List of window titles the user blacklisted
 } opt;
 
-struct RUNTIME                                                                 // Used to store things relevant only to runtime
+static struct RUNTIME                                                          // Used to store things relevant only to runtime
 {
 	SAVECONFIGSTATES should_save_config = SaveAll;                             // Determines if current configuration should be saved when we exit
 	IVirtualDesktopManager *desktop_manager = NULL;                            // Used to detect if a window is in the current virtual desktop. Don't forget to check for null on this one
@@ -97,15 +97,21 @@ struct RUNTIME                                                                 /
 	UINT NEW_TTB_INSTANCE;                                                     // Message sent when an instance should exit because a new one started
 	HWND main_taskbar;                                                         // Handle to taskbar that shows on main monitor
 	std::map<HWND, TASKBARPROPERTIES> taskbars;                                // Map for all taskbars and their properties
-	bool cached_peek = true;                                                   // Cache of the status of the Aero Peek button to prevent constant flashing
 	bool should_show_peek;                                                     // Set by the EnumWindowsProcess and determines if peek should be shown when in dynamic mode
 	bool run = true;                                                           // Set to false to break out of the main program loop
-	int counter = 0;                                                           // Used to make EnumWindowsProcess poll less often than our regular main loop
-	const LPCWSTR guid = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";              // Used to prevent two instances running at the same time
-	HMENU popup;                                                               // Tray icon context menu
+	HMENU popup;                                                               // Tray icon popup
 	int opacity;                                                               // Opacity override. Later stored in opt.color
 	HANDLE ev;                                                                 // Handle to an event. Used for uniqueness
+	HMENU menu;                                                                // Tray icon context menu
+	NOTIFYICONDATA tray;                                                       // Tray icon
+	HWND tray_hwnd;                                                            // Tray window handle
 } run;
+
+const static struct CONSTANTS                                        // Constants. What else do you need?
+{
+	const LPCWSTR guid = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";    // Used to prevent two instances running at the same time
+	const int WM_NOTIFY_TB = 3141;                                   // Message id for tray callback
+} cnst;
 
 #pragma endregion
 
@@ -454,7 +460,9 @@ void RefreshHandles()
 
 void TogglePeek(bool status)
 {
-	if (status != run.cached_peek)
+	static bool cached_peek = true;
+
+	if (status != cached_peek)
 	{
 		HWND _tray = FindWindowEx(run.main_taskbar, NULL, L"TrayNotifyWnd", NULL);
 		HWND _peek = FindWindowEx(_tray, NULL, L"TrayShowDesktopButtonWClass", NULL);
@@ -467,7 +475,7 @@ void TogglePeek(bool status)
 		SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
 		SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
 
-		run.cached_peek = status;
+		cached_peek = status;
 	}
 }
 
@@ -510,12 +518,6 @@ bool isBlacklisted(HWND hWnd)
 #pragma endregion
 
 #pragma region Tray
-
-#define WM_NOTIFY_TB 3141
-
-HMENU menu;
-NOTIFYICONDATA Tray;
-HWND tray_hwnd;
 
 bool CheckPopupItem(UINT item_to_check, bool state)
 {
@@ -604,32 +606,32 @@ void RefreshMenu()
 
 void initTray(HWND parent)
 {
-	Tray.cbSize = sizeof(Tray);
-	Tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
-	Tray.hWnd = parent;
-	wcscpy_s(Tray.szTip, L"TranslucentTB");
-	Tray.uCallbackMessage = WM_NOTIFY_TB;
-	Tray.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
-	Tray.uID = 101;
-	Shell_NotifyIcon(NIM_ADD, &Tray);
-	Shell_NotifyIcon(NIM_SETVERSION, &Tray);
+	run.tray.cbSize = sizeof(run.tray);
+	run.tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
+	run.tray.hWnd = parent;
+	wcscpy_s(run.tray.szTip, L"TranslucentTB");
+	run.tray.uCallbackMessage = cnst.WM_NOTIFY_TB;
+	run.tray.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
+	run.tray.uID = 101;
+	Shell_NotifyIcon(NIM_ADD, &run.tray);
+	Shell_NotifyIcon(NIM_SETVERSION, &run.tray);
 	RefreshMenu();
 }
 
 LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	switch (message)
+	if (message == WM_CLOSE)
 	{
-	case WM_CLOSE:
 		PostQuitMessage(0);
-		break;
-	case WM_NOTIFY_TB:
+	}
+	else if (message == cnst.WM_NOTIFY_TB)
+	{
 		if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
 		{
 			POINT pt;
 			GetCursorPos(&pt);
 			SetForegroundWindow(hWnd);
-			UINT tray = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
+			UINT tray = TrackPopupMenu(run.menu, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
 			switch (tray) // TODO: Add menu items for colors, and one to open config file locations, and one to reset ApplicationFrameHost (after reset if there is still a bad window, show details to help in bug report)
 			{
 			case IDM_BLUR:
@@ -689,10 +691,10 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			RefreshMenu();
 		}
 	}
-	if (message == run.WM_TASKBARCREATED) // Unfortunately, WM_TASKBARCREATED is not a constant, so I can't include it in the switch.
+	else if (message == run.WM_TASKBARCREATED)
 	{
 		RefreshHandles();
-		initTray(tray_hwnd);
+		initTray(run.tray_hwnd);
 	}
 	else if (message == run.NEW_TTB_INSTANCE) {
 		run.should_save_config = DoNotSave;
@@ -745,10 +747,12 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 
 void SetTaskbarBlur()
 {
-	if (run.counter >= 10)   // Change this if you want to change the time it takes for the program to update
-	{                        // 100 = 1 second; we use 10, because the difference is less noticeable and it has
-							 // no large impact on CPU. We can change this if we feel that CPU is more important
-							 // than response time.
+	static int counter = 0;
+
+	if (counter >= 10)   // Change this if you want to change the time it takes for the program to update
+	{                    // 100 = 1 second; we use 10, because the difference is less noticeable and it has
+						 // no large impact on CPU. We can change this if we feel that CPU is more important
+						 // than response time.
 		run.should_show_peek = (opt.peek == Enabled);
 
 		for (auto &taskbar : run.taskbars)
@@ -756,7 +760,7 @@ void SetTaskbarBlur()
 			taskbar.second.state = Normal; // Reset taskbar state
 		}
 		if (opt.dynamicws || opt.peek == Dynamic) {
-			run.counter = 0;
+			counter = 0;
 			EnumWindows(&EnumWindowsProcess, NULL);
 		}
 
@@ -801,7 +805,7 @@ void SetTaskbarBlur()
 		}
 	}
 	TogglePeek(run.should_show_peek);
-	run.counter++;
+	counter++;
 }
 
 #pragma endregion
@@ -810,7 +814,7 @@ void SetTaskbarBlur()
 
 bool singleProc()
 {
-	run.ev = CreateEvent(NULL, TRUE, FALSE, run.guid);
+	run.ev = CreateEvent(NULL, TRUE, FALSE, cnst.guid);
 	if (GetLastError() == ERROR_ALREADY_EXISTS)
 	{
 		return false;
@@ -874,7 +878,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 
 	MSG msg; // for message translation and dispatch
 	run.popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
-	menu = GetSubMenu(run.popup, 0);
+	run.menu = GetSubMenu(run.popup, 0);
 	WNDCLASSEX wnd = { 0 };
 
 	wnd.hInstance = hInstance;
@@ -888,12 +892,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 	wnd.hbrBackground = (HBRUSH)BLACK_BRUSH;
 	RegisterClassEx(&wnd);
 
-	tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"TranslucentTB", L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
+	run.tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"TranslucentTB", L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
 		400, 400, NULL, NULL, hInstance, NULL);
 
-	initTray(tray_hwnd);
+	initTray(run.tray_hwnd);
 
-	ShowWindow(tray_hwnd, WM_SHOWWINDOW);
+	ShowWindow(run.tray_hwnd, WM_SHOWWINDOW);
 
 	// Store stuff
 	if (FAILED(Initialize())) { OutputDebugStringW(L"Initialization of UWP APIs failed. Unable to manipulate startup entry."); }
@@ -922,7 +926,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 		SetTaskbarBlur();
 		Sleep(10);
 	}
-	Shell_NotifyIcon(NIM_DELETE, &Tray);
+	Shell_NotifyIcon(NIM_DELETE, &run.tray);
 
 	if (run.should_save_config != DoNotSave)
 		SaveConfigFile(configFile);
