@@ -18,36 +18,36 @@ using namespace Windows::Foundation;
 
 #pragma region Enumerations
 
-enum TASKBARSTATE {    // enum to store states of a taskbar
-	Normal,            // Proceed as normal. If no dynamic options are set, act as it says in opt.taskbar_appearance
-	WindowMaximised,   // There is a window which is maximised on the monitor this HWND is in. Display as blurred.
-	StartMenuOpen      // The Start Menu is open on the monitor this HWND is in. Display as it would be without TranslucentTB active.
+enum TASKBARSTATE {		// enum to store states of a taskbar
+	Normal,				// Proceed as normal. If no dynamic options are set, act as it says in opt.taskbar_appearance
+	WindowMaximised,	// There is a window which is maximised on the monitor this HWND is in. Display as blurred.
+	StartMenuOpen		// The Start Menu is open on the monitor this HWND is in. Display as it would be without TranslucentTB active.
 };
 
-enum SAVECONFIGSTATES { // enum to store all config states
-	DoNotSave,          // Fairly self-explanatory
-	SaveAll             // Save all options
+enum SAVECONFIGSTATES {	// enum to store all config states
+	DoNotSave,			// Fairly self-explanatory
+	SaveAll				// Save all options
 };
 
-enum PEEKSTATE { // enum to store the user's Aero Peek settings
-	Disabled,    // Hide the button
-	Dynamic,     // Show when a window is maximised
-	Enabled      // Show the button
+enum PEEKSTATE {	// enum to store the user's Aero Peek settings
+	Disabled,		// Hide the button
+	Dynamic,		// Show when a window is maximised
+	Enabled			// Show the button
 };
 
-enum ACCENTSTATE {                             // Values passed to SetWindowCompositionAttribute determining the appearance of a window
-	ACCENT_ENABLE_GRADIENT = 1,                // Use a solid color specified by nColor. This mode doesn't care about the alpha channel.
-	ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,     // Use a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
-	ACCENT_ENABLE_BLURBEHIND = 3,              // Use a tinted blurry overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
+enum ACCENTSTATE {								// Values passed to SetWindowCompositionAttribute determining the appearance of a window
+	ACCENT_ENABLE_GRADIENT = 1,					// Use a solid color specified by nColor. This mode doesn't care about the alpha channel.
+	ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,		// Use a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
+	ACCENT_ENABLE_BLURBEHIND = 3,				// Use a tinted blurry overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
 
-	ACCENT_FOLLOW_OPT = 149,                   // (Fake value) Respect what defined in opt.taskbar_appearance
-	ACCENT_ENABLE_TINTED = 150,                // (Fake value) Dynamic windows tinted
-	ACCENT_NORMAL = 151                        // (Fake value) Emulate regular taskbar appearance
+	ACCENT_FOLLOW_OPT = 149,					// (Fake value) Respect what defined in opt.taskbar_appearance
+	ACCENT_ENABLE_TINTED = 150,					// (Fake value) Dynamic windows tinted
+	ACCENT_NORMAL = 151							// (Fake value) Emulate regular taskbar appearance
 };
 
-enum WindowCompositionAttribute {              // Possible kinds of data sent to SetWindowCompositionAttribute
+enum WindowCompositionAttribute {				// Possible kinds of data sent to SetWindowCompositionAttribute
 	// ...
-	WCA_ACCENT_POLICY = 19                     // The data sent is an ACCENTPOLICY struct
+	WCA_ACCENT_POLICY = 19						// The data sent is an ACCENTPOLICY struct
 	// ...
 };
 
@@ -55,62 +55,62 @@ enum WindowCompositionAttribute {              // Possible kinds of data sent to
 
 #pragma region Structures
 
-struct ACCENTPOLICY              // Determines how a window's transparent region will be painted
+struct ACCENTPOLICY					// Determines how a window's transparent region will be painted
 {
-	ACCENTSTATE nAccentState;    // Appearance
-	int nFlags;                  // Nobody knows how this value works
-	UINT nColor;                 // A color in the format AABBGGRR
-	int nAnimationId;            // Nobody knows how this value works
+	ACCENTSTATE nAccentState;		// Appearance
+	int nFlags;						// Nobody knows how this value works
+	UINT nColor;					// A color in the format AABBGGRR
+	int nAnimationId;				// Nobody knows how this value works
 };
 
-struct WINCOMPATTRDATA                        // Composition Attributes
+struct WINCOMPATTRDATA							// Composition Attributes
 {
-	WindowCompositionAttribute nAttribute;    // Type of the data passed in nAttribute
-	PVOID pData;                              // Some data
-	ULONG ulDataSize;                         // Size of the data passed in nAttribute
+	WindowCompositionAttribute nAttribute;		// Type of the data passed in nAttribute
+	PVOID pData;								// Some data
+	ULONG ulDataSize;							// Size of the data passed in nAttribute
 };
 
-struct TASKBARPROPERTIES // Relevant info on a taskbar
+struct TASKBARPROPERTIES	// Relevant info on a taskbar
 {
-	HMONITOR hmon;       // Monitor it lives on
-	TASKBARSTATE state;  // How we should handle it
+	HMONITOR hmon;			// Monitor it lives on
+	TASKBARSTATE state;		// How we should handle it
 };
 
-static struct OPTIONS                                           // User settings
+static struct OPTIONS											// User settings
 {
-	ACCENTSTATE taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;  // Appearance of the taskbar
-	UINT color = 0x00000000;                                    // Color to apply to the taskbar
-	bool dynamicws = false;                                     // Wether dynamic windows are enabled
-	ACCENTSTATE dynamic_ws_state = ACCENT_ENABLE_BLURBEHIND;    // State to activate when a window is maximised
-	bool dynamicstart = false;                                  // Wether dynamic start is enabled
-	PEEKSTATE peek = Enabled;                                   // Controls how the Aero Peek button is handled
-	std::vector<std::wstring> blacklisted_classes;              // List of window classes the user blacklisted
-	std::vector<std::wstring> blacklisted_filenames;            // List of executable filenames the user blacklisted
-	std::vector<std::wstring> blacklisted_titles;               // List of window titles the user blacklisted
+	ACCENTSTATE taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;	// Appearance of the taskbar
+	UINT color = 0x00000000;									// Color to apply to the taskbar
+	bool dynamicws = false;										// Wether dynamic windows are enabled
+	ACCENTSTATE dynamic_ws_state = ACCENT_ENABLE_BLURBEHIND;	// State to activate when a window is maximised
+	bool dynamicstart = false;									// Wether dynamic start is enabled
+	PEEKSTATE peek = Enabled;									// Controls how the Aero Peek button is handled
+	std::vector<std::wstring> blacklisted_classes;				// List of window classes the user blacklisted
+	std::vector<std::wstring> blacklisted_filenames;			// List of executable filenames the user blacklisted
+	std::vector<std::wstring> blacklisted_titles;				// List of window titles the user blacklisted
 } opt;
 
-static struct RUNTIME                                                          // Used to store things relevant only to runtime
+static struct RUNTIME															// Used to store things relevant only to runtime
 {
-	SAVECONFIGSTATES should_save_config = SaveAll;                             // Determines if current configuration should be saved when we exit
-	IVirtualDesktopManager *desktop_manager = NULL;                            // Used to detect if a window is in the current virtual desktop. Don't forget to check for null on this one
-	UINT WM_TASKBARCREATED;                                                    // Message received when Explorer restarts
-	UINT NEW_TTB_INSTANCE;                                                     // Message sent when an instance should exit because a new one started
-	HWND main_taskbar;                                                         // Handle to taskbar that shows on main monitor
-	std::map<HWND, TASKBARPROPERTIES> taskbars;                                // Map for all taskbars and their properties
-	bool should_show_peek;                                                     // Set by the EnumWindowsProcess and determines if peek should be shown when in dynamic mode
-	bool run = true;                                                           // Set to false to break out of the main program loop
-	HMENU popup;                                                               // Tray icon popup
-	int opacity;                                                               // Opacity override. Later stored in opt.color
-	HANDLE ev;                                                                 // Handle to an event. Used for uniqueness
-	HMENU menu;                                                                // Tray icon context menu
-	NOTIFYICONDATA tray;                                                       // Tray icon
-	HWND tray_hwnd;                                                            // Tray window handle
+	SAVECONFIGSTATES should_save_config = SaveAll;								// Determines if current configuration should be saved when we exit
+	IVirtualDesktopManager *desktop_manager = NULL;								// Used to detect if a window is in the current virtual desktop. Don't forget to check for null on this one
+	UINT WM_TASKBARCREATED;														// Message received when Explorer restarts
+	UINT NEW_TTB_INSTANCE;														// Message sent when an instance should exit because a new one started
+	HWND main_taskbar;															// Handle to taskbar that shows on main monitor
+	std::map<HWND, TASKBARPROPERTIES> taskbars;									// Map for all taskbars and their properties
+	bool should_show_peek;														// Set by the EnumWindowsProcess and determines if peek should be shown when in dynamic mode
+	bool run = true;															// Set to false to break out of the main program loop
+	HMENU popup;																// Tray icon popup
+	int opacity;																// Opacity override. Later stored in opt.color
+	HANDLE ev;																	// Handle to an event. Used for uniqueness
+	HMENU menu;																	// Tray icon context menu
+	NOTIFYICONDATA tray;														// Tray icon
+	HWND tray_hwnd;																// Tray window handle
 } run;
 
-const static struct CONSTANTS                                        // Constants. What else do you need?
+const static struct CONSTANTS											// Constants. What else do you need?
 {
-	const LPCWSTR guid = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";    // Used to prevent two instances running at the same time
-	const int WM_NOTIFY_TB = 3141;                                   // Message id for tray callback
+	const LPCWSTR guid = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";		// Used to prevent two instances running at the same time
+	const int WM_NOTIFY_TB = 3141;										// Message id for tray callback
 } cnst;
 
 #pragma endregion
@@ -749,10 +749,10 @@ void SetTaskbarBlur()
 {
 	static int counter = 0;
 
-	if (counter >= 10)   // Change this if you want to change the time it takes for the program to update
-	{                    // 100 = 1 second; we use 10, because the difference is less noticeable and it has
-						 // no large impact on CPU. We can change this if we feel that CPU is more important
-						 // than response time.
+	if (counter >= 10)	// Change this if you want to change the time it takes for the program to update
+	{					// 100 = 1 second; we use 10, because the difference is less noticeable and it has
+						// no large impact on CPU. We can change this if we feel that CPU is more important
+						// than response time.
 		run.should_show_peek = (opt.peek == Enabled);
 
 		for (auto &taskbar : run.taskbars)
