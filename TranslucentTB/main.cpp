@@ -111,6 +111,7 @@ const static struct CONSTANTS											// Constants. What else do you need?
 {
 	const LPCWSTR guid = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";		// Used to prevent two instances running at the same time
 	const int WM_NOTIFY_TB = 3141;										// Message id for tray callback
+	const LPCWSTR program_name = L"TranslucentTB";						// Sounds weird, but prevents typos
 } cnst;
 
 #pragma endregion
@@ -169,7 +170,7 @@ void AddToStartup()
 	std::wstring progPath = L"\"" + unsafePath + L"\"";
 	HKEY hkey = NULL;
 	LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey); //Creates a key
-	LONG status = RegSetValueEx(hkey, L"TranslucentTB", 0, REG_SZ, (BYTE *)progPath.c_str(), (DWORD)((progPath.size() + 1) * sizeof(wchar_t)));
+	LONG status = RegSetValueEx(hkey, cnst.program_name, 0, REG_SZ, (BYTE *)progPath.c_str(), (DWORD)((progPath.size() + 1) * sizeof(wchar_t)));
 }
 
 void ParseSingleConfigOption(std::wstring arg, std::wstring value)
@@ -302,7 +303,7 @@ void SaveConfigFile(std::wstring configfile)
 
 		configstream << L"; ===========================================================================" << endl;
 		configstream << L"; Warning" << endl;
-		configstream << L"; File gets overwritten on exit. Only edit when TranslucentTB is not running." << endl;
+		configstream << L"; File gets overwritten on exit. Only edit when " << cnst.program_name << L" is not running." << endl;
 		configstream << L"; ===========================================================================" << endl;
 		configstream << endl;
 
@@ -358,12 +359,13 @@ void SaveConfigFile(std::wstring configfile)
 		configstream << L"opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << L"    ; A value in the range 0 to 255." << endl;
 		configstream << endl;
 		configstream << L"; Controls how the Aero Peek button behaves" << endl;
+		configstream << L"peek=";
 		if (opt.peek == Disabled)
-			configstream << L"peek=hide" << endl;
+			configstream << L"hide" << endl;
 		else if (opt.peek == Dynamic)
-			configstream << L"peek=dynamic" << endl;
+			configstream << L"dynamic" << endl;
 		else
-			configstream << L"peek=show" << endl;
+			configstream << L"show" << endl;
 	}
 }
 
@@ -601,7 +603,7 @@ void RefreshMenu()
 
 	CheckPopupItem(IDM_DYNAMICWS, opt.dynamicws);
 	CheckPopupItem(IDM_DYNAMICSTART, opt.dynamicstart);
-	CheckPopupItem(IDM_AUTOSTART, RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS);
+	CheckPopupItem(IDM_AUTOSTART, RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", cnst.program_name, RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS);
 }
 
 void InitializeTray(HWND parent)
@@ -609,7 +611,7 @@ void InitializeTray(HWND parent)
 	run.tray.cbSize = sizeof(run.tray);
 	run.tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
 	run.tray.hWnd = parent;
-	wcscpy_s(run.tray.szTip, L"TranslucentTB");
+	wcscpy_s(run.tray.szTip, cnst.program_name);
 	run.tray.uCallbackMessage = cnst.WM_NOTIFY_TB;
 	run.tray.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 	run.tray.uID = 101;
@@ -674,11 +676,11 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 				opt.peek = Disabled;
 				break;
 			case IDM_AUTOSTART: // TODO: Use UWP Apis
-				if (RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
+				if (RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", cnst.program_name, RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
 				{
 					HKEY hkey = NULL;
 					RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
-					RegDeleteValue(hkey, L"TranslucentTB");
+					RegDeleteValue(hkey, cnst.program_name);
 				}
 				else {
 					AddToStartup();
@@ -830,7 +832,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 
 	if (FAILED(SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_DEFAULT, NULL, &localAppData)))
 	{
-		MessageBox(NULL, L"Failed to get LocalAppData folder location!\n\nProgram will exit.", L"TranslucentTB - Fatal error", MB_ICONERROR | MB_OK);
+		MessageBox(NULL, L"Failed to get LocalAppData folder location!\n\nProgram will exit.", (std::wstring(cnst.program_name) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
 		return 1;
 	}
 
@@ -841,7 +843,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 	TCHAR stockConfigFile[MAX_PATH];
 	TCHAR stockExcludeFile[MAX_PATH];
 
-	PathCombine(configFolder, localAppData, L"TranslucentTB");
+	PathCombine(configFolder, localAppData, cnst.program_name);
 	PathCombine(configFile, configFolder, L"config.cfg");
 	PathCombine(excludeFile, configFolder, L"dynamic-ws-exclude.csv");
 
@@ -872,7 +874,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 
 	run.NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");
 	if (!SingleInstance()) {
-		HWND oldInstance = FindWindow(L"TranslucentTB", L"TrayWindow");
+		HWND oldInstance = FindWindow(cnst.program_name, L"TrayWindow");
 		SendMessage(oldInstance, run.NEW_TTB_INSTANCE, NULL, NULL);
 	}
 
@@ -882,7 +884,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 	WNDCLASSEX wnd = { 0 };
 
 	wnd.hInstance = hInstance;
-	wnd.lpszClassName = L"TranslucentTB";
+	wnd.lpszClassName = cnst.program_name;
 	wnd.lpfnWndProc = TrayCallback;
 	wnd.style = CS_HREDRAW | CS_VREDRAW;
 	wnd.cbSize = sizeof(WNDCLASSEX);
@@ -892,7 +894,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 	wnd.hbrBackground = (HBRUSH)BLACK_BRUSH;
 	RegisterClassEx(&wnd);
 
-	run.tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"TranslucentTB", L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
+	run.tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, cnst.program_name, L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
 		400, 400, NULL, NULL, hInstance, NULL);
 
 	InitializeTray(run.tray_hwnd);
