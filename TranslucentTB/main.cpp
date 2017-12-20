@@ -39,6 +39,7 @@ enum ACCENTSTATE {								// Values passed to SetWindowCompositionAttribute dete
 	ACCENT_ENABLE_GRADIENT = 1,					// Use a solid color specified by nColor. This mode doesn't care about the alpha channel.
 	ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,		// Use a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
 	ACCENT_ENABLE_BLURBEHIND = 3,				// Use a tinted blurry overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
+	ACCENT_ENABLE_FLUENT = 4,					// Use fluent design-like aspect. nColor is tint color.
 
 	ACCENT_FOLLOW_OPT = 149,					// (Fake value) Respect what defined in opt.taskbar_appearance
 	ACCENT_ENABLE_TINTED = 150,					// (Fake value) Dynamic windows tinted
@@ -105,6 +106,7 @@ static struct RUNTIME															// Used to store things relevant only to run
 	HMENU menu;																	// Tray icon context menu
 	NOTIFYICONDATA tray;														// Tray icon
 	HWND tray_hwnd;																// Tray window handle
+	bool fluent_available;														// Wether ACCENT_ENABLE_FLUENT works
 } run;
 
 const static struct CONSTANTS											// Constants. What else do you need?
@@ -187,6 +189,8 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 		else if (value == L"normal")
 			opt.taskbar_appearance = ACCENT_NORMAL;
+		else if (value == L"fluent" && run.fluent_available)
+			opt.taskbar_appearance = ACCENT_ENABLE_FLUENT;
 	}
 	else if (arg == L"dynamic-ws")
 	{
@@ -214,6 +218,11 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		{
 			opt.dynamicws = true;
 			opt.dynamic_ws_state = ACCENT_NORMAL;
+		}
+		else if (value == L"fluent" && run.fluent_available)
+		{
+			opt.dynamicws = true;
+			opt.dynamic_ws_state = ACCENT_ENABLE_FLUENT;
 		}
 	}
 	else if (arg == L"dynamic-start")
@@ -319,6 +328,8 @@ void SaveConfigFile(std::wstring configfile)
 			configstream << L"blur" << endl;
 		else if (opt.taskbar_appearance == ACCENT_NORMAL)
 			configstream << L"normal" << endl;
+		else if (opt.taskbar_appearance == ACCENT_ENABLE_FLUENT)
+			configstream << L"fluent" << endl;
 
 		configstream << endl;
 		configstream << L"; Dynamic states: Window States and (WIP) Start Menu" << endl;
@@ -339,6 +350,8 @@ void SaveConfigFile(std::wstring configfile)
 			configstream << L"opaque" << endl;
 		else if (opt.dynamic_ws_state == ACCENT_NORMAL)
 			configstream << L"normal" << endl;
+		else if (opt.dynamic_ws_state == ACCENT_ENABLE_FLUENT)
+			configstream << L"fluent" << endl;
 		else
 			configstream << L"enable" << endl;
 
@@ -548,6 +561,10 @@ void RefreshMenu()
 	{
 		radio_to_check_regular = IDM_OPAQUE;
 	}
+	else if (opt.taskbar_appearance == ACCENT_ENABLE_FLUENT)
+	{
+		radio_to_check_regular = IDM_FLUENT;
+	}
 	else
 	{
 		OutputDebugString(L"Unable to determine which radio item to check for regular state!");
@@ -568,6 +585,10 @@ void RefreshMenu()
 	else if (opt.dynamic_ws_state == ACCENT_ENABLE_GRADIENT)
 	{
 		radio_to_check_dynamic = IDM_DYNAMICWS_OPAQUE;
+	}
+	else if (opt.dynamic_ws_state == ACCENT_ENABLE_FLUENT)
+	{
+		radio_to_check_dynamic = IDM_DYNAMICWS_FLUENT;
 	}
 	else
 	{
@@ -597,8 +618,10 @@ void RefreshMenu()
 	CheckMenuRadioItem(run.popup, IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_OPAQUE, radio_to_check_dynamic, MF_BYCOMMAND);
 	CheckMenuRadioItem(run.popup, IDM_PEEK, IDM_NOPEEK, radio_to_check_peek, MF_BYCOMMAND);
 
-	INT items_to_enable[] = { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL, IDM_DYNAMICWS_OPAQUE };
-	for (INT item : items_to_enable)
+	for (INT item : { IDM_FLUENT, IDM_DYNAMICWS_FLUENT})
+		EnableMenuItem(run.popup, item, MF_BYCOMMAND | (run.fluent_available ? MF_ENABLED : MF_GRAYED));
+
+	for (INT item : { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL, IDM_DYNAMICWS_OPAQUE, IDM_DYNAMICWS_FLUENT })
 		EnableMenuItem(run.popup, item, MF_BYCOMMAND | (opt.dynamicws ? MF_ENABLED : MF_GRAYED));
 
 	CheckPopupItem(IDM_DYNAMICWS, opt.dynamicws);
@@ -606,11 +629,11 @@ void RefreshMenu()
 	CheckPopupItem(IDM_AUTOSTART, RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", cnst.program_name, RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS);
 }
 
-void InitializeTray(HWND parent)
+void InitializeTray()
 {
 	run.tray.cbSize = sizeof(run.tray);
 	run.tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
-	run.tray.hWnd = parent;
+	run.tray.hWnd = run.tray_hwnd;
 	wcscpy_s(run.tray.szTip, cnst.program_name);
 	run.tray.uCallbackMessage = cnst.WM_NOTIFY_TB;
 	run.tray.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
@@ -648,6 +671,9 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			case IDM_OPAQUE:
 				opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
 				break;
+			case IDM_FLUENT:
+				opt.taskbar_appearance = ACCENT_ENABLE_FLUENT;
+				break;
 			case IDM_DYNAMICWS:
 				opt.dynamicws = !opt.dynamicws;
 				break;
@@ -662,6 +688,9 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 				break;
 			case IDM_DYNAMICWS_OPAQUE:
 				opt.dynamic_ws_state = ACCENT_ENABLE_GRADIENT;
+				break;
+			case IDM_DYNAMICWS_FLUENT:
+				opt.dynamic_ws_state = ACCENT_ENABLE_FLUENT;
 				break;
 			case IDM_DYNAMICSTART:
 				opt.dynamicstart = !opt.dynamicstart;
@@ -696,7 +725,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	else if (message == run.WM_TASKBARCREATED)
 	{
 		RefreshHandles();
-		InitializeTray(run.tray_hwnd);
+		InitializeTray();
 	}
 	else if (message == run.NEW_TTB_INSTANCE) {
 		run.should_save_config = DoNotSave;
@@ -816,6 +845,17 @@ bool SingleInstance()
 	return true;
 }
 
+bool IsFluentPresent()
+{
+	typedef NTSTATUS(__stdcall *pRtlGetVersion)(PRTL_OSVERSIONINFOW);
+	HMODULE ntdll = GetModuleHandle(L"ntdll");
+	pRtlGetVersion RtlGetVersion = (pRtlGetVersion)GetProcAddress(ntdll, "RtlGetVersion");
+	RTL_OSVERSIONINFOW versionInfo;
+	RtlGetVersion(&versionInfo);
+
+	return versionInfo.dwBuildNumber >= 17063;
+}
+
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ LPSTR pCmdLine, _In_ int nCmdShow)
 {
 	if (FAILED(SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE))) { OutputDebugStringW(L"Per-monitor DPI scaling failed\n"); }
@@ -861,6 +901,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 		CopyFile(stockExcludeFile, excludeFile, FALSE);
 	}
 
+	run.fluent_available = IsFluentPresent();
+
 	ParseConfigFile(configFile); // Config file settings
 	ParseBlacklistFile(excludeFile);
 
@@ -889,7 +931,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 	run.tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, cnst.program_name, L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
 		400, 400, NULL, NULL, hInstance, NULL);
 
-	InitializeTray(run.tray_hwnd);
+	InitializeTray();
 
 	ShowWindow(run.tray_hwnd, WM_SHOWWINDOW);
 
@@ -920,15 +962,20 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 		SetTaskbarBlur();
 		Sleep(10);
 	}
-	Shell_NotifyIcon(NIM_DELETE, &run.tray);
 
 	if (run.should_save_config != DoNotSave)
 		SaveConfigFile(configFile);
 
-	opt.taskbar_appearance = ACCENT_NORMAL;
-	TogglePeek(true);
+	// Restore default taskbar appearance
+	opt.taskbar_appearance = run.fluent_available ? ACCENT_ENABLE_FLUENT : ACCENT_ENABLE_TRANSPARENTGRADIENT;
+	opt.color = 0x99000000;
+	opt.peek = Enabled;
+	opt.dynamicstart = false;
+	opt.dynamicws = false;
 	SetTaskbarBlur();
+
 	CloseHandle(run.ev);
+	Shell_NotifyIcon(NIM_DELETE, &run.tray);
 	return 0;
 }
 
