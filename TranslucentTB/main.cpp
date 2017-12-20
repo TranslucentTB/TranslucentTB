@@ -711,34 +711,26 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
 BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 {
-	HMONITOR _monitor;
-
-	if (opt.dynamicws || opt.peek == Dynamic)
-	{
-		WINDOWPLACEMENT result = {};
-		::GetWindowPlacement(hWnd, &result);
-		if (result.showCmd == SW_MAXIMIZE) {
-			BOOL on_current_desktop = true;
-			if (run.desktop_manager)
-				run.desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
-			if (IsWindowVisible(hWnd) && on_current_desktop)
+	WINDOWPLACEMENT result = {};
+	::GetWindowPlacement(hWnd, &result);
+	if (result.showCmd == SW_MAXIMIZE) {
+		BOOL on_current_desktop = true;
+		if (run.desktop_manager)
+			run.desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
+		if (IsWindowVisible(hWnd) && on_current_desktop)
+		{
+			if (!IsWindowBlacklisted(hWnd))
 			{
-				if (!IsWindowBlacklisted(hWnd))
+				HMONITOR _monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
+				for (auto &taskbar : run.taskbars)
 				{
-					_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
-					for (auto &taskbar : run.taskbars)
-					{
-						if (taskbar.first == run.main_taskbar &&
-							taskbar.second.hmon == _monitor)
-						{
-							run.should_show_peek = true;
-						}
 
-						if (taskbar.second.hmon == _monitor &&
-							taskbar.second.state != StartMenuOpen)
-						{
+					if (taskbar.second.hmon == _monitor)
+					{
+						if (taskbar.second.state != StartMenuOpen)
 							taskbar.second.state = WindowMaximised;
-						}
+						if (opt.peek == Dynamic && taskbar.first == run.main_taskbar)
+							run.should_show_peek = true;
 					}
 				}
 			}
