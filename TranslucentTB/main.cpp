@@ -140,23 +140,13 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 		}
 		else { // Use the defaults
 			if (opt.dynamic_ws_state == ACCENT_ENABLE_TINTED) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 }; } // dynamic-ws is tint and desktop is shown
-			else if (opt.taskbar_appearance == ACCENT_NORMAL) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0xd9000000, 0 }; } // normal gradient color
+			else if (opt.taskbar_appearance == ACCENT_NORMAL) { policy = { (run.fluent_available ? ACCENT_ENABLE_FLUENT : ACCENT_ENABLE_TRANSPARENTGRADIENT), 2, 0x99000000, 0 }; } // normal gradient color
 			else { policy = { opt.taskbar_appearance, 2, opt.color, 0 }; }
 		}
 
 		WINCOMPATTRDATA data = { WCA_ACCENT_POLICY, &policy, sizeof(ACCENTPOLICY) };
 		SetWindowCompositionAttribute(hWnd, &data);
 	}
-}
-
-#pragma endregion
-
-#pragma region IO help
-
-bool FileExists(std::wstring path)
-{
-	std::ifstream infile(path);
-	return infile.good();
 }
 
 #pragma endregion
@@ -968,8 +958,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 		SaveConfigFile(configFile);
 
 		// Restore default taskbar appearance
-		opt.taskbar_appearance = run.fluent_available ? ACCENT_ENABLE_FLUENT : ACCENT_ENABLE_TRANSPARENTGRADIENT;
-		opt.color = 0x99000000;
+		opt.taskbar_appearance = ACCENT_NORMAL;
 		opt.peek = Enabled;
 		opt.dynamicstart = false;
 		opt.dynamicws = false;
