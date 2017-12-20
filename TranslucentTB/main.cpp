@@ -24,9 +24,9 @@ enum TASKBARSTATE {		// enum to store states of a taskbar
 	StartMenuOpen		// The Start Menu is open on the monitor this HWND is in. Display as it would be without TranslucentTB active.
 };
 
-enum SAVECONFIGSTATES {	// enum to store all config states
-	DoNotSave,			// Fairly self-explanatory
-	SaveAll				// Save all options
+enum EXITREASON {		// enum to store possible exit reasons
+	NewInstance,		// New instance told us to exit
+	UserAction			// Triggered by the user
 };
 
 enum PEEKSTATE {	// enum to store the user's Aero Peek settings
@@ -92,7 +92,7 @@ static struct OPTIONS											// User settings
 
 static struct RUNTIME															// Used to store things relevant only to runtime
 {
-	SAVECONFIGSTATES should_save_config = SaveAll;								// Determines if current configuration should be saved when we exit
+	EXITREASON exit_reason = UserAction;										// Determines if current configuration should be saved when we exit
 	IVirtualDesktopManager *desktop_manager = NULL;								// Used to detect if a window is in the current virtual desktop. Don't forget to check for null on this one
 	UINT WM_TASKBARCREATED;														// Message received when Explorer restarts
 	UINT NEW_TTB_INSTANCE;														// Message sent when an instance should exit because a new one started
@@ -728,7 +728,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		InitializeTray();
 	}
 	else if (message == run.NEW_TTB_INSTANCE) {
-		run.should_save_config = DoNotSave;
+		run.exit_reason = NewInstance;
 		run.run = false;
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
@@ -963,16 +963,18 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 		Sleep(10);
 	}
 
-	if (run.should_save_config != DoNotSave)
+	if (run.exit_reason != NewInstance)
+	{
 		SaveConfigFile(configFile);
 
-	// Restore default taskbar appearance
-	opt.taskbar_appearance = run.fluent_available ? ACCENT_ENABLE_FLUENT : ACCENT_ENABLE_TRANSPARENTGRADIENT;
-	opt.color = 0x99000000;
-	opt.peek = Enabled;
-	opt.dynamicstart = false;
-	opt.dynamicws = false;
-	SetTaskbarBlur();
+		// Restore default taskbar appearance
+		opt.taskbar_appearance = run.fluent_available ? ACCENT_ENABLE_FLUENT : ACCENT_ENABLE_TRANSPARENTGRADIENT;
+		opt.color = 0x99000000;
+		opt.peek = Enabled;
+		opt.dynamicstart = false;
+		opt.dynamicws = false;
+		SetTaskbarBlur();
+	}
 
 	CloseHandle(run.ev);
 	Shell_NotifyIcon(NIM_DELETE, &run.tray);
