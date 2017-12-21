@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <ShellScalingAPI.h>
 #include <shellapi.h>
+#include <comdef.h>
 #include "resource.h"
 
 using namespace Windows::Foundation;
@@ -112,7 +113,7 @@ static struct RUNTIME															// Used to store things relevant only to run
 const static struct CONSTANTS											// Constants. What else do you need?
 {
 	const LPCWSTR guid = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";		// Used to prevent two instances running at the same time
-	const int WM_NOTIFY_TB = 3141;										// Message id for tray callback
+	const UINT WM_NOTIFY_TB = 3141;										// Message id for tray callback
 	const LPCWSTR program_name = L"TranslucentTB";						// Sounds weird, but prevents typos
 } cnst;
 
@@ -520,6 +521,16 @@ bool IsWindowBlacklisted(HWND hWnd)
 	return false;
 }
 
+bool IsSingleInstance()
+{
+	run.ev = CreateEvent(NULL, TRUE, FALSE, cnst.guid);
+	if (GetLastError() == ERROR_ALREADY_EXISTS)
+	{
+		return false;
+	}
+	return true;
+}
+
 #pragma endregion
 
 #pragma region Tray
@@ -619,18 +630,10 @@ void RefreshMenu()
 	CheckPopupItem(IDM_AUTOSTART, RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", cnst.program_name, RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS);
 }
 
-void InitializeTray()
+void RegisterTray()
 {
-	run.tray.cbSize = sizeof(run.tray);
-	run.tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
-	run.tray.hWnd = run.tray_hwnd;
-	wcscpy_s(run.tray.szTip, cnst.program_name);
-	run.tray.uCallbackMessage = cnst.WM_NOTIFY_TB;
-	run.tray.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
-	run.tray.uID = 101;
 	Shell_NotifyIcon(NIM_ADD, &run.tray);
 	Shell_NotifyIcon(NIM_SETVERSION, &run.tray);
-	RefreshMenu();
 }
 
 LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -646,7 +649,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			POINT pt;
 			GetCursorPos(&pt);
 			SetForegroundWindow(hWnd);
-			UINT tray = TrackPopupMenu(run.menu, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
+			UINT tray = TrackPopupMenu(GetSubMenu(run.popup, 0), TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
 			switch (tray) // TODO: Add menu items for colors, and one to open config file locations, and one to reset ApplicationFrameHost (after reset if there is still a bad window, show details to help in bug report)
 			{
 			case IDM_BLUR:
@@ -715,7 +718,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	else if (message == run.WM_TASKBARCREATED)
 	{
 		RefreshHandles();
-		InitializeTray();
+		RegisterTray();
 	}
 	else if (message == run.NEW_TTB_INSTANCE) {
 		run.exit_reason = NewInstance;
@@ -825,17 +828,85 @@ void SetTaskbarBlur()
 
 #pragma region Startup
 
-bool SingleInstance()
+void InitializeAPIs()
 {
-	run.ev = CreateEvent(NULL, TRUE, FALSE, cnst.guid);
-	if (GetLastError() == ERROR_ALREADY_EXISTS)
+	HRESULT result;
+	std::wstring buffer;
+
+	if (FAILED(result = Initialize()))
 	{
-		return false;
+		buffer += L"Initialization of COM failed. Exception from HRESULT: ";
+		buffer += _com_error(result).ErrorMessage();
+		buffer += '\n';
 	}
-	return true;
+
+	if (FAILED(result = ::CoInitialize(NULL)))
+	{
+		buffer += L"Initialization of COM failed. Exception from HRESULT: ";
+		buffer += _com_error(result).ErrorMessage();
+		buffer += '\n';
+	}
+
+	if (FAILED(result = ::CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, (void **)&run.desktop_manager)))
+	{
+		buffer += L"Initialization of VDM failed. Exception from HRESULT: ";
+		buffer += _com_error(result).ErrorMessage();
+		buffer += '\n';
+	}
+
+	OutputDebugString(buffer.c_str());
 }
 
-bool IsFluentPresent()
+void InitializeTray(HINSTANCE hInstance)
+{
+	run.WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated"); // Get the message sent when taskbar gets restarted
+	run.popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU)); // Load our popup menu
+
+	WNDCLASSEX wnd = {
+		sizeof(WNDCLASSEX),					// cbSize
+		CS_HREDRAW | CS_VREDRAW,			// style
+		TrayCallback,						// lpfnWndProc
+		NULL,								// cbClsExtra
+		NULL,								// cbWndExtra
+		hInstance,							// hInstance
+		LoadIcon(NULL, IDI_APPLICATION),	// hIcon
+		LoadCursor(NULL, IDC_ARROW),		// hCursor
+		(HBRUSH)BLACK_BRUSH,				// hbrBackground
+		NULL,								// lpszMenuName
+		cnst.program_name,					// lpszClassName
+		NULL								// hIconSm
+	};
+
+	RegisterClassEx(&wnd);
+
+	run.tray = {
+		sizeof(NOTIFYICONDATA),											// cbSize
+		CreateWindowEx(													// hWnd
+			WS_EX_TOOLWINDOW,													// dwExStyle
+			cnst.program_name,													// lpClassName
+			L"TrayWindow",														// lpWindowName
+			WS_OVERLAPPEDWINDOW,												// dwStyle
+			0,																	// x
+			0,																	// y
+			400,																// nWidth
+			400,																// nHeight
+			NULL,																// hWndParent
+			NULL,																// hMenu
+			hInstance,															// hInstance
+			NULL																// lpParam
+		),
+		101,															// uID
+		NIF_ICON | NIF_TIP | NIF_MESSAGE,								// uFlags
+		cnst.WM_NOTIFY_TB,												// uCallbackMessage
+		LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON))		// hIcon
+	};
+	wcscpy_s(run.tray.szTip, cnst.program_name);
+
+	ShowWindow(run.tray.hWnd, WM_SHOWWINDOW);
+	RegisterTray();
+}
+
+void VerifyFluentPresence()
 {
 	typedef NTSTATUS(__stdcall *pRtlGetVersion)(PRTL_OSVERSIONINFOW);
 	HMODULE ntdll = GetModuleHandle(L"ntdll");
@@ -843,7 +914,7 @@ bool IsFluentPresent()
 	RTL_OSVERSIONINFOW versionInfo;
 	RtlGetVersion(&versionInfo);
 
-	return versionInfo.dwBuildNumber >= 17063;
+	run.fluent_available = versionInfo.dwBuildNumber >= 17063;
 }
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ LPSTR pCmdLine, _In_ int nCmdShow)
@@ -891,59 +962,28 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 		CopyFile(stockExcludeFile, excludeFile, FALSE);
 	}
 
-	run.fluent_available = IsFluentPresent();
+	InitializeAPIs();
+	InitializeTray(hInstance);
+	VerifyFluentPresence();
 
-	ParseConfigFile(configFile); // Config file settings
+	ParseConfigFile(configFile);
 	ParseBlacklistFile(excludeFile);
 
 	run.NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");
-	if (!SingleInstance()) {
+	if (!IsSingleInstance()) {
 		HWND oldInstance = FindWindow(cnst.program_name, L"TrayWindow");
 		SendMessage(oldInstance, run.NEW_TTB_INSTANCE, NULL, NULL);
 	}
-
-	MSG msg; // for message translation and dispatch
-	run.popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
-	run.menu = GetSubMenu(run.popup, 0);
-	WNDCLASSEX wnd = { 0 };
-
-	wnd.hInstance = hInstance;
-	wnd.lpszClassName = cnst.program_name;
-	wnd.lpfnWndProc = TrayCallback;
-	wnd.style = CS_HREDRAW | CS_VREDRAW;
-	wnd.cbSize = sizeof(WNDCLASSEX);
-
-	wnd.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wnd.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wnd.hbrBackground = (HBRUSH)BLACK_BRUSH;
-	RegisterClassEx(&wnd);
-
-	run.tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, cnst.program_name, L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
-		400, 400, NULL, NULL, hInstance, NULL);
-
-	InitializeTray();
-
-	ShowWindow(run.tray_hwnd, WM_SHOWWINDOW);
-
-	// Store stuff
-	if (FAILED(Initialize())) { OutputDebugStringW(L"Initialization of UWP APIs failed. Unable to manipulate startup entry."); }
-	//Windows::ApplicationModel::StartupTask::GetForCurrentPackageAsync()->GetResults()->GetAt(1)->State;
-	// This should not make it crash once it gets packaged into an APPX.
-
-	//Virtual Desktop stuff
-	if (FAILED(::CoInitialize(NULL))) { OutputDebugStringW(L"Initialization of COM failed, VirtualDesktopManager will probably fail too.\n"); }
-	HRESULT desktop_success = ::CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, (void **)&run.desktop_manager);
-	if (FAILED(desktop_success)) { OutputDebugStringW(L"Initialization of VirtualDesktopManager failed, dynamic windows will not support Windows virtual desktops.\n"); }
-
-	RefreshHandles();
+	
+	RefreshHandles(); // Populate our vectors
 	if (opt.dynamicws || opt.peek == Dynamic)
 	{
 		EnumWindows(&EnumWindowsProcess, NULL); // Putting this here so there isn't a
 												// delay between when you start the
 												// program and when the taskbar goes blurry
 	}
-	run.WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
 
+	MSG msg;
 	while (run.run) {
 		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
 			TranslateMessage(&msg);
