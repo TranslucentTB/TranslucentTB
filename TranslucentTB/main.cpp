@@ -13,6 +13,7 @@
 #include <ShellScalingAPI.h>
 #include <shellapi.h>
 #include <comdef.h>
+#include <map>
 #include "resource.h"
 
 using namespace Windows::Foundation;
@@ -115,6 +116,25 @@ const static struct CONSTANTS											// Constants. What else do you need?
 	const LPCWSTR guid = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";		// Used to prevent two instances running at the same time
 	const UINT WM_NOTIFY_TB = 3141;										// Message id for tray callback
 	const LPCWSTR program_name = L"TranslucentTB";						// Sounds weird, but prevents typos
+	const std::map<ACCENTSTATE, UINT> normal_button_map = {				// Holds a map of which setting is associated to which button
+		{ ACCENT_ENABLE_BLURBEHIND,				IDM_BLUR },
+		{ ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_CLEAR },
+		{ ACCENT_NORMAL,						IDM_NORMAL },
+		{ ACCENT_ENABLE_GRADIENT,				IDM_OPAQUE },
+		{ ACCENT_ENABLE_FLUENT,					IDM_FLUENT }
+	};
+	const std::map<ACCENTSTATE, UINT> dynamic_button_map = {			// Holds a map of which setting is associated to which button
+		{ ACCENT_ENABLE_BLURBEHIND,				IDM_DYNAMICWS_BLUR },
+		{ ACCENT_ENABLE_TINTED,					IDM_DYNAMICWS_CLEAR },
+		{ ACCENT_NORMAL,						IDM_DYNAMICWS_NORMAL },
+		{ ACCENT_ENABLE_GRADIENT,				IDM_DYNAMICWS_OPAQUE },
+		{ ACCENT_ENABLE_FLUENT,					IDM_DYNAMICWS_FLUENT }
+	};
+	const std::map<PEEKSTATE, UINT> peek_button_map = {					// Holds a map of which setting is associated to which button
+		{ Disabled,		IDM_NOPEEK },
+		{ Dynamic,		IDM_DPEEK },
+		{ Enabled,		IDM_PEEK }
+	};
 } cnst;
 
 #pragma endregion
@@ -542,82 +562,9 @@ bool CheckPopupItem(UINT item_to_check, bool state)
 
 void RefreshMenu()
 {
-	UINT radio_to_check_regular = NULL;
-	UINT radio_to_check_dynamic = NULL;
-	UINT radio_to_check_peek    = NULL;
-
-	if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
-	{
-		radio_to_check_regular = IDM_BLUR;
-	}
-	else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
-	{
-		radio_to_check_regular = IDM_CLEAR;
-	}
-	else if (opt.taskbar_appearance == ACCENT_NORMAL)
-	{
-		radio_to_check_regular = IDM_NORMAL;
-	}
-	else if (opt.taskbar_appearance == ACCENT_ENABLE_GRADIENT)
-	{
-		radio_to_check_regular = IDM_OPAQUE;
-	}
-	else if (opt.taskbar_appearance == ACCENT_ENABLE_FLUENT)
-	{
-		radio_to_check_regular = IDM_FLUENT;
-	}
-	else
-	{
-		OutputDebugString(L"Unable to determine which radio item to check for regular state!");
-	}
-
-	if (opt.dynamic_ws_state == ACCENT_ENABLE_BLURBEHIND)
-	{
-		radio_to_check_dynamic = IDM_DYNAMICWS_BLUR;
-	}
-	else if (opt.dynamic_ws_state == ACCENT_ENABLE_TINTED)
-	{
-		radio_to_check_dynamic = IDM_DYNAMICWS_CLEAR;
-	}
-	else if (opt.dynamic_ws_state == ACCENT_NORMAL)
-	{
-		radio_to_check_dynamic = IDM_DYNAMICWS_NORMAL;
-	}
-	else if (opt.dynamic_ws_state == ACCENT_ENABLE_GRADIENT)
-	{
-		radio_to_check_dynamic = IDM_DYNAMICWS_OPAQUE;
-	}
-	else if (opt.dynamic_ws_state == ACCENT_ENABLE_FLUENT)
-	{
-		radio_to_check_dynamic = IDM_DYNAMICWS_FLUENT;
-	}
-	else
-	{
-		OutputDebugString(L"Unable to determine which radio item to check for dynamic state!");
-	}
-
-
-
-	if (opt.peek == Enabled)
-	{
-		radio_to_check_peek = IDM_PEEK;
-	}
-	else if (opt.peek == Dynamic)
-	{
-		radio_to_check_peek = IDM_DPEEK;
-	}
-	else if (opt.peek == Disabled)
-	{
-		radio_to_check_peek = IDM_NOPEEK;
-	}
-	else
-	{
-		OutputDebugString(L"Unable to determine which radio item to check for peek!");
-	}
-
-	CheckMenuRadioItem(run.popup, IDM_BLUR, IDM_OPAQUE, radio_to_check_regular, MF_BYCOMMAND);
-	CheckMenuRadioItem(run.popup, IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_OPAQUE, radio_to_check_dynamic, MF_BYCOMMAND);
-	CheckMenuRadioItem(run.popup, IDM_PEEK, IDM_NOPEEK, radio_to_check_peek, MF_BYCOMMAND);
+	CheckMenuRadioItem(run.popup, IDM_BLUR, IDM_FLUENT, cnst.normal_button_map.at(opt.taskbar_appearance), MF_BYCOMMAND);
+	CheckMenuRadioItem(run.popup, IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_FLUENT, cnst.dynamic_button_map.at(opt.dynamic_ws_state), MF_BYCOMMAND);
+	CheckMenuRadioItem(run.popup, IDM_PEEK, IDM_NOPEEK, cnst.peek_button_map.at(opt.peek), MF_BYCOMMAND);
 
 	for (INT item : { IDM_FLUENT, IDM_DYNAMICWS_FLUENT})
 		EnableMenuItem(run.popup, item, MF_BYCOMMAND | (run.fluent_available ? MF_ENABLED : MF_GRAYED));
@@ -734,7 +681,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 {
 	WINDOWPLACEMENT result = {};
-	::GetWindowPlacement(hWnd, &result);
+	GetWindowPlacement(hWnd, &result);
 	if (result.showCmd == SW_MAXIMIZE) {
 		BOOL on_current_desktop = true;
 		if (run.desktop_manager)
@@ -833,21 +780,28 @@ void InitializeAPIs()
 	HRESULT result;
 	std::wstring buffer;
 
+	if (FAILED(result = SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)))
+	{
+		buffer += L"Initialization of DPI failed. Exception from HRESULT: ";
+		buffer += _com_error(result).ErrorMessage();
+		buffer += '\n';
+	}
+
 	if (FAILED(result = Initialize()))
 	{
-		buffer += L"Initialization of COM failed. Exception from HRESULT: ";
+		buffer += L"Initialization of UWP failed. Exception from HRESULT: ";
 		buffer += _com_error(result).ErrorMessage();
 		buffer += '\n';
 	}
 
-	if (FAILED(result = ::CoInitialize(NULL)))
+	if (FAILED(result = CoInitialize(NULL)))
 	{
 		buffer += L"Initialization of COM failed. Exception from HRESULT: ";
 		buffer += _com_error(result).ErrorMessage();
 		buffer += '\n';
 	}
 
-	if (FAILED(result = ::CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, (void **)&run.desktop_manager)))
+	if (FAILED(result = CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, (void **)&run.desktop_manager)))
 	{
 		buffer += L"Initialization of VDM failed. Exception from HRESULT: ";
 		buffer += _com_error(result).ErrorMessage();
@@ -919,7 +873,7 @@ void VerifyFluentPresence()
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ LPSTR pCmdLine, _In_ int nCmdShow)
 {
-	if (FAILED(SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE))) { OutputDebugStringW(L"Per-monitor DPI scaling failed\n"); }
+	InitializeAPIs();
 
 	LPWSTR localAppData;
 
@@ -962,7 +916,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 		CopyFile(stockExcludeFile, excludeFile, FALSE);
 	}
 
-	InitializeAPIs();
 	InitializeTray(hInstance);
 	VerifyFluentPresence();
 
