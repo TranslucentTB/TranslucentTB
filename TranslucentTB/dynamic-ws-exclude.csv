@@ -4,7 +4,7 @@
 ; example:
 ; title, Command Prompt
 ;
-; Name of the .exe file
+; Name of the .exe file. This one is case insensitive
 ; example:
 ; exename, cmd.exe
 ;
@@ -12,7 +12,8 @@
 ; example
 ; class, ConsoleWindowClass
 ;
-; As you might have noticed, all lines beginning with ";" is a comment.
-; if you find dynamic windows is not working correctly
-; uncomment the line below. Note: this will make dynamic windows not work for UWP apps
+; As you might have noticed, lines beginning with ";" are comments.
+
+
+; If you find dynamic windows does not works correctly, uncomment the following line. It will blacklist all UWP apps (which are known to be buggy with dynamic windows).
 ; exename, ApplicationFrameHost.exe

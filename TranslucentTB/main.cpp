@@ -1,20 +1,28 @@
-#include <windows.h>
-#include <iostream>
+#pragma region Includes
+
+// Standard API
+#include <algorithm>
 #include <fstream>
+#include <iostream>
+#include <map>
 #include <string>
 #include <vector>
-#include <tchar.h>
-#include <map>
+
+// Windows API
+#include <comdef.h>
 #include <psapi.h>
+#include <roapi.h>
+#include <shellapi.h>
+#include <ShellScalingAPI.h>
 #include <ShlObj.h>
 #include <Shlwapi.h>
-#include <roapi.h>
-#include <algorithm>
-#include <ShellScalingAPI.h>
-#include <shellapi.h>
-#include <comdef.h>
-#include <map>
+#include <tchar.h>
+#include <windows.h>
+
+// Local
 #include "resource.h"
+
+#pragma endregion
 
 using namespace Windows::Foundation;
 
@@ -83,9 +91,9 @@ static struct OPTIONS											// User settings
 {
 	ACCENTSTATE taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;	// Appearance of the taskbar
 	UINT color = 0x00000000;									// Color to apply to the taskbar
-	bool dynamicws = false;										// Wether dynamic windows are enabled
+	bool dynamicws = false;										// Whether dynamic windows are enabled
 	ACCENTSTATE dynamic_ws_state = ACCENT_ENABLE_BLURBEHIND;	// State to activate when a window is maximised
-	bool dynamicstart = false;									// Wether dynamic start is enabled
+	bool dynamicstart = false;									// Whether dynamic start is enabled
 	PEEKSTATE peek = Enabled;									// Controls how the Aero Peek button is handled
 	std::vector<std::wstring> blacklisted_classes;				// List of window classes the user blacklisted
 	std::vector<std::wstring> blacklisted_filenames;			// List of executable filenames the user blacklisted
@@ -96,41 +104,39 @@ static struct RUNTIME															// Used to store things relevant only to run
 {
 	EXITREASON exit_reason = UserAction;										// Determines if current configuration should be saved when we exit
 	IVirtualDesktopManager *desktop_manager = NULL;								// Used to detect if a window is in the current virtual desktop. Don't forget to check for null on this one
-	UINT WM_TASKBARCREATED;														// Message received when Explorer restarts
-	UINT NEW_TTB_INSTANCE;														// Message sent when an instance should exit because a new one started
 	HWND main_taskbar;															// Handle to taskbar that shows on main monitor
 	std::map<HWND, TASKBARPROPERTIES> taskbars;									// Map for all taskbars and their properties
 	bool should_show_peek;														// Set by the EnumWindowsProcess and determines if peek should be shown when in dynamic mode
 	bool run = true;															// Set to false to break out of the main program loop
 	HMENU popup;																// Tray icon popup
-	int opacity;																// Opacity override. Later stored in opt.color
 	HANDLE ev;																	// Handle to an event. Used for uniqueness
-	HMENU menu;																	// Tray icon context menu
 	NOTIFYICONDATA tray;														// Tray icon
 	HWND tray_hwnd;																// Tray window handle
-	bool fluent_available;														// Wether ACCENT_ENABLE_FLUENT works
+	bool fluent_available;														// Whether ACCENT_ENABLE_FLUENT works
 } run;
 
-const static struct CONSTANTS											// Constants. What else do you need?
+const static struct CONSTANTS													// Constants. What else do you need?
 {
-	const LPCWSTR guid = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";		// Used to prevent two instances running at the same time
-	const UINT WM_NOTIFY_TB = 3141;										// Message id for tray callback
-	const LPCWSTR program_name = L"TranslucentTB";						// Sounds weird, but prevents typos
-	const std::map<ACCENTSTATE, UINT> normal_button_map = {				// Holds a map of which setting is associated to which button
+	const LPCWSTR guid = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";				// Used to prevent two instances running at the same time
+	const UINT WM_NOTIFY_TB = 3141;												// Message id for tray callback
+	const LPCWSTR program_name = L"TranslucentTB";								// Sounds weird, but prevents typos
+	const UINT WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");	// Message received when Explorer restarts
+	const UINT NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");		// Message sent when an instance should exit because a new one started
+	const std::map<ACCENTSTATE, UINT> normal_button_map = {						// Holds a map of which setting is associated to which button
 		{ ACCENT_ENABLE_BLURBEHIND,				IDM_BLUR },
 		{ ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_CLEAR },
 		{ ACCENT_NORMAL,						IDM_NORMAL },
 		{ ACCENT_ENABLE_GRADIENT,				IDM_OPAQUE },
 		{ ACCENT_ENABLE_FLUENT,					IDM_FLUENT }
 	};
-	const std::map<ACCENTSTATE, UINT> dynamic_button_map = {			// Holds a map of which setting is associated to which button
+	const std::map<ACCENTSTATE, UINT> dynamic_button_map = {					// Holds a map of which setting is associated to which button
 		{ ACCENT_ENABLE_BLURBEHIND,				IDM_DYNAMICWS_BLUR },
 		{ ACCENT_ENABLE_TINTED,					IDM_DYNAMICWS_CLEAR },
 		{ ACCENT_NORMAL,						IDM_DYNAMICWS_NORMAL },
 		{ ACCENT_ENABLE_GRADIENT,				IDM_DYNAMICWS_OPAQUE },
 		{ ACCENT_ENABLE_FLUENT,					IDM_DYNAMICWS_FLUENT }
 	};
-	const std::map<PEEKSTATE, UINT> peek_button_map = {					// Holds a map of which setting is associated to which button
+	const std::map<PEEKSTATE, UINT> peek_button_map = {							// Holds a map of which setting is associated to which button
 		{ Disabled,		IDM_NOPEEK },
 		{ Dynamic,		IDM_DPEEK },
 		{ Enabled,		IDM_PEEK }
@@ -148,21 +154,40 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 {
 	if (SetWindowCompositionAttribute)
 	{
-		ACCENTPOLICY policy;
+		static ACCENTPOLICY policy;
 
 		if (appearance != ACCENT_FOLLOW_OPT) // Custom taskbar appearance is set
 		{
-			if (opt.dynamic_ws_state == ACCENT_ENABLE_TINTED)
-			{ // dynamic-ws is set to tint
-				if (appearance == ACCENT_ENABLE_TINTED) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, opt.color, 0 }; } // Window is maximised
-				else { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 }; } // Desktop is shown (this shouldn't ever be called tho, just in case)
+			if (opt.dynamic_ws_state == ACCENT_ENABLE_TINTED) // dynamic-ws is set to tint
+			{
+				if (appearance == ACCENT_ENABLE_TINTED) // Window is maximised
+				{
+					policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, opt.color, 0 };
+				}
+				else // Desktop is shown (this shouldn't ever be called tho, just in case)
+				{
+					policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 };
+				}
 			}
-			else { policy = { appearance, 2, opt.color, 0 }; }
+			else
+			{
+				policy = { appearance, 2, opt.color, 0 };
+			}
 		}
-		else { // Use the defaults
-			if (opt.dynamic_ws_state == ACCENT_ENABLE_TINTED) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 }; } // dynamic-ws is tint and desktop is shown
-			else if (opt.taskbar_appearance == ACCENT_NORMAL) { policy = { (run.fluent_available ? ACCENT_ENABLE_FLUENT : ACCENT_ENABLE_TRANSPARENTGRADIENT), 2, 0x99000000, 0 }; } // normal gradient color
-			else { policy = { opt.taskbar_appearance, 2, opt.color, 0 }; }
+		else // Use the defaults
+		{
+			if (opt.dynamic_ws_state == ACCENT_ENABLE_TINTED) // dynamic-ws is tint and desktop is shown
+			{
+				policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 };
+			}
+			else if (opt.taskbar_appearance == ACCENT_NORMAL) // normal gradient color
+			{
+				policy = { (run.fluent_available ? ACCENT_ENABLE_FLUENT : ACCENT_ENABLE_TRANSPARENTGRADIENT), 2, 0x99000000, 0 };
+			}
+			else
+			{
+				policy = { opt.taskbar_appearance, 2, opt.color, 0 };
+			}
 		}
 
 		WINCOMPATTRDATA data = { WCA_ACCENT_POLICY, &policy, sizeof(ACCENTPOLICY) };
@@ -179,11 +204,24 @@ void AddToStartup()
 	HMODULE hModule = GetModuleHandle(NULL);
 	TCHAR path[MAX_PATH];
 	GetModuleFileName(hModule, path, MAX_PATH);
-	std::wstring unsafePath = path;
-	std::wstring progPath = L"\"" + unsafePath + L"\"";
+	std::wstring safePath = '"' + path + '"';
+
 	HKEY hkey = NULL;
 	LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey); //Creates a key
-	LONG status = RegSetValueEx(hkey, cnst.program_name, 0, REG_SZ, (BYTE *)progPath.c_str(), (DWORD)((progPath.size() + 1) * sizeof(wchar_t)));
+	LONG status = RegSetValueEx(hkey, cnst.program_name, 0, REG_SZ, (BYTE *)safePath.c_str(), (DWORD)((safePath.size() + 1) * sizeof(wchar_t)));
+	RegCloseKey(hkey);
+}
+
+std::wstring Trim(std::wstring& str)
+{
+	size_t first = str.find_first_not_of(' ');
+	size_t last = str.find_last_not_of(' ');
+
+	if (first == std::wstring::npos)
+	{
+		return std::wstring(L"");
+	}
+	return str.substr(first, (last - first + 1));
 }
 
 void ParseSingleConfigOption(std::wstring arg, std::wstring value)
@@ -191,22 +229,29 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 	if (arg == L"accent")
 	{
 		if (value == L"blur")
+		{
 			opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+		}
 		else if (value == L"opaque")
+		{
 			opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
-		else if (value == L"transparent" ||
-			value == L"translucent" ||
-			value == L"clear")
+		}
+		else if (value == L"transparent" ||	value == L"translucent" || value == L"clear")
+		{
 			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+		}
 		else if (value == L"normal")
+		{
 			opt.taskbar_appearance = ACCENT_NORMAL;
+		}
 		else if (value == L"fluent" && run.fluent_available)
+		{
 			opt.taskbar_appearance = ACCENT_ENABLE_FLUENT;
+		}
 	}
 	else if (arg == L"dynamic-ws")
 	{
-		if (value == L"true" ||
-			value == L"enable")
+		if (value == L"true" ||	value == L"enable")
 		{
 			opt.dynamicws = true;
 		}
@@ -238,41 +283,35 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 	}
 	else if (arg == L"dynamic-start")
 	{
-		if (value == L"true" ||
-			value == L"enable")
+		if (value == L"true" || value == L"enable")
 		{
 			opt.dynamicstart = true;
 		}
 	}
-	else if (arg == L"color" ||
-		arg == L"tint")
+	else if (arg == L"color" || arg == L"tint")
 	{
 		if (value.find(L'#') == 0)
 			value = value.substr(1, value.length() - 1);
 
-		size_t numchars = 0;
-		// heh make sure we don't run into overflow errors
-		// TODO use proper range here and check for overflows. Write to logfile and warn user of error.
-		unsigned long long parsed = std::stoull(value, &numchars, 16);
+		value = Trim(value);
+		value = value.substr(value.length() - 6, value.length()); // Avoid running into overflow errors
 
-		opt.color =
-			(parsed & 0xFF000000) +
-			((parsed & 0x00FF0000) >> 16) +
-			(parsed & 0x0000FF00) +
-			((parsed & 0x000000FF) << 16);
+		opt.color = std::stoi(value, (size_t *)0, 16);
 	}
 	else if (arg == L"opacity")
 	{
-		// TODO Same here. Should check range and warn user if the value doesn't fit.
-		size_t numchars = 0;
-		int parsed = std::stoi(value, &numchars, 10);
+		int parsed = std::stoi(value);
 
 		if (parsed < 0)
+		{
 			parsed = 0;
+		}
 		else if (parsed > 255)
+		{
 			parsed = 255;
+		}
 
-		run.opacity = parsed;
+		opt.color = (parsed << 24) + (opt.color & 0x00FFFFFF);
 	}
 	else if (arg == L"peek")
 	{
@@ -296,21 +335,19 @@ void ParseConfigFile(std::wstring path)
 		// Skip comments
 		size_t comment_index = line.find(L';');
 		if (comment_index == 0)
+		{
 			continue;
+		}
 		else
+		{
 			line = line.substr(0, comment_index);
+		}
 
 		size_t split_index = line.find(L'=');
 		std::wstring key = line.substr(0, split_index);
 		std::wstring val = line.substr(split_index + 1, line.length() - split_index - 1);
 
 		ParseSingleConfigOption(key, val);
-	}
-
-	if (run.opacity >= 0)
-	{
-		opt.color = (run.opacity << 24) +
-			(opt.color & 0x00FFFFFF);
 	}
 }
 
@@ -330,17 +367,25 @@ void SaveConfigFile(std::wstring configfile)
 		configstream << L"; Taskbar appearance: opaque, clear, normal, or blur (default)." << endl;
 
 		configstream << L"accent=";
-
-		if (opt.taskbar_appearance == ACCENT_ENABLE_GRADIENT)
-			configstream << L"opaque" << endl;
-		else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
-			configstream << L"clear" << endl;
-		else if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
-			configstream << L"blur" << endl;
-		else if (opt.taskbar_appearance == ACCENT_NORMAL)
-			configstream << L"normal" << endl;
-		else if (opt.taskbar_appearance == ACCENT_ENABLE_FLUENT)
-			configstream << L"fluent" << endl;
+		switch (opt.taskbar_appearance)
+		{
+		case ACCENT_ENABLE_GRADIENT:
+			configstream << L"opaque";
+			break;
+		case ACCENT_ENABLE_TRANSPARENTGRADIENT:
+			configstream << L"clear";
+			break;
+		case ACCENT_ENABLE_BLURBEHIND:
+			configstream << L"blur";
+			break;
+		case ACCENT_NORMAL:
+			configstream << L"normal";
+			break;
+		case ACCENT_ENABLE_FLUENT:
+			configstream << L"fluent";
+			break;
+		}
+		configstream << endl;
 
 		configstream << endl;
 		configstream << L"; Dynamic states: Window States and (WIP) Start Menu" << endl;
@@ -349,60 +394,69 @@ void SaveConfigFile(std::wstring configfile)
 		configstream << L"; you can also set an accent value, which will represent the state of dynamic windows when there is no window maximised" << endl;
 
 		if (!opt.dynamicws)
+		{
 			configstream << L"; ";
+		}
 
 		configstream << L"dynamic-ws=";
+		switch (opt.dynamic_ws_state)
+		{
+		case ACCENT_ENABLE_BLURBEHIND:
+			configstream << L"blur";
+			break;
+		case ACCENT_ENABLE_TINTED:
+			configstream << L"tint";
+			break;
+		case ACCENT_ENABLE_GRADIENT:
+			configstream << L"opaque";
+			break;
+		case ACCENT_NORMAL:
+			configstream << L"normal";
+			break;
+		case ACCENT_ENABLE_FLUENT:
+			configstream << L"fluent";
+			break;
+		default:
+			configstream << L"enable";
+			break;
+		}
+		configstream << endl;
 
-		if (opt.dynamic_ws_state == ACCENT_ENABLE_BLURBEHIND)
-			configstream << L"blur" << endl;
-		else if (opt.dynamic_ws_state == ACCENT_ENABLE_TINTED)
-			configstream << L"tint" << endl;
-		else if (opt.dynamic_ws_state == ACCENT_ENABLE_GRADIENT)
-			configstream << L"opaque" << endl;
-		else if (opt.dynamic_ws_state == ACCENT_NORMAL)
-			configstream << L"normal" << endl;
-		else if (opt.dynamic_ws_state == ACCENT_ENABLE_FLUENT)
-			configstream << L"fluent" << endl;
-		else
-			configstream << L"enable" << endl;
 
 		if (!opt.dynamicstart)
+		{
 			configstream << L"; ";
+		}
 
 		configstream << L"dynamic-start=enable" << endl;
 
 		configstream << endl;
 		configstream << L"; Color and opacity of the taskbar." << endl;
 
-		unsigned int bitreversed =
-			(opt.color & 0xFF000000) +
-			((opt.color & 0x00FF0000) >> 16) +
-			(opt.color & 0x0000FF00) +
-			((opt.color & 0x000000FF) << 16);
+		UINT bitreversed =
+			((opt.color & 0xFF0000) >> 16) +
+			(opt.color & 0x00FF00) +
+			((opt.color & 0x0000FF) << 16);
 		configstream << L"color=" << hex << bitreversed << L"    ; A color in hexadecimal notation." << endl;
 		configstream << L"opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << L"    ; A value in the range 0 to 255." << endl;
 		configstream << endl;
+
 		configstream << L"; Controls how the Aero Peek button behaves" << endl;
 		configstream << L"peek=";
-		if (opt.peek == Disabled)
-			configstream << L"hide" << endl;
-		else if (opt.peek == Dynamic)
-			configstream << L"dynamic" << endl;
-		else
-			configstream << L"show" << endl;
+		switch (opt.peek)
+		{
+		case Disabled:
+			configstream << L"hide";
+			break;
+		case Dynamic:
+			configstream << L"dynamic";
+			break;
+		default:
+			configstream << L"show";
+			break;
+		}
+		configstream << endl;
 	}
-}
-
-std::wstring Trim(std::wstring& str)
-{
-	size_t first = str.find_first_not_of(' ');
-	size_t last = str.find_last_not_of(' ');
-
-	if (first == std::wstring::npos)
-	{
-		return std::wstring(L"");
-	}
-	return str.substr(first, (last - first + 1));
 }
 
 std::vector<std::wstring> ParseByDelimiter(std::wstring row, std::wstring delimiter = L",")
@@ -429,9 +483,13 @@ void ParseBlacklistFile(std::wstring filename)
 	{
 		size_t comment_index = line.find(L';');
 		if (comment_index == 0)
+		{
 			continue;
+		}
 		else
+		{
 			line = line.substr(0, comment_index);
+		}
 
 		if (line.length() > delimiter.length())
 		{
@@ -447,8 +505,7 @@ void ParseBlacklistFile(std::wstring filename)
 			opt.blacklisted_classes = ParseByDelimiter(line, delimiter);
 			opt.blacklisted_classes.erase(opt.blacklisted_classes.begin());
 		}
-		else if (line_lowercase.substr(0, 5) == L"title" ||
-			line.substr(0, 13) == L"windowtitle")
+		else if (line_lowercase.substr(0, 5) == L"title" || line.substr(0, 13) == L"windowtitle")
 		{
 			opt.blacklisted_titles = ParseByDelimiter(line, delimiter);
 			opt.blacklisted_titles.erase(opt.blacklisted_titles.begin());
@@ -487,8 +544,9 @@ void RefreshHandles()
 void TogglePeek(bool status)
 {
 	static bool cached_peek = true;
+	static HWND cached_taskbar = run.main_taskbar;
 
-	if (status != cached_peek)
+	if (status != cached_peek || cached_taskbar != run.main_taskbar)
 	{
 		HWND _tray = FindWindowEx(run.main_taskbar, NULL, L"TrayNotifyWnd", NULL);
 		HWND _peek = FindWindowEx(_tray, NULL, L"TrayShowDesktopButtonWClass", NULL);
@@ -502,34 +560,41 @@ void TogglePeek(bool status)
 		SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
 
 		cached_peek = status;
+		cached_taskbar = run.main_taskbar;
 	}
 }
 
 bool IsWindowBlacklisted(HWND hWnd)
 {
 	// Get respective attributes
-	TCHAR className[MAX_PATH];
-	TCHAR exeName_path[MAX_PATH];
-	TCHAR windowTitle[MAX_PATH];
+	static TCHAR className[MAX_PATH];
+	static TCHAR exeName_path[MAX_PATH];
+	static TCHAR windowTitle[MAX_PATH];
 	GetClassName(hWnd, className, _countof(className));
 	GetWindowText(hWnd, windowTitle, _countof(windowTitle));
 
-	DWORD ProcessId;
+	static DWORD ProcessId;
 	GetWindowThreadProcessId(hWnd, &ProcessId);
 	HANDLE processhandle = OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId);
 	GetModuleFileNameEx(processhandle, NULL, exeName_path, _countof(exeName_path));
 
-	std::wstring exeName = PathFindFileNameW(exeName_path);
+	std::wstring exeName = PathFindFileName(exeName_path);
 	std::wstring w_WindowTitle = windowTitle;
 
 	// Check if the different vars are in their respective vectors
 	for (auto & value : opt.blacklisted_classes)
 	{
-		if (className == value.c_str()) { return true; }
+		if (className == value.c_str())
+		{
+			return true;
+		}
 	}
 	for (auto & value : opt.blacklisted_filenames)
 	{
-		if (exeName == value) { return true; }
+		if (exeName == value)
+		{
+			return true;
+		}
 	}
 	for (auto & value : opt.blacklisted_titles)
 	{
@@ -544,11 +609,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 bool IsSingleInstance()
 {
 	run.ev = CreateEvent(NULL, TRUE, FALSE, cnst.guid);
-	if (GetLastError() == ERROR_ALREADY_EXISTS)
-	{
-		return false;
-	}
-	return true;
+	return GetLastError() != ERROR_ALREADY_EXISTS;
 }
 
 #pragma endregion
@@ -662,12 +723,12 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			}
 		}
 	}
-	else if (message == run.WM_TASKBARCREATED)
+	else if (message == cnst.WM_TASKBARCREATED)
 	{
 		RefreshHandles();
 		RegisterTray();
 	}
-	else if (message == run.NEW_TTB_INSTANCE) {
+	else if (message == cnst.NEW_TTB_INSTANCE) {
 		run.exit_reason = NewInstance;
 		run.run = false;
 	}
@@ -680,12 +741,16 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
 BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 {
-	WINDOWPLACEMENT result = {};
+	static WINDOWPLACEMENT result;
 	GetWindowPlacement(hWnd, &result);
-	if (result.showCmd == SW_MAXIMIZE) {
+	if (result.showCmd == SW_MAXIMIZE)
+	{
 		BOOL on_current_desktop = true;
 		if (run.desktop_manager)
+		{
 			run.desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
+		}
+
 		if (IsWindowVisible(hWnd) && on_current_desktop)
 		{
 			if (!IsWindowBlacklisted(hWnd))
@@ -696,10 +761,14 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 					if (taskbar.second.hmon == _monitor)
 					{
 						if (opt.dynamicws)
+						{
 							taskbar.second.state = WindowMaximised;
+						}
 
 						if (opt.peek == Dynamic && taskbar.first == run.main_taskbar)
+						{
 							run.should_show_peek = true;
+						}
 
 						break;
 					}
@@ -724,7 +793,8 @@ void SetTaskbarBlur()
 		{
 			taskbar.second.state = Normal; // Reset taskbar state
 		}
-		if (opt.dynamicws || opt.peek == Dynamic) {
+		if (opt.dynamicws || opt.peek == Dynamic)
+		{
 			counter = 0;
 			EnumWindows(&EnumWindowsProcess, NULL);
 		}
@@ -733,7 +803,7 @@ void SetTaskbarBlur()
 
 		if (opt.dynamicstart)
 		{
-			TCHAR ForehWndClass[MAX_PATH];
+			static TCHAR ForehWndClass[MAX_PATH];
 
 			HWND foreground = GetForegroundWindow();
 			GetClassName(foreground, ForehWndClass, _countof(ForehWndClass));
@@ -810,7 +880,6 @@ void InitializeAPIs()
 
 void InitializeTray(HINSTANCE hInstance)
 {
-	run.WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated"); // Get the message sent when taskbar gets restarted
 	run.popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU)); // Load our popup menu
 
 	WNDCLASSEX wnd = {
@@ -870,6 +939,11 @@ void VerifyFluentPresence()
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ LPSTR pCmdLine, _In_ int nCmdShow)
 {
+	if (!IsSingleInstance()) {
+		HWND oldInstance = FindWindow(cnst.program_name, L"TrayWindow");
+		SendMessage(oldInstance, cnst.NEW_TTB_INSTANCE, NULL, NULL);
+	}
+
 	InitializeAPIs();
 
 	LPWSTR localAppData;
@@ -918,12 +992,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 
 	ParseConfigFile(configFile);
 	ParseBlacklistFile(excludeFile);
-
-	run.NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");
-	if (!IsSingleInstance()) {
-		HWND oldInstance = FindWindow(cnst.program_name, L"TrayWindow");
-		SendMessage(oldInstance, run.NEW_TTB_INSTANCE, NULL, NULL);
-	}
 	
 	RefreshHandles(); // Populate our vectors
 	if (opt.dynamicws || opt.peek == Dynamic)
@@ -933,8 +1001,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 												// program and when the taskbar goes blurry
 	}
 
-	MSG msg;
 	while (run.run) {
+		static MSG msg;
 		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
