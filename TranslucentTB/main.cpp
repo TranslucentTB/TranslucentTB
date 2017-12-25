@@ -566,11 +566,11 @@ void RefreshMenu()
 	CheckMenuRadioItem(run.popup, IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_FLUENT, cnst.dynamic_button_map.at(opt.dynamic_ws_state), MF_BYCOMMAND);
 	CheckMenuRadioItem(run.popup, IDM_PEEK, IDM_NOPEEK, cnst.peek_button_map.at(opt.peek), MF_BYCOMMAND);
 
-	for (INT item : { IDM_FLUENT, IDM_DYNAMICWS_FLUENT})
-		EnableMenuItem(run.popup, item, MF_BYCOMMAND | (run.fluent_available ? MF_ENABLED : MF_GRAYED));
-
-	for (INT item : { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL, IDM_DYNAMICWS_OPAQUE, IDM_DYNAMICWS_FLUENT })
+	for (INT item : { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL, IDM_DYNAMICWS_OPAQUE })
 		EnableMenuItem(run.popup, item, MF_BYCOMMAND | (opt.dynamicws ? MF_ENABLED : MF_GRAYED));
+
+	EnableMenuItem(run.popup, IDM_FLUENT, MF_BYCOMMAND | (run.fluent_available ? MF_ENABLED : MF_GRAYED));
+	EnableMenuItem(run.popup, IDM_DYNAMICWS_FLUENT, MF_BYCOMMAND | (opt.dynamicws && run.fluent_available ? MF_ENABLED : MF_GRAYED));
 
 	CheckPopupItem(IDM_DYNAMICWS, opt.dynamicws);
 	CheckPopupItem(IDM_DYNAMICSTART, opt.dynamicstart);
@@ -593,6 +593,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	{
 		if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
 		{
+			RefreshMenu();
 			POINT pt;
 			GetCursorPos(&pt);
 			SetForegroundWindow(hWnd);
@@ -659,7 +660,6 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 				run.run = false;
 				break;
 			}
-			RefreshMenu();
 		}
 	}
 	else if (message == run.WM_TASKBARCREATED)
@@ -693,13 +693,15 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 				HMONITOR _monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
 				for (auto &taskbar : run.taskbars)
 				{
-
 					if (taskbar.second.hmon == _monitor)
 					{
-						if (taskbar.second.state != StartMenuOpen)
+						if (opt.dynamicws)
 							taskbar.second.state = WindowMaximised;
+
 						if (opt.peek == Dynamic && taskbar.first == run.main_taskbar)
 							run.should_show_peek = true;
+
+						break;
 					}
 				}
 			}
@@ -727,30 +729,25 @@ void SetTaskbarBlur()
 			EnumWindows(&EnumWindowsProcess, NULL);
 		}
 
+		TogglePeek(run.should_show_peek);
+
 		if (opt.dynamicstart)
 		{
-			HWND foreground;
 			TCHAR ForehWndClass[MAX_PATH];
-			TCHAR ForehWndName[MAX_PATH];
 
-			foreground = GetForegroundWindow();
-			GetWindowText(foreground, ForehWndName, _countof(ForehWndName));
+			HWND foreground = GetForegroundWindow();
 			GetClassName(foreground, ForehWndClass, _countof(ForehWndClass));
 
-			if (!_tcscmp(ForehWndClass, _T("Windows.UI.Core.CoreWindow")) &&
-				(!_tcscmp(ForehWndName, _T("Search")) || !_tcscmp(ForehWndName, _T("Cortana"))))
+			if (!_tcscmp(ForehWndClass, L"Windows.UI.Core.CoreWindow"))
 			{
-				// Detect monitor Start Menu is open on
-				HMONITOR _monitor;
-				_monitor = MonitorFromWindow(foreground, MONITOR_DEFAULTTOPRIMARY);
+				// Detect monitor Start Menu/Action Center is open on
+				 HMONITOR _monitor = MonitorFromWindow(foreground, MONITOR_DEFAULTTOPRIMARY);
 				for (auto &taskbar : run.taskbars)
 				{
 					if (taskbar.second.hmon == _monitor)
 					{
 						taskbar.second.state = StartMenuOpen;
-					}
-					else {
-						taskbar.second.state = Normal;
+						break; // Useless to continue looping, we found what we desired.
 					}
 				}
 			}
@@ -759,15 +756,15 @@ void SetTaskbarBlur()
 
 	for (auto const &taskbar : run.taskbars)
 	{
-		if (taskbar.second.state == WindowMaximised) {
-			SetWindowBlur(taskbar.first, opt.dynamic_ws_state);
-			// A window is maximised; let's make sure that we blur the window.
+		if (taskbar.second.state == WindowMaximised)
+		{
+			SetWindowBlur(taskbar.first, opt.dynamic_ws_state); // A window is maximised; let's make sure that we blur the taskbar.
 		}
-		else if (taskbar.second.state == Normal) {
+		else if (taskbar.second.state == Normal)
+		{
 			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
 		}
 	}
-	TogglePeek(run.should_show_peek);
 	counter++;
 }
 
