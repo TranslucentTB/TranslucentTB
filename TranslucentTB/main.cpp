@@ -588,7 +588,11 @@ bool IsWindowBlacklisted(HWND hWnd)
 {
 	static std::unordered_map<HWND, bool> blacklist_cache;
 
-	if (blacklist_cache.count(hWnd) == 0)
+	if (blacklist_cache.count(hWnd) > 0)
+	{
+		return blacklist_cache[hWnd];
+	}
+	else
 	{
 		if (opt.blacklisted_classes.size() > 0)
 		{
@@ -599,10 +603,13 @@ bool IsWindowBlacklisted(HWND hWnd)
 				if (className == value.c_str())
 				{
 					blacklist_cache[hWnd] = true;
+					return true;
 				}
 			}
 		}
 
+		// Window names can change, but I don't think it will be a big issue if we cache it.
+		// If it ends up affecting stuff, we can remove it from caching easily.
 		if (opt.blacklisted_titles.size() > 0)
 		{
 			static TCHAR windowTitle[MAX_PATH];
@@ -614,10 +621,12 @@ bool IsWindowBlacklisted(HWND hWnd)
 				if (w_WindowTitle.find(value) != std::wstring::npos)
 				{
 					blacklist_cache[hWnd] = true;
+					return true;
 				}
 			}
 		}
 
+		// GetModuleFileNameEx is quite expensive according to the tracing tools, so use it as last resort.
 		if (opt.blacklisted_filenames.size() > 0)
 		{
 			static TCHAR exeName_path[MAX_PATH];
@@ -634,13 +643,14 @@ bool IsWindowBlacklisted(HWND hWnd)
 				if (exeName == value)
 				{
 					blacklist_cache[hWnd] = true;
+					return true;
 				}
 			}
 		}
 
 		blacklist_cache[hWnd] = false;
+		return false;
 	}
-	return blacklist_cache[hWnd];
 }
 
 bool IsWindowOnCurrentDesktop(HWND hWnd)
