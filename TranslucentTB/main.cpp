@@ -2,9 +2,10 @@
 
 // Standard API
 #include <algorithm>
+#include <cwctype>
 #include <fstream>
 #include <iostream>
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <vector>
 
@@ -105,7 +106,7 @@ static struct RUNTIME															// Used to store things relevant only to run
 	EXITREASON exit_reason = UserAction;										// Determines if current configuration should be saved when we exit
 	IVirtualDesktopManager *desktop_manager = NULL;								// Used to detect if a window is in the current virtual desktop. Don't forget to check for null on this one
 	HWND main_taskbar;															// Handle to taskbar that shows on main monitor
-	std::map<HWND, TASKBARPROPERTIES> taskbars;									// Map for all taskbars and their properties
+	std::unordered_map<HWND, TASKBARPROPERTIES> taskbars;						// Map for all taskbars and their properties
 	bool should_show_peek;														// Set by the EnumWindowsProcess and determines if peek should be shown when in dynamic mode
 	bool run = true;															// Set to false to break out of the main program loop
 	HMENU popup;																// Tray icon popup
@@ -115,28 +116,28 @@ static struct RUNTIME															// Used to store things relevant only to run
 	bool fluent_available;														// Whether ACCENT_ENABLE_FLUENT works
 } run;
 
-const static struct CONSTANTS													// Constants. What else do you need?
+const struct CONSTANTS														// Constants. What else do you need?
 {
-	const LPCWSTR guid = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";				// Used to prevent two instances running at the same time
-	const UINT WM_NOTIFY_TB = 3141;												// Message id for tray callback
-	const LPCWSTR program_name = L"TranslucentTB";								// Sounds weird, but prevents typos
-	const UINT WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");	// Message received when Explorer restarts
-	const UINT NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");		// Message sent when an instance should exit because a new one started
-	const std::map<ACCENTSTATE, UINT> normal_button_map = {						// Holds a map of which setting is associated to which button
+	LPCWSTR guid = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";					// Used to prevent two instances running at the same time
+	UINT WM_NOTIFY_TB = 3141;												// Message id for tray callback
+	LPCWSTR program_name = L"TranslucentTB";								// Sounds weird, but prevents typos
+	UINT WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");		// Message received when Explorer restarts
+	UINT NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");		// Message sent when an instance should exit because a new one started
+	std::unordered_map<ACCENTSTATE, UINT> normal_button_map = {				// Holds a map of which setting is associated to which button
 		{ ACCENT_ENABLE_BLURBEHIND,				IDM_BLUR },
 		{ ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_CLEAR },
 		{ ACCENT_NORMAL,						IDM_NORMAL },
 		{ ACCENT_ENABLE_GRADIENT,				IDM_OPAQUE },
 		{ ACCENT_ENABLE_FLUENT,					IDM_FLUENT }
 	};
-	const std::map<ACCENTSTATE, UINT> dynamic_button_map = {					// Holds a map of which setting is associated to which button
+	std::unordered_map<ACCENTSTATE, UINT> dynamic_button_map = {			// Holds a map of which setting is associated to which button
 		{ ACCENT_ENABLE_BLURBEHIND,				IDM_DYNAMICWS_BLUR },
 		{ ACCENT_ENABLE_TINTED,					IDM_DYNAMICWS_CLEAR },
 		{ ACCENT_NORMAL,						IDM_DYNAMICWS_NORMAL },
 		{ ACCENT_ENABLE_GRADIENT,				IDM_DYNAMICWS_OPAQUE },
 		{ ACCENT_ENABLE_FLUENT,					IDM_DYNAMICWS_FLUENT }
 	};
-	const std::map<PEEKSTATE, UINT> peek_button_map = {							// Holds a map of which setting is associated to which button
+	std::unordered_map<PEEKSTATE, UINT> peek_button_map = {					// Holds a map of which setting is associated to which button
 		{ Disabled,		IDM_NOPEEK },
 		{ Dynamic,		IDM_DPEEK },
 		{ Enabled,		IDM_PEEK }
@@ -199,17 +200,31 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 
 #pragma region Configuration
 
-void AddToStartup()
+bool GetStartupState()
 {
-	HMODULE hModule = GetModuleHandle(NULL);
-	TCHAR path[MAX_PATH];
-	GetModuleFileName(hModule, path, MAX_PATH);
-	std::wstring safePath = '"' + path + '"';
+	return SUCCEEDED(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", cnst.program_name, RRF_RT_REG_SZ, NULL, NULL, NULL));
+}
 
-	HKEY hkey = NULL;
-	LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey); //Creates a key
-	LONG status = RegSetValueEx(hkey, cnst.program_name, 0, REG_SZ, (BYTE *)safePath.c_str(), (DWORD)((safePath.size() + 1) * sizeof(wchar_t)));
-	RegCloseKey(hkey);
+void SetStartupState(bool state)
+{
+	HKEY hkey;
+	if (SUCCEEDED(RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey))) //Creates a key
+	{
+		if (state)
+		{
+			HMODULE hModule = GetModuleHandle(NULL);
+			TCHAR path[MAX_PATH];
+			GetModuleFileName(hModule, path, MAX_PATH);
+			std::wstring safePath = '"' + path + '"';
+
+			LONG status = RegSetValueEx(hkey, cnst.program_name, 0, REG_SZ, (BYTE *)safePath.c_str(), (DWORD)((safePath.size() + 1) * sizeof(wchar_t)));
+		}
+		else
+		{
+			RegDeleteValue(hkey, cnst.program_name);
+		}
+		RegCloseKey(hkey);
+	}
 }
 
 std::wstring Trim(std::wstring& str)
@@ -473,6 +488,11 @@ std::vector<std::wstring> ParseByDelimiter(std::wstring row, std::wstring delimi
 	return result;
 }
 
+void ToLower(std::wstring &data)
+{
+	std::transform(data.begin(), data.end(), data.begin(), ::towlower);
+}
+
 void ParseBlacklistFile(std::wstring filename)
 {
 	std::wifstream excludesfilestream(filename);
@@ -499,7 +519,7 @@ void ParseBlacklistFile(std::wstring filename)
 			}
 		}
 		std::wstring line_lowercase = line;
-		std::transform(line_lowercase.begin(), line_lowercase.end(), line_lowercase.begin(), tolower);
+		ToLower(line_lowercase);
 		if (line_lowercase.substr(0, 5) == L"class")
 		{
 			opt.blacklisted_classes = ParseByDelimiter(line, delimiter);
@@ -566,44 +586,78 @@ void TogglePeek(bool status)
 
 bool IsWindowBlacklisted(HWND hWnd)
 {
-	// Get respective attributes
-	static TCHAR className[MAX_PATH];
-	static TCHAR exeName_path[MAX_PATH];
-	static TCHAR windowTitle[MAX_PATH];
-	GetClassName(hWnd, className, _countof(className));
-	GetWindowText(hWnd, windowTitle, _countof(windowTitle));
+	static std::unordered_map<HWND, bool> blacklist_cache;
 
-	static DWORD ProcessId;
-	GetWindowThreadProcessId(hWnd, &ProcessId);
-	HANDLE processhandle = OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId);
-	GetModuleFileNameEx(processhandle, NULL, exeName_path, _countof(exeName_path));
+	if (blacklist_cache.count(hWnd) == 0)
+	{
+		if (opt.blacklisted_classes.size() > 0)
+		{
+			static TCHAR className[MAX_PATH];
+			GetClassName(hWnd, className, _countof(className));
+			for (auto & value : opt.blacklisted_classes)
+			{
+				if (className == value.c_str())
+				{
+					blacklist_cache[hWnd] = true;
+				}
+			}
+		}
 
-	std::wstring exeName = PathFindFileName(exeName_path);
-	std::wstring w_WindowTitle = windowTitle;
+		if (opt.blacklisted_titles.size() > 0)
+		{
+			static TCHAR windowTitle[MAX_PATH];
+			GetWindowText(hWnd, windowTitle, _countof(windowTitle));
+			std::wstring w_WindowTitle = windowTitle;
 
-	// Check if the different vars are in their respective vectors
-	for (auto & value : opt.blacklisted_classes)
-	{
-		if (className == value.c_str())
-		{
-			return true;
+			for (auto & value : opt.blacklisted_titles)
+			{
+				if (w_WindowTitle.find(value) != std::wstring::npos)
+				{
+					blacklist_cache[hWnd] = true;
+				}
+			}
 		}
-	}
-	for (auto & value : opt.blacklisted_filenames)
-	{
-		if (exeName == value)
+
+		if (opt.blacklisted_filenames.size() > 0)
 		{
-			return true;
+			static TCHAR exeName_path[MAX_PATH];
+
+			static DWORD ProcessId;
+			GetWindowThreadProcessId(hWnd, &ProcessId);
+			GetModuleFileNameEx(OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId), NULL, exeName_path, _countof(exeName_path));
+
+			std::wstring exeName = PathFindFileName(exeName_path);
+			ToLower(exeName);
+
+			for (auto & value : opt.blacklisted_filenames)
+			{
+				if (exeName == value)
+				{
+					blacklist_cache[hWnd] = true;
+				}
+			}
 		}
+
+		blacklist_cache[hWnd] = false;
 	}
-	for (auto & value : opt.blacklisted_titles)
+	return blacklist_cache[hWnd];
+}
+
+bool IsWindowOnCurrentDesktop(HWND hWnd)
+{
+	BOOL on_current_desktop = true;
+	if (run.desktop_manager)
 	{
-		if (w_WindowTitle.find(value) != std::wstring::npos)
-		{
-			return true;
-		}
+		run.desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
 	}
-	return false;
+	return on_current_desktop;
+}
+
+bool IsWindowMaximised(HWND hWnd)
+{
+	WINDOWPLACEMENT result;
+	GetWindowPlacement(hWnd, &result);
+	return result.showCmd == SW_MAXIMIZE;
 }
 
 bool IsSingleInstance()
@@ -635,7 +689,7 @@ void RefreshMenu()
 
 	CheckPopupItem(IDM_DYNAMICWS, opt.dynamicws);
 	CheckPopupItem(IDM_DYNAMICSTART, opt.dynamicstart);
-	CheckPopupItem(IDM_AUTOSTART, RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", cnst.program_name, RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS);
+	CheckPopupItem(IDM_AUTOSTART, GetStartupState());
 }
 
 void RegisterTray()
@@ -707,15 +761,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 				opt.peek = Disabled;
 				break;
 			case IDM_AUTOSTART: // TODO: Use UWP Apis
-				if (RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", cnst.program_name, RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
-				{
-					HKEY hkey = NULL;
-					RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
-					RegDeleteValue(hkey, cnst.program_name);
-				}
-				else {
-					AddToStartup();
-				}
+				SetStartupState(!GetStartupState());
 				break;
 			case IDM_EXIT:
 				run.run = false;
@@ -741,38 +787,24 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
 BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 {
-	static WINDOWPLACEMENT result;
-	GetWindowPlacement(hWnd, &result);
-	if (result.showCmd == SW_MAXIMIZE)
+	if (IsWindowVisible(hWnd) && IsWindowMaximised(hWnd) && !IsWindowBlacklisted(hWnd) && IsWindowOnCurrentDesktop(hWnd))
 	{
-		BOOL on_current_desktop = true;
-		if (run.desktop_manager)
+		HMONITOR _monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
+		for (auto &taskbar : run.taskbars)
 		{
-			run.desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
-		}
-
-		if (IsWindowVisible(hWnd) && on_current_desktop)
-		{
-			if (!IsWindowBlacklisted(hWnd))
+			if (taskbar.second.hmon == _monitor)
 			{
-				HMONITOR _monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
-				for (auto &taskbar : run.taskbars)
+				if (opt.dynamicws)
 				{
-					if (taskbar.second.hmon == _monitor)
-					{
-						if (opt.dynamicws)
-						{
-							taskbar.second.state = WindowMaximised;
-						}
-
-						if (opt.peek == Dynamic && taskbar.first == run.main_taskbar)
-						{
-							run.should_show_peek = true;
-						}
-
-						break;
-					}
+					taskbar.second.state = WindowMaximised;
 				}
+
+				if (opt.peek == Dynamic && taskbar.first == run.main_taskbar)
+				{
+					run.should_show_peek = true;
+				}
+
+				break;
 			}
 		}
 	}
@@ -826,13 +858,14 @@ void SetTaskbarBlur()
 
 	for (auto const &taskbar : run.taskbars)
 	{
-		if (taskbar.second.state == WindowMaximised)
+		switch (taskbar.second.state)
 		{
+		case WindowMaximised:
 			SetWindowBlur(taskbar.first, opt.dynamic_ws_state); // A window is maximised; let's make sure that we blur the taskbar.
-		}
-		else if (taskbar.second.state == Normal)
-		{
+			break;
+		case Normal:
 			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
+			break;
 		}
 	}
 	counter++;
