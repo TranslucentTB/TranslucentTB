@@ -198,6 +198,27 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 
 #pragma endregion
 
+#pragma region String manipulation
+
+void ToLower(std::wstring &data)
+{
+	std::transform(data.begin(), data.end(), data.begin(), ::towlower);
+}
+
+std::wstring Trim(std::wstring& str)
+{
+	size_t first = str.find_first_not_of(' ');
+	size_t last = str.find_last_not_of(' ');
+
+	if (first == std::wstring::npos)
+	{
+		return std::wstring(L"");
+	}
+	return str.substr(first, (last - first + 1));
+}
+
+#pragma endregion
+
 #pragma region Configuration
 
 bool GetStartupState()
@@ -225,18 +246,6 @@ void SetStartupState(bool state)
 		}
 		RegCloseKey(hkey);
 	}
-}
-
-std::wstring Trim(std::wstring& str)
-{
-	size_t first = str.find_first_not_of(' ');
-	size_t last = str.find_last_not_of(' ');
-
-	if (first == std::wstring::npos)
-	{
-		return std::wstring(L"");
-	}
-	return str.substr(first, (last - first + 1));
 }
 
 void ParseSingleConfigOption(std::wstring arg, std::wstring value)
@@ -486,11 +495,6 @@ std::vector<std::wstring> ParseByDelimiter(std::wstring row, std::wstring delimi
 		row.erase(0, pos + delimiter.length());
 	}
 	return result;
-}
-
-void ToLower(std::wstring &data)
-{
-	std::transform(data.begin(), data.end(), data.begin(), ::towlower);
 }
 
 void ParseBlacklistFile(std::wstring filename)
