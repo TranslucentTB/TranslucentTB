@@ -113,7 +113,7 @@ static struct RUNTIME															// Used to store things relevant only to run
 	HANDLE ev;																	// Handle to an event. Used for uniqueness
 	NOTIFYICONDATA tray;														// Tray icon
 	HWND tray_hwnd;																// Tray window handle
-	bool fluent_available;														// Whether ACCENT_ENABLE_FLUENT works
+	bool fluent_available = false;												// Whether ACCENT_ENABLE_FLUENT works
 } run;
 
 const struct CONSTANTS														// Constants. What else do you need?
@@ -1003,11 +1003,13 @@ void VerifyFluentPresence()
 	// Importing a driver-specific function because it's the easiest way to acquire the current OS version without being lied to
 
 	typedef NTSTATUS(__stdcall *pRtlGetVersion)(PRTL_OSVERSIONINFOW);
-	pRtlGetVersion RtlGetVersion = (pRtlGetVersion)GetProcAddress(GetModuleHandle(L"ntdll.dll"), "RtlGetVersion");
-	RTL_OSVERSIONINFOW versionInfo;
-	RtlGetVersion(&versionInfo);
-
-	run.fluent_available = versionInfo.dwBuildNumber >= 17063;
+	static pRtlGetVersion RtlGetVersion = (pRtlGetVersion)GetProcAddress(GetModuleHandle(L"ntdll.dll"), "RtlGetVersion"); // Using static here shuts up code analysis /shrug
+	if (RtlGetVersion)
+	{
+		RTL_OSVERSIONINFOW versionInfo;
+		RtlGetVersion(&versionInfo);
+		run.fluent_available = versionInfo.dwBuildNumber >= 17063;
+	}
 }
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ LPSTR pCmdLine, _In_ int nCmdShow)
