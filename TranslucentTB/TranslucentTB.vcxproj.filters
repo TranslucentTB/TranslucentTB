@@ -17,13 +17,6 @@
       <UniqueIdentifier>{8a3034e1-4c07-4ca8-a036-8cfc161a562d}</UniqueIdentifier>
       <Extensions>cfg;csv</Extensions>
     </Filter>
-    <Filter Include="Documentation">
-      <UniqueIdentifier>{8a2e107d-81ab-4fd9-8067-e994a63ded11}</UniqueIdentifier>
-      <Extensions>txt;md</Extensions>
-    </Filter>
-    <Filter Include="LICENSE">
-      <UniqueIdentifier>{a96f464f-6d8c-4b19-81dd-c68fbaf1882e}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -52,19 +45,5 @@
     <None Include="dynamic-ws-exclude.csv">
       <Filter>Configuration Files</Filter>
     </None>
-    <None Include="..\usage.md">
-      <Filter>Documentation</Filter>
-    </None>
-    <None Include="..\Readme.md">
-      <Filter>Documentation</Filter>
-    </None>
-    <None Include="..\COPYING">
-      <Filter>LICENSE</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="SetWindowCompositionAttribute-description.txt">
-      <Filter>Documentation</Filter>
-    </Text>
   </ItemGroup>
 </Project>
