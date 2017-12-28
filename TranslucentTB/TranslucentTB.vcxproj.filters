@@ -45,5 +45,7 @@
     <None Include="dynamic-ws-exclude.csv">
       <Filter>Configuration Files</Filter>
     </None>
+    <None Include="..\LICENSE.md" />
+    <None Include="..\Readme.md" />
   </ItemGroup>
 </Project>
