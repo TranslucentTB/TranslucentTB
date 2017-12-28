@@ -259,7 +259,7 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		{
 			opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
 		}
-		else if (value == L"transparent" ||	value == L"translucent" || value == L"clear")
+		else if (value == L"transparent" || value == L"translucent" || value == L"clear")
 		{
 			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 		}
@@ -274,7 +274,7 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 	}
 	else if (arg == L"dynamic-ws")
 	{
-		if (value == L"true" ||	value == L"enable")
+		if (value == L"true" || value == L"enable")
 		{
 			opt.dynamicws = true;
 		}
@@ -881,7 +881,7 @@ void SetTaskbarBlur()
 			if (!_tcscmp(ForehWndClass, L"Windows.UI.Core.CoreWindow"))
 			{
 				// Detect monitor Start Menu/Action Center is open on
-				 HMONITOR _monitor = MonitorFromWindow(foreground, MONITOR_DEFAULTTOPRIMARY);
+				HMONITOR _monitor = MonitorFromWindow(foreground, MONITOR_DEFAULTTOPRIMARY);
 				for (auto &taskbar : run.taskbars)
 				{
 					if (taskbar.second.hmon == _monitor)
