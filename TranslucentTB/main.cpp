@@ -483,22 +483,33 @@ void SaveConfigFile(std::wstring configfile)
 	}
 }
 
-std::vector<std::wstring> ParseByDelimiter(std::wstring row, std::wstring delimiter = L",")
+void AddValuesToVectorByDelimiter(std::wstring delimiter, std::vector<std::wstring> &vector, std::wstring line)
 {
-	std::vector<std::wstring> result;
-	std::wstring token;
-	size_t pos = 0;
-	while ((pos = row.find(delimiter)) != std::string::npos)
+	size_t pos;
+	std::wstring value;
+
+	// First lets remove the key
+	if ((pos = line.find(delimiter)) != std::wstring::npos)
 	{
-		token = Trim(row.substr(0, pos));
-		result.push_back(token);
-		row.erase(0, pos + delimiter.length());
+		line.erase(0, pos + delimiter.length());
 	}
-	return result;
+
+	// Now iterate and add the values
+	while ((pos = line.find(delimiter)) != std::wstring::npos)
+	{
+		value = Trim(line.substr(0, pos));
+		vector.push_back(value);
+		line.erase(0, pos + delimiter.length());
+	}
 }
 
 void ParseBlacklistFile(std::wstring filename)
 {
+	for (auto vector : { opt.blacklisted_classes, opt.blacklisted_filenames, opt.blacklisted_titles })
+	{
+		vector.clear(); // Clear our vectors
+	}
+
 	std::wifstream excludesfilestream(filename);
 
 	std::wstring delimiter = L","; // Change to change the char(s) used to split,
@@ -522,22 +533,21 @@ void ParseBlacklistFile(std::wstring filename)
 				line.append(delimiter);
 			}
 		}
+
 		std::wstring line_lowercase = line;
 		ToLower(line_lowercase);
+
 		if (line_lowercase.substr(0, 5) == L"class")
 		{
-			opt.blacklisted_classes = ParseByDelimiter(line, delimiter);
-			opt.blacklisted_classes.erase(opt.blacklisted_classes.begin());
+			AddValuesToVectorByDelimiter(delimiter, opt.blacklisted_classes, line);
 		}
 		else if (line_lowercase.substr(0, 5) == L"title" || line.substr(0, 13) == L"windowtitle")
 		{
-			opt.blacklisted_titles = ParseByDelimiter(line, delimiter);
-			opt.blacklisted_titles.erase(opt.blacklisted_titles.begin());
+			AddValuesToVectorByDelimiter(delimiter, opt.blacklisted_titles, line);
 		}
 		else if (line_lowercase.substr(0, 7) == L"exename")
 		{
-			opt.blacklisted_filenames = ParseByDelimiter(line, delimiter);
-			opt.blacklisted_filenames.erase(opt.blacklisted_filenames.begin());
+			AddValuesToVectorByDelimiter(delimiter, opt.blacklisted_filenames, line_lowercase);
 		}
 	}
 }
@@ -985,6 +995,8 @@ void InitializeTray(HINSTANCE hInstance)
 
 void VerifyFluentPresence()
 {
+	// Importing a driver-specific function because it's the easiest way to acquire the current OS version without being lied to
+
 	typedef NTSTATUS(__stdcall *pRtlGetVersion)(PRTL_OSVERSIONINFOW);
 	pRtlGetVersion RtlGetVersion = (pRtlGetVersion)GetProcAddress(GetModuleHandle(L"ntdll.dll"), "RtlGetVersion");
 	RTL_OSVERSIONINFOW versionInfo;
@@ -995,11 +1007,13 @@ void VerifyFluentPresence()
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ LPSTR pCmdLine, _In_ int nCmdShow)
 {
+	// If there already is another instance running, tell it to exit
 	if (!IsSingleInstance()) {
 		HWND oldInstance = FindWindow(cnst.program_name, L"TrayWindow");
 		SendMessage(oldInstance, cnst.NEW_TTB_INSTANCE, NULL, NULL);
 	}
 
+	// Initialize COM, UWP, set DPI awareness, and acquire a VirtualDesktopManager interface
 	InitializeAPIs();
 
 	LPWSTR localAppData;
@@ -1043,20 +1057,23 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 		CopyFile(stockExcludeFile, excludeFile, FALSE);
 	}
 
-	InitializeTray(hInstance);
+	// Verify our runtime
 	VerifyFluentPresence();
 
+	// Parse our configuration
 	ParseConfigFile(configFile);
 	ParseBlacklistFile(excludeFile);
-	
-	RefreshHandles(); // Populate our vectors
-	if (opt.dynamicws || opt.peek == Dynamic)
-	{
-		EnumWindows(&EnumWindowsProcess, NULL); // Putting this here so there isn't a
-												// delay between when you start the
-												// program and when the taskbar goes blurry
-	}
 
+	// Initialize GUI
+	InitializeTray(hInstance);
+
+	// Populate our vectors
+	RefreshHandles();
+
+	// Scan windows to start taskbar with the correct mode immediatly
+	if (opt.dynamicws || opt.peek == Dynamic) EnumWindows(&EnumWindowsProcess, NULL);
+
+	// Message loop
 	while (run.run) {
 		static MSG msg;
 		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
@@ -1067,8 +1084,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 		Sleep(10);
 	}
 
+	// If it's a new instance, don't save or restore taskbar to default
 	if (run.exit_reason != NewInstance)
 	{
+		// Save configuration before we change opt
 		SaveConfigFile(configFile);
 
 		// Restore default taskbar appearance
@@ -1079,8 +1098,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ L
 		SetTaskbarBlur();
 	}
 
+	// Close the uniqueness handle to allow other instances to run
 	CloseHandle(run.ev);
+
+	// Notify Explorer we are exiting
 	Shell_NotifyIcon(NIM_DELETE, &run.tray);
+
+	// Exit
 	return 0;
 }
 
