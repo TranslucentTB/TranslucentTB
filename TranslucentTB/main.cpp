@@ -148,11 +148,11 @@ const struct CONSTANTS														// Constants. What else do you need?
 
 #pragma region That one function that does all the magic
 
-typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
-static pSetWindowCompositionAttribute SetWindowCompositionAttribute = (pSetWindowCompositionAttribute)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowCompositionAttribute");
-
 void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 {
+	typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
+	static pSetWindowCompositionAttribute SetWindowCompositionAttribute = (pSetWindowCompositionAttribute)GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute");
+
 	if (SetWindowCompositionAttribute)
 	{
 		static ACCENTPOLICY policy;
@@ -665,7 +665,7 @@ bool IsWindowOnCurrentDesktop(HWND hWnd)
 
 bool IsWindowMaximised(HWND hWnd)
 {
-	WINDOWPLACEMENT result;
+	static WINDOWPLACEMENT result;
 	GetWindowPlacement(hWnd, &result);
 	return result.showCmd == SW_MAXIMIZE;
 }
@@ -680,23 +680,33 @@ bool IsSingleInstance()
 
 #pragma region Tray
 
-bool CheckPopupItem(UINT item_to_check, bool state)
+DWORD CheckPopupItem(UINT item_to_check, bool state)
 {
 	return CheckMenuItem(run.popup, item_to_check, MF_BYCOMMAND | (state ? MF_CHECKED : MF_UNCHECKED) | MF_ENABLED);
 }
 
+bool EnablePopupItem(UINT item_to_enable, bool state)
+{
+	return EnableMenuItem(run.popup, item_to_enable, MF_BYCOMMAND | (state ? MF_ENABLED : MF_GRAYED));
+}
+
+bool CheckPopupRadioItem(UINT from, UINT to, UINT item_to_check)
+{
+	return CheckMenuRadioItem(run.popup, from, to, item_to_check, MF_BYCOMMAND);
+}
+
 void RefreshMenu()
 {
-	CheckMenuRadioItem(run.popup, IDM_BLUR, IDM_FLUENT, cnst.normal_button_map.at(opt.taskbar_appearance), MF_BYCOMMAND);
-	CheckMenuRadioItem(run.popup, IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_FLUENT, cnst.dynamic_button_map.at(opt.dynamic_ws_state), MF_BYCOMMAND);
-	CheckMenuRadioItem(run.popup, IDM_PEEK, IDM_NOPEEK, cnst.peek_button_map.at(opt.peek), MF_BYCOMMAND);
+	// This block of CheckPopupRadioItem might throw, but if that happens we just need to update the map, or something really fucked up happened
+	CheckPopupRadioItem(IDM_BLUR, IDM_FLUENT, cnst.normal_button_map.at(opt.taskbar_appearance));
+	CheckPopupRadioItem(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_FLUENT, cnst.dynamic_button_map.at(opt.dynamic_ws_state));
+	CheckPopupRadioItem(IDM_PEEK, IDM_NOPEEK, cnst.peek_button_map.at(opt.peek));
 
-	for (INT item : { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL, IDM_DYNAMICWS_OPAQUE })
-		EnableMenuItem(run.popup, item, MF_BYCOMMAND | (opt.dynamicws ? MF_ENABLED : MF_GRAYED));
+	for (int item : { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL, IDM_DYNAMICWS_OPAQUE })
+		EnablePopupItem(item, opt.dynamicws);
 
-	EnableMenuItem(run.popup, IDM_FLUENT, MF_BYCOMMAND | (run.fluent_available ? MF_ENABLED : MF_GRAYED));
-	EnableMenuItem(run.popup, IDM_DYNAMICWS_FLUENT, MF_BYCOMMAND | (opt.dynamicws && run.fluent_available ? MF_ENABLED : MF_GRAYED));
-
+	EnablePopupItem(IDM_FLUENT, run.fluent_available);
+	EnablePopupItem(IDM_DYNAMICWS_FLUENT, opt.dynamicws && run.fluent_available);
 	CheckPopupItem(IDM_DYNAMICWS, opt.dynamicws);
 	CheckPopupItem(IDM_DYNAMICSTART, opt.dynamicstart);
 	CheckPopupItem(IDM_AUTOSTART, GetStartupState());
@@ -972,8 +982,7 @@ void InitializeTray(HINSTANCE hInstance)
 void VerifyFluentPresence()
 {
 	typedef NTSTATUS(__stdcall *pRtlGetVersion)(PRTL_OSVERSIONINFOW);
-	HMODULE ntdll = GetModuleHandle(L"ntdll");
-	pRtlGetVersion RtlGetVersion = (pRtlGetVersion)GetProcAddress(ntdll, "RtlGetVersion");
+	pRtlGetVersion RtlGetVersion = (pRtlGetVersion)GetProcAddress(GetModuleHandle(L"ntdll.dll"), "RtlGetVersion");
 	RTL_OSVERSIONINFOW versionInfo;
 	RtlGetVersion(&versionInfo);
 
