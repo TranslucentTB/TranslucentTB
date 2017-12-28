@@ -204,7 +204,7 @@ void ToLower(std::wstring &data)
 	std::transform(data.begin(), data.end(), data.begin(), ::towlower);
 }
 
-std::wstring Trim(std::wstring& str)
+std::wstring Trim(const std::wstring& str)
 {
 	size_t first = str.find_first_not_of(' ');
 	size_t last = str.find_last_not_of(' ');
@@ -237,7 +237,7 @@ void SetStartupState(bool state)
 			GetModuleFileName(hModule, path, MAX_PATH);
 			std::wstring safePath = '"' + path + '"';
 
-			LONG status = RegSetValueEx(hkey, cnst.program_name, 0, REG_SZ, (BYTE *)safePath.c_str(), (DWORD)((safePath.size() + 1) * sizeof(wchar_t)));
+			RegSetValueEx(hkey, cnst.program_name, 0, REG_SZ, (BYTE *)safePath.c_str(), (DWORD)((safePath.size() + 1) * sizeof(wchar_t)));
 		}
 		else
 		{
@@ -568,7 +568,7 @@ void RefreshHandles()
 	_properties.state = Normal;
 	run.taskbars.insert(std::make_pair(run.main_taskbar, _properties));
 
-	while (secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", NULL))
+	while ((secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", NULL)) != 0)
 	{
 		_properties.hmon = MonitorFromWindow(secondtaskbar, MONITOR_DEFAULTTOPRIMARY);
 		_properties.state = Normal;
@@ -823,7 +823,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
 #pragma region Main logic
 
-BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam)
+BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM)
 {
 	if (IsWindowVisible(hWnd) && IsWindowMaximised(hWnd) && !IsWindowBlacklisted(hWnd) && IsWindowOnCurrentDesktop(hWnd))
 	{
@@ -1011,7 +1011,7 @@ void VerifyFluentPresence()
 	}
 }
 
-int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPreInst, _In_ LPSTR pCmdLine, _In_ int nCmdShow)
+int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int)
 {
 	// If there already is another instance running, tell it to exit
 	if (!IsSingleInstance()) {
