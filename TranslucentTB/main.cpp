@@ -561,12 +561,14 @@ void RefreshHandles()
 	HWND secondtaskbar = NULL;
 	TASKBARPROPERTIES _properties;
 
+	// Older handles are invalid, so clear the map to be ready for new ones
 	run.taskbars.clear();
-	run.main_taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
 
+	run.main_taskbar = FindWindow(L"Shell_TrayWnd", NULL);
 	_properties.hmon = MonitorFromWindow(run.main_taskbar, MONITOR_DEFAULTTOPRIMARY);
 	_properties.state = Normal;
 	run.taskbars.insert(std::make_pair(run.main_taskbar, _properties));
+
 	while (secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", NULL))
 	{
 		_properties.hmon = MonitorFromWindow(secondtaskbar, MONITOR_DEFAULTTOPRIMARY);
@@ -590,6 +592,7 @@ void TogglePeek(bool status)
 
 		// This is a really terrible hack, but it's the only way I found to make the changes reflect instantly.
 		// Toggles the overflow area popup twice. Nearly imperceptible.
+		// If you have a better solution, let me know or send a pull request
 		SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
 		SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
 
@@ -608,6 +611,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 	}
 	else
 	{
+		// This is the fastest because we do the less string manipulation, so always try it first
 		if (opt.blacklisted_classes.size() > 0)
 		{
 			static TCHAR className[MAX_PATH];
@@ -622,6 +626,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 			}
 		}
 
+		// Try it second because idk
 		// Window names can change, but I don't think it will be a big issue if we cache it.
 		// If it ends up affecting stuff, we can remove it from caching easily.
 		if (opt.blacklisted_titles.size() > 0)
