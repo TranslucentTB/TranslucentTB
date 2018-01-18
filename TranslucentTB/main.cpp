@@ -113,9 +113,12 @@ static struct RUNTIME															// Used to store things relevant only to run
 	NOTIFYICONDATA tray;														// Tray icon
 	HWND tray_hwnd;																// Tray window handle
 	bool fluent_available = false;												// Whether ACCENT_ENABLE_FLUENT works
+	TCHAR config_folder[MAX_PATH];												// Folder where configuration is stored
+	TCHAR config_file[MAX_PATH];												// Location of configuration file
+	TCHAR exclude_file[MAX_PATH];												// Location of blacklist file
 } run;
 
-const struct CONSTANTS														// Constants. What else do you need?
+const static struct CONSTANTS												// Constants. What else do you need?
 {
 	LPCWSTR guid = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";					// Used to prevent two instances running at the same time
 	UINT WM_NOTIFY_TB = 3141;												// Message id for tray callback
@@ -141,6 +144,8 @@ const struct CONSTANTS														// Constants. What else do you need?
 		{ Dynamic,		IDM_DPEEK },
 		{ Enabled,		IDM_PEEK }
 	};
+	LPWSTR config_file = L"config.cfg";										// Name of configuration file
+	LPWSTR exclude_file = L"dynamic-ws-exclude.csv";						// Name of dynamic windows blacklist file
 } cnst;
 
 #pragma endregion
@@ -219,6 +224,68 @@ std::wstring Trim(const std::wstring& str)
 #pragma endregion
 
 #pragma region Configuration
+
+HRESULT GetPaths()
+{
+	LPWSTR localAppData;
+	HRESULT error = SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_DEFAULT, NULL, &localAppData);
+
+	if (FAILED(error))
+	{
+		return error;
+	}
+
+	PathCombine(run.config_folder, localAppData, cnst.program_name);
+	PathCombine(run.config_file, run.config_folder, cnst.config_file);
+	PathCombine(run.exclude_file, run.config_folder, cnst.exclude_file);
+
+	return ERROR_SUCCESS;
+}
+
+void ApplyStock(LPWSTR filename)
+{
+	TCHAR exeFolder[MAX_PATH];
+	GetModuleFileName(GetModuleHandle(NULL), exeFolder, MAX_PATH);
+	PathRemoveFileSpec(exeFolder);
+
+	TCHAR stockFile[MAX_PATH];
+	PathCombine(stockFile, exeFolder, filename);
+
+	TCHAR configFile[MAX_PATH];
+	PathCombine(configFile, run.config_folder, filename);
+
+	if (!PathIsDirectory(run.config_folder))
+	{
+		CreateDirectory(run.config_folder, NULL);
+	}
+
+	CopyFile(stockFile, configFile, FALSE);
+}
+
+void CheckAndRunWelcome()
+{
+	if (!PathIsDirectory(run.config_folder))
+	{
+		// String concatenation is hard OK
+		std::wstring message;
+		message += L"Welcome to ";
+		message += cnst.program_name;
+		message += L"!\n\n";
+		message += L"You can tweak the taskbar's appearance with the tray icon. If it's your cup of tea, you can also edit the configuration files, located at \"";
+		message += run.config_folder;
+		message += '"';
+
+		MessageBox(NULL, message.c_str(), std::wstring(cnst.program_name).c_str(), MB_ICONINFORMATION | MB_OK);
+	}
+	if (!PathFileExists(run.config_file))
+	{
+		ApplyStock(cnst.config_file);
+	}
+	if (!PathFileExists(run.exclude_file))
+	{
+		ApplyStock(cnst.exclude_file);
+	}
+}
 
 bool GetStartupState()
 {
@@ -313,10 +380,13 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 	}
 	else if (arg == L"color" || arg == L"tint")
 	{
-		if (value.find(L'#') == 0)
-			value = value.substr(1, value.length() - 1);
-
 		value = Trim(value);
+
+		if (value.find(L'#') == 0)
+		{
+			value = value.substr(1, value.length() - 1);
+		}
+
 		value = value.substr(value.length() - 6, value.length()); // Avoid running into overflow errors
 
 		opt.color = std::stoi(value, (size_t *)0, 16);
@@ -349,9 +419,9 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 	}
 }
 
-void ParseConfigFile(std::wstring path)
+void ParseConfigFile()
 {
-	std::wifstream configstream(path);
+	std::wifstream configstream(run.config_file);
 
 	for (std::wstring line; std::getline(configstream, line); )
 	{
@@ -374,8 +444,9 @@ void ParseConfigFile(std::wstring path)
 	}
 }
 
-void SaveConfigFile(std::wstring configfile)
+void SaveConfigFile()
 {
+	std::wstring configfile(run.config_file);
 	if (!configfile.empty())
 	{
 		using namespace std;
@@ -502,8 +573,9 @@ void AddValuesToVectorByDelimiter(std::wstring delimiter, std::vector<std::wstri
 	}
 }
 
-void ParseBlacklistFile(std::wstring filename)
+void ParseBlacklistFile()
 {
+	std::wstring filename(run.exclude_file);
 	for (auto vector : { opt.blacklisted_classes, opt.blacklisted_filenames, opt.blacklisted_titles })
 	{
 		vector.clear(); // Clear our vectors
@@ -1022,53 +1094,22 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	// Initialize COM, UWP, set DPI awareness, and acquire a VirtualDesktopManager interface
 	InitializeAPIs();
 
-	LPWSTR localAppData;
-
-	if (FAILED(SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_DEFAULT, NULL, &localAppData)))
+	// Get configuration file paths
+	if (FAILED(GetPaths()))
 	{
-		MessageBox(NULL, L"Failed to get LocalAppData folder location!\n\nProgram will exit.", (std::wstring(cnst.program_name) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
+		MessageBox(NULL, L"Failed to determine configuration files locations!\n\nProgram will exit.", (std::wstring(cnst.program_name) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
 		return 1;
 	}
 
-	TCHAR configFolder[MAX_PATH];
-	TCHAR excludeFile[MAX_PATH];
-	TCHAR configFile[MAX_PATH];
-	TCHAR exeFolder[MAX_PATH];
-	TCHAR stockConfigFile[MAX_PATH];
-	TCHAR stockExcludeFile[MAX_PATH];
-
-	PathCombine(configFolder, localAppData, cnst.program_name);
-	PathCombine(configFile, configFolder, L"config.cfg");
-	PathCombine(excludeFile, configFolder, L"dynamic-ws-exclude.csv");
-
-	HMODULE hModule = GetModuleHandle(NULL);
-	GetModuleFileName(hModule, exeFolder, MAX_PATH);
-	PathRemoveFileSpec(exeFolder);
-
-	PathCombine(stockConfigFile, exeFolder, L"config.cfg");
-	PathCombine(stockExcludeFile, exeFolder, L"dynamic-ws-exclude.csv");
-
-	if (!PathFileExists(configFolder))
-	{
-		// TODO: First run experience
-		CreateDirectory(configFolder, NULL);
-	}
-
-	if (!PathFileExists(configFile))
-	{
-		CopyFile(stockConfigFile, configFile, FALSE);
-	}
-	if (!PathFileExists(excludeFile))
-	{
-		CopyFile(stockExcludeFile, excludeFile, FALSE);
-	}
+	// If the configuration files don't exist, restore the files and show welcome to the users
+	CheckAndRunWelcome();
 
 	// Verify our runtime
 	VerifyFluentPresence();
 
 	// Parse our configuration
-	ParseConfigFile(configFile);
-	ParseBlacklistFile(excludeFile);
+	ParseConfigFile();
+	ParseBlacklistFile();
 
 	// Initialize GUI
 	InitializeTray(hInstance);
@@ -1094,7 +1135,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	if (run.exit_reason != NewInstance)
 	{
 		// Save configuration before we change opt
-		SaveConfigFile(configFile);
+		SaveConfigFile();
 
 		// Restore default taskbar appearance
 		opt.taskbar_appearance = ACCENT_NORMAL;
