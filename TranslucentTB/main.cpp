@@ -1095,9 +1095,14 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	InitializeAPIs();
 
 	// Get configuration file paths
-	if (FAILED(GetPaths()))
+	HRESULT error = GetPaths();
+	if (FAILED(error))
 	{
-		MessageBox(NULL, L"Failed to determine configuration files locations!\n\nProgram will exit.", (std::wstring(cnst.program_name) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
+		std::wstring message;
+		message += L"Failed to determine configuration files locations!\n\nProgram will exit.\n\nException from HRESULT: ";
+		message += _com_error(error).ErrorMessage();
+
+		MessageBox(NULL, message.c_str(), (std::wstring(cnst.program_name) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
 		return 1;
 	}
 
