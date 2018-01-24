@@ -13,7 +13,4 @@
 ; class, ConsoleWindowClass
 ;
 ; As you might have noticed, lines beginning with ";" are comments.
-
-
-; If you find dynamic windows does not works correctly, uncomment the following line. It will blacklist all UWP apps (which are known to be buggy with dynamic windows).
-; exename, ApplicationFrameHost.exe
+; Write your configurations entries below (or above, I'm not your master):

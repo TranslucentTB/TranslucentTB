@@ -10,6 +10,7 @@
 
 // Windows API
 #include <comdef.h>
+#include <dwmapi.h>
 #include <psapi.h>
 #include <roapi.h>
 #include <shellapi.h>
@@ -159,7 +160,7 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 
 	if (SetWindowCompositionAttribute)
 	{
-		static ACCENTPOLICY policy;
+		ACCENTPOLICY policy;
 
 		if (appearance != ACCENT_FOLLOW_OPT) // Custom taskbar appearance is set
 		{
@@ -685,14 +686,13 @@ bool IsWindowBlacklisted(HWND hWnd)
 		// This is the fastest because we do the less string manipulation, so always try it first
 		if (opt.blacklisted_classes.size() > 0)
 		{
-			static TCHAR className[MAX_PATH];
+			TCHAR className[MAX_PATH];
 			GetClassName(hWnd, className, _countof(className));
 			for (auto & value : opt.blacklisted_classes)
 			{
 				if (className == value.c_str())
 				{
-					blacklist_cache[hWnd] = true;
-					return true;
+					return blacklist_cache[hWnd] = true;
 				}
 			}
 		}
@@ -702,7 +702,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 		// If it ends up affecting stuff, we can remove it from caching easily.
 		if (opt.blacklisted_titles.size() > 0)
 		{
-			static TCHAR windowTitle[MAX_PATH];
+			TCHAR windowTitle[MAX_PATH];
 			GetWindowText(hWnd, windowTitle, _countof(windowTitle));
 			std::wstring w_WindowTitle = windowTitle;
 
@@ -710,8 +710,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 			{
 				if (w_WindowTitle.find(value) != std::wstring::npos)
 				{
-					blacklist_cache[hWnd] = true;
-					return true;
+					return blacklist_cache[hWnd] = true;
 				}
 			}
 		}
@@ -719,10 +718,10 @@ bool IsWindowBlacklisted(HWND hWnd)
 		// GetModuleFileNameEx is quite expensive according to the tracing tools, so use it as last resort.
 		if (opt.blacklisted_filenames.size() > 0)
 		{
-			static TCHAR exeName_path[MAX_PATH];
-
-			static DWORD ProcessId;
+			DWORD ProcessId;
 			GetWindowThreadProcessId(hWnd, &ProcessId);
+
+			TCHAR exeName_path[MAX_PATH];
 			GetModuleFileNameEx(OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId), NULL, exeName_path, _countof(exeName_path));
 
 			std::wstring exeName = PathFindFileName(exeName_path);
@@ -732,14 +731,12 @@ bool IsWindowBlacklisted(HWND hWnd)
 			{
 				if (exeName == value)
 				{
-					blacklist_cache[hWnd] = true;
-					return true;
+					return blacklist_cache[hWnd] = true;
 				}
 			}
 		}
 
-		blacklist_cache[hWnd] = false;
-		return false;
+		return blacklist_cache[hWnd] = false;
 	}
 }
 
@@ -755,9 +752,16 @@ bool IsWindowOnCurrentDesktop(HWND hWnd)
 
 bool IsWindowMaximised(HWND hWnd)
 {
-	static WINDOWPLACEMENT result;
+	WINDOWPLACEMENT result;
 	GetWindowPlacement(hWnd, &result);
 	return result.showCmd == SW_MAXIMIZE;
+}
+
+bool IsWindowCloaked(HWND hWnd)
+{
+	int cloaked;
+	DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, &cloaked, sizeof(int));
+	return cloaked;
 }
 
 bool IsSingleInstance()
@@ -897,7 +901,10 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
 BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM)
 {
-	if (IsWindowVisible(hWnd) && IsWindowMaximised(hWnd) && !IsWindowBlacklisted(hWnd) && IsWindowOnCurrentDesktop(hWnd))
+	// IsWindowCloaked should take care of checking if it's on the current desktop.
+	// But that's undefined behavior.
+	// So eh, do both but with IsWindowOnCurrentDesktop last.
+	if (IsWindowVisible(hWnd) && IsWindowMaximised(hWnd) && !IsWindowCloaked(hWnd) && !IsWindowBlacklisted(hWnd) && IsWindowOnCurrentDesktop(hWnd))
 	{
 		HMONITOR _monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
 		for (auto &taskbar : run.taskbars)
@@ -945,9 +952,9 @@ void SetTaskbarBlur()
 
 		if (opt.dynamicstart)
 		{
-			static TCHAR ForehWndClass[MAX_PATH];
-
 			HWND foreground = GetForegroundWindow();
+
+			TCHAR ForehWndClass[MAX_PATH];
 			GetClassName(foreground, ForehWndClass, _countof(ForehWndClass));
 
 			if (!_tcscmp(ForehWndClass, L"Windows.UI.Core.CoreWindow"))
@@ -1123,11 +1130,14 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	RefreshHandles();
 
 	// Scan windows to start taskbar with the correct mode immediatly
-	if (opt.dynamicws || opt.peek == Dynamic) EnumWindows(&EnumWindowsProcess, NULL);
+	if (opt.dynamicws || opt.peek == Dynamic)
+	{
+		EnumWindows(&EnumWindowsProcess, NULL);
+	}
 
 	// Message loop
 	while (run.run) {
-		static MSG msg;
+		MSG msg;
 		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
