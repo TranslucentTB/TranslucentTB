@@ -298,7 +298,8 @@ void CheckAndRunWelcome()
 
 bool GetStartupState()
 {
-	return SUCCEEDED(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", cnst.program_name, RRF_RT_REG_SZ, NULL, NULL, NULL));
+	// SUCCEEDED macro considers ERROR_FILE_NOT_FOUND as succeeded ???
+	return RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", cnst.program_name, RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS;
 }
 
 void SetStartupState(bool state)
@@ -311,9 +312,9 @@ void SetStartupState(bool state)
 			HMODULE hModule = GetModuleHandle(NULL);
 			TCHAR path[MAX_PATH];
 			GetModuleFileName(hModule, path, MAX_PATH);
-			std::wstring safePath = '"' + path + '"';
+			PathQuoteSpaces(path);
 
-			RegSetValueEx(hkey, cnst.program_name, 0, REG_SZ, (BYTE *)safePath.c_str(), (DWORD)((safePath.size() + 1) * sizeof(wchar_t)));
+			RegSetValueEx(hkey, cnst.program_name, 0, REG_SZ, (BYTE *)path, _tcslen(path) * sizeof(TCHAR));
 		}
 		else
 		{
@@ -852,7 +853,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			GetCursorPos(&pt);
 			SetForegroundWindow(hWnd);
 			UINT tray = TrackPopupMenu(GetSubMenu(run.popup, 0), TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
-			switch (tray) // TODO: Add menu items for colors, and one to open config file locations, and one to reset ApplicationFrameHost (after reset if there is still a bad window, show details to help in bug report)
+			switch (tray) // TODO: Add menu items to edit config files, add dynamic windows ACCENT_ENABLE_TRANSPARENT_GRADIENT
 			{
 			case IDM_BLUR:
 				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
