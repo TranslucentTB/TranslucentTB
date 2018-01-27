@@ -19,6 +19,7 @@ EXPORT CColourPicker::CColourPicker(HWND hParentWindow, unsigned short r, unsign
 		SetRGB(r, g, b);
 	else
 		SetHSV(r, g, b);
+	UseAlpha = CP_USE_ALPHA;
 	SetAlpha(a);
 	OldCol = CurrCol;
 	

@@ -164,6 +164,7 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 	if (SetWindowCompositionAttribute)
 	{
 		ACCENTPOLICY policy;
+		UINT color = (opt.color & 0xFF00FF00) + ((opt.color & 0x00FF0000) >> 16) + ((opt.color & 0x000000FF) << 16);
 
 		if (appearance != ACCENT_FOLLOW_OPT) // Custom taskbar appearance is set
 		{
@@ -171,7 +172,7 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 			{
 				if (appearance == ACCENT_ENABLE_TINTED) // Window is maximised
 				{
-					policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, opt.color, 0 };
+					policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, color, 0 };
 				}
 				else // Desktop is shown (this shouldn't ever be called tho, just in case)
 				{
@@ -195,7 +196,7 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 			}
 			else
 			{
-				policy = { opt.taskbar_appearance, 2, opt.color, 0 };
+				policy = { opt.taskbar_appearance, 2, color, 0 };
 			}
 		}
 
@@ -530,12 +531,7 @@ void SaveConfigFile()
 
 		configstream << endl;
 		configstream << L"; Color and opacity of the taskbar." << endl;
-
-		UINT bitreversed =
-			((opt.color & 0xFF0000) >> 16) +
-			(opt.color & 0x00FF00) +
-			((opt.color & 0x0000FF) << 16);
-		configstream << L"color=" << hex << bitreversed << L"    ; A color in hexadecimal notation." << endl;
+		configstream << L"color=" << hex << (opt.color & 0x00FFFFFF) << L"    ; A color in hexadecimal notation." << endl;
 		configstream << L"opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << L"    ; A value in the range 0 to 255." << endl;
 		configstream << endl;
 
@@ -890,6 +886,29 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			case IDM_DYNAMICSTART:
 				opt.dynamicstart = !opt.dynamicstart;
 				break;
+			case IDM_COLOR:
+			{
+				unsigned short a;
+				float alphaPercent;
+
+				a = (opt.color & 0xFF000000) >> 24;
+				alphaPercent = a / 255.0f;
+				a = (unsigned short)std::round(alphaPercent * 100);
+
+				unsigned short r = (opt.color & 0x00FF0000) >> 16;
+				unsigned short g = (opt.color & 0x0000FF00) >> 8;
+				unsigned short b = (opt.color & 0x000000FF);
+
+				CColourPicker *picker = new CColourPicker(NULL, r, g, b, a, true);
+				picker->CreatecolourPicker(CP_USE_ALPHA);
+				SColour newColor = picker->GetCurrentColour();
+
+				alphaPercent = newColor.a / 100.0f;
+				a = (unsigned short)std::round(alphaPercent * 255);
+
+				opt.color = (a << 24) + (newColor.r << 16) + (newColor.g << 8) + newColor.b;
+				break;
+			}
 			case IDM_PEEK:
 				opt.peek = Enabled;
 				break;
