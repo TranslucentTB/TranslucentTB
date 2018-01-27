@@ -869,6 +869,6 @@ void UpdateValues(HWND hDlg, SColour col)
 	SetDlgItemInt(hDlg, IDC_SATURATION, col.s, false);
 	SetDlgItemInt(hDlg, IDC_VALUE, col.v, false);
     
-	sprintf(buff, "%02X%02X%02X", col.r, col.g, col.b);
+	sprintf_s(buff, "%02X%02X%02X", col.r, col.g, col.b);
 	SetDlgItemText(hDlg, IDC_HEXCOL, buff);
 	}
