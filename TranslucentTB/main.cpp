@@ -179,6 +179,10 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 					policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 };
 				}
 			}
+			else if (appearance == ACCENT_NORMAL)
+			{
+				policy = { (run.fluent_available ? ACCENT_ENABLE_FLUENT : ACCENT_ENABLE_TRANSPARENTGRADIENT), 2, 0x99000000, 0 };
+			}
 			else
 			{
 				policy = { appearance, 2, opt.color, 0 };
