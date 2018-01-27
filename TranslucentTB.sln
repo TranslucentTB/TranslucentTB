@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TranslucentTB", "TranslucentTB\TranslucentTB.vcxproj", "{59F844AA-8D3C-431C-B8CC-57682915F551}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CPicker", "CPicker\CPicker.vcxproj", "{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +17,13 @@ Global
 		{59F844AA-8D3C-431C-B8CC-57682915F551}.Debug|x86.Build.0 = Debug|Win32
 		{59F844AA-8D3C-431C-B8CC-57682915F551}.Release|x86.ActiveCfg = Release|Win32
 		{59F844AA-8D3C-431C-B8CC-57682915F551}.Release|x86.Build.0 = Release|Win32
+		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Debug|x86.ActiveCfg = Debug|Win32
+		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Debug|x86.Build.0 = Debug|Win32
+		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Release|x86.ActiveCfg = Release|Win32
+		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = TRUE
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {69F96DC4-E133-4A1B-8AB1-83EF70F8CE12}

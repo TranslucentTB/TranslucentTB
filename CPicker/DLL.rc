@@ -1,0 +1,219 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_COLORPICKER DIALOGEX 0, 0, 256, 187
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_CAPTION
+CAPTION "Colour picker"
+FONT 10, "Verdana", 400, 0, 0x0
+BEGIN
+    PUSHBUTTON      "OK",IDB_OK,69,157,34,12
+    PUSHBUTTON      "Cancel",IDB_CANCEL,108,157,31,12
+    CONTROL         "R:",IDC_R,"Button",BS_AUTORADIOBUTTON | WS_GROUP,186,12,
+                    19,12
+    CONTROL         "G:",IDC_G,"Button",BS_AUTORADIOBUTTON,186,27,19,12
+    CONTROL         "B:",IDC_B,"Button",BS_AUTORADIOBUTTON,186,42,19,12
+    EDITTEXT        IDC_RED,207,12,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_GREEN,207,27,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_BLUE,207,42,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "H:",IDC_H,"Button",BS_AUTORADIOBUTTON,186,76,19,12
+    CONTROL         "S:",IDC_S,"Button",BS_AUTORADIOBUTTON,186,91,19,12
+    CONTROL         "V:",IDC_V,"Button",BS_AUTORADIOBUTTON,186,106,19,12
+    EDITTEXT        IDC_HUE,207,76,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_SATURATION,207,91,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_VALUE,207,106,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_ALPHA,207,58,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_CURRCOLOR,"Static",SS_OWNERDRAW | SS_SUNKEN,195,
+                    140,41,18
+    CONTROL         "",IDC_OLDCOLOR,"Static",SS_OWNERDRAW | SS_NOTIFY | 
+                    SS_SUNKEN,195,158,41,18
+    CONTROL         "",IDC_COLOR,"Static",SS_OWNERDRAW,10,12,128,128
+    CONTROL         "",IDC_COLOR2,"Static",SS_OWNERDRAW | SS_REALSIZEIMAGE,
+                    142,12,17,128,WS_EX_TRANSPARENT
+    CONTROL         "",IDC_ALPHASLIDE,"Static",SS_OWNERDRAW | 
+                    SS_REALSIZEIMAGE,163,12,17,128,WS_EX_TRANSPARENT
+    LTEXT           "%",-1,240,93,8,9
+    LTEXT           "%",-1,240,108,8,9
+    LTEXT           "°",-1,240,76,8,9
+    LTEXT           "A:",IDC_ALPHATXT,195,60,8,9
+    LTEXT           "%",IDC_ALPHATXT2,240,59,8,9
+    EDITTEXT        IDC_HEXCOL,195,122,41,12,ES_CENTER | ES_AUTOHSCROLL | 
+                    ES_READONLY
+END
+
+IDD_COLORPICKERNOALPHA DIALOGEX 0, 0, 238, 179
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_CAPTION
+CAPTION "Colour picker"
+FONT 10, "Verdana", 400, 0, 0x0
+BEGIN
+    PUSHBUTTON      "OK",IDB_OK,69,157,34,12
+    PUSHBUTTON      "Cancel",IDB_CANCEL,108,157,31,12
+    CONTROL         "R:",IDC_R,"Button",BS_AUTORADIOBUTTON | WS_GROUP,166,12,
+                    19,12
+    CONTROL         "G:",IDC_G,"Button",BS_AUTORADIOBUTTON,166,27,19,12
+    CONTROL         "B:",IDC_B,"Button",BS_AUTORADIOBUTTON,166,42,19,12
+    EDITTEXT        IDC_RED,187,12,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_GREEN,187,27,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_BLUE,187,42,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "H:",IDC_H,"Button",BS_AUTORADIOBUTTON,166,57,19,12
+    CONTROL         "S:",IDC_S,"Button",BS_AUTORADIOBUTTON,166,72,19,12
+    CONTROL         "V:",IDC_V,"Button",BS_AUTORADIOBUTTON,166,87,19,12
+    EDITTEXT        IDC_HUE,187,57,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_SATURATION,187,72,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_VALUE,187,87,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_CURRCOLOR,"Static",SS_OWNERDRAW | SS_SUNKEN,175,
+                    132,41,18
+    CONTROL         "",IDC_OLDCOLOR,"Static",SS_OWNERDRAW | SS_NOTIFY | 
+                    SS_SUNKEN,175,150,41,18
+    CONTROL         "",IDC_COLOR,"Static",SS_OWNERDRAW | SS_SUNKEN,10,12,128,
+                    128
+    CONTROL         "",IDC_COLOR2,"Static",SS_OWNERDRAW | SS_REALSIZEIMAGE,
+                    142,12,17,128,WS_EX_TRANSPARENT
+    LTEXT           "%",-1,220,74,8,9
+    LTEXT           "%",-1,220,89,8,9
+    LTEXT           "°",-1,220,57,8,9
+    EDITTEXT        IDC_HEXCOL,175,103,41,12,ES_CENTER | ES_AUTOHSCROLL | 
+                    ES_READONLY
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_COLORPICKER, DIALOG
+    BEGIN
+        LEFTMARGIN, 5
+        RIGHTMARGIN, 251
+        BOTTOMMARGIN, 182
+    END
+
+    IDD_COLORPICKERNOALPHA, DIALOG
+    BEGIN
+        LEFTMARGIN, 5
+        RIGHTMARGIN, 233
+        BOTTOMMARGIN, 174
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Italian (Italy) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ITA)
+#ifdef _WIN32
+LANGUAGE LANG_ITALIAN, SUBLANG_ITALIAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "A simple colour picker dialog complete with RGB/HSV and alpha selection."
+            VALUE "FileDescription", "Colour Picker Dialog"
+            VALUE "FileVersion", "1.0"
+            VALUE "InternalName", "CPicker"
+            VALUE "LegalCopyright", "by nICO (chick80@libero.it) - 2004"
+            VALUE "OriginalFilename", "CPicker.dll"
+            VALUE "ProductName", "Colour Picker Dialog"
+            VALUE "ProductVersion", "1.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // Italian (Italy) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
