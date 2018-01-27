@@ -695,6 +695,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 			{
 				if (className == value.c_str())
 				{
+					#pragma warning(suppress: 6282)
 					return blacklist_cache[hWnd] = true;
 				}
 			}
@@ -713,6 +714,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 			{
 				if (w_WindowTitle.find(value) != std::wstring::npos)
 				{
+					#pragma warning(suppress: 6282)
 					return blacklist_cache[hWnd] = true;
 				}
 			}
@@ -734,11 +736,13 @@ bool IsWindowBlacklisted(HWND hWnd)
 			{
 				if (exeName == value)
 				{
+					#pragma warning(suppress: 6282)
 					return blacklist_cache[hWnd] = true;
 				}
 			}
 		}
 
+		#pragma warning(suppress: 6282)
 		return blacklist_cache[hWnd] = false;
 	}
 }
@@ -755,7 +759,7 @@ bool IsWindowOnCurrentDesktop(HWND hWnd)
 
 bool IsWindowMaximised(HWND hWnd)
 {
-	WINDOWPLACEMENT result;
+	WINDOWPLACEMENT result = {};
 	GetWindowPlacement(hWnd, &result);
 	return result.showCmd == SW_MAXIMIZE;
 }
@@ -1104,11 +1108,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 		HWND oldInstance = FindWindow(cnst.program_name, L"TrayWindow");
 		SendMessage(oldInstance, cnst.NEW_TTB_INSTANCE, NULL, NULL);
 	}
-
-	unsigned short r = 150, g = 190, b = 240, a = 100;
-
-	CColourPicker *cpicker = new CColourPicker(NULL, r, g, b, a, true);
-	cpicker->CreatecolourPicker(CP_USE_ALPHA);
 
 	// Initialize COM, UWP, set DPI awareness, and acquire a VirtualDesktopManager interface
 	InitializeAPIs();
