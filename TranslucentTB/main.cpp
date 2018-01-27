@@ -773,6 +773,24 @@ bool IsSingleInstance()
 	return GetLastError() != ERROR_ALREADY_EXISTS;
 }
 
+bool IsAtLeastBuildNumber(int buildNumber)
+{
+	// Importing a driver-specific function because it's the easiest way to acquire the current OS version without being lied to
+
+	typedef NTSTATUS(__stdcall *pRtlGetVersion)(PRTL_OSVERSIONINFOW);
+	static pRtlGetVersion RtlGetVersion = (pRtlGetVersion)GetProcAddress(GetModuleHandle(L"ntdll.dll"), "RtlGetVersion"); // Using static here shuts up code analysis /shrug
+	if (RtlGetVersion)
+	{
+		RTL_OSVERSIONINFOW versionInfo;
+		RtlGetVersion(&versionInfo);
+		return versionInfo.dwBuildNumber >= buildNumber;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 #pragma endregion
 
 #pragma region Tray
@@ -1079,20 +1097,6 @@ void InitializeTray(HINSTANCE hInstance)
 	RegisterTray();
 }
 
-void VerifyFluentPresence()
-{
-	// Importing a driver-specific function because it's the easiest way to acquire the current OS version without being lied to
-
-	typedef NTSTATUS(__stdcall *pRtlGetVersion)(PRTL_OSVERSIONINFOW);
-	static pRtlGetVersion RtlGetVersion = (pRtlGetVersion)GetProcAddress(GetModuleHandle(L"ntdll.dll"), "RtlGetVersion"); // Using static here shuts up code analysis /shrug
-	if (RtlGetVersion)
-	{
-		RTL_OSVERSIONINFOW versionInfo;
-		RtlGetVersion(&versionInfo);
-		run.fluent_available = versionInfo.dwBuildNumber >= 17063;
-	}
-}
-
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int)
 {
 	// If there already is another instance running, tell it to exit
@@ -1120,7 +1124,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	CheckAndRunWelcome();
 
 	// Verify our runtime
-	VerifyFluentPresence();
+	run.fluent_available = IsAtLeastBuildNumber(17063);
 
 	// Parse our configuration
 	ParseConfigFile();
