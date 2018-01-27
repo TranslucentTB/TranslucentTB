@@ -68,6 +68,9 @@ If you would like to contribute, everyone is welcome to! If you are considering 
 or want to talk an idea out, don't hesitate to jump on Discord or Gitter (see above), or file an issue. The main contributors are often on Discord, Gitter and Github, so we should reply fairly quickly.
 Also, at this time I have no plans of expanding this beyond the taskbar.
 
+The color picker used comes from [this great CodeProject article](https://www.codeproject.com/Articles/9207/An-HSV-RGBA-colour-picker).
+The code has been slightly changed to fix a few bugs, warnings and errors in newer Visual Studio versions.
+
 ### Similar programs
 If you are looking for something that modifies more than just the taskbar, there are several programs out there.
 

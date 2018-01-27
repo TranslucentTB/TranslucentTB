@@ -56,7 +56,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			hdc = GetDC(hWndColor);
 			hcomp = CreateCompatibleDC(hdc);
 
-			GetWindowRect(hWndColor, &rect);
+			GetClientRect(hWndColor, &rect);
 			hbmp = CreateCompatibleBitmap(hdc, 255, 255);
 			SelectObject(hcomp, hbmp);
 			
