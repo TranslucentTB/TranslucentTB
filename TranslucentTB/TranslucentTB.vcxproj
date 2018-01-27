@@ -89,6 +89,11 @@
     <None Include="config.cfg" />
     <None Include="dynamic-ws-exclude.csv" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CPicker\CPicker.vcxproj">
+      <Project>{ab4d3015-2ad4-4152-bdd2-fc1343b22b6c}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Target Name="PostBuildEvent">
     <Copy SourceFiles="@(None)" DestinationFolder="$(TargetDir)" />
   </Target>

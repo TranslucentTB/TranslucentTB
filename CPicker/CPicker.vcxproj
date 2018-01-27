@@ -75,6 +75,7 @@
     <ClCompile Include="PixelBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CPicker.h" />
     <ClInclude Include="CPickerDll.h" />
   </ItemGroup>
   <ItemGroup>

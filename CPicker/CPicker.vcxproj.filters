@@ -29,6 +29,9 @@
     <ClInclude Include="CPickerDll.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CPicker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DLL.rc">

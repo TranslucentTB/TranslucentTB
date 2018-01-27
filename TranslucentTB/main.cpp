@@ -23,6 +23,9 @@
 // Local
 #include "resource.h"
 
+// Libraries
+#include "../CPicker/CPicker.h"
+
 #pragma endregion
 
 using namespace Windows::Foundation;
