@@ -773,7 +773,7 @@ bool IsSingleInstance()
 	return GetLastError() != ERROR_ALREADY_EXISTS;
 }
 
-bool IsAtLeastBuildNumber(int buildNumber)
+bool IsAtLeastBuildNumber(unsigned int buildNumber)
 {
 	// Importing a driver-specific function because it's the easiest way to acquire the current OS version without being lied to
 
@@ -1104,6 +1104,11 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 		HWND oldInstance = FindWindow(cnst.program_name, L"TrayWindow");
 		SendMessage(oldInstance, cnst.NEW_TTB_INSTANCE, NULL, NULL);
 	}
+
+	unsigned short r = 150, g = 190, b = 240, a = 100;
+
+	CColourPicker *cpicker = new CColourPicker(NULL, r, g, b, a, true);
+	cpicker->CreatecolourPicker(CP_USE_ALPHA);
 
 	// Initialize COM, UWP, set DPI awareness, and acquire a VirtualDesktopManager interface
 	InitializeAPIs();
