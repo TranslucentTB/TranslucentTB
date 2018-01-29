@@ -396,8 +396,8 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		{
 			value = value.substr(1, value.length() - 1);
 		}
-
-		value = value.substr(value.length() - 6, value.length()); // Avoid running into overflow errors
+		int start = value.length() - 6;
+		value = value.substr(start > 0 ? start : 0, value.length()); // Avoid bounds errors
 
 		opt.color = std::stoi(value, (size_t *)0, 16);
 	}
