@@ -1,92 +1,108 @@
-# TranslucentTB
+﻿# TranslucentTB
 
 [![Build status](https://ci.appveyor.com/api/projects/status/9yym3vr6s5gc7vk3/branch/develop?svg=true)](https://ci.appveyor.com/project/sylveon/translucenttb/branch/develop)
 [![Join on Discord](https://img.shields.io/discord/304387206552879116.svg)](https://discord.gg/w95DGTK)
 [![Join the chat at https://gitter.im/TranslucentTB/Lobby](https://badges.gitter.im/TranslucentTB/Lobby.svg)](https://gitter.im/TranslucentTB/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Total downloads](https://img.shields.io/github/downloads/TranslucentTB/TranslucentTB/total.svg)](https://github.com/TranslucentTB/TranslucentTB/releases)
 
-A lightweight (uses a few MB of RAM and almost no CPU) utility that makes the Windows taskbar translucent/transparent. Sadly only compatible with Windows 10, as TranslucentTB uses new Windows 10 APIs.
+A lightweight (uses a few MB of RAM and almost no CPU) utility that makes the Windows taskbar translucent/transparent on Windows 10.
 
-You can see how to use the command line in the [usage file](usage.md).
+You can see examples of the customizations you can make in the images below:
 
-You can see examples of the customizations you can make in the image below:
-![taskbar images](https://i.imgur.com/QMnfswp.png)
+![](https://charles.getsharex.com/GbOX4b.png) ![](https://charles.getsharex.com/yX37Vc.png) ![](https://charles.getsharex.com/MPaxeO.png)
+
+## Features
+
+TranslucentTB supports multiple taskbar states and dynamic taskbar states.
+
+ - Advanced **color picker** supporting alpha to change the taskbar's color.
+ - **Taskbar states** (choose one):
+   - **Blur**: Will make the taskbar slightly blurred.
+   - **Clear**: Transparent taskbar.
+   - **Normal**: Classic Windows style.
+   - **Opaque**: No transparency.
+   - **Fluent**: Windows Insider build higher than 17063 only. Will give the taskbar an appearance similar to Microsoft's Fluent Design guidelines.
+ - **Dynamic** modes (these can be used together):
+   - **Dynamic Windows**: Will change the taskbar to a different state if a window is currently maximised.
+   - **Dynamic Peek**: Will hide the Aero Peek button if no window is currently maximised.
+   - **Dynamic Start Menu**: Will restore default taskbar appearance when the start menu is opened.
+ - Ability to **show or hide the Aero Peek** button.
+
+You can see it in action [here](https://gfycat.com/EverlastingCreamyIlladopsis) (Thanks [@Gunny123](https://github.com/Gunny123)!).
+
+## Download
+
+You can download the program (prebuilt executables and source snapshots) [via the releases tab](https://github.com/TranslucentTB/TranslucentTB/releases).
+If you want to get the latest bleedging edge build, you can grab it over at the [AppVeyor artifacts](https://ci.appveyor.com/project/sylveon/translucenttb/build/artifacts). Note that these build may not work, or include features that are partially complete. Use at your own risk.
 
 ## Add to Startup
 
-To add TranslucentTB to startup, run the application through the command line with `TranslucentTB.exe --startup` to automatically add it to the Windows Registry and thus make it start automatically at subsequent boots.  
-It's also possible to do so via the tray icon's context menu.
-
-## Features
-TranslucentTB supports multiple taskbar states and dynamic taskbar states.
-
-Normal taskbar states (choose one):
- - Blurred, which makes the taskbar, well, blurred.
- - Transparent, which makes the taskbar transparent. This will display your whole desktop background.
- - Opaque, which makes your taskbar opaque.
-
-Dynamic taskbar states (these can be used together):
- - Dynamic Window States (dynamic-ws), which will make the taskbar blurred when a window is maximised on the current monitor and transparent otherwise.
- - Dynamic Start Menu (dynamic-sm), which will make your taskbar match the system theme when the Start Menu is open. Does not change the Start Menu.
-
-TranslucentTB also supports custom tints, which makes your taskbar any color you want.
-
-You can see it in action [here](https://gfycat.com/EverlastingCreamyIlladopsis) (Thanks @Gunny123!).
-
-## Download
-You can download the program (prebuilt executables and source snapshots) [via the releases tab](https://github.com/ethanhs/TranslucentTB/releases).
-If you want to get the latest bleedging edge build, you can grab it over at the [AppVeyor artifacts](https://ci.appveyor.com/project/sylveon/translucenttb/build/artifacts). Note that these build may not work, or include features that are partially complete. Use at your own risk.
+To add TranslucentTB to startup, check the "Open at boot" entry in the TranslucentTB tray icon's context menu. If it is grayed out, TranslucentTB startup has been disabled from the Task Manager.
 
 ## Security
-Some antiviruses are over eager, so they might flag this program as malicious. IT IS NOT! Over 50 thousand users have downloaded this program safely. The source is open, you can compile yourself, and I welcome any and all security reviews.
+
+Some antiviruses are over eager, so they might flag this program as malicious. IT IS NOT! Over 150 thousand users have downloaded this program safely. The source is open, you can compile it yourself, and I welcome any and all security reviews.
 
 Speaking of compiling...
 
 ## Building from source
 
-You have two options here: you can checkout either of the `develop` or `master` branches. It is highly recommended that you checkout `master` as it is stable, and `develop` may contain non-working code.
- Via [git](https://git-scm.com):
+You can checkout one of the available branches. However, it recommended to use `master`, as the code here is stable and has been passed through peer review.
+
+Via [git](https://git-scm.com):
 ```
-$ git clone -b master https://github.com/TranslucentTB/TranslucentTB.git
+$ git clone -b <branch-you-want> https://github.com/TranslucentTB/TranslucentTB
+Cloning into 'TranslucentTB'...
+remote: Counting objects: 909, done.
+remote: Compressing objects: 100% (40/40), done.
+remote: Total 909 (delta 44), reused 61 (delta 35), pack-reused 834
+Receiving objects: 100% (909/909), 383.94 KiB | 2.78 MiB/s, done.
+Resolving deltas: 100% (624/624), done.
 ```
 
-You can also download a zip of each branch by clicking on the `Clone or Download` button.
+You can also download a zip archive of each branch by clicking on the `Clone or download` button while browsing that branch's files.
 
-Now that you have the source, you will need Visual Studio 2015. [You can get the free community edition here](https://www.visualstudio.com/vs/community/). 
-Once you have that installed (make sure you have the C++ components, which are included by default). Then you can open TranslucentTB.sln, and press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to build the solution.
-The output will be in either the Release or Debug folder.
+Now that you have the source, you will need Visual Studio 2017. [You can get the free community edition here](https://www.visualstudio.com/vs/community/).
 
-If you don't want to open Visual Studio (or install it), you can (if you haven't installed VS) install the [Visual C++ Build Tools from Microsoft](http://landinghub.visualstudio.com/visual-cpp-build-tools). 
-Then open the `Visual C++ MSBuild Command Prompt` and `cd` into the root directory of this project, before running `msbuild`.
+Once you have that installed (make sure you have the C++ components and Windows SDK  10.0.16299 installed). Then you can open TranslucentTB.sln, and press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to build the solution.
+The output will be in either the Release or Debug folder (depending on which configuration is currently active).
+
+If you don't want to open Visual Studio (or install it), you can install the [Visual C++ Build Tools](http://landinghub.visualstudio.com/visual-cpp-build-tools) and the [Windows SDK](https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk) version 10.0.16299. Both of those are already included in Visual Studio.
+
+Then open the `Visual C++ MSBuild Command Prompt` (or `Developer Command Prompt for VS 2017`) and `cd` into the root directory of this project, before running `msbuild /p:Configuration=Release`.
+
+**Note**: If Visual Studio or msbuild says it cannot find `platform.winmd`, you will need to edit the project file (`TranslucenTB\TranslucentTB.vcxproj`) to replace two environment variables by their real value:
+
+ - `%VCIDEInstallDir%` to `C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC`
+ - `%WindowsSdkDir%` to `C:\Program Files (x86)\Windows Kits\10`
+
+If you changed your installation directories, replace these paths by their correspondant value in your setup.
 
 ## Thanks
 
-I definitly could not have done this without the help of several people:
-@charlesmilette, @MrAksel, @olliethepikachu, and last but certainly not least @PFCKrutonium.
+I definitely could not have done this without the help of several people:
+
+ - [@sylveon](https://github.com/sylveon),
+ - [@MrAksel](https://github.com/MrAksel),
+ - [@olliethepikachu](https://github.com/olliethepikachu),
+ - and last but certainly not least [@PFCKrutonium](https://github.com/PFCKrutonium).
 
 If you would like to contribute, everyone is welcome to! If you are considering a major feature, need guidance, 
-or want to talk an idea out, don't hesitate to jump on Discord or Gitter (see above), or file an issue. The main contributors are often on Discord, Gitter and Github, so we should reply fairly quickly.
+or want to talk an idea out, don't hesitate to jump on Discord or Gitter (see the badges on the top of the README), or file an issue here. The main contributors are often on Discord, Gitter and GitHub, so we should reply fairly quickly.
 Also, at this time I have no plans of expanding this beyond the taskbar.
 
 The color picker used comes from [this great CodeProject article](https://www.codeproject.com/Articles/9207/An-HSV-RGBA-colour-picker).
 The code has been slightly changed to fix a few bugs, warnings and errors in newer Visual Studio versions.
 
 ### Similar programs
+
 If you are looking for something that modifies more than just the taskbar, there are several programs out there.
 
-[Taskbar Tools](https://github.com/Elestriel/TaskbarTools) is a similar program written in C#. Elestriel plans on expanding beyond the taskbar, to Explorer and Start last I heard.
+[Taskbar Tools](https://github.com/Elestriel/TaskbarTools) is a similar program written in C#.
 
-You may have seen similar translucency abilities from programs such as Start is Back++ and Classic Shell. Both of these are great programs, but I don't need the start-replacement features, so I wrote this.
+You may have seen similar translucency abilities from programs such as StartIsBack, Start10 and the now defunct Classic Shell. All of these are great programs, but I don't need the start-replacement features, so I wrote this.
 Also Dynamic States allow for more customisability over the taskbar.
-
-### Known issues
-
-On build 14986, Windows Defender's real time protection sometimes seems to cause Explorer to freeze. There are two work-arounds: temporarily disable Defender when starting it, or start it via the command line.
-I do not know if this is fixed in build 15002.
-
-Dynamic windows (dynamic-ws) on occaison has an issue with UWP Windows. To fix this problem, try ending the ApplicationFrameHost process (this will close open UWP programs!), and restart TranslucentTB. We are working on a solution to this.
-The alternative to this is to uncomment the ApplicationFrameHost line in the blacklist, but this will cause dynamic-ws to fail on UWP windows.
 
 ### License
 
-This program is free software under the GPL v3. Please see the COPYING file for more.
+This program is free software under the GPL v3. Please see the LICENSE.md file for more.
