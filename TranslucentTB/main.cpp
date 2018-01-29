@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cwctype>
 #include <fstream>
+#include <iomanip>
 #include <unordered_map>
 #include <string>
 #include <vector>
@@ -394,10 +395,16 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 
 		if (value.find(L'#') == 0)
 		{
-			value = value.substr(1, value.length() - 1);
+			value = value.substr(1, value.length());
 		}
-		int start = value.length() - 6;
-		value = value.substr(start > 0 ? start : 0, value.length()); // Avoid bounds errors
+
+		// Get only the last 6 characters, keeps compatibility with old version.
+		// It stored AARRGGBB in color, but now we store it as RRGGBB.
+		// We read AA from opacity instead, which the old version also saved alpha to.
+		if (value.length() > 6)
+		{
+			value = value.substr(value.length() - 6, value.length());
+		}
 
 		opt.color = std::stoi(value, (size_t *)0, 16);
 	}
@@ -536,7 +543,12 @@ void SaveConfigFile()
 
 		configstream << endl;
 		configstream << L"; Color and opacity of the taskbar." << endl;
-		configstream << L"color=" << hex << (opt.color & 0x00FFFFFF) << L"    ; A color in hexadecimal notation." << endl;
+
+		configstream << L"color=";
+		configstream.fill('0'); // Sets fill character
+		configstream << setw(6) << hex << (opt.color & 0x00FFFFFF);
+		configstream << L" ; A color in hexadecimal notation." << endl;
+
 		configstream << L"opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << L"    ; A value in the range 0 to 255." << endl;
 		configstream << endl;
 
