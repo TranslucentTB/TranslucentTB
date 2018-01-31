@@ -7,6 +7,10 @@ configuration:
 - Release
 - Debug
 platform: x86
+before_build:
+- ps: update-version.ps1
+build:
+  parallel: true
 test: off
 artifacts:
 - path: $(CONFIGURATION)
