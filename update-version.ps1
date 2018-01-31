@@ -2,7 +2,7 @@
 
 $tag = git describe --abbrev=0 --tags
 $tag_hash = git show-ref -s $tag
-$commits = git rev-list $tag_hash..HEAD --count
+$commits = git rev-list $tag_hash`...HEAD --count
 $tags = (git tag | Measure-Object -Line).Lines
 
 $content = $content.Replace("1,0,0,1", "$tags,$commits,0,0")
