@@ -545,13 +545,11 @@ void SaveConfigFile()
 		configstream << L"; Color and opacity of the taskbar." << endl;
 
 		configstream << L"color=";
-		configstream.fill('0'); // Sets fill character
-		configstream << setw(6) << hex << (opt.color & 0x00FFFFFF);
+		configstream << right << setw(6) << setfill<wchar_t>('0') << hex << (opt.color & 0x00FFFFFF);
 		configstream << L" ; A color in hexadecimal notation." << endl;
 
 		configstream << L"opacity=";
-		configstream.fill(' '); // Sets fill character
-		configstream << setw(3) << to_wstring((opt.color & 0xFF000000) >> 24);
+		configstream << left << setw(3) << setfill<wchar_t>(' ') << to_wstring((opt.color & 0xFF000000) >> 24);
 		configstream << L"  ; A value in the range 0 to 255." << endl;
 		configstream << endl;
 
