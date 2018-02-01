@@ -395,7 +395,7 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 
 		if (value.find(L'#') == 0)
 		{
-			value = value.substr(1, value.length());
+			value = value.substr(1, value.length() - 1);
 		}
 
 		// Get only the last 6 characters, keeps compatibility with old version.
@@ -403,7 +403,7 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		// We read AA from opacity instead, which the old version also saved alpha to.
 		if (value.length() > 6)
 		{
-			value = value.substr(value.length() - 6, value.length());
+			value = value.substr(value.length() - 6, 6);
 		}
 
 		opt.color = std::stoi(value, (size_t *)0, 16);
@@ -549,7 +549,10 @@ void SaveConfigFile()
 		configstream << setw(6) << hex << (opt.color & 0x00FFFFFF);
 		configstream << L" ; A color in hexadecimal notation." << endl;
 
-		configstream << L"opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << L"    ; A value in the range 0 to 255." << endl;
+		configstream << L"opacity=";
+		configstream.fill(' '); // Sets fill character
+		configstream << setw(3) << to_wstring((opt.color & 0xFF000000) >> 24);
+		configstream << L"  ; A value in the range 0 to 255." << endl;
 		configstream << endl;
 
 		configstream << L"; Controls how the Aero Peek button behaves" << endl;
