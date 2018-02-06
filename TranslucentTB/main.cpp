@@ -41,7 +41,8 @@ enum TASKBARSTATE {		// enum to store states of a taskbar
 
 enum EXITREASON {		// enum to store possible exit reasons
 	NewInstance,		// New instance told us to exit
-	UserAction			// Triggered by the user
+	UserAction,			// Triggered by the user
+	UserActionNoSave	// Triggered by the user, but doesn't saves config
 };
 
 enum PEEKSTATE {	// enum to store the user's Aero Peek settings
@@ -939,6 +940,10 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			case IDM_AUTOSTART: // TODO: Use UWP Apis
 				SetStartupState(!GetStartupState());
 				break;
+			case IDM_EXITWITHOUTSAVING:
+				run.exit_reason = UserActionNoSave;
+				run.run = false;
+				break;
 			case IDM_EXIT:
 				run.run = false;
 				break;
@@ -1197,8 +1202,11 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	// If it's a new instance, don't save or restore taskbar to default
 	if (run.exit_reason != NewInstance)
 	{
-		// Save configuration before we change opt
-		SaveConfigFile();
+		if (run.exit_reason != UserActionNoSave)
+		{
+			// Save configuration before we change opt
+			SaveConfigFile();
+		}
 
 		// Restore default taskbar appearance
 		opt.taskbar_appearance = ACCENT_NORMAL;
