@@ -122,6 +122,7 @@ static struct RUNTIME															// Used to store things relevant only to run
 	TCHAR config_folder[MAX_PATH];												// Folder where configuration is stored
 	TCHAR config_file[MAX_PATH];												// Location of configuration file
 	TCHAR exclude_file[MAX_PATH];												// Location of blacklist file
+	int cache_hits;																// Number of times the blacklist cache has been hit
 } run;
 
 const static struct CONSTANTS												// Constants. What else do you need?
@@ -152,6 +153,7 @@ const static struct CONSTANTS												// Constants. What else do you need?
 	};
 	LPWSTR config_file = L"config.cfg";										// Name of configuration file
 	LPWSTR exclude_file = L"dynamic-ws-exclude.csv";						// Name of dynamic windows blacklist file
+	int max_cache_hits = 10000;												// Maximum number of times the blacklist cache may be hit
 } cnst;
 
 #pragma endregion
@@ -642,6 +644,55 @@ void ParseBlacklistFile()
 	}
 }
 
+void EditFile(std::wstring file)
+{
+	// WinAPI reeeeeeeeeeeeeeeeeeeeeeeeee
+	LPWSTR system32;
+	HRESULT error = SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, NULL, &system32);
+	if (FAILED(error))
+	{
+		std::wstring message;
+		message += L"Failed to determine System32 folder location!\n\nException from HRESULT: ";
+		message += _com_error(error).ErrorMessage();
+
+		MessageBox(NULL, message.c_str(), (std::wstring(cnst.program_name) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
+
+		return;
+	}
+
+	TCHAR notepad[MAX_PATH];
+	PathCombine(notepad, system32, L"notepad.exe");
+
+	std::vector<TCHAR> buf(file.begin(), file.end());
+	buf.push_back(0); // Null terminator
+	PathQuoteSpaces(buf.data());
+
+	std::wstring path;
+	path += notepad;
+	path += ' ';
+	path += buf.data();
+
+	STARTUPINFO si = { sizeof(STARTUPINFO) };
+	PROCESS_INFORMATION pi;
+	// Not using lpApplicationName here because if someone has set a redirect to another editor it doesn't works. (eg Notepad2)
+	BOOL success = CreateProcess(NULL, const_cast<LPWSTR>(path.c_str()), NULL, NULL, FALSE, NULL, NULL, NULL, &si, &pi);
+	error = GetLastError();
+	if (success)
+	{
+		WaitForSingleObject(pi.hProcess, INFINITE);
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
+	}
+	else
+	{
+		std::wstring message;
+		message += L"Failed to start Notepad!\n\nException from HRESULT: ";
+		message += _com_error(error).ErrorMessage();
+
+		MessageBox(NULL, message.c_str(), (std::wstring(cnst.program_name) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
+	}
+}
+
 #pragma endregion
 
 #pragma region Utilities
@@ -695,12 +746,19 @@ bool IsWindowBlacklisted(HWND hWnd)
 {
 	static std::unordered_map<HWND, bool> blacklist_cache;
 
-	if (blacklist_cache.count(hWnd) > 0)
+	if (run.cache_hits < cnst.max_cache_hits && blacklist_cache.count(hWnd) > 0)
 	{
+		run.cache_hits++;
 		return blacklist_cache[hWnd];
 	}
 	else
 	{
+		if (run.cache_hits > cnst.max_cache_hits)
+		{
+			run.cache_hits = 0;
+			blacklist_cache.clear();
+		}
+
 		// This is the fastest because we do the less string manipulation, so always try it first
 		if (opt.blacklisted_classes.size() > 0)
 		{
@@ -721,13 +779,14 @@ bool IsWindowBlacklisted(HWND hWnd)
 		// If it ends up affecting stuff, we can remove it from caching easily.
 		if (opt.blacklisted_titles.size() > 0)
 		{
-			TCHAR windowTitle[MAX_PATH];
-			GetWindowText(hWnd, windowTitle, _countof(windowTitle));
-			std::wstring w_WindowTitle = windowTitle;
+			int titleSize = GetWindowTextLength(hWnd) + 1; // For the null terminator
+			std::vector<TCHAR> windowTitleBuffer(titleSize);
+			GetWindowText(hWnd, windowTitleBuffer.data(), titleSize);
+			std::wstring windowTitle = windowTitleBuffer.data();
 
 			for (auto & value : opt.blacklisted_titles)
 			{
-				if (w_WindowTitle.find(value) != std::wstring::npos)
+				if (windowTitle.find(value) != std::wstring::npos)
 				{
 					#pragma warning(suppress: 6282)
 					return blacklist_cache[hWnd] = true;
@@ -939,6 +998,26 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 				break;
 			case IDM_AUTOSTART: // TODO: Use UWP Apis
 				SetStartupState(!GetStartupState());
+				break;
+			case IDM_RETURNTODEFAULTSETTINGS:
+				ApplyStock(cnst.config_file);
+			case IDM_RELOADSETTINGS:
+				ParseConfigFile();
+				break;
+			case IDM_EDITSETTINGS:
+				SaveConfigFile();
+				EditFile(run.config_file);
+				ParseConfigFile();
+				break;
+			case IDM_RETURNTODEFAULTBLACKLIST:
+				ApplyStock(cnst.exclude_file);
+			case IDM_RELOADDYNAMICBLACKLIST:
+				ParseBlacklistFile();
+				break;
+			case IDM_EDITDYNAMICBLACKLIST:
+				EditFile(run.exclude_file);
+				ParseBlacklistFile();
+				run.cache_hits = cnst.max_cache_hits + 1; // Flush cache for instant changes
 				break;
 			case IDM_EXITWITHOUTSAVING:
 				run.exit_reason = UserActionNoSave;
