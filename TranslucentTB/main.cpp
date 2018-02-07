@@ -99,6 +99,7 @@ static struct OPTIONS											// User settings
 	UINT color = 0x00000000;									// Color to apply to the taskbar
 	bool dynamicws = false;										// Whether dynamic windows are enabled
 	ACCENTSTATE dynamic_ws_state = ACCENT_ENABLE_BLURBEHIND;	// State to activate when a window is maximised
+	bool dynamicws_peek = true;									// Whether to use the normal style when using Aero Peek
 	bool dynamicstart = false;									// Whether dynamic start is enabled
 	PEEKSTATE peek = Enabled;									// Controls how the Aero Peek button is handled
 	std::vector<std::wstring> blacklisted_classes;				// List of window classes the user blacklisted
@@ -124,6 +125,7 @@ static struct RUNTIME															// Used to store things relevant only to run
 	TCHAR config_file[MAX_PATH];												// Location of configuration file
 	TCHAR exclude_file[MAX_PATH];												// Location of blacklist file
 	int cache_hits;																// Number of times the blacklist cache has been hit
+	bool peek_active = false;													// Determines if the user is currently peeking the desktop
 } run;
 
 const static struct CONSTANTS												// Constants. What else do you need?
@@ -431,6 +433,13 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 			opt.peek = Dynamic;
 		}
 	}
+	else if (arg == L"dynamic-ws-normal-on-peek")
+	{
+		if (value == L"true" || value == L"enable")
+		{
+			opt.dynamicws_peek = true;
+		}
+	}
 }
 
 void ParseConfigFile()
@@ -496,9 +505,10 @@ void SaveConfigFile()
 		configstream << endl;
 
 		configstream << endl;
-		configstream << L"; Dynamic states: Window States and (WIP) Start Menu" << endl;
+		configstream << L"; Dynamic states: Window States and Start Menu" << endl;
 		configstream << L"; dynamic windows: opaque, tint, normal, or blur (default)." << endl;
 		configstream << L"; dynamic windows can be used in conjunction with a custom color and non-zero opacity!" << endl;
+		configstream << L"; by enabling dynamic-ws-normal-on-peek, dynamic windows will return to the normal non-maximised state when using Aero Peek." << endl;
 		configstream << L"; you can also set an accent value, which will represent the state of dynamic windows when there is no window maximised" << endl;
 
 		if (!opt.dynamicws)
@@ -530,6 +540,13 @@ void SaveConfigFile()
 		}
 		configstream << endl;
 
+
+		if (!opt.dynamicws_peek)
+		{
+			configstream << L"; ";
+		}
+
+		configstream << L"dynamic-ws-normal-on-peek=enable" << endl;
 
 		if (!opt.dynamicstart)
 		{
@@ -591,14 +608,14 @@ void AddValuesToVectorByDelimiter(std::wstring delimiter, std::vector<std::wstri
 void ParseBlacklistFile()
 {
 	std::wstring filename(run.exclude_file);
-	for (auto vector : { opt.blacklisted_classes, opt.blacklisted_filenames, opt.blacklisted_titles })
+	for (std::vector<std::wstring> vector : { opt.blacklisted_classes, opt.blacklisted_filenames, opt.blacklisted_titles })
 	{
 		vector.clear(); // Clear our vectors
 	}
 
 	std::wifstream excludesfilestream(filename);
 
-	std::wstring delimiter = L","; // Change to change the char(s) used to split,
+	const std::wstring delimiter = L","; // Change to change the char(s) used to split,
 
 	for (std::wstring line; std::getline(excludesfilestream, line); )
 	{
@@ -884,11 +901,12 @@ void RefreshMenu()
 	CheckPopupRadioItem(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_FLUENT, cnst.dynamic_button_map.at(opt.dynamic_ws_state));
 	CheckPopupRadioItem(IDM_PEEK, IDM_NOPEEK, cnst.peek_button_map.at(opt.peek));
 
-	for (int const &item : { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL, IDM_DYNAMICWS_OPAQUE })
+	for (const UINT &item : { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL, IDM_DYNAMICWS_OPAQUE, IDM_DYNAMICWS_PEEK })
 		EnablePopupItem(item, opt.dynamicws);
 
 	EnablePopupItem(IDM_FLUENT, run.fluent_available);
 	EnablePopupItem(IDM_DYNAMICWS_FLUENT, opt.dynamicws && run.fluent_available);
+	CheckPopupItem(IDM_DYNAMICWS_PEEK, opt.dynamicws_peek);
 	CheckPopupItem(IDM_DYNAMICWS, opt.dynamicws);
 	CheckPopupItem(IDM_DYNAMICSTART, opt.dynamicstart);
 	CheckPopupItem(IDM_AUTOSTART, GetStartupState());
@@ -934,6 +952,9 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 				break;
 			case IDM_DYNAMICWS:
 				opt.dynamicws = !opt.dynamicws;
+				break;
+			case IDM_DYNAMICWS_PEEK:
+				opt.dynamicws_peek = !opt.dynamicws_peek;
 				break;
 			case IDM_DYNAMICWS_BLUR:
 				opt.dynamic_ws_state = ACCENT_ENABLE_BLURBEHIND;
@@ -1042,7 +1063,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM)
 	if (IsWindowVisible(hWnd) && IsWindowMaximised(hWnd) && !IsWindowCloaked(hWnd) && !IsWindowBlacklisted(hWnd) && IsWindowOnCurrentDesktop(hWnd))
 	{
 		HMONITOR _monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
-		for (auto &taskbar : run.taskbars)
+		for (std::pair<const HWND, TASKBARPROPERTIES> &taskbar : run.taskbars)
 		{
 			if (taskbar.second.hmon == _monitor)
 			{
@@ -1063,6 +1084,11 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM)
 	return true;
 }
 
+void CALLBACK HandleAeroPeekEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
+{
+	run.peek_active = event == 0x21;
+}
+
 void SetTaskbarBlur()
 {
 	static int counter = 0;
@@ -1073,7 +1099,7 @@ void SetTaskbarBlur()
 						// than response time.
 		run.should_show_peek = (opt.peek == Enabled);
 
-		for (auto &taskbar : run.taskbars)
+		for (std::pair<const HWND, TASKBARPROPERTIES> &taskbar : run.taskbars)
 		{
 			taskbar.second.state = Normal; // Reset taskbar state
 		}
@@ -1094,7 +1120,7 @@ void SetTaskbarBlur()
 				// If not, is a window caption of "Start" reliable to check for (does it works on other UI cultures?)
 				HWND start = FindWindow(L"Windows.UI.Core.CoreWindow", NULL);
 				HMONITOR monitor = MonitorFromWindow(start, MONITOR_DEFAULTTOPRIMARY);
-				for (auto &taskbar : run.taskbars)
+				for (std::pair<const HWND, TASKBARPROPERTIES> &taskbar : run.taskbars)
 				{
 					if (taskbar.second.hmon == monitor)
 					{
@@ -1104,9 +1130,14 @@ void SetTaskbarBlur()
 				}
 			}
 		}
+
+		if (opt.dynamicws && opt.dynamicws_peek && run.peek_active)
+		{
+			run.taskbars.at(run.main_taskbar).state = Normal;
+		}
 	}
 
-	for (auto const &taskbar : run.taskbars)
+	for (const std::pair<HWND, TASKBARPROPERTIES> &taskbar : run.taskbars)
 	{
 		switch (taskbar.second.state)
 		{
@@ -1264,6 +1295,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 		EnumWindows(&EnumWindowsProcess, NULL);
 	}
 
+	// Undoc'd, allows to detect when Aero Peek starts and stops
+	HWINEVENTHOOK hook = SetWinEventHook(0x21, 0x22, NULL, HandleAeroPeekEvent, 0, 0, WINEVENT_OUTOFCONTEXT);
+
 	// Message loop
 	while (run.run) {
 		MSG msg;
@@ -1274,6 +1308,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 		SetTaskbarBlur();
 		Sleep(10);
 	}
+
+	UnhookWinEvent(hook);
 
 	// If it's a new instance, don't save or restore taskbar to default
 	if (run.exit_reason != NewInstance)
@@ -1294,6 +1330,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 
 	// Close the uniqueness handle to allow other instances to run
 	CloseHandle(run.ev);
+
+	// Uninitialize UWP and COM
+	CoUninitialize();
+	Uninitialize();
 
 	// Notify Explorer we are exiting
 	Shell_NotifyIcon(NIM_DELETE, &run.tray);
