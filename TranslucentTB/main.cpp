@@ -165,7 +165,7 @@ const static struct CONSTANTS												// Constants. What else do you need?
 
 void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 {
-	typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
+	typedef BOOL(WINAPI *pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA *);
 	static pSetWindowCompositionAttribute SetWindowCompositionAttribute = reinterpret_cast<pSetWindowCompositionAttribute>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
 
 	if (SetWindowCompositionAttribute)
@@ -1185,14 +1185,14 @@ void InitializeAPIs()
 		buffer += '\n';
 	}
 
-	if (FAILED(result = CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, reinterpret_cast<void **>(&run.desktop_manager))))
+	if (FAILED(result = CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, reinterpret_cast<LPVOID *>(&run.desktop_manager))))
 	{
 		buffer += L"Initialization of VDM failed. Exception from HRESULT: ";
 		buffer += _com_error(result).ErrorMessage();
 		buffer += '\n';
 	}
 
-	if (FAILED(result = CoCreateInstance(__uuidof(AppVisibility), NULL, CLSCTX_INPROC_SERVER, IID_IAppVisibility, reinterpret_cast<void **>(&run.app_visibility))))
+	if (FAILED(result = CoCreateInstance(__uuidof(AppVisibility), NULL, CLSCTX_INPROC_SERVER, IID_IAppVisibility, reinterpret_cast<LPVOID *>(&run.app_visibility))))
 	{
 		buffer += L"Initialization of IAV failed. Exception from HRESULT: ";
 		buffer += _com_error(result).ErrorMessage();
