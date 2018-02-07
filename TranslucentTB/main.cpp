@@ -475,12 +475,6 @@ void SaveConfigFile()
 		using namespace std;
 		wofstream configstream(configfile);
 
-		configstream << L"; ===========================================================================" << endl;
-		configstream << L"; Warning" << endl;
-		configstream << L"; File gets overwritten on exit. Only edit when " << cnst.program_name << L" is not running." << endl;
-		configstream << L"; ===========================================================================" << endl;
-		configstream << endl;
-
 		configstream << L"; Taskbar appearance: opaque, clear, normal, or blur (default)." << endl;
 
 		configstream << L"accent=";
@@ -752,11 +746,16 @@ void TogglePeek(bool status)
 	}
 }
 
+void ClearBlacklistCache()
+{
+	run.cache_hits = cnst.max_cache_hits + 1;
+}
+
 bool IsWindowBlacklisted(HWND hWnd)
 {
 	static std::unordered_map<HWND, bool> blacklist_cache;
 
-	if (run.cache_hits < cnst.max_cache_hits && blacklist_cache.count(hWnd) > 0)
+	if (run.cache_hits <= cnst.max_cache_hits && blacklist_cache.count(hWnd) > 0)
 	{
 		run.cache_hits++;
 		return blacklist_cache[hWnd];
@@ -1023,11 +1022,12 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 				ApplyStock(cnst.exclude_file);
 			case IDM_RELOADDYNAMICBLACKLIST:
 				ParseBlacklistFile();
+				ClearBlacklistCache();
 				break;
 			case IDM_EDITDYNAMICBLACKLIST:
 				EditFile(run.exclude_file);
 				ParseBlacklistFile();
-				run.cache_hits = cnst.max_cache_hits + 1; // Flush cache for instant changes
+				ClearBlacklistCache();
 				break;
 			case IDM_EXITWITHOUTSAVING:
 				run.exit_reason = UserActionNoSave;
