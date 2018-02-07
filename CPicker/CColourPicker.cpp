@@ -26,7 +26,7 @@ EXPORT CColourPicker::CColourPicker(HWND hParentWindow, unsigned short r, unsign
 	hParent = hParentWindow;
 	}
 
-EXPORT void CColourPicker::CreatecolourPicker(short AlphaUsage)
+EXPORT void CColourPicker::CreateColourPicker(short AlphaUsage)
 	{
 	UseAlpha = AlphaUsage;
 	
@@ -44,7 +44,7 @@ EXPORT void CColourPicker::CreatecolourPicker(short AlphaUsage)
 		break;
 
 		default:
-			CreatecolourPicker(CP_USE_ALPHA);
+			CreateColourPicker(CP_USE_ALPHA);
 		break;
 		}
 	}

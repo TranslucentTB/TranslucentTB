@@ -986,8 +986,9 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 				unsigned short g = (opt.color & 0x0000FF00) >> 8;
 				unsigned short b = (opt.color & 0x000000FF);
 
+				// Bet 5 bucks a british wrote this library
 				CColourPicker picker(NULL, r, g, b, a, true);
-				picker.CreatecolourPicker(CP_USE_ALPHA);
+				picker.CreateColourPicker(CP_USE_ALPHA);
 				SColour newColor = picker.GetCurrentColour();
 
 				alphaPercent = newColor.a / 100.0f;

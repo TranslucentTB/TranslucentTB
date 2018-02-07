@@ -30,7 +30,7 @@ class CColourPicker
 			unsigned short a, bool IsRGB);
 
 		// Creates the colour picker dialog
-		void CreatecolourPicker(short AlphaUsage);
+		void CreateColourPicker(short AlphaUsage);
 
 		// Functions to set the colour components
 		// NOTE: SetRGB automatically updates HSV and viceversa
