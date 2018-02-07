@@ -166,7 +166,7 @@ const static struct CONSTANTS												// Constants. What else do you need?
 void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 {
 	typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
-	static pSetWindowCompositionAttribute SetWindowCompositionAttribute = (pSetWindowCompositionAttribute)GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute");
+	static pSetWindowCompositionAttribute SetWindowCompositionAttribute = reinterpret_cast<pSetWindowCompositionAttribute>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
 
 	if (SetWindowCompositionAttribute)
 	{
@@ -405,7 +405,7 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 			value = value.substr(value.length() - 6, 6);
 		}
 
-		opt.color = std::stoi(value, (size_t *)0, 16);
+		opt.color = std::stoi(value, static_cast<size_t *>(0), 16);
 	}
 	else if (arg == L"opacity")
 	{
@@ -862,7 +862,7 @@ bool IsAtLeastBuildNumber(unsigned int buildNumber)
 	// Importing a driver-specific function because it's the easiest way to acquire the current OS version without being lied to
 
 	typedef NTSTATUS(__stdcall *pRtlGetVersion)(PRTL_OSVERSIONINFOW);
-	static pRtlGetVersion RtlGetVersion = (pRtlGetVersion)GetProcAddress(GetModuleHandle(L"ntdll.dll"), "RtlGetVersion"); // Using static here shuts up code analysis /shrug
+	static pRtlGetVersion RtlGetVersion = reinterpret_cast<pRtlGetVersion>(GetProcAddress(GetModuleHandle(L"ntdll.dll"), "RtlGetVersion")); // Using static here shuts up code analysis /shrug
 	if (RtlGetVersion)
 	{
 		RTL_OSVERSIONINFOW versionInfo;
@@ -981,7 +981,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
 				a = (opt.color & 0xFF000000) >> 24;
 				alphaPercent = a / 255.0f;
-				a = (unsigned short)std::round(alphaPercent * 100);
+				a = static_cast<unsigned short>(std::round(alphaPercent * 100));
 
 				unsigned short r = (opt.color & 0x00FF0000) >> 16;
 				unsigned short g = (opt.color & 0x0000FF00) >> 8;
@@ -992,7 +992,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 				SColour newColor = picker->GetCurrentColour();
 
 				alphaPercent = newColor.a / 100.0f;
-				a = (unsigned short)std::round(alphaPercent * 255);
+				a = static_cast<unsigned short>(std::round(alphaPercent * 255));
 
 				opt.color = (a << 24) + (newColor.r << 16) + (newColor.g << 8) + newColor.b;
 				break;
@@ -1084,7 +1084,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM)
 	return true;
 }
 
-void CALLBACK HandleAeroPeekEvent(HWINEVENTHOOK hook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
+void CALLBACK HandleAeroPeekEvent(HWINEVENTHOOK, DWORD event, HWND, LONG, LONG, DWORD, DWORD)
 {
 	run.peek_active = event == 0x21;
 }
@@ -1207,18 +1207,18 @@ void InitializeTray(HINSTANCE hInstance)
 	run.popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU)); // Load our popup menu
 
 	WNDCLASSEX wnd = {
-		sizeof(WNDCLASSEX),					// cbSize
-		CS_HREDRAW | CS_VREDRAW,			// style
-		TrayCallback,						// lpfnWndProc
-		NULL,								// cbClsExtra
-		NULL,								// cbWndExtra
-		hInstance,							// hInstance
-		LoadIcon(NULL, IDI_APPLICATION),	// hIcon
-		LoadCursor(NULL, IDC_ARROW),		// hCursor
-		(HBRUSH)BLACK_BRUSH,				// hbrBackground
-		NULL,								// lpszMenuName
-		cnst.program_name,					// lpszClassName
-		NULL								// hIconSm
+		sizeof(WNDCLASSEX),						// cbSize
+		CS_HREDRAW | CS_VREDRAW,				// style
+		TrayCallback,							// lpfnWndProc
+		NULL,									// cbClsExtra
+		NULL,									// cbWndExtra
+		hInstance,								// hInstance
+		LoadIcon(NULL, IDI_APPLICATION),		// hIcon
+		LoadCursor(NULL, IDC_ARROW),			// hCursor
+		reinterpret_cast<HBRUSH>(BLACK_BRUSH),	// hbrBackground
+		NULL,									// lpszMenuName
+		cnst.program_name,						// lpszClassName
+		NULL									// hIconSm
 	};
 
 	RegisterClassEx(&wnd);
