@@ -110,6 +110,7 @@ static struct RUNTIME															// Used to store things relevant only to run
 {
 	EXITREASON exit_reason = UserAction;										// Determines if current configuration should be saved when we exit
 	IVirtualDesktopManager *desktop_manager = NULL;								// Used to detect if a window is in the current virtual desktop. Don't forget to check for null on this one
+	IAppVisibility *app_visibility = NULL;										// Used to detect if start menu is opened
 	HWND main_taskbar;															// Handle to taskbar that shows on main monitor
 	std::unordered_map<HWND, TASKBARPROPERTIES> taskbars;						// Map for all taskbars and their properties
 	bool should_show_peek;														// Set by the EnumWindowsProcess and determines if peek should be shown when in dynamic mode
@@ -172,16 +173,9 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 
 		if (appearance != ACCENT_FOLLOW_OPT) // Custom taskbar appearance is set
 		{
-			if (opt.dynamic_ws_state == ACCENT_ENABLE_TINTED) // dynamic-ws is set to tint
+			if (appearance == ACCENT_ENABLE_TINTED) // Window is maximised
 			{
-				if (appearance == ACCENT_ENABLE_TINTED) // Window is maximised
-				{
-					policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, color, 0 };
-				}
-				else // Desktop is shown (this shouldn't ever be called tho, just in case)
-				{
-					policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 };
-				}
+				policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, color, 0 };
 			}
 			else if (appearance == ACCENT_NORMAL)
 			{
@@ -675,9 +669,7 @@ void EditFile(std::wstring file)
 	STARTUPINFO si = { sizeof(STARTUPINFO) };
 	PROCESS_INFORMATION pi;
 	// Not using lpApplicationName here because if someone has set a redirect to another editor it doesn't works. (eg Notepad2)
-	BOOL success = CreateProcess(NULL, const_cast<LPWSTR>(path.c_str()), NULL, NULL, FALSE, NULL, NULL, NULL, &si, &pi);
-	error = GetLastError();
-	if (success)
+	if (CreateProcess(NULL, const_cast<LPWSTR>(path.c_str()), NULL, NULL, FALSE, NULL, NULL, NULL, &si, &pi))
 	{
 		WaitForSingleObject(pi.hProcess, INFINITE);
 		CloseHandle(pi.hProcess);
@@ -685,6 +677,7 @@ void EditFile(std::wstring file)
 	}
 	else
 	{
+		error = GetLastError();
 		std::wstring message;
 		message += L"Failed to start Notepad!\n\nException from HRESULT: ";
 		message += _com_error(error).ErrorMessage();
@@ -764,7 +757,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 		{
 			TCHAR className[MAX_PATH];
 			GetClassName(hWnd, className, _countof(className));
-			for (auto & value : opt.blacklisted_classes)
+			for (std::wstring const &value : opt.blacklisted_classes)
 			{
 				if (className == value.c_str())
 				{
@@ -784,7 +777,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 			GetWindowText(hWnd, windowTitleBuffer.data(), titleSize);
 			std::wstring windowTitle = windowTitleBuffer.data();
 
-			for (auto & value : opt.blacklisted_titles)
+			for (std::wstring const &value : opt.blacklisted_titles)
 			{
 				if (windowTitle.find(value) != std::wstring::npos)
 				{
@@ -806,7 +799,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 			std::wstring exeName = PathFindFileName(exeName_path);
 			ToLower(exeName);
 
-			for (auto & value : opt.blacklisted_filenames)
+			for (std::wstring const &value : opt.blacklisted_filenames)
 			{
 				if (exeName == value)
 				{
@@ -823,12 +816,8 @@ bool IsWindowBlacklisted(HWND hWnd)
 
 bool IsWindowOnCurrentDesktop(HWND hWnd)
 {
-	BOOL on_current_desktop = true;
-	if (run.desktop_manager)
-	{
-		run.desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
-	}
-	return on_current_desktop;
+	BOOL on_current_desktop;
+	return run.desktop_manager && SUCCEEDED(run.desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop)) ? on_current_desktop : true;
 }
 
 bool IsWindowMaximised(HWND hWnd)
@@ -895,7 +884,7 @@ void RefreshMenu()
 	CheckPopupRadioItem(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_FLUENT, cnst.dynamic_button_map.at(opt.dynamic_ws_state));
 	CheckPopupRadioItem(IDM_PEEK, IDM_NOPEEK, cnst.peek_button_map.at(opt.peek));
 
-	for (int item : { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL, IDM_DYNAMICWS_OPAQUE })
+	for (int const &item : { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL, IDM_DYNAMICWS_OPAQUE })
 		EnablePopupItem(item, opt.dynamicws);
 
 	EnablePopupItem(IDM_FLUENT, run.fluent_available);
@@ -926,7 +915,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			GetCursorPos(&pt);
 			SetForegroundWindow(hWnd);
 			UINT tray = TrackPopupMenu(GetSubMenu(run.popup, 0), TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
-			switch (tray) // TODO: Add menu items to edit config files, add dynamic windows ACCENT_ENABLE_TRANSPARENT_GRADIENT
+			switch (tray) // TODO: Add dynamic windows ACCENT_ENABLE_TRANSPARENT_GRADIENT
 			{
 			case IDM_BLUR:
 				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
@@ -1098,18 +1087,16 @@ void SetTaskbarBlur()
 
 		if (opt.dynamicstart)
 		{
-			HWND foreground = GetForegroundWindow();
-
-			TCHAR ForehWndClass[MAX_PATH];
-			GetClassName(foreground, ForehWndClass, _countof(ForehWndClass));
-
-			if (!_tcscmp(ForehWndClass, L"Windows.UI.Core.CoreWindow"))
+			BOOL start_visible = false;
+			if (run.app_visibility && SUCCEEDED(run.app_visibility->IsLauncherVisible(&start_visible)) && start_visible)
 			{
-				// Detect monitor Start Menu/Action Center is open on
-				HMONITOR _monitor = MonitorFromWindow(foreground, MONITOR_DEFAULTTOPRIMARY);
+				// TODO: does this works correctly most of the time? (especially multi-monitor)
+				// If not, is a window caption of "Start" reliable to check for (does it works on other UI cultures?)
+				HWND start = FindWindow(L"Windows.UI.Core.CoreWindow", NULL);
+				HMONITOR monitor = MonitorFromWindow(start, MONITOR_DEFAULTTOPRIMARY);
 				for (auto &taskbar : run.taskbars)
 				{
-					if (taskbar.second.hmon == _monitor)
+					if (taskbar.second.hmon == monitor)
 					{
 						taskbar.second.state = StartMenuOpen;
 						break; // Useless to continue looping, we found what we desired.
@@ -1123,6 +1110,9 @@ void SetTaskbarBlur()
 	{
 		switch (taskbar.second.state)
 		{
+		case StartMenuOpen:
+			SetWindowBlur(taskbar.first, ACCENT_NORMAL);
+			break;
 		case WindowMaximised:
 			SetWindowBlur(taskbar.first, opt.dynamic_ws_state); // A window is maximised; let's make sure that we blur the taskbar.
 			break;
@@ -1167,6 +1157,13 @@ void InitializeAPIs()
 	if (FAILED(result = CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, (void **)&run.desktop_manager)))
 	{
 		buffer += L"Initialization of VDM failed. Exception from HRESULT: ";
+		buffer += _com_error(result).ErrorMessage();
+		buffer += '\n';
+	}
+
+	if (FAILED(result = CoCreateInstance(__uuidof(AppVisibility), NULL, CLSCTX_INPROC_SERVER, IID_IAppVisibility, (void **)&run.app_visibility)))
+	{
+		buffer += L"Initialization of IAV failed. Exception from HRESULT: ";
 		buffer += _com_error(result).ErrorMessage();
 		buffer += '\n';
 	}
@@ -1230,7 +1227,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 		SendMessage(oldInstance, cnst.NEW_TTB_INSTANCE, NULL, NULL);
 	}
 
-	// Initialize COM, UWP, set DPI awareness, and acquire a VirtualDesktopManager interface
+	// Initialize COM, UWP, set DPI awareness, and acquire a VirtualDesktopManager and AppVisibility interface
 	InitializeAPIs();
 
 	// Get configuration file paths
