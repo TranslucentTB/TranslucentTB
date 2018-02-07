@@ -314,7 +314,7 @@ void SetStartupState(bool state)
 			GetModuleFileName(hModule, path, MAX_PATH);
 			PathQuoteSpaces(path);
 
-			RegSetValueEx(hkey, cnst.program_name, 0, REG_SZ, (BYTE *)path, _tcslen(path) * sizeof(TCHAR));
+			RegSetValueEx(hkey, cnst.program_name, 0, REG_SZ, reinterpret_cast<BYTE *>(path), _tcslen(path) * sizeof(TCHAR));
 		}
 		else
 		{
@@ -774,7 +774,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 		{
 			TCHAR className[MAX_PATH];
 			GetClassName(hWnd, className, _countof(className));
-			for (std::wstring const &value : opt.blacklisted_classes)
+			for (const std::wstring &value : opt.blacklisted_classes)
 			{
 				if (className == value.c_str())
 				{
@@ -794,7 +794,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 			GetWindowText(hWnd, windowTitleBuffer.data(), titleSize);
 			std::wstring windowTitle = windowTitleBuffer.data();
 
-			for (std::wstring const &value : opt.blacklisted_titles)
+			for (const std::wstring &value : opt.blacklisted_titles)
 			{
 				if (windowTitle.find(value) != std::wstring::npos)
 				{
@@ -816,7 +816,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 			std::wstring exeName = PathFindFileName(exeName_path);
 			ToLower(exeName);
 
-			for (std::wstring const &value : opt.blacklisted_filenames)
+			for (const std::wstring &value : opt.blacklisted_filenames)
 			{
 				if (exeName == value)
 				{
@@ -987,9 +987,9 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 				unsigned short g = (opt.color & 0x0000FF00) >> 8;
 				unsigned short b = (opt.color & 0x000000FF);
 
-				CColourPicker *picker = new CColourPicker(NULL, r, g, b, a, true);
-				picker->CreatecolourPicker(CP_USE_ALPHA);
-				SColour newColor = picker->GetCurrentColour();
+				CColourPicker picker(NULL, r, g, b, a, true);
+				picker.CreatecolourPicker(CP_USE_ALPHA);
+				SColour newColor = picker.GetCurrentColour();
 
 				alphaPercent = newColor.a / 100.0f;
 				a = static_cast<unsigned short>(std::round(alphaPercent * 255));
@@ -1185,14 +1185,14 @@ void InitializeAPIs()
 		buffer += '\n';
 	}
 
-	if (FAILED(result = CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, (void **)&run.desktop_manager)))
+	if (FAILED(result = CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, reinterpret_cast<void **>(&run.desktop_manager))))
 	{
 		buffer += L"Initialization of VDM failed. Exception from HRESULT: ";
 		buffer += _com_error(result).ErrorMessage();
 		buffer += '\n';
 	}
 
-	if (FAILED(result = CoCreateInstance(__uuidof(AppVisibility), NULL, CLSCTX_INPROC_SERVER, IID_IAppVisibility, (void **)&run.app_visibility)))
+	if (FAILED(result = CoCreateInstance(__uuidof(AppVisibility), NULL, CLSCTX_INPROC_SERVER, IID_IAppVisibility, reinterpret_cast<void **>(&run.app_visibility))))
 	{
 		buffer += L"Initialization of IAV failed. Exception from HRESULT: ";
 		buffer += _com_error(result).ErrorMessage();
