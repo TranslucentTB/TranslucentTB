@@ -157,8 +157,8 @@ const static struct CONSTANTS												// Constants. What else do you need?
 		{ Dynamic,		IDM_DPEEK },
 		{ Enabled,		IDM_PEEK }
 	};
-	LPCWSTR config_file = L"config.cfg";								// Name of configuration file
-	LPCWSTR exclude_file = L"dynamic-ws-exclude.csv";					// Name of dynamic windows blacklist file
+	LPCWSTR config_file = L"config.cfg";									// Name of configuration file
+	LPCWSTR exclude_file = L"dynamic-ws-exclude.csv";						// Name of dynamic windows blacklist file
 	int max_cache_hits = 500;												// Maximum number of times the blacklist cache may be hit
 } cnst = CONSTANTS();
 
