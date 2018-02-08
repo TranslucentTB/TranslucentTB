@@ -1,3 +1,8 @@
+#if defined(__clang__)
+#  define __is_trivially_destructible(arg) __has_trivial_destructor(arg)
+#  include <type_traits>
+#endif
+
 #pragma region Includes
 
 // Standard API
@@ -28,8 +33,6 @@
 #include "../CPicker/CPicker.h"
 
 #pragma endregion
-
-using namespace Windows::Foundation;
 
 #pragma region Enumerations
 
@@ -157,6 +160,7 @@ const static struct CONSTANTS												// Constants. What else do you need?
 	LPWSTR config_file = L"config.cfg";										// Name of configuration file
 	LPWSTR exclude_file = L"dynamic-ws-exclude.csv";						// Name of dynamic windows blacklist file
 	int max_cache_hits = 500;												// Maximum number of times the blacklist cache may be hit
+	CONSTANTS() {}
 } cnst;
 
 #pragma endregion
@@ -1179,7 +1183,7 @@ void InitializeAPIs()
 	//	buffer += '\n';
 	//}
 
-	if (FAILED(result = Initialize()))
+	if (FAILED(result = Windows::Foundation::Initialize()))
 	{
 		buffer += L"Initialization of UWP failed. Exception from HRESULT: ";
 		buffer += _com_error(result).ErrorMessage();
@@ -1341,7 +1345,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 
 	// Uninitialize UWP and COM
 	CoUninitialize();
-	Uninitialize();
+	Windows::Foundation::Uninitialize();
 
 	// Notify Explorer we are exiting
 	Shell_NotifyIcon(NIM_DELETE, &run.tray);

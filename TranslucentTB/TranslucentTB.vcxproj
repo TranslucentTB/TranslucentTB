@@ -28,7 +28,7 @@
     <RootNamespace>TranslucentTB</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v141_clang_c2</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -58,16 +58,16 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
       <PreprocessorDefinitions>WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalUsingDirectories>%VCIDEInstallDir%\vcpackages;%WindowsSdkDir%\UnionMetadata</AdditionalUsingDirectories>
-      <CompileAsWinRT>true</CompileAsWinRT>
-      <DisableSpecificWarnings>4447</DisableSpecificWarnings>
+      <UseShortEnums>true</UseShortEnums>
+      <MSCompatibility>true</MSCompatibility>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>advapi32.lib;comctl32.lib;dwmapi.lib;ole32.lib;shcore.lib;shell32.lib;shlwapi.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>advapi32.lib;comctl32.lib;dwmapi.lib;ole32.lib;runtimeobject.lib;shcore.lib;shell32.lib;shlwapi.lib;user32.lib</AdditionalDependencies>
       <AdditionalManifestDependencies>"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'"</AdditionalManifestDependencies>
     </Link>
     <Manifest>
