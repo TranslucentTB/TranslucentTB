@@ -204,7 +204,7 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 			}
 		}
 
-		WINCOMPATTRDATA data = { WCA_ACCENT_POLICY, &policy, sizeof(ACCENTPOLICY) };
+		WINCOMPATTRDATA data = { WCA_ACCENT_POLICY, &policy, sizeof(policy) };
 		SetWindowCompositionAttribute(hWnd, &data);
 	}
 }
@@ -677,10 +677,12 @@ void EditFile(std::wstring file)
 	path += ' ';
 	path += buf.data();
 
-	STARTUPINFO si = { sizeof(STARTUPINFO) };
+	std::vector<TCHAR> buf2(path.begin(), path.end());
+	buf2.push_back(0); // Null terminator
+	STARTUPINFO si = { sizeof(si) };
 	PROCESS_INFORMATION pi;
 	// Not using lpApplicationName here because if someone has set a redirect to another editor it doesn't works. (eg Notepad2)
-	if (CreateProcess(NULL, const_cast<LPWSTR>(path.c_str()), NULL, NULL, FALSE, NULL, NULL, NULL, &si, &pi))
+	if (CreateProcess(NULL, buf2.data(), NULL, NULL, FALSE, NULL, NULL, NULL, &si, &pi))
 	{
 		WaitForSingleObject(pi.hProcess, INFINITE);
 		CloseHandle(pi.hProcess);
@@ -846,7 +848,7 @@ bool IsWindowMaximised(HWND hWnd)
 bool IsWindowCloaked(HWND hWnd)
 {
 	int cloaked;
-	DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, &cloaked, sizeof(int));
+	DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, &cloaked, sizeof(cloaked));
 	return cloaked;
 }
 
@@ -1114,7 +1116,7 @@ void SetTaskbarBlur()
 
 		if (opt.dynamicstart)
 		{
-			BOOL start_visible = false;
+			BOOL start_visible;
 			if (run.app_visibility && SUCCEEDED(run.app_visibility->IsLauncherVisible(&start_visible)) && start_visible)
 			{
 				// TODO: does this works correctly most of the time? (especially multi-monitor)
@@ -1134,7 +1136,10 @@ void SetTaskbarBlur()
 
 		if (opt.dynamicws && opt.dynamicws_peek && run.peek_active)
 		{
-			run.taskbars.at(run.main_taskbar).state = Normal;
+			for (std::pair<const HWND, TASKBARPROPERTIES> &taskbar : run.taskbars)
+			{
+				taskbar.second.state = Normal;
+			}
 		}
 	}
 
@@ -1165,12 +1170,13 @@ void InitializeAPIs()
 	HRESULT result;
 	std::wstring buffer;
 
-	if (FAILED(result = SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)))
-	{
-		buffer += L"Initialization of DPI failed. Exception from HRESULT: ";
-		buffer += _com_error(result).ErrorMessage();
-		buffer += '\n';
-	}
+	// Now declared in the manifest, no need to do it programatically
+	//if (FAILED(result = SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)))
+	//{
+	//	buffer += L"Initialization of DPI failed. Exception from HRESULT: ";
+	//	buffer += _com_error(result).ErrorMessage();
+	//	buffer += '\n';
+	//}
 
 	if (FAILED(result = Initialize()))
 	{
@@ -1208,7 +1214,7 @@ void InitializeTray(HINSTANCE hInstance)
 	run.popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU)); // Load our popup menu
 
 	WNDCLASSEX wnd = {
-		sizeof(WNDCLASSEX),						// cbSize
+		sizeof(wnd),							// cbSize
 		CS_HREDRAW | CS_VREDRAW,				// style
 		TrayCallback,							// lpfnWndProc
 		NULL,									// cbClsExtra
@@ -1225,7 +1231,7 @@ void InitializeTray(HINSTANCE hInstance)
 	RegisterClassEx(&wnd);
 
 	run.tray = {
-		sizeof(NOTIFYICONDATA),											// cbSize
+		sizeof(run.tray),												// cbSize
 		CreateWindowEx(													// hWnd
 			WS_EX_TOOLWINDOW,													// dwExStyle
 			cnst.program_name,													// lpClassName
