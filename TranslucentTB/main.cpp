@@ -1,3 +1,4 @@
+// Remove this when https://developercommunity.visualstudio.com/content/problem/162874/vs-155-e1027-language-modes-specified-are-incompat.html is fixed
 #if defined(__clang__)
 #  define __is_trivially_destructible(arg) __has_trivial_destructor(arg)
 #  include <type_traits>
@@ -160,8 +161,7 @@ const static struct CONSTANTS												// Constants. What else do you need?
 	LPWSTR config_file = L"config.cfg";										// Name of configuration file
 	LPWSTR exclude_file = L"dynamic-ws-exclude.csv";						// Name of dynamic windows blacklist file
 	int max_cache_hits = 500;												// Maximum number of times the blacklist cache may be hit
-	CONSTANTS() {}
-} cnst;
+} cnst = CONSTANTS();
 
 #pragma endregion
 
