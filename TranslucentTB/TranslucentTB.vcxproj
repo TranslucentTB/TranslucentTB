@@ -63,7 +63,6 @@
       <AdditionalUsingDirectories>%VCIDEInstallDir%\vcpackages;%WindowsSdkDir%\UnionMetadata</AdditionalUsingDirectories>
       <UseShortEnums>true</UseShortEnums>
       <MSCompatibility>true</MSCompatibility>
-      <FloatABI>hard</FloatABI>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
