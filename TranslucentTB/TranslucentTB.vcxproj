@@ -19,7 +19,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <LinkIncremental>false</LinkIncremental>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <!--<RunCodeAnalysis>true</RunCodeAnalysis>--.
     <!--<EnableCppCoreCheck>true</EnableCppCoreCheck>-->
   </PropertyGroup>
   <PropertyGroup Label="Globals">
