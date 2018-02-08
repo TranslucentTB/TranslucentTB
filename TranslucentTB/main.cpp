@@ -158,8 +158,8 @@ const static struct CONSTANTS												// Constants. What else do you need?
 		{ Dynamic,		IDM_DPEEK },
 		{ Enabled,		IDM_PEEK }
 	};
-	LPWSTR config_file = L"config.cfg";										// Name of configuration file
-	LPWSTR exclude_file = L"dynamic-ws-exclude.csv";						// Name of dynamic windows blacklist file
+	LPCWSTR config_file = L"config.cfg";								// Name of configuration file
+	LPCWSTR exclude_file = L"dynamic-ws-exclude.csv";					// Name of dynamic windows blacklist file
 	int max_cache_hits = 500;												// Maximum number of times the blacklist cache may be hit
 } cnst = CONSTANTS();
 
@@ -255,7 +255,7 @@ HRESULT GetPaths()
 	return ERROR_SUCCESS;
 }
 
-void ApplyStock(LPWSTR filename)
+void ApplyStock(LPCWSTR filename)
 {
 	TCHAR exeFolder[MAX_PATH];
 	GetModuleFileName(GetModuleHandle(NULL), exeFolder, MAX_PATH);
@@ -498,6 +498,8 @@ void SaveConfigFile()
 			break;
 		case ACCENT_ENABLE_FLUENT:
 			configstream << L"fluent";
+			break;
+		default:
 			break;
 		}
 		configstream << endl;
