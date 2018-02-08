@@ -25,7 +25,6 @@
 #include <ShlObj.h>
 #include <Shlwapi.h>
 #include <tchar.h>
-#include <windows.h>
 
 // Local
 #include "resource.h"
