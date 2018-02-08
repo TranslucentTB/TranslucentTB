@@ -156,7 +156,7 @@ const static struct CONSTANTS												// Constants. What else do you need?
 	};
 	LPWSTR config_file = L"config.cfg";										// Name of configuration file
 	LPWSTR exclude_file = L"dynamic-ws-exclude.csv";						// Name of dynamic windows blacklist file
-	int max_cache_hits = 10000;												// Maximum number of times the blacklist cache may be hit
+	int max_cache_hits = 500;												// Maximum number of times the blacklist cache may be hit
 } cnst;
 
 #pragma endregion
@@ -775,9 +775,10 @@ bool IsWindowBlacklisted(HWND hWnd)
 		{
 			TCHAR className[MAX_PATH];
 			GetClassName(hWnd, className, _countof(className));
+			std::wstring classNameString(className);
 			for (const std::wstring &value : opt.blacklisted_classes)
 			{
-				if (className == value.c_str())
+				if (classNameString == value)
 				{
 					#pragma warning(suppress: 6282)
 					return blacklist_cache[hWnd] = true;
