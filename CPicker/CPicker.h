@@ -1,7 +1,7 @@
 #ifndef __CPICKER_H
 #define __CPICKER_H
 
-#include <windows.h>
+#include <dwmapi.h>
 
 // No alpha slider displayed
 #define CP_NO_ALPHA			0

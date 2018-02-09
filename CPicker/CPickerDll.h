@@ -1,7 +1,7 @@
 #ifndef __CPICKERDLL_H
 #define __CPICKERDLL_H
 
-#include <windows.h>
+#include <dwmapi.h>
 
 // Just some useful macros...
 #define EXPORT _declspec (dllexport)

@@ -1,4 +1,4 @@
-#include "CPickerDLL.h"
+#include "CPickerDll.h"
 
 PixelBuffer::PixelBuffer()
 	{

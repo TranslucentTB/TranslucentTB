@@ -859,7 +859,7 @@ EXPORT void DrawCheckedRect(HWND hWnd, int r, int g, int b, int a, int cx, int c
 
 void UpdateValues(HWND hDlg, SColour col)
 	{
-	char buff[10];
+	TCHAR buff[10];
 
 	SetDlgItemInt(hDlg, IDC_RED, col.r, false);
 	SetDlgItemInt(hDlg, IDC_GREEN, col.g, false);
@@ -869,6 +869,6 @@ void UpdateValues(HWND hDlg, SColour col)
 	SetDlgItemInt(hDlg, IDC_SATURATION, col.s, false);
 	SetDlgItemInt(hDlg, IDC_VALUE, col.v, false);
     
-	sprintf_s(buff, "%02X%02X%02X", col.r, col.g, col.b);
+	swprintf_s(buff, L"%02X%02X%02X", col.r, col.g, col.b);
 	SetDlgItemText(hDlg, IDC_HEXCOL, buff);
 	}

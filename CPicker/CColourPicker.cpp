@@ -33,13 +33,13 @@ EXPORT void CColourPicker::CreateColourPicker(short AlphaUsage)
 	switch(UseAlpha)
 		{
 		case CP_NO_ALPHA:
-			DialogBoxParam(GetModuleHandle("CPicker.dll"), MAKEINTRESOURCE(IDD_COLORPICKERNOALPHA), hParent, 
+			DialogBoxParam(GetModuleHandle(L"CPicker.dll"), MAKEINTRESOURCE(IDD_COLORPICKERNOALPHA), hParent,
 				(DLGPROC)ColourPickerDlgProc, (LPARAM)this);
 		break;
 
 		case CP_USE_ALPHA:
 		case CP_DISABLE_ALPHA:
-			DialogBoxParam(GetModuleHandle("CPicker.dll"), MAKEINTRESOURCE(IDD_COLORPICKER), hParent, 
+			DialogBoxParam(GetModuleHandle(L"CPicker.dll"), MAKEINTRESOURCE(IDD_COLORPICKER), hParent,
 				(DLGPROC)ColourPickerDlgProc, (LPARAM)this);
 		break;
 
