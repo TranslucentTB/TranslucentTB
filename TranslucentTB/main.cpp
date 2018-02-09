@@ -1,9 +1,3 @@
-// Remove this when https://developercommunity.visualstudio.com/content/problem/162874/vs-155-e1027-language-modes-specified-are-incompat.html is fixed
-#if defined(__clang__)
-#  define __is_trivially_destructible(arg) __has_trivial_destructor(arg)
-#  include <type_traits>
-#endif
-
 #pragma region Includes
 
 // Standard API
