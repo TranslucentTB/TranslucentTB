@@ -149,7 +149,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				double sat, val, stepsat, stepval;
 				SColour tempcol;
 
-				sat = val = 0.0;
+				sat, val = 0.0;
 				stepsat = 100.0 / widthC1;
 				stepval = 100.0 / heightC1;
 				
@@ -157,9 +157,9 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				tempcol.s = (unsigned short) sat;
 				tempcol.v = (unsigned short) val;
 
-				for (int y= heightC1 - 1; y>0; y--)
+				for (int y = heightC1 - 1; y > -1; y--)
 				{
-					for (int x=0; x<widthC1-1; x++)
+					for (int x = 0; x < widthC1; x++)
 					{
 						tempcol.UpdateRGB();
 						pbuffer.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
@@ -192,7 +192,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				double hue, val, stepval, stephue;
 				SColour tempcol;
 
-				hue = val = 0.0;
+				hue, val = 0.0;
 				stephue = 359.0/widthC1;
 				stepval = 100.0/heightC1;
 				
@@ -200,9 +200,9 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				tempcol.s = (unsigned short) GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false);
 				tempcol.v = (unsigned short) val;
 
-				for (int y= heightC1 - 1; y>0; y--)
+				for (int y = heightC1 - 1; y > -1; y--)
 				{
-					for (int x=0; x<widthC1 - 1; x++)
+					for (int x = 0; x < widthC1; x++)
 					{
 						tempcol.UpdateRGB();
 						pbuffer.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
@@ -235,7 +235,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				double hue, sat, stepsat, stephue;
 				SColour tempcol;
 
-				hue = sat = 0.0;
+				hue, sat = 0.0;
 				stephue = 359.0/widthC1;
 				stepsat = 100.0/heightC1;
 
@@ -243,9 +243,9 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				tempcol.s = (unsigned short) sat;
 				tempcol.v = (unsigned short) GetDlgItemInt(hDlg, IDC_VALUE, NULL, false);
 
-				for (int y=heightC1-1; y>0; y--)
+				for (int y = heightC1 - 1; y > -1; y--)
 				{
-					for (int x=0; x<widthC1-1; x++)
+					for (int x = 0; x < widthC1; x++)
 					{
 						tempcol.UpdateRGB();
 						pbuffer.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
