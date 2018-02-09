@@ -116,7 +116,6 @@ static struct RUNTIME															// Used to store things relevant only to run
 	HMENU popup;																// Tray icon popup
 	HANDLE ev;																	// Handle to an event. Used for uniqueness
 	NOTIFYICONDATA tray;														// Tray icon
-	HWND tray_hwnd;																// Tray window handle
 	bool fluent_available = false;												// Whether ACCENT_ENABLE_FLUENT works
 	TCHAR config_folder[MAX_PATH];												// Folder where configuration is stored
 	TCHAR config_file[MAX_PATH];												// Location of configuration file
@@ -1234,27 +1233,27 @@ void InitializeTray(HINSTANCE hInstance)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wmissing-field-initializers"
 	run.tray = {
-		sizeof(run.tray),												// cbSize
-		CreateWindowEx(													// hWnd
-			WS_EX_TOOLWINDOW,													// dwExStyle
-			cnst.program_name,													// lpClassName
-			L"TrayWindow",														// lpWindowName
-			WS_OVERLAPPEDWINDOW,												// dwStyle
-			0,																	// x
-			0,																	// y
-			400,																// nWidth
-			400,																// nHeight
-			NULL,																// hWndParent
-			NULL,																// hMenu
-			hInstance,															// hInstance
-			NULL																// lpParam
+		sizeof(run.tray),																// cbSize
+		CreateWindowEx(																	// hWnd
+			WS_EX_TOOLWINDOW,																// dwExStyle
+			cnst.program_name,																// lpClassName
+			L"TrayWindow",																	// lpWindowName
+			WS_OVERLAPPEDWINDOW,															// dwStyle
+			0,																				// x
+			0,																				// y
+			0,																				// nWidth
+			0,																				// nHeight
+			NULL,																			// hWndParent
+			NULL,																			// hMenu
+			hInstance,																		// hInstance
+			NULL																			// lpParam
 		),
-		101,															// uID
-		NIF_ICON | NIF_TIP | NIF_MESSAGE,								// uFlags
-		cnst.WM_NOTIFY_TB,												// uCallbackMessage
-		LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON))		// hIcon
+		101,																			// uID
+		NIF_ICON | NIF_TIP | NIF_MESSAGE,												// uFlags
+		cnst.WM_NOTIFY_TB																// uCallbackMessage
 	};
-	wcscpy_s(run.tray.szTip, cnst.program_name);
+	LoadIconMetric(hInstance, MAKEINTRESOURCE(MAINICON), LIM_LARGE, &run.tray.hIcon);	// hIcon
+	wcscpy_s(run.tray.szTip, cnst.program_name);										// szTip
 	#pragma clang diagnostic pop
 
 	ShowWindow(run.tray.hWnd, WM_SHOWWINDOW);
