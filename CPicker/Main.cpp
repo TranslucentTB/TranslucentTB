@@ -825,6 +825,11 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				break;
 				}
 		break; // WM_COMMAND
+
+		case WM_DPICHANGED:
+			pbuffer.Destroy();
+			pbuffer.Create(widthC1, heightC1);
+		break; // WM_DPICHANGED
 		}
 	return 0L;
 	}
