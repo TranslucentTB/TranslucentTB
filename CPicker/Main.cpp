@@ -161,16 +161,15 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				{
 					for (int x = 0; x < widthC1; x++)
 					{
+						sat += stepsat;
+						tempcol.s = (unsigned short)sat;
 						tempcol.UpdateRGB();
 						pbuffer.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
-						sat += stepsat;
-						tempcol.s = (unsigned short) sat;
 					}
 					
 					val += stepval;
 					sat = 0.0;
 					tempcol.v = (unsigned short) val;
-//					tempcol.UpdateRGB();
 				}
 				pbuffer.Display(hcomp);
                 
@@ -204,11 +203,10 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				{
 					for (int x = 0; x < widthC1; x++)
 					{
+						hue += stephue;
+						tempcol.h = (unsigned short)hue;
 						tempcol.UpdateRGB();
 						pbuffer.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
-						hue += stephue;
-						tempcol.h = (unsigned short) hue;
-//						tempcol.UpdateRGB();
 					}
 
 					val += stepval;
@@ -247,11 +245,10 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				{
 					for (int x = 0; x < widthC1; x++)
 					{
+						hue += stephue;
+						tempcol.h = (unsigned short)hue;
 						tempcol.UpdateRGB();
 						pbuffer.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
-						hue += stephue;
-						tempcol.h = (unsigned short) hue;
-//						tempcol.UpdateRGB();
 					}
 
 					sat += stepsat;
