@@ -1,6 +1,7 @@
 #include "resource.h"
 #include "CPickerDll.h"
 #include "stdio.h"
+#include <cmath>
 
 static PixelBuffer pbuffer;
 
@@ -8,12 +9,33 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 	{
 	static CColourPicker *picker = NULL;
 
+	const HWND Color1 = GetDlgItem(hDlg, IDC_COLOR);
+	const HWND Color2 = GetDlgItem(hDlg, IDC_COLOR2);
+	const HWND Alpha = GetDlgItem(hDlg, IDC_ALPHASLIDE);
+
+	RECT rectC1;
+	RECT rectC2;
+	RECT rectA;
+
+	GetWindowRect(Color1, &rectC1);
+	GetWindowRect(Color2, &rectC2);
+	GetWindowRect(Alpha, &rectA);
+
+	const float widthC1 = rectC1.right - rectC1.left;
+	const float heightC1 = rectC1.bottom - rectC1.top;
+
+	const float widthC2 = rectC2.right - rectC2.left;
+	const float heightC2 = rectC2.bottom - rectC2.top;
+
+	const float widthA = rectA.right - rectA.left;
+	const float heightA = rectA.bottom - rectA.top;
+
 	switch (uMsg)
 		{
 		case WM_INITDIALOG:
 			{
 			picker = (CColourPicker*)lParam;
-			pbuffer.Create(256,256);
+			pbuffer.Create(widthC1, heightC1);
 
 			switch (picker->GetAlphaUsage())
 				{
@@ -41,7 +63,6 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 		case WM_PAINT:
 			{
-			HWND hWndColor, hWndColor2, hWndAlpha;
 			HDC hdc, hcomp;
 			HBITMAP hbmp;
 			RECT rect;
@@ -52,12 +73,10 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
             // Big color selector (displays non-selected features)
 			// For example, if G is selected (in RGB radio box) it displays red vs. blue colors
-			hWndColor = GetDlgItem(hDlg, IDC_COLOR);
-			hdc = GetDC(hWndColor);
+			hdc = GetDC(Color1);
 			hcomp = CreateCompatibleDC(hdc);
 
-			GetClientRect(hWndColor, &rect);
-			hbmp = CreateCompatibleBitmap(hdc, 255, 255);
+			hbmp = CreateCompatibleBitmap(hdc, widthC1, heightC1);
 			SelectObject(hcomp, hbmp);
 			
 			red = GetDlgItemInt(hDlg, IDC_RED, NULL, false);
@@ -69,9 +88,13 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			// RED
 			if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 				{
-				for (int g=0; g<255; g++)
-					for (int b=0; b<255; b++)
-						pbuffer.SetPixel(g, b, RGB(red, g, b));
+				for (int g=0; g < widthC1; g++)
+					for (int b=0; b < heightC1; b++)
+					{
+						const float fgreen = std::round((g / widthC1) * 255.0f);
+						const float fblue = std::round((b / heightC1) * 255.0f);
+						pbuffer.SetPixel(g, b, RGB(red, fgreen, fblue));
+					}
 
 				pbuffer.Display(hcomp);
 
@@ -79,27 +102,39 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				// Draws circle
 				pen = CreatePen(PS_SOLID, 1, RGB(255-red, 255-green, 255-blue));
 				SelectObject(hcomp, pen);
-				Arc(hcomp, green-5, blue-5, green+5, blue+5, 0, 0, 0, 0);
+				const float fgreen = std::round((green / 255.0f) * widthC1);
+				const float fblue = std::round((blue / 255.0f) * heightC1);
+				Arc(hcomp, fgreen-5, fblue-5, fgreen+5, fblue+5, 0, 0, 0, 0);
 				}
 			// GREEN
 			else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 				{
-				for (int r=0; r<255; r++)
-					for (int b=0; b<255; b++)
-						pbuffer.SetPixel(r, b, RGB(r, green, b));
+				for (int r=0; r<widthC1; r++)
+					for (int b = 0; b < heightC1; b++)
+					{
+						const float fred = std::round((r / widthC1) * 255.0f);
+						const float fblue = std::round((b / heightC1) * 255.0f);
+						pbuffer.SetPixel(r, b, RGB(fred, green, fblue));
+					}
 				pbuffer.Display(hcomp);
 
 				// Draws circle
 				pen = CreatePen(PS_SOLID, 1, RGB(255-red, 255-green, 255-blue));
 				SelectObject(hcomp, pen);
-				Arc(hcomp, red-5, blue-5, red+5, blue+5, 0, 0, 0, 0);
+				const float fred = std::round((red / 255.0f) * widthC1);
+				const float fblue = std::round((blue / 255.0f) * heightC1);
+				Arc(hcomp, fred-5, fblue-5, fred+5, fblue+5, 0, 0, 0, 0);
 				}
 			// BLUE
 			else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 				{
-				for (int g=0; g<255; g++)
-					for (int r=0; r<255; r++)
-						pbuffer.SetPixel(g, r, RGB(r, g, blue));
+				for (int g=0; g<widthC1; g++)
+					for (int r = 0; r < heightC1; r++)
+					{
+						const float fred = std::round((r / heightC1) * 255.0f);
+						const float fgreen = std::round((g / widthC1) * 255.0f);
+						pbuffer.SetPixel(g, r, RGB(fred, fgreen, blue));
+					}
 				pbuffer.Display(hcomp);
                 
 				// Draws circle
@@ -111,27 +146,28 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			// HUE
 			else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
 				{
-				double sat, val, step;
+				double sat, val, stepsat, stepval;
 				SColour tempcol;
 
 				sat = val = 0.0;
-				step = 100.0/255.0;
+				stepsat = 100.0 / widthC1;
+				stepval = 100.0 / heightC1;
 				
 				tempcol.h = (unsigned short) GetDlgItemInt(hDlg, IDC_HUE, NULL, false);
 				tempcol.s = (unsigned short) sat;
 				tempcol.v = (unsigned short) val;
 
-				for (int y=255; y>0; y--)
+				for (int y= heightC1 - 1; y>0; y--)
 				{
-					for (int x=0; x<255; x++)
+					for (int x=0; x<widthC1-1; x++)
 					{
 						tempcol.UpdateRGB();
 						pbuffer.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
-						sat += step;
+						sat += stepsat;
 						tempcol.s = (unsigned short) sat;
 					}
 					
-					val += step;
+					val += stepval;
 					sat = 0.0;
 					tempcol.v = (unsigned short) val;
 //					tempcol.UpdateRGB();
@@ -146,36 +182,36 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				pen = CreatePen(PS_SOLID, 1, RGB(255-tempcol.r, 255-tempcol.g, 255-tempcol.b));
 				SelectObject(hcomp, pen);
 				
-				Arc(hcomp, (int)(tempcol.s/step)-5, 255-(int)(tempcol.v/step)+5, (int)(tempcol.s/step)+5, 
-					255-(int)(tempcol.v/step)-5, 0, 0, 0, 0);
+				Arc(hcomp, (int)(tempcol.s/stepsat)-5, heightC1-(int)(tempcol.v / stepval) + 5, (int)(tempcol.s/stepsat)+5,
+					heightC1-(int)(tempcol.v / stepval) - 5, 0, 0, 0, 0);
 				}
             
 			// SATURATION
 			else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
 				{
-				double hue, val, step, step2;
+				double hue, val, stepval, stephue;
 				SColour tempcol;
 
 				hue = val = 0.0;
-				step2 = 359.0/255.0;
-				step = 100.0/255.0;
+				stephue = 359.0/widthC1;
+				stepval = 100.0/heightC1;
 				
 				tempcol.h = (unsigned short) hue;
 				tempcol.s = (unsigned short) GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false);
 				tempcol.v = (unsigned short) val;
 
-				for (int y=255; y>0; y--)
+				for (int y= heightC1 - 1; y>0; y--)
 				{
-					for (int x=0; x<255; x++)
+					for (int x=0; x<widthC1 - 1; x++)
 					{
 						tempcol.UpdateRGB();
 						pbuffer.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
-						hue += step2;
+						hue += stephue;
 						tempcol.h = (unsigned short) hue;
 //						tempcol.UpdateRGB();
 					}
 
-					val += step;
+					val += stepval;
 					hue = 0.0;
 					tempcol.v = (unsigned short) val;
 				}
@@ -189,36 +225,36 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				pen = CreatePen(PS_SOLID, 1, RGB(255-tempcol.r, 255-tempcol.g, 255-tempcol.b));
 				SelectObject(hcomp, pen);
 				
-				Arc(hcomp, (int)(tempcol.h/step2)-5, 255-(int)(tempcol.v/step)+5, (int)(tempcol.h/step2)+5, 
-					255-(int)(tempcol.v/step)-5, 0, 0, 0, 0);
+				Arc(hcomp, (int)(tempcol.h/stephue)-5, heightC1-(int)(tempcol.v/stepval)+5, (int)(tempcol.h/stephue)+5,
+					heightC1-(int)(tempcol.v/stepval)-5, 0, 0, 0, 0);
 				}
             
 			// VALUE
 			else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
 				{
-				double hue, sat, step, step2;
+				double hue, sat, stepsat, stephue;
 				SColour tempcol;
 
 				hue = sat = 0.0;
-				step2 = 359.0/255.0;
-				step = 100.0/255.0;
+				stephue = 359.0/widthC1;
+				stepsat = 100.0/heightC1;
 
 				tempcol.h = (unsigned short) hue;
 				tempcol.s = (unsigned short) sat;
 				tempcol.v = (unsigned short) GetDlgItemInt(hDlg, IDC_VALUE, NULL, false);
 
-				for (int y=255; y>0; y--)
+				for (int y=heightC1-1; y>0; y--)
 				{
-					for (int x=0; x<255; x++)
+					for (int x=0; x<widthC1-1; x++)
 					{
 						tempcol.UpdateRGB();
 						pbuffer.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
-						hue += step2;
+						hue += stephue;
 						tempcol.h = (unsigned short) hue;
 //						tempcol.UpdateRGB();
 					}
 
-					sat += step;
+					sat += stepsat;
 					hue = 0.0;
 					tempcol.s = (unsigned short) sat;
 				}
@@ -232,23 +268,21 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				pen = CreatePen(PS_SOLID, 1, RGB(255-tempcol.r, 255-tempcol.g, 255-tempcol.b));
 				SelectObject(hcomp, pen);
 				
-				Arc(hcomp, (int)(tempcol.h/step2)-5, 255-(int)(tempcol.s/step)+5, (int)(tempcol.h/step2)+5, 
-					255-(int)(tempcol.s/step)-5, 0, 0, 0, 0);
+				Arc(hcomp, (int)(tempcol.h/stephue)-5, heightC1-(int)(tempcol.s/stepsat)+5, (int)(tempcol.h/stephue)+5, 
+					heightC1-(int)(tempcol.s/stepsat)-5, 0, 0, 0, 0);
 				}
 
-			BitBlt(hdc, 0, 0, rect.right, rect.bottom, hcomp, 0, 0, SRCCOPY);
+			BitBlt(hdc, 0, 0, rectC1.right, rectC1.bottom, hcomp, 0, 0, SRCCOPY);
 
 			DeleteObject(hbmp);
 			DeleteDC(hcomp);
-			ReleaseDC(hWndColor, hdc);
+			ReleaseDC(Color1, hdc);
 
 			// Small color selector (displays selected feature)
-
-			hWndColor2 = GetDlgItem(hDlg, IDC_COLOR2);
-			hdc = GetDC(hWndColor2);
+			hdc = GetDC(Color2);
 			hcomp = CreateCompatibleDC(hdc);
 
-			GetClientRect(hWndColor2, &rect);
+			GetClientRect(Color2, &rect);
 			hbmp = CreateCompatibleBitmap(hdc, rect.right, 255);
 			SelectObject(hcomp, hbmp);
 
@@ -452,16 +486,15 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 			DeleteObject(hbmp);
 			DeleteDC(hcomp);
-			ReleaseDC(hWndColor, hdc);
+			ReleaseDC(Color2, hdc);
   
 			// Alpha slider
 			if (picker->GetAlphaUsage() != CP_NO_ALPHA)
 				{
-				hWndAlpha = GetDlgItem(hDlg, IDC_ALPHASLIDE);
-				hdc = GetDC(hWndAlpha);
+				hdc = GetDC(Alpha);
 				hcomp = CreateCompatibleDC(hdc);
 
-				GetClientRect(hWndAlpha, &rect);
+				GetClientRect(Alpha, &rect);
 				hbmp = CreateCompatibleBitmap(hdc, rect.right, 255);
 				SelectObject(hcomp, hbmp);
 
@@ -524,18 +557,18 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 				DeleteObject(hbmp);
 				DeleteDC(hcomp);
-				ReleaseDC(hWndColor, hdc);
+				ReleaseDC(Alpha, hdc);
 				}
 
 			// Current color & old color
-			hWndColor = GetDlgItem(hDlg, IDC_CURRCOLOR);
+			HWND Color = GetDlgItem(hDlg, IDC_CURRCOLOR);
 
-			DrawCheckedRect(hWndColor, picker->GetCurrentColour().r, picker->GetCurrentColour().g, 
+			DrawCheckedRect(Color, picker->GetCurrentColour().r, picker->GetCurrentColour().g, 
 				picker->GetCurrentColour().b, picker->GetCurrentColour().a, 10, 10);
 			
-			hWndColor = GetDlgItem(hDlg, IDC_OLDCOLOR);
+			Color = GetDlgItem(hDlg, IDC_OLDCOLOR);
 			
-			DrawCheckedRect(hWndColor, picker->GetOldColour().r, picker->GetOldColour().g, picker->GetOldColour().b, 
+			DrawCheckedRect(Color, picker->GetOldColour().r, picker->GetOldColour().g, picker->GetOldColour().b, 
 				picker->GetOldColour().a, 10, 10);
 			}
 		break; // WM_PAINT
@@ -544,52 +577,36 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		case WM_MOUSEMOVE:
 			{
 			POINT p;
-			RECT rectC1, rectC2, rectA;
-			HWND Color1, Color2, Alpha;
 
 			if (uMsg == WM_MOUSEMOVE && wParam != MK_LBUTTON)
 				break;
-			
-			// Determine where the mouse is
-			Color1 = GetDlgItem(hDlg, IDC_COLOR);
-			Color2 = GetDlgItem(hDlg, IDC_COLOR2);
-			Alpha = GetDlgItem(hDlg, IDC_ALPHASLIDE);
-
-			GetWindowRect(Color1, &rectC1);
-			GetWindowRect(Color2, &rectC2);
-			GetWindowRect(Alpha, &rectA);
 
 			GetCursorPos(&p);
 			
 			// IDC_COLOR1 picked
-			if (_IS_IN(rectC1.left-10, rectC1.right+10, p.x) && 
-				_IS_IN(rectC1.top-10, rectC1.bottom+10, p.y))
+			if (_IS_IN(rectC1.left, rectC1.right, p.x) && 
+				_IS_IN(rectC1.top, rectC1.bottom, p.y))
 				{
-					int x = (p.x-rectC1.left);
-					int y = (p.y-rectC1.top);
-					CLAMP(x,0,255);
-					CLAMP(y,0,255);
+					const float fx = std::round(((p.x - rectC1.left) / widthC1) * 255);
+					const float fy = std::round(((p.y - rectC1.top) / heightC1) * 255);
 
 				if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 				{
-					picker->SetRGB((unsigned short)GetDlgItemInt(hDlg, IDC_RED, NULL, false), x, y);
+					picker->SetRGB((unsigned short)GetDlgItemInt(hDlg, IDC_RED, NULL, false), fx, fy);
 					
 					UpdateValues(hDlg, picker->GetCurrentColour());
 				}
 
 				else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 					{
-					picker->SetRGB((unsigned short)(p.x-rectC1.left), 
-						(unsigned short)GetDlgItemInt(hDlg, IDC_GREEN, NULL, false),
-						(unsigned short)(p.y-rectC1.top));
+					picker->SetRGB(fx, (unsigned short)GetDlgItemInt(hDlg, IDC_GREEN, NULL, false), fy);
 
 					UpdateValues(hDlg, picker->GetCurrentColour());
 					}
 
 				else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 					{
-					picker->SetRGB(y, x,
-						(unsigned short) GetDlgItemInt(hDlg, IDC_BLUE, NULL, false));
+					picker->SetRGB(fy, fx, (unsigned short) GetDlgItemInt(hDlg, IDC_BLUE, NULL, false));
 
 					UpdateValues(hDlg, picker->GetCurrentColour());
 					} 
@@ -597,25 +614,25 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
 					{
 					picker->SetHSV((unsigned short)GetDlgItemInt(hDlg, IDC_HUE, NULL, false),
-						(unsigned short)(x/255.0*100.0), 
-						(unsigned short)((255-y)/255.0*100.0));
+						(unsigned short)(fx/255.0*100.0), 
+						(unsigned short)((255-fy)/255.0*100.0));
 
 					UpdateValues(hDlg, picker->GetCurrentColour());					
 					}
 
 				else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
 					{
-					picker->SetHSV((unsigned short)(x/255.0*359.0),
+					picker->SetHSV((unsigned short)(fx/255.0*359.0),
 						(unsigned short)GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false), 
-						(unsigned short)((255-y)/255.0*100.0));
+						(unsigned short)((255-fy)/255.0*100.0));
 
 					UpdateValues(hDlg, picker->GetCurrentColour());					
 					} 
 				
 				else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
 					{
-					picker->SetHSV((unsigned short)(x/255.0*359.0),
-						(unsigned short)((255-y)/255.0*100.0), 
+					picker->SetHSV((unsigned short)(fx/255.0*359.0),
+						(unsigned short)((255-fy)/255.0*100.0), 
 						(unsigned short)GetDlgItemInt(hDlg, IDC_VALUE, NULL, false));
 
 					UpdateValues(hDlg, picker->GetCurrentColour());					

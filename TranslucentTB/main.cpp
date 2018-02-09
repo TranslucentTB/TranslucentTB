@@ -1171,13 +1171,13 @@ void InitializeAPIs()
 	HRESULT result;
 	std::wstring buffer;
 
-	// Now declared in the manifest, no need to do it programatically
-	//if (FAILED(result = SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)))
-	//{
-	//	buffer += L"Initialization of DPI failed. Exception from HRESULT: ";
-	//	buffer += _com_error(result).ErrorMessage();
-	//	buffer += '\n';
-	//}
+	if (!SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
+	{
+		result = GetLastError();
+		buffer += L"Initialization of DPI failed. Exception from HRESULT: ";
+		buffer += _com_error(result).ErrorMessage();
+		buffer += '\n';
+	}
 
 	if (FAILED(result = Windows::Foundation::Initialize()))
 	{
