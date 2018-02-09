@@ -678,7 +678,12 @@ void EditFile(std::wstring file)
 
 	std::vector<TCHAR> buf2(path.begin(), path.end());
 	buf2.push_back(0); // Null terminator
+
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wmissing-field-initializers"
 	STARTUPINFO si = { sizeof(si) };
+	#pragma clang diagnostic pop
+
 	PROCESS_INFORMATION pi;
 	// Not using lpApplicationName here because if someone has set a redirect to another editor it doesn't works. (eg Notepad2)
 	if (CreateProcess(NULL, buf2.data(), NULL, NULL, FALSE, NULL, NULL, NULL, &si, &pi))
@@ -779,7 +784,6 @@ bool IsWindowBlacklisted(HWND hWnd)
 			{
 				if (classNameString == value)
 				{
-					#pragma warning(suppress: 6282)
 					return blacklist_cache[hWnd] = true;
 				}
 			}
@@ -799,7 +803,6 @@ bool IsWindowBlacklisted(HWND hWnd)
 			{
 				if (windowTitle.find(value) != std::wstring::npos)
 				{
-					#pragma warning(suppress: 6282)
 					return blacklist_cache[hWnd] = true;
 				}
 			}
@@ -821,13 +824,11 @@ bool IsWindowBlacklisted(HWND hWnd)
 			{
 				if (exeName == value)
 				{
-					#pragma warning(suppress: 6282)
 					return blacklist_cache[hWnd] = true;
 				}
 			}
 		}
 
-		#pragma warning(suppress: 6282)
 		return blacklist_cache[hWnd] = false;
 	}
 }
@@ -1230,6 +1231,8 @@ void InitializeTray(HINSTANCE hInstance)
 
 	RegisterClassEx(&wnd);
 
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wmissing-field-initializers"
 	run.tray = {
 		sizeof(run.tray),												// cbSize
 		CreateWindowEx(													// hWnd
@@ -1252,6 +1255,7 @@ void InitializeTray(HINSTANCE hInstance)
 		LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON))		// hIcon
 	};
 	wcscpy_s(run.tray.szTip, cnst.program_name);
+	#pragma clang diagnostic pop
 
 	ShowWindow(run.tray.hWnd, WM_SHOWWINDOW);
 	RegisterTray();
