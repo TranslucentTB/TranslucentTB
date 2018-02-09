@@ -1,8 +1,5 @@
 version: 'Build #{build}'
 image: Visual Studio 2017
-environment:
-  VCIDEInstallDir: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC
-  WindowsSdkDir: C:\Program Files (x86)\Windows Kits\10
 configuration:
 - Release
 - Debug

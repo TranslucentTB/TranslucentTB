@@ -64,19 +64,14 @@ You can also download a zip archive of each branch by clicking on the `Clone or 
 
 Now that you have the source, you will need Visual Studio 2017. [You can get the free community edition here](https://www.visualstudio.com/vs/community/).
 
-Once you have that installed (make sure you have the C++ components and Windows SDK  10.0.16299 installed). Then you can open TranslucentTB.sln, and press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to build the solution.
+You also need the [Clang compiler for Windows](http://releases.llvm.org/download.html).
+
+Once you have that installed (make sure you have the C++ components and Windows SDK 10.0.16299 installed). Then you can open TranslucentTB.sln, and press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to build the solution.
 The output will be in either the Release or Debug folder (depending on which configuration is currently active).
 
-If you don't want to open Visual Studio (or install it), you can install the [Visual C++ Build Tools](http://landinghub.visualstudio.com/visual-cpp-build-tools) and the [Windows SDK](https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk) version 10.0.16299. Both of those are already included in Visual Studio.
+If you don't want to open Visual Studio (or install it), you can install the [Visual C++ Build Tools](http://landinghub.visualstudio.com/visual-cpp-build-tools), the [Windows SDK](https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk) version 10.0.16299 and the [Clang compiler for Windows](http://releases.llvm.org/download.html). The C++ build tools and Windows SDK are already included in Visual Studio.
 
 Then open the `Visual C++ MSBuild Command Prompt` (or `Developer Command Prompt for VS 2017`) and `cd` into the root directory of this project, before running `msbuild /p:Configuration=Release`.
-
-**Note**: If Visual Studio or msbuild says it cannot find `platform.winmd`, you will need to edit the project file (`TranslucenTB\TranslucentTB.vcxproj`) to replace two environment variables by their real value:
-
- - `%VCIDEInstallDir%` to `C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC`
- - `%WindowsSdkDir%` to `C:\Program Files (x86)\Windows Kits\10`
-
-If you changed your installation directories, replace these paths by their correspondant value in your setup.
 
 ## Thanks
 
