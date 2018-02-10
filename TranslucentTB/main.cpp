@@ -1,5 +1,3 @@
-#pragma region Includes
-
 // Standard API
 #include <algorithm>
 #include <cwctype>
@@ -31,13 +29,11 @@
 #include "tray.hpp"
 #include "win32.hpp"
 
-#pragma endregion
 
-#pragma region Enumerations
-
-
-
-#pragma endregion
+namespace App {
+	static const LPCWSTR ID = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";		// Message id for app uniqueness
+	static const LPCWSTR NAME = L"TranslucentTB";
+}
 
 #pragma region Structures
 
@@ -77,11 +73,6 @@ static struct RUNTIMESTATE
 
 const static struct CONSTANTS
 {
-	LPCWSTR app_id = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
-	uint32_t WM_NOTIFY_TB = 3141;												// Message id for tray callback
-	LPCWSTR program_name = L"TranslucentTB";
-	uint32_t WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
-	uint32_t NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");
 	LPCWSTR config_file = L"config.cfg";
 	LPCWSTR exclude_file = L"dynamic-ws-exclude.csv";
 	int max_cache_hits = 500;
@@ -170,7 +161,7 @@ HRESULT GetPaths()
 		return error;
 	}
 
-	PathCombine(run.config_folder, localAppData, cnst.program_name);
+	PathCombine(run.config_folder, localAppData, App::NAME);
 	PathCombine(run.config_file, run.config_folder, cnst.config_file);
 	PathCombine(run.exclude_file, run.config_folder, cnst.exclude_file);
 
@@ -204,13 +195,13 @@ void CheckAndRunWelcome()
 		// String concatenation is hard OK
 		std::wstring message;
 		message += L"Welcome to ";
-		message += cnst.program_name;
+		message += App::NAME;
 		message += L"!\n\n";
 		message += L"You can tweak the taskbar's appearance with the tray icon. If it's your cup of tea, you can also edit the configuration files, located at \"";
 		message += run.config_folder;
 		message += '"';
 
-		MessageBox(NULL, message.c_str(), std::wstring(cnst.program_name).c_str(), MB_ICONINFORMATION | MB_OK);
+		MessageBox(NULL, message.c_str(), std::wstring(App::NAME).c_str(), MB_ICONINFORMATION | MB_OK);
 	}
 	if (!PathFileExists(run.config_file))
 	{
@@ -225,7 +216,7 @@ void CheckAndRunWelcome()
 bool GetStartupState()
 {
 	// SUCCEEDED macro considers ERROR_FILE_NOT_FOUND as succeeded ???
-	return RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", cnst.program_name, RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS;
+	return RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", App::NAME, RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS;
 }
 
 void SetStartupState(bool state)
@@ -240,11 +231,11 @@ void SetStartupState(bool state)
 			GetModuleFileName(hModule, path, MAX_PATH);
 			PathQuoteSpaces(path);
 
-			RegSetValueEx(hkey, cnst.program_name, 0, REG_SZ, reinterpret_cast<BYTE *>(path), _tcslen(path) * sizeof(TCHAR));
+			RegSetValueEx(hkey, App::NAME, 0, REG_SZ, reinterpret_cast<BYTE *>(path), _tcslen(path) * sizeof(TCHAR));
 		}
 		else
 		{
-			RegDeleteValue(hkey, cnst.program_name);
+			RegDeleteValue(hkey, App::NAME);
 		}
 		RegCloseKey(hkey);
 	}
@@ -588,7 +579,7 @@ void EditFile(std::wstring file)
 		message += L"Failed to determine System32 folder location!\n\nException from HRESULT: ";
 		message += _com_error(error).ErrorMessage();
 
-		MessageBox(NULL, message.c_str(), (std::wstring(cnst.program_name) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
+		MessageBox(NULL, message.c_str(), (std::wstring(App::NAME) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
 
 		return;
 	}
@@ -628,7 +619,7 @@ void EditFile(std::wstring file)
 		message += L"Failed to start Notepad!\n\nException from HRESULT: ";
 		message += _com_error(error).ErrorMessage();
 
-		MessageBox(NULL, message.c_str(), (std::wstring(cnst.program_name) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
+		MessageBox(NULL, message.c_str(), (std::wstring(App::NAME) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
 	}
 }
 
@@ -784,7 +775,7 @@ bool IsWindowCloaked(HWND hWnd)
 
 bool IsSingleInstance()
 {
-	run.app_handle = CreateEvent(NULL, TRUE, FALSE, cnst.app_id);
+	run.app_handle = CreateEvent(NULL, TRUE, FALSE, App::ID);
 	return GetLastError() != ERROR_ALREADY_EXISTS;
 }
 
@@ -852,7 +843,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM
 	{
 		PostQuitMessage(0);
 	}
-	else if (message == cnst.WM_NOTIFY_TB)
+	else if (message == Tray::WM_NOTIFY_TB)
 	{
 		if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
 		{
@@ -969,12 +960,12 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM
 			}
 		}
 	}
-	else if (message == cnst.WM_TASKBARCREATED)
+	else if (message == Tray::WM_TASKBARCREATED)
 	{
 		RefreshHandles();
 		RegisterTray();
 	}
-	else if (message == cnst.NEW_TTB_INSTANCE) {
+	else if (message == Tray::NEW_TTB_INSTANCE) {
 		run.exit_reason = Tray::NewInstance;
 		run.run = false;
 	}
@@ -1151,7 +1142,7 @@ void InitializeTray(HINSTANCE hInstance)
 		LoadCursor(NULL, IDC_ARROW),			// hCursor
 		reinterpret_cast<HBRUSH>(BLACK_BRUSH),	// hbrBackground
 		NULL,									// lpszMenuName
-		cnst.program_name,						// lpszClassName
+		App::NAME,						// lpszClassName
 		NULL									// hIconSm
 	};
 
@@ -1163,7 +1154,7 @@ void InitializeTray(HINSTANCE hInstance)
 		sizeof(run.tray),																// cbSize
 		CreateWindowEx(																	// hWnd
 			WS_EX_TOOLWINDOW,																// dwExStyle
-			cnst.program_name,																// lpClassName
+			App::NAME,																// lpClassName
 			L"TrayWindow",																	// lpWindowName
 			WS_OVERLAPPEDWINDOW,															// dwStyle
 			0,																				// x
@@ -1177,10 +1168,10 @@ void InitializeTray(HINSTANCE hInstance)
 		),
 		101,																			// uID
 		NIF_ICON | NIF_TIP | NIF_MESSAGE,												// uFlags
-		cnst.WM_NOTIFY_TB																// uCallbackMessage
+		Tray::WM_NOTIFY_TB																// uCallbackMessage
 	};
 	LoadIconMetric(hInstance, MAKEINTRESOURCE(MAINICON), LIM_LARGE, &run.tray.hIcon);	// hIcon
-	wcscpy_s(run.tray.szTip, cnst.program_name);										// szTip
+	wcscpy_s(run.tray.szTip, App::NAME);										// szTip
 	#pragma clang diagnostic pop
 
 	ShowWindow(run.tray.hWnd, WM_SHOWWINDOW);
@@ -1191,8 +1182,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 {
 	// If there already is another instance running, tell it to exit
 	if (!IsSingleInstance()) {
-		HWND oldInstance = FindWindow(cnst.program_name, L"TrayWindow");
-		SendMessage(oldInstance, cnst.NEW_TTB_INSTANCE, NULL, NULL);
+		HWND oldInstance = FindWindow(App::NAME, L"TrayWindow");
+		SendMessage(oldInstance, Tray::NEW_TTB_INSTANCE, NULL, NULL);
 	}
 
 	// Initialize COM, UWP, set DPI awareness, and acquire a VirtualDesktopManager and AppVisibility interface
@@ -1206,7 +1197,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 		message += L"Failed to determine configuration files locations!\n\nProgram will exit.\n\nException from HRESULT: ";
 		message += _com_error(error).ErrorMessage();
 
-		MessageBox(NULL, message.c_str(), (std::wstring(cnst.program_name) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
+		MessageBox(NULL, message.c_str(), (std::wstring(App::NAME) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
 		return 1;
 	}
 
