@@ -375,18 +375,20 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				tempcol.s = 100;
 				tempcol.v = 100;
 
-				step = 359.0/255.0;
+				step = 359.0/heightC2;
 
-				for (int y=255; y>0; y--) // NB: 255 is the height of IDC_COLOR and IDC_COLOR1
-					{
+				for (int y = heightC2; y > -1; y--)
+				{
 					tempcol.UpdateRGB();
 
-					for (int x=6; x<rect.right-6; x++)
+					for (int x = 6; x < widthC2 - 6; x++)
+					{
 						SetPixel(hcomp, x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
+					}
 
 					hue += step;
-					tempcol.h = (UINT) hue;
-					}
+					tempcol.h = (UINT)hue;
+				}
 
 				hue = (double) GetDlgItemInt(hDlg, IDC_HUE, NULL, false);
 				hue = hue / step;
@@ -394,14 +396,14 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				// Draws arrows
 				pen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
 				SelectObject(hcomp, pen);
-				MoveToEx(hcomp, 0, 255 - ((int)(hue)-5), NULL);
-                LineTo(hcomp, 0, 255 - ((int)(hue)+5));
-				LineTo(hcomp, 5, 255 - ((int)(hue)));
-				LineTo(hcomp, 0, 255 - ((int)(hue)-5));
-				MoveToEx(hcomp, rect.right-1, 255 - ((int)(hue)-5), NULL);
-				LineTo(hcomp, rect.right-1, 255 - ((int)(hue)+5));
-				LineTo(hcomp, rect.right-6, 255 - ((int)(hue)));
-				LineTo(hcomp, rect.right-1, 255 - ((int)(hue)-5));
+				MoveToEx(hcomp, 0, heightC2 - ((int)(hue)-5), NULL);
+                LineTo(hcomp, 0, heightC2 - ((int)(hue)+5));
+				LineTo(hcomp, 5, heightC2 - ((int)(hue)));
+				LineTo(hcomp, 0, heightC2 - ((int)(hue)-5));
+				MoveToEx(hcomp, widthC2 -1, heightC2 - ((int)(hue)-5), NULL);
+				LineTo(hcomp, widthC2 -1, heightC2 - ((int)(hue)+5));
+				LineTo(hcomp, widthC2 -6, heightC2 - ((int)(hue)));
+				LineTo(hcomp, widthC2 -1, heightC2 - ((int)(hue)-5));
 				}
             // SATURATION
 			else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
@@ -415,18 +417,20 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				tempcol.s = 0;
 				tempcol.v = (unsigned short) GetDlgItemInt(hDlg, IDC_VALUE, NULL, false);
                                     
-				step = 100.0/255.0;
+				step = 100.0/heightC2;
 
-				for (int y=255; y>0; y--) // NB: 255 is the height of IDC_COLOR and IDC_COLOR1
-					{
+				for (int y = heightC2; y > -1; y--)
+				{
 					tempcol.UpdateRGB();
-					
-					for (int x=6; x<rect.right-6; x++)
+
+					for (int x = 6; x < widthC2 - 6; x++)
+					{
 						SetPixel(hcomp, x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
+					}
 
 					sat += step;
-					tempcol.s = (UINT) sat;
-					}
+					tempcol.s = (UINT)sat;
+				}
 
 				sat = (double) GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false);
 				sat = sat / step;
@@ -434,14 +438,14 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				// Draws arrows
 				pen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
 				SelectObject(hcomp, pen);
-				MoveToEx(hcomp, 0, 255 - ((int)(sat)-5), NULL);
-                LineTo(hcomp, 0, 255 - ((int)(sat)+5));
-				LineTo(hcomp, 5, 255 - ((int)(sat)));
-				LineTo(hcomp, 0, 255 - ((int)(sat)-5));
-				MoveToEx(hcomp, rect.right-1, 255 - ((int)(sat)-5), NULL);
-				LineTo(hcomp, rect.right-1, 255 - ((int)(sat)+5));
-				LineTo(hcomp, rect.right-6, 255 - ((int)(sat)));
-				LineTo(hcomp, rect.right-1, 255 - ((int)(sat)-5));
+				MoveToEx(hcomp, 0, heightC2 - ((int)(sat)-5), NULL);
+                LineTo(hcomp, 0, heightC2 - ((int)(sat)+5));
+				LineTo(hcomp, 5, heightC2 - ((int)(sat)));
+				LineTo(hcomp, 0, heightC2 - ((int)(sat)-5));
+				MoveToEx(hcomp, widthC2-1, heightC2 - ((int)(sat)-5), NULL);
+				LineTo(hcomp, widthC2 -1, heightC2 - ((int)(sat)+5));
+				LineTo(hcomp, widthC2 -6, heightC2 - ((int)(sat)));
+				LineTo(hcomp, widthC2 -1, heightC2 - ((int)(sat)-5));
 				}
             // VALUE
 			else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
@@ -455,18 +459,18 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				tempcol.s = GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false);
 				tempcol.v = 0;
                                     
-				step = 100.0/255.0;
+				step = 100.0/heightC2;
 
-				for (int y=255; y>0; y--) // NB: 255 is the height of IDC_COLOR and IDC_COLOR1
-					{
+				for (int y = heightC2; y > -1; y--)
+				{
 					tempcol.UpdateRGB();
-					
-					for (int x=6; x<rect.right-6; x++)
+
+					for (int x = 6; x < widthC2 - 6; x++)
 						SetPixel(hcomp, x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
 
 					val += step;
-					tempcol.v = (unsigned short) val;
-					}
+					tempcol.v = (unsigned short)val;
+				}
 
 				val = (double) GetDlgItemInt(hDlg, IDC_VALUE, NULL, false);
 				val  = val / step;
@@ -474,14 +478,14 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				// Draws arrows
 				pen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
 				SelectObject(hcomp, pen);
-				MoveToEx(hcomp, 0, 255 - ((int)(val)-5), NULL);
-                LineTo(hcomp, 0, 255 - ((int)(val)+5));
-				LineTo(hcomp, 5, 255 - ((int)(val)));
-				LineTo(hcomp, 0, 255 - ((int)(val)-5));
-				MoveToEx(hcomp, rect.right-1, 255 - ((int)(val)-5), NULL);
-				LineTo(hcomp, rect.right-1, 255 - ((int)(val)+5));
-				LineTo(hcomp, rect.right-6, 255 - ((int)(val)));
-				LineTo(hcomp, rect.right-1, 255 - ((int)(val)-5));
+				MoveToEx(hcomp, 0, heightC2 - ((int)(val)-5), NULL);
+                LineTo(hcomp, 0, heightC2 - ((int)(val)+5));
+				LineTo(hcomp, 5, heightC2 - ((int)(val)));
+				LineTo(hcomp, 0, heightC2 - ((int)(val)-5));
+				MoveToEx(hcomp, widthC2-1, heightC2 - ((int)(val)-5), NULL);
+				LineTo(hcomp, widthC2 -1, heightC2 - ((int)(val)+5));
+				LineTo(hcomp, widthC2 -6, heightC2 - ((int)(val)));
+				LineTo(hcomp, widthC2 -1, heightC2 - ((int)(val)-5));
 				}
 			
 			BitBlt(hdc, 0, 0, rect.right, rect.bottom, hcomp, 0, 0, SRCCOPY);
@@ -509,30 +513,30 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				bf = (float)blue/255.0f;
 				bool flag = false;
 
-				for (int y=255; y>0; y--)
+				for (int y=heightA; y>-1; y--)
 					{
 					COLORREF cb, cw;
 
-					if (!(y%(WIDTH(rect)/2-6)))
+					if (!(y % (int)(widthA / 2 - 6)))
 						flag = !flag;
 
-					float af = 1.0f - (float)y/255.0f;
+					float af = 1.0f - (y/heightA);
 
 					cb = RGB((rf*af)*255, (gf*af)*255, (bf*af)*255);
 					cw = RGB((rf*af+1-af)*255, (gf*af+1-af)*255, (bf*af+1-af)*255);
 
 					if (flag)
 						{
-						for (int x=6; x<(WIDTH(rect)/2); x++)
+						for (int x=6; x<(widthA /2); x++)
 							SetPixel(hcomp, x, y, cw);
-						for (int x=(WIDTH(rect)/2); x<rect.right-6; x++)
+						for (int x=(widthA/2); x<widthA -6; x++)
 							SetPixel(hcomp, x, y, cb);
 						}
 					else
 						{
-						for (int x=6; x<(WIDTH(rect)/2); x++)
+						for (int x=6; x < (widthA/2); x++)
 							SetPixel(hcomp, x, y, cb);
-						for (int x=(WIDTH(rect)/2); x<rect.right-6; x++)
+						for (int x=(widthA/2); x<widthA-6; x++)
 							SetPixel(hcomp, x, y, cw);
 						}
 					}
@@ -540,19 +544,17 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				if (picker->GetAlphaUsage() == CP_USE_ALPHA)
 					{
 					// Draws arrows
-					int a;
-
-					a = (int)((float)alpha/100.0f*255.0f);
+					const float fa = (alpha / 100.0f) * heightA;
 					pen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
 					SelectObject(hcomp, pen);
-					MoveToEx(hcomp, 0, 255-(a-5), NULL);
-					LineTo(hcomp, 0, 255-(a+5));
-					LineTo(hcomp, 5, 255-(a));
-					LineTo(hcomp, 0, 255-(a-5));
-					MoveToEx(hcomp, rect.right-1, 255-(a-5), NULL);
-					LineTo(hcomp, rect.right-1, 255-(a+5));
-					LineTo(hcomp, rect.right-6, 255-(a));
-					LineTo(hcomp, rect.right-1, 255-(a-5));
+					MoveToEx(hcomp, 0, heightA -(fa-5), NULL);
+					LineTo(hcomp, 0, heightA -(fa+5));
+					LineTo(hcomp, 5, heightA -(fa));
+					LineTo(hcomp, 0, heightA -(fa-5));
+					MoveToEx(hcomp, widthA-1, heightA -(fa-5), NULL);
+					LineTo(hcomp, widthA -1, heightA -(fa+5));
+					LineTo(hcomp, widthA -6, heightA -(fa));
+					LineTo(hcomp, widthA -1, heightA -(fa-5));
 					}
 
 				BitBlt(hdc, 0, 0, rect.right, rect.bottom, hcomp, 0, 0, SRCCOPY);
