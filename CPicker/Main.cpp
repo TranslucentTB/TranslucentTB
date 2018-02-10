@@ -52,6 +52,14 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 	const float widthA = rectA.right - rectA.left;
 	const float heightA = rectA.bottom - rectA.top;
 
+	const int red = GetDlgItemInt(hDlg, IDC_RED, NULL, false);
+	const int green = GetDlgItemInt(hDlg, IDC_GREEN, NULL, false);
+	const int blue = GetDlgItemInt(hDlg, IDC_BLUE, NULL, false);
+
+	const int hue = GetDlgItemInt(hDlg, IDC_HUE, NULL, false);
+	const int saturation = GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false);
+	const int value = GetDlgItemInt(hDlg, IDC_VALUE, NULL, false);
+
 	switch (uMsg)
 	{
 	case WM_INITDIALOG:
@@ -85,15 +93,6 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 	case WM_PAINT:
 	{
-		const int red = GetDlgItemInt(hDlg, IDC_RED, NULL, false);
-		const int green = GetDlgItemInt(hDlg, IDC_GREEN, NULL, false);
-		const int blue = GetDlgItemInt(hDlg, IDC_BLUE, NULL, false);
-		const int alpha = GetDlgItemInt(hDlg, IDC_ALPHA, NULL, false);
-
-		const int hue = GetDlgItemInt(hDlg, IDC_HUE, NULL, false);
-		const int saturation = GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false);
-		const int value = GetDlgItemInt(hDlg, IDC_VALUE, NULL, false);
-
 		const HWND CurrentColor = GetDlgItem(hDlg, IDC_CURRCOLOR);
 		const HWND OldColor = GetDlgItem(hDlg, IDC_OLDCOLOR);
 
@@ -443,9 +442,9 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			GetClientRect(Alpha, &rect);
 			FillRect(hcomp, &rect, backgroundColor);
 
-			rf = (float)red / 255.0f;
-			gf = (float)green / 255.0f;
-			bf = (float)blue / 255.0f;
+			rf = red / 255.0f;
+			gf = green / 255.0f;
+			bf = blue / 255.0f;
 			bool flag = false;
 
 			for (int y = heightA; y > -1; y--)
@@ -453,7 +452,9 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				COLORREF cb, cw;
 
 				if (!(y % (int)(widthA / 2 - 6)))
+				{
 					flag = !flag;
+				}
 
 				float af = 1.0f - (y / heightA);
 
@@ -472,7 +473,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 			if (picker->GetAlphaUsage() == CP_USE_ALPHA)
 			{
-				DrawArrows(hcomp, widthA, heightA, (alpha / 100.0f) * heightA);
+				DrawArrows(hcomp, widthA, heightA, (GetDlgItemInt(hDlg, IDC_ALPHA, NULL, false) / 100.0f) * heightA);
 			}
 
 			BitBlt(hdc, 0, 0, widthA, heightA, hcomp, 0, 0, SRCCOPY);
@@ -500,139 +501,120 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		POINT p;
 
 		if (uMsg == WM_MOUSEMOVE && wParam != MK_LBUTTON)
+		{
 			break;
+		}
 
 		GetCursorPos(&p);
 
 		// IDC_COLOR1 picked
-		if (_IS_IN(rectC1.left, rectC1.right, p.x) &&
-			_IS_IN(rectC1.top, rectC1.bottom, p.y))
+		if (_IS_IN(rectC1.left, rectC1.right, p.x) && _IS_IN(rectC1.top, rectC1.bottom, p.y))
 		{
 			const float fx = ((p.x - rectC1.left) / widthC1) * 255.0f;
 			const float fy = ((p.y - rectC1.top) / heightC1) * 255.0f;
 
 			if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 			{
-				picker->SetRGB((unsigned short)GetDlgItemInt(hDlg, IDC_RED, NULL, false), fx, fy);
+				picker->SetRGB(red, fx, fy);
 
 				UpdateValues(hDlg, picker->GetCurrentColour());
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 			{
-				picker->SetRGB(fx, (unsigned short)GetDlgItemInt(hDlg, IDC_GREEN, NULL, false), fy);
+				picker->SetRGB(fx, green, fy);
 
 				UpdateValues(hDlg, picker->GetCurrentColour());
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 			{
-				picker->SetRGB(fy, fx, (unsigned short)GetDlgItemInt(hDlg, IDC_BLUE, NULL, false));
+				picker->SetRGB(fy, fx, blue);
 
 				UpdateValues(hDlg, picker->GetCurrentColour());
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
 			{
-				picker->SetHSV((unsigned short)GetDlgItemInt(hDlg, IDC_HUE, NULL, false),
-					(unsigned short)(fx / 255.0*100.0),
-					(unsigned short)((255 - fy) / 255.0*100.0));
+				picker->SetHSV(hue, fx / 255.0 * 100.0, (255 - fy) / 255.0 * 100.0);
 
 				UpdateValues(hDlg, picker->GetCurrentColour());
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
 			{
-				picker->SetHSV((unsigned short)(fx / 255.0*359.0),
-					(unsigned short)GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false),
-					(unsigned short)((255 - fy) / 255.0*100.0));
+				picker->SetHSV(fx / 255.0 * 359.0, saturation, (255 - fy) / 255.0 * 100.0);
 
 				UpdateValues(hDlg, picker->GetCurrentColour());
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
 			{
-				picker->SetHSV((unsigned short)(fx / 255.0*359.0),
-					(unsigned short)((255 - fy) / 255.0*100.0),
-					(unsigned short)GetDlgItemInt(hDlg, IDC_VALUE, NULL, false));
+				picker->SetHSV(fx / 255.0 * 359.0, (255 - fy) / 255.0 * 100.0, value);
 
 				UpdateValues(hDlg, picker->GetCurrentColour());
 			}
 		}
 		// IDC_COLOR2 picked
-		else if (_IS_IN(rectC2.left, rectC2.right, p.x) &&
-			_IS_IN(rectC2.top, rectC2.bottom, p.y))
+		else if (_IS_IN(rectC2.left, rectC2.right, p.x) && _IS_IN(rectC2.top, rectC2.bottom, p.y))
 		{
 			const float fy = ((p.y - rectC2.top) / heightC2) * 255.0f;
 
 			if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 			{
-				picker->SetRGB((unsigned short)(255 - fy),
-					(unsigned short)GetDlgItemInt(hDlg, IDC_GREEN, NULL, false),
-					(unsigned short)GetDlgItemInt(hDlg, IDC_BLUE, NULL, false));
+				picker->SetRGB(255 - fy, green, blue);
 
 				UpdateValues(hDlg, picker->GetCurrentColour());
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 			{
-				picker->SetRGB((unsigned short)GetDlgItemInt(hDlg, IDC_RED, NULL, false),
-					(unsigned short)(255 - fy),
-					(unsigned short)GetDlgItemInt(hDlg, IDC_BLUE, NULL, false));
+				picker->SetRGB(red, 255 - fy, blue);
 
 				UpdateValues(hDlg, picker->GetCurrentColour());
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 			{
-				picker->SetRGB((unsigned short)GetDlgItemInt(hDlg, IDC_RED, NULL, false),
-					(unsigned short)GetDlgItemInt(hDlg, IDC_GREEN, NULL, false),
-					(unsigned short)(255 - fy));
+				picker->SetRGB(red, green, 255 - fy);
 
 				UpdateValues(hDlg, picker->GetCurrentColour());
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
 			{
-				picker->SetHSV((unsigned short)((255 - fy) / 255.0*359.0),
-					(unsigned short)GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false),
-					(unsigned short)GetDlgItemInt(hDlg, IDC_VALUE, NULL, false));
+				picker->SetHSV((255 - fy) / 255.0 * 359.0, saturation, value);
 
 				UpdateValues(hDlg, picker->GetCurrentColour());
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
 			{
-				picker->SetHSV((unsigned short)GetDlgItemInt(hDlg, IDC_HUE, NULL, false),
-					(unsigned short)((255 - fy) / 255.0*100.0),
-					(unsigned short)GetDlgItemInt(hDlg, IDC_VALUE, NULL, false));
+				picker->SetHSV(hue, (255 - fy) / 255.0 * 100.0, value);
 
 				UpdateValues(hDlg, picker->GetCurrentColour());
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
 			{
-				picker->SetHSV((unsigned short)GetDlgItemInt(hDlg, IDC_HUE, NULL, false),
-					(unsigned short)GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false),
-					(unsigned short)((255 - fy) / 255.0*100.0));
+				picker->SetHSV(hue, saturation, (255 - fy) / 255.0 * 100.0);
 
 				UpdateValues(hDlg, picker->GetCurrentColour());
 			}
 		}
 		// IDC_ALPHASLIDE picked
-		else if (_IS_IN(rectA.left, rectA.right, p.x) &&
-			_IS_IN(rectA.top, rectA.bottom, p.y) && (picker->GetAlphaUsage() == CP_USE_ALPHA))
+		else if (_IS_IN(rectA.left, rectA.right, p.x) && _IS_IN(rectA.top, rectA.bottom, p.y) && (picker->GetAlphaUsage() == CP_USE_ALPHA))
 		{
 			const float fy = ((p.y - rectA.top) / heightA) * 255.0f;
 
-			picker->SetAlpha((unsigned short)((float)(255 - fy) / 255.0f*100.0f));
+			picker->SetAlpha((255 - fy) / 255.0f * 100.0f);
 
 			UpdateValues(hDlg, picker->GetCurrentColour());
 		}
 
 		SendMessage(hDlg, WM_PAINT, 0, 0);
+		break;
 	}
-	break; // WM_LBUTTONDOWN, WM_MOUSEMOVE
 
 	case WM_COMMAND:
 		switch (HIWORD(wParam))
@@ -640,8 +622,8 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		case EN_SETFOCUS:
 		{
 			SendDlgItemMessage(hDlg, LOWORD(wParam), EM_SETSEL, 0, -1);
+			break;
 		}
-		break;
 
 		case EN_KILLFOCUS:
 		{
@@ -658,11 +640,9 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				tempcolor = max(0, tempcolor);
 				SetDlgItemInt(hDlg, LOWORD(wParam), tempcolor, false);
 
-				picker->SetRGB(GetDlgItemInt(hDlg, IDC_RED, NULL, false),
-					GetDlgItemInt(hDlg, IDC_GREEN, NULL, false),
-					GetDlgItemInt(hDlg, IDC_BLUE, NULL, false));
+				picker->SetRGB(GetDlgItemInt(hDlg, IDC_RED, NULL, false), GetDlgItemInt(hDlg, IDC_GREEN, NULL, false), GetDlgItemInt(hDlg, IDC_BLUE, NULL, false));
+				break;
 			}
-			break;
 
 			case IDC_HUE:
 			{
@@ -671,32 +651,29 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				tempcolor = max(0, tempcolor);
 				SetDlgItemInt(hDlg, IDC_HUE, tempcolor, false);
 
-				picker->SetHSV(GetDlgItemInt(hDlg, IDC_HUE, NULL, false),
-					GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false),
-					GetDlgItemInt(hDlg, IDC_VALUE, NULL, false));
+				picker->SetHSV(tempcolor, saturation, value);
+				break;
 			}
-			break;
 
 			case IDC_SATURATION:
 			case IDC_VALUE:
 			{
-				tempcolor = GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false);
+				tempcolor = GetDlgItemInt(hDlg, LOWORD(wParam), NULL, false);
 				tempcolor = min(100, tempcolor);
 				tempcolor = max(0, tempcolor);
-				SetDlgItemInt(hDlg, IDC_SATURATION, tempcolor, false);
+				SetDlgItemInt(hDlg, LOWORD(wParam), tempcolor, false);
 
-				picker->SetHSV(GetDlgItemInt(hDlg, IDC_HUE, NULL, false),
-					GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false),
-					GetDlgItemInt(hDlg, IDC_VALUE, NULL, false));
+				picker->SetHSV(hue, GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false), GetDlgItemInt(hDlg, IDC_VALUE, NULL, false));
+				break;
 			}
-			break;
 			}
 
 			// Update color
 			UpdateValues(hDlg, picker->GetCurrentColour());
 			SendMessage(hDlg, WM_PAINT, 0, 0);
+
+			break;
 		}
-		break;
 
 		case BN_CLICKED: // Equivalent to STN_CLICKED
 		{
@@ -710,24 +687,24 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			case IDC_V:
 			{
 				SendMessage(hDlg, WM_PAINT, 0, 0);
+				break;
 			}
-			break;
 
 			case IDC_OLDCOLOR:
 			{
 				picker->Revert();
 				UpdateValues(hDlg, picker->GetCurrentColour());
 				SendMessage(hDlg, WM_PAINT, 0, 0);
+				break;
 			}
-			break;
 
 			case IDB_OK:
 			{
 				picker->UpdateOldColour();
 				pbufferC1.Destroy();
 				EndDialog(hDlg, IDB_OK);
+				break;
 			}
-			break;
 
 			case IDB_CANCEL:
 			{
@@ -737,19 +714,20 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				picker->SetAlpha(old.a);
 				pbufferC1.Destroy();
 				EndDialog(hDlg, IDB_CANCEL);
+				break;
 			}
+			}
+
 			break;
-			}
+		}
 		}
 		break;
-		}
-		break; // WM_COMMAND
 
 	case WM_DPICHANGED:
 		pbufferC1.Destroy();
 		pbufferC1.Create(widthC1, heightC1);
 		SendMessage(hDlg, WM_PAINT, 0, 0);
-		break; // WM_DPICHANGED
+		break;
 	}
 	return 0L;
 }
