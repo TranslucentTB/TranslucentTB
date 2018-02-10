@@ -678,7 +678,7 @@ void RefreshMenu()
 	CheckPopupItem(IDM_DYNAMICWS_PEEK, opt.dynamicws_peek);
 	CheckPopupItem(IDM_DYNAMICWS, opt.dynamicws);
 	CheckPopupItem(IDM_DYNAMICSTART, opt.dynamicstart);
-	CheckPopupItem(IDM_AUTOSTART, GetStartupState());
+	CheckPopupItem(IDM_AUTOSTART, win32::GetStartupState());
 }
 
 void RegisterTray()
@@ -777,7 +777,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM
 				opt.peek = Taskbar::Disabled;
 				break;
 			case IDM_AUTOSTART: // TODO: Use UWP Apis
-				SetStartupState(!GetStartupState());
+				win32::SetStartupState(!win32::GetStartupState());
 				break;
 			case IDM_RETURNTODEFAULTSETTINGS:
 				ApplyStock(Config::CONFIG_FILE);
@@ -1055,7 +1055,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	CheckAndRunWelcome();
 
 	// Verify our runtime
-	run.fluent_available = IsAtLeastBuild(17063);
+	run.fluent_available = win32::IsAtLeastBuild(17063);
 
 	// Parse our configuration
 	ParseConfigFile();
