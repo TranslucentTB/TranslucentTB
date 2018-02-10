@@ -140,7 +140,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				for (int b = 0; b < heightC1; b++)
 				{
 					bf = (b / heightC1) * 255.0f;
-					pbufferC1.SetPixel(r, b, RGB(rf, green, gf));
+					pbufferC1.SetPixel(r, b, RGB(rf, green, bf));
 				}
 			}
 			pbufferC1.Display(hcomp);
