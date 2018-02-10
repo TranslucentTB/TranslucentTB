@@ -5,8 +5,8 @@
 #include <cwctype>
 #include <fstream>
 #include <iomanip>
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 // Windows API
@@ -20,32 +20,32 @@
 #include <Shlwapi.h>
 #include <tchar.h>
 
-// Local
+// For the context menu
 #include "resource.h"
 
-// Libraries
+// For the color picker
 #include "../CPicker/CPicker.h"
 
 #pragma endregion
 
 #pragma region Enumerations
 
-enum TASKBARSTATE {		// enum to store states of a taskbar
-	Normal,				// Proceed as normal. If no dynamic options are set, act as it says in opt.taskbar_appearance
+enum TASKBARSTATE {
+	Normal,				// If no dynamic options are set, act as it says in opt.taskbar_appearance
 	WindowMaximised,	// There is a window which is maximised on the monitor this HWND is in. Display as blurred.
 	StartMenuOpen		// The Start Menu is open on the monitor this HWND is in. Display as it would be without TranslucentTB active.
 };
 
-enum EXITREASON {		// enum to store possible exit reasons
+enum EXITREASON {
 	NewInstance,		// New instance told us to exit
 	UserAction,			// Triggered by the user
 	UserActionNoSave	// Triggered by the user, but doesn't saves config
 };
 
-enum PEEKSTATE {	// enum to store the user's Aero Peek settings
+enum AEROPEEKSTATE {
 	Disabled,		// Hide the button
 	Dynamic,		// Show when a window is maximised
-	Enabled			// Show the button
+	Enabled			// Don't hide the button
 };
 
 enum ACCENTSTATE {								// Values passed to SetWindowCompositionAttribute determining the appearance of a window
@@ -54,7 +54,7 @@ enum ACCENTSTATE {								// Values passed to SetWindowCompositionAttribute dete
 	ACCENT_ENABLE_BLURBEHIND = 3,				// Use a tinted blurry overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
 	ACCENT_ENABLE_FLUENT = 4,					// Use fluent design-like aspect. nColor is tint color.
 
-	ACCENT_FOLLOW_OPT = 149,					// (Fake value) Respect what defined in opt.taskbar_appearance
+	ACCENT_FOLLOW_OPT = 149,					// (Fake value) Use the value in opt.taskbar_appearance
 	ACCENT_ENABLE_TINTED = 150,					// (Fake value) Dynamic windows tinted
 	ACCENT_NORMAL = 151							// (Fake value) Emulate regular taskbar appearance
 };
@@ -73,86 +73,86 @@ struct ACCENTPOLICY					// Determines how a window's transparent region will be 
 {
 	ACCENTSTATE nAccentState;		// Appearance
 	int nFlags;						// Nobody knows how this value works
-	UINT nColor;					// A color in the format AABBGGRR
+	UINT nColor;					// A color in the hex format AABBGGRR
 	int nAnimationId;				// Nobody knows how this value works
 };
 
 struct WINCOMPATTRDATA							// Composition Attributes
 {
 	WindowCompositionAttribute nAttribute;		// Type of the data passed in nAttribute
-	PVOID pData;								// Some data
-	ULONG ulDataSize;							// Size of the data passed in nAttribute
+	PVOID pData;								// Opaque pointer to the data struct (ACCENTPOLICY)
+	ULONG ulDataSize;
 };
 
-struct TASKBARPROPERTIES	// Relevant info on a taskbar
+struct TASKBARPROPERTIES
 {
-	HMONITOR hmon;			// Monitor it lives on
-	TASKBARSTATE state;		// How we should handle it
+	HMONITOR hmon;
+	TASKBARSTATE state;
 };
 
-static struct OPTIONS											// User settings
+static struct OPTIONS
 {
-	ACCENTSTATE taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;	// Appearance of the taskbar
-	UINT color = 0x00000000;									// Color to apply to the taskbar
-	bool dynamicws = false;										// Whether dynamic windows are enabled
+	ACCENTSTATE taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+	UINT color = 0x00000000;
+	bool dynamicws = false;
 	ACCENTSTATE dynamic_ws_state = ACCENT_ENABLE_BLURBEHIND;	// State to activate when a window is maximised
 	bool dynamicws_peek = true;									// Whether to use the normal style when using Aero Peek
-	bool dynamicstart = false;									// Whether dynamic start is enabled
-	PEEKSTATE peek = Enabled;									// Controls how the Aero Peek button is handled
-	std::vector<std::wstring> blacklisted_classes;				// List of window classes the user blacklisted
-	std::vector<std::wstring> blacklisted_filenames;			// List of executable filenames the user blacklisted
-	std::vector<std::wstring> blacklisted_titles;				// List of window titles the user blacklisted
+	bool dynamicstart = false;
+	AEROPEEKSTATE peek = Enabled;
+	std::vector<std::wstring> blacklisted_classes;
+	std::vector<std::wstring> blacklisted_filenames;
+	std::vector<std::wstring> blacklisted_titles;
 } opt;
 
-static struct RUNTIME															// Used to store things relevant only to runtime
+static struct RUNTIMESTATE
 {
-	EXITREASON exit_reason = UserAction;										// Determines if current configuration should be saved when we exit
-	IVirtualDesktopManager *desktop_manager = NULL;								// Used to detect if a window is in the current virtual desktop. Don't forget to check for null on this one
-	IAppVisibility *app_visibility = NULL;										// Used to detect if start menu is opened
-	HWND main_taskbar;															// Handle to taskbar that shows on main monitor
-	std::unordered_map<HWND, TASKBARPROPERTIES> taskbars;						// Map for all taskbars and their properties
-	bool should_show_peek;														// Set by the EnumWindowsProcess and determines if peek should be shown when in dynamic mode
-	bool run = true;															// Set to false to break out of the main program loop
-	HMENU popup;																// Tray icon popup
-	HANDLE ev;																	// Handle to an event. Used for uniqueness
-	NOTIFYICONDATA tray;														// Tray icon
-	bool fluent_available = false;												// Whether ACCENT_ENABLE_FLUENT works
-	TCHAR config_folder[MAX_PATH];												// Folder where configuration is stored
-	TCHAR config_file[MAX_PATH];												// Location of configuration file
-	TCHAR exclude_file[MAX_PATH];												// Location of blacklist file
-	int cache_hits;																// Number of times the blacklist cache has been hit
-	bool peek_active = false;													// Determines if the user is currently peeking the desktop
+	EXITREASON exit_reason = UserAction;
+	IVirtualDesktopManager *desktop_manager = NULL;				// Used to detect if a window is in the current virtual desktop. Don't forget to check for null on this one
+	IAppVisibility *app_visibility = NULL;						// Used to detect if start menu is opened
+	HWND main_taskbar;
+	std::unordered_map<HWND, TASKBARPROPERTIES> taskbars;
+	bool should_show_peek;
+	bool run = true;
+	HMENU tray_popup;
+	HANDLE app_handle;											// Handle to this app to check for uniqueness
+	NOTIFYICONDATA tray;
+	bool fluent_available = false;
+	TCHAR config_folder[MAX_PATH];
+	TCHAR config_file[MAX_PATH];
+	TCHAR exclude_file[MAX_PATH];
+	int cache_hits;
+	bool peek_active = false;
 } run;
 
-const static struct CONSTANTS												// Constants. What else do you need?
+const static struct CONSTANTS
 {
-	LPCWSTR guid = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";					// Used to prevent two instances running at the same time
+	LPCWSTR app_id = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
 	UINT WM_NOTIFY_TB = 3141;												// Message id for tray callback
-	LPCWSTR program_name = L"TranslucentTB";								// Sounds weird, but prevents typos
-	UINT WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");		// Message received when Explorer restarts
-	UINT NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");		// Message sent when an instance should exit because a new one started
-	std::unordered_map<ACCENTSTATE, UINT> normal_button_map = {				// Holds a map of which setting is associated to which button
+	LPCWSTR program_name = L"TranslucentTB";
+	UINT WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
+	UINT NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");
+	std::unordered_map<ACCENTSTATE, UINT> normal_button_map = {
 		{ ACCENT_ENABLE_BLURBEHIND,				IDM_BLUR },
 		{ ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_CLEAR },
 		{ ACCENT_NORMAL,						IDM_NORMAL },
 		{ ACCENT_ENABLE_GRADIENT,				IDM_OPAQUE },
 		{ ACCENT_ENABLE_FLUENT,					IDM_FLUENT }
 	};
-	std::unordered_map<ACCENTSTATE, UINT> dynamic_button_map = {			// Holds a map of which setting is associated to which button
+	std::unordered_map<ACCENTSTATE, UINT> dynamic_button_map = {
 		{ ACCENT_ENABLE_BLURBEHIND,				IDM_DYNAMICWS_BLUR },
 		{ ACCENT_ENABLE_TINTED,					IDM_DYNAMICWS_CLEAR },
 		{ ACCENT_NORMAL,						IDM_DYNAMICWS_NORMAL },
 		{ ACCENT_ENABLE_GRADIENT,				IDM_DYNAMICWS_OPAQUE },
 		{ ACCENT_ENABLE_FLUENT,					IDM_DYNAMICWS_FLUENT }
 	};
-	std::unordered_map<PEEKSTATE, UINT> peek_button_map = {					// Holds a map of which setting is associated to which button
+	std::unordered_map<AEROPEEKSTATE, UINT> peek_button_map = {
 		{ Disabled,		IDM_NOPEEK },
 		{ Dynamic,		IDM_DPEEK },
 		{ Enabled,		IDM_PEEK }
 	};
-	LPCWSTR config_file = L"config.cfg";									// Name of configuration file
-	LPCWSTR exclude_file = L"dynamic-ws-exclude.csv";						// Name of dynamic windows blacklist file
-	int max_cache_hits = 500;												// Maximum number of times the blacklist cache may be hit
+	LPCWSTR config_file = L"config.cfg";
+	LPCWSTR exclude_file = L"dynamic-ws-exclude.csv";
+	int max_cache_hits = 500;
 } cnst = CONSTANTS();
 
 #pragma endregion
@@ -854,7 +854,7 @@ bool IsWindowCloaked(HWND hWnd)
 
 bool IsSingleInstance()
 {
-	run.ev = CreateEvent(NULL, TRUE, FALSE, cnst.guid);
+	run.app_handle = CreateEvent(NULL, TRUE, FALSE, cnst.app_id);
 	return GetLastError() != ERROR_ALREADY_EXISTS;
 }
 
@@ -882,17 +882,17 @@ bool IsAtLeastBuildNumber(unsigned int buildNumber)
 
 DWORD CheckPopupItem(UINT item_to_check, bool state)
 {
-	return CheckMenuItem(run.popup, item_to_check, MF_BYCOMMAND | (state ? MF_CHECKED : MF_UNCHECKED) | MF_ENABLED);
+	return CheckMenuItem(run.tray_popup, item_to_check, MF_BYCOMMAND | (state ? MF_CHECKED : MF_UNCHECKED) | MF_ENABLED);
 }
 
 bool EnablePopupItem(UINT item_to_enable, bool state)
 {
-	return EnableMenuItem(run.popup, item_to_enable, MF_BYCOMMAND | (state ? MF_ENABLED : MF_GRAYED));
+	return EnableMenuItem(run.tray_popup, item_to_enable, MF_BYCOMMAND | (state ? MF_ENABLED : MF_GRAYED));
 }
 
 bool CheckPopupRadioItem(UINT from, UINT to, UINT item_to_check)
 {
-	return CheckMenuRadioItem(run.popup, from, to, item_to_check, MF_BYCOMMAND);
+	return CheckMenuRadioItem(run.tray_popup, from, to, item_to_check, MF_BYCOMMAND);
 }
 
 void RefreshMenu()
@@ -933,7 +933,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			POINT pt;
 			GetCursorPos(&pt);
 			SetForegroundWindow(hWnd);
-			UINT tray = TrackPopupMenu(GetSubMenu(run.popup, 0), TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
+			UINT tray = TrackPopupMenu(GetSubMenu(run.tray_popup, 0), TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
 			switch (tray) // TODO: Add dynamic windows ACCENT_ENABLE_TRANSPARENT_GRADIENT
 			{
 			case IDM_BLUR:
@@ -1211,7 +1211,7 @@ void InitializeAPIs()
 
 void InitializeTray(HINSTANCE hInstance)
 {
-	run.popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU)); // Load our popup menu
+	run.tray_popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU)); // Load our popup menu
 
 	WNDCLASSEX wnd = {
 		sizeof(wnd),							// cbSize
@@ -1339,7 +1339,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	}
 
 	// Close the uniqueness handle to allow other instances to run
-	CloseHandle(run.ev);
+	CloseHandle(run.app_handle);
 
 	// Uninitialize UWP and COM
 	CoUninitialize();
