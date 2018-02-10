@@ -13,6 +13,20 @@ inline void DrawCircle(HDC hcomp, int red, int green, int blue, float x, float y
 	Arc(hcomp, x - 5, y - 5, x + 5, y + 5, 0, 0, 0, 0);
 }
 
+inline void DrawArrows(HDC hcomp, int width, int height, int y)
+{
+	HPEN pen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
+	SelectObject(hcomp, pen);
+	MoveToEx(hcomp, 0, height - (y - 5), NULL);
+	LineTo(hcomp, 0, height - (y + 5));
+	LineTo(hcomp, 5, height - (y));
+	LineTo(hcomp, 0, height - (y - 5));
+	MoveToEx(hcomp, width - 1, height - (y - 5), NULL);
+	LineTo(hcomp, width - 1, height - (y + 5));
+	LineTo(hcomp, width - 6, height - (y));
+	LineTo(hcomp, width - 1, height - (y - 5));
+}
+
 LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static CColourPicker *picker = NULL;
@@ -37,15 +51,6 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 	const float widthA = rectA.right - rectA.left;
 	const float heightA = rectA.bottom - rectA.top;
-
-	const int red = GetDlgItemInt(hDlg, IDC_RED, NULL, false);
-	const int green = GetDlgItemInt(hDlg, IDC_GREEN, NULL, false);
-	const int blue = GetDlgItemInt(hDlg, IDC_BLUE, NULL, false);
-	const int alpha = GetDlgItemInt(hDlg, IDC_ALPHA, NULL, false);
-
-	const int hue = GetDlgItemInt(hDlg, IDC_HUE, NULL, false);
-	const int saturation = GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false);
-	const int value = GetDlgItemInt(hDlg, IDC_VALUE, NULL, false);
 
 	switch (uMsg)
 	{
@@ -80,11 +85,23 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 	case WM_PAINT:
 	{
+		const int red = GetDlgItemInt(hDlg, IDC_RED, NULL, false);
+		const int green = GetDlgItemInt(hDlg, IDC_GREEN, NULL, false);
+		const int blue = GetDlgItemInt(hDlg, IDC_BLUE, NULL, false);
+		const int alpha = GetDlgItemInt(hDlg, IDC_ALPHA, NULL, false);
+
+		const int hue = GetDlgItemInt(hDlg, IDC_HUE, NULL, false);
+		const int saturation = GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false);
+		const int value = GetDlgItemInt(hDlg, IDC_VALUE, NULL, false);
+
+		const HWND CurrentColor = GetDlgItem(hDlg, IDC_CURRCOLOR);
+		const HWND OldColor = GetDlgItem(hDlg, IDC_OLDCOLOR);
+
 		HDC hdc, hcomp;
 		HBITMAP hbmp;
 		RECT rect;
 		HPEN pen;
-		HBRUSH brush;
+		const HBRUSH backgroundColor = CreateSolidBrush(GetSysColor(COLOR_BTNFACE));
 		float rf, gf, bf;
 
 		// Big color selector (displays non-selected features)
@@ -164,14 +181,14 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				for (int x = 0; x < widthC1; x++)
 				{
 					sat += stepsat;
-					tempcol.s = (unsigned short)sat;
+					tempcol.s = sat;
 					tempcol.UpdateRGB();
 					pbufferC1.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
 				}
 
 				val += stepval;
 				sat = 0.0;
-				tempcol.v = (unsigned short)val;
+				tempcol.v = val;
 			}
 			pbufferC1.Display(hcomp);
 
@@ -247,7 +264,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 				sat += stepsat;
 				temphue = 0.0;
-				tempcol.s = (unsigned short)sat;
+				tempcol.s = sat;
 			}
 			pbufferC1.Display(hcomp);
 
@@ -272,10 +289,8 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		hbmp = CreateCompatibleBitmap(hdc, widthC2, heightC2);
 		SelectObject(hcomp, hbmp);
 
-		brush = CreateSolidBrush(GetSysColor(COLOR_BTNFACE));
 		GetClientRect(Color2, &rect);
-		FillRect(hcomp, &rect, brush);
-		DeleteObject(brush);
+		FillRect(hcomp, &rect, backgroundColor);
 
 		// Check who is selected.
 		// RED
@@ -283,75 +298,43 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		{
 			for (int r = heightC2; r > -1; r--)
 			{
-				const float fred = ((r / heightC2) * 255.0f);
+				rf = ((r / heightC2) * 255.0f);
 				for (int x = 6; x < widthC2 - 6; x++)
-					SetPixel(hcomp, x, r, RGB(255 - fred, green, blue));
+				{
+					SetPixel(hcomp, x, r, RGB(255 - rf, green, blue));
+				}
 			}
-
-			// Draws arrows
-			const float fred = (red / 255.0f) * heightC2;
-			pen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
-			SelectObject(hcomp, pen);
-			MoveToEx(hcomp, 0, heightC2 - (fred - 5), NULL);
-			LineTo(hcomp, 0, heightC2 - (fred + 5));
-			LineTo(hcomp, 5, heightC2 - (fred));
-			LineTo(hcomp, 0, heightC2 - (fred - 5));
-			MoveToEx(hcomp, widthC2 - 1, heightC2 - (fred - 5), NULL);
-			LineTo(hcomp, widthC2 - 1, heightC2 - (fred + 5));
-			LineTo(hcomp, widthC2 - 6, heightC2 - (fred));
-			LineTo(hcomp, widthC2 - 1, heightC2 - (fred - 5));
+			DrawArrows(hcomp, widthC2, heightC2, (red / 255.0f) * heightC2);
 		}
 		// GREEN
 		else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 		{
 			for (int g = heightC2; g > -1; g--)
 			{
-				const float fgreen = ((g / heightC2) * 255.0f);
+				gf = ((g / heightC2) * 255.0f);
 				for (int x = 6; x < widthC2 - 6; x++)
-					SetPixel(hcomp, x, g, RGB(red, 255 - fgreen, blue));
+					SetPixel(hcomp, x, g, RGB(red, 255 - gf, blue));
 			}
-
-			const float fgreen = (green / 255.0f) * heightC2;
-			pen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
-			SelectObject(hcomp, pen);
-			MoveToEx(hcomp, 0, heightC2 - (fgreen - 5), NULL);
-			LineTo(hcomp, 0, heightC2 - (fgreen + 5));
-			LineTo(hcomp, 5, heightC2 - (fgreen));
-			LineTo(hcomp, 0, heightC2 - (fgreen - 5));
-			MoveToEx(hcomp, widthC2 - 1, heightC2 - (fgreen - 5), NULL);
-			LineTo(hcomp, widthC2 - 1, heightC2 - (fgreen + 5));
-			LineTo(hcomp, widthC2 - 6, heightC2 - (fgreen));
-			LineTo(hcomp, widthC2 - 1, heightC2 - (fgreen - 5));
+			DrawArrows(hcomp, widthC2, heightC2, (green / 255.0f) * heightC2);
 		}
 		// BLUE
 		else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 		{
 			for (int b = heightC2; b > -1; b--)
 			{
-				const float fblue = ((b / heightC2) * 255.0f);
+				bf = ((b / heightC2) * 255.0f);
 				for (int x = 6; x < widthC2 - 6; x++)
-					SetPixel(hcomp, x, b, RGB(red, green, 255 - fblue));
+					SetPixel(hcomp, x, b, RGB(red, green, 255 - bf));
 			}
-
-			const float fblue = (blue / 255.0f) * heightC2;
-			pen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
-			SelectObject(hcomp, pen);
-			MoveToEx(hcomp, 0, heightC2 - (fblue - 5), NULL);
-			LineTo(hcomp, 0, heightC2 - (fblue + 5));
-			LineTo(hcomp, 5, heightC2 - (fblue));
-			LineTo(hcomp, 0, heightC2 - (fblue - 5));
-			MoveToEx(hcomp, widthC2 - 1, heightC2 - (fblue - 5), NULL);
-			LineTo(hcomp, widthC2 - 1, heightC2 - (fblue + 5));
-			LineTo(hcomp, widthC2 - 6, heightC2 - (fblue));
-			LineTo(hcomp, widthC2 - 1, heightC2 - (fblue - 5));
+			DrawArrows(hcomp, widthC2, heightC2, (blue / 255.0f) * heightC2);
 		}
 		// HUE
 		else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
 		{
-			double hue, step;
+			double temphue, step;
 			SColour tempcol;
 
-			hue = 0.0;
+			temphue = 0.0;
 
 			tempcol.h = 0;
 			tempcol.s = 100;
@@ -368,24 +351,14 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 					SetPixel(hcomp, x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
 				}
 
-				hue += step;
-				tempcol.h = (UINT)hue;
+				temphue += step;
+				tempcol.h = temphue;
 			}
 
-			hue = (double)GetDlgItemInt(hDlg, IDC_HUE, NULL, false);
-			hue = hue / step;
+			temphue = GetDlgItemInt(hDlg, IDC_HUE, NULL, false);
+			temphue = temphue / step;
 
-			// Draws arrows
-			pen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
-			SelectObject(hcomp, pen);
-			MoveToEx(hcomp, 0, heightC2 - ((int)(hue)-5), NULL);
-			LineTo(hcomp, 0, heightC2 - ((int)(hue)+5));
-			LineTo(hcomp, 5, heightC2 - ((int)(hue)));
-			LineTo(hcomp, 0, heightC2 - ((int)(hue)-5));
-			MoveToEx(hcomp, widthC2 - 1, heightC2 - ((int)(hue)-5), NULL);
-			LineTo(hcomp, widthC2 - 1, heightC2 - ((int)(hue)+5));
-			LineTo(hcomp, widthC2 - 6, heightC2 - ((int)(hue)));
-			LineTo(hcomp, widthC2 - 1, heightC2 - ((int)(hue)-5));
+			DrawArrows(hcomp, widthC2, heightC2, temphue);
 		}
 		// SATURATION
 		else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
@@ -395,9 +368,9 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 			sat = 0.0;
 
-			tempcol.h = (unsigned short)GetDlgItemInt(hDlg, IDC_HUE, NULL, false);
+			tempcol.h = GetDlgItemInt(hDlg, IDC_HUE, NULL, false);
 			tempcol.s = 0;
-			tempcol.v = (unsigned short)GetDlgItemInt(hDlg, IDC_VALUE, NULL, false);
+			tempcol.v = GetDlgItemInt(hDlg, IDC_VALUE, NULL, false);
 
 			step = 100.0 / heightC2;
 
@@ -411,23 +384,13 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				}
 
 				sat += step;
-				tempcol.s = (UINT)sat;
+				tempcol.s = sat;
 			}
 
-			sat = (double)GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false);
+			sat = GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false);
 			sat = sat / step;
 
-			// Draws arrows
-			pen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
-			SelectObject(hcomp, pen);
-			MoveToEx(hcomp, 0, heightC2 - ((int)(sat)-5), NULL);
-			LineTo(hcomp, 0, heightC2 - ((int)(sat)+5));
-			LineTo(hcomp, 5, heightC2 - ((int)(sat)));
-			LineTo(hcomp, 0, heightC2 - ((int)(sat)-5));
-			MoveToEx(hcomp, widthC2 - 1, heightC2 - ((int)(sat)-5), NULL);
-			LineTo(hcomp, widthC2 - 1, heightC2 - ((int)(sat)+5));
-			LineTo(hcomp, widthC2 - 6, heightC2 - ((int)(sat)));
-			LineTo(hcomp, widthC2 - 1, heightC2 - ((int)(sat)-5));
+			DrawArrows(hcomp, widthC2, heightC2, sat);
 		}
 		// VALUE
 		else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
@@ -448,29 +411,21 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				tempcol.UpdateRGB();
 
 				for (int x = 6; x < widthC2 - 6; x++)
+				{
 					SetPixel(hcomp, x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
+				}
 
 				val += step;
-				tempcol.v = (unsigned short)val;
+				tempcol.v = val;
 			}
 
-			val = (double)GetDlgItemInt(hDlg, IDC_VALUE, NULL, false);
+			val = GetDlgItemInt(hDlg, IDC_VALUE, NULL, false);
 			val = val / step;
 
-			// Draws arrows
-			pen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
-			SelectObject(hcomp, pen);
-			MoveToEx(hcomp, 0, heightC2 - ((int)(val)-5), NULL);
-			LineTo(hcomp, 0, heightC2 - ((int)(val)+5));
-			LineTo(hcomp, 5, heightC2 - ((int)(val)));
-			LineTo(hcomp, 0, heightC2 - ((int)(val)-5));
-			MoveToEx(hcomp, widthC2 - 1, heightC2 - ((int)(val)-5), NULL);
-			LineTo(hcomp, widthC2 - 1, heightC2 - ((int)(val)+5));
-			LineTo(hcomp, widthC2 - 6, heightC2 - ((int)(val)));
-			LineTo(hcomp, widthC2 - 1, heightC2 - ((int)(val)-5));
+			DrawArrows(hcomp, widthC2, heightC2, val);
 		}
 
-		BitBlt(hdc, 0, 0, rect.right, rect.bottom, hcomp, 0, 0, SRCCOPY);
+		BitBlt(hdc, 0, 0, widthC2, heightC2, hcomp, 0, 0, SRCCOPY);
 
 		DeleteObject(hbmp);
 		DeleteDC(hcomp);
@@ -486,9 +441,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			SelectObject(hcomp, hbmp);
 
 			GetClientRect(Alpha, &rect);
-			brush = CreateSolidBrush(GetSysColor(COLOR_BTNFACE));
-			FillRect(hcomp, &rect, brush);
-			DeleteObject(brush);
+			FillRect(hcomp, &rect, backgroundColor);
 
 			rf = (float)red / 255.0f;
 			gf = (float)green / 255.0f;
@@ -507,57 +460,39 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				cb = RGB((rf*af) * 255, (gf*af) * 255, (bf*af) * 255);
 				cw = RGB((rf*af + 1 - af) * 255, (gf*af + 1 - af) * 255, (bf*af + 1 - af) * 255);
 
-				if (flag)
+				for (int x = 6; x < (widthA / 2); x++)
 				{
-					for (int x = 6; x < (widthA / 2); x++)
-						SetPixel(hcomp, x, y, cw);
-					for (int x = (widthA / 2); x < widthA - 6; x++)
-						SetPixel(hcomp, x, y, cb);
+					SetPixel(hcomp, x, y, flag ? cw : cb);
 				}
-				else
+				for (int x = (widthA / 2); x < widthA - 6; x++)
 				{
-					for (int x = 6; x < (widthA / 2); x++)
-						SetPixel(hcomp, x, y, cb);
-					for (int x = (widthA / 2); x < widthA - 6; x++)
-						SetPixel(hcomp, x, y, cw);
+					SetPixel(hcomp, x, y, flag ? cb: cw);
 				}
 			}
 
 			if (picker->GetAlphaUsage() == CP_USE_ALPHA)
 			{
-				// Draws arrows
-				const float fa = (alpha / 100.0f) * heightA;
-				pen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
-				SelectObject(hcomp, pen);
-				MoveToEx(hcomp, 0, heightA - (fa - 5), NULL);
-				LineTo(hcomp, 0, heightA - (fa + 5));
-				LineTo(hcomp, 5, heightA - (fa));
-				LineTo(hcomp, 0, heightA - (fa - 5));
-				MoveToEx(hcomp, widthA - 1, heightA - (fa - 5), NULL);
-				LineTo(hcomp, widthA - 1, heightA - (fa + 5));
-				LineTo(hcomp, widthA - 6, heightA - (fa));
-				LineTo(hcomp, widthA - 1, heightA - (fa - 5));
+				DrawArrows(hcomp, widthA, heightA, (alpha / 100.0f) * heightA);
 			}
 
-			BitBlt(hdc, 0, 0, rect.right, rect.bottom, hcomp, 0, 0, SRCCOPY);
+			BitBlt(hdc, 0, 0, widthA, heightA, hcomp, 0, 0, SRCCOPY);
 
 			DeleteObject(hbmp);
 			DeleteDC(hcomp);
 			ReleaseDC(Alpha, hdc);
 		}
 
-		// Current color & old color
-		HWND Color = GetDlgItem(hDlg, IDC_CURRCOLOR);
+		DeleteObject(backgroundColor);
 
-		DrawCheckedRect(Color, picker->GetCurrentColour().r, picker->GetCurrentColour().g,
+
+		DrawCheckedRect(CurrentColor, picker->GetCurrentColour().r, picker->GetCurrentColour().g,
 			picker->GetCurrentColour().b, picker->GetCurrentColour().a, 10, 10);
 
-		Color = GetDlgItem(hDlg, IDC_OLDCOLOR);
-
-		DrawCheckedRect(Color, picker->GetOldColour().r, picker->GetOldColour().g, picker->GetOldColour().b,
+		DrawCheckedRect(OldColor, picker->GetOldColour().r, picker->GetOldColour().g, picker->GetOldColour().b,
 			picker->GetOldColour().a, 10, 10);
+
+		break;
 	}
-	break; // WM_PAINT
 
 	case WM_LBUTTONDOWN:
 	case WM_MOUSEMOVE:
