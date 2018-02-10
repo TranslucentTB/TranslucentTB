@@ -26,6 +26,9 @@
 // For the color picker
 #include "../CPicker/CPicker.h"
 
+#include "compositiondata.hpp"
+#include "win32.hpp"
+
 #pragma endregion
 
 #pragma region Enumerations
@@ -48,41 +51,9 @@ enum AEROPEEKSTATE {
 	Enabled			// Don't hide the button
 };
 
-enum ACCENTSTATE {								// Values passed to SetWindowCompositionAttribute determining the appearance of a window
-	ACCENT_ENABLE_GRADIENT = 1,					// Use a solid color specified by nColor. This mode doesn't care about the alpha channel.
-	ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,		// Use a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
-	ACCENT_ENABLE_BLURBEHIND = 3,				// Use a tinted blurry overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
-	ACCENT_ENABLE_FLUENT = 4,					// Use fluent design-like aspect. nColor is tint color.
-
-	ACCENT_FOLLOW_OPT = 149,					// (Fake value) Use the value in opt.taskbar_appearance
-	ACCENT_ENABLE_TINTED = 150,					// (Fake value) Dynamic windows tinted
-	ACCENT_NORMAL = 151							// (Fake value) Emulate regular taskbar appearance
-};
-
-enum WindowCompositionAttribute {				// Possible kinds of data sent to SetWindowCompositionAttribute
-	// ...
-	WCA_ACCENT_POLICY = 19						// The data sent is an ACCENTPOLICY struct
-	// ...
-};
-
 #pragma endregion
 
 #pragma region Structures
-
-struct ACCENTPOLICY					// Determines how a window's transparent region will be painted
-{
-	ACCENTSTATE nAccentState;		// Appearance
-	int nFlags;						// Nobody knows how this value works
-	UINT nColor;					// A color in the hex format AABBGGRR
-	int nAnimationId;				// Nobody knows how this value works
-};
-
-struct WINCOMPATTRDATA							// Composition Attributes
-{
-	WindowCompositionAttribute nAttribute;		// Type of the data passed in nAttribute
-	PVOID pData;								// Opaque pointer to the data struct (ACCENTPOLICY)
-	ULONG ulDataSize;
-};
 
 struct TASKBARPROPERTIES
 {
@@ -159,12 +130,10 @@ const static struct CONSTANTS
 
 #pragma region That one function that does all the magic
 
-typedef BOOL(WINAPI *pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA *);
-static pSetWindowCompositionAttribute SetWindowCompositionAttribute = reinterpret_cast<pSetWindowCompositionAttribute>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
 
 void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 {
-	if (SetWindowCompositionAttribute)
+	if (user32::SetWindowCompositionAttribute)
 	{
 		ACCENTPOLICY policy;
 		UINT color = (opt.color & 0xFF00FF00) + ((opt.color & 0x00FF0000) >> 16) + ((opt.color & 0x000000FF) << 16);
@@ -201,7 +170,7 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 		}
 
 		WINCOMPATTRDATA data = { WCA_ACCENT_POLICY, &policy, sizeof(policy) };
-		SetWindowCompositionAttribute(hWnd, &data);
+		user32::SetWindowCompositionAttribute(hWnd, &data);
 	}
 }
 
@@ -859,17 +828,12 @@ bool IsSingleInstance()
 }
 
 
-// Importing a driver-specific function because it's the easiest way to acquire the current OS version without being lied to
-typedef NTSTATUS(__stdcall *pRtlGetVersion)(PRTL_OSVERSIONINFOW);
-static pRtlGetVersion RtlGetVersion = reinterpret_cast<pRtlGetVersion>(GetProcAddress(GetModuleHandle(L"ntdll.dll"), "RtlGetVersion"));
-
-
 bool IsAtLeastBuild(unsigned int buildNumber)
 {
-	if (RtlGetVersion)
+	if (ntdll::RtlGetVersion)
 	{
 		RTL_OSVERSIONINFOW versionInfo;
-		RtlGetVersion(&versionInfo);
+		ntdll::RtlGetVersion(&versionInfo);
 		return versionInfo.dwBuildNumber >= buildNumber;
 	}
 	else

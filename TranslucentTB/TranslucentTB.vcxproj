@@ -73,7 +73,9 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="compositiondata.hpp" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="win32.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TranslucentTB.rc" />
