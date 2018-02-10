@@ -159,11 +159,11 @@ const static struct CONSTANTS
 
 #pragma region That one function that does all the magic
 
+typedef BOOL(WINAPI *pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA *);
+static pSetWindowCompositionAttribute SetWindowCompositionAttribute = reinterpret_cast<pSetWindowCompositionAttribute>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
+
 void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 {
-	typedef BOOL(WINAPI *pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA *);
-	static pSetWindowCompositionAttribute SetWindowCompositionAttribute = reinterpret_cast<pSetWindowCompositionAttribute>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
-
 	if (SetWindowCompositionAttribute)
 	{
 		ACCENTPOLICY policy;
@@ -858,12 +858,14 @@ bool IsSingleInstance()
 	return GetLastError() != ERROR_ALREADY_EXISTS;
 }
 
-bool IsAtLeastBuildNumber(unsigned int buildNumber)
-{
-	// Importing a driver-specific function because it's the easiest way to acquire the current OS version without being lied to
 
-	typedef NTSTATUS(__stdcall *pRtlGetVersion)(PRTL_OSVERSIONINFOW);
-	static pRtlGetVersion RtlGetVersion = reinterpret_cast<pRtlGetVersion>(GetProcAddress(GetModuleHandle(L"ntdll.dll"), "RtlGetVersion")); // Using static here shuts up code analysis /shrug
+// Importing a driver-specific function because it's the easiest way to acquire the current OS version without being lied to
+typedef NTSTATUS(__stdcall *pRtlGetVersion)(PRTL_OSVERSIONINFOW);
+static pRtlGetVersion RtlGetVersion = reinterpret_cast<pRtlGetVersion>(GetProcAddress(GetModuleHandle(L"ntdll.dll"), "RtlGetVersion"));
+
+
+bool IsAtLeastBuild(unsigned int buildNumber)
+{
 	if (RtlGetVersion)
 	{
 		RTL_OSVERSIONINFOW versionInfo;
@@ -1287,7 +1289,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	CheckAndRunWelcome();
 
 	// Verify our runtime
-	run.fluent_available = IsAtLeastBuildNumber(17063);
+	run.fluent_available = IsAtLeastBuild(17063);
 
 	// Parse our configuration
 	ParseConfigFile();
