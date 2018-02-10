@@ -24,8 +24,8 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 	const float widthC1 = rectC1.right - rectC1.left;
 	const float heightC1 = rectC1.bottom - rectC1.top;
 
-	// const float widthC2 = rectC2.right - rectC2.left;
-	// const float heightC2 = rectC2.bottom - rectC2.top;
+	const float widthC2 = rectC2.right - rectC2.left;
+	const float heightC2 = rectC2.bottom - rectC2.top;
 
 	// const float widthA = rectA.right - rectA.left;
 	// const float heightA = rectA.bottom - rectA.top;
@@ -88,13 +88,15 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			// RED
 			if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 				{
-				for (int g=0; g < widthC1; g++)
-					for (int b=0; b < heightC1; b++)
+				for (int g = 0; g < widthC1; g++)
+				{
+					const float fgreen = (g / widthC1) * 255.0f;
+					for (int b = 0; b < heightC1; b++)
 					{
-						const float fgreen = std::round((g / widthC1) * 255.0f);
-						const float fblue = std::round((b / heightC1) * 255.0f);
+						const float fblue = (b / heightC1) * 255.0f;
 						pbuffer.SetPixel(g, b, RGB(red, fgreen, fblue));
 					}
+				}
 
 				pbuffer.Display(hcomp);
 
@@ -102,45 +104,51 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				// Draws circle
 				pen = CreatePen(PS_SOLID, 1, RGB(255-red, 255-green, 255-blue));
 				SelectObject(hcomp, pen);
-				const float fgreen = std::round((green / 255.0f) * widthC1);
-				const float fblue = std::round((blue / 255.0f) * heightC1);
+				const float fgreen = (green / 255.0f) * widthC1;
+				const float fblue = (blue / 255.0f) * heightC1;
 				Arc(hcomp, fgreen-5, fblue-5, fgreen+5, fblue+5, 0, 0, 0, 0);
 				}
 			// GREEN
 			else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 				{
-				for (int r=0; r<widthC1; r++)
+				for (int r = 0; r < widthC1; r++)
+				{
+					const float fred = (r / widthC1) * 255.0f;
 					for (int b = 0; b < heightC1; b++)
 					{
-						const float fred = std::round((r / widthC1) * 255.0f);
-						const float fblue = std::round((b / heightC1) * 255.0f);
+						const float fblue = (b / heightC1) * 255.0f;
 						pbuffer.SetPixel(r, b, RGB(fred, green, fblue));
 					}
+				}
 				pbuffer.Display(hcomp);
 
 				// Draws circle
 				pen = CreatePen(PS_SOLID, 1, RGB(255-red, 255-green, 255-blue));
 				SelectObject(hcomp, pen);
-				const float fred = std::round((red / 255.0f) * widthC1);
-				const float fblue = std::round((blue / 255.0f) * heightC1);
+				const float fred = (red / 255.0f) * widthC1;
+				const float fblue = (blue / 255.0f) * heightC1;
 				Arc(hcomp, fred-5, fblue-5, fred+5, fblue+5, 0, 0, 0, 0);
 				}
 			// BLUE
 			else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 				{
-				for (int g=0; g<widthC1; g++)
+				for (int g = 0; g < widthC1; g++)
+				{
+					const float fgreen = (g / widthC1) * 255.0f;
 					for (int r = 0; r < heightC1; r++)
 					{
-						const float fred = std::round((r / heightC1) * 255.0f);
-						const float fgreen = std::round((g / widthC1) * 255.0f);
+						const float fred = (r / heightC1) * 255.0f;
 						pbuffer.SetPixel(g, r, RGB(fred, fgreen, blue));
 					}
+				}
 				pbuffer.Display(hcomp);
                 
 				// Draws circle
 				pen = CreatePen(PS_SOLID, 1, RGB(255-red, 255-green, 255-blue));
 				SelectObject(hcomp, pen);
-				Arc(hcomp, green-5, red-5, green+5, red+5, 0, 0, 0, 0);
+				const float fgreen = (green / 255.0f) * widthC1;
+				const float fred = (red / 255.0f) * heightC1;
+				Arc(hcomp, fgreen-5, fred-5, fgreen+5, fred+5, 0, 0, 0, 0);
 				}
 
 			// HUE
@@ -584,8 +592,8 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			if (_IS_IN(rectC1.left, rectC1.right, p.x) && 
 				_IS_IN(rectC1.top, rectC1.bottom, p.y))
 				{
-					const float fx = std::round(((p.x - rectC1.left) / widthC1) * 255);
-					const float fy = std::round(((p.y - rectC1.top) / heightC1) * 255);
+					const float fx = ((p.x - rectC1.left) / widthC1) * 255.0f;
+					const float fy = ((p.y - rectC1.top) / heightC1) * 255.0f;
 
 				if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 				{
