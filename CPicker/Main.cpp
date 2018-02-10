@@ -66,6 +66,8 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 	{
 		picker = (CColourPicker*)lParam;
 		pbufferC1.Create(widthC1, heightC1);
+		pbufferC2.Create(widthC2, heightC2);
+		pbufferA.Create(widthA, heightA);
 
 		switch (picker->GetAlphaUsage())
 		{
@@ -98,9 +100,9 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 		HDC hdc, hcomp;
 		HBITMAP hbmp;
-		RECT rect;
-		HPEN pen;
-		const HBRUSH backgroundColor = CreateSolidBrush(GetSysColor(COLOR_BTNFACE));
+		const HBRUSH backgroundColorBrush = CreateSolidBrush(GetSysColor(COLOR_BTNFACE));
+		LOGBRUSH backgroundColor;
+		GetObject(backgroundColorBrush, sizeof(backgroundColor), &backgroundColor);
 		float rf, gf, bf;
 
 		// Big color selector (displays non-selected features)
@@ -288,43 +290,59 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		hbmp = CreateCompatibleBitmap(hdc, widthC2, heightC2);
 		SelectObject(hcomp, hbmp);
 
-		GetClientRect(Color2, &rect);
-		FillRect(hcomp, &rect, backgroundColor);
+		for (int y = heightC2 - 1; y > -1; y--)
+		{
+			for (int x = 0; x < 6; x++)
+			{
+				pbufferC2.SetPixel(x, y, backgroundColor.lbColor);
+			}
+			for (int x = widthC2 - 6; x < widthC2; x++)
+			{
+				pbufferC2.SetPixel(x, y, backgroundColor.lbColor);
+			}
+		}
 
 		// Check who is selected.
 		// RED
 		if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 		{
-			for (int r = heightC2; r > -1; r--)
+			for (int r = heightC2 - 1; r > -1; r--)
 			{
 				rf = ((r / heightC2) * 255.0f);
 				for (int x = 6; x < widthC2 - 6; x++)
 				{
-					SetPixel(hcomp, x, r, RGB(255 - rf, green, blue));
+					pbufferC2.SetPixel(x, r, RGB(255 - rf, green, blue));
 				}
 			}
+			pbufferC2.Display(hcomp);
 			DrawArrows(hcomp, widthC2, heightC2, (red / 255.0f) * heightC2);
 		}
 		// GREEN
 		else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 		{
-			for (int g = heightC2; g > -1; g--)
+			for (int g = heightC2 - 1; g > -1; g--)
 			{
 				gf = ((g / heightC2) * 255.0f);
 				for (int x = 6; x < widthC2 - 6; x++)
-					SetPixel(hcomp, x, g, RGB(red, 255 - gf, blue));
+				{
+					pbufferC2.SetPixel(x, g, RGB(red, 255 - gf, blue));
+				}
 			}
+			pbufferC2.Display(hcomp);
 			DrawArrows(hcomp, widthC2, heightC2, (green / 255.0f) * heightC2);
 		}
 		// BLUE
 		else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 		{
-			for (int b = heightC2; b > -1; b--)
+			for (int b = heightC2 - 1; b > -1; b--)
 			{
 				bf = ((b / heightC2) * 255.0f);
 				for (int x = 6; x < widthC2 - 6; x++)
-					SetPixel(hcomp, x, b, RGB(red, green, 255 - bf));
+				{
+					pbufferC2.SetPixel(x, b, RGB(red, green, 255 - bf));
+				}
 			}
+			pbufferC2.Display(hcomp);
 			DrawArrows(hcomp, widthC2, heightC2, (blue / 255.0f) * heightC2);
 		}
 		// HUE
@@ -341,18 +359,19 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 			step = 359.0 / heightC2;
 
-			for (int y = heightC2; y > -1; y--)
+			for (int y = heightC2 - 1; y > -1; y--)
 			{
 				tempcol.UpdateRGB();
 
 				for (int x = 6; x < widthC2 - 6; x++)
 				{
-					SetPixel(hcomp, x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
+					pbufferC2.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
 				}
 
 				temphue += step;
 				tempcol.h = temphue;
 			}
+			pbufferC2.Display(hcomp);
 
 			temphue = GetDlgItemInt(hDlg, IDC_HUE, NULL, false);
 			temphue = temphue / step;
@@ -373,18 +392,19 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 			step = 100.0 / heightC2;
 
-			for (int y = heightC2; y > -1; y--)
+			for (int y = heightC2 - 1; y > -1; y--)
 			{
 				tempcol.UpdateRGB();
 
 				for (int x = 6; x < widthC2 - 6; x++)
 				{
-					SetPixel(hcomp, x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
+					pbufferC2.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
 				}
 
 				sat += step;
 				tempcol.s = sat;
 			}
+			pbufferC2.Display(hcomp);
 
 			sat = GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false);
 			sat = sat / step;
@@ -405,18 +425,19 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 			step = 100.0 / heightC2;
 
-			for (int y = heightC2; y > -1; y--)
+			for (int y = heightC2 - 1; y > -1; y--)
 			{
 				tempcol.UpdateRGB();
 
 				for (int x = 6; x < widthC2 - 6; x++)
 				{
-					SetPixel(hcomp, x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
+					pbufferC2.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
 				}
 
 				val += step;
 				tempcol.v = val;
 			}
+			pbufferC2.Display(hcomp);
 
 			val = GetDlgItemInt(hDlg, IDC_VALUE, NULL, false);
 			val = val / step;
@@ -439,15 +460,24 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			hbmp = CreateCompatibleBitmap(hdc, widthA, heightA);
 			SelectObject(hcomp, hbmp);
 
-			GetClientRect(Alpha, &rect);
-			FillRect(hcomp, &rect, backgroundColor);
+			for (int y = heightA - 1; y > -1; y--)
+			{
+				for (int x = 0; x < 6; x++)
+				{
+					pbufferA.SetPixel(x, y, backgroundColor.lbColor);
+				}
+				for (int x = widthA - 6; x < widthA; x++)
+				{
+					pbufferA.SetPixel(x, y, backgroundColor.lbColor);
+				}
+			}
 
 			rf = red / 255.0f;
 			gf = green / 255.0f;
 			bf = blue / 255.0f;
 			bool flag = false;
 
-			for (int y = heightA; y > -1; y--)
+			for (int y = heightA - 1; y > -1; y--)
 			{
 				COLORREF cb, cw;
 
@@ -463,13 +493,14 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 				for (int x = 6; x < (widthA / 2); x++)
 				{
-					SetPixel(hcomp, x, y, flag ? cw : cb);
+					pbufferA.SetPixel(x, y, flag ? cw : cb);
 				}
 				for (int x = (widthA / 2); x < widthA - 6; x++)
 				{
-					SetPixel(hcomp, x, y, flag ? cb: cw);
+					pbufferA.SetPixel(x, y, flag ? cb: cw);
 				}
 			}
+			pbufferA.Display(hcomp);
 
 			if (picker->GetAlphaUsage() == CP_USE_ALPHA)
 			{
@@ -483,7 +514,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			ReleaseDC(Alpha, hdc);
 		}
 
-		DeleteObject(backgroundColor);
+		DeleteObject(backgroundColorBrush);
 
 
 		DrawCheckedRect(CurrentColor, picker->GetCurrentColour().r, picker->GetCurrentColour().g,
@@ -726,6 +757,10 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 	case WM_DPICHANGED:
 		pbufferC1.Destroy();
 		pbufferC1.Create(widthC1, heightC1);
+		pbufferC2.Destroy();
+		pbufferC2.Create(widthC2, heightC2);
+		pbufferA.Destroy();
+		pbufferA.Create(widthA, heightA);
 		SendMessage(hDlg, WM_PAINT, 0, 0);
 		break;
 	}
