@@ -78,6 +78,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="taskbar.hpp" />
     <ClInclude Include="tray.hpp" />
+    <ClInclude Include="util.hpp" />
     <ClInclude Include="win32.hpp" />
   </ItemGroup>
   <ItemGroup>

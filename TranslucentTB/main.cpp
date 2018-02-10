@@ -1,5 +1,4 @@
 // Standard API
-#include <algorithm>
 #include <cwctype>
 #include <fstream>
 #include <iomanip>
@@ -28,13 +27,9 @@
 #include "config.hpp"
 #include "taskbar.hpp"
 #include "tray.hpp"
+#include "util.hpp"
 #include "win32.hpp"
 
-
-namespace App {
-	static const LPCWSTR ID = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";		// Message id for app uniqueness
-	static const LPCWSTR NAME = L"TranslucentTB";
-}
 
 #pragma region Structures
 
@@ -75,7 +70,6 @@ static struct RUNTIMESTATE
 #pragma endregion
 
 #pragma region That one function that does all the magic
-
 
 void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 {
@@ -118,27 +112,6 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 		WINCOMPATTRDATA data = { WCA_ACCENT_POLICY, &policy, sizeof(policy) };
 		user32::SetWindowCompositionAttribute(hWnd, &data);
 	}
-}
-
-#pragma endregion
-
-#pragma region String manipulation
-
-void ToLower(std::wstring &data)
-{
-	std::transform(data.begin(), data.end(), data.begin(), ::towlower);
-}
-
-std::wstring Trim(const std::wstring& str)
-{
-	size_t first = str.find_first_not_of(' ');
-	size_t last = str.find_last_not_of(' ');
-
-	if (first == std::wstring::npos)
-	{
-		return std::wstring(L"");
-	}
-	return str.substr(first, (last - first + 1));
 }
 
 #pragma endregion
@@ -207,33 +180,6 @@ void CheckAndRunWelcome()
 	}
 }
 
-bool GetStartupState()
-{
-	// SUCCEEDED macro considers ERROR_FILE_NOT_FOUND as succeeded ???
-	return RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", App::NAME, RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS;
-}
-
-void SetStartupState(bool state)
-{
-	HKEY hkey;
-	if (SUCCEEDED(RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey))) //Creates a key
-	{
-		if (state)
-		{
-			HMODULE hModule = GetModuleHandle(NULL);
-			TCHAR path[MAX_PATH];
-			GetModuleFileName(hModule, path, MAX_PATH);
-			PathQuoteSpaces(path);
-
-			RegSetValueEx(hkey, App::NAME, 0, REG_SZ, reinterpret_cast<BYTE *>(path), _tcslen(path) * sizeof(TCHAR));
-		}
-		else
-		{
-			RegDeleteValue(hkey, App::NAME);
-		}
-		RegCloseKey(hkey);
-	}
-}
 
 void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 {
@@ -492,26 +438,6 @@ void SaveConfigFile()
 	}
 }
 
-void AddValuesToVectorByDelimiter(std::wstring delimiter, std::vector<std::wstring> &vector, std::wstring line)
-{
-	size_t pos;
-	std::wstring value;
-
-	// First lets remove the key
-	if ((pos = line.find(delimiter)) != std::wstring::npos)
-	{
-		line.erase(0, pos + delimiter.length());
-	}
-
-	// Now iterate and add the values
-	while ((pos = line.find(delimiter)) != std::wstring::npos)
-	{
-		value = Trim(line.substr(0, pos));
-		vector.push_back(value);
-		line.erase(0, pos + delimiter.length());
-	}
-}
-
 void ParseBlacklistFile()
 {
 	std::wstring filename(run.exclude_file);
@@ -559,61 +485,6 @@ void ParseBlacklistFile()
 		{
 			AddValuesToVectorByDelimiter(delimiter, opt.blacklisted_filenames, line_lowercase);
 		}
-	}
-}
-
-void EditFile(std::wstring file)
-{
-	// WinAPI reeeeeeeeeeeeeeeeeeeeeeeeee
-	LPWSTR system32;
-	HRESULT error = SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, NULL, &system32);
-	if (FAILED(error))
-	{
-		std::wstring message;
-		message += L"Failed to determine System32 folder location!\n\nException from HRESULT: ";
-		message += _com_error(error).ErrorMessage();
-
-		MessageBox(NULL, message.c_str(), (std::wstring(App::NAME) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
-
-		return;
-	}
-
-	TCHAR notepad[MAX_PATH];
-	PathCombine(notepad, system32, L"notepad.exe");
-
-	std::vector<TCHAR> buf(file.begin(), file.end());
-	buf.push_back(0); // Null terminator
-	PathQuoteSpaces(buf.data());
-
-	std::wstring path;
-	path += notepad;
-	path += ' ';
-	path += buf.data();
-
-	std::vector<TCHAR> buf2(path.begin(), path.end());
-	buf2.push_back(0); // Null terminator
-
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wmissing-field-initializers"
-	STARTUPINFO si = { sizeof(si) };
-	#pragma clang diagnostic pop
-
-	PROCESS_INFORMATION pi;
-	// Not using lpApplicationName here because if someone has set a redirect to another editor it doesn't works. (eg Notepad2)
-	if (CreateProcess(NULL, buf2.data(), NULL, NULL, FALSE, NULL, NULL, NULL, &si, &pi))
-	{
-		WaitForSingleObject(pi.hProcess, INFINITE);
-		CloseHandle(pi.hProcess);
-		CloseHandle(pi.hThread);
-	}
-	else
-	{
-		error = GetLastError();
-		std::wstring message;
-		message += L"Failed to start Notepad!\n\nException from HRESULT: ";
-		message += _com_error(error).ErrorMessage();
-
-		MessageBox(NULL, message.c_str(), (std::wstring(App::NAME) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
 	}
 }
 
@@ -771,21 +642,6 @@ bool IsSingleInstance()
 {
 	run.app_handle = CreateEvent(NULL, TRUE, FALSE, App::ID);
 	return GetLastError() != ERROR_ALREADY_EXISTS;
-}
-
-
-bool IsAtLeastBuild(unsigned int buildNumber)
-{
-	if (ntdll::RtlGetVersion)
-	{
-		RTL_OSVERSIONINFOW versionInfo;
-		ntdll::RtlGetVersion(&versionInfo);
-		return versionInfo.dwBuildNumber >= buildNumber;
-	}
-	else
-	{
-		return false;
-	}
 }
 
 #pragma endregion
@@ -1147,18 +1003,18 @@ void InitializeTray(HINSTANCE hInstance)
 	run.tray = {
 		sizeof(run.tray),																// cbSize
 		CreateWindowEx(																	// hWnd
-			WS_EX_TOOLWINDOW,																// dwExStyle
-			App::NAME,																// lpClassName
-			L"TrayWindow",																	// lpWindowName
-			WS_OVERLAPPEDWINDOW,															// dwStyle
-			0,																				// x
-			0,																				// y
-			0,																				// nWidth
-			0,																				// nHeight
-			NULL,																			// hWndParent
-			NULL,																			// hMenu
-			hInstance,																		// hInstance
-			NULL																			// lpParam
+			WS_EX_TOOLWINDOW,															// dwExStyle
+			App::NAME,																    // lpClassName
+			L"TrayWindow",																// lpWindowName
+			WS_OVERLAPPEDWINDOW,														// dwStyle
+			0,																			// x
+			0,																			// y
+			0,																			// nWidth
+			0,																			// nHeight
+			NULL,																		// hWndParent
+			NULL,																		// hMenu
+			hInstance,																	// hInstance
+			NULL																		// lpParam
 		),
 		101,																			// uID
 		NIF_ICON | NIF_TIP | NIF_MESSAGE,												// uFlags
