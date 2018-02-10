@@ -27,17 +27,12 @@
 #include "../CPicker/CPicker.h"
 
 #include "compositiondata.hpp"
+#include "taskbar.hpp"
 #include "win32.hpp"
 
 #pragma endregion
 
 #pragma region Enumerations
-
-enum TASKBARSTATE {
-	Normal,				// If no dynamic options are set, act as it says in opt.taskbar_appearance
-	WindowMaximised,	// There is a window which is maximised on the monitor this HWND is in. Display as blurred.
-	StartMenuOpen		// The Start Menu is open on the monitor this HWND is in. Display as it would be without TranslucentTB active.
-};
 
 enum EXITREASON {
 	NewInstance,		// New instance told us to exit
@@ -45,21 +40,9 @@ enum EXITREASON {
 	UserActionNoSave	// Triggered by the user, but doesn't saves config
 };
 
-enum AEROPEEKSTATE {
-	Disabled,		// Hide the button
-	Dynamic,		// Show when a window is maximised
-	Enabled			// Don't hide the button
-};
-
 #pragma endregion
 
 #pragma region Structures
-
-struct TASKBARPROPERTIES
-{
-	HMONITOR hmon;
-	TASKBARSTATE state;
-};
 
 static struct OPTIONS
 {

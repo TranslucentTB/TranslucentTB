@@ -1,6 +1,6 @@
 #pragma once
-#ifndef COMPOSITIONDATA_H
-#define COMPISITIONDATA_H
+#ifndef COMPOSITIONDATA_HPP
+#define COMPISITIONDATA_HPP
 
 #include <cstdint>
 
@@ -36,4 +36,4 @@ struct WINCOMPATTRDATA							// Composition Attributes
 	ULONG ulDataSize;
 };
 
-#endif // !COMPOSITIONDATA_H
+#endif // !COMPOSITIONDATA_HPP

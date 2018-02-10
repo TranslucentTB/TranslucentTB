@@ -75,6 +75,7 @@
   <ItemGroup>
     <ClInclude Include="compositiondata.hpp" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="taskbar.hpp" />
     <ClInclude Include="win32.hpp" />
   </ItemGroup>
   <ItemGroup>

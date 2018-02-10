@@ -33,6 +33,9 @@
     <ClInclude Include="win32.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="taskbar.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TranslucentTB.rc">
