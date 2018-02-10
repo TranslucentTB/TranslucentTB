@@ -1,7 +1,6 @@
 #include "resource.h"
 #include "CPickerDll.h"
 #include "stdio.h"
-#include <cmath>
 
 static PixelBuffer pbuffer;
 
@@ -27,8 +26,8 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 	const float widthC2 = rectC2.right - rectC2.left;
 	const float heightC2 = rectC2.bottom - rectC2.top;
 
-	// const float widthA = rectA.right - rectA.left;
-	// const float heightA = rectA.bottom - rectA.top;
+	const float widthA = rectA.right - rectA.left;
+	const float heightA = rectA.bottom - rectA.top;
 
 	switch (uMsg)
 		{
@@ -287,11 +286,11 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			hdc = GetDC(Color2);
 			hcomp = CreateCompatibleDC(hdc);
 
-			GetClientRect(Color2, &rect);
-			hbmp = CreateCompatibleBitmap(hdc, rect.right, 255);
+			hbmp = CreateCompatibleBitmap(hdc, widthC2, heightC2);
 			SelectObject(hcomp, hbmp);
 
 			brush = CreateSolidBrush(GetSysColor(COLOR_BTNFACE));
+			GetClientRect(Color2, &rect);
 			FillRect(hcomp, &rect, brush);
 			DeleteObject(brush);
 			
@@ -299,72 +298,70 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			// RED
 			if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 				{
-				for (int r=255; r>0; r--)
-					{
-					int g = GetDlgItemInt(hDlg, IDC_GREEN, NULL, false);
-					int b = GetDlgItemInt(hDlg, IDC_BLUE, NULL, false);
-					
-					for (int x=6; x<rect.right-6; x++)
-						SetPixel(hcomp, x, r, RGB(255-r, g, b));
+				for (int r = heightC2; r > -1; r--)
+				{
+
+					const float fred = ((r / heightC2) * 255.0f);
+					for (int x = 6; x < widthC2 - 6; x++)
+						SetPixel(hcomp, x, r, RGB(255-fred, green, blue));
 					}
 
 				// Draws arrows
+				const float fred = (red / 255.0f) * heightC2;
 				pen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
 				SelectObject(hcomp, pen);
-				MoveToEx(hcomp, 0, 255-(red-5), NULL);
-                LineTo(hcomp, 0, 255-(red+5));
-				LineTo(hcomp, 5, 255-(red));
-				LineTo(hcomp, 0, 255-(red-5));
-				MoveToEx(hcomp, rect.right-1, 255-(red-5), NULL);
-				LineTo(hcomp, rect.right-1, 255-(red+5));
-				LineTo(hcomp, rect.right-6, 255-(red));
-				LineTo(hcomp, rect.right-1, 255-(red-5));
+				MoveToEx(hcomp, 0, heightC2-(fred-5), NULL);
+                LineTo(hcomp, 0, heightC2-(fred+5));
+				LineTo(hcomp, 5, heightC2-(fred));
+				LineTo(hcomp, 0, heightC2-(fred-5));
+				MoveToEx(hcomp, widthC2-1, heightC2-(fred-5), NULL);
+				LineTo(hcomp, widthC2 -1, heightC2-(fred+5));
+				LineTo(hcomp, widthC2 -6, heightC2-(fred));
+				LineTo(hcomp, widthC2 -1, heightC2-(fred-5));
 				}
 			// GREEN
 			else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 				{
-				for (int g=255; g>0; g--)
-					{
-					int r = GetDlgItemInt(hDlg, IDC_RED, NULL, false);
-					int b = GetDlgItemInt(hDlg, IDC_BLUE, NULL, false);
-
-					for (int x=6; x<rect.right-6; x++)
-						SetPixel(hcomp, x, g, RGB(r, 255-g, b));
+				for (int g = heightC2; g > -1; g--)
+				{
+					const float fgreen = ((g / heightC2) * 255.0f);
+					for (int x = 6; x < widthC2 - 6; x++)
+						SetPixel(hcomp, x, g, RGB(red, 255-fgreen, blue));
 					}
 
+				const float fgreen = (green / 255.0f) * heightC2;
 				pen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
 				SelectObject(hcomp, pen);
-				MoveToEx(hcomp, 0, 255-(green-5), NULL);
-                LineTo(hcomp, 0, 255-(green+5));
-				LineTo(hcomp, 5, 255-(green));
-				LineTo(hcomp, 0, 255-(green-5));
-				MoveToEx(hcomp, rect.right-1, 255-(green-5), NULL);
-				LineTo(hcomp, rect.right-1, 255-(green+5));
-				LineTo(hcomp, rect.right-6, 255-(green));
-				LineTo(hcomp, rect.right-1, 255-(green-5));
+				MoveToEx(hcomp, 0, heightC2 -(fgreen-5), NULL);
+                LineTo(hcomp, 0, heightC2 -(fgreen+5));
+				LineTo(hcomp, 5, heightC2 -(fgreen));
+				LineTo(hcomp, 0, heightC2 -(fgreen-5));
+				MoveToEx(hcomp, widthC2 -1, heightC2 -(fgreen-5), NULL);
+				LineTo(hcomp, widthC2 -1, heightC2 -(fgreen+5));
+				LineTo(hcomp, widthC2 -6, heightC2 -(fgreen));
+				LineTo(hcomp, widthC2 -1, heightC2 -(fgreen-5));
 				}
             // BLUE
 			else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 				{
-				for (int b=255; b>0; b--)
-					{
-					int g = GetDlgItemInt(hDlg, IDC_GREEN, NULL, false);
-					int r = GetDlgItemInt(hDlg, IDC_RED, NULL, false);
+				for (int b = heightC2; b > -1; b--)
+				{
+					const float fblue = ((b / heightC2) * 255.0f);
+					for (int x = 6; x < widthC2 - 6; x++)
+						SetPixel(hcomp, x, b, RGB(red, green, 255-fblue));
+				}
 
-					for (int x=6; x<rect.right-6; x++)
-						SetPixel(hcomp, x, b, RGB(r, g, 255-b));
-					}
-
+				const float fblue = (blue / 255.0f) * heightC2;
 				pen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
 				SelectObject(hcomp, pen);
-				MoveToEx(hcomp, 0, 255-(blue-5), NULL);
-                LineTo(hcomp, 0, 255-(blue+5));
-				LineTo(hcomp, 5, 255-(blue));
-				LineTo(hcomp, 0, 255-(blue-5));
-				MoveToEx(hcomp, rect.right-1, 255-(blue-5), NULL);
-				LineTo(hcomp, rect.right-1, 255-(blue+5));
-				LineTo(hcomp, rect.right-6, 255-(blue));
-				LineTo(hcomp, rect.right-1, 255-(blue-5));
+				MoveToEx(hcomp, 0, heightC2 -(fblue -5), NULL);
+                LineTo(hcomp, 0, heightC2 -(fblue +5));
+				LineTo(hcomp, 5, heightC2 -(fblue));
+				LineTo(hcomp, 0, heightC2 -(fblue -5));
+				MoveToEx(hcomp, widthC2 -1, heightC2 -(fblue -5), NULL);
+				LineTo(hcomp, widthC2 -1, heightC2 -(fblue +5));
+				LineTo(hcomp, widthC2 -6, heightC2 -(fblue));
+				LineTo(hcomp, widthC2 -1, heightC2 -(fblue -5));
 				}
 			// HUE
 			else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
@@ -499,10 +496,10 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				hdc = GetDC(Alpha);
 				hcomp = CreateCompatibleDC(hdc);
 
-				GetClientRect(Alpha, &rect);
-				hbmp = CreateCompatibleBitmap(hdc, rect.right, 255);
+				hbmp = CreateCompatibleBitmap(hdc, widthA, heightA);
 				SelectObject(hcomp, hbmp);
 
+				GetClientRect(Alpha, &rect);
 				brush = CreateSolidBrush(GetSysColor(COLOR_BTNFACE));
 				FillRect(hcomp, &rect, brush);
 				DeleteObject(brush);
@@ -644,15 +641,14 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 					}
 				}
 			// IDC_COLOR2 picked
-			else if (_IS_IN(rectC2.left-10, rectC2.right+10, p.x) && 
-				_IS_IN(rectC2.top-10, rectC2.bottom+10, p.y))
+			else if (_IS_IN(rectC2.left, rectC2.right, p.x) && 
+				_IS_IN(rectC2.top, rectC2.bottom, p.y))
 				{
-					int y = (p.y-rectC2.top);
-					CLAMP(y,0,255);
+					const float fy = ((p.y - rectC2.top) / heightC2) * 255.0f;
 
 				if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 					{
-					picker->SetRGB((unsigned short)(255 - y),
+					picker->SetRGB((unsigned short)(255 - fy),
 						(unsigned short) GetDlgItemInt(hDlg, IDC_GREEN, NULL, false),
 						(unsigned short) GetDlgItemInt(hDlg, IDC_BLUE, NULL, false));
 
@@ -662,7 +658,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 					{
 					picker->SetRGB((unsigned short) GetDlgItemInt(hDlg, IDC_RED, NULL, false),
-						(unsigned short) (255 - y),
+						(unsigned short) (255 - fy),
 						(unsigned short) GetDlgItemInt(hDlg, IDC_BLUE, NULL, false));
 
 					UpdateValues(hDlg, picker->GetCurrentColour());
@@ -672,14 +668,14 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 					{
 					picker->SetRGB((unsigned short) GetDlgItemInt(hDlg, IDC_RED, NULL, false),
 						(unsigned short) GetDlgItemInt(hDlg, IDC_GREEN, NULL, false),
-						(unsigned short) (255 - y));
+						(unsigned short) (255 - fy));
 
 					UpdateValues(hDlg, picker->GetCurrentColour());
 					}
 
 				else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
 					{
-					picker->SetHSV((unsigned short) ((255 - y)/255.0*359.0),
+					picker->SetHSV((unsigned short) ((255 - fy)/255.0*359.0),
 						(unsigned short) GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false),
 						(unsigned short) GetDlgItemInt(hDlg, IDC_VALUE, NULL, false));
 
@@ -689,7 +685,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
 					{
 					picker->SetHSV((unsigned short) GetDlgItemInt(hDlg, IDC_HUE, NULL, false),
-						(unsigned short) ((255 - y)/255.0*100.0),
+						(unsigned short) ((255 - fy)/255.0*100.0),
 						(unsigned short) GetDlgItemInt(hDlg, IDC_VALUE, NULL, false));
 
 					UpdateValues(hDlg, picker->GetCurrentColour());
@@ -699,19 +695,18 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 					{
 					picker->SetHSV((unsigned short) GetDlgItemInt(hDlg, IDC_HUE, NULL, false),
 						(unsigned short) GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false),
-						(unsigned short) ((255 - y)/255.0*100.0));
+						(unsigned short) ((255 - fy)/255.0*100.0));
 
 					UpdateValues(hDlg, picker->GetCurrentColour());
 					}
 				}
 			// IDC_ALPHASLIDE picked
-			else if (_IS_IN(rectA.left-10, rectA.right+10, p.x) &&
-				_IS_IN(rectA.top-10, rectA.bottom+10, p.y) && (picker->GetAlphaUsage()==CP_USE_ALPHA))
+			else if (_IS_IN(rectA.left, rectA.right, p.x) &&
+				_IS_IN(rectA.top, rectA.bottom, p.y) && (picker->GetAlphaUsage()==CP_USE_ALPHA))
 				{
-				int y = (p.y-rectA.top);
-				CLAMP(y,0,255);
+				const float fy = ((p.y - rectA.top) / heightA) * 255.0f;
 
-				picker->SetAlpha((unsigned short)((float)(255 - y)/255.0f*100.0f));
+				picker->SetAlpha((unsigned short)((float)(255 - fy)/255.0f*100.0f));
 
 				UpdateValues(hDlg, picker->GetCurrentColour());
 				}
