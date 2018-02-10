@@ -24,11 +24,11 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 	const float widthC1 = rectC1.right - rectC1.left;
 	const float heightC1 = rectC1.bottom - rectC1.top;
 
-	const float widthC2 = rectC2.right - rectC2.left;
-	const float heightC2 = rectC2.bottom - rectC2.top;
+	// const float widthC2 = rectC2.right - rectC2.left;
+	// const float heightC2 = rectC2.bottom - rectC2.top;
 
-	const float widthA = rectA.right - rectA.left;
-	const float heightA = rectA.bottom - rectA.top;
+	// const float widthA = rectA.right - rectA.left;
+	// const float heightA = rectA.bottom - rectA.top;
 
 	switch (uMsg)
 		{
@@ -149,7 +149,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				double sat, val, stepsat, stepval;
 				SColour tempcol;
 
-				sat, val = 0.0;
+				sat = val = 0.0;
 				stepsat = 100.0 / widthC1;
 				stepval = 100.0 / heightC1;
 				
@@ -191,7 +191,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				double hue, val, stepval, stephue;
 				SColour tempcol;
 
-				hue, val = 0.0;
+				hue = val = 0.0;
 				stephue = 359.0/widthC1;
 				stepval = 100.0/heightC1;
 				
@@ -233,7 +233,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				double hue, sat, stepsat, stephue;
 				SColour tempcol;
 
-				hue, sat = 0.0;
+				hue = sat = 0.0;
 				stephue = 359.0/widthC1;
 				stepsat = 100.0/heightC1;
 
