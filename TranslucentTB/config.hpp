@@ -6,8 +6,8 @@
 #include <windef.h>
 
 namespace Config {
-	LPCWSTR CONFIG_FILE = L"config.cfg";
-	LPCWSTR EXCLUDE_FILE = L"dynamic-ws-exclude.csv";
+	static LPCWSTR CONFIG_FILE = L"config.cfg";
+	static LPCWSTR EXCLUDE_FILE = L"dynamic-ws-exclude.csv";
 	static const uint16_t CACHE_HIT_MAX = 500;
 }
 
