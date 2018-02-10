@@ -33,7 +33,7 @@ struct WINCOMPATTRDATA							// Composition Attributes
 {
 	WindowCompositionAttribute nAttribute;		// Type of the data passed in nAttribute
 	void *pData;								// Opaque pointer to the data struct (ACCENTPOLICY)
-	ULONG ulDataSize;
+	uint32_t ulDataSize;
 };
 
 #endif // !COMPOSITIONDATA_HPP

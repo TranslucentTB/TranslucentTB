@@ -10,10 +10,10 @@
 
 namespace Tray {
 
-	uint32_t WM_NOTIFY_TB = 3141;
+	static const uint32_t WM_NOTIFY_TB = 3141;
 
-	uint32_t WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
-	uint32_t NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");
+	static const uint32_t WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
+	static const uint32_t NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");
 
 	enum EXITREASON {
 		NewInstance,		// New instance told us to exit
