@@ -89,8 +89,6 @@ class CColourPicker
 
 EXPORT void DrawCheckedRect(HWND hWnd, int r, int g, int b, int a, int cx, int cy);
 
-extern PixelBuffer pbuffer;
-
 LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void UpdateValues(HWND hDlg, struct SColour col);
 
