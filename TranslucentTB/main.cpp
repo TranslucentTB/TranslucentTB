@@ -28,17 +28,14 @@
 
 #include "compositiondata.hpp"
 #include "taskbar.hpp"
+#include "tray.hpp"
 #include "win32.hpp"
 
 #pragma endregion
 
 #pragma region Enumerations
 
-enum EXITREASON {
-	NewInstance,		// New instance told us to exit
-	UserAction,			// Triggered by the user
-	UserActionNoSave	// Triggered by the user, but doesn't saves config
-};
+
 
 #pragma endregion
 
@@ -47,12 +44,12 @@ enum EXITREASON {
 static struct OPTIONS
 {
 	ACCENTSTATE taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-	UINT color = 0x00000000;
+	uint32_t color = 0x00000000;
 	bool dynamicws = false;
 	ACCENTSTATE dynamic_ws_state = ACCENT_ENABLE_BLURBEHIND;	// State to activate when a window is maximised
 	bool dynamicws_peek = true;									// Whether to use the normal style when using Aero Peek
 	bool dynamicstart = false;
-	AEROPEEKSTATE peek = Enabled;
+	Taskbar::AEROPEEKSTATE peek = Taskbar::Enabled;
 	std::vector<std::wstring> blacklisted_classes;
 	std::vector<std::wstring> blacklisted_filenames;
 	std::vector<std::wstring> blacklisted_titles;
@@ -60,11 +57,11 @@ static struct OPTIONS
 
 static struct RUNTIMESTATE
 {
-	EXITREASON exit_reason = UserAction;
+	Tray::EXITREASON exit_reason = Tray::UserAction;
 	IVirtualDesktopManager *desktop_manager = NULL;				// Used to detect if a window is in the current virtual desktop. Don't forget to check for null on this one
 	IAppVisibility *app_visibility = NULL;						// Used to detect if start menu is opened
 	HWND main_taskbar;
-	std::unordered_map<HWND, TASKBARPROPERTIES> taskbars;
+	std::unordered_map<HWND, Taskbar::TASKBARPROPERTIES> taskbars;
 	bool should_show_peek;
 	bool run = true;
 	HMENU tray_popup;
@@ -81,29 +78,10 @@ static struct RUNTIMESTATE
 const static struct CONSTANTS
 {
 	LPCWSTR app_id = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
-	UINT WM_NOTIFY_TB = 3141;												// Message id for tray callback
+	uint32_t WM_NOTIFY_TB = 3141;												// Message id for tray callback
 	LPCWSTR program_name = L"TranslucentTB";
-	UINT WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
-	UINT NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");
-	std::unordered_map<ACCENTSTATE, UINT> normal_button_map = {
-		{ ACCENT_ENABLE_BLURBEHIND,				IDM_BLUR },
-		{ ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_CLEAR },
-		{ ACCENT_NORMAL,						IDM_NORMAL },
-		{ ACCENT_ENABLE_GRADIENT,				IDM_OPAQUE },
-		{ ACCENT_ENABLE_FLUENT,					IDM_FLUENT }
-	};
-	std::unordered_map<ACCENTSTATE, UINT> dynamic_button_map = {
-		{ ACCENT_ENABLE_BLURBEHIND,				IDM_DYNAMICWS_BLUR },
-		{ ACCENT_ENABLE_TINTED,					IDM_DYNAMICWS_CLEAR },
-		{ ACCENT_NORMAL,						IDM_DYNAMICWS_NORMAL },
-		{ ACCENT_ENABLE_GRADIENT,				IDM_DYNAMICWS_OPAQUE },
-		{ ACCENT_ENABLE_FLUENT,					IDM_DYNAMICWS_FLUENT }
-	};
-	std::unordered_map<AEROPEEKSTATE, UINT> peek_button_map = {
-		{ Disabled,		IDM_NOPEEK },
-		{ Dynamic,		IDM_DPEEK },
-		{ Enabled,		IDM_PEEK }
-	};
+	uint32_t WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
+	uint32_t NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");
 	LPCWSTR config_file = L"config.cfg";
 	LPCWSTR exclude_file = L"dynamic-ws-exclude.csv";
 	int max_cache_hits = 500;
@@ -119,7 +97,7 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 	if (user32::SetWindowCompositionAttribute)
 	{
 		ACCENTPOLICY policy;
-		UINT color = (opt.color & 0xFF00FF00) + ((opt.color & 0x00FF0000) >> 16) + ((opt.color & 0x000000FF) << 16);
+		uint32_t color = (opt.color & 0xFF00FF00) + ((opt.color & 0x00FF0000) >> 16) + ((opt.color & 0x000000FF) << 16);
 
 		if (appearance != ACCENT_FOLLOW_OPT) // Custom taskbar appearance is set
 		{
@@ -374,11 +352,11 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 	{
 		if (value == L"hide")
 		{
-			opt.peek = Disabled;
+			opt.peek = Taskbar::Disabled;
 		}
 		else if (value == L"dynamic")
 		{
-			opt.peek = Dynamic;
+			opt.peek = Taskbar::Dynamic;
 		}
 	}
 	else if (arg == L"dynamic-ws-normal-on-peek")
@@ -515,10 +493,10 @@ void SaveConfigFile()
 		configstream << L"peek=";
 		switch (opt.peek)
 		{
-		case Disabled:
+		case Taskbar::Disabled:
 			configstream << L"hide";
 			break;
-		case Dynamic:
+		case Taskbar::Dynamic:
 			configstream << L"dynamic";
 			break;
 		default:
@@ -661,20 +639,20 @@ void EditFile(std::wstring file)
 void RefreshHandles()
 {
 	HWND secondtaskbar = NULL;
-	TASKBARPROPERTIES _properties;
+	Taskbar::TASKBARPROPERTIES _properties;
 
 	// Older handles are invalid, so clear the map to be ready for new ones
 	run.taskbars.clear();
 
 	run.main_taskbar = FindWindow(L"Shell_TrayWnd", NULL);
 	_properties.hmon = MonitorFromWindow(run.main_taskbar, MONITOR_DEFAULTTOPRIMARY);
-	_properties.state = Normal;
+	_properties.state = Taskbar::Normal;
 	run.taskbars.insert(std::make_pair(run.main_taskbar, _properties));
 
 	while ((secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", NULL)) != 0)
 	{
 		_properties.hmon = MonitorFromWindow(secondtaskbar, MONITOR_DEFAULTTOPRIMARY);
-		_properties.state = Normal;
+		_properties.state = Taskbar::Normal;
 		run.taskbars.insert(std::make_pair(secondtaskbar, _properties));
 	}
 }
@@ -829,17 +807,17 @@ bool IsAtLeastBuild(unsigned int buildNumber)
 
 #pragma region Tray
 
-DWORD CheckPopupItem(UINT item_to_check, bool state)
+DWORD CheckPopupItem(uint32_t item_to_check, bool state)
 {
 	return CheckMenuItem(run.tray_popup, item_to_check, MF_BYCOMMAND | (state ? MF_CHECKED : MF_UNCHECKED) | MF_ENABLED);
 }
 
-bool EnablePopupItem(UINT item_to_enable, bool state)
+bool EnablePopupItem(uint32_t item_to_enable, bool state)
 {
 	return EnableMenuItem(run.tray_popup, item_to_enable, MF_BYCOMMAND | (state ? MF_ENABLED : MF_GRAYED));
 }
 
-bool CheckPopupRadioItem(UINT from, UINT to, UINT item_to_check)
+bool CheckPopupRadioItem(uint32_t from, uint32_t to, uint32_t item_to_check)
 {
 	return CheckMenuRadioItem(run.tray_popup, from, to, item_to_check, MF_BYCOMMAND);
 }
@@ -847,11 +825,11 @@ bool CheckPopupRadioItem(UINT from, UINT to, UINT item_to_check)
 void RefreshMenu()
 {
 	// This block of CheckPopupRadioItem might throw, but if that happens we just need to update the map, or something really fucked up happened
-	CheckPopupRadioItem(IDM_BLUR, IDM_FLUENT, cnst.normal_button_map.at(opt.taskbar_appearance));
-	CheckPopupRadioItem(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_FLUENT, cnst.dynamic_button_map.at(opt.dynamic_ws_state));
-	CheckPopupRadioItem(IDM_PEEK, IDM_NOPEEK, cnst.peek_button_map.at(opt.peek));
+	CheckPopupRadioItem(IDM_BLUR, IDM_FLUENT, Tray::NORMAL_BUTTON_MAP.at(opt.taskbar_appearance));
+	CheckPopupRadioItem(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_FLUENT, Tray::DYNAMIC_BUTTON_MAP.at(opt.dynamic_ws_state));
+	CheckPopupRadioItem(IDM_PEEK, IDM_NOPEEK, Tray::PEEK_BUTTON_MAP.at(opt.peek));
 
-	for (const UINT &item : { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL, IDM_DYNAMICWS_OPAQUE, IDM_DYNAMICWS_PEEK })
+	for (const uint32_t &item : { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL, IDM_DYNAMICWS_OPAQUE, IDM_DYNAMICWS_PEEK })
 		EnablePopupItem(item, opt.dynamicws);
 
 	EnablePopupItem(IDM_FLUENT, run.fluent_available);
@@ -868,7 +846,7 @@ void RegisterTray()
 	Shell_NotifyIcon(NIM_SETVERSION, &run.tray);
 }
 
-LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM lParam)
 {
 	if (message == WM_CLOSE)
 	{
@@ -882,7 +860,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			POINT pt;
 			GetCursorPos(&pt);
 			SetForegroundWindow(hWnd);
-			UINT tray = TrackPopupMenu(GetSubMenu(run.tray_popup, 0), TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
+			uint32_t tray = TrackPopupMenu(GetSubMenu(run.tray_popup, 0), TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
 			switch (tray) // TODO: Add dynamic windows ACCENT_ENABLE_TRANSPARENT_GRADIENT
 			{
 			case IDM_BLUR:
@@ -949,13 +927,13 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 				break;
 			}
 			case IDM_PEEK:
-				opt.peek = Enabled;
+				opt.peek = Taskbar::Enabled;
 				break;
 			case IDM_DPEEK:
-				opt.peek = Dynamic;
+				opt.peek = Taskbar::Dynamic;
 				break;
 			case IDM_NOPEEK:
-				opt.peek = Disabled;
+				opt.peek = Taskbar::Disabled;
 				break;
 			case IDM_AUTOSTART: // TODO: Use UWP Apis
 				SetStartupState(!GetStartupState());
@@ -982,7 +960,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 				ClearBlacklistCache();
 				break;
 			case IDM_EXITWITHOUTSAVING:
-				run.exit_reason = UserActionNoSave;
+				run.exit_reason = Tray::UserActionNoSave;
 				run.run = false;
 				break;
 			case IDM_EXIT:
@@ -997,7 +975,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		RegisterTray();
 	}
 	else if (message == cnst.NEW_TTB_INSTANCE) {
-		run.exit_reason = NewInstance;
+		run.exit_reason = Tray::NewInstance;
 		run.run = false;
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
@@ -1015,16 +993,16 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM)
 	if (IsWindowVisible(hWnd) && IsWindowMaximised(hWnd) && !IsWindowCloaked(hWnd) && !IsWindowBlacklisted(hWnd) && IsWindowOnCurrentDesktop(hWnd))
 	{
 		HMONITOR _monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
-		for (std::pair<const HWND, TASKBARPROPERTIES> &taskbar : run.taskbars)
+		for (std::pair<const HWND, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
 		{
 			if (taskbar.second.hmon == _monitor)
 			{
 				if (opt.dynamicws)
 				{
-					taskbar.second.state = WindowMaximised;
+					taskbar.second.state = Taskbar::WindowMaximised;
 				}
 
-				if (opt.peek == Dynamic && taskbar.first == run.main_taskbar)
+				if (opt.peek == Taskbar::Dynamic && taskbar.first == run.main_taskbar)
 				{
 					run.should_show_peek = true;
 				}
@@ -1049,13 +1027,13 @@ void SetTaskbarBlur()
 	{					// 100 = 1 second; we use 10, because the difference is less noticeable and it has
 						// no large impact on CPU. We can change this if we feel that CPU is more important
 						// than response time.
-		run.should_show_peek = (opt.peek == Enabled);
+		run.should_show_peek = (opt.peek == Taskbar::Enabled);
 
-		for (std::pair<const HWND, TASKBARPROPERTIES> &taskbar : run.taskbars)
+		for (std::pair<const HWND, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
 		{
-			taskbar.second.state = Normal; // Reset taskbar state
+			taskbar.second.state = Taskbar::Normal; // Reset taskbar state
 		}
-		if (opt.dynamicws || opt.peek == Dynamic)
+		if (opt.dynamicws || opt.peek == Taskbar::Dynamic)
 		{
 			counter = 0;
 			EnumWindows(&EnumWindowsProcess, NULL);
@@ -1072,11 +1050,11 @@ void SetTaskbarBlur()
 				// If not, is a window caption of "Start" reliable to check for (does it works on other UI cultures?)
 				HWND start = FindWindow(L"Windows.UI.Core.CoreWindow", NULL);
 				HMONITOR monitor = MonitorFromWindow(start, MONITOR_DEFAULTTOPRIMARY);
-				for (std::pair<const HWND, TASKBARPROPERTIES> &taskbar : run.taskbars)
+				for (std::pair<const HWND, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
 				{
 					if (taskbar.second.hmon == monitor)
 					{
-						taskbar.second.state = StartMenuOpen;
+						taskbar.second.state = Taskbar::StartMenuOpen;
 						break; // Useless to continue looping, we found what we desired.
 					}
 				}
@@ -1085,24 +1063,24 @@ void SetTaskbarBlur()
 
 		if (opt.dynamicws && opt.dynamicws_peek && run.peek_active)
 		{
-			for (std::pair<const HWND, TASKBARPROPERTIES> &taskbar : run.taskbars)
+			for (std::pair<const HWND, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
 			{
-				taskbar.second.state = Normal;
+				taskbar.second.state = Taskbar::Normal;
 			}
 		}
 	}
 
-	for (const std::pair<HWND, TASKBARPROPERTIES> &taskbar : run.taskbars)
+	for (const std::pair<HWND, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
 	{
 		switch (taskbar.second.state)
 		{
-		case StartMenuOpen:
+		case Taskbar::StartMenuOpen:
 			SetWindowBlur(taskbar.first, ACCENT_NORMAL);
 			break;
-		case WindowMaximised:
+		case Taskbar::WindowMaximised:
 			SetWindowBlur(taskbar.first, opt.dynamic_ws_state); // A window is maximised; let's make sure that we blur the taskbar.
 			break;
-		case Normal:
+		case Taskbar::Normal:
 			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
 			break;
 		}
@@ -1249,7 +1227,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	RefreshHandles();
 
 	// Scan windows to start taskbar with the correct mode immediatly
-	if (opt.dynamicws || opt.peek == Dynamic)
+	if (opt.dynamicws || opt.peek == Taskbar::Dynamic)
 	{
 		EnumWindows(&EnumWindowsProcess, NULL);
 	}
@@ -1271,9 +1249,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	UnhookWinEvent(hook);
 
 	// If it's a new instance, don't save or restore taskbar to default
-	if (run.exit_reason != NewInstance)
+	if (run.exit_reason != Tray::NewInstance)
 	{
-		if (run.exit_reason != UserActionNoSave)
+		if (run.exit_reason != Tray::UserActionNoSave)
 		{
 			// Save configuration before we change opt
 			SaveConfigFile();
@@ -1281,7 +1259,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 
 		// Restore default taskbar appearance
 		opt.taskbar_appearance = ACCENT_NORMAL;
-		opt.peek = Enabled;
+		opt.peek = Taskbar::Enabled;
 		opt.dynamicstart = false;
 		opt.dynamicws = false;
 		SetTaskbarBlur();

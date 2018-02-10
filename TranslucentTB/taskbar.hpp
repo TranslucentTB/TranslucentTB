@@ -2,6 +2,8 @@
 #ifndef TASKBAR_HPP
 #define TASKBAR_HPP
 
+namespace Taskbar {
+
 enum TASKBARSTATE {
 	Normal,				// If no dynamic options are set, act as it says in opt.taskbar_appearance
 	WindowMaximised,	// There is a window which is maximised on the monitor this HWND is in. Display as blurred.
@@ -19,5 +21,7 @@ struct TASKBARPROPERTIES
 	HMONITOR hmon;
 	TASKBARSTATE state;
 };
+
+}
 
 #endif // !TASKBAR_HPP
