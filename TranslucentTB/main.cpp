@@ -25,6 +25,7 @@
 #include "../CPicker/CPicker.h"
 
 #include "compositiondata.hpp"
+#include "config.hpp"
 #include "taskbar.hpp"
 #include "tray.hpp"
 #include "win32.hpp"
@@ -70,13 +71,6 @@ static struct RUNTIMESTATE
 	int cache_hits;
 	bool peek_active = false;
 } run;
-
-const static struct CONSTANTS
-{
-	LPCWSTR config_file = L"config.cfg";
-	LPCWSTR exclude_file = L"dynamic-ws-exclude.csv";
-	int max_cache_hits = 500;
-} cnst = CONSTANTS();
 
 #pragma endregion
 
@@ -162,8 +156,8 @@ HRESULT GetPaths()
 	}
 
 	PathCombine(run.config_folder, localAppData, App::NAME);
-	PathCombine(run.config_file, run.config_folder, cnst.config_file);
-	PathCombine(run.exclude_file, run.config_folder, cnst.exclude_file);
+	PathCombine(run.config_file, run.config_folder, Config::CONFIG_FILE);
+	PathCombine(run.exclude_file, run.config_folder, Config::EXCLUDE_FILE);
 
 	return ERROR_SUCCESS;
 }
@@ -205,11 +199,11 @@ void CheckAndRunWelcome()
 	}
 	if (!PathFileExists(run.config_file))
 	{
-		ApplyStock(cnst.config_file);
+		ApplyStock(Config::CONFIG_FILE);
 	}
 	if (!PathFileExists(run.exclude_file))
 	{
-		ApplyStock(cnst.exclude_file);
+		ApplyStock(Config::EXCLUDE_FILE);
 	}
 }
 
@@ -674,21 +668,21 @@ void TogglePeek(bool status)
 
 void ClearBlacklistCache()
 {
-	run.cache_hits = cnst.max_cache_hits + 1;
+	run.cache_hits = Config::CACHE_HIT_MAX + 1;
 }
 
 bool IsWindowBlacklisted(HWND hWnd)
 {
 	static std::unordered_map<HWND, bool> blacklist_cache;
 
-	if (run.cache_hits <= cnst.max_cache_hits && blacklist_cache.count(hWnd) > 0)
+	if (run.cache_hits <= Config::CACHE_HIT_MAX && blacklist_cache.count(hWnd) > 0)
 	{
 		run.cache_hits++;
 		return blacklist_cache[hWnd];
 	}
 	else
 	{
-		if (run.cache_hits > cnst.max_cache_hits)
+		if (run.cache_hits > Config::CACHE_HIT_MAX)
 		{
 			run.cache_hits = 0;
 			blacklist_cache.clear();
@@ -930,7 +924,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM
 				SetStartupState(!GetStartupState());
 				break;
 			case IDM_RETURNTODEFAULTSETTINGS:
-				ApplyStock(cnst.config_file);
+				ApplyStock(Config::CONFIG_FILE);
 			case IDM_RELOADSETTINGS:
 				ParseConfigFile();
 				break;
@@ -940,7 +934,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM
 				ParseConfigFile();
 				break;
 			case IDM_RETURNTODEFAULTBLACKLIST:
-				ApplyStock(cnst.exclude_file);
+				ApplyStock(Config::EXCLUDE_FILE);
 			case IDM_RELOADDYNAMICBLACKLIST:
 				ParseBlacklistFile();
 				ClearBlacklistCache();

@@ -1,12 +1,13 @@
 #pragma once
 #ifndef WIN32_HPP
 
+#include <cstdbool>
 #include <windef.h>
 
 #include "compositiondata.hpp"
 
 namespace user32 {
-	typedef BOOL(WINAPI *pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA *);
+	typedef bool(WINAPI *pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA *);
 	static pSetWindowCompositionAttribute SetWindowCompositionAttribute = reinterpret_cast<pSetWindowCompositionAttribute>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
 }
 
