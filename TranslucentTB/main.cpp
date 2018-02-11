@@ -982,6 +982,12 @@ void InitializeAPIs()
 	OutputDebugString(buffer.c_str());
 }
 
+void UninitializeAPIs()
+{
+	CoUninitialize();
+	Windows::Foundation::Uninitialize();
+}
+
 void InitializeTray(HINSTANCE hInstance)
 {
 	run.tray_popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU)); // Load our popup menu
@@ -1053,11 +1059,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 		message += _com_error(error).ErrorMessage();
 
 		MessageBox(NULL, message.c_str(), (std::wstring(App::NAME) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
+		UninitializeAPIs();
 		return 1;
 	}
 
 	// If the configuration files don't exist, restore the files and show welcome to the users
 	if (!CheckAndRunWelcome()) {
+		UninitializeAPIs();
 		return 0;
 	}
 
@@ -1117,8 +1125,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	CloseHandle(run.app_handle);
 
 	// Uninitialize UWP and COM
-	CoUninitialize();
-	Windows::Foundation::Uninitialize();
+	UninitializeAPIs();
 
 	// Notify Explorer we are exiting
 	Shell_NotifyIcon(NIM_DELETE, &run.tray);

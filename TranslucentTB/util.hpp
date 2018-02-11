@@ -48,7 +48,7 @@ namespace Util {
 			message += L"Failed to determine System32 folder location!\n\nException from HRESULT: ";
 			message += _com_error(error).ErrorMessage();
 
-			MessageBox(NULL, message.c_str(), (std::wstring(App::NAME) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
+			MessageBox(NULL, message.c_str(), (std::wstring(App::NAME) + L" - Error").c_str(), MB_ICONERROR | MB_OK);
 
 			return;
 		}
@@ -88,7 +88,7 @@ namespace Util {
 			message += L"Failed to start Notepad!\n\nException from HRESULT: ";
 			message += _com_error(error).ErrorMessage();
 
-			MessageBox(NULL, message.c_str(), (std::wstring(App::NAME) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
+			MessageBox(NULL, message.c_str(), (std::wstring(App::NAME) + L" - Error").c_str(), MB_ICONERROR | MB_OK);
 		}
 	}
 
