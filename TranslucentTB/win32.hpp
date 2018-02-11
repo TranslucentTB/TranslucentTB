@@ -10,6 +10,7 @@
 #include <winbase.h>
 #include <winreg.h>
 
+#include "app.hpp"
 #include "swcadata.hpp"
 
 namespace user32 {
