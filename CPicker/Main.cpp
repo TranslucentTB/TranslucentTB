@@ -4,7 +4,6 @@
 #include <chrono>
 #include <future>
 #include <stdio.h>
-#include <synchapi.h>
 
 inline void DrawCircle(HDC hcomp, int red, int green, int blue, float x, float y)
 {
@@ -33,6 +32,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 	static PixelBuffer pbufferC1;
 	static PixelBuffer pbufferC2;
 	static PixelBuffer pbufferA;
+	static bool open;
 
 	const HWND Color1 = GetDlgItem(hDlg, IDC_COLOR);
 	const HWND Color2 = GetDlgItem(hDlg, IDC_COLOR2);
@@ -74,25 +74,38 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 		switch (picker->GetAlphaUsage())
 		{
-			case CP_NO_ALPHA:
-			{
-				picker->SetAlpha(100);
-				break;
-			}
+		case CP_NO_ALPHA:
+		{
+			picker->SetAlpha(100);
+			break;
+		}
 
-			case CP_DISABLE_ALPHA:
-			{
-				picker->SetAlpha(100);
-				EnableWindow(GetDlgItem(hDlg, IDC_ALPHA), false);
-				EnableWindow(GetDlgItem(hDlg, IDC_ALPHATXT), false);
-				EnableWindow(GetDlgItem(hDlg, IDC_ALPHATXT2), false);
-				break;
-			}
+		case CP_DISABLE_ALPHA:
+		{
+			picker->SetAlpha(100);
+			EnableWindow(GetDlgItem(hDlg, IDC_ALPHA), false);
+			EnableWindow(GetDlgItem(hDlg, IDC_ALPHATXT), false);
+			EnableWindow(GetDlgItem(hDlg, IDC_ALPHATXT2), false);
+			break;
+		}
 		}
 
 		UpdateValues(hDlg, picker->GetCurrentColour());
 
 		SendDlgItemMessage(hDlg, IDC_R, BM_SETCHECK, BST_CHECKED, 0);
+
+		open = true;
+		std::thread(
+			[hDlg]()
+			{
+				while (open)
+				{
+					SendMessage(hDlg, WM_DPICHANGED, 0, 0);
+					std::this_thread::sleep_for(std::chrono::seconds(1));
+				}
+			}
+		).detach();
+
 		break;
 	}
 
@@ -550,9 +563,10 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		if (draw_time < frame_time)
 		{
 			std::async(std::launch::async,
-				[&draw_time]() {
+				[&draw_time]()
+				{
 					can_run = false;
-					Sleep((frame_time - draw_time) / 1000);
+					std::this_thread::sleep_for(std::chrono::microseconds(frame_time - draw_time));
 					can_run = true;
 				}
 			);
@@ -765,6 +779,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 			case IDB_OK:
 			{
+				open = false;
 				picker->UpdateOldColour();
 				pbufferC1.Destroy();
 				pbufferC2.Destroy();
@@ -775,6 +790,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 			case IDB_CANCEL:
 			{
+				open = false;
 				SColour old = picker->GetOldColour();
 
 				picker->SetRGB(old.r, old.g, old.b);

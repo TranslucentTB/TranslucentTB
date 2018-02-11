@@ -1,9 +1,11 @@
 // Standard API
+#include <chrono>
 #include <cwchar>
 #include <cwctype>
 #include <fstream>
 #include <iomanip>
 #include <string>
+#include <thread>
 #include <unordered_map>
 #include <vector>
 
@@ -1106,7 +1108,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 			DispatchMessage(&msg);
 		}
 		SetTaskbarBlur();
-		Sleep(10);
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 
 	UnhookWinEvent(hook);
