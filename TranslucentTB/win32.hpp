@@ -1,15 +1,16 @@
 #pragma once
 #ifndef WIN32_HPP
+#define WIN32_HPP
 
 #include <cstdbool>
+#include <cstdint>
 #include <wchar.h>
-#include <windef.h>
+#include <winreg.h>
 
-#include "compositiondata.hpp"
-#include "util.hpp"
+#include "swcadata.hpp"
 
 namespace user32 {
-	typedef bool(WINAPI *pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA *);
+	typedef bool(WINAPI *pSetWindowCompositionAttribute)(HWND, swca::WINCOMPATTRDATA *);
 	static pSetWindowCompositionAttribute SetWindowCompositionAttribute = reinterpret_cast<pSetWindowCompositionAttribute>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
 }
 
@@ -48,7 +49,7 @@ namespace win32 {
 		}
 	}
 
-	bool IsAtLeastBuild(unsigned int buildNumber)
+	bool IsAtLeastBuild(uint32_t buildNumber)
 	{
 		if (ntdll::RtlGetVersion)
 		{

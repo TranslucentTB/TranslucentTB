@@ -27,9 +27,6 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="compositiondata.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="win32.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -43,6 +40,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="util.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="swcadata.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="app.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

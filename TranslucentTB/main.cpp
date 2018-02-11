@@ -23,23 +23,24 @@
 // For the color picker
 #include "../CPicker/CPicker.h"
 
-#include "compositiondata.hpp"
+#include "swcadata.hpp"
 #include "config.hpp"
 #include "taskbar.hpp"
 #include "tray.hpp"
 #include "util.hpp"
 #include "win32.hpp"
+#include "app.h"
 
 
 #pragma region Structures
 
 static struct OPTIONS
 {
-	ACCENTSTATE taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+	swca::ACCENTSTATE taskbar_appearance = swca::ACCENT_ENABLE_BLURBEHIND;
 	uint32_t color = 0x00000000;
 	bool dynamicws = false;
-	ACCENTSTATE dynamic_ws_state = ACCENT_ENABLE_BLURBEHIND;	// State to activate when a window is maximised
-	bool dynamicws_peek = true;									// Whether to use the normal style when using Aero Peek
+	swca::ACCENTSTATE dynamic_ws_state = swca::ACCENT_ENABLE_BLURBEHIND;	// State to activate when a window is maximised
+	bool dynamicws_peek = true;												// Whether to use the normal style when using Aero Peek
 	bool dynamicstart = false;
 	Taskbar::AEROPEEKSTATE peek = Taskbar::Enabled;
 	std::vector<std::wstring> blacklisted_classes;
@@ -71,22 +72,22 @@ static struct RUNTIMESTATE
 
 #pragma region That one function that does all the magic
 
-void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
+void SetWindowBlur(HWND hWnd, swca::ACCENTSTATE appearance = swca::ACCENT_FOLLOW_OPT)
 {
 	if (user32::SetWindowCompositionAttribute)
 	{
-		ACCENTPOLICY policy;
+		swca::ACCENTPOLICY policy;
 		uint32_t color = (opt.color & 0xFF00FF00) + ((opt.color & 0x00FF0000) >> 16) + ((opt.color & 0x000000FF) << 16);
 
-		if (appearance != ACCENT_FOLLOW_OPT) // Custom taskbar appearance is set
+		if (appearance != swca::ACCENT_FOLLOW_OPT) // Custom taskbar appearance is set
 		{
-			if (appearance == ACCENT_ENABLE_TINTED) // Window is maximised
+			if (appearance == swca::ACCENT_ENABLE_TINTED) // Window is maximised
 			{
-				policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, color, 0 };
+				policy = { swca::ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, color, 0 };
 			}
-			else if (appearance == ACCENT_NORMAL)
+			else if (appearance == swca::ACCENT_NORMAL)
 			{
-				policy = { (run.fluent_available ? ACCENT_ENABLE_FLUENT : ACCENT_ENABLE_TRANSPARENTGRADIENT), 2, 0x99000000, 0 };
+				policy = { (run.fluent_available ? swca::ACCENT_ENABLE_FLUENT : swca::ACCENT_ENABLE_TRANSPARENTGRADIENT), 2, 0x99000000, 0 };
 			}
 			else
 			{
@@ -95,13 +96,13 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 		}
 		else // Use the defaults
 		{
-			if (opt.dynamic_ws_state == ACCENT_ENABLE_TINTED) // dynamic-ws is tint and desktop is shown
+			if (opt.dynamic_ws_state == swca::ACCENT_ENABLE_TINTED) // dynamic-ws is tint and desktop is shown
 			{
-				policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 };
+				policy = { swca::ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 };
 			}
-			else if (opt.taskbar_appearance == ACCENT_NORMAL) // normal gradient color
+			else if (opt.taskbar_appearance == swca::ACCENT_NORMAL) // normal gradient color
 			{
-				policy = { (run.fluent_available ? ACCENT_ENABLE_FLUENT : ACCENT_ENABLE_TRANSPARENTGRADIENT), 2, 0x99000000, 0 };
+				policy = { (run.fluent_available ? swca::ACCENT_ENABLE_FLUENT : swca::ACCENT_ENABLE_TRANSPARENTGRADIENT), 2, 0x99000000, 0 };
 			}
 			else
 			{
@@ -109,7 +110,7 @@ void SetWindowBlur(HWND hWnd, ACCENTSTATE appearance = ACCENT_FOLLOW_OPT)
 			}
 		}
 
-		WINCOMPATTRDATA data = { WCA_ACCENT_POLICY, &policy, sizeof(policy) };
+		swca::WINCOMPATTRDATA data = { swca::WCA_ACCENT_POLICY, &policy, sizeof(policy) };
 		user32::SetWindowCompositionAttribute(hWnd, &data);
 	}
 }
@@ -187,23 +188,23 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 	{
 		if (value == L"blur")
 		{
-			opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+			opt.taskbar_appearance = swca::ACCENT_ENABLE_BLURBEHIND;
 		}
 		else if (value == L"opaque")
 		{
-			opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
+			opt.taskbar_appearance = swca::ACCENT_ENABLE_GRADIENT;
 		}
 		else if (value == L"transparent" || value == L"translucent" || value == L"clear")
 		{
-			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+			opt.taskbar_appearance = swca::ACCENT_ENABLE_TRANSPARENTGRADIENT;
 		}
 		else if (value == L"normal")
 		{
-			opt.taskbar_appearance = ACCENT_NORMAL;
+			opt.taskbar_appearance = swca::ACCENT_NORMAL;
 		}
 		else if (value == L"fluent" && run.fluent_available)
 		{
-			opt.taskbar_appearance = ACCENT_ENABLE_FLUENT;
+			opt.taskbar_appearance = swca::ACCENT_ENABLE_FLUENT;
 		}
 	}
 	else if (arg == L"dynamic-ws")
@@ -215,27 +216,27 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		else if (value == L"tint")
 		{
 			opt.dynamicws = true;
-			opt.dynamic_ws_state = ACCENT_ENABLE_TINTED;
+			opt.dynamic_ws_state = swca::ACCENT_ENABLE_TINTED;
 		}
 		else if (value == L"blur")
 		{
 			opt.dynamicws = true;
-			opt.dynamic_ws_state = ACCENT_ENABLE_BLURBEHIND;
+			opt.dynamic_ws_state = swca::ACCENT_ENABLE_BLURBEHIND;
 		}
 		else if (value == L"opaque")
 		{
 			opt.dynamicws = true;
-			opt.dynamic_ws_state = ACCENT_ENABLE_GRADIENT;
+			opt.dynamic_ws_state = swca::ACCENT_ENABLE_GRADIENT;
 		}
 		else if (value == L"normal")
 		{
 			opt.dynamicws = true;
-			opt.dynamic_ws_state = ACCENT_NORMAL;
+			opt.dynamic_ws_state = swca::ACCENT_NORMAL;
 		}
 		else if (value == L"fluent" && run.fluent_available)
 		{
 			opt.dynamicws = true;
-			opt.dynamic_ws_state = ACCENT_ENABLE_FLUENT;
+			opt.dynamic_ws_state = swca::ACCENT_ENABLE_FLUENT;
 		}
 	}
 	else if (arg == L"dynamic-start")
@@ -247,7 +248,7 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 	}
 	else if (arg == L"color" || arg == L"tint")
 	{
-		value = Trim(value);
+		value = Util::Trim(value);
 
 		if (value.find(L'#') == 0)
 		{
@@ -337,19 +338,19 @@ void SaveConfigFile()
 		configstream << L"accent=";
 		switch (opt.taskbar_appearance)
 		{
-		case ACCENT_ENABLE_GRADIENT:
+		case swca::ACCENT_ENABLE_GRADIENT:
 			configstream << L"opaque";
 			break;
-		case ACCENT_ENABLE_TRANSPARENTGRADIENT:
+		case swca::ACCENT_ENABLE_TRANSPARENTGRADIENT:
 			configstream << L"clear";
 			break;
-		case ACCENT_ENABLE_BLURBEHIND:
+		case swca::ACCENT_ENABLE_BLURBEHIND:
 			configstream << L"blur";
 			break;
-		case ACCENT_NORMAL:
+		case swca::ACCENT_NORMAL:
 			configstream << L"normal";
 			break;
-		case ACCENT_ENABLE_FLUENT:
+		case swca::ACCENT_ENABLE_FLUENT:
 			configstream << L"fluent";
 			break;
 		default:
@@ -372,19 +373,19 @@ void SaveConfigFile()
 		configstream << L"dynamic-ws=";
 		switch (opt.dynamic_ws_state)
 		{
-		case ACCENT_ENABLE_BLURBEHIND:
+		case swca::ACCENT_ENABLE_BLURBEHIND:
 			configstream << L"blur";
 			break;
-		case ACCENT_ENABLE_TINTED:
+		case swca::ACCENT_ENABLE_TINTED:
 			configstream << L"tint";
 			break;
-		case ACCENT_ENABLE_GRADIENT:
+		case swca::ACCENT_ENABLE_GRADIENT:
 			configstream << L"opaque";
 			break;
-		case ACCENT_NORMAL:
+		case swca::ACCENT_NORMAL:
 			configstream << L"normal";
 			break;
-		case ACCENT_ENABLE_FLUENT:
+		case swca::ACCENT_ENABLE_FLUENT:
 			configstream << L"fluent";
 			break;
 		default:
@@ -471,19 +472,19 @@ void ParseBlacklistFile()
 		}
 
 		std::wstring line_lowercase = line;
-		ToLower(line_lowercase);
+		Util::ToLower(line_lowercase);
 
 		if (line_lowercase.substr(0, 5) == L"class")
 		{
-			AddValuesToVectorByDelimiter(delimiter, opt.blacklisted_classes, line);
+			Util::AddValuesToVectorByDelimiter(delimiter, opt.blacklisted_classes, line);
 		}
 		else if (line_lowercase.substr(0, 5) == L"title" || line.substr(0, 13) == L"windowtitle")
 		{
-			AddValuesToVectorByDelimiter(delimiter, opt.blacklisted_titles, line);
+			Util::AddValuesToVectorByDelimiter(delimiter, opt.blacklisted_titles, line);
 		}
 		else if (line_lowercase.substr(0, 7) == L"exename")
 		{
-			AddValuesToVectorByDelimiter(delimiter, opt.blacklisted_filenames, line_lowercase);
+			Util::AddValuesToVectorByDelimiter(delimiter, opt.blacklisted_filenames, line_lowercase);
 		}
 	}
 }
@@ -603,7 +604,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 			GetModuleFileNameEx(OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId), NULL, exeName_path, _countof(exeName_path));
 
 			std::wstring exeName = PathFindFileName(exeName_path);
-			ToLower(exeName);
+			Util::ToLower(exeName);
 
 			for (const std::wstring &value : opt.blacklisted_filenames)
 			{
@@ -705,19 +706,19 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM
 			switch (tray) // TODO: Add dynamic windows ACCENT_ENABLE_TRANSPARENT_GRADIENT
 			{
 			case IDM_BLUR:
-				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
+				opt.taskbar_appearance = swca::ACCENT_ENABLE_BLURBEHIND;
 				break;
 			case IDM_CLEAR:
-				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
+				opt.taskbar_appearance = swca::ACCENT_ENABLE_TRANSPARENTGRADIENT;
 				break;
 			case IDM_NORMAL:
-				opt.taskbar_appearance = ACCENT_NORMAL;
+				opt.taskbar_appearance = swca::ACCENT_NORMAL;
 				break;
 			case IDM_OPAQUE:
-				opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
+				opt.taskbar_appearance = swca::ACCENT_ENABLE_GRADIENT;
 				break;
 			case IDM_FLUENT:
-				opt.taskbar_appearance = ACCENT_ENABLE_FLUENT;
+				opt.taskbar_appearance = swca::ACCENT_ENABLE_FLUENT;
 				break;
 			case IDM_DYNAMICWS:
 				opt.dynamicws = !opt.dynamicws;
@@ -726,19 +727,19 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM
 				opt.dynamicws_peek = !opt.dynamicws_peek;
 				break;
 			case IDM_DYNAMICWS_BLUR:
-				opt.dynamic_ws_state = ACCENT_ENABLE_BLURBEHIND;
+				opt.dynamic_ws_state = swca::ACCENT_ENABLE_BLURBEHIND;
 				break;
 			case IDM_DYNAMICWS_CLEAR:
-				opt.dynamic_ws_state = ACCENT_ENABLE_TINTED;
+				opt.dynamic_ws_state = swca::ACCENT_ENABLE_TINTED;
 				break;
 			case IDM_DYNAMICWS_NORMAL:
-				opt.dynamic_ws_state = ACCENT_NORMAL;
+				opt.dynamic_ws_state = swca::ACCENT_NORMAL;
 				break;
 			case IDM_DYNAMICWS_OPAQUE:
-				opt.dynamic_ws_state = ACCENT_ENABLE_GRADIENT;
+				opt.dynamic_ws_state = swca::ACCENT_ENABLE_GRADIENT;
 				break;
 			case IDM_DYNAMICWS_FLUENT:
-				opt.dynamic_ws_state = ACCENT_ENABLE_FLUENT;
+				opt.dynamic_ws_state = swca::ACCENT_ENABLE_FLUENT;
 				break;
 			case IDM_DYNAMICSTART:
 				opt.dynamicstart = !opt.dynamicstart;
@@ -786,7 +787,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM
 				break;
 			case IDM_EDITSETTINGS:
 				SaveConfigFile();
-				EditFile(run.config_file);
+				Util::EditFile(run.config_file);
 				ParseConfigFile();
 				break;
 			case IDM_RETURNTODEFAULTBLACKLIST:
@@ -796,7 +797,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM
 				ClearBlacklistCache();
 				break;
 			case IDM_EDITDYNAMICBLACKLIST:
-				EditFile(run.exclude_file);
+				Util::EditFile(run.exclude_file);
 				ParseBlacklistFile();
 				ClearBlacklistCache();
 				break;
@@ -916,7 +917,7 @@ void SetTaskbarBlur()
 		switch (taskbar.second.state)
 		{
 		case Taskbar::StartMenuOpen:
-			SetWindowBlur(taskbar.first, ACCENT_NORMAL);
+			SetWindowBlur(taskbar.first, swca::ACCENT_NORMAL);
 			break;
 		case Taskbar::WindowMaximised:
 			SetWindowBlur(taskbar.first, opt.dynamic_ws_state); // A window is maximised; let's make sure that we blur the taskbar.
@@ -1099,7 +1100,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 		}
 
 		// Restore default taskbar appearance
-		opt.taskbar_appearance = ACCENT_NORMAL;
+		opt.taskbar_appearance = swca::ACCENT_NORMAL;
 		opt.peek = Taskbar::Enabled;
 		opt.dynamicstart = false;
 		opt.dynamicws = false;
