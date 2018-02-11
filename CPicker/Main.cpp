@@ -1,6 +1,10 @@
-#include "resource.h"
 #include "CPickerDll.h"
-#include "stdio.h"
+#include "resource.h"
+
+#include <chrono>
+#include <future>
+#include <stdio.h>
+#include <synchapi.h>
 
 static PixelBuffer pbufferC1;
 static PixelBuffer pbufferC2;
@@ -95,6 +99,16 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 	case WM_PAINT:
 	{
+		static bool can_run = true;
+		if (!can_run)
+		{
+			break;
+		}
+
+		const int FPS = 60;
+		const int frame_time = 1000000 / FPS;
+		auto start_time = std::chrono::high_resolution_clock::now();
+
 		const HWND CurrentColor = GetDlgItem(hDlg, IDC_CURRCOLOR);
 		const HWND OldColor = GetDlgItem(hDlg, IDC_OLDCOLOR);
 
@@ -497,7 +511,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				}
 				for (int x = (widthA / 2); x < widthA - 6; x++)
 				{
-					pbufferA.SetPixel(x, y, flag ? cb: cw);
+					pbufferA.SetPixel(x, y, flag ? cb : cw);
 				}
 			}
 			pbufferA.Display(hcomp);
@@ -523,19 +537,33 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		DrawCheckedRect(OldColor, picker->GetOldColour().r, picker->GetOldColour().g, picker->GetOldColour().b,
 			picker->GetOldColour().a, 10, 10);
 
+		auto end_time = std::chrono::high_resolution_clock::now();
+		auto time = end_time - start_time;
+
+		long long draw_time = std::chrono::duration_cast<std::chrono::microseconds>(time).count();
+		if (draw_time < frame_time)
+		{
+			std::async(std::launch::async,
+				[frame_time, draw_time]() {
+					can_run = false;
+					Sleep((frame_time - draw_time) / 1000);
+					can_run = true;
+				}
+			);
+		}
+
 		break;
 	}
 
 	case WM_LBUTTONDOWN:
 	case WM_MOUSEMOVE:
 	{
-		POINT p;
-
 		if (uMsg == WM_MOUSEMOVE && wParam != MK_LBUTTON)
 		{
 			break;
 		}
 
+		POINT p;
 		GetCursorPos(&p);
 
 		// IDC_COLOR1 picked
@@ -764,7 +792,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		SendMessage(hDlg, WM_PAINT, 0, 0);
 		break;
 	}
-	return 0L;
+	return 0;
 }
 
 // Draw a b/w checked rectangle, "covered" with the rgba color provided.
