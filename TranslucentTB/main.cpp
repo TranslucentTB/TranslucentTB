@@ -15,7 +15,6 @@
 #include <shellapi.h>
 #include <ShellScalingAPI.h>
 #include <ShlObj.h>
-#include <Shlwapi.h>
 
 // For the context menu
 #include "resource.h"

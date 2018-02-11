@@ -2,7 +2,7 @@
 #ifndef APP_HPP
 #define APP_HPP
 
-#include <minwindef.h>
+#include <windef.h>
 
 namespace App {
 

@@ -3,7 +3,7 @@
 #define CONFIG_HPP
 
 #include <cstdint>
-#include <minwindef.h>
+#include <windef.h>
 
 namespace Config {
 

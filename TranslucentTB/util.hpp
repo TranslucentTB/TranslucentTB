@@ -3,7 +3,17 @@
 #define UTIL_HPP
 
 #include <algorithm>
+#include <comdef.h>
+#include <cwchar>
+#include <Processthreadsapi.h>
+#include <Shlobj.h>
+#include <Shlwapi.h>
 #include <string>
+#include <Synchapi.h>
+#include <vector>
+#include <winbase.h>
+#include <windef.h>
+#include <Winuser.h>
 
 namespace Util {
 
@@ -40,10 +50,10 @@ namespace Util {
 			return;
 		}
 
-		TCHAR notepad[MAX_PATH];
+		wchar_t notepad[MAX_PATH];
 		PathCombine(notepad, system32, L"notepad.exe");
 
-		std::vector<TCHAR> buf(file.begin(), file.end());
+		std::vector<wchar_t> buf(file.begin(), file.end());
 		buf.push_back(0); // Null terminator
 		PathQuoteSpaces(buf.data());
 
@@ -52,7 +62,7 @@ namespace Util {
 		path += ' ';
 		path += buf.data();
 
-		std::vector<TCHAR> buf2(path.begin(), path.end());
+		std::vector<wchar_t> buf2(path.begin(), path.end());
 		buf2.push_back(0); // Null terminator
 
 #pragma clang diagnostic push

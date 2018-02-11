@@ -2,9 +2,12 @@
 #ifndef WIN32_HPP
 #define WIN32_HPP
 
+#include <comdef.h>
 #include <cstdbool>
 #include <cstdint>
 #include <cwchar>
+#include <Shlwapi.h>
+#include <winbase.h>
 #include <winreg.h>
 
 #include "swcadata.hpp"
