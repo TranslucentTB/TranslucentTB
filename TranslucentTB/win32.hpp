@@ -4,7 +4,7 @@
 
 #include <cstdbool>
 #include <cstdint>
-#include <wchar.h>
+#include <cwchar>
 #include <winreg.h>
 
 #include "swcadata.hpp"

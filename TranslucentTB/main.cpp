@@ -1,4 +1,5 @@
 // Standard API
+#include <cwchar>
 #include <cwctype>
 #include <fstream>
 #include <iomanip>
@@ -15,7 +16,6 @@
 #include <ShellScalingAPI.h>
 #include <ShlObj.h>
 #include <Shlwapi.h>
-#include <tchar.h>
 
 // For the context menu
 #include "resource.h"
@@ -61,9 +61,9 @@ static struct RUNTIMESTATE
 	HANDLE app_handle;											// Handle to this app to check for uniqueness
 	NOTIFYICONDATA tray;
 	bool fluent_available = false;
-	TCHAR config_folder[MAX_PATH];
-	TCHAR config_file[MAX_PATH];
-	TCHAR exclude_file[MAX_PATH];
+	wchar_t config_folder[MAX_PATH];
+	wchar_t config_file[MAX_PATH];
+	wchar_t exclude_file[MAX_PATH];
 	int cache_hits;
 	bool peek_active = false;
 } run;
@@ -138,14 +138,14 @@ HRESULT GetPaths()
 
 void ApplyStock(LPCWSTR filename)
 {
-	TCHAR exeFolder[MAX_PATH];
+	wchar_t exeFolder[MAX_PATH];
 	GetModuleFileName(GetModuleHandle(NULL), exeFolder, MAX_PATH);
 	PathRemoveFileSpec(exeFolder);
 
-	TCHAR stockFile[MAX_PATH];
+	wchar_t stockFile[MAX_PATH];
 	PathCombine(stockFile, exeFolder, filename);
 
-	TCHAR configFile[MAX_PATH];
+	wchar_t configFile[MAX_PATH];
 	PathCombine(configFile, run.config_folder, filename);
 
 	if (!PathIsDirectory(run.config_folder))
@@ -563,7 +563,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 		// This is the fastest because we do the less string manipulation, so always try it first
 		if (opt.blacklisted_classes.size() > 0)
 		{
-			TCHAR className[MAX_PATH];
+			wchar_t className[MAX_PATH];
 			GetClassName(hWnd, className, _countof(className));
 			std::wstring classNameString(className);
 			for (const std::wstring &value : opt.blacklisted_classes)
@@ -581,7 +581,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 		if (opt.blacklisted_titles.size() > 0)
 		{
 			int titleSize = GetWindowTextLength(hWnd) + 1; // For the null terminator
-			std::vector<TCHAR> windowTitleBuffer(titleSize);
+			std::vector<wchar_t> windowTitleBuffer(titleSize);
 			GetWindowText(hWnd, windowTitleBuffer.data(), titleSize);
 			std::wstring windowTitle = windowTitleBuffer.data();
 
@@ -600,7 +600,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 			DWORD ProcessId;
 			GetWindowThreadProcessId(hWnd, &ProcessId);
 
-			TCHAR exeName_path[MAX_PATH];
+			wchar_t exeName_path[MAX_PATH];
 			GetModuleFileNameEx(OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId), NULL, exeName_path, _countof(exeName_path));
 
 			std::wstring exeName = PathFindFileName(exeName_path);
