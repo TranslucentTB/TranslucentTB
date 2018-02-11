@@ -676,7 +676,9 @@ void RefreshMenu()
 	CheckPopupRadioItem(IDM_PEEK, IDM_NOPEEK, Tray::PEEK_BUTTON_MAP.at(opt.peek));
 
 	for (const uint32_t &item : { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL, IDM_DYNAMICWS_OPAQUE, IDM_DYNAMICWS_PEEK })
+	{
 		EnablePopupItem(item, opt.dynamicws);
+	}
 
 	EnablePopupItem(IDM_FLUENT, run.fluent_available);
 	EnablePopupItem(IDM_DYNAMICWS_FLUENT, opt.dynamicws && run.fluent_available);
@@ -820,7 +822,8 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM
 		RefreshHandles();
 		RegisterTray();
 	}
-	else if (message == Tray::NEW_TTB_INSTANCE) {
+	else if (message == Tray::NEW_TTB_INSTANCE)
+	{
 		run.exit_reason = Tray::NewInstance;
 		run.run = false;
 	}
@@ -1042,7 +1045,8 @@ void InitializeTray(HINSTANCE hInstance)
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int)
 {
 	// If there already is another instance running, tell it to exit
-	if (!IsSingleInstance()) {
+	if (!IsSingleInstance())
+	{
 		HWND oldInstance = FindWindow(App::NAME, L"TrayWindow");
 		SendMessage(oldInstance, Tray::NEW_TTB_INSTANCE, NULL, NULL);
 	}
@@ -1064,7 +1068,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	}
 
 	// If the configuration files don't exist, restore the files and show welcome to the users
-	if (!CheckAndRunWelcome()) {
+	if (!CheckAndRunWelcome())
+	{
 		UninitializeAPIs();
 		return 0;
 	}
@@ -1092,9 +1097,11 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	HWINEVENTHOOK hook = SetWinEventHook(0x21, 0x22, NULL, HandleAeroPeekEvent, 0, 0, WINEVENT_OUTOFCONTEXT);
 
 	// Message loop
-	while (run.run) {
+	while (run.run)
+	{
 		MSG msg;
-		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
+		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
