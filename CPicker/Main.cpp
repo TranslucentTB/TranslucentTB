@@ -6,10 +6,6 @@
 #include <stdio.h>
 #include <synchapi.h>
 
-static PixelBuffer pbufferC1;
-static PixelBuffer pbufferC2;
-static PixelBuffer pbufferA;
-
 inline void DrawCircle(HDC hcomp, int red, int green, int blue, float x, float y)
 {
 	HPEN pen = CreatePen(PS_SOLID, 1, RGB(255 - red, 255 - green, 255 - blue));
@@ -17,7 +13,7 @@ inline void DrawCircle(HDC hcomp, int red, int green, int blue, float x, float y
 	Arc(hcomp, x - 5, y - 5, x + 5, y + 5, 0, 0, 0, 0);
 }
 
-inline void DrawArrows(HDC hcomp, int width, int height, int y)
+inline void DrawArrows(HDC hcomp, int width, int height, float y)
 {
 	HPEN pen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
 	SelectObject(hcomp, pen);
@@ -34,6 +30,9 @@ inline void DrawArrows(HDC hcomp, int width, int height, int y)
 LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static CColourPicker *picker = NULL;
+	static PixelBuffer pbufferC1;
+	static PixelBuffer pbufferC2;
+	static PixelBuffer pbufferA;
 
 	const HWND Color1 = GetDlgItem(hDlg, IDC_COLOR);
 	const HWND Color2 = GetDlgItem(hDlg, IDC_COLOR2);
@@ -97,6 +96,13 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		break;
 	}
 
+	case WM_DPICHANGED:
+		pbufferC1.Destroy();
+		pbufferC2.Destroy();
+		pbufferA.Destroy();
+		pbufferC1.Create(widthC1, heightC1);
+		pbufferC2.Create(widthC2, heightC2);
+		pbufferA.Create(widthA, heightA);
 	case WM_PAINT:
 	{
 		static bool can_run = true;
@@ -105,7 +111,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			break;
 		}
 
-		const int FPS = 60;
+		const int FPS = 30;
 		const int frame_time = 1000000 / FPS;
 		auto start_time = std::chrono::high_resolution_clock::now();
 
@@ -761,6 +767,8 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			{
 				picker->UpdateOldColour();
 				pbufferC1.Destroy();
+				pbufferC2.Destroy();
+				pbufferA.Destroy();
 				EndDialog(hDlg, IDB_OK);
 				break;
 			}
@@ -772,6 +780,8 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				picker->SetRGB(old.r, old.g, old.b);
 				picker->SetAlpha(old.a);
 				pbufferC1.Destroy();
+				pbufferC2.Destroy();
+				pbufferA.Destroy();
 				EndDialog(hDlg, IDB_CANCEL);
 				break;
 			}
@@ -780,16 +790,6 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			break;
 		}
 		}
-		break;
-
-	case WM_DPICHANGED:
-		pbufferC1.Destroy();
-		pbufferC1.Create(widthC1, heightC1);
-		pbufferC2.Destroy();
-		pbufferC2.Create(widthC2, heightC2);
-		pbufferA.Destroy();
-		pbufferA.Create(widthA, heightA);
-		SendMessage(hDlg, WM_PAINT, 0, 0);
 		break;
 	}
 	return 0;
@@ -826,10 +826,7 @@ EXPORT void DrawCheckedRect(HWND hWnd, int r, int g, int b, int a, int cx, int c
 			r2.top = y * cy;
 			r2.bottom = min((y + 1)*cy, HEIGHT(rect) - 2);
 
-			if (flag)
-				FillRect(hdc, &r2, brush);
-			else
-				FillRect(hdc, &r2, brush2);
+			FillRect(hdc, &r2, flag ? brush : brush2);
 
 			flag = !flag;
 		}
