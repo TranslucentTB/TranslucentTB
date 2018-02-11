@@ -550,7 +550,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		if (draw_time < frame_time)
 		{
 			std::async(std::launch::async,
-				[frame_time, draw_time]() {
+				[&draw_time]() {
 					can_run = false;
 					Sleep((frame_time - draw_time) / 1000);
 					can_run = true;
