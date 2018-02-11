@@ -135,7 +135,7 @@ HRESULT GetPaths()
 	return ERROR_SUCCESS;
 }
 
-void ApplyStock(const wchar_t* filename)
+void ApplyStock(const wchar_t *filename)
 {
 	wchar_t exeFolder[MAX_PATH];
 	GetModuleFileName(GetModuleHandle(NULL), exeFolder, MAX_PATH);
@@ -169,9 +169,8 @@ bool CheckAndRunWelcome()
 		message += '"';
 		message += L"\n\nBy selecting OK and continuing, you agree to the GPLv3 license.";
 
-		int choice = MessageBox(NULL, message.c_str(), std::wstring(App::NAME).c_str(), MB_ICONINFORMATION | MB_OKCANCEL);
-		if (choice != IDOK) {
-			run.exit_reason = Tray::UserActionNoSave;
+		if (MessageBox(NULL, message.c_str(), App::NAME, MB_ICONINFORMATION | MB_OKCANCEL) != IDOK)
+		{
 			return false;
 		}
 	}
@@ -998,7 +997,7 @@ void InitializeTray(HINSTANCE hInstance)
 		LoadCursor(NULL, IDC_ARROW),			// hCursor
 		reinterpret_cast<HBRUSH>(BLACK_BRUSH),	// hbrBackground
 		NULL,									// lpszMenuName
-		App::NAME,						// lpszClassName
+		App::NAME,								// lpszClassName
 		NULL									// hIconSm
 	};
 
@@ -1027,7 +1026,7 @@ void InitializeTray(HINSTANCE hInstance)
 		Tray::WM_NOTIFY_TB																// uCallbackMessage
 	};
 	LoadIconMetric(hInstance, MAKEINTRESOURCE(MAINICON), LIM_LARGE, &run.tray.hIcon);	// hIcon
-	wcscpy_s(run.tray.szTip, App::NAME);										// szTip
+	wcscpy_s(run.tray.szTip, App::NAME);												// szTip
 	#pragma clang diagnostic pop
 
 	ShowWindow(run.tray.hWnd, WM_SHOWWINDOW);
@@ -1058,8 +1057,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	}
 
 	// If the configuration files don't exist, restore the files and show welcome to the users
-	bool accept = CheckAndRunWelcome();
-	if (!accept) {
+	if (!CheckAndRunWelcome()) {
 		return 0;
 	}
 
