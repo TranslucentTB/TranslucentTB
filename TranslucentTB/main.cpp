@@ -135,7 +135,7 @@ HRESULT GetPaths()
 	return ERROR_SUCCESS;
 }
 
-void ApplyStock(LPCWSTR filename)
+void ApplyStock(const wchar_t* filename)
 {
 	wchar_t exeFolder[MAX_PATH];
 	GetModuleFileName(GetModuleHandle(NULL), exeFolder, MAX_PATH);
@@ -155,7 +155,7 @@ void ApplyStock(LPCWSTR filename)
 	CopyFile(stockFile, configFile, FALSE);
 }
 
-void CheckAndRunWelcome()
+bool CheckAndRunWelcome()
 {
 	if (!PathIsDirectory(run.config_folder))
 	{
@@ -167,8 +167,13 @@ void CheckAndRunWelcome()
 		message += L"You can tweak the taskbar's appearance with the tray icon. If it's your cup of tea, you can also edit the configuration files, located at \"";
 		message += run.config_folder;
 		message += '"';
+		message += L"\n\nBy selecting OK and continuing, you agree to the GPLv3 license.";
 
-		MessageBox(NULL, message.c_str(), std::wstring(App::NAME).c_str(), MB_ICONINFORMATION | MB_OK);
+		int choice = MessageBox(NULL, message.c_str(), std::wstring(App::NAME).c_str(), MB_ICONINFORMATION | MB_OKCANCEL);
+		if (choice != IDOK) {
+			run.exit_reason = Tray::UserActionNoSave;
+			return false;
+		}
 	}
 	if (!PathFileExists(run.config_file))
 	{
@@ -178,6 +183,7 @@ void CheckAndRunWelcome()
 	{
 		ApplyStock(Config::EXCLUDE_FILE);
 	}
+	return true;
 }
 
 
@@ -620,7 +626,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 
 bool IsWindowOnCurrentDesktop(HWND hWnd)
 {
-	BOOL on_current_desktop;
+	BOOL on_current_desktop;  // This must be a BOOL not a bool because Windows and C89 are equally stupid
 	return run.desktop_manager && SUCCEEDED(run.desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop)) ? on_current_desktop : true;
 }
 
@@ -1052,7 +1058,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	}
 
 	// If the configuration files don't exist, restore the files and show welcome to the users
-	CheckAndRunWelcome();
+	bool accept = CheckAndRunWelcome();
+	if (!accept) {
+		return 0;
+	}
 
 	// Verify our runtime
 	run.fluent_available = win32::IsAtLeastBuild(17063);

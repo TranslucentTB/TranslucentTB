@@ -3,17 +3,20 @@
 #define UTIL_HPP
 
 #include <algorithm>
-#include <comdef.h>
 #include <cwchar>
+#include <string>
+#include <vector>
+
+#include <comdef.h>
 #include <Processthreadsapi.h>
 #include <Shlobj.h>
 #include <Shlwapi.h>
-#include <string>
 #include <Synchapi.h>
-#include <vector>
 #include <winbase.h>
 #include <windef.h>
 #include <Winuser.h>
+
+#include "app.hpp"
 
 namespace Util {
 
