@@ -100,5 +100,4 @@ namespace Util {
 	}
 }
 
-
 #endif // !UTIL_HPP
