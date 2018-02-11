@@ -29,7 +29,7 @@
 #include "tray.hpp"
 #include "util.hpp"
 #include "win32.hpp"
-#include "app.h"
+#include "app.hpp"
 
 
 #pragma region Structures

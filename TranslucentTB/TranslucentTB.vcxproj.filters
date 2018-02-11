@@ -45,7 +45,7 @@
     <ClInclude Include="swcadata.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="app.h">
+    <ClInclude Include="app.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

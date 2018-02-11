@@ -73,7 +73,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="app.h" />
+    <ClInclude Include="app.hpp" />
     <ClInclude Include="swcadata.hpp" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="resource.h" />
