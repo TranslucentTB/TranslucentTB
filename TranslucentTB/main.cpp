@@ -31,6 +31,7 @@
 #include "util.hpp"
 #include "win32.hpp"
 #include "app.hpp"
+#include "ttberror.hpp"
 
 
 #pragma region Structures
@@ -67,6 +68,7 @@ static struct RUNTIMESTATE
 	wchar_t exclude_file[MAX_PATH];
 	int cache_hits;
 	bool peek_active = false;
+	HWINEVENTHOOK peek_hook;
 } run;
 
 #pragma endregion
@@ -120,21 +122,14 @@ void SetWindowBlur(HWND hWnd, swca::ACCENT appearance = swca::ACCENT_FOLLOW_OPT)
 
 #pragma region Configuration
 
-HRESULT GetPaths()
+void GetPaths()
 {
 	LPWSTR localAppData;
-	HRESULT error = SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_DEFAULT, NULL, &localAppData);
-
-	if (FAILED(error))
-	{
-		return error;
-	}
+	Error::Handle(SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_DEFAULT, NULL, &localAppData), Error::Level::Fatal, L"Failed to determine configuration files locations!");
 
 	PathCombine(run.config_folder, localAppData, App::NAME);
 	PathCombine(run.config_file, run.config_folder, Config::CONFIG_FILE);
 	PathCombine(run.exclude_file, run.config_folder, Config::EXCLUDE_FILE);
-
-	return ERROR_SUCCESS;
 }
 
 void ApplyStock(const wchar_t *filename)
@@ -171,7 +166,7 @@ bool CheckAndRunWelcome()
 		message += '"';
 		message += L"\n\nBy selecting OK and continuing, you agree to the GPLv3 license.";
 
-		if (MessageBox(NULL, message.c_str(), App::NAME, MB_ICONINFORMATION | MB_OKCANCEL) != IDOK)
+		if (MessageBox(NULL, message.c_str(), App::NAME, MB_ICONINFORMATION | MB_OKCANCEL | MB_SETFOREGROUND) != IDOK)
 		{
 			return false;
 		}
@@ -647,7 +642,25 @@ bool IsWindowCloaked(HWND hWnd)
 bool IsSingleInstance()
 {
 	run.app_handle = CreateEvent(NULL, TRUE, FALSE, App::ID);
-	return GetLastError() != ERROR_ALREADY_EXISTS;
+	HRESULT error = GetLastError();
+	switch (error)
+	{
+		case ERROR_ALREADY_EXISTS:
+		{
+			return false;
+		}
+
+		case ERROR_SUCCESS:
+		{
+			return true;
+		}
+
+		default:
+		{
+			Error::Handle(error, Error::Level::Fatal, L"Failed to open app handle!");
+			return true;
+		}
+	}
 }
 
 #pragma endregion
@@ -890,7 +903,7 @@ void SetTaskbarBlur()
 			if (run.app_visibility && SUCCEEDED(run.app_visibility->IsLauncherVisible(&start_visible)) && start_visible)
 			{
 				// TODO: does this works correctly most of the time? (especially multi-monitor)
-				// If not, is a window caption of "Start" reliable to check for (does it works on other UI cultures?)
+				// Is a window caption of "Start" reliable to check for (does it works on other UI cultures?)
 				HWND start = FindWindow(L"Windows.UI.Core.CoreWindow", L"Start");
 				run.taskbars.at(MonitorFromWindow(start, MONITOR_DEFAULTTOPRIMARY)).state = Taskbar::StartMenuOpen;
 			}
@@ -929,46 +942,15 @@ void SetTaskbarBlur()
 
 void InitializeAPIs()
 {
-	HRESULT result;
-	std::wstring buffer;
-
 	if (!SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
 	{
-		result = GetLastError();
-		buffer += L"Initialization of DPI failed. Exception from HRESULT: ";
-		buffer += _com_error(result).ErrorMessage();
-		buffer += '\n';
+		Error::Handle(GetLastError(), Error::Level::Log, L"Setting DPI awareness failed.");
 	}
 
-	if (FAILED(result = Windows::Foundation::Initialize()))
-	{
-		buffer += L"Initialization of UWP failed. Exception from HRESULT: ";
-		buffer += _com_error(result).ErrorMessage();
-		buffer += '\n';
-	}
-
-	if (FAILED(result = CoInitialize(NULL)))
-	{
-		buffer += L"Initialization of COM failed. Exception from HRESULT: ";
-		buffer += _com_error(result).ErrorMessage();
-		buffer += '\n';
-	}
-
-	if (FAILED(result = CoCreateInstance(CLSID_VirtualDesktopManager, NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, reinterpret_cast<LPVOID *>(&run.desktop_manager))))
-	{
-		buffer += L"Initialization of VDM failed. Exception from HRESULT: ";
-		buffer += _com_error(result).ErrorMessage();
-		buffer += '\n';
-	}
-
-	if (FAILED(result = CoCreateInstance(CLSID_AppVisibility, NULL, CLSCTX_INPROC_SERVER, IID_IAppVisibility, reinterpret_cast<LPVOID *>(&run.app_visibility))))
-	{
-		buffer += L"Initialization of IAV failed. Exception from HRESULT: ";
-		buffer += _com_error(result).ErrorMessage();
-		buffer += '\n';
-	}
-
-	OutputDebugString(buffer.c_str());
+	Error::Handle(Windows::Foundation::Initialize(), Error::Level::Log, L"Initialization of UWP failed.");
+	Error::Handle(CoInitialize(NULL), Error::Level::Log, L"Initialization of COM failed.");
+	Error::Handle(CoCreateInstance(CLSID_VirtualDesktopManager, NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, reinterpret_cast<LPVOID *>(&run.desktop_manager)), Error::Level::Log, L"Initialization of IVirtualDesktopManager failed.");
+	Error::Handle(CoCreateInstance(CLSID_AppVisibility, NULL, CLSCTX_INPROC_SERVER, IID_IAppVisibility, reinterpret_cast<LPVOID *>(&run.app_visibility)), Error::Level::Log, L"Initialization of IAppVisibility failed.");
 }
 
 void UninitializeAPIs()
@@ -1028,6 +1010,16 @@ void InitializeTray(HINSTANCE hInstance)
 	RegisterTray();
 }
 
+void Terminate()
+{
+	if (run.peek_hook)
+	{
+		UnhookWinEvent(run.peek_hook);
+	}
+	UninitializeAPIs();
+	exit(1);
+}
+
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int)
 {
 	// If there already is another instance running, tell it to exit
@@ -1039,25 +1031,15 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 
 	// Initialize COM, UWP, set DPI awareness, and acquire a VirtualDesktopManager and AppVisibility interface
 	InitializeAPIs();
+	std::set_terminate(Terminate);
 
 	// Get configuration file paths
-	HRESULT error = GetPaths();
-	if (FAILED(error))
-	{
-		std::wstring message;
-		message += L"Failed to determine configuration files locations!\n\nProgram will exit.\n\nException from HRESULT: ";
-		message += _com_error(error).ErrorMessage();
-
-		MessageBox(NULL, message.c_str(), (std::wstring(App::NAME) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK);
-		UninitializeAPIs();
-		return 1;
-	}
+	GetPaths();
 
 	// If the configuration files don't exist, restore the files and show welcome to the users
 	if (!CheckAndRunWelcome())
 	{
-		UninitializeAPIs();
-		return 0;
+		std::terminate();
 	}
 
 	// Verify our runtime
@@ -1080,7 +1062,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	}
 
 	// Undoc'd, allows to detect when Aero Peek starts and stops
-	HWINEVENTHOOK hook = SetWinEventHook(0x21, 0x22, NULL, HandleAeroPeekEvent, 0, 0, WINEVENT_OUTOFCONTEXT);
+	run.peek_hook = SetWinEventHook(0x21, 0x22, NULL, HandleAeroPeekEvent, 0, 0, WINEVENT_OUTOFCONTEXT);
 
 	// Message loop
 	while (run.run)
@@ -1095,7 +1077,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 
-	UnhookWinEvent(hook);
+	UnhookWinEvent(run.peek_hook);
 
 	// If it's a new instance, don't save or restore taskbar to default
 	if (run.exit_reason != Tray::NewInstance)

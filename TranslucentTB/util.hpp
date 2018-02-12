@@ -14,9 +14,9 @@
 #include <Synchapi.h>
 #include <winbase.h>
 #include <windef.h>
-#include <Winuser.h>
 
 #include "app.hpp"
+#include "ttberror.hpp"
 
 namespace Util {
 
@@ -41,17 +41,7 @@ namespace Util {
 	{
 		// WinAPI reeeeeeeeeeeeeeeeeeeeeeeeee
 		LPWSTR system32;
-		HRESULT error = SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, NULL, &system32);
-		if (FAILED(error))
-		{
-			std::wstring message;
-			message += L"Failed to determine System32 folder location!\n\nException from HRESULT: ";
-			message += _com_error(error).ErrorMessage();
-
-			MessageBox(NULL, message.c_str(), (std::wstring(App::NAME) + L" - Error").c_str(), MB_ICONERROR | MB_OK);
-
-			return;
-		}
+		Error::Handle(SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, NULL, &system32), Error::Level::Error, L"Failed to determine System32 folder location!");
 
 		wchar_t notepad[MAX_PATH];
 		PathCombine(notepad, system32, L"notepad.exe");
@@ -83,12 +73,7 @@ namespace Util {
 		}
 		else
 		{
-			error = GetLastError();
-			std::wstring message;
-			message += L"Failed to start Notepad!\n\nException from HRESULT: ";
-			message += _com_error(error).ErrorMessage();
-
-			MessageBox(NULL, message.c_str(), (std::wstring(App::NAME) + L" - Error").c_str(), MB_ICONERROR | MB_OK);
+			Error::Handle(GetLastError(), Error::Level::Error, L"Failed to start Notepad!");
 		}
 	}
 

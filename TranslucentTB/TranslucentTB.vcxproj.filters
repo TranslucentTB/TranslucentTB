@@ -48,6 +48,9 @@
     <ClInclude Include="app.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ttberror.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TranslucentTB.rc">
