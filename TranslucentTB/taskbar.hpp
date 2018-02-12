@@ -2,6 +2,8 @@
 #ifndef TASKBAR_HPP
 #define TASKBAR_HPP
 
+#include <windef.h>
+
 namespace Taskbar {
 
 	enum TASKBARSTATE {
@@ -18,7 +20,7 @@ namespace Taskbar {
 
 	struct TASKBARPROPERTIES
 	{
-		HMONITOR hmon;
+		HWND hwnd;
 		TASKBARSTATE state;
 	};
 

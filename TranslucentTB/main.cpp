@@ -55,7 +55,7 @@ static struct RUNTIMESTATE
 	IVirtualDesktopManager *desktop_manager = NULL;				// Used to detect if a window is in the current virtual desktop. Don't forget to check for null on this one
 	IAppVisibility *app_visibility = NULL;						// Used to detect if start menu is opened
 	HWND main_taskbar;
-	std::unordered_map<HWND, Taskbar::TASKBARPROPERTIES> taskbars;
+	std::unordered_map<HMONITOR, Taskbar::TASKBARPROPERTIES> taskbars;
 	bool should_show_peek;
 	bool run = true;
 	HMENU tray_popup;
@@ -507,16 +507,15 @@ void RefreshHandles()
 	// Older handles are invalid, so clear the map to be ready for new ones
 	run.taskbars.clear();
 
-	run.main_taskbar = FindWindow(L"Shell_TrayWnd", NULL);
-	_properties.hmon = MonitorFromWindow(run.main_taskbar, MONITOR_DEFAULTTOPRIMARY);
+	_properties.hwnd = run.main_taskbar = FindWindow(L"Shell_TrayWnd", NULL);
 	_properties.state = Taskbar::Normal;
-	run.taskbars.insert(std::make_pair(run.main_taskbar, _properties));
+	run.taskbars.insert(std::make_pair(MonitorFromWindow(run.main_taskbar, MONITOR_DEFAULTTOPRIMARY), _properties));
 
 	while ((secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", NULL)) != 0)
 	{
-		_properties.hmon = MonitorFromWindow(secondtaskbar, MONITOR_DEFAULTTOPRIMARY);
+		_properties.hwnd = secondtaskbar;
 		_properties.state = Taskbar::Normal;
-		run.taskbars.insert(std::make_pair(secondtaskbar, _properties));
+		run.taskbars.insert(std::make_pair(MonitorFromWindow(secondtaskbar, MONITOR_DEFAULTTOPRIMARY), _properties));
 	}
 }
 
@@ -844,22 +843,15 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM)
 	if (IsWindowVisible(hWnd) && IsWindowMaximised(hWnd) && !IsWindowCloaked(hWnd) && !IsWindowBlacklisted(hWnd) && IsWindowOnCurrentDesktop(hWnd))
 	{
 		HMONITOR _monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
-		for (std::pair<const HWND, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
+		Taskbar::TASKBARPROPERTIES &taskbar = run.taskbars.at(_monitor);
+		if (opt.dynamicws)
 		{
-			if (taskbar.second.hmon == _monitor)
-			{
-				if (opt.dynamicws)
-				{
-					taskbar.second.state = Taskbar::WindowMaximised;
-				}
+			taskbar.state = Taskbar::WindowMaximised;
+		}
 
-				if (opt.peek == Taskbar::AEROPEEK::Dynamic && taskbar.first == run.main_taskbar)
-				{
-					run.should_show_peek = true;
-				}
-
-				break;
-			}
+		if (opt.peek == Taskbar::AEROPEEK::Dynamic && taskbar.hwnd == run.main_taskbar)
+		{
+			run.should_show_peek = true;
 		}
 	}
 	return true;
@@ -880,7 +872,7 @@ void SetTaskbarBlur()
 						// than response time.
 		run.should_show_peek = (opt.peek == Taskbar::AEROPEEK::Enabled);
 
-		for (std::pair<const HWND, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
+		for (std::pair<const HMONITOR, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
 		{
 			taskbar.second.state = Taskbar::Normal; // Reset taskbar state
 		}
@@ -899,40 +891,32 @@ void SetTaskbarBlur()
 			{
 				// TODO: does this works correctly most of the time? (especially multi-monitor)
 				// If not, is a window caption of "Start" reliable to check for (does it works on other UI cultures?)
-				HWND start = FindWindow(L"Windows.UI.Core.CoreWindow", NULL);
-				HMONITOR monitor = MonitorFromWindow(start, MONITOR_DEFAULTTOPRIMARY);
-				for (std::pair<const HWND, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
-				{
-					if (taskbar.second.hmon == monitor)
-					{
-						taskbar.second.state = Taskbar::StartMenuOpen;
-						break; // Useless to continue looping, we found what we desired.
-					}
-				}
+				HWND start = FindWindow(L"Windows.UI.Core.CoreWindow", L"Start");
+				run.taskbars.at(MonitorFromWindow(start, MONITOR_DEFAULTTOPRIMARY)).state = Taskbar::StartMenuOpen;
 			}
 		}
 
 		if (opt.dynamicws && opt.dynamicws_peek && run.peek_active)
 		{
-			for (std::pair<const HWND, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
+			for (std::pair<const HMONITOR, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
 			{
 				taskbar.second.state = Taskbar::Normal;
 			}
 		}
 	}
 
-	for (const std::pair<HWND, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
+	for (const std::pair<HMONITOR, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
 	{
 		switch (taskbar.second.state)
 		{
 		case Taskbar::StartMenuOpen:
-			SetWindowBlur(taskbar.first, swca::ACCENT_NORMAL);
+			SetWindowBlur(taskbar.second.hwnd, swca::ACCENT_NORMAL);
 			break;
 		case Taskbar::WindowMaximised:
-			SetWindowBlur(taskbar.first, opt.dynamic_ws_state); // A window is maximised; let's make sure that we blur the taskbar.
+			SetWindowBlur(taskbar.second.hwnd, opt.dynamic_ws_state); // A window is maximised; let's make sure that we blur the taskbar.
 			break;
 		case Taskbar::Normal:
-			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
+			SetWindowBlur(taskbar.second.hwnd);  // Taskbar should be normal, call using normal transparency settings
 			break;
 		}
 	}
@@ -970,14 +954,14 @@ void InitializeAPIs()
 		buffer += '\n';
 	}
 
-	if (FAILED(result = CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, reinterpret_cast<LPVOID *>(&run.desktop_manager))))
+	if (FAILED(result = CoCreateInstance(CLSID_VirtualDesktopManager, NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, reinterpret_cast<LPVOID *>(&run.desktop_manager))))
 	{
 		buffer += L"Initialization of VDM failed. Exception from HRESULT: ";
 		buffer += _com_error(result).ErrorMessage();
 		buffer += '\n';
 	}
 
-	if (FAILED(result = CoCreateInstance(__uuidof(AppVisibility), NULL, CLSCTX_INPROC_SERVER, IID_IAppVisibility, reinterpret_cast<LPVOID *>(&run.app_visibility))))
+	if (FAILED(result = CoCreateInstance(CLSID_AppVisibility, NULL, CLSCTX_INPROC_SERVER, IID_IAppVisibility, reinterpret_cast<LPVOID *>(&run.app_visibility))))
 	{
 		buffer += L"Initialization of IAV failed. Exception from HRESULT: ";
 		buffer += _com_error(result).ErrorMessage();
