@@ -164,9 +164,9 @@ bool CheckAndRunWelcome()
 		message += L"You can tweak the taskbar's appearance with the tray icon. If it's your cup of tea, you can also edit the configuration files, located at \"";
 		message += run.config_folder;
 		message += '"';
-		message += L"\n\nBy selecting OK and continuing, you agree to the GPLv3 license.";
+		message += L"\n\nDo you agree to the GPLv3 license?";
 
-		if (MessageBox(NULL, message.c_str(), App::NAME, MB_ICONINFORMATION | MB_OKCANCEL | MB_SETFOREGROUND) != IDOK)
+		if (MessageBox(NULL, message.c_str(), App::NAME, MB_ICONINFORMATION | MB_YESNO | MB_SETFOREGROUND) != IDYES)
 		{
 			return false;
 		}
