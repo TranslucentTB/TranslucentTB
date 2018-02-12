@@ -1017,11 +1017,21 @@ void Terminate()
 		UnhookWinEvent(run.peek_hook);
 	}
 	UninitializeAPIs();
+	if (run.tray.cbSize)
+	{
+		Shell_NotifyIcon(NIM_DELETE, &run.tray);
+	}
+	if (run.app_handle)
+	{
+		CloseHandle(run.app_handle);
+	}
 	exit(1);
 }
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int)
 {
+	std::set_terminate(Terminate);
+
 	// If there already is another instance running, tell it to exit
 	if (!IsSingleInstance())
 	{
@@ -1031,7 +1041,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 
 	// Initialize COM, UWP, set DPI awareness, and acquire a VirtualDesktopManager and AppVisibility interface
 	InitializeAPIs();
-	std::set_terminate(Terminate);
 
 	// Get configuration file paths
 	GetPaths();
@@ -1077,8 +1086,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 
-	UnhookWinEvent(run.peek_hook);
-
 	// If it's a new instance, don't save or restore taskbar to default
 	if (run.exit_reason != Tray::NewInstance)
 	{
@@ -1096,16 +1103,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 		SetTaskbarBlur();
 	}
 
-	// Close the uniqueness handle to allow other instances to run
-	CloseHandle(run.app_handle);
-
-	// Uninitialize UWP and COM
-	UninitializeAPIs();
-
-	// Notify Explorer we are exiting
-	Shell_NotifyIcon(NIM_DELETE, &run.tray);
-
-	// Exit
+	std::terminate();
 	return 0;
 }
 
