@@ -1025,7 +1025,7 @@ void Terminate()
 	{
 		CloseHandle(run.app_handle);
 	}
-	exit(1);
+	exit(run.run ? 1 : 0);
 }
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int)
