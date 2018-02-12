@@ -146,10 +146,16 @@ void ApplyStock(const wchar_t *filename)
 
 	if (!PathIsDirectory(run.config_folder))
 	{
-		CreateDirectory(run.config_folder, NULL);
+		if (!CreateDirectory(run.config_folder, NULL))
+		{
+			Error::Handle(GetLastError(), Error::Level::Error, L"Creating configuration files directory failed!");
+		}
 	}
 
-	CopyFile(stockFile, configFile, FALSE);
+	if (!CopyFile(stockFile, configFile, FALSE))
+	{
+		Error::Handle(GetLastError(), Error::Level::Error, L"Copying stock configuration file failed!");
+	}
 }
 
 bool CheckAndRunWelcome()

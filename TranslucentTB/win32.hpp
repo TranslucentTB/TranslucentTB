@@ -12,6 +12,7 @@
 
 #include "app.hpp"
 #include "swcadata.hpp"
+#include "ttberror.hpp"
 
 namespace user32 {
 
@@ -32,14 +33,31 @@ namespace win32 {
 
 	bool GetStartupState()
 	{
-		// SUCCEEDED macro considers ERROR_FILE_NOT_FOUND as succeeded ???
-		return RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", App::NAME, RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS;
+		HRESULT error = RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", App::NAME, RRF_RT_REG_SZ, NULL, NULL, NULL);
+		switch (error)
+		{
+			case ERROR_FILE_NOT_FOUND:
+			{
+				return false;
+			}
+
+			case ERROR_SUCCESS:
+			{
+				return true;
+			}
+
+			default:
+			{
+				Error::Handle(error, Error::Level::Log, L"Querying startup state failed.");
+			}
+		}
 	}
 
 	void SetStartupState(bool state)
 	{
 		HKEY hkey;
-		if (SUCCEEDED(RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey))) //Creates a key
+		HRESULT error = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
+		if (Error::Handle(error, Error::Level::Error, L"Opening registry key failed!")) //Creates a key
 		{
 			if (state)
 			{
@@ -48,13 +66,16 @@ namespace win32 {
 				GetModuleFileName(hModule, path, MAX_PATH);
 				PathQuoteSpaces(path);
 
-				RegSetValueEx(hkey, App::NAME, 0, REG_SZ, reinterpret_cast<BYTE *>(path), wcslen(path) * sizeof(wchar_t));
+				error = RegSetValueEx(hkey, App::NAME, 0, REG_SZ, reinterpret_cast<BYTE *>(path), wcslen(path) * sizeof(wchar_t));
+				Error::Handle(error, Error::Level::Error, L"Error while setting startup registry value!");
 			}
 			else
 			{
-				RegDeleteValue(hkey, App::NAME);
+				error = RegDeleteValue(hkey, App::NAME);
+				Error::Handle(error, Error::Level::Error, L"Error while deleting startup registry value!");
 			}
-			RegCloseKey(hkey);
+			error = RegCloseKey(hkey);
+			Error::Handle(error, Error::Level::Log, L"Error closing registry key.");
 		}
 	}
 
