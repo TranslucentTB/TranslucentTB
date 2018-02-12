@@ -49,6 +49,7 @@ namespace win32 {
 			default:
 			{
 				Error::Handle(error, Error::Level::Log, L"Querying startup state failed.");
+				return false;
 			}
 		}
 	}
