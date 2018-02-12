@@ -69,6 +69,11 @@ namespace Error {
 				}
 			}
 
+			if (level == Level::Error)
+			{
+				OutputDebugString(L"\n");
+			}
+
 			return false;
 		}
 		else
