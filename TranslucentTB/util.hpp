@@ -41,7 +41,10 @@ namespace Util {
 	{
 		// WinAPI reeeeeeeeeeeeeeeeeeeeeeeeee
 		LPWSTR system32;
-		Error::Handle(SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, NULL, &system32), Error::Level::Error, L"Failed to determine System32 folder location!");
+		if (!Error::Handle(SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, NULL, &system32), Error::Level::Error, L"Failed to determine System32 folder location!"))
+		{
+			return;
+		}
 
 		wchar_t notepad[MAX_PATH];
 		PathCombine(notepad, system32, L"notepad.exe");

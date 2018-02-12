@@ -19,7 +19,7 @@ namespace Error {
 		Log
 	};
 
-	void Handle(const HRESULT error, const Level level, const std::wstring message)
+	bool Handle(const HRESULT error, const Level level, const std::wstring message)
 	{
 		if (FAILED(error))
 		{
@@ -68,6 +68,12 @@ namespace Error {
 					break;
 				}
 			}
+
+			return false;
+		}
+		else
+		{
+			return true;
 		}
 	}
 }
