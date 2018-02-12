@@ -10,7 +10,7 @@ namespace Taskbar {
 		StartMenuOpen		// The Start Menu is open on the monitor this HWND is in. Display as it would be without TranslucentTB active.
 	};
 
-	enum AEROPEEKSTATE {
+	enum class AEROPEEK {
 		Disabled,		// Hide the button
 		Dynamic,		// Show when a window is maximised
 		Enabled			// Don't hide the button

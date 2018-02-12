@@ -37,13 +37,13 @@
 
 static struct OPTIONS
 {
-	swca::ACCENTSTATE taskbar_appearance = swca::ACCENT_ENABLE_BLURBEHIND;
+	swca::ACCENT taskbar_appearance = swca::ACCENT_ENABLE_BLURBEHIND;
 	uint32_t color = 0x00000000;
 	bool dynamicws = false;
-	swca::ACCENTSTATE dynamic_ws_state = swca::ACCENT_ENABLE_BLURBEHIND;	// State to activate when a window is maximised
+	swca::ACCENT dynamic_ws_state = swca::ACCENT_ENABLE_BLURBEHIND;	// State to activate when a window is maximised
 	bool dynamicws_peek = true;												// Whether to use the normal style when using Aero Peek
 	bool dynamicstart = false;
-	Taskbar::AEROPEEKSTATE peek = Taskbar::Enabled;
+	Taskbar::AEROPEEK peek = Taskbar::AEROPEEK::Enabled;
 	std::vector<std::wstring> blacklisted_classes;
 	std::vector<std::wstring> blacklisted_filenames;
 	std::vector<std::wstring> blacklisted_titles;
@@ -73,7 +73,7 @@ static struct RUNTIMESTATE
 
 #pragma region That one function that does all the magic
 
-void SetWindowBlur(HWND hWnd, swca::ACCENTSTATE appearance = swca::ACCENT_FOLLOW_OPT)
+void SetWindowBlur(HWND hWnd, swca::ACCENT appearance = swca::ACCENT_FOLLOW_OPT)
 {
 	if (user32::SetWindowCompositionAttribute)
 	{
@@ -290,11 +290,11 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 	{
 		if (value == L"hide")
 		{
-			opt.peek = Taskbar::Disabled;
+			opt.peek = Taskbar::AEROPEEK::Disabled;
 		}
 		else if (value == L"dynamic")
 		{
-			opt.peek = Taskbar::Dynamic;
+			opt.peek = Taskbar::AEROPEEK::Dynamic;
 		}
 	}
 	else if (arg == L"dynamic-ws-normal-on-peek")
@@ -431,10 +431,10 @@ void SaveConfigFile()
 		configstream << L"peek=";
 		switch (opt.peek)
 		{
-		case Taskbar::Disabled:
+		case Taskbar::AEROPEEK::Disabled:
 			configstream << L"hide";
 			break;
-		case Taskbar::Dynamic:
+		case Taskbar::AEROPEEK::Dynamic:
 			configstream << L"dynamic";
 			break;
 		default:
@@ -777,13 +777,13 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM
 				break;
 			}
 			case IDM_PEEK:
-				opt.peek = Taskbar::Enabled;
+				opt.peek = Taskbar::AEROPEEK::Enabled;
 				break;
 			case IDM_DPEEK:
-				opt.peek = Taskbar::Dynamic;
+				opt.peek = Taskbar::AEROPEEK::Dynamic;
 				break;
 			case IDM_NOPEEK:
-				opt.peek = Taskbar::Disabled;
+				opt.peek = Taskbar::AEROPEEK::Disabled;
 				break;
 			case IDM_AUTOSTART: // TODO: Use UWP Apis
 				win32::SetStartupState(!win32::GetStartupState());
@@ -853,7 +853,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM)
 					taskbar.second.state = Taskbar::WindowMaximised;
 				}
 
-				if (opt.peek == Taskbar::Dynamic && taskbar.first == run.main_taskbar)
+				if (opt.peek == Taskbar::AEROPEEK::Dynamic && taskbar.first == run.main_taskbar)
 				{
 					run.should_show_peek = true;
 				}
@@ -878,13 +878,13 @@ void SetTaskbarBlur()
 	{					// 100 = 1 second; we use 10, because the difference is less noticeable and it has
 						// no large impact on CPU. We can change this if we feel that CPU is more important
 						// than response time.
-		run.should_show_peek = (opt.peek == Taskbar::Enabled);
+		run.should_show_peek = (opt.peek == Taskbar::AEROPEEK::Enabled);
 
 		for (std::pair<const HWND, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
 		{
 			taskbar.second.state = Taskbar::Normal; // Reset taskbar state
 		}
-		if (opt.dynamicws || opt.peek == Taskbar::Dynamic)
+		if (opt.dynamicws || opt.peek == Taskbar::AEROPEEK::Dynamic)
 		{
 			counter = 0;
 			EnumWindows(&EnumWindowsProcess, NULL);
@@ -1090,7 +1090,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 	RefreshHandles();
 
 	// Scan windows to start taskbar with the correct mode immediatly
-	if (opt.dynamicws || opt.peek == Taskbar::Dynamic)
+	if (opt.dynamicws || opt.peek == Taskbar::AEROPEEK::Dynamic)
 	{
 		EnumWindows(&EnumWindowsProcess, NULL);
 	}
@@ -1124,7 +1124,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 
 		// Restore default taskbar appearance
 		opt.taskbar_appearance = swca::ACCENT_NORMAL;
-		opt.peek = Taskbar::Enabled;
+		opt.peek = Taskbar::AEROPEEK::Enabled;
 		opt.dynamicstart = false;
 		opt.dynamicws = false;
 		SetTaskbarBlur();

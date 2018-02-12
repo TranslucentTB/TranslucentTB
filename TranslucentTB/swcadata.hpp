@@ -6,7 +6,7 @@
 
 namespace swca {
 
-	enum ACCENTSTATE {								// Values passed to SetWindowCompositionAttribute determining the appearance of a window
+	enum ACCENT {									// Values passed to SetWindowCompositionAttribute determining the appearance of a window
 		ACCENT_ENABLE_GRADIENT = 1,					// Use a solid color specified by nColor. This mode doesn't care about the alpha channel.
 		ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,		// Use a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
 		ACCENT_ENABLE_BLURBEHIND = 3,				// Use a tinted blurry overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
@@ -25,7 +25,7 @@ namespace swca {
 
 	struct ACCENTPOLICY					// Determines how a window's transparent region will be painted
 	{
-		ACCENTSTATE nAccentState;		// Appearance
+		ACCENT nAccentState;			// Appearance
 		int nFlags;						// Nobody knows how this value works
 		uint32_t nColor;				// A color in the hex format AABBGGRR
 		int nAnimationId;				// Nobody knows how this value works
