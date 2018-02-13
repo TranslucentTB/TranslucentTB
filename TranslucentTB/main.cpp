@@ -1,5 +1,6 @@
 // Standard API
 #include <chrono>
+#include <ctime>
 #include <cwchar>
 #include <cwctype>
 #include <fstream>
@@ -32,6 +33,7 @@
 #include "win32.hpp"
 #include "app.hpp"
 #include "ttberror.hpp"
+#include "ttblog.hpp"
 
 
 #pragma region Structures
@@ -148,13 +150,13 @@ void ApplyStock(const wchar_t *filename)
 	{
 		if (!CreateDirectory(run.config_folder, NULL))
 		{
-			Error::Handle(GetLastError(), Error::Level::Error, L"Creating configuration files directory failed!");
+			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Creating configuration files directory failed!");
 		}
 	}
 
 	if (!CopyFile(stockFile, configFile, FALSE))
 	{
-		Error::Handle(GetLastError(), Error::Level::Error, L"Copying stock configuration file failed!");
+		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Copying stock configuration file failed!");
 	}
 }
 
@@ -500,6 +502,29 @@ void ParseBlacklistFile()
 
 #pragma region Utilities
 
+void StartLogger()
+{
+	wchar_t log_folder[MAX_PATH];
+
+	PathCombine(log_folder, run.config_folder, L"Logs");
+
+	if (!PathIsDirectory(log_folder))
+	{
+		if (!CreateDirectory(log_folder, NULL))
+		{
+			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Creating log files directory failed!");
+		}
+	}
+
+	wchar_t log_file[MAX_PATH];
+
+	std::time_t unix_epoch = std::time(0);
+	std::wstring log_filename = std::to_wstring(unix_epoch) + L".log";
+
+	PathCombine(log_file, log_folder, log_filename.c_str());
+	Log::Instance = new Logger(log_file);
+}
+
 void RefreshHandles()
 {
 	HWND secondtaskbar = NULL;
@@ -648,7 +673,7 @@ bool IsWindowCloaked(HWND hWnd)
 bool IsSingleInstance()
 {
 	run.app_handle = CreateEvent(NULL, TRUE, FALSE, App::ID);
-	HRESULT error = GetLastError();
+	LRESULT error = GetLastError();
 	switch (error)
 	{
 		case ERROR_ALREADY_EXISTS:
@@ -663,7 +688,7 @@ bool IsSingleInstance()
 
 		default:
 		{
-			Error::Handle(error, Error::Level::Fatal, L"Failed to open app handle!");
+			Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Fatal, L"Failed to open app handle!");
 			return true;
 		}
 	}
@@ -915,6 +940,15 @@ void SetTaskbarBlur()
 			}
 		}
 
+		//if (true)
+		//{
+		//	HWND task_view = FindWindow(L"Windows.UI.Core.CoreWindow", L"Task view");
+		//	if (task_view == GetForegroundWindow())
+		//	{
+		//		run.taskbars.at(MonitorFromWindow(task_view, MONITOR_DEFAULTTOPRIMARY)).state = Taskbar::StartMenuOpen;
+		//	}
+		//}
+
 		if (opt.dynamicws && opt.dynamicws_peek && run.peek_active)
 		{
 			for (std::pair<const HMONITOR, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
@@ -948,11 +982,6 @@ void SetTaskbarBlur()
 
 void InitializeAPIs()
 {
-	if (!SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
-	{
-		Error::Handle(GetLastError(), Error::Level::Log, L"Setting DPI awareness failed.");
-	}
-
 	Error::Handle(Windows::Foundation::Initialize(), Error::Level::Log, L"Initialization of UWP failed.");
 	Error::Handle(CoInitialize(NULL), Error::Level::Log, L"Initialization of COM failed.");
 	Error::Handle(CoCreateInstance(CLSID_VirtualDesktopManager, NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, reinterpret_cast<LPVOID *>(&run.desktop_manager)), Error::Level::Log, L"Initialization of IVirtualDesktopManager failed.");
@@ -1031,13 +1060,15 @@ void Terminate()
 	{
 		CloseHandle(run.app_handle);
 	}
+	if (Log::Instance)
+	{
+		delete Log::Instance;
+	}
 	exit(run.run ? 1 : 0);
 }
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int)
 {
-	std::set_terminate(Terminate);
-
 	// If there already is another instance running, tell it to exit
 	if (!IsSingleInstance())
 	{
@@ -1045,17 +1076,28 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 		SendMessage(oldInstance, Tray::NEW_TTB_INSTANCE, NULL, NULL);
 	}
 
-	// Initialize COM, UWP, set DPI awareness, and acquire a VirtualDesktopManager and AppVisibility interface
-	InitializeAPIs();
+	// Set our exit handler
+	std::set_terminate(Terminate);
 
 	// Get configuration file paths
 	GetPaths();
+
+	// Set DPI awareness before showing the welcome dialog
+	if (!SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
+	{
+		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Setting DPI awareness failed.");
+	}
 
 	// If the configuration files don't exist, restore the files and show welcome to the users
 	if (!CheckAndRunWelcome())
 	{
 		std::terminate();
 	}
+
+	StartLogger();
+
+	// Initialize COM, UWP, and acquire a VirtualDesktopManager and AppVisibility interface
+	InitializeAPIs();
 
 	// Verify our runtime
 	run.fluent_available = win32::IsAtLeastBuild(17063);

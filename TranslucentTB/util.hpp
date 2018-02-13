@@ -76,7 +76,7 @@ namespace Util {
 		}
 		else
 		{
-			Error::Handle(GetLastError(), Error::Level::Error, L"Failed to start Notepad!");
+			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to start Notepad!");
 		}
 	}
 

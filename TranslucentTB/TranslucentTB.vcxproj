@@ -80,6 +80,7 @@
     <ClInclude Include="taskbar.hpp" />
     <ClInclude Include="tray.hpp" />
     <ClInclude Include="ttberror.hpp" />
+    <ClInclude Include="ttblog.hpp" />
     <ClInclude Include="util.hpp" />
     <ClInclude Include="win32.hpp" />
   </ItemGroup>

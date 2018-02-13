@@ -10,6 +10,7 @@
 #include <winuser.h>
 
 #include "app.hpp"
+#include "ttblog.hpp"
 
 namespace Error {
 
@@ -39,14 +40,12 @@ namespace Error {
 			}
 
 			std::wstring logbuffer;
-			if (level != Level::Fatal)
-			{
-				logbuffer += message;
-				logbuffer += ' ';
-				logbuffer += L"Exception from HRESULT: ";
-				logbuffer += _com_error(error).ErrorMessage();
-				logbuffer += '\n';
-			}
+			logbuffer += message;
+			logbuffer += ' ';
+			logbuffer += L"Exception from HRESULT: ";
+			logbuffer += _com_error(error).ErrorMessage();
+			logbuffer += '\n';
+			Log::OutputMessage(logbuffer);
 
 			switch (level)
 			{

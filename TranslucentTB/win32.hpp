@@ -33,7 +33,7 @@ namespace win32 {
 
 	bool GetStartupState()
 	{
-		HRESULT error = RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", App::NAME, RRF_RT_REG_SZ, NULL, NULL, NULL);
+		LRESULT error = RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", App::NAME, RRF_RT_REG_SZ, NULL, NULL, NULL);
 		switch (error)
 		{
 			case ERROR_FILE_NOT_FOUND:
@@ -48,7 +48,7 @@ namespace win32 {
 
 			default:
 			{
-				Error::Handle(error, Error::Level::Log, L"Querying startup state failed.");
+				Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup state failed.");
 				return false;
 			}
 		}
@@ -57,8 +57,8 @@ namespace win32 {
 	void SetStartupState(bool state)
 	{
 		HKEY hkey;
-		HRESULT error = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
-		if (Error::Handle(error, Error::Level::Error, L"Opening registry key failed!")) //Creates a key
+		LRESULT error = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
+		if (Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Opening registry key failed!")) //Creates a key
 		{
 			if (state)
 			{
@@ -68,15 +68,15 @@ namespace win32 {
 				PathQuoteSpaces(path);
 
 				error = RegSetValueEx(hkey, App::NAME, 0, REG_SZ, reinterpret_cast<BYTE *>(path), wcslen(path) * sizeof(wchar_t));
-				Error::Handle(error, Error::Level::Error, L"Error while setting startup registry value!");
+				Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while setting startup registry value!");
 			}
 			else
 			{
 				error = RegDeleteValue(hkey, App::NAME);
-				Error::Handle(error, Error::Level::Error, L"Error while deleting startup registry value!");
+				Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while deleting startup registry value!");
 			}
 			error = RegCloseKey(hkey);
-			Error::Handle(error, Error::Level::Log, L"Error closing registry key.");
+			Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Error closing registry key.");
 		}
 	}
 
@@ -85,7 +85,7 @@ namespace win32 {
 		if (ntdll::RtlGetVersion)
 		{
 			RTL_OSVERSIONINFOW versionInfo;
-			ntdll::RtlGetVersion(&versionInfo);
+			Error::Handle(HRESULT_FROM_NT(ntdll::RtlGetVersion(&versionInfo)), Error::Level::Log, L"Error obtaining version info.");
 			return versionInfo.dwBuildNumber >= buildNumber;
 		}
 		else
