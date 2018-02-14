@@ -48,19 +48,35 @@ Logger::~Logger()
 
 void Log::OutputMessage(std::wstring message)
 {
+	static std::wstring messages_before_init;
+
+	std::time_t current_time = std::time(0);
+
+	std::wstring buffer;
+	buffer += '(';
+	buffer += _wctime(&current_time);
+	buffer = buffer.substr(0, buffer.length() - 1);
+	buffer += L") ";
+	buffer += message;
+
 	if (Instance)
 	{
-		std::time_t current_time = std::time(0);
-
-		std::wstring buffer;
-		buffer += '(';
-		buffer += _wctime(&current_time);
-		buffer = buffer.substr(0, buffer.length() - 1);
-		buffer += L") ";
-		buffer += message;
-
+		if (!messages_before_init.empty())
+		{
+			// Remove last new line
+			messages_before_init = messages_before_init.substr(0, messages_before_init.length() - 1);
+			Instance->Log(messages_before_init);
+			messages_before_init.clear();
+		}
 		Instance->Log(buffer);
 	}
+	else
+	{
+		messages_before_init += buffer;
+		messages_before_init += '\n';
+	}
+
+	OutputDebugString(message.c_str());
 }
 
 #endif // !TTBLOG_HPP

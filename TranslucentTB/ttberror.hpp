@@ -44,7 +44,6 @@ namespace Error {
 			logbuffer += ' ';
 			logbuffer += L"Exception from HRESULT: ";
 			logbuffer += _com_error(error).ErrorMessage();
-			logbuffer += '\n';
 			Log::OutputMessage(logbuffer);
 
 			switch (level)
@@ -59,11 +58,6 @@ namespace Error {
 				case Level::Error:
 				{
 					MessageBox(NULL, boxbuffer.c_str(), (std::wstring(App::NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
-				}
-
-				case Level::Log:
-				{
-					OutputDebugString(logbuffer.c_str());
 					break;
 				}
 			}
