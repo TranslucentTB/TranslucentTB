@@ -5,6 +5,7 @@
 #include <cwctype>
 #include <fstream>
 #include <iomanip>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <unordered_map>
@@ -215,6 +216,10 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		{
 			opt.taskbar_appearance = swca::ACCENT_ENABLE_FLUENT;
 		}
+		else
+		{
+			Log::OutputMessage(L"Unknown value found in configuration file: " + value);
+		}
 	}
 	else if (arg == L"dynamic-ws")
 	{
@@ -247,12 +252,20 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 			opt.dynamicws = true;
 			opt.dynamic_ws_state = swca::ACCENT_ENABLE_FLUENT;
 		}
+		else
+		{
+			Log::OutputMessage(L"Unknown value found in configuration file: " + value);
+		}
 	}
 	else if (arg == L"dynamic-start")
 	{
 		if (value == L"true" || value == L"enable")
 		{
 			opt.dynamicstart = true;
+		}
+		else
+		{
+			Log::OutputMessage(L"Unknown value found in configuration file: " + value);
 		}
 	}
 	else if (arg == L"color" || arg == L"tint")
@@ -299,6 +312,10 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		{
 			opt.peek = Taskbar::AEROPEEK::Dynamic;
 		}
+		else
+		{
+			Log::OutputMessage(L"Unknown value found in configuration file: " + value);
+		}
 	}
 	else if (arg == L"dynamic-ws-normal-on-peek")
 	{
@@ -306,6 +323,14 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		{
 			opt.dynamicws_peek = true;
 		}
+		else
+		{
+			Log::OutputMessage(L"Unknown value found in configuration file: " + value);
+		}
+	}
+	else
+	{
+		Log::OutputMessage(L"Unknown key found in configuration file: " + arg);
 	}
 }
 
@@ -315,22 +340,33 @@ void ParseConfigFile()
 
 	for (std::wstring line; std::getline(configstream, line); )
 	{
+		if (line.empty())
+		{
+			continue;
+		}
+
 		// Skip comments
 		size_t comment_index = line.find(L';');
 		if (comment_index == 0)
 		{
 			continue;
 		}
-		else
+		else if (comment_index != std::wstring::npos)
 		{
 			line = line.substr(0, comment_index);
 		}
 
 		size_t split_index = line.find(L'=');
-		std::wstring key = line.substr(0, split_index);
-		std::wstring val = line.substr(split_index + 1, line.length() - split_index - 1);
-
-		ParseSingleConfigOption(key, val);
+		if (split_index != std::wstring::npos)
+		{
+			std::wstring key = line.substr(0, split_index);
+			std::wstring val = line.substr(split_index + 1, line.length() - split_index - 1);
+			ParseSingleConfigOption(key, val);
+		}
+		else
+		{
+			Log::OutputMessage(L"Invalid line in configuration file");
+		}
 	}
 }
 
@@ -462,12 +498,17 @@ void ParseBlacklistFile()
 
 	for (std::wstring line; std::getline(excludesfilestream, line); )
 	{
+		if (line.empty())
+		{
+			continue;
+		}
+
 		size_t comment_index = line.find(L';');
 		if (comment_index == 0)
 		{
 			continue;
 		}
-		else
+		else if (comment_index != std::wstring::npos)
 		{
 			line = line.substr(0, comment_index);
 		}
@@ -494,6 +535,10 @@ void ParseBlacklistFile()
 		else if (line_lowercase.substr(0, 7) == L"exename")
 		{
 			Util::AddValuesToVectorByDelimiter(delimiter, opt.blacklisted_filenames, line_lowercase);
+		}
+		else
+		{
+			Log::OutputMessage(L"Invalid line in dynamic window blacklist file");
 		}
 	}
 }
@@ -527,6 +572,10 @@ void StartLogger()
 
 void RefreshHandles()
 {
+	if (Config::VERBOSE)
+	{
+		Log::OutputMessage(L"Refreshing taskbar handles");
+	}
 	HWND secondtaskbar = NULL;
 	Taskbar::TASKBARPROPERTIES _properties;
 
@@ -574,6 +623,40 @@ void ClearBlacklistCache()
 	run.cache_hits = Config::CACHE_HIT_MAX + 1;
 }
 
+std::wstring GetWindowTitle(HWND hwnd)
+{
+	int titleSize = GetWindowTextLength(hwnd) + 1; // For the null terminator
+	std::vector<wchar_t> windowTitleBuffer(titleSize);
+	GetWindowText(hwnd, windowTitleBuffer.data(), titleSize);
+	return windowTitleBuffer.data();
+}
+
+void OutputBlacklistMatchToLog(HWND hwnd, bool match)
+{
+	if (Config::VERBOSE)
+	{
+		wchar_t className[MAX_PATH];
+		GetClassName(hwnd, className, _countof(className));
+		std::wstring classNameString(className);
+
+		std::wstring title = GetWindowTitle(hwnd);
+
+		DWORD ProcessId;
+		GetWindowThreadProcessId(hwnd, &ProcessId);
+
+		wchar_t exeName_path[MAX_PATH];
+		GetModuleFileNameEx(OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId), NULL, exeName_path, _countof(exeName_path));
+
+		std::wstring exeName = PathFindFileName(exeName_path);
+
+		std::wstringstream message;
+		message << (match ? L"Blacklist match found for window: " : L"No blacklist match found for window: ");
+		message << hwnd << L" [" << classNameString << L"] [" << exeName << L"] [" << title << L"]";
+
+		Log::OutputMessage(message.str());
+	}
+}
+
 bool IsWindowBlacklisted(HWND hWnd)
 {
 	static std::unordered_map<HWND, bool> blacklist_cache;
@@ -587,6 +670,10 @@ bool IsWindowBlacklisted(HWND hWnd)
 	{
 		if (run.cache_hits > Config::CACHE_HIT_MAX)
 		{
+			if (Config::VERBOSE)
+			{
+				Log::OutputMessage(L"Maximum number of " + std::to_wstring(Config::CACHE_HIT_MAX) + L" cache hits reached, clearing blacklist cache.");
+			}
 			run.cache_hits = 0;
 			blacklist_cache.clear();
 		}
@@ -601,6 +688,7 @@ bool IsWindowBlacklisted(HWND hWnd)
 			{
 				if (classNameString == value)
 				{
+					OutputBlacklistMatchToLog(hWnd, true);
 					return blacklist_cache[hWnd] = true;
 				}
 			}
@@ -611,15 +699,13 @@ bool IsWindowBlacklisted(HWND hWnd)
 		// If it ends up affecting stuff, we can remove it from caching easily.
 		if (opt.blacklisted_titles.size() > 0)
 		{
-			int titleSize = GetWindowTextLength(hWnd) + 1; // For the null terminator
-			std::vector<wchar_t> windowTitleBuffer(titleSize);
-			GetWindowText(hWnd, windowTitleBuffer.data(), titleSize);
-			std::wstring windowTitle = windowTitleBuffer.data();
+			std::wstring windowTitle = GetWindowTitle(hWnd);
 
 			for (const std::wstring &value : opt.blacklisted_titles)
 			{
 				if (windowTitle.find(value) != std::wstring::npos)
 				{
+					OutputBlacklistMatchToLog(hWnd, true);
 					return blacklist_cache[hWnd] = true;
 				}
 			}
@@ -641,11 +727,13 @@ bool IsWindowBlacklisted(HWND hWnd)
 			{
 				if (exeName == value)
 				{
+					OutputBlacklistMatchToLog(hWnd, true);
 					return blacklist_cache[hWnd] = true;
 				}
 			}
 		}
 
+		OutputBlacklistMatchToLog(hWnd, false);
 		return blacklist_cache[hWnd] = false;
 	}
 }
@@ -731,6 +819,7 @@ void RefreshMenu()
 	CheckPopupItem(IDM_DYNAMICWS, opt.dynamicws);
 	CheckPopupItem(IDM_DYNAMICSTART, opt.dynamicstart);
 	CheckPopupItem(IDM_AUTOSTART, win32::GetStartupState());
+	CheckPopupItem(IDM_VERBOSE, Config::VERBOSE);
 }
 
 void RegisterTray()
@@ -845,12 +934,19 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM
 				ApplyStock(Config::EXCLUDE_FILE);
 			case IDM_RELOADDYNAMICBLACKLIST:
 				ParseBlacklistFile();
+			case IDM_CLEARBLACKLISTCACHE:
 				ClearBlacklistCache();
 				break;
 			case IDM_EDITDYNAMICBLACKLIST:
 				Util::EditFile(run.exclude_file);
 				ParseBlacklistFile();
 				ClearBlacklistCache();
+				break;
+			case IDM_OPENLOG:
+				Util::EditFile(Log::File);
+				break;
+			case IDM_VERBOSE:
+				Config::VERBOSE = !Config::VERBOSE;
 				break;
 			case IDM_EXITWITHOUTSAVING:
 				run.exit_reason = Tray::UserActionNoSave;
