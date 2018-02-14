@@ -31,7 +31,6 @@ namespace Log {
 Logger::Logger(std::wstring file_path)
 {
 	log_stream = new std::wofstream(file_path);
-	Log::File = file_path;
 }
 
 void Logger::Log(std::wstring message)

@@ -568,6 +568,7 @@ void StartLogger()
 
 	PathCombine(log_file, log_folder, log_filename.c_str());
 	Log::Instance = new Logger(log_file);
+	Log::File = log_file;
 }
 
 void RefreshHandles()
