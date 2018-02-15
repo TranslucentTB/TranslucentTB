@@ -19,7 +19,7 @@ TranslucentTB supports multiple taskbar states and dynamic taskbar states.
  - **Taskbar states** (choose one):
    - **Blur**: Will make the taskbar slightly blurred.
    - **Clear**: Transparent taskbar.
-   - **Normal**: Classic Windows style.
+   - **Normal**: Regular Windows style.
    - **Opaque**: No transparency.
    - **Fluent**: Windows Insider build higher than 17063 only. Will give the taskbar an appearance similar to Microsoft's Fluent Design guidelines.
  - **Dynamic** modes (these can be used together):
@@ -33,7 +33,7 @@ You can see it in action [here](https://gfycat.com/EverlastingCreamyIlladopsis) 
 ## Download
 
 You can download the program (prebuilt executables and source snapshots) [via the releases tab](https://github.com/TranslucentTB/TranslucentTB/releases).
-If you want to get the latest bleedging edge build, you can grab it over at the [AppVeyor artifacts](https://ci.appveyor.com/project/sylveon/translucenttb/build/artifacts). Note that these build may not work, or include features that are partially complete. Use at your own risk.
+If you want to get the latest bleeding edge build, you can grab it over at the [AppVeyor artifacts](https://ci.appveyor.com/project/sylveon/translucenttb/build/artifacts). Note that these build may not work, or include features that are partially complete. Use at your own risk.
 
 ## Add to Startup
 
@@ -63,20 +63,20 @@ Resolving deltas: 100% (624/624), done.
 You can also download a zip archive of each branch by clicking on the `Clone or download` button while browsing that branch's files.
 
 Now that you have the source, you will need Visual Studio 2017. [You can get the free community edition here](https://www.visualstudio.com/vs/community/).
-You will also need the Visual Studio _2015_ C++ Build Tools (v140); **The VS 2017 Build Tools will not work with Clang.** [They can be downloaded here,](http://landinghub.visualstudio.com/visual-cpp-build-tools) or you can check the `VC++ 2015.3 v140 toolset for desktop` option in the VS2017 installer.
+You also need to check the `VC++ 2015.3 v140 toolset for desktop` option in the VS2017 installer.
 
-You also need the [Clang compiler for Windows](http://releases.llvm.org/download.html). Install this after you install the VS2015 Build Tools.
+You also need the [Clang compiler for Windows](http://releases.llvm.org/download.html).
 
-Once you have that installed (make sure you have the C++ components and Windows SDK 10.0.16299 installed). Then you can open TranslucentTB.sln, and press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to build the solution.
+Once you have that installed (make sure you have the C++ components and the Windows SDK version 10.0.16299 installed). Then you can open TranslucentTB.sln, and press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to build the solution.
 The output will be in either the Release or Debug folder (depending on which configuration is currently active).
 
-If you don't want to open Visual Studio (or install it), you can install the [Visual C++ Build Tools](http://landinghub.visualstudio.com/visual-cpp-build-tools), the [Windows SDK](https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk) version 10.0.16299 and the [Clang compiler for Windows](http://releases.llvm.org/download.html). The C++ build tools and Windows SDK are already included in Visual Studio.
+If you don't want to install Visual Studio, you can install the [Visual C++ 2015 Build Tools](http://landinghub.visualstudio.com/visual-cpp-build-tools), the [Windows SDK](https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk) version 10.0.16299 and the [Clang compiler for Windows](http://releases.llvm.org/download.html). You can also follow the instructions below if you have Visual Studio installed (with the requirements listed earlier) but don't want to open it.
 
 Then open the `Visual C++ MSBuild Command Prompt` (or `Developer Command Prompt for VS 2017`) and `cd` into the root directory of this project, before running `msbuild /p:Configuration=Release`.
 
 ## Thanks
 
-TTB is a team effort! It is the result of the collective efforts of many people:
+TranslucentTB is a team effort! It is the result of the collective efforts of many people:
  - [@ethanhs](https://github.com/ethanhs),
  - [@sylveon](https://github.com/sylveon),
  - [@MrAksel](https://github.com/MrAksel),
@@ -94,10 +94,10 @@ The code has been slightly changed to fix a few bugs, warnings and errors in new
 
 If you are looking for something that modifies more than just the taskbar, there are several programs out there.
 
-[Taskbar Tools](https://github.com/Elestriel/TaskbarTools) is a similar program written in C#. Please note that it seems to be unmaintaned.
+[Taskbar Tools](https://github.com/Elestriel/TaskbarTools) is a similar program written in C#. However, it seems to be unmaintaned.
 
 You may have seen similar translucency abilities from programs such as StartIsBack, Start10 and the now defunct Classic Shell. All of these are great programs, but I don't need the start-replacement features, so I wrote this.
-Also, Dynamic States allow for more customisability over the taskbar.
+TranslucentTB also allows for more customizability over the taskbar.
 
 ### License
 
