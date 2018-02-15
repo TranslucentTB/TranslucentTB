@@ -63,8 +63,9 @@ Resolving deltas: 100% (624/624), done.
 You can also download a zip archive of each branch by clicking on the `Clone or download` button while browsing that branch's files.
 
 Now that you have the source, you will need Visual Studio 2017. [You can get the free community edition here](https://www.visualstudio.com/vs/community/).
+You will also need the Visual Studio _2015_ C++ Build Tools; **The VS 2017 Build Tools will not work with Clang.** [They can be downloaded here.](http://landinghub.visualstudio.com/visual-cpp-build-tools)
 
-You also need the [Clang compiler for Windows](http://releases.llvm.org/download.html).
+You also need the [Clang compiler for Windows](http://releases.llvm.org/download.html). Install this after you install the VS2015 Build Tools.
 
 Once you have that installed (make sure you have the C++ components and Windows SDK 10.0.16299 installed). Then you can open TranslucentTB.sln, and press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to build the solution.
 The output will be in either the Release or Debug folder (depending on which configuration is currently active).
@@ -75,12 +76,12 @@ Then open the `Visual C++ MSBuild Command Prompt` (or `Developer Command Prompt 
 
 ## Thanks
 
-I definitely could not have done this without the help of several people:
-
+TTB is a team effort! It is the result of the collective efforts of many people:
+ - [@ethanhs](https://github.com/ethanhs),
  - [@sylveon](https://github.com/sylveon),
  - [@MrAksel](https://github.com/MrAksel),
- - [@olliethepikachu](https://github.com/olliethepikachu),
- - and last but certainly not least [@PFCKrutonium](https://github.com/PFCKrutonium).
+ - [@denosawr](https://github.com/denosawr),
+ - [@PFCKrutonium](https://github.com/PFCKrutonium).
 
 If you would like to contribute, everyone is welcome to! If you are considering a major feature, need guidance, 
 or want to talk an idea out, don't hesitate to jump on Discord or Gitter (see the badges on the top of the README), or file an issue here. The main contributors are often on Discord, Gitter and GitHub, so we should reply fairly quickly.
@@ -93,10 +94,10 @@ The code has been slightly changed to fix a few bugs, warnings and errors in new
 
 If you are looking for something that modifies more than just the taskbar, there are several programs out there.
 
-[Taskbar Tools](https://github.com/Elestriel/TaskbarTools) is a similar program written in C#.
+[Taskbar Tools](https://github.com/Elestriel/TaskbarTools) is a similar program written in C#. Please note that it seems to be unmaintaned.
 
 You may have seen similar translucency abilities from programs such as StartIsBack, Start10 and the now defunct Classic Shell. All of these are great programs, but I don't need the start-replacement features, so I wrote this.
-Also Dynamic States allow for more customisability over the taskbar.
+Also, Dynamic States allow for more customisability over the taskbar.
 
 ### License
 
