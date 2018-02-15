@@ -11,16 +11,21 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
 		Release|x86 = Release|x86
+		Store|x86 = Store|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{59F844AA-8D3C-431C-B8CC-57682915F551}.Debug|x86.ActiveCfg = Debug|Win32
 		{59F844AA-8D3C-431C-B8CC-57682915F551}.Debug|x86.Build.0 = Debug|Win32
 		{59F844AA-8D3C-431C-B8CC-57682915F551}.Release|x86.ActiveCfg = Release|Win32
 		{59F844AA-8D3C-431C-B8CC-57682915F551}.Release|x86.Build.0 = Release|Win32
+		{59F844AA-8D3C-431C-B8CC-57682915F551}.Store|x86.ActiveCfg = Store|Win32
+		{59F844AA-8D3C-431C-B8CC-57682915F551}.Store|x86.Build.0 = Store|Win32
 		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Debug|x86.ActiveCfg = Debug|Win32
 		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Debug|x86.Build.0 = Debug|Win32
 		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Release|x86.ActiveCfg = Release|Win32
 		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Release|x86.Build.0 = Release|Win32
+		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Store|x86.ActiveCfg = Release|Win32
+		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Store|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

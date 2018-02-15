@@ -15,7 +15,9 @@
 #include <comdef.h>
 #include <dwmapi.h>
 #include <psapi.h>
+#ifdef STORE
 #include <roapi.h>
+#endif
 #include <shellapi.h>
 #include <ShellScalingAPI.h>
 #include <ShlObj.h>
@@ -1079,7 +1081,9 @@ void SetTaskbarBlur()
 
 void InitializeAPIs()
 {
+#ifdef STORE
 	Error::Handle(Windows::Foundation::Initialize(), Error::Level::Log, L"Initialization of UWP failed.");
+#endif
 	Error::Handle(CoInitialize(NULL), Error::Level::Log, L"Initialization of COM failed.");
 	Error::Handle(CoCreateInstance(CLSID_VirtualDesktopManager, NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, reinterpret_cast<LPVOID *>(&run.desktop_manager)), Error::Level::Log, L"Initialization of IVirtualDesktopManager failed.");
 	Error::Handle(CoCreateInstance(CLSID_AppVisibility, NULL, CLSCTX_INPROC_SERVER, IID_IAppVisibility, reinterpret_cast<LPVOID *>(&run.app_visibility)), Error::Level::Log, L"Initialization of IAppVisibility failed.");
@@ -1088,7 +1092,9 @@ void InitializeAPIs()
 void UninitializeAPIs()
 {
 	CoUninitialize();
+#ifdef STORE
 	Windows::Foundation::Uninitialize();
+#endif
 }
 
 void InitializeTray(HINSTANCE hInstance)

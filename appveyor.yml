@@ -1,6 +1,7 @@
 version: 'Build #{build}'
 image: Visual Studio 2017
 configuration:
+- Store
 - Release
 - Debug
 platform: x86
