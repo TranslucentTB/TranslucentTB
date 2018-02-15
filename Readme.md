@@ -63,7 +63,7 @@ Resolving deltas: 100% (624/624), done.
 You can also download a zip archive of each branch by clicking on the `Clone or download` button while browsing that branch's files.
 
 Now that you have the source, you will need Visual Studio 2017. [You can get the free community edition here](https://www.visualstudio.com/vs/community/).
-You will also need the Visual Studio _2015_ C++ Build Tools; **The VS 2017 Build Tools will not work with Clang.** [They can be downloaded here.](http://landinghub.visualstudio.com/visual-cpp-build-tools)
+You will also need the Visual Studio _2015_ C++ Build Tools (v140); **The VS 2017 Build Tools will not work with Clang.** [They can be downloaded here,](http://landinghub.visualstudio.com/visual-cpp-build-tools) or you can check the `VC++ 2015.3 v140 toolset for desktop` option in the VS2017 installer.
 
 You also need the [Clang compiler for Windows](http://releases.llvm.org/download.html). Install this after you install the VS2015 Build Tools.
 
