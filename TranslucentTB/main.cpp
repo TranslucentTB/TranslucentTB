@@ -15,12 +15,14 @@
 #include <comdef.h>
 #include <dwmapi.h>
 #include <psapi.h>
-#ifdef STORE
-#include <roapi.h>
-#endif
 #include <shellapi.h>
 #include <ShellScalingAPI.h>
 #include <ShlObj.h>
+
+// UWP startup API
+#ifdef STORE
+#include <roapi.h>
+#endif
 
 // For the context menu
 #include "resource.h"
@@ -99,7 +101,7 @@ void SetWindowBlur(HWND hWnd, swca::ACCENT appearance = swca::ACCENT_FOLLOW_OPT)
 			}
 			else
 			{
-				policy = { appearance, 2, opt.color, 0 };
+				policy = { appearance, 2, color, 0 };
 			}
 		}
 		else // Use the defaults
@@ -1082,7 +1084,7 @@ void SetTaskbarBlur()
 void InitializeAPIs()
 {
 #ifdef STORE
-	Error::Handle(Windows::Foundation::Initialize(), Error::Level::Log, L"Initialization of UWP failed.");
+	Error::Handle(ABI::Windows::Foundation::Initialize(), Error::Level::Log, L"Initialization of UWP failed.");
 #endif
 	Error::Handle(CoInitialize(NULL), Error::Level::Log, L"Initialization of COM failed.");
 	Error::Handle(CoCreateInstance(CLSID_VirtualDesktopManager, NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, reinterpret_cast<LPVOID *>(&run.desktop_manager)), Error::Level::Log, L"Initialization of IVirtualDesktopManager failed.");
@@ -1093,7 +1095,7 @@ void UninitializeAPIs()
 {
 	CoUninitialize();
 #ifdef STORE
-	Windows::Foundation::Uninitialize();
+	ABI::Windows::Foundation::Uninitialize();
 #endif
 }
 
