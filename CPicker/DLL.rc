@@ -7,7 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "windows.h"
+#include "winres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -17,7 +17,6 @@
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -32,7 +31,7 @@ END
 
 2 TEXTINCLUDE 
 BEGIN
-    "#include ""afxres.h""\r\n"
+    "#include ""winres.h""\r\n"
     "\0"
 END
 
@@ -153,16 +152,6 @@ BEGIN
     0
 END
 
-#endif    // English (United States) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Italian (Italy) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ITA)
-LANGUAGE LANG_ITALIAN, SUBLANG_ITALIAN
-#pragma code_page(1252)
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -178,7 +167,7 @@ VS_VERSION_INFO VERSIONINFO
 #else
  FILEFLAGS 0x0L
 #endif
- FILEOS 0x4L
+ FILEOS 0x40004L
  FILETYPE 0x2L
  FILESUBTYPE 0x0L
 BEGIN
@@ -187,12 +176,13 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "Comments", "A simple colour picker dialog complete with RGB/HSV and alpha selection."
-            VALUE "FileDescription", "Colour Picker Dialog"
+            VALUE "CompanyName", "by nICO (chick80@libero.it) - 2004.  Modified by TranslucentTB devs"
+            VALUE "FileDescription", "Color Picker Dialog"
             VALUE "FileVersion", "1.0"
-            VALUE "InternalName", "CPicker"
-            VALUE "LegalCopyright", "by nICO (chick80@libero.it) - 2004"
+            VALUE "InternalName", "CPicker.dll"
+            VALUE "LegalCopyright", "by nICO (chick80@libero.it) - 2004. Modified by TranslucentTB devs"
             VALUE "OriginalFilename", "CPicker.dll"
-            VALUE "ProductName", "Colour Picker Dialog"
+            VALUE "ProductName", "Color Picker Dialog"
             VALUE "ProductVersion", "1.0"
         END
     END
@@ -202,7 +192,7 @@ BEGIN
     END
 END
 
-#endif    // Italian (Italy) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
