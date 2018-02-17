@@ -49,7 +49,7 @@ static struct OPTIONS
 	uint32_t color = 0x00000000;
 	bool dynamicws = false;
 	swca::ACCENT dynamic_ws_state = swca::ACCENT_ENABLE_BLURBEHIND;	// State to activate when a window is maximised
-	bool dynamicws_peek = true;												// Whether to use the normal style when using Aero Peek
+	bool dynamicws_peek = true;										// Whether to use the normal style when using Aero Peek
 	bool dynamicstart = false;
 	Taskbar::AEROPEEK peek = Taskbar::AEROPEEK::Enabled;
 	std::vector<std::wstring> blacklisted_classes;
@@ -82,7 +82,7 @@ static struct RUNTIMESTATE
 
 #pragma region That one function that does all the magic
 
-void SetWindowBlur(HWND hWnd, swca::ACCENT appearance = swca::ACCENT_FOLLOW_OPT)
+void SetWindowBlur(const HWND &hWnd, const swca::ACCENT &appearance = swca::ACCENT_FOLLOW_OPT)
 {
 	if (user32::SetWindowCompositionAttribute)
 	{
@@ -95,6 +95,14 @@ void SetWindowBlur(HWND hWnd, swca::ACCENT appearance = swca::ACCENT_FOLLOW_OPT)
 			{
 				policy = { swca::ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, color, 0 };
 			}
+			if (appearance == swca::ACCENT_ENABLE_BLUR_TINTED)
+			{
+				policy = { swca::ACCENT_ENABLE_BLURBEHIND, 2, color, 0 };
+			}
+			if (appearance == swca::ACCENT_ENABLE_FLUENT_TINTED)
+			{
+				policy = { swca::ACCENT_ENABLE_FLUENT, 2, color, 0 };
+			}
 			else if (appearance == swca::ACCENT_NORMAL)
 			{
 				policy = { (run.fluent_available ? swca::ACCENT_ENABLE_FLUENT : swca::ACCENT_ENABLE_TRANSPARENTGRADIENT), 2, 0x99000000, 0 };
@@ -106,7 +114,7 @@ void SetWindowBlur(HWND hWnd, swca::ACCENT appearance = swca::ACCENT_FOLLOW_OPT)
 		}
 		else // Use the defaults
 		{
-			if (opt.dynamic_ws_state == swca::ACCENT_ENABLE_TINTED) // dynamic-ws is tint and desktop is shown
+			if (opt.dynamic_ws_state == swca::ACCENT_ENABLE_TINTED || opt.dynamic_ws_state == swca::ACCENT_ENABLE_BLUR_TINTED || opt.dynamic_ws_state == swca::ACCENT_ENABLE_FLUENT_TINTED) // dynamic-ws is tint and desktop is shown
 			{
 				policy = { swca::ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 };
 			}
@@ -256,6 +264,16 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 			opt.dynamicws = true;
 			opt.dynamic_ws_state = swca::ACCENT_ENABLE_FLUENT;
 		}
+		else if (value == L"tint-blur")
+		{
+			opt.dynamicws = true;
+			opt.dynamic_ws_state = swca::ACCENT_ENABLE_BLUR_TINTED;
+		}
+		else if (value == L"tint-fluent" && run.fluent_available)
+		{
+			opt.dynamicws = true;
+			opt.dynamic_ws_state = swca::ACCENT_ENABLE_FLUENT_TINTED;
+		}
 		else
 		{
 			Log::OutputMessage(L"Unknown value found in configuration file: " + value);
@@ -382,7 +400,7 @@ void SaveConfigFile()
 		using namespace std;
 		wofstream configstream(configfile);
 
-		configstream << L"; Taskbar appearance: opaque, clear, normal, or blur (default)." << endl;
+		configstream << L"; Taskbar appearance: fluent, opaque, clear, normal, or blur (default)." << endl;
 
 		configstream << L"accent=";
 		switch (opt.taskbar_appearance)
@@ -409,7 +427,7 @@ void SaveConfigFile()
 
 		configstream << endl;
 		configstream << L"; Dynamic states: Window States and Start Menu" << endl;
-		configstream << L"; dynamic windows: opaque, tint, normal, or blur (default)." << endl;
+		configstream << L"; dynamic windows: normal, fluent, opaque, tint, tint-blur, tint-fluent, normal, or blur (default)." << endl;
 		configstream << L"; dynamic windows can be used in conjunction with a custom color and non-zero opacity!" << endl;
 		configstream << L"; by enabling dynamic-ws-normal-on-peek, dynamic windows will return to the normal non-maximised state when using Aero Peek." << endl;
 		configstream << L"; you can also set an accent value, which will represent the state of dynamic windows when there is no window maximised" << endl;
@@ -427,6 +445,12 @@ void SaveConfigFile()
 			break;
 		case swca::ACCENT_ENABLE_TINTED:
 			configstream << L"tint";
+			break;
+		case swca::ACCENT_ENABLE_BLUR_TINTED:
+			configstream << L"tint-blur";
+			break;
+		case swca::ACCENT_ENABLE_FLUENT_TINTED:
+			configstream << L"tint-fluent";
 			break;
 		case swca::ACCENT_ENABLE_GRADIENT:
 			configstream << L"opaque";
@@ -813,13 +837,14 @@ void RefreshMenu()
 	CheckPopupRadioItem(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_FLUENT, Tray::DYNAMIC_BUTTON_MAP.at(opt.dynamic_ws_state));
 	CheckPopupRadioItem(IDM_PEEK, IDM_NOPEEK, Tray::PEEK_BUTTON_MAP.at(opt.peek));
 
-	for (const uint32_t &item : { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, IDM_DYNAMICWS_NORMAL, IDM_DYNAMICWS_OPAQUE, IDM_DYNAMICWS_PEEK })
+	for (const uint32_t &item : { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_TINTED, IDM_DYNAMICWS_NORMAL, IDM_DYNAMICWS_OPAQUE, IDM_DYNAMICWS_PEEK, IDM_DYNAMICWS_BLUR_TINTED, IDM_DYNAMICWS_FLUENT_TINTED })
 	{
 		EnablePopupItem(item, opt.dynamicws);
 	}
 
 	EnablePopupItem(IDM_FLUENT, run.fluent_available);
 	EnablePopupItem(IDM_DYNAMICWS_FLUENT, opt.dynamicws && run.fluent_available);
+	EnablePopupItem(IDM_DYNAMICWS_FLUENT_TINTED, opt.dynamicws && run.fluent_available);
 	CheckPopupItem(IDM_DYNAMICWS_PEEK, opt.dynamicws_peek);
 	CheckPopupItem(IDM_DYNAMICWS, opt.dynamicws);
 	CheckPopupItem(IDM_DYNAMICSTART, opt.dynamicstart);
@@ -874,8 +899,14 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM
 			case IDM_DYNAMICWS_BLUR:
 				opt.dynamic_ws_state = swca::ACCENT_ENABLE_BLURBEHIND;
 				break;
-			case IDM_DYNAMICWS_CLEAR:
+			case IDM_DYNAMICWS_TINTED:
 				opt.dynamic_ws_state = swca::ACCENT_ENABLE_TINTED;
+				break;
+			case IDM_DYNAMICWS_BLUR_TINTED:
+				opt.dynamic_ws_state = swca::ACCENT_ENABLE_BLUR_TINTED;
+				break;
+			case IDM_DYNAMICWS_FLUENT_TINTED:
+				opt.dynamic_ws_state = swca::ACCENT_ENABLE_FLUENT_TINTED;
 				break;
 			case IDM_DYNAMICWS_NORMAL:
 				opt.dynamic_ws_state = swca::ACCENT_NORMAL;

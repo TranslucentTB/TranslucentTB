@@ -14,7 +14,9 @@ namespace swca {
 
 		ACCENT_FOLLOW_OPT = 149,					// (Fake value) Use the value in opt.taskbar_appearance
 		ACCENT_ENABLE_TINTED = 150,					// (Fake value) Dynamic windows tinted
-		ACCENT_NORMAL = 151							// (Fake value) Emulate regular taskbar appearance
+		ACCENT_ENABLE_BLUR_TINTED = 151,			// (Fake value) Dynamic windows tinted + blurred
+		ACCENT_ENABLE_FLUENT_TINTED = 152,			// (Fake value) Dynamic windows tinted + fluent
+		ACCENT_NORMAL = 153							// (Fake value) Emulate regular taskbar appearance
 	};
 
 	enum WindowCompositionAttribute {				// Possible kinds of data sent to SetWindowCompositionAttribute
