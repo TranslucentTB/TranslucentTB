@@ -51,7 +51,7 @@ static struct OPTIONS
 	swca::ACCENT dynamic_ws_state = swca::ACCENT_ENABLE_BLURBEHIND;	// State to activate when a window is maximised
 	bool dynamicws_peek = true;												// Whether to use the normal style when using Aero Peek
 	bool dynamicstart = false;
-	int refresh_rate = 10;
+	uint16_t refresh_rate = 10;
 	Taskbar::AEROPEEK peek = Taskbar::AEROPEEK::Enabled;
 	std::vector<std::wstring> blacklisted_classes;
 	std::vector<std::wstring> blacklisted_filenames;
