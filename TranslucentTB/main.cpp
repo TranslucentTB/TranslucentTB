@@ -51,6 +51,7 @@ static struct OPTIONS
 	swca::ACCENT dynamic_ws_state = swca::ACCENT_ENABLE_BLURBEHIND;	// State to activate when a window is maximised
 	bool dynamicws_peek = true;												// Whether to use the normal style when using Aero Peek
 	bool dynamicstart = false;
+	int refresh_rate = 10;
 	Taskbar::AEROPEEK peek = Taskbar::AEROPEEK::Enabled;
 	std::vector<std::wstring> blacklisted_classes;
 	std::vector<std::wstring> blacklisted_filenames;
@@ -223,6 +224,18 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		else
 		{
 			Log::OutputMessage(L"Unknown value found in configuration file: " + value);
+		}
+	}
+	else if (arg == L"refresh-rate")
+	{
+		try
+		{
+			int refresh_rate = std::stoi(value);
+			opt.refresh_rate = refresh_rate;
+		}
+		catch (const std::invalid_argument& e)
+		{
+			Log::OutputMessage(L"Unknown non-integer refresh rate found in configuration file.");
 		}
 	}
 	else if (arg == L"dynamic-ws")
@@ -1236,7 +1249,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 			DispatchMessage(&msg);
 		}
 		SetTaskbarBlur();
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(opt.refresh_rate));
 	}
 
 	// If it's a new instance, don't save or restore taskbar to default
