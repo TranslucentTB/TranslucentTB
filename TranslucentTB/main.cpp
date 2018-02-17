@@ -86,49 +86,55 @@ void SetWindowBlur(const HWND &hWnd, const swca::ACCENT &appearance = swca::ACCE
 {
 	if (user32::SetWindowCompositionAttribute)
 	{
-		swca::ACCENTPOLICY policy;
-		uint32_t color = (opt.color & 0xFF00FF00) + ((opt.color & 0x00FF0000) >> 16) + ((opt.color & 0x000000FF) << 16);
+		swca::ACCENTPOLICY policy = {
+			appearance == swca::ACCENT_FOLLOW_OPT ? opt.taskbar_appearance : appearance,
+			2,
+			(opt.color & 0xFF00FF00) + ((opt.color & 0x00FF0000) >> 16) + ((opt.color & 0x000000FF) << 16),
+			0
+		};
 
-		if (appearance != swca::ACCENT_FOLLOW_OPT) // Custom taskbar appearance is set
+		// Handle fake values
+		if (policy.nAccentState == swca::ACCENT_NORMAL)
 		{
-			if (appearance == swca::ACCENT_ENABLE_TINTED) // Window is maximised
-			{
-				policy = { swca::ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, color, 0 };
-			}
-			if (appearance == swca::ACCENT_ENABLE_BLUR_TINTED)
-			{
-				policy = { swca::ACCENT_ENABLE_BLURBEHIND, 2, color, 0 };
-			}
-			if (appearance == swca::ACCENT_ENABLE_FLUENT_TINTED)
-			{
-				policy = { swca::ACCENT_ENABLE_FLUENT, 2, color, 0 };
-			}
-			else if (appearance == swca::ACCENT_NORMAL)
-			{
-				policy = { (run.fluent_available ? swca::ACCENT_ENABLE_FLUENT : swca::ACCENT_ENABLE_TRANSPARENTGRADIENT), 2, 0x99000000, 0 };
-			}
-			else
-			{
-				policy = { appearance, 2, color, 0 };
-			}
+			policy.nAccentState = run.fluent_available ? swca::ACCENT_ENABLE_FLUENT : swca::ACCENT_ENABLE_TRANSPARENTGRADIENT;
+			policy.nColor = 0x99000000;
 		}
-		else // Use the defaults
+		else if (policy.nAccentState == swca::ACCENT_ENABLE_TINTED)
 		{
-			if (opt.dynamic_ws_state == swca::ACCENT_ENABLE_TINTED || opt.dynamic_ws_state == swca::ACCENT_ENABLE_BLUR_TINTED || opt.dynamic_ws_state == swca::ACCENT_ENABLE_FLUENT_TINTED) // dynamic-ws is tint and desktop is shown
+			policy.nAccentState = swca::ACCENT_ENABLE_TRANSPARENTGRADIENT;
+		}
+		else if (policy.nAccentState == swca::ACCENT_ENABLE_FLUENT_TINTED)
+		{
+			policy.nAccentState = swca::ACCENT_ENABLE_FLUENT;
+		}
+		else if (policy.nAccentState == swca::ACCENT_ENABLE_BLUR_TINTED)
+		{
+			policy.nAccentState = swca::ACCENT_ENABLE_BLURBEHIND;
+		}
+
+		// Dynamic windows is enabled and desktop is shown
+		if (opt.dynamicws && appearance == swca::ACCENT_FOLLOW_OPT)
+		{
+			// One of the tint modes is enabled, so set taskbar as completely transparent
+			if (opt.dynamic_ws_state == swca::ACCENT_ENABLE_TINTED || opt.dynamic_ws_state == swca::ACCENT_ENABLE_BLUR_TINTED || opt.dynamic_ws_state == swca::ACCENT_ENABLE_FLUENT_TINTED)
 			{
-				policy = { swca::ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 };
-			}
-			else if (opt.taskbar_appearance == swca::ACCENT_NORMAL) // normal gradient color
-			{
-				policy = { (run.fluent_available ? swca::ACCENT_ENABLE_FLUENT : swca::ACCENT_ENABLE_TRANSPARENTGRADIENT), 2, 0x99000000, 0 };
-			}
-			else
-			{
-				policy = { opt.taskbar_appearance, 2, color, 0 };
+				policy.nAccentState = swca::ACCENT_ENABLE_TRANSPARENTGRADIENT;
+				policy.nColor = 0x00000000;
 			}
 		}
 
-		swca::WINCOMPATTRDATA data = { swca::WCA_ACCENT_POLICY, &policy, sizeof(policy) };
+		// Fluent mode doesn't likes a completely 0 opacity
+		if (policy.nAccentState == swca::ACCENT_ENABLE_FLUENT && policy.nColor >> 24 == 0x00)
+		{
+			policy.nColor = (0x01 << 24) + (policy.nColor & 0x00FFFFFF);
+		}
+
+		swca::WINCOMPATTRDATA data = {
+			swca::WCA_ACCENT_POLICY,
+			&policy,
+			sizeof(policy)
+		};
+
 		user32::SetWindowCompositionAttribute(hWnd, &data);
 	}
 }
@@ -834,17 +840,30 @@ void RefreshMenu()
 {
 	// This block of CheckPopupRadioItem might throw, but if that happens we just need to update the map, or something really fucked up happened
 	CheckPopupRadioItem(IDM_BLUR, IDM_FLUENT, Tray::NORMAL_BUTTON_MAP.at(opt.taskbar_appearance));
-	CheckPopupRadioItem(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_FLUENT, Tray::DYNAMIC_BUTTON_MAP.at(opt.dynamic_ws_state));
+	CheckPopupRadioItem(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_BLUR_TINTED, Tray::DYNAMIC_BUTTON_MAP.at(opt.dynamic_ws_state));
 	CheckPopupRadioItem(IDM_PEEK, IDM_NOPEEK, Tray::PEEK_BUTTON_MAP.at(opt.peek));
 
-	for (const uint32_t &item : { IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_TINTED, IDM_DYNAMICWS_NORMAL, IDM_DYNAMICWS_OPAQUE, IDM_DYNAMICWS_PEEK, IDM_DYNAMICWS_BLUR_TINTED, IDM_DYNAMICWS_FLUENT_TINTED })
+	for (const std::pair<swca::ACCENT, uint32_t> &kvp : Tray::DYNAMIC_BUTTON_MAP)
 	{
-		EnablePopupItem(item, opt.dynamicws);
+		EnablePopupItem(kvp.second, opt.dynamicws);
 	}
-
+	EnablePopupItem(IDM_DYNAMICWS_PEEK, opt.dynamicws);
 	EnablePopupItem(IDM_FLUENT, run.fluent_available);
 	EnablePopupItem(IDM_DYNAMICWS_FLUENT, opt.dynamicws && run.fluent_available);
 	EnablePopupItem(IDM_DYNAMICWS_FLUENT_TINTED, opt.dynamicws && run.fluent_available);
+
+	if (opt.dynamicws)
+	{
+		if (opt.dynamic_ws_state == swca::ACCENT_ENABLE_TINTED || opt.dynamic_ws_state == swca::ACCENT_ENABLE_BLUR_TINTED || opt.dynamic_ws_state == swca::ACCENT_ENABLE_FLUENT_TINTED)
+		{
+			for (const std::pair<swca::ACCENT, uint32_t> &kvp : Tray::NORMAL_BUTTON_MAP)
+			{
+				// The tint modes takes over the normal appearance
+				EnablePopupItem(kvp.second, false);
+			}
+		}
+	}
+
 	CheckPopupItem(IDM_DYNAMICWS_PEEK, opt.dynamicws_peek);
 	CheckPopupItem(IDM_DYNAMICWS, opt.dynamicws);
 	CheckPopupItem(IDM_DYNAMICSTART, opt.dynamicstart);
