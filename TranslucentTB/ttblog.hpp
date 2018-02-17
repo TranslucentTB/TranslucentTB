@@ -10,8 +10,8 @@
 class Logger {
 
 public:
-	Logger(std::wstring file_path);
-	void Log(std::wstring message);
+	Logger(const std::wstring &file_path);
+	void Log(const std::wstring &message);
 	~Logger();
 
 private:
@@ -19,21 +19,22 @@ private:
 
 };
 
+
 namespace Log {
 	static ::Logger *Instance;
 	static std::wstring File;
 
-	void OutputMessage(std::wstring message);
+	void OutputMessage(const std::wstring &message);
 }
 
 
 
-Logger::Logger(std::wstring file_path)
+Logger::Logger(const std::wstring &file_path)
 {
 	log_stream = new std::wofstream(file_path);
 }
 
-void Logger::Log(std::wstring message)
+void Logger::Log(const std::wstring &message)
 {
 	*log_stream << message << std::endl;
 }
@@ -46,7 +47,7 @@ Logger::~Logger()
 }
 
 
-void Log::OutputMessage(std::wstring message)
+void Log::OutputMessage(const std::wstring &message)
 {
 	static std::wstring messages_before_init;
 
@@ -76,7 +77,7 @@ void Log::OutputMessage(std::wstring message)
 		messages_before_init += '\n';
 	}
 
-	OutputDebugString(message.c_str());
+	OutputDebugString((message + L"\n").c_str());
 }
 
 #endif // !TTBLOG_HPP
