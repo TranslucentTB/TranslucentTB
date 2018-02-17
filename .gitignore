@@ -244,3 +244,4 @@ ModelManifest.xml
 # Visual Studio Code configuration
 .vscode/
 *.lnk
+[Ss]tore/
