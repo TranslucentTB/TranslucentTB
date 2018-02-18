@@ -28,7 +28,7 @@
 #include "resource.h"
 
 // For the color picker
-#include "../CPicker/CPicker.h"
+#include "../CPicker/CPickerDll.h"
 
 #include "swcadata.hpp"
 #include "config.hpp"

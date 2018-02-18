@@ -28,8 +28,7 @@ CColourPicker::CColourPicker(HWND hParentWindow, unsigned short r, unsigned shor
 
 void CColourPicker::CreateColourPicker()
 {
-	DialogBoxParam(GetModuleHandle(L"CPicker.dll"), MAKEINTRESOURCE(IDD_COLORPICKER), hParent,
-		(DLGPROC)ColourPickerDlgProc, (LPARAM)this);
+	DialogBoxParam(GetModuleHandle(L"CPicker.dll"), MAKEINTRESOURCE(IDD_COLORPICKER), hParent, (DLGPROC)ColourPickerDlgProc, (LPARAM)this);
 }
 
 void CColourPicker::SetRGB(unsigned short r, unsigned short g, unsigned short b)

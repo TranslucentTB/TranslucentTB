@@ -2,7 +2,7 @@
 #ifndef __CPICKER_H
 #define __CPICKER_H
 
-#include <dwmapi.h>
+#include <windows.h>
 #include "CPickerDll.h"
 
 // Just some useful macros...
