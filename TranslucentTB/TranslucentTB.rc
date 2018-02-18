@@ -65,6 +65,8 @@ BEGIN
     BEGIN
         POPUP "Regular State"
         BEGIN
+            MENUITEM "Accent Color",                IDM_COLOR
+            MENUITEM SEPARATOR
             MENUITEM "Blur",                        IDM_BLUR
             MENUITEM "Clear",                       IDM_CLEAR
             MENUITEM "Normal",                      IDM_NORMAL
@@ -75,6 +77,7 @@ BEGIN
         BEGIN
             MENUITEM "Enabled",                     IDM_DYNAMICWS
             MENUITEM "Regular state when peeking",  IDM_DYNAMICWS_PEEK
+            MENUITEM "Accent Color",                IDM_DYNAMICWS_COLOR
             MENUITEM SEPARATOR
             MENUITEM "Blur",                        IDM_DYNAMICWS_BLUR
             MENUITEM "Tinted",                      IDM_DYNAMICWS_TINTED
@@ -84,7 +87,6 @@ BEGIN
             MENUITEM "Opaque",                      IDM_DYNAMICWS_OPAQUE
             MENUITEM "Fluent",                      IDM_DYNAMICWS_FLUENT
         END
-        MENUITEM "Accent Color",                IDM_COLOR
         MENUITEM SEPARATOR
         MENUITEM "Dynamic Start",               IDM_DYNAMICSTART
         POPUP "Show Aero Peek"

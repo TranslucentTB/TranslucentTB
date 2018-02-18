@@ -36,13 +36,14 @@
 #define IDM_CLEARBLACKLISTCACHE         40020
 #define IDM_OPENLOG                     40021
 #define IDM_VERBOSE                     40022
+#define IDM_DYNAMICWS_COLOR             40023
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        104
-#define _APS_NEXT_COMMAND_VALUE         40023
+#define _APS_NEXT_COMMAND_VALUE         40024
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

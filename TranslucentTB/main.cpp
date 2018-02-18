@@ -52,6 +52,7 @@ static struct OPTIONS
 	swca::ACCENT dynamic_ws_state = swca::ACCENT_ENABLE_BLURBEHIND;	// State to activate when a window is maximised
 	bool dynamicws_peek = true;										// Whether to use the normal style when using Aero Peek
 	bool dynamicstart = false;
+	uint32_t dynamicwscolor = 0x00000000;
 	uint16_t sleep_time = 10;
 	Taskbar::AEROPEEK peek = Taskbar::AEROPEEK::Enabled;
 	std::vector<std::wstring> blacklisted_classes;
@@ -84,14 +85,15 @@ static struct RUNTIMESTATE
 
 #pragma region That one function that does all the magic
 
-void SetWindowBlur(const HWND &hWnd, const swca::ACCENT &appearance = swca::ACCENT_FOLLOW_OPT)
+void SetWindowBlur(const HWND &hWnd, const swca::ACCENT &appearance = swca::ACCENT_FOLLOW_OPT, const uint64_t &color = 0x100000000)
 {
 	if (user32::SetWindowCompositionAttribute)
 	{
+		uint32_t override_color = color == 0x100000000 ? opt.color : color;
 		swca::ACCENTPOLICY policy = {
 			appearance == swca::ACCENT_FOLLOW_OPT ? opt.taskbar_appearance : appearance,
 			2,
-			(opt.color & 0xFF00FF00) + ((opt.color & 0x00FF0000) >> 16) + ((opt.color & 0x000000FF) << 16),
+			(override_color & 0xFF00FF00) + ((override_color & 0x00FF0000) >> 16) + ((override_color & 0x000000FF) << 16),
 			0
 		};
 
@@ -340,6 +342,32 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 			Log::OutputMessage(L"Could not parse color found in configuration file: " + value + L" (after processing: " + color_value + L")");
 		}
 	}
+	else if (arg == L"dynamic-ws-color")
+	{
+		std::wstring color_value = Util::Trim(value);
+
+		if (color_value.find(L'#') == 0)
+		{
+			color_value = color_value.substr(1, color_value.length() - 1);
+		}
+
+		// Get only the last 6 characters, keeps compatibility with old version.
+		// It stored AARRGGBB in color, but now we store it as RRGGBB.
+		// We read AA from opacity instead, which the old version also saved alpha to.
+		if (color_value.length() > 6)
+		{
+			color_value = color_value.substr(color_value.length() - 6, 6);
+		}
+
+		try
+		{
+			opt.dynamicwscolor = std::stoi(color_value, static_cast<size_t *>(0), 16);
+		}
+		catch (const std::invalid_argument &e)
+		{
+			Log::OutputMessage(L"Could not parse dynamic windows color found in configuration file: " + value + L" (after processing: " + color_value + L")");
+		}
+	}
 	else if (arg == L"opacity")
 	{
 		int parsed;
@@ -363,6 +391,30 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		}
 
 		opt.color = (parsed << 24) + (opt.color & 0x00FFFFFF);
+	}
+	else if (arg == L"dynamic-ws-opacity")
+	{
+		int parsed;
+		try
+		{
+			parsed = std::stoi(value);
+		}
+		catch (const std::invalid_argument &e)
+		{
+			Log::OutputMessage(L"Could not parse dynamic windows opacity found in configuration file: " + value);
+			return;
+		}
+
+		if (parsed < 0)
+		{
+			parsed = 0;
+		}
+		else if (parsed > 255)
+		{
+			parsed = 255;
+		}
+
+		opt.dynamicwscolor = (parsed << 24) + (opt.dynamicwscolor & 0x00FFFFFF);
 	}
 	else if (arg == L"peek")
 	{
@@ -477,11 +529,12 @@ void SaveConfigFile()
 		configstream << endl;
 
 		configstream << endl;
-		configstream << L"; Dynamic states: Window States and Start Menu" << endl;
-		configstream << L"; dynamic windows: normal, fluent, opaque, tint, tint-blur, tint-fluent, normal, or blur (default)." << endl;
-		configstream << L"; dynamic windows can be used in conjunction with a custom color and non-zero opacity!" << endl;
-		configstream << L"; by enabling dynamic-ws-normal-on-peek, dynamic windows will return to the normal non-maximised state when using Aero Peek." << endl;
-		configstream << L"; you can also set an accent value, which will represent the state of dynamic windows when there is no window maximised" << endl;
+		configstream << L"; Dynamic Windows and Start Menu" << endl;
+		configstream << L"; Available states are: normal, fluent, opaque, tint, tint-blur, tint-fluent, normal, or blur (default)." << endl;
+		configstream << L"; dynamic windows has its own color and opacity configs." << endl;
+		configstream << L"; by enabling dynamic-ws-normal-on-peek, dynamic windows will behave as if no window is maximised when using Aero Peek." << endl;
+		configstream << L"; you can also set the accent, color and opacity values, which will represent the state of dynamic windows when there is no window maximised." << endl;
+		configstream << L"; dynamic start returns the taskbar to normal appearance when the start menu is opened." << endl;
 
 		if (!opt.dynamicws)
 		{
@@ -518,6 +571,15 @@ void SaveConfigFile()
 		}
 		configstream << endl;
 
+
+		configstream << L"dynamic-ws-color=";
+		configstream << right << setw(6) << setfill<wchar_t>('0') << hex << (opt.dynamicwscolor & 0x00FFFFFF);
+		configstream << L" ; A color in hexadecimal notation." << endl;
+
+		configstream << L"dynamic-ws-opacity=";
+		configstream << left << setw(3) << setfill<wchar_t>(' ') << to_wstring((opt.dynamicwscolor & 0xFF000000) >> 24);
+		configstream << L"  ; A value in the range 0 to 255." << endl;
+		configstream << endl;
 
 		if (!opt.dynamicws_peek)
 		{
@@ -876,6 +938,30 @@ bool IsSingleInstance()
 	}
 }
 
+uint32_t PickColor(uint32_t color)
+{
+	unsigned short a;
+	float alphaPercent;
+
+	a = (color & 0xFF000000) >> 24;
+	alphaPercent = a / 255.0f;
+	a = static_cast<unsigned short>(std::round(alphaPercent * 100));
+
+	unsigned short r = (color & 0x00FF0000) >> 16;
+	unsigned short g = (color & 0x0000FF00) >> 8;
+	unsigned short b = (color & 0x000000FF);
+
+	// Bet 5 bucks a british wrote this library
+	CColourPicker picker(NULL, r, g, b, a, true);
+	picker.CreateColourPicker(CP_USE_ALPHA);
+	SColour newColor = picker.GetCurrentColour();
+
+	alphaPercent = newColor.a / 100.0f;
+	a = static_cast<unsigned short>(std::round(alphaPercent * 255));
+
+	return (a << 24) + (newColor.r << 16) + (newColor.g << 8) + newColor.b;
+}
+
 #pragma endregion
 
 #pragma region Tray
@@ -1002,29 +1088,11 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM
 				opt.dynamicstart = !opt.dynamicstart;
 				break;
 			case IDM_COLOR:
-			{
-				unsigned short a;
-				float alphaPercent;
-
-				a = (opt.color & 0xFF000000) >> 24;
-				alphaPercent = a / 255.0f;
-				a = static_cast<unsigned short>(std::round(alphaPercent * 100));
-
-				unsigned short r = (opt.color & 0x00FF0000) >> 16;
-				unsigned short g = (opt.color & 0x0000FF00) >> 8;
-				unsigned short b = (opt.color & 0x000000FF);
-
-				// Bet 5 bucks a british wrote this library
-				CColourPicker picker(NULL, r, g, b, a, true);
-				picker.CreateColourPicker(CP_USE_ALPHA);
-				SColour newColor = picker.GetCurrentColour();
-
-				alphaPercent = newColor.a / 100.0f;
-				a = static_cast<unsigned short>(std::round(alphaPercent * 255));
-
-				opt.color = (a << 24) + (newColor.r << 16) + (newColor.g << 8) + newColor.b;
+				opt.color = PickColor(opt.color);
 				break;
-			}
+			case IDM_DYNAMICWS_COLOR:
+				opt.dynamicwscolor = PickColor(opt.dynamicwscolor);
+				break;
 			case IDM_PEEK:
 				opt.peek = Taskbar::AEROPEEK::Enabled;
 				break;
@@ -1179,7 +1247,7 @@ void SetTaskbarBlur()
 			SetWindowBlur(taskbar.second.hwnd, swca::ACCENT_NORMAL);
 			break;
 		case Taskbar::WindowMaximised:
-			SetWindowBlur(taskbar.second.hwnd, opt.dynamic_ws_state); // A window is maximised; let's make sure that we blur the taskbar.
+			SetWindowBlur(taskbar.second.hwnd, opt.dynamic_ws_state, opt.dynamicwscolor); // A window is maximised; let's make sure that we blur the taskbar.
 			break;
 		case Taskbar::Normal:
 			SetWindowBlur(taskbar.second.hwnd);  // Taskbar should be normal, call using normal transparency settings
