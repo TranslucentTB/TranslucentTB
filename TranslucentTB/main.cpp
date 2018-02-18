@@ -1005,9 +1005,9 @@ void RefreshMenu()
 	for (const std::pair<swca::ACCENT, uint32_t> &kvp : Tray::NORMAL_BUTTON_MAP)
 	{
 		// The tint modes takes over the normal appearance
-		EnablePopupItem(kvp.second, d_ws_tint);
+		EnablePopupItem(kvp.second, !d_ws_tint);
 	}
-	EnablePopupItem(IDM_COLOR, d_ws_tint);
+	EnablePopupItem(IDM_COLOR, !d_ws_tint);
 
 	CheckPopupItem(IDM_DYNAMICWS_PEEK, opt.dynamicws_peek);
 	CheckPopupItem(IDM_DYNAMICWS, opt.dynamicws);
