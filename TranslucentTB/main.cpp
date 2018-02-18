@@ -575,7 +575,7 @@ void SaveConfigFile()
 		configstream << L"dynamic-start=enable" << endl;
 
 		configstream << endl;
-		configstream << L"; Controls how the Aero Peek button behaves" << endl;
+		configstream << L"; Controls how the Aero Peek button behaves (dynamic, show or hide)" << endl;
 		configstream << L"peek=";
 		switch (opt.peek)
 		{
@@ -602,7 +602,7 @@ void SaveConfigFile()
 
 		configstream << L"verbose=enable" << endl;
 
-		configstream << L"; sleep time in milliseconds, a shorter time reduces flicker when opening start, but results in higher CPU usage" << endl;
+		configstream << L"; sleep time in milliseconds, a shorter time reduces flicker when opening start, but results in higher CPU usage." << endl;
 		configstream << L"sleep-time=" << to_wstring(opt.sleep_time) << endl;
 		configstream << L"; maximum number of times the blacklist cache can be hit before getting cleared." << endl;
 		configstream << L"max-cache-hits=" << to_wstring(Config::CACHE_HIT_MAX) << endl;
@@ -1156,10 +1156,10 @@ void CALLBACK HandleAeroPeekEvent(HWINEVENTHOOK, const DWORD event, HWND, LONG, 
 
 void SetTaskbarBlur()
 {
-	static int counter = 0;
+	static int counter = 10;
 
 	if (counter >= 10)	// Change this if you want to change the time it takes for the program to update
-	{					// 100 = 1 second; we use 10, because the difference is less noticeable and it has
+	{					// 1 = opt.sleep_time; we use 10, because the difference is less noticeable and it has
 						// no large impact on CPU. We can change this if we feel that CPU is more important
 						// than response time.
 		run.should_show_peek = (opt.peek == Taskbar::AEROPEEK::Enabled);
@@ -1204,6 +1204,8 @@ void SetTaskbarBlur()
 				taskbar.second.state = Taskbar::Normal;
 			}
 		}
+
+		counter = 0;
 	}
 
 	for (const std::pair<HMONITOR, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
@@ -1363,12 +1365,6 @@ int WINAPI WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 
 	// Populate our vectors
 	RefreshHandles();
-
-	// Scan windows to start taskbar with the correct mode immediatly
-	if (opt.dynamic_ws || opt.peek == Taskbar::AEROPEEK::Dynamic)
-	{
-		EnumWindows(&EnumWindowsProcess, NULL);
-	}
 
 	// Undoc'd, allows to detect when Aero Peek starts and stops
 	run.peek_hook = SetWinEventHook(0x21, 0x22, NULL, HandleAeroPeekEvent, 0, 0, WINEVENT_OUTOFCONTEXT);
