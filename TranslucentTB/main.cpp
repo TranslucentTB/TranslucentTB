@@ -64,7 +64,7 @@ static struct RUNTIMESTATE
 {
 	Tray::EXITREASON exit_reason = Tray::UserAction;
 	IVirtualDesktopManager *desktop_manager = NULL;				// Used to detect if a window is in the current virtual desktop. Don't forget to check for null on this one
-	IAppVisibility *app_visibility = NULL;						// Used to detect if start menu is opened
+	IAppVisibility *app_visibility = NULL;						// Used to detect if start menu is opened. Don't forget to check for null on this one
 	HWND main_taskbar;
 	std::unordered_map<HMONITOR, Taskbar::TASKBARPROPERTIES> taskbars;
 	bool should_show_peek;

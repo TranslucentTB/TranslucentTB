@@ -7,13 +7,12 @@
 namespace swca {
 
 	enum ACCENT {									// Values passed to SetWindowCompositionAttribute determining the appearance of a window
-		ACCENT_ENABLE_GRADIENT = 1,					// Use a solid color specified by nColor. This mode doesn't care about the alpha channel.
-		ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,		// Use a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
-		ACCENT_ENABLE_BLURBEHIND = 3,				// Use a tinted blurry overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
-		ACCENT_ENABLE_FLUENT = 4,					// Use fluent design-like aspect. nColor is tint color.
+		ACCENT_ENABLE_GRADIENT = 1,					// Use a solid color specified by nColor. This mode ignores the alpha value and is fully opaque.
+		ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,		// Use a tinted transparent overlay. nColor is the tint color.
+		ACCENT_ENABLE_BLURBEHIND = 3,				// Use a tinted blurry overlay. nColor is the tint color.
+		ACCENT_ENABLE_FLUENT = 4,					// Use an aspect similar to Fluent design. nColor is tint color. This mode bugs if the alpha value is 0.
 
-		ACCENT_FOLLOW_OPT = 149,					// (Fake value) Use the value in opt.taskbar_appearance
-		ACCENT_NORMAL = 153							// (Fake value) Emulate regular taskbar appearance
+		ACCENT_NORMAL = 150							// (Fake value) Emulate regular taskbar appearance
 	};
 
 	enum WindowCompositionAttribute {				// Possible kinds of data sent to SetWindowCompositionAttribute
@@ -32,8 +31,8 @@ namespace swca {
 
 	struct WINCOMPATTRDATA							// Composition Attributes
 	{
-		WindowCompositionAttribute nAttribute;		// Type of the data passed in nAttribute
-		void *pData;								// Opaque pointer to the data struct (ACCENTPOLICY)
+		WindowCompositionAttribute nAttribute;		// Type of the data struct passed
+		void *pData;								// Opaque pointer to the data struct (ACCENTPOLICY in our case)
 		uint32_t ulDataSize;						// Size of data struct
 	};
 
