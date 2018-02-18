@@ -37,7 +37,7 @@ namespace Util {
 		return str.substr(first, (last - first + 1));
 	}
 
-	void EditFile(std::wstring file)
+	void EditFile(const std::wstring &file)
 	{
 		// WinAPI reeeeeeeeeeeeeeeeeeeeeeeeee
 		LPWSTR system32;
@@ -80,7 +80,7 @@ namespace Util {
 		}
 	}
 
-	void AddValuesToVectorByDelimiter(std::wstring delimiter, std::vector<std::wstring> &vector, std::wstring line)
+	void AddValuesToVectorByDelimiter(const std::wstring &delimiter, std::vector<std::wstring> &vector, std::wstring line)
 	{
 		size_t pos;
 		std::wstring value;

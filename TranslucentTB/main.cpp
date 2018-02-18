@@ -85,28 +85,26 @@ static struct RUNTIMESTATE
 
 #pragma region That one function that does all the magic
 
-void SetWindowBlur(const HWND &hWnd, const swca::ACCENT &appearance = swca::ACCENT_FOLLOW_OPT, const uint64_t &color = 0x100000000)
+void SetWindowBlur(const HWND &hWnd, const swca::ACCENT &appearance, const uint32_t &color)
 {
 	if (user32::SetWindowCompositionAttribute)
 	{
-		uint32_t override_color = color == 0x100000000 ? opt.color : color;
 		swca::ACCENTPOLICY policy = {
-			appearance == swca::ACCENT_FOLLOW_OPT ? opt.taskbar_appearance : appearance,
+			appearance,
 			2,
-			(override_color & 0xFF00FF00) + ((override_color & 0x00FF0000) >> 16) + ((override_color & 0x000000FF) << 16),
+			(color & 0xFF00FF00) + ((color & 0x00FF0000) >> 16) + ((color & 0x000000FF) << 16),
 			0
 		};
 
-		// Handle fake values
 		if (policy.nAccentState == swca::ACCENT_NORMAL)
 		{
+			// Handle fake value
 			policy.nAccentState = run.fluent_available ? swca::ACCENT_ENABLE_FLUENT : swca::ACCENT_ENABLE_TRANSPARENTGRADIENT;
 			policy.nColor = 0x99000000;
 		}
-
-		// Fluent mode doesn't likes a completely 0 opacity
-		if (policy.nAccentState == swca::ACCENT_ENABLE_FLUENT && policy.nColor >> 24 == 0x00)
+		else if (policy.nAccentState == swca::ACCENT_ENABLE_FLUENT && policy.nColor >> 24 == 0x00)
 		{
+			// Fluent mode doesn't likes a completely 0 opacity
 			policy.nColor = (0x01 << 24) + (policy.nColor & 0x00FFFFFF);
 		}
 
@@ -129,22 +127,22 @@ void GetPaths()
 	LPWSTR localAppData;
 	Error::Handle(SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_DEFAULT, NULL, &localAppData), Error::Level::Fatal, L"Failed to determine configuration files locations!");
 
-	PathCombine(run.config_folder, localAppData, App::NAME);
-	PathCombine(run.config_file, run.config_folder, Config::CONFIG_FILE);
-	PathCombine(run.exclude_file, run.config_folder, Config::EXCLUDE_FILE);
+	PathCombine(run.config_folder, localAppData, App::NAME.c_str());
+	PathCombine(run.config_file, run.config_folder, Config::CONFIG_FILE.c_str());
+	PathCombine(run.exclude_file, run.config_folder, Config::EXCLUDE_FILE.c_str());
 }
 
-void ApplyStock(const wchar_t *filename)
+void ApplyStock(const std::wstring &filename)
 {
 	wchar_t exeFolder[MAX_PATH];
 	GetModuleFileName(GetModuleHandle(NULL), exeFolder, MAX_PATH);
 	PathRemoveFileSpec(exeFolder);
 
 	wchar_t stockFile[MAX_PATH];
-	PathCombine(stockFile, exeFolder, filename);
+	PathCombine(stockFile, exeFolder, filename.c_str());
 
 	wchar_t configFile[MAX_PATH];
-	PathCombine(configFile, run.config_folder, filename);
+	PathCombine(configFile, run.config_folder, filename.c_str());
 
 	if (!PathIsDirectory(run.config_folder))
 	{
@@ -174,7 +172,7 @@ bool CheckAndRunWelcome()
 		message += '"';
 		message += L"\n\nDo you agree to the GPLv3 license?";
 
-		if (MessageBox(NULL, message.c_str(), App::NAME, MB_ICONINFORMATION | MB_YESNO | MB_SETFOREGROUND) != IDYES)
+		if (MessageBox(NULL, message.c_str(), App::NAME.c_str(), MB_ICONINFORMATION | MB_YESNO | MB_SETFOREGROUND) != IDYES)
 		{
 			return false;
 		}
@@ -195,7 +193,7 @@ inline void UnknownValue(const std::wstring &key, const std::wstring &value)
 	Log::OutputMessage(L"Unknown value found in configuration file: " + value + L" (for key: " + key + L")");
 }
 
-void ParseSingleConfigOption(std::wstring arg, std::wstring value)
+void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 {
 	if (arg == L"accent")
 	{
@@ -420,6 +418,18 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 			UnknownValue(arg, value);
 		}
 	}
+	else if (arg == L"max-cache-hits")
+	{
+		try
+		{
+			int cache_hits = std::stoi(value);
+			Config::CACHE_HIT_MAX = cache_hits;
+		}
+		catch (const std::invalid_argument &e)
+		{
+			Log::OutputMessage(L"Could not parse max cache hits found in configuration file: " + value);
+		}
+	}
 	else
 	{
 		Log::OutputMessage(L"Unknown key found in configuration file: " + arg);
@@ -593,7 +603,9 @@ void SaveConfigFile()
 		configstream << L"verbose=enable" << endl;
 
 		configstream << L"; sleep time in milliseconds, a shorter time reduces flicker when opening start, but results in higher CPU usage" << endl;
-		configstream << L"sleep-time=" << opt.sleep_time << endl;
+		configstream << L"sleep-time=" << to_wstring(opt.sleep_time) << endl;
+		configstream << L"; maximum number of times the blacklist cache can be hit before getting cleared." << endl;
+		configstream << L"max-cache-hits=" << to_wstring(Config::CACHE_HIT_MAX) << endl;
 	}
 }
 
@@ -708,7 +720,7 @@ void RefreshHandles()
 	}
 }
 
-void TogglePeek(bool status)
+void TogglePeek(const bool &status)
 {
 	static bool cached_peek = true;
 	static HWND cached_taskbar = run.main_taskbar;
@@ -737,7 +749,7 @@ void ClearBlacklistCache()
 	run.cache_hits = Config::CACHE_HIT_MAX + 1;
 }
 
-std::wstring GetWindowTitle(HWND hwnd)
+std::wstring GetWindowTitle(const HWND &hwnd)
 {
 	int titleSize = GetWindowTextLength(hwnd) + 1; // For the null terminator
 	std::vector<wchar_t> windowTitleBuffer(titleSize);
@@ -745,7 +757,7 @@ std::wstring GetWindowTitle(HWND hwnd)
 	return windowTitleBuffer.data();
 }
 
-void OutputBlacklistMatchToLog(HWND hwnd, bool match)
+void OutputBlacklistMatchToLog(const HWND &hwnd, const bool &match)
 {
 	if (Config::VERBOSE)
 	{
@@ -771,7 +783,7 @@ void OutputBlacklistMatchToLog(HWND hwnd, bool match)
 	}
 }
 
-bool IsWindowBlacklisted(HWND hWnd)
+bool IsWindowBlacklisted(const HWND &hWnd)
 {
 	static std::unordered_map<HWND, bool> blacklist_cache;
 
@@ -852,20 +864,20 @@ bool IsWindowBlacklisted(HWND hWnd)
 	}
 }
 
-bool IsWindowOnCurrentDesktop(HWND hWnd)
+bool IsWindowOnCurrentDesktop(const HWND &hWnd)
 {
 	BOOL on_current_desktop;  // This must be a BOOL not a bool because Windows and C89 are equally stupid
 	return run.desktop_manager && SUCCEEDED(run.desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop)) ? on_current_desktop : true;
 }
 
-bool IsWindowMaximised(HWND hWnd)
+bool IsWindowMaximised(const HWND &hWnd)
 {
 	WINDOWPLACEMENT result = {};
 	GetWindowPlacement(hWnd, &result);
 	return result.showCmd == SW_MAXIMIZE;
 }
 
-bool IsWindowCloaked(HWND hWnd)
+bool IsWindowCloaked(const HWND &hWnd)
 {
 	int cloaked;
 	DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, &cloaked, sizeof(cloaked));
@@ -874,7 +886,7 @@ bool IsWindowCloaked(HWND hWnd)
 
 bool IsSingleInstance()
 {
-	run.app_handle = CreateEvent(NULL, TRUE, FALSE, App::ID);
+	run.app_handle = CreateEvent(NULL, TRUE, FALSE, App::ID.c_str());
 	LRESULT error = GetLastError();
 	switch (error)
 	{
@@ -896,7 +908,7 @@ bool IsSingleInstance()
 	}
 }
 
-uint32_t PickColor(uint32_t color)
+uint32_t PickColor(const uint32_t &color)
 {
 	unsigned short a;
 	float alphaPercent;
@@ -924,17 +936,17 @@ uint32_t PickColor(uint32_t color)
 
 #pragma region Tray
 
-DWORD CheckPopupItem(uint32_t item_to_check, bool state)
+DWORD CheckPopupItem(const uint32_t &item_to_check, const bool &state)
 {
 	return CheckMenuItem(run.tray_popup, item_to_check, MF_BYCOMMAND | (state ? MF_CHECKED : MF_UNCHECKED) | MF_ENABLED);
 }
 
-bool EnablePopupItem(uint32_t item_to_enable, bool state)
+bool EnablePopupItem(const uint32_t &item_to_enable, const bool &state)
 {
 	return EnableMenuItem(run.tray_popup, item_to_enable, MF_BYCOMMAND | (state ? MF_ENABLED : MF_GRAYED));
 }
 
-bool CheckPopupRadioItem(uint32_t from, uint32_t to, uint32_t item_to_check)
+bool CheckPopupRadioItem(const uint32_t &from, const uint32_t &to, const uint32_t &item_to_check)
 {
 	return CheckMenuRadioItem(run.tray_popup, from, to, item_to_check, MF_BYCOMMAND);
 }
@@ -979,7 +991,7 @@ void RegisterTray()
 	Shell_NotifyIcon(NIM_SETVERSION, &run.tray);
 }
 
-LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK TrayCallback(const HWND hWnd, const uint32_t message, const WPARAM wParam, const LPARAM lParam)
 {
 	if (message == WM_CLOSE)
 	{
@@ -1115,7 +1127,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM
 
 #pragma region Main logic
 
-BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM)
+BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
 {
 	// IsWindowCloaked should take care of checking if it's on the current desktop.
 	// But that's undefined behavior.
@@ -1137,7 +1149,7 @@ BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM)
 	return true;
 }
 
-void CALLBACK HandleAeroPeekEvent(HWINEVENTHOOK, DWORD event, HWND, LONG, LONG, DWORD, DWORD)
+void CALLBACK HandleAeroPeekEvent(HWINEVENTHOOK, const DWORD event, HWND, LONG, LONG, DWORD, DWORD)
 {
 	run.peek_active = event == 0x21;
 }
@@ -1199,13 +1211,13 @@ void SetTaskbarBlur()
 		switch (taskbar.second.state)
 		{
 		case Taskbar::StartMenuOpen:
-			SetWindowBlur(taskbar.second.hwnd, swca::ACCENT_NORMAL);
+			SetWindowBlur(taskbar.second.hwnd, swca::ACCENT_NORMAL, NULL);
 			break;
 		case Taskbar::WindowMaximised:
 			SetWindowBlur(taskbar.second.hwnd, opt.dynamic_ws_taskbar_appearance, opt.dynamic_ws_color); // A window is maximised; let's make sure that we blur the taskbar.
 			break;
 		case Taskbar::Normal:
-			SetWindowBlur(taskbar.second.hwnd);  // Taskbar should be normal, call using normal transparency settings
+			SetWindowBlur(taskbar.second.hwnd, opt.taskbar_appearance, opt.color);  // Taskbar should be normal, call using normal transparency settings
 			break;
 		}
 	}
@@ -1234,7 +1246,7 @@ void UninitializeAPIs()
 #endif
 }
 
-void InitializeTray(HINSTANCE hInstance)
+void InitializeTray(const HINSTANCE &hInstance)
 {
 	run.tray_popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU)); // Load our popup menu
 
@@ -1249,7 +1261,7 @@ void InitializeTray(HINSTANCE hInstance)
 		LoadCursor(NULL, IDC_ARROW),			// hCursor
 		reinterpret_cast<HBRUSH>(BLACK_BRUSH),	// hbrBackground
 		NULL,									// lpszMenuName
-		App::NAME,								// lpszClassName
+		App::NAME.c_str(),						// lpszClassName
 		NULL									// hIconSm
 	};
 
@@ -1261,7 +1273,7 @@ void InitializeTray(HINSTANCE hInstance)
 		sizeof(run.tray),																// cbSize
 		CreateWindowEx(																	// hWnd
 			WS_EX_TOOLWINDOW,															// dwExStyle
-			App::NAME,																    // lpClassName
+			App::NAME.c_str(),														    // lpClassName
 			L"TrayWindow",																// lpWindowName
 			WS_OVERLAPPEDWINDOW,														// dwStyle
 			0,																			// x
@@ -1278,7 +1290,7 @@ void InitializeTray(HINSTANCE hInstance)
 		Tray::WM_NOTIFY_TB																// uCallbackMessage
 	};
 	LoadIconMetric(hInstance, MAKEINTRESOURCE(MAINICON), LIM_LARGE, &run.tray.hIcon);	// hIcon
-	wcscpy_s(run.tray.szTip, App::NAME);												// szTip
+	wcscpy_s(run.tray.szTip, App::NAME.c_str());										// szTip
 	#pragma clang diagnostic pop
 
 	ShowWindow(run.tray.hWnd, WM_SHOWWINDOW);
@@ -1307,12 +1319,12 @@ void Terminate()
 	exit(run.is_running ? 1 : 0);
 }
 
-int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int)
+int WINAPI WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 {
 	// If there already is another instance running, tell it to exit
 	if (!IsSingleInstance())
 	{
-		HWND oldInstance = FindWindow(App::NAME, L"TrayWindow");
+		HWND oldInstance = FindWindow(App::NAME.c_str(), L"TrayWindow");
 		SendMessage(oldInstance, Tray::NEW_TTB_INSTANCE, NULL, NULL);
 	}
 

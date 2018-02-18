@@ -25,7 +25,7 @@ namespace Autostart {
 	StartupState GetStartupState()
 	{
 #ifndef STORE
-		LRESULT error = RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", App::NAME, RRF_RT_REG_SZ, NULL, NULL, NULL);
+		LRESULT error = RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", App::NAME.c_str(), RRF_RT_REG_SZ, NULL, NULL, NULL);
 		switch (error)
 		{
 			case ERROR_FILE_NOT_FOUND:
@@ -37,7 +37,7 @@ namespace Autostart {
 			{
 				unsigned char status[12];
 				unsigned long size = sizeof(status);
-				error = RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run", App::NAME, RRF_RT_REG_BINARY, NULL, &status, &size);
+				error = RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run", App::NAME.c_str(), RRF_RT_REG_BINARY, NULL, &status, &size);
 				if (Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup disable state failed.") && status[0] == 3)
 				{
 					return StartupState::DisabledByUser;
@@ -60,7 +60,7 @@ namespace Autostart {
 #endif
 	}
 
-	void SetStartupState(StartupState state)
+	void SetStartupState(const StartupState &state)
 	{
 #ifndef STORE
 		HKEY hkey;
@@ -74,12 +74,12 @@ namespace Autostart {
 				GetModuleFileName(hModule, path, MAX_PATH);
 				PathQuoteSpaces(path);
 
-				error = RegSetValueEx(hkey, App::NAME, 0, REG_SZ, reinterpret_cast<BYTE *>(path), wcslen(path) * sizeof(wchar_t));
+				error = RegSetValueEx(hkey, App::NAME.c_str(), 0, REG_SZ, reinterpret_cast<BYTE *>(path), wcslen(path) * sizeof(wchar_t));
 				Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while setting startup registry value!");
 			}
 			else
 			{
-				error = RegDeleteValue(hkey, App::NAME);
+				error = RegDeleteValue(hkey, App::NAME.c_str());
 				Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while deleting startup registry value!");
 			}
 			error = RegCloseKey(hkey);

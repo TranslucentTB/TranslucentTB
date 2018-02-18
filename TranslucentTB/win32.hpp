@@ -28,7 +28,7 @@ namespace ntdll {
 
 namespace win32 {
 
-	bool IsAtLeastBuild(uint32_t buildNumber)
+	bool IsAtLeastBuild(const uint32_t &buildNumber)
 	{
 		RTL_OSVERSIONINFOW versionInfo;
 		if (ntdll::RtlGetVersion && Error::Handle(HRESULT_FROM_NT(ntdll::RtlGetVersion(&versionInfo)), Error::Level::Log, L"Error obtaining version info."))
