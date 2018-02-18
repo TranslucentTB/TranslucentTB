@@ -67,10 +67,10 @@ BEGIN
         BEGIN
             MENUITEM "Accent Color",                IDM_COLOR
             MENUITEM SEPARATOR
-            MENUITEM "Blur",                        IDM_BLUR
-            MENUITEM "Clear",                       IDM_CLEAR
             MENUITEM "Normal",                      IDM_NORMAL
+            MENUITEM "Clear",                       IDM_CLEAR
             MENUITEM "Opaque",                      IDM_OPAQUE
+            MENUITEM "Blur",                        IDM_BLUR
             MENUITEM "Fluent",                      IDM_FLUENT
         END
         POPUP "Dynamic State"
@@ -79,12 +79,10 @@ BEGIN
             MENUITEM "Regular state when peeking",  IDM_DYNAMICWS_PEEK
             MENUITEM "Accent Color",                IDM_DYNAMICWS_COLOR
             MENUITEM SEPARATOR
-            MENUITEM "Blur",                        IDM_DYNAMICWS_BLUR
-            MENUITEM "Tinted",                      IDM_DYNAMICWS_TINTED
-            MENUITEM "Tinted && blurred",           IDM_DYNAMICWS_BLUR_TINTED
-            MENUITEM "Tinted && Fluent",            IDM_DYNAMICWS_FLUENT_TINTED
             MENUITEM "Normal",                      IDM_DYNAMICWS_NORMAL
+            MENUITEM "Clear",                       IDM_DYNAMICWS_CLEAR
             MENUITEM "Opaque",                      IDM_DYNAMICWS_OPAQUE
+            MENUITEM "Blur",                        IDM_DYNAMICWS_BLUR
             MENUITEM "Fluent",                      IDM_DYNAMICWS_FLUENT
         END
         MENUITEM SEPARATOR

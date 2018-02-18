@@ -19,31 +19,29 @@
 #define IDM_NOPEEK                      214
 #define IDM_COLOR                       215
 #define IDM_DYNAMICWS_BLUR              40005
-#define IDM_DYNAMICWS_TINTED            40006
-#define IDM_DYNAMICWS_NORMAL            40007
-#define IDM_DYNAMICWS_OPAQUE            40008
-#define IDM_DYNAMICWS_FLUENT            40009
-#define IDM_DYNAMICWS_FLUENT_TINTED     40010
-#define IDM_DYNAMICWS_BLUR_TINTED       40011
-#define IDM_EXITWITHOUTSAVING           40012
-#define IDM_RELOADSETTINGS              40013
-#define IDM_EDITSETTINGS                40014
-#define IDM_RETURNTODEFAULTSETTINGS     40015
-#define IDM_RELOADDYNAMICBLACKLIST      40016
-#define IDM_EDITDYNAMICBLACKLIST        40017
-#define IDM_RETURNTODEFAULTBLACKLIST    40018
-#define IDM_DYNAMICWS_PEEK              40019
-#define IDM_CLEARBLACKLISTCACHE         40020
-#define IDM_OPENLOG                     40021
-#define IDM_VERBOSE                     40022
-#define IDM_DYNAMICWS_COLOR             40023
+#define IDM_DYNAMICWS_NORMAL            40006
+#define IDM_DYNAMICWS_OPAQUE            40007
+#define IDM_DYNAMICWS_FLUENT            40008
+#define IDM_DYNAMICWS_CLEAR             40009
+#define IDM_EXITWITHOUTSAVING           40010
+#define IDM_RELOADSETTINGS              40011
+#define IDM_EDITSETTINGS                40012
+#define IDM_RETURNTODEFAULTSETTINGS     40013
+#define IDM_RELOADDYNAMICBLACKLIST      40014
+#define IDM_EDITDYNAMICBLACKLIST        40015
+#define IDM_RETURNTODEFAULTBLACKLIST    40016
+#define IDM_DYNAMICWS_PEEK              40017
+#define IDM_CLEARBLACKLISTCACHE         40018
+#define IDM_OPENLOG                     40019
+#define IDM_VERBOSE                     40020
+#define IDM_DYNAMICWS_COLOR             40021
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        104
-#define _APS_NEXT_COMMAND_VALUE         40024
+#define _APS_NEXT_COMMAND_VALUE         40022
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
