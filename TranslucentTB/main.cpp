@@ -524,7 +524,7 @@ void SaveConfigFile()
 
 		if (!opt.dynamic_ws)
 		{
-			configstream << L"; ";
+			configstream << L";";
 		}
 
 		configstream << L"dynamic-ws=";
@@ -562,14 +562,14 @@ void SaveConfigFile()
 
 		if (!opt.dynamic_ws_normal_on_peek)
 		{
-			configstream << L"; ";
+			configstream << L";";
 		}
 
 		configstream << L"dynamic-ws-normal-on-peek=enable" << endl;
 
 		if (!opt.dynamic_start)
 		{
-			configstream << L"; ";
+			configstream << L";";
 		}
 
 		configstream << L"dynamic-start=enable" << endl;
@@ -597,7 +597,7 @@ void SaveConfigFile()
 
 		if (!Config::VERBOSE)
 		{
-			configstream << L"; ";
+			configstream << L";";
 		}
 
 		configstream << L"verbose=enable" << endl;
@@ -757,30 +757,40 @@ std::wstring GetWindowTitle(const HWND &hwnd)
 	return windowTitleBuffer.data();
 }
 
-void OutputBlacklistMatchToLog(const HWND &hwnd, const bool &match)
+std::wstring GetWindowClass(const HWND &hwnd)
+{
+	wchar_t className[MAX_PATH];
+	GetClassName(hwnd, className, _countof(className));
+	return className;
+}
+
+std::wstring GetWindowFile(const HWND &hwnd)
+{
+	DWORD ProcessId;
+	GetWindowThreadProcessId(hwnd, &ProcessId);
+
+	wchar_t exeName_path[MAX_PATH];
+	GetModuleFileNameEx(OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId), NULL, exeName_path, _countof(exeName_path));
+
+	return PathFindFileName(exeName_path);
+}
+
+bool OutputBlacklistMatchToLog(const HWND &hwnd, const bool &match)
 {
 	if (Config::VERBOSE)
 	{
-		wchar_t className[MAX_PATH];
-		GetClassName(hwnd, className, _countof(className));
-		std::wstring classNameString(className);
-
+		std::wstring className = GetWindowClass(hwnd);
 		std::wstring title = GetWindowTitle(hwnd);
-
-		DWORD ProcessId;
-		GetWindowThreadProcessId(hwnd, &ProcessId);
-
-		wchar_t exeName_path[MAX_PATH];
-		GetModuleFileNameEx(OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId), NULL, exeName_path, _countof(exeName_path));
-
-		std::wstring exeName = PathFindFileName(exeName_path);
+		std::wstring exeName = GetWindowFile(hwnd);
 
 		std::wstringstream message;
 		message << (match ? L"Blacklist match found for window: " : L"No blacklist match found for window: ");
-		message << hwnd << L" [" << classNameString << L"] [" << exeName << L"] [" << title << L"]";
+		message << hwnd << L" [" << className << L"] [" << exeName << L"] [" << title << L"]";
 
 		Log::OutputMessage(message.str());
 	}
+
+	return match;
 }
 
 bool IsWindowBlacklisted(const HWND &hWnd)
@@ -807,15 +817,12 @@ bool IsWindowBlacklisted(const HWND &hWnd)
 		// This is the fastest because we do the less string manipulation, so always try it first
 		if (opt.blacklisted_classes.size() > 0)
 		{
-			wchar_t className[MAX_PATH];
-			GetClassName(hWnd, className, _countof(className));
-			std::wstring classNameString(className);
+			std::wstring className = GetWindowClass(hWnd);
 			for (const std::wstring &value : opt.blacklisted_classes)
 			{
-				if (classNameString == value)
+				if (className == value)
 				{
-					OutputBlacklistMatchToLog(hWnd, true);
-					return blacklist_cache[hWnd] = true;
+					return OutputBlacklistMatchToLog(hWnd, blacklist_cache[hWnd] = true);
 				}
 			}
 		}
@@ -826,13 +833,11 @@ bool IsWindowBlacklisted(const HWND &hWnd)
 		if (opt.blacklisted_titles.size() > 0)
 		{
 			std::wstring windowTitle = GetWindowTitle(hWnd);
-
 			for (const std::wstring &value : opt.blacklisted_titles)
 			{
 				if (windowTitle.find(value) != std::wstring::npos)
 				{
-					OutputBlacklistMatchToLog(hWnd, true);
-					return blacklist_cache[hWnd] = true;
+					return OutputBlacklistMatchToLog(hWnd, blacklist_cache[hWnd] = true);
 				}
 			}
 		}
@@ -840,27 +845,18 @@ bool IsWindowBlacklisted(const HWND &hWnd)
 		// GetModuleFileNameEx is quite expensive according to the tracing tools, so use it as last resort.
 		if (opt.blacklisted_filenames.size() > 0)
 		{
-			DWORD ProcessId;
-			GetWindowThreadProcessId(hWnd, &ProcessId);
-
-			wchar_t exeName_path[MAX_PATH];
-			GetModuleFileNameEx(OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId), NULL, exeName_path, _countof(exeName_path));
-
-			std::wstring exeName = PathFindFileName(exeName_path);
+			std::wstring exeName = GetWindowFile(hWnd);
 			Util::ToLower(exeName);
-
 			for (const std::wstring &value : opt.blacklisted_filenames)
 			{
 				if (exeName == value)
 				{
-					OutputBlacklistMatchToLog(hWnd, true);
-					return blacklist_cache[hWnd] = true;
+					return OutputBlacklistMatchToLog(hWnd, blacklist_cache[hWnd] = true);
 				}
 			}
 		}
 
-		OutputBlacklistMatchToLog(hWnd, false);
-		return blacklist_cache[hWnd] = false;
+		return OutputBlacklistMatchToLog(hWnd, blacklist_cache[hWnd] = false);
 	}
 }
 
@@ -902,7 +898,7 @@ bool IsSingleInstance()
 
 		default:
 		{
-			Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Fatal, L"Failed to open app handle!");
+			Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Failed to open app handle!");
 			return true;
 		}
 	}
@@ -995,7 +991,8 @@ LRESULT CALLBACK TrayCallback(const HWND hWnd, const uint32_t message, const WPA
 {
 	if (message == WM_CLOSE)
 	{
-		PostQuitMessage(0);
+		run.is_running = false;
+		return 0;
 	}
 	else if (message == Tray::WM_NOTIFY_TB)
 	{
@@ -1109,18 +1106,24 @@ LRESULT CALLBACK TrayCallback(const HWND hWnd, const uint32_t message, const WPA
 				break;
 			}
 		}
+		return 0;
 	}
 	else if (message == Tray::WM_TASKBARCREATED)
 	{
 		RefreshHandles();
 		RegisterTray();
+		return 0;
 	}
 	else if (message == Tray::NEW_TTB_INSTANCE)
 	{
 		run.exit_reason = Tray::NewInstance;
 		run.is_running = false;
+		return 0;
 	}
-	return DefWindowProc(hWnd, message, wParam, lParam);
+	else
+	{
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
 }
 
 #pragma endregion
@@ -1158,10 +1161,10 @@ void SetTaskbarBlur()
 {
 	static int counter = 10;
 
-	if (counter >= 10)	// Change this if you want to change the time it takes for the program to update
-	{					// 1 = opt.sleep_time; we use 10, because the difference is less noticeable and it has
-						// no large impact on CPU. We can change this if we feel that CPU is more important
-						// than response time.
+	if (counter >= 10)	// Change this if you want to change the time it takes for the program to update.
+	{					// 1 = opt.sleep_time; we use 10 (assuming the default opt.sleep_time value),
+						// because the difference is less noticeable and it has no large impact on CPU.
+						// We can change this if we feel that CPU is more important than response time.
 		run.should_show_peek = (opt.peek == Taskbar::AEROPEEK::Enabled);
 
 		for (std::pair<const HMONITOR, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
@@ -1400,7 +1403,7 @@ int WINAPI WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 	}
 
 	std::terminate();
-	return 0;
+	return 0; // This shouldn't ever be called, but Clang complains if we don't add it or change the return value to void
 }
 
 #pragma endregion

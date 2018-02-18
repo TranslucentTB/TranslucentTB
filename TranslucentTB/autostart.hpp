@@ -26,33 +26,28 @@ namespace Autostart {
 	{
 #ifndef STORE
 		LRESULT error = RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", App::NAME.c_str(), RRF_RT_REG_SZ, NULL, NULL, NULL);
-		switch (error)
+		if (error == ERROR_FILE_NOT_FOUND)
 		{
-			case ERROR_FILE_NOT_FOUND:
-			{
-				return StartupState::Disabled;
-			}
-
-			case ERROR_SUCCESS:
-			{
-				unsigned char status[12];
-				unsigned long size = sizeof(status);
-				error = RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run", App::NAME.c_str(), RRF_RT_REG_BINARY, NULL, &status, &size);
-				if (Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup disable state failed.") && status[0] == 3)
-				{
-					return StartupState::DisabledByUser;
-				}
-				else
-				{
-					return StartupState::Enabled;
-				}
-			}
-
-			default:
-			{
-				Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup state failed.");
-				return StartupState::Disabled;
+			return StartupState::Disabled;
 		}
+		else if (error == ERROR_SUCCESS)
+		{
+			uint8_t status[12];
+			DWORD size = sizeof(status);
+			error = RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run", App::NAME.c_str(), RRF_RT_REG_BINARY, NULL, &status, &size);
+			if (error != ERROR_FILE_NOT_FOUND && Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup disable state failed.") && status[0] == 3)
+			{
+				return StartupState::DisabledByUser;
+			}
+			else
+			{
+				return StartupState::Enabled;
+			}
+		}
+		else
+		{
+			Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup state failed.");
+			return StartupState::Disabled;
 		}
 #else
 		// TODO
