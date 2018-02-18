@@ -54,6 +54,9 @@
     <ClInclude Include="ttblog.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="autostart.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TranslucentTB.rc">

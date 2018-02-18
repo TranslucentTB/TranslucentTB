@@ -19,7 +19,7 @@
 #include <ShellScalingAPI.h>
 #include <ShlObj.h>
 
-// UWP startup API
+// UWP
 #ifdef STORE
 #include <roapi.h>
 #endif
@@ -39,6 +39,7 @@
 #include "app.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
+#include "autostart.hpp"
 
 
 #pragma region Structures
@@ -51,7 +52,7 @@ static struct OPTIONS
 	swca::ACCENT dynamic_ws_state = swca::ACCENT_ENABLE_BLURBEHIND;	// State to activate when a window is maximised
 	bool dynamicws_peek = true;										// Whether to use the normal style when using Aero Peek
 	bool dynamicstart = false;
-	uint16_t refresh_rate = 10;
+	uint16_t sleep_time = 10;
 	Taskbar::AEROPEEK peek = Taskbar::AEROPEEK::Enabled;
 	std::vector<std::wstring> blacklisted_classes;
 	std::vector<std::wstring> blacklisted_filenames;
@@ -210,6 +211,10 @@ bool CheckAndRunWelcome()
 	return true;
 }
 
+inline void UnknownValue(const std::wstring &key, const std::wstring &value)
+{
+	Log::OutputMessage(L"Unknown value found in configuration file: " + value + L" (for key: " + key + L")");
+}
 
 void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 {
@@ -237,19 +242,19 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		}
 		else
 		{
-			Log::OutputMessage(L"Unknown value found in configuration file: " + value);
+			UnknownValue(arg, value);
 		}
 	}
-	else if (arg == L"refresh-rate")
+	else if (arg == L"sleep-time")
 	{
 		try
 		{
-			int refresh_rate = std::stoi(value);
-			opt.refresh_rate = refresh_rate;
+			int sleep_time = std::stoi(value);
+			opt.sleep_time = sleep_time;
 		}
-		catch (const std::invalid_argument& e)
+		catch (const std::invalid_argument &e)
 		{
-			Log::OutputMessage(L"Unknown non-integer refresh rate found in configuration file.");
+			Log::OutputMessage(L"Could not parse sleep time found in configuration file: " + value);
 		}
 	}
 	else if (arg == L"dynamic-ws")
@@ -295,7 +300,7 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		}
 		else
 		{
-			Log::OutputMessage(L"Unknown value found in configuration file: " + value);
+			UnknownValue(arg, value);
 		}
 	}
 	else if (arg == L"dynamic-start")
@@ -306,31 +311,47 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		}
 		else
 		{
-			Log::OutputMessage(L"Unknown value found in configuration file: " + value);
+			UnknownValue(arg, value);
 		}
 	}
 	else if (arg == L"color" || arg == L"tint")
 	{
-		value = Util::Trim(value);
+		std::wstring color_value = Util::Trim(value);
 
-		if (value.find(L'#') == 0)
+		if (color_value.find(L'#') == 0)
 		{
-			value = value.substr(1, value.length() - 1);
+			color_value = color_value.substr(1, color_value.length() - 1);
 		}
 
 		// Get only the last 6 characters, keeps compatibility with old version.
 		// It stored AARRGGBB in color, but now we store it as RRGGBB.
 		// We read AA from opacity instead, which the old version also saved alpha to.
-		if (value.length() > 6)
+		if (color_value.length() > 6)
 		{
-			value = value.substr(value.length() - 6, 6);
+			color_value = color_value.substr(color_value.length() - 6, 6);
 		}
 
-		opt.color = std::stoi(value, static_cast<size_t *>(0), 16);
+		try
+		{
+			opt.color = std::stoi(color_value, static_cast<size_t *>(0), 16);
+		}
+		catch (const std::invalid_argument &e)
+		{
+			Log::OutputMessage(L"Could not parse color found in configuration file: " + value + L" (after processing: " + color_value + L")");
+		}
 	}
 	else if (arg == L"opacity")
 	{
-		int parsed = std::stoi(value);
+		int parsed;
+		try
+		{
+			parsed = std::stoi(value);
+		}
+		catch (const std::invalid_argument &e)
+		{
+			Log::OutputMessage(L"Could not parse opacity found in configuration file: " + value);
+			return;
+		}
 
 		if (parsed < 0)
 		{
@@ -355,7 +376,7 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		}
 		else
 		{
-			Log::OutputMessage(L"Unknown value found in configuration file: " + value);
+			UnknownValue(arg, value);
 		}
 	}
 	else if (arg == L"dynamic-ws-normal-on-peek")
@@ -366,7 +387,18 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		}
 		else
 		{
-			Log::OutputMessage(L"Unknown value found in configuration file: " + value);
+			UnknownValue(arg, value);
+		}
+	}
+	else if (arg == L"verbose")
+	{
+		if (value == L"true" || value == L"enable")
+		{
+			Config::VERBOSE = true;
+		}
+		else
+		{
+			UnknownValue(arg, value);
 		}
 	}
 	else
@@ -528,6 +560,20 @@ void SaveConfigFile()
 			break;
 		}
 		configstream << endl;
+
+		configstream << endl;
+		configstream << L"; Advanced settings" << endl;
+		configstream << L"; more informative logging. can make huge log files." << endl;
+
+		if (!Config::VERBOSE)
+		{
+			configstream << L"; ";
+		}
+
+		configstream << L"verbose=enable" << endl;
+
+		configstream << L"; sleep time in milliseconds, a shorter time reduces flicker when opening start, but results in higher CPU usage" << endl;
+		configstream << L"sleep-time=" << opt.sleep_time << endl;
 	}
 }
 
@@ -851,6 +897,8 @@ bool CheckPopupRadioItem(uint32_t from, uint32_t to, uint32_t item_to_check)
 
 void RefreshMenu()
 {
+	Autostart::StartupState s_state = Autostart::GetStartupState();
+
 	// This block of CheckPopupRadioItem might throw, but if that happens we just need to update the map, or something really fucked up happened
 	CheckPopupRadioItem(IDM_BLUR, IDM_FLUENT, Tray::NORMAL_BUTTON_MAP.at(opt.taskbar_appearance));
 	CheckPopupRadioItem(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_BLUR_TINTED, Tray::DYNAMIC_BUTTON_MAP.at(opt.dynamic_ws_state));
@@ -864,6 +912,7 @@ void RefreshMenu()
 	EnablePopupItem(IDM_FLUENT, run.fluent_available);
 	EnablePopupItem(IDM_DYNAMICWS_FLUENT, opt.dynamicws && run.fluent_available);
 	EnablePopupItem(IDM_DYNAMICWS_FLUENT_TINTED, opt.dynamicws && run.fluent_available);
+	EnablePopupItem(IDM_AUTOSTART, s_state != Autostart::StartupState::DisabledByUser);
 
 	if (opt.dynamicws)
 	{
@@ -880,7 +929,7 @@ void RefreshMenu()
 	CheckPopupItem(IDM_DYNAMICWS_PEEK, opt.dynamicws_peek);
 	CheckPopupItem(IDM_DYNAMICWS, opt.dynamicws);
 	CheckPopupItem(IDM_DYNAMICSTART, opt.dynamicstart);
-	CheckPopupItem(IDM_AUTOSTART, win32::GetStartupState());
+	CheckPopupItem(IDM_AUTOSTART, s_state == Autostart::StartupState::Enabled);
 	CheckPopupItem(IDM_VERBOSE, Config::VERBOSE);
 }
 
@@ -985,8 +1034,8 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM
 			case IDM_NOPEEK:
 				opt.peek = Taskbar::AEROPEEK::Disabled;
 				break;
-			case IDM_AUTOSTART: // TODO: Use UWP Apis
-				win32::SetStartupState(!win32::GetStartupState());
+			case IDM_AUTOSTART:
+				Autostart::SetStartupState(Autostart::GetStartupState() == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
 				break;
 			case IDM_RETURNTODEFAULTSETTINGS:
 				ApplyStock(Config::CONFIG_FILE);
@@ -1299,7 +1348,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPSTR, _In
 			DispatchMessage(&msg);
 		}
 		SetTaskbarBlur();
-		std::this_thread::sleep_for(std::chrono::milliseconds(opt.refresh_rate));
+		std::this_thread::sleep_for(std::chrono::milliseconds(opt.sleep_time));
 	}
 
 	// If it's a new instance, don't save or restore taskbar to default
