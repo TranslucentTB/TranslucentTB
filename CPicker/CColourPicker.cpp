@@ -1,113 +1,86 @@
-#include "CPickerDll.h"
+#include "CPicker.h"
 #include "resource.h"
 
-EXPORT CColourPicker::CColourPicker(HWND hParentWindow)
-	{
+CColourPicker::CColourPicker(HWND hParentWindow)
+{
 	SetRGB(0, 0, 0);
 	SetAlpha(100);
 	OldCol = CurrCol;
 
-	UseAlpha = CP_USE_ALPHA;
-
 	hParent = hParentWindow;
-	}
+}
  
-EXPORT CColourPicker::CColourPicker(HWND hParentWindow, unsigned short r, unsigned short g, unsigned short b, 
-							 unsigned short a, bool IsRGB)
-	{
+CColourPicker::CColourPicker(HWND hParentWindow, unsigned short r, unsigned short g, unsigned short b, unsigned short a, bool IsRGB)
+{
 	if (IsRGB)
+	{
 		SetRGB(r, g, b);
+	}
 	else
+	{
 		SetHSV(r, g, b);
-	UseAlpha = CP_USE_ALPHA;
+	}
 	SetAlpha(a);
 	OldCol = CurrCol;
 	
 	hParent = hParentWindow;
-	}
+}
 
-EXPORT void CColourPicker::CreateColourPicker(short AlphaUsage)
-	{
-	UseAlpha = AlphaUsage;
-	
-	switch(UseAlpha)
-		{
-		case CP_NO_ALPHA:
-			DialogBoxParam(GetModuleHandle(L"CPicker.dll"), MAKEINTRESOURCE(IDD_COLORPICKERNOALPHA), hParent,
-				(DLGPROC)ColourPickerDlgProc, (LPARAM)this);
-		break;
+void CColourPicker::CreateColourPicker()
+{
+	DialogBoxParam(GetModuleHandle(L"CPicker.dll"), MAKEINTRESOURCE(IDD_COLORPICKER), hParent,
+		(DLGPROC)ColourPickerDlgProc, (LPARAM)this);
+}
 
-		case CP_USE_ALPHA:
-		case CP_DISABLE_ALPHA:
-			DialogBoxParam(GetModuleHandle(L"CPicker.dll"), MAKEINTRESOURCE(IDD_COLORPICKER), hParent,
-				(DLGPROC)ColourPickerDlgProc, (LPARAM)this);
-		break;
-
-		default:
-			CreateColourPicker(CP_USE_ALPHA);
-		break;
-		}
-	}
-
-EXPORT void CColourPicker::SetRGB(unsigned short r, unsigned short g, unsigned short b)
-	{
+void CColourPicker::SetRGB(unsigned short r, unsigned short g, unsigned short b)
+{
 	// Clamp colour values to 255
 	CurrCol.r = min(r, 255);
 	CurrCol.g = min(g, 255);
 	CurrCol.b = min(b, 255);
 
 	CurrCol.UpdateHSV();
-	}
+}
 
-EXPORT void CColourPicker::SetHSV(unsigned short h, unsigned short s, unsigned short v)
-	{
+void CColourPicker::SetHSV(unsigned short h, unsigned short s, unsigned short v)
+{
 	// Clamp hue values to 359, sat and val to 100
 	CurrCol.h = min(h, 359);
 	CurrCol.s = min(s, 100);
 	CurrCol.v = min(v, 100);
 
 	CurrCol.UpdateRGB();
-	}
+}
 
-EXPORT void CColourPicker::SetAlpha(unsigned short a)
-	{
-	if (UseAlpha == CP_USE_ALPHA)
-		{
-		// Clamp alpha values to 100
-		CurrCol.a = min(a, 100);
-		}
-	else
-		CurrCol.a = 100;
-	}
+void CColourPicker::SetAlpha(unsigned short a)
+{
+	// Clamp alpha values to 100
+	CurrCol.a = min(a, 100);
+}
 
-EXPORT SColour CColourPicker::GetCurrentColour()
-	{
+SColour CColourPicker::GetCurrentColour()
+{
 	return CurrCol;
-	}
+}
 
-EXPORT SColour CColourPicker::GetOldColour()
-	{
+SColour CColourPicker::GetOldColour()
+{
 	return OldCol;
-	}
-
-short CColourPicker::GetAlphaUsage()
-	{
-	return UseAlpha;
-	}
+}
 
 void CColourPicker::UpdateOldColour()
-	{
+{
 	OldCol = CurrCol;
-	}
+}
 
 void CColourPicker::Revert()
-	{
+{
 	CurrCol = OldCol;
-	}
+}
 
 // Updates the RGB color from the HSV
 void SColour::UpdateRGB()
-	{
+{
 	int conv;
 	double hue, sat, val;
 	int base;
@@ -126,7 +99,7 @@ void SColour::UpdateRGB()
 	base = (unsigned short)(255.0f * (1.0 - sat) * val);
 
 	switch ((unsigned short)((float)h/60.0f))
-		{
+	{
 		case 0:
 			r = (unsigned short)(255.0f * val);
 			g = (unsigned short)((255.0f * val - base) * (h/60.0f) + base);
@@ -162,12 +135,12 @@ void SColour::UpdateRGB()
 			g = base;
 			b = (unsigned short)((255.0f * val - base) * (1.0f - ((h%60) / 60.0f)) + base);
 		break;
-		}
 	}
+}
 
 // Updates the HSV color from the RGB
 void SColour::UpdateHSV()
-	{
+{
 	unsigned short max, min, delta;
 	short temp;
     
@@ -195,4 +168,4 @@ void SColour::UpdateHSV()
 		h = temp + 360;
 	else
 		h = temp;
-	}
+}

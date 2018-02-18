@@ -81,6 +81,7 @@
   <ItemGroup>
     <ClInclude Include="CPicker.h" />
     <ClInclude Include="CPickerDll.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DLL.rc" />

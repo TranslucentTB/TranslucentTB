@@ -335,7 +335,7 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 
 		try
 		{
-			opt.color = std::stoi(color_value, static_cast<size_t *>(0), 16);
+			opt.color = (opt.color & 0xFF000000) + (std::stoi(color_value, static_cast<size_t *>(0), 16) & 0x00FFFFFF);
 		}
 		catch (const std::invalid_argument &e)
 		{
@@ -361,7 +361,7 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 
 		try
 		{
-			opt.dynamicwscolor = std::stoi(color_value, static_cast<size_t *>(0), 16);
+			opt.dynamicwscolor = (opt.dynamicwscolor & 0xFF000000) + (std::stoi(color_value, static_cast<size_t *>(0), 16) & 0x00FFFFFF);
 		}
 		catch (const std::invalid_argument &e)
 		{
@@ -953,7 +953,7 @@ uint32_t PickColor(uint32_t color)
 
 	// Bet 5 bucks a british wrote this library
 	CColourPicker picker(NULL, r, g, b, a, true);
-	picker.CreateColourPicker(CP_USE_ALPHA);
+	picker.CreateColourPicker();
 	SColour newColor = picker.GetCurrentColour();
 
 	alphaPercent = newColor.a / 100.0f;
@@ -984,6 +984,7 @@ bool CheckPopupRadioItem(uint32_t from, uint32_t to, uint32_t item_to_check)
 void RefreshMenu()
 {
 	Autostart::StartupState s_state = Autostart::GetStartupState();
+	bool d_ws_tint = opt.dynamicws && (opt.dynamic_ws_state == swca::ACCENT_ENABLE_TINTED || opt.dynamic_ws_state == swca::ACCENT_ENABLE_BLUR_TINTED || opt.dynamic_ws_state == swca::ACCENT_ENABLE_FLUENT_TINTED);
 
 	// This block of CheckPopupRadioItem might throw, but if that happens we just need to update the map, or something really fucked up happened
 	CheckPopupRadioItem(IDM_BLUR, IDM_FLUENT, Tray::NORMAL_BUTTON_MAP.at(opt.taskbar_appearance));
@@ -995,22 +996,18 @@ void RefreshMenu()
 		EnablePopupItem(kvp.second, opt.dynamicws);
 	}
 	EnablePopupItem(IDM_DYNAMICWS_PEEK, opt.dynamicws);
+	EnablePopupItem(IDM_DYNAMICWS_COLOR, opt.dynamicws);
 	EnablePopupItem(IDM_FLUENT, run.fluent_available);
 	EnablePopupItem(IDM_DYNAMICWS_FLUENT, opt.dynamicws && run.fluent_available);
 	EnablePopupItem(IDM_DYNAMICWS_FLUENT_TINTED, opt.dynamicws && run.fluent_available);
 	EnablePopupItem(IDM_AUTOSTART, s_state != Autostart::StartupState::DisabledByUser);
 
-	if (opt.dynamicws)
+	for (const std::pair<swca::ACCENT, uint32_t> &kvp : Tray::NORMAL_BUTTON_MAP)
 	{
-		if (opt.dynamic_ws_state == swca::ACCENT_ENABLE_TINTED || opt.dynamic_ws_state == swca::ACCENT_ENABLE_BLUR_TINTED || opt.dynamic_ws_state == swca::ACCENT_ENABLE_FLUENT_TINTED)
-		{
-			for (const std::pair<swca::ACCENT, uint32_t> &kvp : Tray::NORMAL_BUTTON_MAP)
-			{
-				// The tint modes takes over the normal appearance
-				EnablePopupItem(kvp.second, false);
-			}
-		}
+		// The tint modes takes over the normal appearance
+		EnablePopupItem(kvp.second, d_ws_tint);
 	}
+	EnablePopupItem(IDM_COLOR, d_ws_tint);
 
 	CheckPopupItem(IDM_DYNAMICWS_PEEK, opt.dynamicws_peek);
 	CheckPopupItem(IDM_DYNAMICWS, opt.dynamicws);

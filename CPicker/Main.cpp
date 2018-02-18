@@ -1,30 +1,9 @@
-#include "CPickerDll.h"
-#include "resource.h"
-
 #include <chrono>
 #include <future>
 #include <stdio.h>
 
-inline void DrawCircle(HDC hcomp, int red, int green, int blue, float x, float y)
-{
-	HPEN pen = CreatePen(PS_SOLID, 1, RGB(255 - red, 255 - green, 255 - blue));
-	SelectObject(hcomp, pen);
-	Arc(hcomp, x - 5, y - 5, x + 5, y + 5, 0, 0, 0, 0);
-}
-
-inline void DrawArrows(HDC hcomp, int width, int height, float y)
-{
-	HPEN pen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
-	SelectObject(hcomp, pen);
-	MoveToEx(hcomp, 0, height - (y - 5), NULL);
-	LineTo(hcomp, 0, height - (y + 5));
-	LineTo(hcomp, 5, height - (y));
-	LineTo(hcomp, 0, height - (y - 5));
-	MoveToEx(hcomp, width - 1, height - (y - 5), NULL);
-	LineTo(hcomp, width - 1, height - (y + 5));
-	LineTo(hcomp, width - 6, height - (y));
-	LineTo(hcomp, width - 1, height - (y - 5));
-}
+#include "CPicker.h"
+#include "resource.h"
 
 LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -71,24 +50,6 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		pbufferC1.Create(widthC1, heightC1);
 		pbufferC2.Create(widthC2, heightC2);
 		pbufferA.Create(widthA, heightA);
-
-		switch (picker->GetAlphaUsage())
-		{
-		case CP_NO_ALPHA:
-		{
-			picker->SetAlpha(100);
-			break;
-		}
-
-		case CP_DISABLE_ALPHA:
-		{
-			picker->SetAlpha(100);
-			EnableWindow(GetDlgItem(hDlg, IDC_ALPHA), false);
-			EnableWindow(GetDlgItem(hDlg, IDC_ALPHATXT), false);
-			EnableWindow(GetDlgItem(hDlg, IDC_ALPHATXT2), false);
-			break;
-		}
-		}
 
 		UpdateValues(hDlg, picker->GetCurrentColour());
 
@@ -485,67 +446,61 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		ReleaseDC(Color2, hdc);
 
 		// Alpha slider
-		if (picker->GetAlphaUsage() != CP_NO_ALPHA)
+		hdc = GetDC(Alpha);
+		hcomp = CreateCompatibleDC(hdc);
+
+		hbmp = CreateCompatibleBitmap(hdc, widthA, heightA);
+		SelectObject(hcomp, hbmp);
+
+		for (int y = heightA - 1; y > -1; y--)
 		{
-			hdc = GetDC(Alpha);
-			hcomp = CreateCompatibleDC(hdc);
-
-			hbmp = CreateCompatibleBitmap(hdc, widthA, heightA);
-			SelectObject(hcomp, hbmp);
-
-			for (int y = heightA - 1; y > -1; y--)
+			for (int x = 0; x < 6; x++)
 			{
-				for (int x = 0; x < 6; x++)
-				{
-					pbufferA.SetPixel(x, y, backgroundColor.lbColor);
-				}
-				for (int x = widthA - 6; x < widthA; x++)
-				{
-					pbufferA.SetPixel(x, y, backgroundColor.lbColor);
-				}
+				pbufferA.SetPixel(x, y, backgroundColor.lbColor);
 			}
-
-			rf = red / 255.0f;
-			gf = green / 255.0f;
-			bf = blue / 255.0f;
-			bool flag = false;
-
-			for (int y = heightA - 1; y > -1; y--)
+			for (int x = widthA - 6; x < widthA; x++)
 			{
-				COLORREF cb, cw;
-
-				if (!(y % (int)(widthA / 2 - 6)))
-				{
-					flag = !flag;
-				}
-
-				float af = 1.0f - (y / heightA);
-
-				cb = RGB((rf*af) * 255, (gf*af) * 255, (bf*af) * 255);
-				cw = RGB((rf*af + 1 - af) * 255, (gf*af + 1 - af) * 255, (bf*af + 1 - af) * 255);
-
-				for (int x = 6; x < (widthA / 2); x++)
-				{
-					pbufferA.SetPixel(x, y, flag ? cw : cb);
-				}
-				for (int x = (widthA / 2); x < widthA - 6; x++)
-				{
-					pbufferA.SetPixel(x, y, flag ? cb : cw);
-				}
+				pbufferA.SetPixel(x, y, backgroundColor.lbColor);
 			}
-			pbufferA.Display(hcomp);
-
-			if (picker->GetAlphaUsage() == CP_USE_ALPHA)
-			{
-				DrawArrows(hcomp, widthA, heightA, (GetDlgItemInt(hDlg, IDC_ALPHA, NULL, false) / 100.0f) * heightA);
-			}
-
-			BitBlt(hdc, 0, 0, widthA, heightA, hcomp, 0, 0, SRCCOPY);
-
-			DeleteObject(hbmp);
-			DeleteDC(hcomp);
-			ReleaseDC(Alpha, hdc);
 		}
+
+		rf = red / 255.0f;
+		gf = green / 255.0f;
+		bf = blue / 255.0f;
+		bool flag = false;
+
+		for (int y = heightA - 1; y > -1; y--)
+		{
+			COLORREF cb, cw;
+
+			if (!(y % (int)(widthA / 2 - 6)))
+			{
+				flag = !flag;
+			}
+
+			float af = 1.0f - (y / heightA);
+
+			cb = RGB((rf*af) * 255, (gf*af) * 255, (bf*af) * 255);
+			cw = RGB((rf*af + 1 - af) * 255, (gf*af + 1 - af) * 255, (bf*af + 1 - af) * 255);
+
+			for (int x = 6; x < (widthA / 2); x++)
+			{
+				pbufferA.SetPixel(x, y, flag ? cw : cb);
+			}
+			for (int x = (widthA / 2); x < widthA - 6; x++)
+			{
+				pbufferA.SetPixel(x, y, flag ? cb : cw);
+			}
+		}
+		pbufferA.Display(hcomp);
+
+		DrawArrows(hcomp, widthA, heightA, (GetDlgItemInt(hDlg, IDC_ALPHA, NULL, false) / 100.0f) * heightA);
+
+		BitBlt(hdc, 0, 0, widthA, heightA, hcomp, 0, 0, SRCCOPY);
+
+		DeleteObject(hbmp);
+		DeleteDC(hcomp);
+		ReleaseDC(Alpha, hdc);
 
 		DeleteObject(backgroundColorBrush);
 
@@ -682,7 +637,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			}
 		}
 		// IDC_ALPHASLIDE picked
-		else if (_IS_IN(rectA.left, rectA.right, p.x) && _IS_IN(rectA.top, rectA.bottom, p.y) && (picker->GetAlphaUsage() == CP_USE_ALPHA))
+		else if (_IS_IN(rectA.left, rectA.right, p.x) && _IS_IN(rectA.top, rectA.bottom, p.y))
 		{
 			const float fy = ((p.y - rectA.top) / heightA) * 255.0f;
 
@@ -813,7 +768,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 // Draw a b/w checked rectangle, "covered" with the rgba color provided.
 // cx and cy are the size of the checks
-EXPORT void DrawCheckedRect(HWND hWnd, int r, int g, int b, int a, int cx, int cy)
+void DrawCheckedRect(HWND hWnd, int r, int g, int b, int a, int cx, int cy)
 {
 	float rf = (float)r / 255.0f,
 		gf = (float)g / 255.0f,
@@ -851,6 +806,27 @@ EXPORT void DrawCheckedRect(HWND hWnd, int r, int g, int b, int a, int cx, int c
 	DeleteObject(brush);
 	DeleteObject(brush2);
 	ReleaseDC(hWnd, hdc);
+}
+
+void DrawCircle(HDC hcomp, int red, int green, int blue, float x, float y)
+{
+	HPEN pen = CreatePen(PS_SOLID, 1, RGB(255 - red, 255 - green, 255 - blue));
+	SelectObject(hcomp, pen);
+	Arc(hcomp, x - 5, y - 5, x + 5, y + 5, 0, 0, 0, 0);
+}
+
+void DrawArrows(HDC hcomp, int width, int height, float y)
+{
+	HPEN pen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
+	SelectObject(hcomp, pen);
+	MoveToEx(hcomp, 0, height - (y - 5), NULL);
+	LineTo(hcomp, 0, height - (y + 5));
+	LineTo(hcomp, 5, height - (y));
+	LineTo(hcomp, 0, height - (y - 5));
+	MoveToEx(hcomp, width - 1, height - (y - 5), NULL);
+	LineTo(hcomp, width - 1, height - (y + 5));
+	LineTo(hcomp, width - 6, height - (y));
+	LineTo(hcomp, width - 1, height - (y - 5));
 }
 
 void UpdateValues(HWND hDlg, SColour col)

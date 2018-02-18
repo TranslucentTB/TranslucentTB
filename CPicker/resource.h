@@ -3,7 +3,6 @@
 // Used by DLL.rc
 //
 #define IDD_COLORPICKER                 156
-#define IDD_COLORPICKERNOALPHA          157
 #define IDC_COLOR                       1034
 #define IDC_COLOR2                      1035
 #define IDC_R                           1036

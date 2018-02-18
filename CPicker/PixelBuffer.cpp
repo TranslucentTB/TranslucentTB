@@ -1,27 +1,27 @@
-#include "CPickerDll.h"
+#include "CPicker.h"
 
 PixelBuffer::PixelBuffer()
-	{
+{
 	hBmpBuffer=NULL;
 	lpBits=NULL;
-	}
+}
 
 void PixelBuffer::SetPixel(int x, int y, unsigned int color)
-	{
+{
 	unsigned int *pixel = (unsigned int*)lpBits;
 	pixel[(((h-1)-y)*w+x)] = color;
-	}
+}
 
 void PixelBuffer::Display(HDC dc)
-	{
+{
 	HDC hdcTemp = CreateCompatibleDC(dc);
 	HGDIOBJ prev = SelectObject(hdcTemp, hBmpBuffer);
 	BitBlt(dc, 0, 0, w, h, hdcTemp, 0, 0, SRCCOPY);
 	SelectObject(hdcTemp, prev);
-	}
+}
 
 void PixelBuffer::Create(int _w, int _h)
-	{
+{
 	w=_w;
 	h=_h;
 	BITMAPV5HEADER bi;
@@ -44,10 +44,10 @@ void PixelBuffer::Create(int _w, int _h)
 	hdc = GetDC(NULL);
 	hBmpBuffer = CreateDIBSection(hdc, (BITMAPINFO *)&bi, DIB_RGB_COLORS,
 		(void **)&lpBits, NULL, (DWORD)0);
-	}
+}
 
 void PixelBuffer::Destroy()
-	{
+{
 	if (hBmpBuffer)
 		DeleteObject(hBmpBuffer);
-	}
+}
