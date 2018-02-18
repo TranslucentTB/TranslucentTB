@@ -959,11 +959,11 @@ void RefreshMenu()
 	EnablePopupItem(IDM_AUTOSTART, s_state != Autostart::StartupState::DisabledByUser);
 	if (s_state == Autostart::StartupState::DisabledByUser)
 	{
-		// Change text to tell it has been disabled in task manager
+		// TODO: Change text to tell it has been disabled in task manager
 	}
 	else
 	{
-		// Put normal text
+		// TODO: Put normal text
 	}
 
 	CheckPopupItem(IDM_DYNAMICWS_PEEK, opt.dynamicws_peek);
@@ -994,7 +994,7 @@ LRESULT CALLBACK TrayCallback(HWND hWnd, uint32_t message, WPARAM wParam, LPARAM
 			GetCursorPos(&pt);
 			SetForegroundWindow(hWnd);
 			uint32_t tray = TrackPopupMenu(GetSubMenu(run.tray_popup, 0), TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
-			switch (tray) // TODO: Add dynamic windows ACCENT_ENABLE_TRANSPARENT_GRADIENT
+			switch (tray)
 			{
 			case IDM_COLOR:
 				opt.color = PickColor(opt.color);
