@@ -947,6 +947,19 @@ bool CheckPopupRadioItem(const uint32_t &from, const uint32_t &to, const uint32_
 	return CheckMenuRadioItem(run.tray_popup, from, to, item_to_check, MF_BYCOMMAND);
 }
 
+void ChangePopupItemText(const uint32_t &item, const std::wstring &new_text)
+{
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wmissing-field-initializers"
+	MENUITEMINFO item_info = { sizeof(item_info), MIIM_STRING };
+	#pragma clang diagnostic pop
+
+	std::vector<wchar_t> buf(new_text.begin(), new_text.end());
+	buf.push_back(0); // Null terminator
+	item_info.dwTypeData = buf.data();
+	SetMenuItemInfo(run.tray_popup, item, false, &item_info);
+}
+
 void RefreshMenu()
 {
 	Autostart::StartupState s_state = Autostart::GetStartupState();
@@ -965,13 +978,14 @@ void RefreshMenu()
 	EnablePopupItem(IDM_FLUENT, run.fluent_available);
 	EnablePopupItem(IDM_DYNAMICWS_FLUENT, opt.dynamic_ws && run.fluent_available);
 	EnablePopupItem(IDM_AUTOSTART, s_state != Autostart::StartupState::DisabledByUser);
+
 	if (s_state == Autostart::StartupState::DisabledByUser)
 	{
-		// TODO: Change text to tell it has been disabled in task manager
+		ChangePopupItemText(IDM_AUTOSTART, L"Startup has been disabled in Task Manager");
 	}
 	else
 	{
-		// TODO: Put normal text
+		ChangePopupItemText(IDM_AUTOSTART, L"Open at boot");
 	}
 
 	CheckPopupItem(IDM_DYNAMICWS_PEEK, opt.dynamic_ws_normal_on_peek);
