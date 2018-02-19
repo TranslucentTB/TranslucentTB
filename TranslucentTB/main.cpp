@@ -63,7 +63,6 @@ static struct OPTIONS
 static struct RUNTIMESTATE
 {
 	Tray::EXITREASON exit_reason = Tray::UserAction;
-	IVirtualDesktopManager *desktop_manager = NULL;				// Used to detect if a window is in the current virtual desktop. Don't forget to check for null on this one
 	IAppVisibility *app_visibility = NULL;						// Used to detect if start menu is opened. Don't forget to check for null on this one
 	HWND main_taskbar;
 	std::unordered_map<HMONITOR, Taskbar::TASKBARPROPERTIES> taskbars;
@@ -862,8 +861,15 @@ bool IsWindowBlacklisted(const HWND &hWnd)
 
 bool IsWindowOnCurrentDesktop(const HWND &hWnd)
 {
+	static IVirtualDesktopManager *desktop_manager;
+	static bool failed = false;
+	if (!desktop_manager && !failed)
+	{
+		failed = !Error::Handle(CoCreateInstance(CLSID_VirtualDesktopManager, NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, reinterpret_cast<LPVOID *>(&desktop_manager)), Error::Level::Log, L"Initialization of IVirtualDesktopManager failed.");
+	}
+
 	BOOL on_current_desktop;  // This must be a BOOL not a bool because Windows and C89 are equally stupid
-	return run.desktop_manager && SUCCEEDED(run.desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop)) ? on_current_desktop : true;
+	return SUCCEEDED(desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop)) ? on_current_desktop : true;
 }
 
 bool IsWindowMaximised(const HWND &hWnd)
@@ -1253,7 +1259,6 @@ void InitializeAPIs()
 	Error::Handle(ABI::Windows::Foundation::Initialize(), Error::Level::Log, L"Initialization of UWP failed.");
 #endif
 	Error::Handle(CoInitialize(NULL), Error::Level::Log, L"Initialization of COM failed.");
-	Error::Handle(CoCreateInstance(CLSID_VirtualDesktopManager, NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, reinterpret_cast<LPVOID *>(&run.desktop_manager)), Error::Level::Log, L"Initialization of IVirtualDesktopManager failed.");
 	Error::Handle(CoCreateInstance(CLSID_AppVisibility, NULL, CLSCTX_INPROC_SERVER, IID_IAppVisibility, reinterpret_cast<LPVOID *>(&run.app_visibility)), Error::Level::Log, L"Initialization of IAppVisibility failed.");
 }
 
