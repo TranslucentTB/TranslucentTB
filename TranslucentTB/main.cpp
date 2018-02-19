@@ -40,6 +40,7 @@
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 #include "autostart.hpp"
+#include "windowhelper.hpp"
 
 
 #pragma region Structures
@@ -748,39 +749,13 @@ void ClearBlacklistCache()
 	run.cache_hits = Config::CACHE_HIT_MAX + 1;
 }
 
-std::wstring GetWindowTitle(const HWND &hwnd)
-{
-	int titleSize = GetWindowTextLength(hwnd) + 1; // For the null terminator
-	std::vector<wchar_t> windowTitleBuffer(titleSize);
-	GetWindowText(hwnd, windowTitleBuffer.data(), titleSize);
-	return windowTitleBuffer.data();
-}
-
-std::wstring GetWindowClass(const HWND &hwnd)
-{
-	wchar_t className[MAX_PATH];
-	GetClassName(hwnd, className, _countof(className));
-	return className;
-}
-
-std::wstring GetWindowFile(const HWND &hwnd)
-{
-	DWORD ProcessId;
-	GetWindowThreadProcessId(hwnd, &ProcessId);
-
-	wchar_t exeName_path[MAX_PATH];
-	GetModuleFileNameEx(OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId), NULL, exeName_path, _countof(exeName_path));
-
-	return PathFindFileName(exeName_path);
-}
-
 bool OutputBlacklistMatchToLog(const HWND &hwnd, const bool &match)
 {
 	if (Config::VERBOSE)
 	{
-		std::wstring className = GetWindowClass(hwnd);
-		std::wstring title = GetWindowTitle(hwnd);
-		std::wstring exeName = GetWindowFile(hwnd);
+		std::wstring className = WindowHelper::GetWindowClass(hwnd);
+		std::wstring title = WindowHelper::GetWindowTitle(hwnd);
+		std::wstring exeName = WindowHelper::GetWindowFile(hwnd);
 
 		std::wstringstream message;
 		message << (match ? L"Blacklist match found for window: " : L"No blacklist match found for window: ");
@@ -816,7 +791,7 @@ bool IsWindowBlacklisted(const HWND &hWnd)
 		// This is the fastest because we do the less string manipulation, so always try it first
 		if (opt.blacklisted_classes.size() > 0)
 		{
-			std::wstring className = GetWindowClass(hWnd);
+			std::wstring className = WindowHelper::GetWindowClass(hWnd);
 			for (const std::wstring &value : opt.blacklisted_classes)
 			{
 				if (className == value)
@@ -831,7 +806,7 @@ bool IsWindowBlacklisted(const HWND &hWnd)
 		// If it ends up affecting stuff, we can remove it from caching easily.
 		if (opt.blacklisted_titles.size() > 0)
 		{
-			std::wstring windowTitle = GetWindowTitle(hWnd);
+			std::wstring windowTitle = WindowHelper::GetWindowTitle(hWnd);
 			for (const std::wstring &value : opt.blacklisted_titles)
 			{
 				if (windowTitle.find(value) != std::wstring::npos)
@@ -844,7 +819,7 @@ bool IsWindowBlacklisted(const HWND &hWnd)
 		// GetModuleFileNameEx is quite expensive according to the tracing tools, so use it as last resort.
 		if (opt.blacklisted_filenames.size() > 0)
 		{
-			std::wstring exeName = GetWindowFile(hWnd);
+			std::wstring exeName = WindowHelper::GetWindowFile(hWnd);
 			Util::ToLower(exeName);
 			for (const std::wstring &value : opt.blacklisted_filenames)
 			{
@@ -857,33 +832,6 @@ bool IsWindowBlacklisted(const HWND &hWnd)
 
 		return OutputBlacklistMatchToLog(hWnd, blacklist_cache[hWnd] = false);
 	}
-}
-
-bool IsWindowOnCurrentDesktop(const HWND &hWnd)
-{
-	static IVirtualDesktopManager *desktop_manager;
-	static bool failed = false;
-	if (!desktop_manager && !failed)
-	{
-		failed = !Error::Handle(CoCreateInstance(CLSID_VirtualDesktopManager, NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, reinterpret_cast<LPVOID *>(&desktop_manager)), Error::Level::Log, L"Initialization of IVirtualDesktopManager failed.");
-	}
-
-	BOOL on_current_desktop;  // This must be a BOOL not a bool because Windows and C89 are equally stupid
-	return SUCCEEDED(desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop)) ? on_current_desktop : true;
-}
-
-bool IsWindowMaximised(const HWND &hWnd)
-{
-	WINDOWPLACEMENT result = {};
-	GetWindowPlacement(hWnd, &result);
-	return result.showCmd == SW_MAXIMIZE;
-}
-
-bool IsWindowCloaked(const HWND &hWnd)
-{
-	int cloaked;
-	DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, &cloaked, sizeof(cloaked));
-	return cloaked;
 }
 
 bool IsSingleInstance()
@@ -1155,7 +1103,7 @@ BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
 	// IsWindowCloaked should take care of checking if it's on the current desktop.
 	// But that's undefined behavior.
 	// So eh, do both but with IsWindowOnCurrentDesktop last.
-	if (IsWindowVisible(hWnd) && IsWindowMaximised(hWnd) && !IsWindowCloaked(hWnd) && !IsWindowBlacklisted(hWnd) && IsWindowOnCurrentDesktop(hWnd))
+	if (IsWindowVisible(hWnd) && WindowHelper::IsWindowMaximised(hWnd) && !WindowHelper::IsWindowCloaked(hWnd) && !IsWindowBlacklisted(hWnd) && WindowHelper::IsWindowOnCurrentDesktop(hWnd))
 	{
 		HMONITOR _monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
 		Taskbar::TASKBARPROPERTIES &taskbar = run.taskbars.at(_monitor);

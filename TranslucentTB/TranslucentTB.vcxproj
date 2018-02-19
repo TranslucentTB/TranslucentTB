@@ -96,6 +96,7 @@
     <ClInclude Include="ttblog.hpp" />
     <ClInclude Include="util.hpp" />
     <ClInclude Include="win32.hpp" />
+    <ClInclude Include="windowhelper.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TranslucentTB.rc" />
