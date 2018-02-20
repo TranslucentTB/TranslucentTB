@@ -4,6 +4,7 @@
 #include <Windows.Foundation.Collections.h>
 #include <wrl/implements.h>
 
+// Found in libil2cpp's headers
 template <typename T>
 class SynchronousOperation : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::WinRtClassicComMix>, ABI::Windows::Foundation::IAsyncOperationCompletedHandler<T>>
 {
