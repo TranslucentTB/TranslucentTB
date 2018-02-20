@@ -90,6 +90,7 @@
     <ClInclude Include="swcadata.hpp" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SynchronousOperation.hpp" />
     <ClInclude Include="taskbar.hpp" />
     <ClInclude Include="tray.hpp" />
     <ClInclude Include="ttberror.hpp" />

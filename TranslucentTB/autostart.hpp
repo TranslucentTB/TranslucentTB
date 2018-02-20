@@ -9,10 +9,15 @@
 #include <winreg.h>
 
 #include "app.hpp"
-#include "ttberror.hpp"
 #else
-// TODO
+#include <roapi.h>
+#include <Windows.ApplicationModel.h>
+#include <wrl/wrappers/corewrappers.h>
+
+#include "SynchronousOperation.hpp"
 #endif
+
+#include "ttberror.hpp"
 
 namespace Autostart {
 
@@ -21,6 +26,53 @@ namespace Autostart {
 		DisabledByUser = 1,
 		Enabled = 2
 	};
+
+#ifdef STORE
+	// Send help
+	ABI::Windows::ApplicationModel::IStartupTask *GetApplicationStartupTask()
+	{
+		using namespace ABI::Windows;
+		using namespace Microsoft::WRL::Wrappers;
+		typedef Foundation::Collections::IVectorView<ApplicationModel::StartupTask *> StartupTasksVector;
+
+		static ApplicationModel::IStartupTaskStatics *startup_tasks_statics;
+		static StartupTasksVector *package_tasks;
+		static ApplicationModel::IStartupTask *task;
+
+		if (!startup_tasks_statics)
+		{
+			if (!Error::Handle(Foundation::ActivateInstance<ApplicationModel::IStartupTaskStatics>(HStringReference(RuntimeClass_Windows_ApplicationModel_StartupTask).Get(), &startup_tasks_statics), Error::Level::Log, L"Activating IStartupTaskStatics instance failed."))
+			{
+				return nullptr;
+			}
+		}
+
+		if (!package_tasks)
+		{
+			Foundation::IAsyncOperation<StartupTasksVector *> *operation;
+			if (!Error::Handle(startup_tasks_statics->GetForCurrentPackageAsync(&operation), Error::Level::Log, L"Starting acquisition of package startup tasks failed."))
+			{
+				return nullptr;
+			}
+
+			// Fuck off async
+			if (!Error::Handle(SynchronousOperation<StartupTasksVector *>(operation).GetResults(&package_tasks), Error::Level::Log, L"Acquiring package startup tasks failed."))
+			{
+				return nullptr;
+			}
+		}
+
+		if (!task)
+		{
+			if (!Error::Handle(package_tasks->GetAt(0, &task), Error::Level::Log, L"Getting first package startup task failed."))
+			{
+				return nullptr;
+			}
+		}
+
+		return task;
+	}
+#endif
 
 	StartupState GetStartupState()
 	{
@@ -50,8 +102,21 @@ namespace Autostart {
 			return StartupState::Disabled;
 		}
 #else
-		// TODO
-		return StartupState::Disabled;
+		auto task = GetApplicationStartupTask();
+		if (!task)
+		{
+			return StartupState::Disabled;
+		}
+
+		ABI::Windows::ApplicationModel::StartupTaskState state;
+		if (!Error::Handle(task->get_State(&state), Error::Level::Log, L"Could not retrieve startup task state"))
+		{
+			return StartupState::Disabled;
+		}
+		else
+		{
+			return static_cast<StartupState>(state);
+		}
 #endif
 	}
 
@@ -72,7 +137,7 @@ namespace Autostart {
 				error = RegSetValueEx(hkey, App::NAME.c_str(), 0, REG_SZ, reinterpret_cast<BYTE *>(path), wcslen(path) * sizeof(wchar_t));
 				Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while setting startup registry value!");
 			}
-			else
+			else if (state == StartupState::Disabled)
 			{
 				error = RegDeleteValue(hkey, App::NAME.c_str());
 				Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while deleting startup registry value!");
@@ -81,7 +146,24 @@ namespace Autostart {
 			Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Error closing registry key.");
 		}
 #else
-		// TODO
+		auto task = GetApplicationStartupTask();
+		if (!task)
+		{
+			return;
+		}
+
+		if (state == StartupState::Enabled)
+		{
+			ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::ApplicationModel::StartupTaskState> *operation;
+			task->RequestEnableAsync(&operation);
+
+			ABI::Windows::ApplicationModel::StartupTaskState new_state;
+			Error::Handle(SynchronousOperation<ABI::Windows::ApplicationModel::StartupTaskState>(operation).GetResults(&new_state), Error::Level::Log, L"Could not set new startup task state");
+		}
+		else if (state == StartupState::Disabled)
+		{
+			Error::Handle(task->Disable(), Error::Level::Log, L"Could not disable startup task state");
+		}
 #endif
 	}
 

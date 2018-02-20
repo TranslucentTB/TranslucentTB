@@ -60,6 +60,9 @@
     <ClInclude Include="windowhelper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SynchronousOperation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TranslucentTB.rc">

@@ -1204,7 +1204,7 @@ void SetTaskbarBlur()
 void InitializeAPIs()
 {
 #ifdef STORE
-	Error::Handle(ABI::Windows::Foundation::Initialize(), Error::Level::Log, L"Initialization of UWP failed.");
+	Error::Handle(RoInitialize(RO_INIT_MULTITHREADED), Error::Level::Log, L"Initialization of Windows Runtime failed.");
 #endif
 	Error::Handle(CoInitialize(NULL), Error::Level::Log, L"Initialization of COM failed.");
 	Error::Handle(CoCreateInstance(CLSID_AppVisibility, NULL, CLSCTX_INPROC_SERVER, IID_IAppVisibility, reinterpret_cast<LPVOID *>(&run.app_visibility)), Error::Level::Log, L"Initialization of IAppVisibility failed.");
@@ -1214,7 +1214,7 @@ void UninitializeAPIs()
 {
 	CoUninitialize();
 #ifdef STORE
-	ABI::Windows::Foundation::Uninitialize();
+	RoUninitialize();
 #endif
 }
 
