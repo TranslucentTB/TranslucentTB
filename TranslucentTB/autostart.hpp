@@ -155,7 +155,10 @@ namespace Autostart {
 		if (state == StartupState::Enabled)
 		{
 			ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::ApplicationModel::StartupTaskState> *operation;
-			task->RequestEnableAsync(&operation);
+			if (!Error::Handle(task->RequestEnableAsync(&operation), Error::Level::Log, L"Could not start setting of startup task state"))
+			{
+				return;
+			}
 
 			ABI::Windows::ApplicationModel::StartupTaskState new_state;
 			Error::Handle(SynchronousOperation<ABI::Windows::ApplicationModel::StartupTaskState>(operation).GetResults(&new_state), Error::Level::Log, L"Could not set new startup task state");
