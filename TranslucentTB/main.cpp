@@ -1206,16 +1206,18 @@ void InitializeAPIs()
 {
 #ifdef STORE
 	Error::Handle(RoInitialize(RO_INIT_MULTITHREADED), Error::Level::Log, L"Initialization of Windows Runtime failed.");
-#endif
+#else
 	Error::Handle(CoInitialize(NULL), Error::Level::Log, L"Initialization of COM failed.");
+#endif
 	Error::Handle(run.app_visibility.CoCreateInstance(CLSID_AppVisibility), Error::Level::Log, L"Initialization of IAppVisibility failed.");
 }
 
 void UninitializeAPIs()
 {
-	CoUninitialize();
 #ifdef STORE
 	RoUninitialize();
+#else
+	CoUninitialize();
 #endif
 }
 
