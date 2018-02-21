@@ -2,6 +2,7 @@
 #ifndef WINDOWHELPER_HPP
 #define WINDOWHELPER_HPP
 
+#include <atlbase.h>
 #include <combaseapi.h>
 #include <dwmapi.h>
 #include <psapi.h>
@@ -75,7 +76,7 @@ namespace WindowHelper {
 
 	bool IsWindowOnCurrentDesktop(const HWND &hWnd)
 	{
-		static IVirtualDesktopManager *desktop_manager;
+		static CComPtr<IVirtualDesktopManager> desktop_manager;
 		static bool failed = false;
 
 		if (failed)
@@ -84,7 +85,7 @@ namespace WindowHelper {
 		}
 		else if (!desktop_manager)
 		{
-			failed = !Error::Handle(CoCreateInstance(CLSID_VirtualDesktopManager, NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, reinterpret_cast<LPVOID *>(&desktop_manager)), Error::Level::Log, L"Initialization of IVirtualDesktopManager failed.");
+			failed = !Error::Handle(desktop_manager.CoCreateInstance(CLSID_VirtualDesktopManager), Error::Level::Log, L"Initialization of IVirtualDesktopManager failed.");
 			if (failed)
 			{
 				return true;

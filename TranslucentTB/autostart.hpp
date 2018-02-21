@@ -32,16 +32,17 @@ namespace Autostart {
 	ABI::Windows::ApplicationModel::IStartupTask *GetApplicationStartupTask()
 	{
 		using namespace ABI::Windows;
+		using namespace Microsoft::WRL;
 		using namespace Microsoft::WRL::Wrappers;
 		typedef Foundation::Collections::IVectorView<ApplicationModel::StartupTask *> StartupTasksVector;
 
-		static ApplicationModel::IStartupTaskStatics *startup_tasks_statics;
+		static ComPtr<ApplicationModel::IStartupTaskStatics> startup_tasks_statics;
 		static StartupTasksVector *package_tasks;
 		static ApplicationModel::IStartupTask *task;
 
 		if (!startup_tasks_statics)
 		{
-			if (!Error::Handle(Foundation::ActivateInstance<ApplicationModel::IStartupTaskStatics>(HStringReference(RuntimeClass_Windows_ApplicationModel_StartupTask).Get(), &startup_tasks_statics), Error::Level::Log, L"Activating IStartupTaskStatics instance failed."))
+			if (!Error::Handle(Foundation::ActivateInstance<ComPtr<ApplicationModel::IStartupTaskStatics>>(HStringReference(RuntimeClass_Windows_ApplicationModel_StartupTask).Get(), &startup_tasks_statics), Error::Level::Log, L"Activating IStartupTaskStatics instance failed."))
 			{
 				return nullptr;
 			}
