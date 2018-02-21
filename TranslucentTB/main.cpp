@@ -1205,7 +1205,7 @@ void SetTaskbarBlur()
 void InitializeAPIs()
 {
 #ifdef STORE
-	Error::Handle(RoInitialize(RO_INIT_MULTITHREADED), Error::Level::Log, L"Initialization of Windows Runtime failed.");
+	Error::Handle(RoInitialize(RO_INIT_SINGLETHREADED), Error::Level::Log, L"Initialization of Windows Runtime failed.");
 #else
 	Error::Handle(CoInitialize(NULL), Error::Level::Log, L"Initialization of COM failed.");
 #endif
