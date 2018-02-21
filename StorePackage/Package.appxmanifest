@@ -19,7 +19,7 @@
         </uap:DefaultTile>
       </uap:VisualElements>
       <Extensions>
-        <desktop:Extension Category="windows.startupTask" Executable="$targetnametoken$.exe" EntryPoint="Windows.FullTrustApplication">
+        <desktop:Extension Category="windows.startupTask" Executable="TranslucentTB\TranslucentTB.exe" EntryPoint="Windows.FullTrustApplication">
           <desktop:StartupTask TaskId="TranslucentTB" Enabled="true" DisplayName="TranslucentTB" />
         </desktop:Extension>
       </Extensions>
