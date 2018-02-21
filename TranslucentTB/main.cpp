@@ -12,6 +12,7 @@
 #include <vector>
 
 // Windows API
+#include <atlbase.h>
 #include <comdef.h>
 #include <dwmapi.h>
 #include <psapi.h>
@@ -64,7 +65,7 @@ static struct OPTIONS
 static struct RUNTIMESTATE
 {
 	Tray::EXITREASON exit_reason = Tray::UserAction;
-	IAppVisibility *app_visibility = NULL;						// Used to detect if start menu is opened. Don't forget to check for null on this one
+	CComPtr<IAppVisibility> app_visibility;						// Used to detect if start menu is opened. Don't forget to check for null on this one
 	HWND main_taskbar;
 	std::unordered_map<HMONITOR, Taskbar::TASKBARPROPERTIES> taskbars;
 	bool should_show_peek;
@@ -1207,7 +1208,7 @@ void InitializeAPIs()
 	Error::Handle(RoInitialize(RO_INIT_MULTITHREADED), Error::Level::Log, L"Initialization of Windows Runtime failed.");
 #endif
 	Error::Handle(CoInitialize(NULL), Error::Level::Log, L"Initialization of COM failed.");
-	Error::Handle(CoCreateInstance(CLSID_AppVisibility, NULL, CLSCTX_INPROC_SERVER, IID_IAppVisibility, reinterpret_cast<LPVOID *>(&run.app_visibility)), Error::Level::Log, L"Initialization of IAppVisibility failed.");
+	Error::Handle(run.app_visibility.CoCreateInstance(CLSID_AppVisibility), Error::Level::Log, L"Initialization of IAppVisibility failed.");
 }
 
 void UninitializeAPIs()
