@@ -363,8 +363,5 @@
       <ReservedName>TranslucentTB</ReservedName>
     </ReservedNames>
   </ProductReservedInfo>
-  <AccountPackageIdentityNames>
-    <MainPackageIdentityName>28017CharlesMilette.SearchWithMyBrowser</MainPackageIdentityName>
-  </AccountPackageIdentityNames>
   <PackageInfoList LandingUrl="https://developer.microsoft.com/dashboard/Application?appId=9PF4KZ2VN4W9" />
 </StoreAssociation>
