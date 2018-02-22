@@ -17,7 +17,7 @@ private:
 public:
 	inline SynchronousOperation(ABI::Windows::Foundation::IAsyncOperation<T> *op)
 	{
-		m_Event.Attach(CreateEventEx(nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, WRITE_OWNER | EVENT_ALL_ACCESS));
+		m_Event.Attach(CreateEventEx(nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, SYNCHRONIZE | EVENT_MODIFY_STATE));
 
 		op->put_Completed(this);
 	}
