@@ -1083,7 +1083,7 @@ LRESULT CALLBACK TrayCallback(const HWND hWnd, const uint32_t message, const WPA
 		RegisterTray();
 		return 0;
 	}
-	else if (message == WM_DISPLAYCHANGED)
+	else if (message == WM_DISPLAYCHANGE)
 	{
 		RefreshHandles();
 		return 0;
