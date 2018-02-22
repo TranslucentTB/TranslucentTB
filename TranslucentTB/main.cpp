@@ -1083,6 +1083,11 @@ LRESULT CALLBACK TrayCallback(const HWND hWnd, const uint32_t message, const WPA
 		RegisterTray();
 		return 0;
 	}
+	else if (message == WM_DISPLAYCHANGED)
+	{
+		RefreshHandles();
+		return 0;
+	}
 	else if (message == Tray::NEW_TTB_INSTANCE)
 	{
 		run.exit_reason = Tray::NewInstance;
