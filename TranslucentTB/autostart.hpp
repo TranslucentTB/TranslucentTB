@@ -55,8 +55,8 @@ namespace Autostart {
 			}
 
 			// Fuck off async
-			StartupTasksVector *package_tasks;
-			if (!Error::Handle(SynchronousOperation<StartupTasksVector *>(operation.Get()).GetResults(&package_tasks), Error::Level::Log, L"Acquiring package startup tasks failed."))
+			ComPtr<StartupTasksVector> package_tasks;
+			if (!Error::Handle(SynchronousOperation<StartupTasksVector *>(operation.Get()).GetResults(package_tasks.GetAddressOf()), Error::Level::Log, L"Acquiring package startup tasks failed."))
 			{
 				return nullptr;
 			}
