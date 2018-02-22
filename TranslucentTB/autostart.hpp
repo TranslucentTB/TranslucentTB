@@ -10,6 +10,7 @@
 
 #include "app.hpp"
 #else
+#define _HIDE_GLOBAL_ASYNC_STATUS
 #include <roapi.h>
 #include <Windows.ApplicationModel.h>
 #include <wrl/wrappers/corewrappers.h>
@@ -29,43 +30,38 @@ namespace Autostart {
 
 #ifdef STORE
 	// Send help
-	ABI::Windows::ApplicationModel::IStartupTask *GetApplicationStartupTask()
+	Microsoft::WRL::ComPtr<ABI::Windows::ApplicationModel::IStartupTask> GetApplicationStartupTask()
 	{
 		using namespace ABI::Windows;
-		using namespace Microsoft::WRL;
-		using namespace Microsoft::WRL::Wrappers;
-		typedef Foundation::Collections::IVectorView<ApplicationModel::StartupTask *> StartupTasksVector;
 
-		static ComPtr<ApplicationModel::IStartupTaskStatics> startup_tasks_statics;
-		static StartupTasksVector *package_tasks;
-		static ApplicationModel::IStartupTask *task;
+		static Microsoft::WRL::ComPtr<ApplicationModel::IStartupTask> task;
 
-		if (!startup_tasks_statics)
+		if (!task)
 		{
-			if (!Error::Handle(Foundation::ActivateInstance<ComPtr<ApplicationModel::IStartupTaskStatics>>(HStringReference(RuntimeClass_Windows_ApplicationModel_StartupTask).Get(), &startup_tasks_statics), Error::Level::Log, L"Activating IStartupTaskStatics instance failed."))
+			using namespace Microsoft::WRL;
+			using namespace Microsoft::WRL::Wrappers;
+			typedef Foundation::Collections::IVectorView<ApplicationModel::StartupTask *> StartupTasksVector;
+
+			ComPtr<ApplicationModel::IStartupTaskStatics> startup_tasks_statics;
+			if (!Error::Handle(Foundation::GetActivationFactory<ComPtr<ApplicationModel::IStartupTaskStatics>>(HStringReference(RuntimeClass_Windows_ApplicationModel_StartupTask).Get(), &startup_tasks_statics), Error::Level::Log, L"Activating IStartupTaskStatics instance failed."))
 			{
 				return nullptr;
 			}
-		}
 
-		if (!package_tasks)
-		{
-			Foundation::IAsyncOperation<StartupTasksVector *> *operation;
-			if (!Error::Handle(startup_tasks_statics->GetForCurrentPackageAsync(&operation), Error::Level::Log, L"Starting acquisition of package startup tasks failed."))
+			ComPtr<Foundation::IAsyncOperation<StartupTasksVector *>> operation;
+			if (!Error::Handle(startup_tasks_statics->GetForCurrentPackageAsync(operation.GetAddressOf()), Error::Level::Log, L"Starting acquisition of package startup tasks failed."))
 			{
 				return nullptr;
 			}
 
 			// Fuck off async
-			if (!Error::Handle(SynchronousOperation<StartupTasksVector *>(operation).GetResults(&package_tasks), Error::Level::Log, L"Acquiring package startup tasks failed."))
+			StartupTasksVector *package_tasks;
+			if (!Error::Handle(SynchronousOperation<StartupTasksVector *>(operation.Get()).GetResults(&package_tasks), Error::Level::Log, L"Acquiring package startup tasks failed."))
 			{
 				return nullptr;
 			}
-		}
 
-		if (!task)
-		{
-			if (!Error::Handle(package_tasks->GetAt(0, &task), Error::Level::Log, L"Getting first package startup task failed."))
+			if (!Error::Handle(package_tasks->GetAt(0, task.GetAddressOf()), Error::Level::Log, L"Getting first package startup task failed."))
 			{
 				return nullptr;
 			}
@@ -155,14 +151,14 @@ namespace Autostart {
 
 		if (state == StartupState::Enabled)
 		{
-			ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::ApplicationModel::StartupTaskState> *operation;
-			if (!Error::Handle(task->RequestEnableAsync(&operation), Error::Level::Log, L"Could not start setting of startup task state"))
+			Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::ApplicationModel::StartupTaskState>> operation;
+			if (!Error::Handle(task->RequestEnableAsync(operation.GetAddressOf()), Error::Level::Log, L"Could not start setting of startup task state"))
 			{
 				return;
 			}
 
 			ABI::Windows::ApplicationModel::StartupTaskState new_state;
-			Error::Handle(SynchronousOperation<ABI::Windows::ApplicationModel::StartupTaskState>(operation).GetResults(&new_state), Error::Level::Log, L"Could not set new startup task state");
+			Error::Handle(SynchronousOperation<ABI::Windows::ApplicationModel::StartupTaskState>(operation.Get()).GetResults(&new_state), Error::Level::Log, L"Could not set new startup task state");
 		}
 		else if (state == StartupState::Disabled)
 		{

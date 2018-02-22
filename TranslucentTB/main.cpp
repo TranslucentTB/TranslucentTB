@@ -230,7 +230,7 @@ void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 			int sleep_time = std::stoi(value);
 			opt.sleep_time = sleep_time;
 		}
-		catch (const std::invalid_argument &e)
+		catch (std::invalid_argument)
 		{
 			Log::OutputMessage(L"Could not parse sleep time found in configuration file: " + value);
 		}
@@ -303,7 +303,7 @@ void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 		{
 			opt.color = (opt.color & 0xFF000000) + (std::stoi(color_value, static_cast<size_t *>(0), 16) & 0x00FFFFFF);
 		}
-		catch (const std::invalid_argument &e)
+		catch (std::invalid_argument)
 		{
 			Log::OutputMessage(L"Could not parse color found in configuration file: " + value + L" (after processing: " + color_value + L")");
 		}
@@ -329,7 +329,7 @@ void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 		{
 			opt.dynamic_ws_color = (opt.dynamic_ws_color & 0xFF000000) + (std::stoi(color_value, static_cast<size_t *>(0), 16) & 0x00FFFFFF);
 		}
-		catch (const std::invalid_argument &e)
+		catch (std::invalid_argument)
 		{
 			Log::OutputMessage(L"Could not parse dynamic windows color found in configuration file: " + value + L" (after processing: " + color_value + L")");
 		}
@@ -341,7 +341,7 @@ void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 		{
 			parsed = std::stoi(value);
 		}
-		catch (const std::invalid_argument &e)
+		catch (std::invalid_argument)
 		{
 			Log::OutputMessage(L"Could not parse opacity found in configuration file: " + value);
 			return;
@@ -365,7 +365,7 @@ void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 		{
 			parsed = std::stoi(value);
 		}
-		catch (const std::invalid_argument &e)
+		catch (std::invalid_argument)
 		{
 			Log::OutputMessage(L"Could not parse dynamic windows opacity found in configuration file: " + value);
 			return;
@@ -426,7 +426,7 @@ void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 			int cache_hits = std::stoi(value);
 			Config::CACHE_HIT_MAX = cache_hits;
 		}
-		catch (const std::invalid_argument &e)
+		catch (std::invalid_argument)
 		{
 			Log::OutputMessage(L"Could not parse max cache hits found in configuration file: " + value);
 		}
