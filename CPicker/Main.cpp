@@ -5,9 +5,11 @@
 #include "CPicker.h"
 #include "resource.h"
 
+static bool programmaticallyChangingText;
+
 LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	static CColourPicker *picker = NULL;
+	static CColourPicker *picker;
 	static PixelBuffer pbufferC1;
 	static PixelBuffer pbufferC2;
 	static PixelBuffer pbufferA;
@@ -56,6 +58,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		SendDlgItemMessage(hDlg, IDC_R, BM_SETCHECK, BST_CHECKED, 0);
 
 		open = true;
+		programmaticallyChangingText = false;
 		std::thread(
 			[hDlg]()
 			{
@@ -659,8 +662,20 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			break;
 		}
 
-		case EN_KILLFOCUS:
+		case EN_CHANGE:
 		{
+			if (!open || programmaticallyChangingText)
+			{
+				break;
+			}
+
+			programmaticallyChangingText = true;
+
+			HWND dlgItem = GetDlgItem(hDlg, LOWORD(wParam));
+			DWORD start;
+			DWORD end;
+			SendMessage(dlgItem, EM_GETSEL, (LPARAM)&start, (LPARAM)&end);
+
 			switch (LOWORD(wParam))
 			{
 				int tempcolor;
@@ -700,10 +715,22 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				picker->SetHSV(hue, GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false), GetDlgItemInt(hDlg, IDC_VALUE, NULL, false));
 				break;
 			}
+
+			case IDC_ALPHA:
+			{
+				tempcolor = GetDlgItemInt(hDlg, LOWORD(wParam), NULL, false);
+				tempcolor = min(100, tempcolor);
+				tempcolor = max(0, tempcolor);
+				SetDlgItemInt(hDlg, LOWORD(wParam), tempcolor, false);
+
+				picker->SetAlpha(tempcolor);
+			}
 			}
 
 			// Update color
 			UpdateValues(hDlg, picker->GetCurrentColour());
+			programmaticallyChangingText = false;
+			SendMessage(dlgItem, EM_SETSEL, start, end);
 			SendMessage(hDlg, WM_PAINT, 0, 0);
 
 			break;
@@ -831,6 +858,7 @@ void DrawArrows(HDC hcomp, int width, int height, float y)
 
 void UpdateValues(HWND hDlg, SColour col)
 {
+	programmaticallyChangingText = true;
 	TCHAR buff[10];
 
 	SetDlgItemInt(hDlg, IDC_RED, col.r, false);
@@ -843,4 +871,5 @@ void UpdateValues(HWND hDlg, SColour col)
 
 	swprintf_s(buff, L"%02X%02X%02X", col.r, col.g, col.b);
 	SetDlgItemText(hDlg, IDC_HEXCOL, buff);
+	programmaticallyChangingText = false;
 }
