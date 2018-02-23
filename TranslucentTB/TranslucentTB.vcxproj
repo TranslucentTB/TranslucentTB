@@ -34,6 +34,11 @@
     <PlatformToolset>LLVM-vs2014</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  <!-- TODO: Remove this when the clang bug is fixed -->
+  <PropertyGroup Condition="'$(Configuration)'=='Store'">
+    <PlatformToolset>v141</PlatformToolset>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -75,6 +80,10 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Store'">
     <ClCompile>
+      <!-- TODO: Remove this when the clang bug is fixed -->
+      <WarningLevel>Level4</WarningLevel>
+      <!-- TODO: Remove this when the clang bug is fixed -->
+      <TreatWarningAsError>false</TreatWarningAsError>
       <PreprocessorDefinitions>STORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
