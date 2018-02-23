@@ -55,6 +55,11 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 		UpdateValues(hDlg, picker->GetCurrentColour());
 
+		for (int item : {IDC_RED, IDC_GREEN, IDC_BLUE, IDC_ALPHA, IDC_HUE, IDC_SATURATION, IDC_VALUE})
+		{
+			SendDlgItemMessage(hDlg, item, EM_SETLIMITTEXT, 3, 0);
+		}
+
 		SendDlgItemMessage(hDlg, IDC_R, BM_SETCHECK, BST_CHECKED, 0);
 
 		open = true;
@@ -671,10 +676,9 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 			programmaticallyChangingText = true;
 
-			HWND dlgItem = GetDlgItem(hDlg, LOWORD(wParam));
 			DWORD start;
 			DWORD end;
-			SendMessage(dlgItem, EM_GETSEL, (LPARAM)&start, (LPARAM)&end);
+			SendDlgItemMessage(hDlg, LOWORD(wParam), EM_GETSEL, (WPARAM)&start, (LPARAM)&end);
 
 			switch (LOWORD(wParam))
 			{
@@ -730,7 +734,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			// Update color
 			UpdateValues(hDlg, picker->GetCurrentColour());
 			programmaticallyChangingText = false;
-			SendMessage(dlgItem, EM_SETSEL, start, end);
+			SendDlgItemMessage(hDlg, LOWORD(wParam), EM_SETSEL, start, end);
 			SendMessage(hDlg, WM_PAINT, 0, 0);
 
 			break;
