@@ -23,9 +23,17 @@
 namespace Autostart {
 
 	enum class StartupState {
-		Disabled = 0,
-		DisabledByUser = 1,
-		Enabled = 2
+#ifndef STORE
+		Disabled,
+		DisabledByUser,
+		DisabledByPolicy,
+		Enabled
+#else
+		Disabled = ABI::Windows::ApplicationModel::StartupTaskState_Disabled,
+		DisabledByUser = ABI::Windows::ApplicationModel::StartupTaskState_DisabledByUser,
+		DisabledByPolicy = ABI::Windows::ApplicationModel::StartupTaskState_DisabledByPolicy,
+		Enabled = ABI::Windows::ApplicationModel::StartupTaskState_Enabled
+#endif
 	};
 
 #ifdef STORE

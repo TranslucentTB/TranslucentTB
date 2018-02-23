@@ -47,6 +47,7 @@ public:
 		return S_OK;
 	}
 
+private:
 	HRESULT STDMETHODCALLTYPE Invoke(ABI::Windows::Foundation::IAsyncOperation<T> *asyncInfo, ABI::Windows::Foundation::AsyncStatus) override
 	{
 		m_HR = asyncInfo->GetResults(&m_Result);
