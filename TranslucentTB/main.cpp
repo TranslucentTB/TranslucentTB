@@ -392,6 +392,10 @@ void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 		{
 			opt.peek = Taskbar::AEROPEEK::Dynamic;
 		}
+		else if (value == L"show")
+		{
+			opt.peek = Taskbar::AEROPEEK::Enabled;
+		}
 		else
 		{
 			UnknownValue(arg, value);
