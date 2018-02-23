@@ -13,4 +13,6 @@ test: off
 artifacts:
 - path: $(CONFIGURATION)
   name: Build artifacts
+- path: StorePackage\AppPackage
+  name: App packages
 deploy: off
