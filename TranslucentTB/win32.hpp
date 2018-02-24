@@ -4,11 +4,13 @@
 
 #include <cstdbool>
 #include <cstdint>
+#include <synchapi.h>
 #include <winbase.h>
 #include <windef.h>
 #include <winerror.h>
 #include <winnt.h>
 
+#include "app.hpp"
 #include "ttberror.hpp"
 
 namespace user32 {
@@ -38,6 +40,30 @@ namespace win32 {
 		else
 		{
 			return false;
+		}
+	}
+
+	bool IsSingleInstance()
+	{
+		run.app_handle = CreateEvent(NULL, TRUE, FALSE, App::ID.c_str());
+		LRESULT error = GetLastError();
+		switch (error)
+		{
+		case ERROR_ALREADY_EXISTS:
+		{
+			return false;
+		}
+
+		case ERROR_SUCCESS:
+		{
+			return true;
+		}
+
+		default:
+		{
+			Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Failed to open app handle!");
+			return true;
+		}
 		}
 	}
 

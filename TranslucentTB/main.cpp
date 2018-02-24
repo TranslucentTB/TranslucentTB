@@ -28,9 +28,6 @@
 // For the context menu
 #include "resource.h"
 
-// For the color picker
-#include "../CPicker/CPickerDll.h"
-
 #include "swcadata.hpp"
 #include "config.hpp"
 #include "taskbar.hpp"
@@ -582,11 +579,11 @@ void SaveConfigFile()
 		configstream << L"  ; A value in the range 0 to 255." << endl;
 
 		configstream << L"dynamic-ws-normal-on-peek=";
-		configstream << opt.dynamic_ws_normal_on_peek ? L"enable" : L"disable";
+		configstream << (opt.dynamic_ws_normal_on_peek ? L"enable" : L"disable");
 		configstream << endl;
 
 		configstream << L"dynamic-start=";
-		configstream << opt.dynamic_start ? L"enable" : L"disable";
+		configstream << (opt.dynamic_start ? L"enable" : L"disable");
 		configstream << endl;
 
 		configstream << endl;
@@ -611,7 +608,7 @@ void SaveConfigFile()
 		configstream << L"; more informative logging. can make huge log files." << endl;
 
 		configstream << L"verbose=";
-		configstream << Config::VERBOSE ? L"enable" : L"disable";
+		configstream << (Config::VERBOSE ? L"enable" : L"disable");
 		configstream << endl;
 
 		configstream << L"; sleep time in milliseconds, a shorter time reduces flicker when opening start, but results in higher CPU usage." << endl;
@@ -846,54 +843,6 @@ bool IsWindowBlacklisted(const HWND &hWnd)
 	}
 }
 
-bool IsSingleInstance()
-{
-	run.app_handle = CreateEvent(NULL, TRUE, FALSE, App::ID.c_str());
-	LRESULT error = GetLastError();
-	switch (error)
-	{
-		case ERROR_ALREADY_EXISTS:
-		{
-			return false;
-		}
-
-		case ERROR_SUCCESS:
-		{
-			return true;
-		}
-
-		default:
-		{
-			Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Failed to open app handle!");
-			return true;
-		}
-	}
-}
-
-uint32_t PickColor(const uint32_t &color)
-{
-	unsigned short a;
-	float alphaPercent;
-
-	a = (color & 0xFF000000) >> 24;
-	alphaPercent = a / 255.0f;
-	a = static_cast<unsigned short>(std::round(alphaPercent * 100));
-
-	unsigned short r = (color & 0x00FF0000) >> 16;
-	unsigned short g = (color & 0x0000FF00) >> 8;
-	unsigned short b = (color & 0x000000FF);
-
-	// Bet 5 bucks a british wrote this library
-	CColourPicker picker(NULL, r, g, b, a, true);
-	picker.CreateColourPicker();
-	SColour newColor = picker.GetCurrentColour();
-
-	alphaPercent = newColor.a / 100.0f;
-	a = static_cast<unsigned short>(std::round(alphaPercent * 255));
-
-	return (a << 24) + (newColor.r << 16) + (newColor.g << 8) + newColor.b;
-}
-
 #pragma endregion
 
 #pragma region Tray
@@ -982,6 +931,7 @@ LRESULT CALLBACK TrayCallback(const HWND hWnd, const uint32_t message, const WPA
 	{
 		if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
 		{
+			static bool picker_open = false;
 			RefreshMenu();
 			POINT pt;
 			GetCursorPos(&pt);
@@ -990,7 +940,13 @@ LRESULT CALLBACK TrayCallback(const HWND hWnd, const uint32_t message, const WPA
 			switch (tray)
 			{
 			case IDM_COLOR:
-				opt.color = PickColor(opt.color);
+				if (picker_open)
+				{
+					break;
+				}
+				picker_open = true;
+				opt.color = Util::PickColor(opt.color);
+				picker_open = false;
 				break;
 			case IDM_NORMAL:
 				opt.taskbar_appearance = swca::ACCENT_NORMAL;
@@ -1014,7 +970,13 @@ LRESULT CALLBACK TrayCallback(const HWND hWnd, const uint32_t message, const WPA
 				opt.dynamic_ws_normal_on_peek = !opt.dynamic_ws_normal_on_peek;
 				break;
 			case IDM_DYNAMICWS_COLOR:
-				opt.dynamic_ws_color = PickColor(opt.dynamic_ws_color);
+				if (picker_open)
+				{
+					break;
+				}
+				picker_open = true;
+				opt.dynamic_ws_color = Util::PickColor(opt.dynamic_ws_color);
+				picker_open = false;
 				break;
 			case IDM_DYNAMICWS_NORMAL:
 				opt.dynamic_ws_taskbar_appearance = swca::ACCENT_NORMAL;
@@ -1317,7 +1279,7 @@ void Terminate()
 int WINAPI WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 {
 	// If there already is another instance running, tell it to exit
-	if (!IsSingleInstance())
+	if (!win32::IsSingleInstance())
 	{
 		HWND oldInstance = FindWindow(App::NAME.c_str(), L"TrayWindow");
 		SendMessage(oldInstance, Tray::NEW_TTB_INSTANCE, NULL, NULL);

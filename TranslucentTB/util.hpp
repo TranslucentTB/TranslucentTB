@@ -3,6 +3,8 @@
 #define UTIL_HPP
 
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
 #include <cwchar>
 #include <string>
 #include <vector>
@@ -17,6 +19,8 @@
 
 #include "app.hpp"
 #include "ttberror.hpp"
+
+#include "../CPicker/CPickerDll.h"
 
 namespace Util {
 
@@ -78,6 +82,30 @@ namespace Util {
 		{
 			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to start Notepad!");
 		}
+	}
+
+	uint32_t PickColor(const uint32_t &color)
+	{
+		unsigned short a;
+		float alphaPercent;
+
+		a = (color & 0xFF000000) >> 24;
+		alphaPercent = a / 255.0f;
+		a = static_cast<unsigned short>(std::round(alphaPercent * 100));
+
+		unsigned short r = (color & 0x00FF0000) >> 16;
+		unsigned short g = (color & 0x0000FF00) >> 8;
+		unsigned short b = (color & 0x000000FF);
+
+		// Bet 5 bucks a british wrote this library
+		CColourPicker picker(NULL, r, g, b, a, true);
+		picker.CreateColourPicker();
+		SColour newColor = picker.GetCurrentColour();
+
+		alphaPercent = newColor.a / 100.0f;
+		a = static_cast<unsigned short>(std::round(alphaPercent * 255));
+
+		return (a << 24) + (newColor.r << 16) + (newColor.g << 8) + newColor.b;
 	}
 
 	void AddValuesToVectorByDelimiter(const std::wstring &delimiter, std::vector<std::wstring> &vector, std::wstring line)
