@@ -68,7 +68,6 @@ static struct RUNTIMESTATE
 	bool should_show_peek;
 	bool is_running = true;
 	HMENU tray_popup;
-	HANDLE app_handle;											// Handle to this app to check for uniqueness
 	NOTIFYICONDATA tray;
 	bool fluent_available = false;
 	wchar_t config_folder[MAX_PATH];
@@ -1264,10 +1263,6 @@ void Terminate()
 	if (run.tray.cbSize)
 	{
 		Shell_NotifyIcon(NIM_DELETE, &run.tray);
-	}
-	if (run.app_handle)
-	{
-		CloseHandle(run.app_handle);
 	}
 	if (Log::Instance)
 	{

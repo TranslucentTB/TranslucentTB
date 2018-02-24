@@ -9,6 +9,7 @@
 #include <windef.h>
 #include <winerror.h>
 #include <winnt.h>
+#include <wrl/wrappers/corewrappers.h>
 
 #include "app.hpp"
 #include "ttberror.hpp"
@@ -45,26 +46,26 @@ namespace win32 {
 
 	bool IsSingleInstance()
 	{
-		run.app_handle = CreateEvent(NULL, TRUE, FALSE, App::ID.c_str());
+		HANDLE event_handle = CreateEvent(NULL, TRUE, FALSE, App::ID.c_str());
 		LRESULT error = GetLastError();
+		bool return_value;
 		switch (error)
 		{
 		case ERROR_ALREADY_EXISTS:
-		{
-			return false;
-		}
+			return_value = false;
+			break;
 
 		case ERROR_SUCCESS:
-		{
-			return true;
-		}
+			return_value = true;
+			break;
 
 		default:
-		{
 			Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Failed to open app handle!");
-			return true;
+			return_value = true;
 		}
-		}
+
+		static Microsoft::WRL::Wrappers::Event event(event_handle); // RAII, the event automatically closes when we exit.
+		return return_value;
 	}
 
 }
