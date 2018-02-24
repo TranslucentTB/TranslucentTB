@@ -63,7 +63,6 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		SendDlgItemMessage(hDlg, IDC_R, BM_SETCHECK, BST_CHECKED, 0);
 
 		open = true;
-		programmaticallyChangingText = false;
 		std::thread(
 			[hDlg]()
 			{
@@ -669,7 +668,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 		case EN_CHANGE:
 		{
-			if (!open || programmaticallyChangingText)
+			if (programmaticallyChangingText)
 			{
 				break;
 			}

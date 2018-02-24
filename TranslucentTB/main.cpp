@@ -936,7 +936,7 @@ void RefreshMenu()
 	EnablePopupItem(IDM_DYNAMICWS_COLOR, opt.dynamic_ws);
 	EnablePopupItem(IDM_FLUENT, run.fluent_available);
 	EnablePopupItem(IDM_DYNAMICWS_FLUENT, opt.dynamic_ws && run.fluent_available);
-	EnablePopupItem(IDM_AUTOSTART, s_state != Autostart::StartupState::DisabledByUser && s_state != Autostart::StartupState::DisabledByPolicy);
+	EnablePopupItem(IDM_AUTOSTART, !(s_state == Autostart::StartupState::DisabledByUser || s_state == Autostart::StartupState::DisabledByPolicy));
 
 	if (s_state == Autostart::StartupState::DisabledByUser)
 	{
