@@ -241,6 +241,10 @@ void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 		{
 			opt.dynamic_ws = true;
 		}
+		else if (value == L"false" || value == L"disable")
+		{
+			opt.dynamic_ws = false;
+		}
 		else if (value == L"blur")
 		{
 			opt.dynamic_ws = true;
@@ -276,6 +280,10 @@ void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 		if (value == L"true" || value == L"enable")
 		{
 			opt.dynamic_start = true;
+		}
+		else if (value == L"false" || value == L"disable")
+		{
+			opt.dynamic_start = false;
 		}
 		else
 		{
@@ -407,6 +415,10 @@ void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 		{
 			opt.dynamic_ws_normal_on_peek = true;
 		}
+		else if (value == L"false" || value == L"disable")
+		{
+			opt.dynamic_ws_normal_on_peek = false;
+		}
 		else
 		{
 			UnknownValue(arg, value);
@@ -417,6 +429,10 @@ void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 		if (value == L"true" || value == L"enable")
 		{
 			Config::VERBOSE = true;
+		}
+		else if (value == L"false" || value == L"disable")
+		{
+			Config::VERBOSE = false;
 		}
 		else
 		{
@@ -565,19 +581,13 @@ void SaveConfigFile()
 		configstream << left << setw(3) << setfill<wchar_t>(' ') << to_wstring((opt.dynamic_ws_color & 0xFF000000) >> 24);
 		configstream << L"  ; A value in the range 0 to 255." << endl;
 
-		if (!opt.dynamic_ws_normal_on_peek)
-		{
-			configstream << L";";
-		}
+		configstream << L"dynamic-ws-normal-on-peek=";
+		configstream << opt.dynamic_ws_normal_on_peek ? L"enable" : L"disable";
+		configstream << endl;
 
-		configstream << L"dynamic-ws-normal-on-peek=enable" << endl;
-
-		if (!opt.dynamic_start)
-		{
-			configstream << L";";
-		}
-
-		configstream << L"dynamic-start=enable" << endl;
+		configstream << L"dynamic-start=";
+		configstream << opt.dynamic_start ? L"enable" : L"disable";
+		configstream << endl;
 
 		configstream << endl;
 		configstream << L"; Controls how the Aero Peek button behaves (dynamic, show or hide)" << endl;
@@ -600,12 +610,9 @@ void SaveConfigFile()
 		configstream << L"; Advanced settings" << endl;
 		configstream << L"; more informative logging. can make huge log files." << endl;
 
-		if (!Config::VERBOSE)
-		{
-			configstream << L";";
-		}
-
-		configstream << L"verbose=enable" << endl;
+		configstream << L"verbose=";
+		configstream << Config::VERBOSE ? L"enable" : L"disable";
+		configstream << endl;
 
 		configstream << L"; sleep time in milliseconds, a shorter time reduces flicker when opening start, but results in higher CPU usage." << endl;
 		configstream << L"sleep-time=" << to_wstring(opt.sleep_time) << endl;
