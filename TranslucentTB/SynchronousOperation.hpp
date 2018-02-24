@@ -3,7 +3,7 @@
 
 #include <Windows.Foundation.Collections.h>
 #include <wrl/implements.h>
-#include <wrl/event.h>
+#include <wrl/wrappers/corewrappers.h>
 
 // Found in libil2cpp's headers
 template <typename T>
