@@ -96,11 +96,9 @@ const int ACCENT_DISABLED = 4; // Disables TTB for that taskbar
 const int ACCENT_ENABLE_GRADIENT = 1; // Makes the taskbar a solid color specified by nColor. This mode doesn't care about the alpha channel.
 const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2; // Makes the taskbar a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
 const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry overlay. nColor is same as above.
-const int ACCENT_ENABLE_TINTED = 5; // This is not a real state. We will handle it later.
-const int ACCENT_NORMAL_GRADIENT = 6; // Another fake value, handles the 
 unsigned int WM_TASKBARCREATED;
 unsigned int NEW_TTB_INSTANCE;
-int DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND; // State to activate when d-ws is enabled
+int DYNAMIC_WS_STATE = ACCENT_DISABLED; // State to activate when d-ws is enabled
 std::map<HWND, TASKBARPROPERTIES> taskbars; // Create a map for all taskbars
 
 std::wstring ExcludeFile = L"dynamic-ws-exclude.csv";
@@ -114,26 +112,19 @@ void SetWindowBlur(HWND hWnd, int appearance = 0) // `appearance` can be 0, whic
 {
 	if (SetWindowCompositionAttribute)
 	{
-		ACCENTPOLICY policy;
-
-		if (appearance) // Custom taskbar appearance is set
-		{
-			if (DYNAMIC_WS_STATE == ACCENT_ENABLE_TINTED)
-			{ // dynamic-ws is set to tint
-				if (appearance == ACCENT_ENABLE_TINTED) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, opt.color, 0 }; } // Window is maximised
-				else { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 }; } // Desktop is shown (this shouldn't ever be called tho, just in case)
-			}
-			else {  policy = { appearance, 2, opt.color, 0 };  }
-		} else { // Use the defaults
-			if (DYNAMIC_WS_STATE == ACCENT_ENABLE_TINTED) { policy = {ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0}; } // dynamic-ws is tint and desktop is shown
-			else if (opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, (int)0xd9000000, 0 }; } // normal gradient color
-			else { policy = { opt.taskbar_appearance, 2, opt.color, 0 }; }
+		if (!appearance) {
+			appearance = opt.taskbar_appearance;
 		}
-		
+
+		ACCENTPOLICY policy;
+		if (appearance == ACCENT_DISABLED)
+		{
+			policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, (int)0xd9000000, 0 }; // normal gradient color
+		}
+		else {  policy = { appearance, 2, opt.color, 0 };  }
 		WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) }; // WCA_ACCENT_POLICY=19
 		SetWindowCompositionAttribute(hWnd, &data);
 	}
-
 }
 
 #pragma endregion 
@@ -204,7 +195,7 @@ void PrintHelp()
 			cout << "  --tint COLOR          | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format," << endl;
 			cout << "                          see explanation below." << endl;
 			cout << "  --dynamic-ws STATE    | will make the taskbar transparent when no windows are maximised in the current" << endl;
-			cout << "                          monitor, otherwise blurry. State can be from: (blur, opaque, tint). Blur is default." << endl;
+			cout << "                          monitor, otherwise blurry. State can be from: (blur, opaque, transparent, normal). Normal is default." << endl;
 			cout << "  --dynamic-start       | will make the taskbar return to it's normal state when the start menu is opened," << endl;
 			cout << "                          current setting otherwise." << endl;
 			cout << "  --exclude-file FILE   | CSV-format file to specify applications to exclude from dynamic-ws (By default" << endl;
@@ -286,26 +277,27 @@ void ParseSingleConfigOption(std::wstring arg, std::wstring value)
 		if (value == L"true" ||
 			value == L"enable")
 			{
-				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 				opt.dynamicws = true;
 			}
-		else if (value == L"tint")
+		else if (value == L"transparent")
 		{
-			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 			opt.dynamicws = true;
-			DYNAMIC_WS_STATE = ACCENT_ENABLE_TINTED;
+			DYNAMIC_WS_STATE = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 		}
 		else if (value == L"blur")
 		{
-			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 			opt.dynamicws = true;
 			DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND;
 		}
 		else if (value == L"opaque")
 		{
-			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 			opt.dynamicws = true;
 			DYNAMIC_WS_STATE = ACCENT_ENABLE_GRADIENT;
+		}
+		else if (value == L"normal")
+		{
+			opt.dynamicws = true;
+			DYNAMIC_WS_STATE = ACCENT_DISABLED;
 		}
 	}
 	else if (arg == L"dynamic-start")
@@ -446,11 +438,11 @@ void ParseSingleOption(std::wstring arg, std::wstring value)
 	else if (arg == L"--dynamic-ws")
 	{
 		configfileoptions.dynamicws = true;
-		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 		opt.dynamicws = true;
-		if (value == L"tint") { DYNAMIC_WS_STATE = ACCENT_ENABLE_TINTED; }
+		if (value == L"transparent") { DYNAMIC_WS_STATE = ACCENT_ENABLE_TRANSPARENTGRADIENT; }
 		else if (value == L"blur") { DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND; }
 		else if (value == L"opaque") { DYNAMIC_WS_STATE = ACCENT_ENABLE_GRADIENT; }
+		else if (value == L"normal") { DYNAMIC_WS_STATE = ACCENT_DISABLED; }
 	}
 	else if (arg == L"--dynamic-start")
 	{
@@ -705,21 +697,24 @@ HWND tray_hwnd;
 
 void RefreshMenu()
 {
-	if (opt.dynamicws)
+	if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
 	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_DYNAMICWS, MF_BYCOMMAND);
-	}
-	else if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
-	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_BLUR, MF_BYCOMMAND);
+		CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, IDM_BLUR, MF_BYCOMMAND);
 	}
 	else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
 	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_CLEAR, MF_BYCOMMAND);
+		CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, IDM_CLEAR, MF_BYCOMMAND);
 	} 
-	else if (opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT)
+	else if (opt.taskbar_appearance == ACCENT_DISABLED)
 	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_NORMAL, MF_BYCOMMAND);
+		CheckMenuRadioItem(popup, IDM_BLUR, IDM_NORMAL, IDM_NORMAL, MF_BYCOMMAND);
+	}
+
+	if (opt.dynamicws)
+	{
+		CheckMenuItem(popup, IDM_DYNAMICWS, MF_BYCOMMAND | MF_CHECKED);
+	} else {
+		CheckMenuItem(popup, IDM_DYNAMICWS, MF_BYCOMMAND | MF_UNCHECKED);
 	}
 
 	if (opt.dynamicstart)
@@ -834,7 +829,6 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			switch (tray)
 			{
 			case IDM_BLUR:
-				opt.dynamicws = false;
 				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
 				if (shouldsaveconfig == DoNotSave &&
 					shouldsaveconfig != SaveAll)
@@ -842,7 +836,6 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				RefreshMenu();
 				break;
 			case IDM_CLEAR:
-				opt.dynamicws = false;
 				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 				if (shouldsaveconfig == DoNotSave &&
 					shouldsaveconfig != SaveAll)
@@ -850,14 +843,12 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				RefreshMenu();
 				break;
 			case IDM_NORMAL:
-				opt.dynamicws = false;
-				opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
+				opt.taskbar_appearance = ACCENT_DISABLED;
 				RefreshMenu();
 				// TODO: shouldsaveconfig implementation
 				break;
 			case IDM_DYNAMICWS:
-				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-				opt.dynamicws = true;
+				opt.dynamicws = !opt.dynamicws;
 				EnumWindows(&EnumWindowsProcess, NULL);
 				// TODO: shouldsaveconfig implementation
 				RefreshMenu();
@@ -1036,7 +1027,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int 
 	if (shouldsaveconfig != DoNotSave)
 		SaveConfigFile();
 
-	opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
+	opt.taskbar_appearance = ACCENT_DISABLED;
 	SetTaskbarBlur();
 	CloseHandle(ev);
 	return 0;
