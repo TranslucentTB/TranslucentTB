@@ -63,6 +63,9 @@
     <ClInclude Include="SynchronousOperation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="UWP.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TranslucentTB.rc">

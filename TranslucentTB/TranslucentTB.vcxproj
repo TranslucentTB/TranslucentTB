@@ -105,6 +105,7 @@
     <ClInclude Include="ttberror.hpp" />
     <ClInclude Include="ttblog.hpp" />
     <ClInclude Include="util.hpp" />
+    <ClInclude Include="UWP.hpp" />
     <ClInclude Include="win32.hpp" />
     <ClInclude Include="windowhelper.hpp" />
   </ItemGroup>

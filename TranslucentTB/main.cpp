@@ -23,6 +23,7 @@
 // UWP
 #ifdef STORE
 #include <roapi.h>
+#include "UWP.hpp"
 #endif
 
 // For the context menu
@@ -121,10 +122,14 @@ void SetWindowBlur(const HWND &hWnd, const swca::ACCENT &appearance, const uint3
 
 void GetPaths()
 {
-	LPWSTR localAppData;
-	Error::Handle(SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_DEFAULT, NULL, &localAppData), Error::Level::Fatal, L"Failed to determine configuration files locations!");
-
-	PathCombine(run.config_folder, localAppData, App::NAME.c_str());
+	wchar_t appData[MAX_PATH];
+#ifndef STORE
+	Error::Handle(SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_DEFAULT, NULL, &appData), Error::Level::Fatal, L"Failed to determine configuration files locations!");
+#else
+	std::wstring roaming_folder = UWP::GetApplicationFolderPath(UWP::FolderType::Roaming).GetRawBuffer(NULL);
+	wcsncpy_s(appData, MAX_PATH, roaming_folder.c_str(), roaming_folder.length());
+#endif
+	PathCombine(run.config_folder, appData, App::NAME.c_str());
 	PathCombine(run.config_file, run.config_folder, Config::CONFIG_FILE.c_str());
 	PathCombine(run.exclude_file, run.config_folder, Config::EXCLUDE_FILE.c_str());
 }
@@ -684,7 +689,12 @@ void StartLogger()
 {
 	wchar_t log_folder[MAX_PATH];
 
+#ifndef STORE
 	PathCombine(log_folder, run.config_folder, L"Logs");
+#else
+	std::wstring temp_folder = UWP::GetApplicationFolderPath(UWP::FolderType::Temporary).GetRawBuffer(NULL);
+	wcsncpy_s(log_folder, MAX_PATH, temp_folder.c_str(), temp_folder.length());
+#endif
 
 	if (!PathIsDirectory(log_folder))
 	{
@@ -1283,6 +1293,9 @@ int WINAPI WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 	// Set our exit handler
 	std::set_terminate(Terminate);
 
+	// Initialize COM, UWP, and acquire a VirtualDesktopManager and AppVisibility interface
+	InitializeAPIs();
+
 	// Get configuration file paths
 	GetPaths();
 
@@ -1299,9 +1312,6 @@ int WINAPI WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 	}
 
 	StartLogger();
-
-	// Initialize COM, UWP, and acquire a VirtualDesktopManager and AppVisibility interface
-	InitializeAPIs();
 
 	// Verify our runtime
 	run.fluent_available = win32::IsAtLeastBuild(17063);
