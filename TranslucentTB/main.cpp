@@ -122,13 +122,25 @@ void SetWindowBlur(const HWND &hWnd, const swca::ACCENT &appearance, const uint3
 
 void GetPaths()
 {
-	wchar_t appData[MAX_PATH];
 #ifndef STORE
-	Error::Handle(SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_DEFAULT, NULL, &appData), Error::Level::Fatal, L"Failed to determine configuration files locations!");
+	wchar_t *appData;
+	Error::Handle(SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &appData), Error::Level::Fatal, L"Failed to determine configuration files locations!");
+
+	wchar_t temp[MAX_PATH];
+	if (!GetTempPath(MAX_PATH, temp))
+	{
+		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to determine log files locations!");
+	}
+
+	wchar_t log_folder[MAX_PATH];
+	PathCombine(log_folder, temp, App::NAME.c_str());
+	Log::Folder = log_folder;
 #else
-	std::wstring roaming_folder = UWP::GetApplicationFolderPath(UWP::FolderType::Roaming).GetRawBuffer(NULL);
-	wcsncpy_s(appData, MAX_PATH, roaming_folder.c_str(), roaming_folder.length());
+	const wchar_t *appData = UWP::GetApplicationFolderPath(UWP::FolderType::Roaming).GetRawBuffer(NULL);
+
+	Log::Folder = UWP::GetApplicationFolderPath(UWP::FolderType::Temporary).GetRawBuffer(NULL);
 #endif
+
 	PathCombine(run.config_folder, appData, App::NAME.c_str());
 	PathCombine(run.config_file, run.config_folder, Config::CONFIG_FILE.c_str());
 	PathCombine(run.exclude_file, run.config_folder, Config::EXCLUDE_FILE.c_str());
@@ -687,18 +699,9 @@ void ParseBlacklistFile()
 
 void StartLogger()
 {
-	wchar_t log_folder[MAX_PATH];
-
-#ifndef STORE
-	PathCombine(log_folder, run.config_folder, L"Logs");
-#else
-	std::wstring temp_folder = UWP::GetApplicationFolderPath(UWP::FolderType::Temporary).GetRawBuffer(NULL);
-	wcsncpy_s(log_folder, MAX_PATH, temp_folder.c_str(), temp_folder.length());
-#endif
-
-	if (!PathIsDirectory(log_folder))
+	if (!PathIsDirectory(Log::Folder.c_str()))
 	{
-		if (!CreateDirectory(log_folder, NULL))
+		if (!CreateDirectory(Log::Folder.c_str(), NULL))
 		{
 			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Creating log files directory failed!");
 		}
@@ -709,9 +712,11 @@ void StartLogger()
 	std::time_t unix_epoch = std::time(0);
 	std::wstring log_filename = std::to_wstring(unix_epoch) + L".log";
 
-	PathCombine(log_file, log_folder, log_filename.c_str());
+	PathCombine(log_file, Log::Folder.c_str(), log_filename.c_str());
 	Log::Instance = new Logger(log_file);
 	Log::File = log_file;
+
+	Log::OutputMessage(L"Basic initialization completed.");
 }
 
 void RefreshHandles()

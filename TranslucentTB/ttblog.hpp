@@ -23,6 +23,7 @@ private:
 namespace Log {
 	static ::Logger *Instance;
 	static std::wstring File;
+	static std::wstring Folder;
 
 	void OutputMessage(const std::wstring &message);
 }

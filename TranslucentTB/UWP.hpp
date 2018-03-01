@@ -1,5 +1,6 @@
 #pragma once
 // Here be dragons
+#ifdef STORE
 
 #define _HIDE_GLOBAL_ASYNC_STATUS
 #include <Windows.ApplicationModel.h>
@@ -92,3 +93,5 @@ namespace UWP {
 	}
 
 }
+
+#endif // STORE
