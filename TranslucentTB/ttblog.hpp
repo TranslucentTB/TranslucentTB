@@ -12,10 +12,9 @@ class Logger {
 public:
 	Logger(const std::wstring &file_path);
 	void Log(const std::wstring &message);
-	~Logger();
 
 private:
-	std::wofstream *log_stream;
+	std::wofstream log_stream;
 
 };
 
@@ -30,21 +29,11 @@ namespace Log {
 
 
 
-Logger::Logger(const std::wstring &file_path)
-{
-	log_stream = new std::wofstream(file_path);
-}
+Logger::Logger(const std::wstring &file_path) : log_stream(file_path) { }
 
 void Logger::Log(const std::wstring &message)
 {
-	*log_stream << message << std::endl;
-}
-
-Logger::~Logger()
-{
-	log_stream->flush();
-	log_stream->close();
-	delete log_stream;
+	log_stream << message << std::endl;
 }
 
 
