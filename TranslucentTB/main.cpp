@@ -19,10 +19,10 @@
 #include <shellapi.h>
 #include <ShellScalingAPI.h>
 #include <ShlObj.h>
+#include <wrl/wrappers/corewrappers.h>
 
 // UWP
 #ifdef STORE
-#include <roapi.h>
 #include "UWP.hpp"
 #endif
 
@@ -63,7 +63,6 @@ static struct OPTIONS
 static struct RUNTIMESTATE
 {
 	Tray::EXITREASON exit_reason = Tray::UserAction;
-	CComPtr<IAppVisibility> app_visibility;						// Used to detect if start menu is opened. Don't forget to check for null on this one
 	HWND main_taskbar;
 	std::unordered_map<HMONITOR, Taskbar::TASKBARPROPERTIES> taskbars;
 	bool should_show_peek;
@@ -1147,7 +1146,14 @@ void SetTaskbarBlur()
 		if (opt.dynamic_start)
 		{
 			BOOL start_visible;
-			if (run.app_visibility && SUCCEEDED(run.app_visibility->IsLauncherVisible(&start_visible)) && start_visible)
+			static CComPtr<IAppVisibility> app_visibility;
+			static bool failed = false;
+
+			if (!app_visibility && !failed)
+			{
+				failed = !Error::Handle(app_visibility.CoCreateInstance(CLSID_AppVisibility), Error::Level::Log, L"Initialization of IAppVisibility failed.");
+			}
+			if (!failed && app_visibility && SUCCEEDED(app_visibility->IsLauncherVisible(&start_visible)) && start_visible)
 			{
 				// TODO: does this works correctly most of the time? (especially multi-monitor)
 				// Is a window caption of "Start" reliable to check for (does it works on other UI cultures?)
@@ -1200,21 +1206,8 @@ void SetTaskbarBlur()
 
 void InitializeAPIs()
 {
-#ifdef STORE
-	Error::Handle(RoInitialize(RO_INIT_SINGLETHREADED), Error::Level::Log, L"Initialization of Windows Runtime failed.");
-#else
-	Error::Handle(CoInitialize(NULL), Error::Level::Log, L"Initialization of COM failed.");
-#endif
-	Error::Handle(run.app_visibility.CoCreateInstance(CLSID_AppVisibility), Error::Level::Log, L"Initialization of IAppVisibility failed.");
-}
-
-void UninitializeAPIs()
-{
-#ifdef STORE
-	RoUninitialize();
-#else
-	CoUninitialize();
-#endif
+	static Microsoft::WRL::Wrappers::RoInitializeWrapper init(RO_INIT_SINGLETHREADED);
+	Error::Handle(init, Error::Level::Log, L"Initialization of Windows Runtime failed.");
 }
 
 void InitializeTray(const HINSTANCE &hInstance)
@@ -1243,18 +1236,18 @@ void InitializeTray(const HINSTANCE &hInstance)
 	run.tray = {
 		sizeof(run.tray),																// cbSize
 		CreateWindowEx(																	// hWnd
-			WS_EX_TOOLWINDOW,															// dwExStyle
-			App::NAME.c_str(),														    // lpClassName
-			L"TrayWindow",																// lpWindowName
-			WS_OVERLAPPEDWINDOW,														// dwStyle
-			0,																			// x
-			0,																			// y
-			0,																			// nWidth
-			0,																			// nHeight
-			NULL,																		// hWndParent
-			NULL,																		// hMenu
-			hInstance,																	// hInstance
-			NULL																		// lpParam
+			WS_EX_TOOLWINDOW,																// dwExStyle
+			App::NAME.c_str(),																// lpClassName
+			L"TrayWindow",																	// lpWindowName
+			WS_OVERLAPPEDWINDOW,															// dwStyle
+			0,																				// x
+			0,																				// y
+			0,																				// nWidth
+			0,																				// nHeight
+			NULL,																			// hWndParent
+			NULL,																			// hMenu
+			hInstance,																		// hInstance
+			NULL																			// lpParam
 		),
 		101,																			// uID
 		NIF_ICON | NIF_TIP | NIF_MESSAGE,												// uFlags
@@ -1274,7 +1267,6 @@ void Terminate()
 	{
 		UnhookWinEvent(run.peek_hook);
 	}
-	UninitializeAPIs();
 	if (run.tray.cbSize)
 	{
 		Shell_NotifyIcon(NIM_DELETE, &run.tray);
@@ -1298,7 +1290,7 @@ int WINAPI WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 	// Set our exit handler
 	std::set_terminate(Terminate);
 
-	// Initialize COM, UWP, and acquire a VirtualDesktopManager and AppVisibility interface
+	// Initialize COM or UWP
 	InitializeAPIs();
 
 	// Get configuration file paths
