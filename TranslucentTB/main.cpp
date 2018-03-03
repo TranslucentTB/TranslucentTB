@@ -257,29 +257,31 @@ void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 		{
 			opt.dynamic_ws = false;
 		}
-		else if (value == L"blur")
+		else
 		{
-			opt.dynamic_ws = true;
+			UnknownValue(arg, value);
+		}
+	}
+	else if (arg == L"dynamic-ws-accent")
+	{
+		if (value == L"blur")
+		{
 			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_BLURBEHIND;
 		}
 		else if (value == L"opaque")
 		{
-			opt.dynamic_ws = true;
 			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_GRADIENT;
 		}
 		else if (value == L"clear")
 		{
-			opt.dynamic_ws = true;
 			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_TRANSPARENTGRADIENT;
 		}
 		else if (value == L"normal")
 		{
-			opt.dynamic_ws = true;
 			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_NORMAL;
 		}
 		else if (value == L"fluent" && run.fluent_available)
 		{
-			opt.dynamic_ws = true;
 			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_FLUENT;
 		}
 		else
@@ -555,12 +557,9 @@ void SaveConfigFile()
 		configstream << L"; you can also set the accent, color and opacity values, which will represent the state of dynamic windows when there is no window maximised." << endl;
 		configstream << L"; dynamic start returns the taskbar to normal appearance when the start menu is opened." << endl;
 
-		if (!opt.dynamic_ws)
-		{
-			configstream << L";";
-		}
+		configstream << L"dynamic-ws=" << (opt.dynamic_ws ? L"enable" : L"disable") << endl;
 
-		configstream << L"dynamic-ws=";
+		configstream << L"dynamic-ws-accent=";
 		switch (opt.dynamic_ws_taskbar_appearance)
 		{
 		case swca::ACCENT_ENABLE_BLURBEHIND:
@@ -579,7 +578,6 @@ void SaveConfigFile()
 			configstream << L"fluent";
 			break;
 		default:
-			configstream << L"enable";
 			break;
 		}
 		configstream << endl;
@@ -593,13 +591,8 @@ void SaveConfigFile()
 		configstream << left << setw(3) << setfill<wchar_t>(' ') << to_wstring((opt.dynamic_ws_color & 0xFF000000) >> 24);
 		configstream << L"  ; A value in the range 0 to 255." << endl;
 
-		configstream << L"dynamic-ws-normal-on-peek=";
-		configstream << (opt.dynamic_ws_normal_on_peek ? L"enable" : L"disable");
-		configstream << endl;
-
-		configstream << L"dynamic-start=";
-		configstream << (opt.dynamic_start ? L"enable" : L"disable");
-		configstream << endl;
+		configstream << L"dynamic-ws-normal-on-peek=" << (opt.dynamic_ws_normal_on_peek ? L"enable" : L"disable") << endl;
+		configstream << L"dynamic-start=" << (opt.dynamic_start ? L"enable" : L"disable") << endl;
 
 		configstream << endl;
 		configstream << L"; Controls how the Aero Peek button behaves (dynamic, show or hide)" << endl;
@@ -621,11 +614,7 @@ void SaveConfigFile()
 		configstream << endl;
 		configstream << L"; Advanced settings" << endl;
 		configstream << L"; more informative logging. can make huge log files." << endl;
-
-		configstream << L"verbose=";
-		configstream << (Config::VERBOSE ? L"enable" : L"disable");
-		configstream << endl;
-
+		configstream << L"verbose=" << (Config::VERBOSE ? L"enable" : L"disable") << endl;
 		configstream << L"; sleep time in milliseconds, a shorter time reduces flicker when opening start, but results in higher CPU usage." << endl;
 		configstream << L"sleep-time=" << to_wstring(opt.sleep_time) << endl;
 		configstream << L"; maximum number of times the blacklist cache can be hit before getting cleared." << endl;
