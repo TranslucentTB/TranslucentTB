@@ -161,15 +161,18 @@ void GetPaths()
 
 void ApplyStock(const std::wstring &filename)
 {
+	DWORD exeFolder_size = LONG_PATH;
 	wchar_t exeFolder[LONG_PATH];
-	if (!GetModuleFileNameEx(GetModuleHandle(NULL), NULL, exeFolder, LONG_PATH))
+	if (!QueryFullProcessImageName(GetCurrentProcess(), 0, exeFolder, &exeFolder_size))
 	{
 		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to determine executable location!");
+		return;
 	}
-	Error::Handle(PathCchRemoveFileSpec(exeFolder, LONG_PATH), Error::Level::Error, L"Failed to determine executable folder!");
+	std::wstring exeFolder_str(exeFolder);
+	exeFolder_str = exeFolder_str.substr(0, exeFolder_str.find_last_of(L"/\\") + 1);
 
 	wchar_t *stockFile;
-	if (!Error::Handle(PathAllocCombine(exeFolder, filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &stockFile), Error::Level::Error, L"Failed to combine executable folder and config file!"))
+	if (!Error::Handle(PathAllocCombine(exeFolder_str.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &stockFile), Error::Level::Error, L"Failed to combine executable folder and config file!"))
 	{
 		return;
 	}
@@ -177,6 +180,10 @@ void ApplyStock(const std::wstring &filename)
 	wchar_t *configFile;
 	if (!Error::Handle(PathAllocCombine(run.config_folder, filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Error, L"Failed to combine config folder and config file!"))
 	{
+		if (!LocalFree(stockFile))
+		{
+			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary stock config file character array.");
+		}
 		return;
 	}
 
@@ -184,7 +191,18 @@ void ApplyStock(const std::wstring &filename)
 	{
 		if (!CreateDirectory(run.config_folder, NULL))
 		{
-			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Creating configuration files directory failed!");
+			if (!Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Creating configuration files directory failed!"))
+			{
+				if (!LocalFree(stockFile))
+				{
+					Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary stock config file character array.");
+				}
+				if (!LocalFree(configFile))
+				{
+					Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary config file character array.");
+				}
+				return;
+			}
 		}
 	}
 
@@ -1344,12 +1362,6 @@ int WINAPI WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 
 	// Get configuration file paths
 	GetPaths();
-
-	// Set DPI awareness before showing the welcome dialog
-	if (!SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
-	{
-		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Setting DPI awareness failed.");
-	}
 
 	// If the configuration files don't exist, restore the files and show welcome to the users
 	if (!CheckAndRunWelcome())

@@ -87,4 +87,9 @@
     <None Include="..\LICENSE.md" />
     <None Include="..\Readme.md" />
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="app.manifest">
+      <Filter>Resource Files</Filter>
+    </Manifest>
+  </ItemGroup>
 </Project>

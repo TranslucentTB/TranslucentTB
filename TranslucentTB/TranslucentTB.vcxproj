@@ -75,7 +75,6 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>advapi32.lib;comctl32.lib;dwmapi.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;user32.lib</AdditionalDependencies>
-      <AdditionalManifestDependencies>"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'"</AdditionalManifestDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Store'">
@@ -122,6 +121,9 @@
     <ProjectReference Include="..\CPicker\CPicker.vcxproj">
       <Project>{ab4d3015-2ad4-4152-bdd2-fc1343b22b6c}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="app.manifest" />
   </ItemGroup>
   <Target Name="PostBuildEvent">
     <Copy SourceFiles="@(None)" DestinationFolder="$(TargetDir)" />

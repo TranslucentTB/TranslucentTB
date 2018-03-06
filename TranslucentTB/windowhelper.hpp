@@ -59,16 +59,35 @@ namespace WindowHelper {
 		DWORD ProcessId;
 		GetWindowThreadProcessId(hwnd, &ProcessId);
 
-		wchar_t exeName_path[LONG_PATH];
-		DWORD result = GetModuleFileNameEx(OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId), NULL, exeName_path, LONG_PATH);
+		HANDLE processHandle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, ProcessId);
 
-		if (!result)
+		if (!processHandle)
+		{
+			if (Config::VERBOSE)
+			{
+				Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting process handle of a window failed.");
+			}
+			return L"";
+		}
+
+		DWORD path_Size = LONG_PATH;
+		wchar_t exeName_path[LONG_PATH];
+
+		if (!QueryFullProcessImageName(processHandle, 0, exeName_path, &path_Size))
 		{
 			if (Config::VERBOSE)
 			{
 				Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting file name of a window failed.");
 			}
 			return L"";
+		}
+
+		if (!CloseHandle(processHandle))
+		{
+			if (Config::VERBOSE)
+			{
+				Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Closing process handle of a window failed.");
+			}
 		}
 
 		std::wstring exeName(exeName_path);
