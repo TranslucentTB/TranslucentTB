@@ -39,8 +39,8 @@ namespace WindowHelper {
 
 	std::wstring GetWindowClass(const HWND &hwnd)
 	{
-		wchar_t className[MAX_PATH];
-		int result = GetClassName(hwnd, className, _countof(className));
+		wchar_t className[256];
+		int result = GetClassName(hwnd, className, 256);
 
 		if (!result)
 		{
@@ -59,8 +59,8 @@ namespace WindowHelper {
 		DWORD ProcessId;
 		GetWindowThreadProcessId(hwnd, &ProcessId);
 
-		wchar_t exeName_path[MAX_PATH];
-		DWORD result = GetModuleFileNameEx(OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId), NULL, exeName_path, _countof(exeName_path));
+		wchar_t exeName_path[LONG_PATH];
+		DWORD result = GetModuleFileNameEx(OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId), NULL, exeName_path, LONG_PATH);
 
 		if (!result)
 		{
@@ -71,7 +71,8 @@ namespace WindowHelper {
 			return L"";
 		}
 
-		return PathFindFileName(exeName_path);
+		std::wstring exeName(exeName_path);
+		return exeName.substr(exeName.find_last_of(L"/\\") + 1);
 	}
 
 	bool IsWindowOnCurrentDesktop(const HWND &hWnd)

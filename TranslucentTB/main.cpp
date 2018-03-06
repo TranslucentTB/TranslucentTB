@@ -15,11 +15,17 @@
 #include <atlbase.h>
 #include <comdef.h>
 #include <dwmapi.h>
+#include <pathcch.h>
 #include <psapi.h>
 #include <shellapi.h>
 #include <ShellScalingAPI.h>
 #include <ShlObj.h>
 #include <wrl/wrappers/corewrappers.h>
+
+// https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
+// "Note: The maximum path of 32,767 characters is approximate."
+// smh
+#define LONG_PATH 33000
 
 // UWP
 #ifdef STORE
@@ -70,9 +76,9 @@ static struct RUNTIMESTATE
 	HMENU tray_popup;
 	NOTIFYICONDATA tray;
 	bool fluent_available = false;
-	wchar_t config_folder[MAX_PATH];
-	wchar_t config_file[MAX_PATH];
-	wchar_t exclude_file[MAX_PATH];
+	wchar_t *config_folder;
+	wchar_t *config_file;
+	wchar_t *exclude_file;
 	int cache_hits;
 	bool peek_active = false;
 	HWINEVENTHOOK peek_hook;
@@ -125,39 +131,56 @@ void GetPaths()
 	wchar_t *appData;
 	Error::Handle(SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &appData), Error::Level::Fatal, L"Failed to determine configuration files locations!");
 
-	wchar_t temp[MAX_PATH];
-	if (!GetTempPath(MAX_PATH, temp))
+	wchar_t temp[LONG_PATH];
+	if (!GetTempPath(LONG_PATH, temp))
 	{
 		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to determine log files locations!");
 	}
 
-	wchar_t log_folder[MAX_PATH];
-	PathCombine(log_folder, temp, App::NAME.c_str());
+	wchar_t *log_folder;
+	Error::Handle(PathAllocCombine(temp, App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_folder), Error::Level::Fatal, L"Failed to combine temporary folder and application name!");
 	Log::Folder = log_folder;
+	if (!LocalFree(log_folder))
+	{
+		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary log folder character array!");
+	}
 #else
 	const wchar_t *appData = UWP::GetApplicationFolderPath(UWP::FolderType::Roaming).GetRawBuffer(NULL);
 
 	Log::Folder = UWP::GetApplicationFolderPath(UWP::FolderType::Temporary).GetRawBuffer(NULL);
 #endif
 
-	PathCombine(run.config_folder, appData, App::NAME.c_str());
-	PathCombine(run.config_file, run.config_folder, Config::CONFIG_FILE.c_str());
-	PathCombine(run.exclude_file, run.config_folder, Config::EXCLUDE_FILE.c_str());
+	Error::Handle(PathAllocCombine(appData, App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &run.config_folder), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
+	Error::Handle(PathAllocCombine(run.config_folder, Config::CONFIG_FILE.c_str(), PATHCCH_ALLOW_LONG_PATHS, &run.config_file), Error::Level::Fatal, L"Failed to combine config folder and config file!");
+	Error::Handle(PathAllocCombine(run.config_folder, Config::EXCLUDE_FILE.c_str(), PATHCCH_ALLOW_LONG_PATHS, &run.exclude_file), Error::Level::Fatal, L"Failed to combine config folder and exclude file!");
+
+#ifndef STORE
+	CoTaskMemFree(appData);
+#endif
 }
 
 void ApplyStock(const std::wstring &filename)
 {
-	wchar_t exeFolder[MAX_PATH];
-	GetModuleFileName(GetModuleHandle(NULL), exeFolder, MAX_PATH);
-	PathRemoveFileSpec(exeFolder);
+	wchar_t exeFolder[LONG_PATH];
+	if (!GetModuleFileNameEx(GetModuleHandle(NULL), NULL, exeFolder, LONG_PATH))
+	{
+		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to determine executable location!");
+	}
+	Error::Handle(PathCchRemoveFileSpec(exeFolder, LONG_PATH), Error::Level::Error, L"Failed to determine executable folder!");
 
-	wchar_t stockFile[MAX_PATH];
-	PathCombine(stockFile, exeFolder, filename.c_str());
+	wchar_t *stockFile;
+	if (!Error::Handle(PathAllocCombine(exeFolder, filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &stockFile), Error::Level::Error, L"Failed to combine executable folder and config file!"))
+	{
+		return;
+	}
 
-	wchar_t configFile[MAX_PATH];
-	PathCombine(configFile, run.config_folder, filename.c_str());
+	wchar_t *configFile;
+	if (!Error::Handle(PathAllocCombine(run.config_folder, filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Error, L"Failed to combine config folder and config file!"))
+	{
+		return;
+	}
 
-	if (!PathIsDirectory(run.config_folder))
+	if (!win32::IsDirectory(run.config_folder))
 	{
 		if (!CreateDirectory(run.config_folder, NULL))
 		{
@@ -169,11 +192,20 @@ void ApplyStock(const std::wstring &filename)
 	{
 		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Copying stock configuration file failed!");
 	}
+
+	if (!LocalFree(stockFile))
+	{
+		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary stock config file character array.");
+	}
+	if (!LocalFree(configFile))
+	{
+		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary config file character array.");
+	}
 }
 
 bool CheckAndRunWelcome()
 {
-	if (!PathIsDirectory(run.config_folder))
+	if (!win32::IsDirectory(run.config_folder))
 	{
 		// String concatenation is hard OK
 		std::wstring message;
@@ -190,11 +222,11 @@ bool CheckAndRunWelcome()
 			return false;
 		}
 	}
-	if (!PathFileExists(run.config_file))
+	if (!win32::FileExists(run.config_file))
 	{
 		ApplyStock(Config::CONFIG_FILE);
 	}
-	if (!PathFileExists(run.exclude_file))
+	if (!win32::FileExists(run.exclude_file))
 	{
 		ApplyStock(Config::EXCLUDE_FILE);
 	}
@@ -687,7 +719,7 @@ void ParseBlacklistFile()
 
 void StartLogger()
 {
-	if (!PathIsDirectory(Log::Folder.c_str()))
+	if (!win32::IsDirectory(Log::Folder.c_str()))
 	{
 		if (!CreateDirectory(Log::Folder.c_str(), NULL))
 		{
@@ -695,14 +727,21 @@ void StartLogger()
 		}
 	}
 
-	wchar_t log_file[MAX_PATH];
-
 	std::time_t unix_epoch = std::time(0);
 	std::wstring log_filename = std::to_wstring(unix_epoch) + L".log";
 
-	PathCombine(log_file, Log::Folder.c_str(), log_filename.c_str());
+	wchar_t *log_file;
+	if (!Error::Handle(PathAllocCombine(Log::Folder.c_str(), log_filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_file), Error::Level::Error, L"Failed to combine log folder and log filename! Log file not available during this session."))
+	{
+		return;
+	}
 	Log::Instance = new Logger(log_file);
 	Log::File = log_file;
+
+	if (!LocalFree(log_file))
+	{
+		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary log file character array.");
+	}
 
 	Log::OutputMessage(L"Basic initialization completed.");
 }
@@ -1252,6 +1291,27 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 void Terminate()
 {
+	if (run.config_folder)
+	{
+		if (!LocalFree(run.config_folder))
+		{
+			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free config folder character array.");
+		}
+	}
+	if (run.config_file)
+	{
+		if (!LocalFree(run.config_file))
+		{
+			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free config file character array.");
+		}
+	}
+	if (run.exclude_file)
+	{
+		if (!LocalFree(run.exclude_file))
+		{
+			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free exclude file character array.");
+		}
+	}
 	if (run.peek_hook)
 	{
 		UnhookWinEvent(run.peek_hook);

@@ -68,6 +68,18 @@ namespace win32 {
 		return return_value;
 	}
 
+	bool IsDirectory(const std::wstring &directory)
+	{
+		DWORD attributes = GetFileAttributes(directory.c_str());
+		return attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY);
+	}
+
+	bool FileExists(const std::wstring &file)
+	{
+		DWORD attributes = GetFileAttributes(file.c_str());
+		return attributes != INVALID_FILE_ATTRIBUTES && !(attributes & FILE_ATTRIBUTE_DIRECTORY);
+	}
+
 }
 
 #endif // !WIN32_HPP

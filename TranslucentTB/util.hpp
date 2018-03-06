@@ -41,7 +41,15 @@ namespace Util {
 		return str.substr(first, (last - first + 1));
 	}
 
-	void EditFile(const std::wstring &file)
+	void QuoteSpaces(std::wstring &path)
+	{
+		if (path.find(L" ") != std::wstring::npos)
+		{
+			path = L"\"" + path + L"\"";
+		}
+	}
+
+	void EditFile(std::wstring file)
 	{
 		// WinAPI reeeeeeeeeeeeeeeeeeeeeeeeee
 		LPWSTR system32;
@@ -50,17 +58,20 @@ namespace Util {
 			return;
 		}
 
-		wchar_t notepad[MAX_PATH];
-		PathCombine(notepad, system32, L"notepad.exe");
+		wchar_t *notepad;
+		if (!Error::Handle(PathAllocCombine(system32, L"notepad.exe", PATHCCH_ALLOW_LONG_PATHS, &notepad), Error::Level::Error, L"Failed to determine Notepad location!"))
+		{
+			return;
+		}
+		std::wstring str_notepad(notepad);
+		if (!LocalFree(notepad))
+		{
+			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary notepad character array.");
+		}
 
-		std::vector<wchar_t> buf(file.begin(), file.end());
-		buf.push_back(0); // Null terminator
-		PathQuoteSpaces(buf.data());
-
-		std::wstring path;
-		path += notepad;
-		path += ' ';
-		path += buf.data();
+		QuoteSpaces(str_notepad);
+		QuoteSpaces(file);
+		std::wstring path = str_notepad + L" " + file;
 
 		std::vector<wchar_t> buf2(path.begin(), path.end());
 		buf2.push_back(0); // Null terminator
@@ -74,9 +85,18 @@ namespace Util {
 		// Not using lpApplicationName here because if someone has set a redirect to another editor it doesn't works. (eg Notepad2)
 		if (CreateProcess(NULL, buf2.data(), NULL, NULL, FALSE, NULL, NULL, NULL, &si, &pi))
 		{
-			WaitForSingleObject(pi.hProcess, INFINITE);
-			CloseHandle(pi.hProcess);
-			CloseHandle(pi.hThread);
+			if (WaitForSingleObject(pi.hProcess, INFINITE) == WAIT_FAILED)
+			{
+				Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to wait for Notepad close.");
+			}
+			if (!CloseHandle(pi.hProcess))
+			{
+				Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to close process handle.");
+			}
+			if (!CloseHandle(pi.hThread))
+			{
+				Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to close thread handle.");
+			}
 		}
 		else
 		{
