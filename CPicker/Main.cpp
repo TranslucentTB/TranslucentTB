@@ -5,6 +5,8 @@
 #include "CPicker.h"
 #include "resource.h"
 
+#include <CommCtrl.h>
+
 static bool programmaticallyChangingText;
 
 LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -36,13 +38,14 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 	const float widthA = rectA.right - rectA.left;
 	const float heightA = rectA.bottom - rectA.top;
 
-	const int red = GetDlgItemInt(hDlg, IDC_RED, NULL, false);
-	const int green = GetDlgItemInt(hDlg, IDC_GREEN, NULL, false);
-	const int blue = GetDlgItemInt(hDlg, IDC_BLUE, NULL, false);
+	BOOL result;
+	const int red = SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+	const int green = SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+	const int blue = SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
 
-	const int hue = GetDlgItemInt(hDlg, IDC_HUE, NULL, false);
-	const int saturation = GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false);
-	const int value = GetDlgItemInt(hDlg, IDC_VALUE, NULL, false);
+	const int hue = SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+	const int saturation = SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+	const int value = SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
 
 	switch (uMsg)
 	{
@@ -53,12 +56,14 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		pbufferC2.Create(widthC2, heightC2);
 		pbufferA.Create(widthA, heightA);
 
-		UpdateValues(hDlg, picker->GetCurrentColour());
-
-		for (int item : {IDC_RED, IDC_GREEN, IDC_BLUE, IDC_ALPHA, IDC_HUE, IDC_SATURATION, IDC_VALUE})
+		for (const std::pair<unsigned int, std::pair<unsigned int, unsigned int>> &slider_combo : SLIDER_MAP)
 		{
-			SendDlgItemMessage(hDlg, item, EM_SETLIMITTEXT, 3, 0);
+			SendDlgItemMessage(hDlg, slider_combo.second.first, UDM_SETBUDDY, (WPARAM)GetDlgItem(hDlg, slider_combo.first), 0);
+			SendDlgItemMessage(hDlg, slider_combo.second.first, UDM_SETRANGE32, 0, slider_combo.second.second);
 		}
+		SendDlgItemMessage(hDlg, IDC_HEXSLIDER, UDM_SETBASE, 16, 0);
+
+		UpdateValues(hDlg, picker->GetCurrentColour());
 
 		SendDlgItemMessage(hDlg, IDC_R, BM_SETCHECK, BST_CHECKED, 0);
 
@@ -73,6 +78,8 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				}
 			}
 		).detach();
+
+		SendMessage(hDlg, WM_PAINT, 0, 0);
 
 		break;
 	}
@@ -374,7 +381,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			}
 			pbufferC2.Display(hcomp);
 
-			temphue = GetDlgItemInt(hDlg, IDC_HUE, NULL, false);
+			temphue = hue;
 			temphue = temphue / step;
 
 			DrawArrows(hcomp, widthC2, heightC2, temphue);
@@ -387,9 +394,9 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 			sat = 0.0;
 
-			tempcol.h = GetDlgItemInt(hDlg, IDC_HUE, NULL, false);
+			tempcol.h = hue;
 			tempcol.s = 0;
-			tempcol.v = GetDlgItemInt(hDlg, IDC_VALUE, NULL, false);
+			tempcol.v = value;
 
 			step = 100.0 / heightC2;
 
@@ -407,7 +414,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			}
 			pbufferC2.Display(hcomp);
 
-			sat = GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false);
+			sat = saturation;
 			sat = sat / step;
 
 			DrawArrows(hcomp, widthC2, heightC2, sat);
@@ -420,8 +427,8 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 			val = 0.0;
 
-			tempcol.h = GetDlgItemInt(hDlg, IDC_HUE, NULL, false);
-			tempcol.s = GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false);
+			tempcol.h = hue;
+			tempcol.s = saturation;
 			tempcol.v = 0;
 
 			step = 100.0 / heightC2;
@@ -440,7 +447,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			}
 			pbufferC2.Display(hcomp);
 
-			val = GetDlgItemInt(hDlg, IDC_VALUE, NULL, false);
+			val = value;
 			val = val / step;
 
 			DrawArrows(hcomp, widthC2, heightC2, val);
@@ -501,7 +508,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		}
 		pbufferA.Display(hcomp);
 
-		DrawArrows(hcomp, widthA, heightA, (GetDlgItemInt(hDlg, IDC_ALPHA, NULL, false) / 100.0f) * heightA);
+		DrawArrows(hcomp, widthA, heightA, (SendDlgItemMessage(hDlg, IDC_ASLIDER, UDM_GETPOS, 0, (LPARAM)&result) / 100.0f) * heightA);
 
 		BitBlt(hdc, 0, 0, widthA, heightA, hcomp, 0, 0, SRCCOPY);
 
@@ -668,72 +675,47 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 		case EN_CHANGE:
 		{
-			if (programmaticallyChangingText)
+			if (programmaticallyChangingText || !open)
 			{
 				break;
 			}
 
-			programmaticallyChangingText = true;
-
-			DWORD start;
-			DWORD end;
-			SendDlgItemMessage(hDlg, LOWORD(wParam), EM_GETSEL, (WPARAM)&start, (LPARAM)&end);
-
 			switch (LOWORD(wParam))
 			{
-				int tempcolor;
-
 			case IDC_RED:
 			case IDC_GREEN:
 			case IDC_BLUE:
 			{
-				tempcolor = GetDlgItemInt(hDlg, LOWORD(wParam), NULL, false);
-				tempcolor = min(255, tempcolor);
-				tempcolor = max(0, tempcolor);
-				SetDlgItemInt(hDlg, LOWORD(wParam), tempcolor, false);
-
-				picker->SetRGB(GetDlgItemInt(hDlg, IDC_RED, NULL, false), GetDlgItemInt(hDlg, IDC_GREEN, NULL, false), GetDlgItemInt(hDlg, IDC_BLUE, NULL, false));
+				picker->SetRGB(SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, (LPARAM)&result), SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, (LPARAM)&result), SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, (LPARAM)&result));
 				break;
 			}
 
 			case IDC_HUE:
-			{
-				tempcolor = GetDlgItemInt(hDlg, IDC_HUE, NULL, false);
-				tempcolor = min(359, tempcolor);
-				tempcolor = max(0, tempcolor);
-				SetDlgItemInt(hDlg, IDC_HUE, tempcolor, false);
-
-				picker->SetHSV(tempcolor, saturation, value);
-				break;
-			}
-
 			case IDC_SATURATION:
 			case IDC_VALUE:
 			{
-				tempcolor = GetDlgItemInt(hDlg, LOWORD(wParam), NULL, false);
-				tempcolor = min(100, tempcolor);
-				tempcolor = max(0, tempcolor);
-				SetDlgItemInt(hDlg, LOWORD(wParam), tempcolor, false);
-
-				picker->SetHSV(hue, GetDlgItemInt(hDlg, IDC_SATURATION, NULL, false), GetDlgItemInt(hDlg, IDC_VALUE, NULL, false));
+				picker->SetHSV(SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, (LPARAM)&result), SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, (LPARAM)&result), SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, (LPARAM)&result));
 				break;
 			}
 
 			case IDC_ALPHA:
 			{
-				tempcolor = GetDlgItemInt(hDlg, LOWORD(wParam), NULL, false);
-				tempcolor = min(100, tempcolor);
-				tempcolor = max(0, tempcolor);
-				SetDlgItemInt(hDlg, LOWORD(wParam), tempcolor, false);
+				picker->SetAlpha(SendDlgItemMessage(hDlg, IDC_ASLIDER, UDM_GETPOS, 0, (LPARAM)&result));
+				break;
+			}
 
-				picker->SetAlpha(tempcolor);
+			case IDC_HEXCOL:
+			{
+				unsigned int tempcolor = SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS32, 0, (LPARAM)&result);
+
+				picker->SetRGB((tempcolor & 0xFF000000) >> 24, (tempcolor & 0xFF0000) >> 16, (tempcolor & 0xFF00) >> 8);
+				picker->SetAlpha(tempcolor & 0xFF);
+				break;
 			}
 			}
 
 			// Update color
 			UpdateValues(hDlg, picker->GetCurrentColour());
-			programmaticallyChangingText = false;
-			SendDlgItemMessage(hDlg, LOWORD(wParam), EM_SETSEL, start, end);
 			SendMessage(hDlg, WM_PAINT, 0, 0);
 
 			break;
@@ -862,17 +844,15 @@ void DrawArrows(HDC hcomp, int width, int height, float y)
 void UpdateValues(HWND hDlg, SColour col)
 {
 	programmaticallyChangingText = true;
-	TCHAR buff[10];
 
-	SetDlgItemInt(hDlg, IDC_RED, col.r, false);
-	SetDlgItemInt(hDlg, IDC_GREEN, col.g, false);
-	SetDlgItemInt(hDlg, IDC_BLUE, col.b, false);
-	SetDlgItemInt(hDlg, IDC_ALPHA, col.a, false);
-	SetDlgItemInt(hDlg, IDC_HUE, col.h, false);
-	SetDlgItemInt(hDlg, IDC_SATURATION, col.s, false);
-	SetDlgItemInt(hDlg, IDC_VALUE, col.v, false);
+	SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_SETPOS, 0, col.r);
+	SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_SETPOS, 0, col.g);
+	SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_SETPOS, 0, col.b);
+	SendDlgItemMessage(hDlg, IDC_ASLIDER, UDM_SETPOS, 0, col.a);
+	SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_SETPOS, 0, col.h);
+	SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_SETPOS, 0, col.s);
+	SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_SETPOS, 0, col.v);
+	SendDlgItemMessage(hDlg, IDC_HEXSLIDER, UDM_SETPOS32, 0, (col.r << 24) + (col.g << 16) + (col.b << 8) + col.a);
 
-	swprintf_s(buff, L"%02X%02X%02X", col.r, col.g, col.b);
-	SetDlgItemText(hDlg, IDC_HEXCOL, buff);
 	programmaticallyChangingText = false;
 }

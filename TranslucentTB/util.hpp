@@ -36,7 +36,7 @@ namespace Util {
 
 		if (first == std::wstring::npos)
 		{
-			return std::wstring(L"");
+			return L"";
 		}
 		return str.substr(first, (last - first + 1));
 	}

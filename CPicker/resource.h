@@ -20,25 +20,28 @@
 #define IDC_CURRCOLOR                   1048
 #define IDC_ALPHA                       1049
 #define IDC_ALPHASLIDE                  1050
-#define IDC_BLUE2                       1051
 #define IDC_OLDCOLOR                    1051
 #define IDB_OK                          1067
 #define IDB_CANCEL                      1068
 #define IDC_ALPHATXT                    1069
 #define IDC_ALPHATXT2                   1070
-#define IDC_BUTTON1                     1071
-#define IDB_REVERT                      1071
-#define IDb_PICKER                      1071
 #define IDC_HEXCOL                      1072
-#define IDC_PROGRESS1                   1073
+#define IDC_RSLIDER                     1076
+#define IDC_GSLIDER                     1077
+#define IDC_BSLIDER                     1078
+#define IDC_ASLIDER                     1079
+#define IDC_HSLIDER                     1080
+#define IDC_SSLIDER                     1081
+#define IDC_VSLIDER                     1082
+#define IDC_HEXSLIDER                   1083
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        182
+#define _APS_NEXT_RESOURCE_VALUE        183
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1074
+#define _APS_NEXT_CONTROL_VALUE         1084
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

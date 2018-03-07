@@ -388,6 +388,10 @@ void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 		{
 			color_value = color_value.substr(1, color_value.length() - 1);
 		}
+		else if (color_value.find(L"0x") == 0)
+		{
+			color_value = color_value.substr(2, color_value.length() - 2);
+		}
 
 		// Get only the last 6 characters, keeps compatibility with old version.
 		// It stored AARRGGBB in color, but now we store it as RRGGBB.
