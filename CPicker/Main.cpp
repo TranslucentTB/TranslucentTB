@@ -653,7 +653,8 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			UpdateValues(hDlg, picker->GetCurrentColour());
 		}
 
-		SendMessage(hDlg, WM_PAINT, 0, 0);
+		SendMessage(hDlg, WM_PAINT, 0, 0);  // For some reason, RedrawWindow doesn't update the circle
+		RedrawWindow(hDlg, nullptr, nullptr, RDW_UPDATENOW);
 		break;
 	}
 
@@ -863,7 +864,7 @@ void UpdateValues(HWND hDlg, SColour col)
 {
 	programmaticallyChangingText = true;
 	TCHAR buff[10];
-
+	TCHAR test[10];
 	SetDlgItemInt(hDlg, IDC_RED, col.r, false);
 	SetDlgItemInt(hDlg, IDC_GREEN, col.g, false);
 	SetDlgItemInt(hDlg, IDC_BLUE, col.b, false);
