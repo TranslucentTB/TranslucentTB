@@ -667,9 +667,25 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 	case WM_COMMAND:
 		switch (HIWORD(wParam))
 		{
-		case EN_SETFOCUS:
+		case EN_KILLFOCUS:
 		{
-			SendDlgItemMessage(hDlg, LOWORD(wParam), EM_SETSEL, 0, -1);
+			programmaticallyChangingText = true;
+			for (const std::pair<unsigned int, std::pair<unsigned int, unsigned int>> &slider_combo : SLIDER_MAP)
+			{
+				if (slider_combo.first == IDC_HEXCOL)
+				{
+					wchar_t buffer[11];
+					SColour col = picker->GetCurrentColour();
+
+					swprintf_s(buffer, L"0x%02X%02X%02X%02X", col.r, col.g, col.b, col.a);
+					SetDlgItemText(hDlg, slider_combo.first, buffer);
+				}
+				else
+				{
+					SetDlgItemInt(hDlg, slider_combo.first, SendDlgItemMessage(hDlg, slider_combo.second.first, UDM_GETPOS, 0, (LPARAM)&result), false);
+				}
+			}
+			programmaticallyChangingText = false;
 			break;
 		}
 
@@ -706,7 +722,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 			case IDC_HEXCOL:
 			{
-				unsigned int tempcolor = SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS32, 0, (LPARAM)&result);
+				const unsigned int tempcolor = SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS32, 0, (LPARAM)&result);
 
 				picker->SetRGB((tempcolor & 0xFF000000) >> 24, (tempcolor & 0xFF0000) >> 16, (tempcolor & 0xFF00) >> 8);
 				picker->SetAlpha(tempcolor & 0xFF);

@@ -8,7 +8,6 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include "winres.h"
-#include "CommCtrl.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -39,8 +38,8 @@ END
 
 3 TEXTINCLUDE 
 BEGIN
-"#include ""CommCtrl.h""\r\n"
-"\0"
+    "#include ""CommCtrl.h""\r\n"
+    "\0"
 END
 
 4 TEXTINCLUDE 
@@ -65,29 +64,29 @@ BEGIN
     PUSHBUTTON      "OK",IDB_OK,69,157,34,12
     PUSHBUTTON      "Cancel",IDB_CANCEL,108,157,31,12
     CONTROL         "R:",IDC_R,"Button",BS_AUTORADIOBUTTON | WS_GROUP,186,12,19,12
-    CONTROL         "G:",IDC_G,"Button",BS_AUTORADIOBUTTON,186,27,19,12
-    CONTROL         "B:",IDC_B,"Button",BS_AUTORADIOBUTTON,186,42,19,12
     EDITTEXT        IDC_RED,207,12,29,12,ES_NUMBER
+    CONTROL         "G:",IDC_G,"Button",BS_AUTORADIOBUTTON,186,27,19,12
     EDITTEXT        IDC_GREEN,207,27,29,12,ES_NUMBER
+    CONTROL         "B:",IDC_B,"Button",BS_AUTORADIOBUTTON,186,42,19,12
     EDITTEXT        IDC_BLUE,207,42,29,12,ES_NUMBER
-    CONTROL         "H:",IDC_H,"Button",BS_AUTORADIOBUTTON,186,76,19,12
-    CONTROL         "S:",IDC_S,"Button",BS_AUTORADIOBUTTON,186,91,19,12
-    CONTROL         "V:",IDC_V,"Button",BS_AUTORADIOBUTTON,186,106,19,12
-    EDITTEXT        IDC_HUE,207,76,29,12,ES_NUMBER
-    EDITTEXT        IDC_SATURATION,207,91,29,12,ES_NUMBER
-    EDITTEXT        IDC_VALUE,207,106,29,12,ES_NUMBER
+    LTEXT           "A:",-1,195,60,8,9
     EDITTEXT        IDC_ALPHA,207,58,29,12,ES_NUMBER
+    LTEXT           "%",-1,240,59,8,9
+    CONTROL         "H:",IDC_H,"Button",BS_AUTORADIOBUTTON,186,76,19,12
+    EDITTEXT        IDC_HUE,207,76,29,12,ES_NUMBER
+    LTEXT           "%",-1,240,93,8,9
+    CONTROL         "S:",IDC_S,"Button",BS_AUTORADIOBUTTON,186,91,19,12
+    EDITTEXT        IDC_SATURATION,207,91,29,12,ES_NUMBER
+    LTEXT           "%",-1,240,108,8,9
+    CONTROL         "V:",IDC_V,"Button",BS_AUTORADIOBUTTON,186,106,19,12
+    EDITTEXT        IDC_VALUE,207,106,29,12,ES_NUMBER
+    LTEXT           "°",-1,240,76,8,9
+    EDITTEXT        IDC_HEXCOL,186,122,65,12,ES_CENTER
     CONTROL         "",IDC_CURRCOLOR,"Static",SS_OWNERDRAW | SS_SUNKEN,195,140,41,18
     CONTROL         "",IDC_OLDCOLOR,"Static",SS_OWNERDRAW | SS_NOTIFY | SS_SUNKEN,195,158,41,18
     CONTROL         "",IDC_COLOR,"Static",SS_OWNERDRAW,10,12,128,128
     CONTROL         "",IDC_COLOR2,"Static",SS_OWNERDRAW,142,12,17,128
     CONTROL         "",IDC_ALPHASLIDE,"Static",SS_OWNERDRAW,163,12,17,128
-    LTEXT           "%",-1,240,93,8,9
-    LTEXT           "%",-1,240,108,8,9
-    LTEXT           "°",-1,240,76,8,9
-    LTEXT           "A:",IDC_ALPHATXT,195,60,8,9
-    LTEXT           "%",IDC_ALPHATXT2,240,59,8,9
-    EDITTEXT        IDC_HEXCOL,195,122,41,12,ES_CENTER
     CONTROL         "",IDC_RSLIDER, UPDOWN_CLASS,UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS,0,0,0,0
     CONTROL         "",IDC_GSLIDER, UPDOWN_CLASS,UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS,0,0,0,0
     CONTROL         "",IDC_BSLIDER, UPDOWN_CLASS,UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS,0,0,0,0
@@ -177,7 +176,7 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-
+#include "CommCtrl.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
