@@ -62,6 +62,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			SendDlgItemMessage(hDlg, slider_combo.second.first, UDM_SETRANGE32, 0, slider_combo.second.second);
 		}
 		SendDlgItemMessage(hDlg, IDC_HEXSLIDER, UDM_SETBASE, 16, 0);
+		SendDlgItemMessage(hDlg, IDC_HEXCOL, EM_SETLIMITTEXT, 10, 0);
 
 		UpdateValues(hDlg, picker->GetCurrentColour());
 
@@ -667,6 +668,19 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 	case WM_COMMAND:
 		switch (HIWORD(wParam))
 		{
+		case EN_SETFOCUS:
+		{
+			if (LOWORD(wParam) != IDC_HEXCOL)
+			{
+				if (GetDlgItemInt(hDlg, LOWORD(wParam), NULL, FALSE) == 0)
+				{
+					SetDlgItemText(hDlg, LOWORD(wParam), L"");
+				}
+			}
+			SendDlgItemMessage(hDlg, LOWORD(wParam), EM_SETSEL, 0, -1);
+			break;
+		}
+
 		case EN_KILLFOCUS:
 		{
 			programmaticallyChangingText = true;
