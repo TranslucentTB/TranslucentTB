@@ -8,6 +8,9 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include "winres.h"
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "CommCtrl.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -33,16 +36,13 @@ END
 2 TEXTINCLUDE 
 BEGIN
     "#include ""winres.h""\r\n"
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""CommCtrl.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
     "\0"
 END
 
 3 TEXTINCLUDE 
-BEGIN
-    "#include ""CommCtrl.h""\r\n"
-    "\0"
-END
-
-4 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
@@ -176,7 +176,7 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-#include "CommCtrl.h"
+
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
