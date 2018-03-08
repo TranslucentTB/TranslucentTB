@@ -23,8 +23,6 @@
 #define IDC_OLDCOLOR                    1051
 #define IDB_OK                          1067
 #define IDB_CANCEL                      1068
-#define IDC_ALPHATXT                    1069
-#define IDC_ALPHATXT2                   1070
 #define IDC_HEXCOL                      1072
 #define IDC_RSLIDER                     1076
 #define IDC_GSLIDER                     1077
