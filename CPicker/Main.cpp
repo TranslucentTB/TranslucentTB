@@ -661,7 +661,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 			UpdateValues(hDlg, picker->GetCurrentColour());
 		}
 
-		SendMessage(hDlg, WM_PAINT, 0, 0);
+		RedrawWindow(hDlg, nullptr, nullptr, RDW_UPDATENOW | RDW_INTERNALPAINT);
 		break;
 	}
 
