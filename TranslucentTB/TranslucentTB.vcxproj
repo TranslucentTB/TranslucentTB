@@ -82,6 +82,8 @@
     <ClCompile>
       <!-- TODO: Remove this when the clang bug is fixed -->
       <TreatWarningAsError>false</TreatWarningAsError>
+      <!-- TODO: Remove this when the clang bug is fixed -->
+      <AdditionalOptions></AdditionalOptions>
       <PreprocessorDefinitions>STORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
