@@ -5,7 +5,7 @@
 #include <cstdbool>
 #include <cstdint>
 #include <synchapi.h>
-#include <winbase.h>
+#include <WinBase.h>
 #include <windef.h>
 #include <winerror.h>
 #include <winnt.h>

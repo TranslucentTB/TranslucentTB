@@ -7,7 +7,7 @@
 #include <string>
 #include <windef.h>
 #include <winerror.h>
-#include <winuser.h>
+#include <WinUser.h>
 
 #include "app.hpp"
 #include "ttblog.hpp"

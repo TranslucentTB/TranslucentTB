@@ -10,11 +10,11 @@
 #include <vector>
 
 #include <comdef.h>
-#include <Processthreadsapi.h>
-#include <Shlobj.h>
+#include <processthreadsapi.h>
+#include <ShlObj.h>
 #include <Shlwapi.h>
-#include <Synchapi.h>
-#include <winbase.h>
+#include <synchapi.h>
+#include <WinBase.h>
 #include <windef.h>
 
 #include "app.hpp"
@@ -43,7 +43,7 @@ namespace Util {
 
 	void QuoteSpaces(std::wstring &path)
 	{
-		if (path.find(L" ") != std::wstring::npos)
+		if (path.find_first_of(' ') != std::wstring::npos)
 		{
 			path = L"\"" + path + L"\"";
 		}

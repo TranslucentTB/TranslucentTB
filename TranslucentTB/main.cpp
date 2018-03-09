@@ -15,10 +15,10 @@
 #include <atlbase.h>
 #include <comdef.h>
 #include <dwmapi.h>
-#include <pathcch.h>
-#include <psapi.h>
+#include <PathCch.h>
+#include <Psapi.h>
 #include <shellapi.h>
-#include <ShellScalingAPI.h>
+#include <ShellScalingApi.h>
 #include <ShlObj.h>
 #include <wrl/wrappers/corewrappers.h>
 
@@ -358,9 +358,13 @@ void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 	{
 		std::wstring color_value = Util::Trim(value);
 
-		if (color_value.find(L'#') == 0)
+		if (color_value.find_first_of('#') == 0)
 		{
 			color_value = color_value.substr(1, color_value.length() - 1);
+		}
+		else if (color_value.find(L"0x") == 0)
+		{
+			color_value = color_value.substr(2, color_value.length() - 2);
 		}
 
 		// Get only the last 6 characters, keeps compatibility with old version.
@@ -384,7 +388,7 @@ void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 	{
 		std::wstring color_value = Util::Trim(value);
 
-		if (color_value.find(L'#') == 0)
+		if (color_value.find_first_of('#') == 0)
 		{
 			color_value = color_value.substr(1, color_value.length() - 1);
 		}
@@ -589,8 +593,6 @@ void SaveConfigFile()
 		case swca::ACCENT_ENABLE_FLUENT:
 			configstream << L"fluent";
 			break;
-		default:
-			break;
 		}
 		configstream << endl;
 		configstream << L"; Color and opacity of the taskbar." << endl;
@@ -631,8 +633,6 @@ void SaveConfigFile()
 		case swca::ACCENT_ENABLE_FLUENT:
 			configstream << L"fluent";
 			break;
-		default:
-			break;
 		}
 		configstream << endl;
 
@@ -659,7 +659,7 @@ void SaveConfigFile()
 		case Taskbar::AEROPEEK::Dynamic:
 			configstream << L"dynamic";
 			break;
-		default:
+		case Taskbar::AEROPEEK::Enabled:
 			configstream << L"show";
 			break;
 		}
@@ -947,7 +947,7 @@ void RefreshMenu()
 	CheckPopupRadioItem(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, Tray::DYNAMIC_BUTTON_MAP.at(opt.dynamic_ws_taskbar_appearance));
 	CheckPopupRadioItem(IDM_PEEK, IDM_NOPEEK, Tray::PEEK_BUTTON_MAP.at(opt.peek));
 
-	for (const std::pair<swca::ACCENT, uint32_t> &kvp : Tray::DYNAMIC_BUTTON_MAP)
+	for (const std::pair<const swca::ACCENT, uint32_t> &kvp : Tray::DYNAMIC_BUTTON_MAP)
 	{
 		EnablePopupItem(kvp.second, opt.dynamic_ws);
 	}
@@ -1232,7 +1232,7 @@ void SetTaskbarBlur()
 		counter = 0;
 	}
 
-	for (const std::pair<HMONITOR, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
+	for (const std::pair<const HMONITOR, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
 	{
 		switch (taskbar.second.state)
 		{
@@ -1422,7 +1422,6 @@ int WINAPI WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 	}
 
 	std::terminate();
-	return 0; // This shouldn't ever be called, but Clang complains if we don't add it or change the return value to void
 }
 
 #pragma endregion

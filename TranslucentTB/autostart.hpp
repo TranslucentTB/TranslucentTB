@@ -5,7 +5,7 @@
 #ifndef STORE
 #include <cwchar>
 #include <Shlwapi.h>
-#include <winbase.h>
+#include <WinBase.h>
 #include <winreg.h>
 
 #include "app.hpp"

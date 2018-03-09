@@ -56,7 +56,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		pbufferC2.Create(widthC2, heightC2);
 		pbufferA.Create(widthA, heightA);
 
-		for (const std::pair<unsigned int, std::pair<unsigned int, unsigned int>> &slider_combo : SLIDER_MAP)
+		for (const std::pair<const unsigned int, std::pair<unsigned int, unsigned int>> &slider_combo : SLIDER_MAP)
 		{
 			SendDlgItemMessage(hDlg, slider_combo.second.first, UDM_SETBUDDY, (WPARAM)GetDlgItem(hDlg, slider_combo.first), 0);
 			SendDlgItemMessage(hDlg, slider_combo.second.first, UDM_SETRANGE32, 0, slider_combo.second.second);
@@ -92,6 +92,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		pbufferC1.Create(widthC1, heightC1);
 		pbufferC2.Create(widthC2, heightC2);
 		pbufferA.Create(widthA, heightA);
+		[[clang::fallthrough]];
 	case WM_PAINT:
 	{
 		static bool can_run = true;
@@ -684,7 +685,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		case EN_KILLFOCUS:
 		{
 			programmaticallyChangingText = true;
-			for (const std::pair<unsigned int, std::pair<unsigned int, unsigned int>> &slider_combo : SLIDER_MAP)
+			for (const std::pair<const unsigned int, std::pair<unsigned int, unsigned int>> &slider_combo : SLIDER_MAP)
 			{
 				if (slider_combo.first == IDC_HEXCOL)
 				{

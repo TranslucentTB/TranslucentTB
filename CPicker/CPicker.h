@@ -3,7 +3,7 @@
 #define __CPICKER_H
 
 #include <unordered_map>
-#include <windows.h>
+#include <Windows.h>
 #include "CPickerDll.h"
 #include "resource.h"
 

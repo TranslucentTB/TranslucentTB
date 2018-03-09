@@ -5,7 +5,7 @@
 #include <atlbase.h>
 #include <combaseapi.h>
 #include <dwmapi.h>
-#include <psapi.h>
+#include <Psapi.h>
 #include <Shlwapi.h>
 #include <ShObjIdl.h>
 #include <string>
@@ -27,10 +27,7 @@ namespace WindowHelper {
 
 		if (!result)
 		{
-			if (Config::VERBOSE)
-			{
-				Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting title of a window failed.");
-			}
+			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting title of a window failed.");
 			return L"";
 		}
 
@@ -44,10 +41,7 @@ namespace WindowHelper {
 
 		if (!result)
 		{
-			if (Config::VERBOSE)
-			{
-				Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting class name of a window failed.");
-			}
+			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting class name of a window failed.");
 			return L"";
 		}
 
@@ -63,10 +57,7 @@ namespace WindowHelper {
 
 		if (!processHandle)
 		{
-			if (Config::VERBOSE)
-			{
-				Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting process handle of a window failed.");
-			}
+			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting process handle of a window failed.");
 			return L"";
 		}
 
@@ -75,10 +66,7 @@ namespace WindowHelper {
 
 		if (!QueryFullProcessImageName(processHandle, 0, exeName_path, &path_Size))
 		{
-			if (Config::VERBOSE)
-			{
-				Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting file name of a window failed.");
-			}
+			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting file name of a window failed.");
 			return L"";
 		}
 
@@ -116,10 +104,7 @@ namespace WindowHelper {
 		HRESULT result = desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
 		if (FAILED(result))
 		{
-			if (Config::VERBOSE)
-			{
-				Error::Handle(result, Error::Level::Log, L"Verifying if a window is on the current virtual desktop failed.");
-			}
+			Error::Handle(result, Error::Level::Log, L"Verifying if a window is on the current virtual desktop failed.");
 			return true;
 		}
 
@@ -132,10 +117,7 @@ namespace WindowHelper {
 		BOOL status = GetWindowPlacement(hWnd, &result);
 		if (!status)
 		{
-			if (Config::VERBOSE)
-			{
-				Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting placement of a window failed.");
-			}
+			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting placement of a window failed.");
 			return false;
 		}
 		return result.showCmd == SW_MAXIMIZE;
@@ -148,10 +130,7 @@ namespace WindowHelper {
 
 		if (FAILED(status))
 		{
-			if (Config::VERBOSE)
-			{
-				Error::Handle(status, Error::Level::Log, L"Getting cloaked status of a window failed.");
-			}
+			Error::Handle(status, Error::Level::Log, L"Getting cloaked status of a window failed.");
 			return false;
 		}
 

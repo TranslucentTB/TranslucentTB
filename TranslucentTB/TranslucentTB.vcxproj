@@ -64,12 +64,13 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
-      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <PreprocessorDefinitions>WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SDLCheck>true</SDLCheck>
       <MinimalRebuild>
       </MinimalRebuild>
+      <AdditionalOptions>-Wrange-loop-analysis -Wnonportable-system-include-path -Wimplicit-fallthrough -Wunreachable-code-return -Wswitch-enum -Wcovered-switch-default %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -79,8 +80,6 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Store'">
     <ClCompile>
-      <!-- TODO: Remove this when the clang bug is fixed -->
-      <WarningLevel>Level4</WarningLevel>
       <!-- TODO: Remove this when the clang bug is fixed -->
       <TreatWarningAsError>false</TreatWarningAsError>
       <PreprocessorDefinitions>STORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
