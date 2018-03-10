@@ -5,6 +5,9 @@ configuration:
 - Release
 - Debug
 platform: x86
+shallow_clone: true
+install:
+- git submodule update --init --recursive --depth=1
 before_build:
 - ps: .\update-version.ps1
 build:
