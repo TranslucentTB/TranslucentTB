@@ -685,6 +685,50 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 		case EN_KILLFOCUS:
 		{
+			if (LOWORD(wParam) == IDC_HEXCOL)
+			{
+				wchar_t rawText[11];
+				GetDlgItemText(hDlg, IDC_HEXCOL, rawText, 11);
+
+				std::wstring text(rawText);
+				if (text.find_first_of('#') == 0)
+				{
+					text = text.substr(1, text.length() - 1);
+				}
+				else if (text.find(L"0x") == 0)
+				{
+					text = text.substr(2, text.length() - 2);
+				}
+
+				try
+				{
+					const unsigned int tempcolor = std::stoll(text, nullptr, 16) & 0xFFFFFFFF;
+
+					if (text.length() == 8)
+					{
+						picker->SetRGB((tempcolor & 0xFF000000) >> 24, (tempcolor & 0x00FF0000) >> 16, (tempcolor & 0x0000FF00) >> 8);
+						picker->SetAlpha(tempcolor & 0x000000FF);
+					}
+					else if (text.length() == 4)
+					{
+						picker->SetRGB((tempcolor & 0xF000) >> 12, (tempcolor & 0x0F00) >> 8, (tempcolor & 0x00F0) >> 4);
+						picker->SetAlpha(tempcolor & 0x000F);
+					}
+					else if (text.length() == 6)
+					{
+						picker->SetRGB((tempcolor & 0xFF0000) >> 16, (tempcolor & 0x00FF00) >> 8, tempcolor & 0x0000FF);
+					}
+					else if (text.length() == 3)
+					{
+						picker->SetRGB((tempcolor & 0xF00) >> 8, (tempcolor & 0x0F0) >> 4, tempcolor & 0x00F);
+					}
+
+					UpdateValues(hDlg, picker->GetCurrentColour());
+					RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+				}
+				catch (std::invalid_argument) { }
+			}
+
 			programmaticallyChangingText = true;
 			for (const std::pair<const unsigned int, std::pair<unsigned int, unsigned int>> &slider_combo : SLIDER_MAP)
 			{
@@ -712,8 +756,6 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				break;
 			}
 
-			bool invalid = false;
-
 			switch (LOWORD(wParam))
 			{
 			case IDC_RED:
@@ -740,62 +782,13 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 			case IDC_HEXCOL:
 			{
-				wchar_t rawText[11];
-				GetDlgItemText(hDlg, IDC_HEXCOL, rawText, 11);
-
-				std::wstring text(rawText);
-				if (text.find_first_of('#') == 0)
-				{
-					text = text.substr(1, text.length() - 1);
-				}
-				else if (text.find(L"0x") == 0)
-				{
-					text = text.substr(2, text.length() - 2);
-				}
-
-				unsigned int tempcolor;
-				try
-				{
-					tempcolor = std::stoll(text, static_cast<size_t *>(0), 16) & 0xFFFFFFFF;
-				}
-				catch (std::invalid_argument)
-				{
-					invalid = true;
-					break;
-				}
-
-				if (text.length() == 8)
-				{
-					picker->SetRGB((tempcolor & 0xFF000000) >> 24, (tempcolor & 0x00FF0000) >> 16, (tempcolor & 0x0000FF00) >> 8);
-					picker->SetAlpha(tempcolor & 0x000000FF);
-				}
-				else if (text.length() == 4)
-				{
-					picker->SetRGB((tempcolor & 0xF000) >> 12, (tempcolor & 0x0F00) >> 8, (tempcolor & 0x00F0) >> 4);
-					picker->SetAlpha(tempcolor & 0x000F);
-				}
-				else if (text.length() == 6)
-				{
-					picker->SetRGB((tempcolor & 0xFF0000) >> 16, (tempcolor & 0x00FF00) >> 8, tempcolor & 0x0000FF);
-				}
-				else if (text.length() == 3)
-				{
-					picker->SetRGB((tempcolor & 0xF00) >> 8, (tempcolor & 0x0F0) >> 4, tempcolor & 0x00F);
-				}
-				else
-				{
-					invalid = true;
-				}
-				break;
+				return 0;
 			}
 			}
 
-			if (!invalid)
-			{
-				// Update color
-				UpdateValues(hDlg, picker->GetCurrentColour());
-				RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
-			}
+			// Update color
+			UpdateValues(hDlg, picker->GetCurrentColour());
+			RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 
 			break;
 		}
@@ -864,7 +857,7 @@ void DrawCheckedRect(HWND hWnd, int r, int g, int b, int a, int cx, int cy)
 	float rf = (float)r / 255.0f,
 		gf = (float)g / 255.0f,
 		bf = (float)b / 255.0f,
-		af = (float)a / 100.0f;
+		af = (float)a / 255.0f;
 	HDC hdc = GetDC(hWnd);
 	HBRUSH brush, brush2;
 	RECT rect, r2;
