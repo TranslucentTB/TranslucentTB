@@ -62,11 +62,20 @@ namespace WindowHelper {
 		}
 
 		DWORD path_Size = LONG_PATH;
-		wchar_t exeName_path[LONG_PATH];
+		std::vector<wchar_t> exeName_path(LONG_PATH);
 
-		if (!QueryFullProcessImageName(processHandle, 0, exeName_path, &path_Size))
+		if (!QueryFullProcessImageName(processHandle, 0, exeName_path.data(), &path_Size))
 		{
 			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting file name of a window failed.");
+
+			if (!CloseHandle(processHandle))
+			{
+				if (Config::VERBOSE)
+				{
+					Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Closing process handle of a window failed.");
+				}
+			}
+
 			return L"";
 		}
 
@@ -78,7 +87,7 @@ namespace WindowHelper {
 			}
 		}
 
-		std::wstring exeName(exeName_path);
+		std::wstring exeName(exeName_path.data());
 		return exeName.substr(exeName.find_last_of(L"/\\") + 1);
 	}
 

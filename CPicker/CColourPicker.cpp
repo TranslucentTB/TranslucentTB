@@ -4,7 +4,7 @@
 CColourPicker::CColourPicker(HWND hParentWindow)
 {
 	SetRGB(0, 0, 0);
-	SetAlpha(100);
+	SetAlpha(255);
 	OldCol = CurrCol;
 
 	hParent = hParentWindow;
@@ -53,8 +53,8 @@ void CColourPicker::SetHSV(unsigned short h, unsigned short s, unsigned short v)
 
 void CColourPicker::SetAlpha(unsigned short a)
 {
-	// Clamp alpha values to 100
-	CurrCol.a = min(a, 100);
+	// Clamp alpha values to 255
+	CurrCol.a = min(a, 255);
 }
 
 SColour CColourPicker::GetCurrentColour()

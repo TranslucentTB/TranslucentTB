@@ -131,14 +131,14 @@ void GetPaths()
 	wchar_t *appData;
 	Error::Handle(SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &appData), Error::Level::Fatal, L"Failed to determine configuration files locations!");
 
-	wchar_t temp[LONG_PATH];
-	if (!GetTempPath(LONG_PATH, temp))
+	std::vector<wchar_t> temp(LONG_PATH);
+	if (!GetTempPath(LONG_PATH, temp.data()))
 	{
 		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to determine log files locations!");
 	}
 
 	wchar_t *log_folder;
-	Error::Handle(PathAllocCombine(temp, App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_folder), Error::Level::Fatal, L"Failed to combine temporary folder and application name!");
+	Error::Handle(PathAllocCombine(temp.data(), App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_folder), Error::Level::Fatal, L"Failed to combine temporary folder and application name!");
 	Log::Folder = log_folder;
 	if (!LocalFree(log_folder))
 	{
@@ -162,13 +162,13 @@ void GetPaths()
 void ApplyStock(const std::wstring &filename)
 {
 	DWORD exeFolder_size = LONG_PATH;
-	wchar_t exeFolder[LONG_PATH];
-	if (!QueryFullProcessImageName(GetCurrentProcess(), 0, exeFolder, &exeFolder_size))
+	std::vector<wchar_t> exeFolder(LONG_PATH);
+	if (!QueryFullProcessImageName(GetCurrentProcess(), 0, exeFolder.data(), &exeFolder_size))
 	{
 		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to determine executable location!");
 		return;
 	}
-	std::wstring exeFolder_str(exeFolder);
+	std::wstring exeFolder_str(exeFolder.data());
 	exeFolder_str = exeFolder_str.substr(0, exeFolder_str.find_last_of(L"/\\") + 1);
 
 	wchar_t *stockFile;

@@ -1,6 +1,7 @@
 #include <chrono>
 #include <future>
 #include <stdio.h>
+#include <string>
 
 #include "CPicker.h"
 #include "resource.h"
@@ -510,7 +511,7 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		}
 		pbufferA.Display(hcomp);
 
-		DrawArrows(hcomp, widthA, heightA, (SendDlgItemMessage(hDlg, IDC_ASLIDER, UDM_GETPOS, 0, (LPARAM)&result) / 100.0f) * heightA);
+		DrawArrows(hcomp, widthA, heightA, (SendDlgItemMessage(hDlg, IDC_ASLIDER, UDM_GETPOS, 0, (LPARAM)&result) / 255.0f) * heightA);
 
 		BitBlt(hdc, 0, 0, widthA, heightA, hcomp, 0, 0, SRCCOPY);
 
@@ -657,12 +658,12 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		{
 			const float fy = ((p.y - rectA.top) / heightA) * 255.0f;
 
-			picker->SetAlpha((255 - fy) / 255.0f * 100.0f);
+			picker->SetAlpha(255 - fy);
 
 			UpdateValues(hDlg, picker->GetCurrentColour());
 		}
 
-		RedrawWindow(hDlg, nullptr, nullptr, RDW_UPDATENOW | RDW_INTERNALPAINT);
+		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 		break;
 	}
 
@@ -711,6 +712,8 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				break;
 			}
 
+			bool invalid = false;
+
 			switch (LOWORD(wParam))
 			{
 			case IDC_RED:
@@ -737,17 +740,62 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 			case IDC_HEXCOL:
 			{
-				const unsigned int tempcolor = SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS32, 0, (LPARAM)&result);
+				wchar_t rawText[11];
+				GetDlgItemText(hDlg, IDC_HEXCOL, rawText, 11);
 
-				picker->SetRGB((tempcolor & 0xFF000000) >> 24, (tempcolor & 0xFF0000) >> 16, (tempcolor & 0xFF00) >> 8);
-				picker->SetAlpha(tempcolor & 0xFF);
+				std::wstring text(rawText);
+				if (text.find_first_of('#') == 0)
+				{
+					text = text.substr(1, text.length() - 1);
+				}
+				else if (text.find(L"0x") == 0)
+				{
+					text = text.substr(2, text.length() - 2);
+				}
+
+				unsigned int tempcolor;
+				try
+				{
+					tempcolor = std::stoll(text, static_cast<size_t *>(0), 16) & 0xFFFFFFFF;
+				}
+				catch (std::invalid_argument)
+				{
+					invalid = true;
+					break;
+				}
+
+				if (text.length() == 8)
+				{
+					picker->SetRGB((tempcolor & 0xFF000000) >> 24, (tempcolor & 0x00FF0000) >> 16, (tempcolor & 0x0000FF00) >> 8);
+					picker->SetAlpha(tempcolor & 0x000000FF);
+				}
+				else if (text.length() == 4)
+				{
+					picker->SetRGB((tempcolor & 0xF000) >> 12, (tempcolor & 0x0F00) >> 8, (tempcolor & 0x00F0) >> 4);
+					picker->SetAlpha(tempcolor & 0x000F);
+				}
+				else if (text.length() == 6)
+				{
+					picker->SetRGB((tempcolor & 0xFF0000) >> 16, (tempcolor & 0x00FF00) >> 8, tempcolor & 0x0000FF);
+				}
+				else if (text.length() == 3)
+				{
+					picker->SetRGB((tempcolor & 0xF00) >> 8, (tempcolor & 0x0F0) >> 4, tempcolor & 0x00F);
+				}
+				else
+				{
+					invalid = true;
+				}
 				break;
 			}
 			}
 
-			// Update color
-			UpdateValues(hDlg, picker->GetCurrentColour());
-			SendMessage(hDlg, WM_PAINT, 0, 0);
+			if (!invalid)
+			{
+				// Update color
+				UpdateValues(hDlg, picker->GetCurrentColour());
+				RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+			}
 
 			break;
 		}

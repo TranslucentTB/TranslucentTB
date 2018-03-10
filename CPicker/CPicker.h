@@ -39,7 +39,7 @@ const std::unordered_map<unsigned int, std::pair<unsigned int, unsigned int>> SL
 	{ IDC_RED,			{ IDC_RSLIDER, 255 } },
 	{ IDC_GREEN,		{ IDC_GSLIDER, 255 } },
 	{ IDC_BLUE,			{ IDC_BSLIDER, 255 } },
-	{ IDC_ALPHA,		{ IDC_ASLIDER, 100 } },
+	{ IDC_ALPHA,		{ IDC_ASLIDER, 255 } },
 	{ IDC_HUE,			{ IDC_HSLIDER, 359 } },
 	{ IDC_SATURATION,	{ IDC_SSLIDER, 100 } },
 	{ IDC_VALUE,		{ IDC_VSLIDER, 100 } },
