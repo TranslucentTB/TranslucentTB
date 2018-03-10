@@ -10,12 +10,7 @@
 
 #include "app.hpp"
 #else
-#define _HIDE_GLOBAL_ASYNC_STATUS
-#include <roapi.h>
-#include <Windows.ApplicationModel.h>
-#include <wrl/client.h>
-
-#include "SynchronousOperation.hpp"
+#include <winrt/Windows.ApplicationModel.h>
 #include "UWP.hpp"
 #endif
 
@@ -23,19 +18,16 @@
 
 namespace Autostart {
 
-	enum class StartupState {
 #ifndef STORE
+	enum class StartupState {
 		Disabled,
 		DisabledByUser,
 		DisabledByPolicy,
 		Enabled
-#else
-		Disabled = ABI::Windows::ApplicationModel::StartupTaskState_Disabled,
-		DisabledByUser = ABI::Windows::ApplicationModel::StartupTaskState_DisabledByUser,
-		DisabledByPolicy = ABI::Windows::ApplicationModel::StartupTaskState_DisabledByPolicy,
-		Enabled = ABI::Windows::ApplicationModel::StartupTaskState_Enabled
-#endif
 	};
+#else
+	typedef winrt::Windows::ApplicationModel::StartupTaskState StartupState;
+#endif
 
 	StartupState GetStartupState()
 	{
@@ -65,20 +57,14 @@ namespace Autostart {
 			return StartupState::Disabled;
 		}
 #else
-		auto task = UWP::GetApplicationStartupTask();
-		if (!task)
+		try
 		{
-			return StartupState::Disabled;
+			return UWP::GetApplicationStartupTask().State();
 		}
-
-		ABI::Windows::ApplicationModel::StartupTaskState state;
-		if (!Error::Handle(task->get_State(&state), Error::Level::Log, L"Could not retrieve startup task state"))
+		catch (const winrt::hresult_error &error)
 		{
+			Error::Handle(error.code(), Error::Level::Log, L"Getting startup task state failed.");
 			return StartupState::Disabled;
-		}
-		else
-		{
-			return static_cast<StartupState>(state);
 		}
 #endif
 	}
@@ -109,29 +95,22 @@ namespace Autostart {
 			Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Error closing registry key.");
 		}
 #else
-		using namespace ABI::Windows;
-		using namespace Microsoft::WRL;
-
-		auto task = UWP::GetApplicationStartupTask();
-		if (!task)
+		try
 		{
-			return;
-		}
-
-		if (state == StartupState::Enabled)
-		{
-			ComPtr<Foundation::IAsyncOperation<ApplicationModel::StartupTaskState>> operation;
-			if (!Error::Handle(task->RequestEnableAsync(&operation), Error::Level::Log, L"Could not start setting of startup task state"))
+			auto task = UWP::GetApplicationStartupTask();
+			if (state == StartupState::Enabled)
 			{
-				return;
+				task.RequestEnableAsync().get();
 			}
-
-			ApplicationModel::StartupTaskState new_state;
-			Error::Handle(SynchronousOperation<ApplicationModel::StartupTaskState>(operation.Get()).GetResults(&new_state), Error::Level::Log, L"Could not set new startup task state");
+			else if (state == StartupState::Disabled)
+			{
+				task.Disable();
+			}
 		}
-		else if (state == StartupState::Disabled)
+		catch (const winrt::hresult_error &error)
 		{
-			Error::Handle(task->Disable(), Error::Level::Log, L"Could not disable startup task state");
+			Error::Handle(error.code(), Error::Level::Error, L"Changing startup task state failed!");
+			return;
 		}
 #endif
 	}

@@ -2,7 +2,6 @@
 #ifndef WIN32_HPP
 #define WIN32_HPP
 
-#include <cstdbool>
 #include <cstdint>
 #include <synchapi.h>
 #include <WinBase.h>

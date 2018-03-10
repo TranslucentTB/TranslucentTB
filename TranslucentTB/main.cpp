@@ -145,9 +145,13 @@ void GetPaths()
 		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary log folder character array!");
 	}
 #else
-	const wchar_t *appData = UWP::GetApplicationFolderPath(UWP::FolderType::Roaming).GetRawBuffer(NULL);
+	try
+	{
+		std::wstring appData_str = UWP::GetApplicationFolderPath(UWP::FolderType::Roaming);
+		const wchar_t *appData = appData_str.c_str();
 
-	Log::Folder = UWP::GetApplicationFolderPath(UWP::FolderType::Temporary).GetRawBuffer(NULL);
+		Log::Folder = UWP::GetApplicationFolderPath(UWP::FolderType::Temporary);
+
 #endif
 
 	Error::Handle(PathAllocCombine(appData, App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &run.config_folder), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
@@ -156,6 +160,12 @@ void GetPaths()
 
 #ifndef STORE
 	CoTaskMemFree(appData);
+#else
+	}
+	catch (const winrt::hresult_error &error)
+	{
+		Error::Handle(error.code(), Error::Level::Fatal, L"Getting application folder paths failed!");
+	}
 #endif
 }
 

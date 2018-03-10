@@ -85,6 +85,7 @@
       <!-- TODO: Remove this when the clang bug is fixed -->
       <AdditionalOptions></AdditionalOptions>
       <PreprocessorDefinitions>STORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../cppwinrt/10.0.16299.0</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -96,7 +97,6 @@
     <ClInclude Include="swcadata.hpp" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="SynchronousOperation.hpp" />
     <ClInclude Include="taskbar.hpp" />
     <ClInclude Include="tray.hpp" />
     <ClInclude Include="ttberror.hpp" />

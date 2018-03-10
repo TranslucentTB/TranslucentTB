@@ -60,9 +60,6 @@
     <ClInclude Include="windowhelper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SynchronousOperation.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="UWP.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
