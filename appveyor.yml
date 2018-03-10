@@ -11,6 +11,7 @@ before_build:
 - ps: .\update-version.ps1
 build:
   parallel: true
+  project: TranslucentTB.sln
 test: off
 artifacts:
 - path: $(CONFIGURATION)
