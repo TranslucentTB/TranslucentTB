@@ -32,12 +32,13 @@ namespace Util {
 	std::wstring Trim(const std::wstring& str)
 	{
 		size_t first = str.find_first_not_of(' ');
-		size_t last = str.find_last_not_of(' ');
 
 		if (first == std::wstring::npos)
 		{
 			return L"";
 		}
+
+		size_t last = str.find_last_not_of(' ');
 		return str.substr(first, (last - first + 1));
 	}
 
@@ -52,7 +53,7 @@ namespace Util {
 	void EditFile(std::wstring file)
 	{
 		// WinAPI reeeeeeeeeeeeeeeeeeeeeeeeee
-		LPWSTR system32;
+		wchar_t *system32;
 		if (!Error::Handle(SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, NULL, &system32), Error::Level::Error, L"Failed to determine System32 folder location!"))
 		{
 			return;
@@ -64,17 +65,18 @@ namespace Util {
 			return;
 		}
 		std::wstring str_notepad(notepad);
-		if (!LocalFree(notepad))
+		if (LocalFree(notepad))
 		{
 			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary notepad character array.");
 		}
+		CoTaskMemFree(system32);
 
 		QuoteSpaces(str_notepad);
 		QuoteSpaces(file);
 		std::wstring path = str_notepad + L" " + file;
 
-		std::vector<wchar_t> buf2(path.begin(), path.end());
-		buf2.push_back(0); // Null terminator
+		std::vector<wchar_t> buf(path.begin(), path.end());
+		buf.push_back(0); // Null terminator
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
@@ -83,7 +85,7 @@ namespace Util {
 
 		PROCESS_INFORMATION pi;
 		// Not using lpApplicationName here because if someone has set a redirect to another editor it doesn't works. (eg Notepad2)
-		if (CreateProcess(NULL, buf2.data(), NULL, NULL, FALSE, NULL, NULL, NULL, &si, &pi))
+		if (CreateProcess(NULL, buf.data(), NULL, NULL, FALSE, NULL, NULL, NULL, &si, &pi))
 		{
 			if (WaitForSingleObject(pi.hProcess, INFINITE) == WAIT_FAILED)
 			{

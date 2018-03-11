@@ -140,7 +140,7 @@ void GetPaths()
 	wchar_t *log_folder;
 	Error::Handle(PathAllocCombine(temp.data(), App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_folder), Error::Level::Fatal, L"Failed to combine temporary folder and application name!");
 	Log::Folder = log_folder;
-	if (!LocalFree(log_folder))
+	if (LocalFree(log_folder))
 	{
 		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary log folder character array!");
 	}
@@ -190,7 +190,7 @@ void ApplyStock(const std::wstring &filename)
 	wchar_t *configFile;
 	if (!Error::Handle(PathAllocCombine(run.config_folder, filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Error, L"Failed to combine config folder and config file!"))
 	{
-		if (!LocalFree(stockFile))
+		if (LocalFree(stockFile))
 		{
 			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary stock config file character array.");
 		}
@@ -203,11 +203,11 @@ void ApplyStock(const std::wstring &filename)
 		{
 			if (!Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Creating configuration files directory failed!"))
 			{
-				if (!LocalFree(stockFile))
+				if (LocalFree(stockFile))
 				{
 					Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary stock config file character array.");
 				}
-				if (!LocalFree(configFile))
+				if (LocalFree(configFile))
 				{
 					Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary config file character array.");
 				}
@@ -221,11 +221,11 @@ void ApplyStock(const std::wstring &filename)
 		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Copying stock configuration file failed!");
 	}
 
-	if (!LocalFree(stockFile))
+	if (LocalFree(stockFile))
 	{
 		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary stock config file character array.");
 	}
-	if (!LocalFree(configFile))
+	if (LocalFree(configFile))
 	{
 		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary config file character array.");
 	}
@@ -387,7 +387,7 @@ void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 
 		try
 		{
-			opt.color = (opt.color & 0xFF000000) + (std::stoi(color_value, static_cast<size_t *>(0), 16) & 0x00FFFFFF);
+			opt.color = (opt.color & 0xFF000000) + (std::stoi(color_value, nullptr, 16) & 0x00FFFFFF);
 		}
 		catch (std::invalid_argument)
 		{
@@ -417,7 +417,7 @@ void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
 
 		try
 		{
-			opt.dynamic_ws_color = (opt.dynamic_ws_color & 0xFF000000) + (std::stoi(color_value, static_cast<size_t *>(0), 16) & 0x00FFFFFF);
+			opt.dynamic_ws_color = (opt.dynamic_ws_color & 0xFF000000) + (std::stoi(color_value, nullptr, 16) & 0x00FFFFFF);
 		}
 		catch (std::invalid_argument)
 		{
@@ -770,7 +770,7 @@ void StartLogger()
 	Log::Instance = new Logger(log_file);
 	Log::File = log_file;
 
-	if (!LocalFree(log_file))
+	if (LocalFree(log_file))
 	{
 		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary log file character array.");
 	}
@@ -1325,21 +1325,21 @@ void Terminate()
 {
 	if (run.config_folder)
 	{
-		if (!LocalFree(run.config_folder))
+		if (LocalFree(run.config_folder))
 		{
 			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free config folder character array.");
 		}
 	}
 	if (run.config_file)
 	{
-		if (!LocalFree(run.config_file))
+		if (LocalFree(run.config_file))
 		{
 			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free config file character array.");
 		}
 	}
 	if (run.exclude_file)
 	{
-		if (!LocalFree(run.exclude_file))
+		if (LocalFree(run.exclude_file))
 		{
 			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free exclude file character array.");
 		}
