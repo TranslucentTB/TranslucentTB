@@ -1215,13 +1215,13 @@ void SetTaskbarBlur()
 			}
 			if (!failed && app_visibility && SUCCEEDED(app_visibility->IsLauncherVisible(&start_visible)) && start_visible)
 			{
-				// TODO: does this works correctly most of the time? (especially multi-monitor)
-				// Is a window caption of "Start" reliable to check for (does it works on other UI cultures?)
+				// TODO: does this works correctly on multi-monitor
 				HWND start = FindWindow(L"Windows.UI.Core.CoreWindow", L"Start");
 				run.taskbars.at(MonitorFromWindow(start, MONITOR_DEFAULTTOPRIMARY)).state = Taskbar::StartMenuOpen;
 			}
 		}
 
+		// TODO
 		//if (true)
 		//{
 		//	HWND task_view = FindWindow(L"Windows.UI.Core.CoreWindow", L"Task view");
