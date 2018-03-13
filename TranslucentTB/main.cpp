@@ -1313,7 +1313,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 		NIF_ICON | NIF_TIP | NIF_MESSAGE,												// uFlags
 		Tray::WM_NOTIFY_TB																// uCallbackMessage
 	};
-	LoadIconMetric(hInstance, MAKEINTRESOURCE(MAINICON), LIM_LARGE, &run.tray.hIcon);	// hIcon
+	LoadIconMetric(hInstance, MAKEINTRESOURCE(TRAYICON), LIM_LARGE, &run.tray.hIcon);	// hIcon
 	wcscpy_s(run.tray.szTip, App::NAME.c_str());										// szTip
 	#pragma clang diagnostic pop
 

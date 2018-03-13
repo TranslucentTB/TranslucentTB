@@ -4,6 +4,7 @@
 //
 #define IDR_VERSION                     1
 #define MAINICON                        101
+#define TRAYICON                        102
 #define IDR_POPUP_MENU                  202
 #define IDM_BLUR                        203
 #define IDM_CLEAR                       204
@@ -40,7 +41,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        104
+#define _APS_NEXT_RESOURCE_VALUE        103
 #define _APS_NEXT_COMMAND_VALUE         40022
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           101

@@ -51,7 +51,8 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-MAINICON                ICON                    "E_Square_small.ico"
+MAINICON                ICON                    "TTB_color.ico"
+TRAYICON                ICON                    "TTB_white.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
