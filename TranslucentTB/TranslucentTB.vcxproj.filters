@@ -63,16 +63,17 @@
     <ClInclude Include="UWP.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AutoFree.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AutoMemFree.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TranslucentTB.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="E_Square_small.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="config.cfg">
@@ -88,5 +89,13 @@
     <Manifest Include="app.manifest">
       <Filter>Resource Files</Filter>
     </Manifest>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="TTB_white.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="TTB_color.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

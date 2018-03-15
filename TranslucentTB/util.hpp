@@ -18,6 +18,8 @@
 #include <windef.h>
 
 #include "app.hpp"
+#include "AutoFree.hpp"
+#include "AutoMemFree.hpp"
 #include "ttberror.hpp"
 
 #include "../CPicker/CPickerDll.h"
@@ -53,23 +55,21 @@ namespace Util {
 	void EditFile(std::wstring file)
 	{
 		// WinAPI reeeeeeeeeeeeeeeeeeeeeeeeee
-		wchar_t *system32;
-		if (!Error::Handle(SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, NULL, &system32), Error::Level::Error, L"Failed to determine System32 folder location!"))
+		wchar_t *system32Unsafe;
+		if (!Error::Handle(SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, NULL, &system32Unsafe), Error::Level::Error, L"Failed to determine System32 folder location!"))
 		{
 			return;
 		}
+		AutoMemFree<wchar_t> system32(system32Unsafe);
 
-		wchar_t *notepad;
-		if (!Error::Handle(PathAllocCombine(system32, L"notepad.exe", PATHCCH_ALLOW_LONG_PATHS, &notepad), Error::Level::Error, L"Failed to determine Notepad location!"))
+		wchar_t *notepadUnsafe;
+		if (!Error::Handle(PathAllocCombine(system32Unsafe, L"notepad.exe", PATHCCH_ALLOW_LONG_PATHS, &notepadUnsafe), Error::Level::Error, L"Failed to determine Notepad location!"))
 		{
 			return;
 		}
-		std::wstring str_notepad(notepad);
-		if (LocalFree(notepad))
-		{
-			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary notepad character array.");
-		}
-		CoTaskMemFree(system32);
+		AutoFree<wchar_t> notepad(notepadUnsafe);
+
+		std::wstring str_notepad(notepadUnsafe);
 
 		QuoteSpaces(str_notepad);
 		QuoteSpaces(file);

@@ -95,6 +95,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app.hpp" />
+    <ClInclude Include="AutoFree.hpp" />
+    <ClInclude Include="AutoMemFree.hpp" />
     <ClInclude Include="autostart.hpp" />
     <ClInclude Include="swcadata.hpp" />
     <ClInclude Include="config.hpp" />
@@ -112,9 +114,6 @@
     <ResourceCompile Include="TranslucentTB.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="E_Square_small.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\LICENSE.md" />
     <None Include="..\Readme.md" />
     <None Include="config.cfg" />
@@ -127,6 +126,10 @@
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="app.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="TTB_color.ico" />
+    <Image Include="TTB_white.ico" />
   </ItemGroup>
   <Target Name="PostBuildEvent">
     <Copy SourceFiles="@(None)" DestinationFolder="$(TargetDir)" />

@@ -46,6 +46,8 @@
 #include "ttblog.hpp"
 #include "autostart.hpp"
 #include "windowhelper.hpp"
+#include "AutoFree.hpp"
+#include "AutoMemFree.hpp"
 
 
 #pragma region Structures
@@ -76,9 +78,9 @@ static struct RUNTIMESTATE
 	HMENU tray_popup;
 	NOTIFYICONDATA tray;
 	bool fluent_available = false;
-	wchar_t *config_folder;
-	wchar_t *config_file;
-	wchar_t *exclude_file;
+	std::wstring config_folder;
+	std::wstring config_file;
+	std::wstring exclude_file;
 	int cache_hits;
 	bool peek_active = false;
 	HWINEVENTHOOK peek_hook;
@@ -128,8 +130,9 @@ void SetWindowBlur(const HWND &hWnd, const swca::ACCENT &appearance, const uint3
 void GetPaths()
 {
 #ifndef STORE
-	wchar_t *appData;
-	Error::Handle(SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &appData), Error::Level::Fatal, L"Failed to determine configuration files locations!");
+	wchar_t *appDataUnsafe;
+	Error::Handle(SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &appDataUnsafe), Error::Level::Fatal, L"Failed to determine configuration files locations!");
+	AutoMemFree<wchar_t> appData(appDataUnsafe);
 
 	std::vector<wchar_t> temp(LONG_PATH);
 	if (!GetTempPath(LONG_PATH, temp.data()))
@@ -137,30 +140,38 @@ void GetPaths()
 		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to determine log files locations!");
 	}
 
-	wchar_t *log_folder;
-	Error::Handle(PathAllocCombine(temp.data(), App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_folder), Error::Level::Fatal, L"Failed to combine temporary folder and application name!");
-	Log::Folder = log_folder;
-	if (LocalFree(log_folder))
-	{
-		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary log folder character array!");
-	}
+	wchar_t *log_folder_unsafe;
+	Error::Handle(PathAllocCombine(temp.data(), App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_folder_unsafe), Error::Level::Fatal, L"Failed to combine temporary folder and application name!");
+	AutoFree<wchar_t> log_folder(log_folder_unsafe);
+
+	Log::Folder = log_folder_unsafe;
 #else
 	try
 	{
-		std::wstring appData_str = UWP::GetApplicationFolderPath(UWP::FolderType::Roaming);
-		const wchar_t *appData = appData_str.c_str();
+		std::wstring appData = UWP::GetApplicationFolderPath(UWP::FolderType::Roaming);
+		const wchar_t *appDataUnsafe = appData.c_str();
 
 		Log::Folder = UWP::GetApplicationFolderPath(UWP::FolderType::Temporary);
 
 #endif
 
-	Error::Handle(PathAllocCombine(appData, App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &run.config_folder), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
-	Error::Handle(PathAllocCombine(run.config_folder, Config::CONFIG_FILE.c_str(), PATHCCH_ALLOW_LONG_PATHS, &run.config_file), Error::Level::Fatal, L"Failed to combine config folder and config file!");
-	Error::Handle(PathAllocCombine(run.config_folder, Config::EXCLUDE_FILE.c_str(), PATHCCH_ALLOW_LONG_PATHS, &run.exclude_file), Error::Level::Fatal, L"Failed to combine config folder and exclude file!");
+	wchar_t *configFolderUnsafe;
+	wchar_t *configFileUnsafe;
+	wchar_t *excludeFileUnsafe;
 
-#ifndef STORE
-	CoTaskMemFree(appData);
-#else
+	Error::Handle(PathAllocCombine(appDataUnsafe, App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFolderUnsafe), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
+	Error::Handle(PathAllocCombine(configFolderUnsafe, Config::CONFIG_FILE.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFileUnsafe), Error::Level::Fatal, L"Failed to combine config folder and config file!");
+	Error::Handle(PathAllocCombine(configFolderUnsafe, Config::EXCLUDE_FILE.c_str(), PATHCCH_ALLOW_LONG_PATHS, &excludeFileUnsafe), Error::Level::Fatal, L"Failed to combine config folder and exclude file!");
+
+	AutoFree<wchar_t> configFolder(configFolderUnsafe);
+	AutoFree<wchar_t> configFile(configFileUnsafe);
+	AutoFree<wchar_t> excludeFile(excludeFileUnsafe);
+
+	run.config_folder = configFolderUnsafe;
+	run.config_file = configFileUnsafe;
+	run.exclude_file = excludeFileUnsafe;
+
+#ifdef STORE
 	}
 	catch (const winrt::hresult_error &error)
 	{
@@ -181,53 +192,34 @@ void ApplyStock(const std::wstring &filename)
 	std::wstring exeFolder_str(exeFolder.data());
 	exeFolder_str = exeFolder_str.substr(0, exeFolder_str.find_last_of(L"/\\") + 1);
 
-	wchar_t *stockFile;
-	if (!Error::Handle(PathAllocCombine(exeFolder_str.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &stockFile), Error::Level::Error, L"Failed to combine executable folder and config file!"))
+	wchar_t *stockFileUnsafe;
+	if (!Error::Handle(PathAllocCombine(exeFolder_str.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &stockFileUnsafe), Error::Level::Error, L"Failed to combine executable folder and config file!"))
 	{
 		return;
 	}
+	AutoFree<wchar_t> stockFile(stockFileUnsafe);
 
-	wchar_t *configFile;
-	if (!Error::Handle(PathAllocCombine(run.config_folder, filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Error, L"Failed to combine config folder and config file!"))
+	wchar_t *configFileUnsafe;
+	if (!Error::Handle(PathAllocCombine(run.config_folder.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFileUnsafe), Error::Level::Error, L"Failed to combine config folder and config file!"))
 	{
-		if (LocalFree(stockFile))
-		{
-			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary stock config file character array.");
-		}
 		return;
 	}
+	AutoFree<wchar_t> configFile(configFileUnsafe);
 
 	if (!win32::IsDirectory(run.config_folder))
 	{
-		if (!CreateDirectory(run.config_folder, NULL))
+		if (!CreateDirectory(run.config_folder.c_str(), NULL))
 		{
 			if (!Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Creating configuration files directory failed!"))
 			{
-				if (LocalFree(stockFile))
-				{
-					Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary stock config file character array.");
-				}
-				if (LocalFree(configFile))
-				{
-					Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary config file character array.");
-				}
 				return;
 			}
 		}
 	}
 
-	if (!CopyFile(stockFile, configFile, FALSE))
+	if (!CopyFile(stockFileUnsafe, configFileUnsafe, FALSE))
 	{
 		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Copying stock configuration file failed!");
-	}
-
-	if (LocalFree(stockFile))
-	{
-		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary stock config file character array.");
-	}
-	if (LocalFree(configFile))
-	{
-		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary config file character array.");
 	}
 }
 
@@ -762,18 +754,15 @@ void StartLogger()
 	std::time_t unix_epoch = std::time(0);
 	std::wstring log_filename = std::to_wstring(unix_epoch) + L".log";
 
-	wchar_t *log_file;
-	if (!Error::Handle(PathAllocCombine(Log::Folder.c_str(), log_filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_file), Error::Level::Error, L"Failed to combine log folder and log filename! Log file not available during this session."))
+	wchar_t *log_file_unsafe;
+	if (!Error::Handle(PathAllocCombine(Log::Folder.c_str(), log_filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_file_unsafe), Error::Level::Error, L"Failed to combine log folder and log filename! Log file not available during this session."))
 	{
 		return;
 	}
-	Log::Instance = new Logger(log_file);
-	Log::File = log_file;
+	AutoFree<wchar_t> log_file(log_file_unsafe);
 
-	if (LocalFree(log_file))
-	{
-		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free temporary log file character array.");
-	}
+	Log::Instance = new Logger(log_file_unsafe);
+	Log::File = log_file_unsafe;
 
 	Log::OutputMessage(L"Basic initialization completed.");
 }
@@ -1205,7 +1194,6 @@ void SetTaskbarBlur()
 
 		if (opt.dynamic_start)
 		{
-			BOOL start_visible;
 			static CComPtr<IAppVisibility> app_visibility;
 			static bool failed = false;
 
@@ -1213,11 +1201,15 @@ void SetTaskbarBlur()
 			{
 				failed = !Error::Handle(app_visibility.CoCreateInstance(CLSID_AppVisibility), Error::Level::Log, L"Initialization of IAppVisibility failed.");
 			}
-			if (!failed && app_visibility && SUCCEEDED(app_visibility->IsLauncherVisible(&start_visible)) && start_visible)
+			if (!failed && app_visibility)
 			{
-				// TODO: does this works correctly on multi-monitor
-				HWND start = FindWindow(L"Windows.UI.Core.CoreWindow", L"Start");
-				run.taskbars.at(MonitorFromWindow(start, MONITOR_DEFAULTTOPRIMARY)).state = Taskbar::StartMenuOpen;
+				BOOL start_visible;
+				if (Error::Handle(app_visibility->IsLauncherVisible(&start_visible), Error::Level::Log, L"Checking start menu visibility failed.") && start_visible)
+				{
+					// TODO: does this works correctly on multi-monitor
+					HWND start = FindWindow(L"Windows.UI.Core.CoreWindow", L"Start");
+					run.taskbars.at(MonitorFromWindow(start, MONITOR_DEFAULTTOPRIMARY)).state = Taskbar::StartMenuOpen;
+				}
 			}
 		}
 
@@ -1323,27 +1315,6 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 void Terminate()
 {
-	if (run.config_folder)
-	{
-		if (LocalFree(run.config_folder))
-		{
-			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free config folder character array.");
-		}
-	}
-	if (run.config_file)
-	{
-		if (LocalFree(run.config_file))
-		{
-			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free config file character array.");
-		}
-	}
-	if (run.exclude_file)
-	{
-		if (LocalFree(run.exclude_file))
-		{
-			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free exclude file character array.");
-		}
-	}
 	if (run.peek_hook)
 	{
 		UnhookWinEvent(run.peek_hook);
