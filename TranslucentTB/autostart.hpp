@@ -78,12 +78,17 @@ namespace Autostart {
 		{
 			if (state == StartupState::Enabled)
 			{
-				HMODULE hModule = GetModuleHandle(NULL);
-				wchar_t path[MAX_PATH];
-				GetModuleFileName(hModule, path, MAX_PATH);
-				PathQuoteSpaces(path);
+				DWORD exeLocation_size = LONG_PATH;
+				std::vector<wchar_t> exeLocation(exeLocation_size);
+				if (!QueryFullProcessImageName(GetCurrentProcess(), 0, exeLocation.data(), &exeLocation_size))
+				{
+					Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to determine executable location!");
+					return;
+				}
 
-				error = RegSetValueEx(hkey, App::NAME.c_str(), 0, REG_SZ, reinterpret_cast<BYTE *>(path), wcslen(path) * sizeof(wchar_t));
+				std::wstring exeLocation_str(exeLocation.data());
+
+				error = RegSetValueEx(hkey, App::NAME.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE *>(exeLocation_str.c_str()), exeLocation_str.length());
 				Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while setting startup registry value!");
 			}
 			else if (state == StartupState::Disabled)

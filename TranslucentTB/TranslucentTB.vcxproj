@@ -96,7 +96,6 @@
   <ItemGroup>
     <ClInclude Include="app.hpp" />
     <ClInclude Include="AutoFree.hpp" />
-    <ClInclude Include="AutoMemFree.hpp" />
     <ClInclude Include="autostart.hpp" />
     <ClInclude Include="swcadata.hpp" />
     <ClInclude Include="config.hpp" />

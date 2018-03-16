@@ -1,6 +1,7 @@
 #pragma once
 #ifdef STORE
 
+#include <string>
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Storage.h>
 
