@@ -146,7 +146,7 @@ void GetPaths()
 	try
 	{
 		std::wstring appData_str = UWP::GetApplicationFolderPath(UWP::FolderType::Roaming);
-		const wchar_t *appData = appData.c_str();
+		const wchar_t *appData = appData_str.c_str();
 
 		Log::Folder = UWP::GetApplicationFolderPath(UWP::FolderType::Temporary);
 
