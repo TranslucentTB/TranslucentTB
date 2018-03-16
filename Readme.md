@@ -87,6 +87,8 @@ If you would like to contribute, everyone is welcome to! If you are considering 
 or want to talk an idea out, don't hesitate to jump on Discord or Gitter (see the badges on the top of the README), or file an issue here. The main contributors are often on Discord, Gitter and GitHub, so we should reply fairly quickly.
 Also, at this time I have no plans of expanding this beyond the taskbar.
 
+Thanks to [@dAKirby309](https://github.com/dAKirby309) for making the icon! You can find more of his stuff on [his DeviantArt profile](https://dakirby309.deviantart.com/).
+
 The color picker used comes from [this great CodeProject article](https://www.codeproject.com/Articles/9207/An-HSV-RGBA-colour-picker).
 We've modernized it a bit, with things such as per-monitor high DPI awareness, faster drawing, allowing hex input and so on.
 

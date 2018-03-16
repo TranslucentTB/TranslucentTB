@@ -54,13 +54,13 @@ namespace Util {
 	void EditFile(std::wstring file)
 	{
 		// WinAPI reeeeeeeeeeeeeeeeeeeeeeeeee
-		AutoFree<wchar_t> system32(nullptr, CoTaskMemFree);
+		AutoCoTaskMemFree<wchar_t> system32;
 		if (!Error::Handle(SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, NULL, &system32), Error::Level::Error, L"Failed to determine System32 folder location!"))
 		{
 			return;
 		}
 
-		AutoFree<wchar_t> notepad;
+		AutoLocalFree<wchar_t> notepad;
 		if (!Error::Handle(PathAllocCombine(system32, L"notepad.exe", PATHCCH_ALLOW_LONG_PATHS, &notepad), Error::Level::Error, L"Failed to determine Notepad location!"))
 		{
 			return;

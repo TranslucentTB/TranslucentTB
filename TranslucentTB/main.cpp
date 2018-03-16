@@ -129,7 +129,7 @@ void SetWindowBlur(const HWND &hWnd, const swca::ACCENT &appearance, const uint3
 void GetPaths()
 {
 #ifndef STORE
-	AutoFree<wchar_t> appData(nullptr, CoTaskMemFree);
+	AutoCoTaskMemFree<wchar_t> appData;
 	Error::Handle(SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &appData), Error::Level::Fatal, L"Failed to determine configuration files locations!");
 
 	std::vector<wchar_t> temp(LONG_PATH);
@@ -138,7 +138,7 @@ void GetPaths()
 		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to determine log files locations!");
 	}
 
-	AutoFree<wchar_t> log_folder;
+	AutoLocalFree<wchar_t> log_folder;
 	Error::Handle(PathAllocCombine(temp.data(), App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_folder), Error::Level::Fatal, L"Failed to combine temporary folder and application name!");
 
 	Log::Folder = log_folder;
@@ -152,9 +152,9 @@ void GetPaths()
 
 #endif
 
-	AutoFree<wchar_t> configFolder;
-	AutoFree<wchar_t> configFile;
-	AutoFree<wchar_t> excludeFile;
+	AutoLocalFree<wchar_t> configFolder;
+	AutoLocalFree<wchar_t> configFile;
+	AutoLocalFree<wchar_t> excludeFile;
 
 	Error::Handle(PathAllocCombine(appData, App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFolder), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
 	Error::Handle(PathAllocCombine(configFolder, Config::CONFIG_FILE.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Fatal, L"Failed to combine config folder and config file!");
@@ -185,13 +185,13 @@ void ApplyStock(const std::wstring &filename)
 	std::wstring exeFolder_str(exeFolder.data());
 	exeFolder_str = exeFolder_str.substr(0, exeFolder_str.find_last_of(L"/\\") + 1);
 
-	AutoFree<wchar_t> stockFile;
+	AutoLocalFree<wchar_t> stockFile;
 	if (!Error::Handle(PathAllocCombine(exeFolder_str.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &stockFile), Error::Level::Error, L"Failed to combine executable folder and config file!"))
 	{
 		return;
 	}
 
-	AutoFree<wchar_t> configFile;
+	AutoLocalFree<wchar_t> configFile;
 	if (!Error::Handle(PathAllocCombine(run.config_folder.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Error, L"Failed to combine config folder and config file!"))
 	{
 		return;
@@ -745,7 +745,7 @@ void StartLogger()
 	std::time_t unix_epoch = std::time(0);
 	std::wstring log_filename = std::to_wstring(unix_epoch) + L".log";
 
-	AutoFree<wchar_t> log_file;
+	AutoLocalFree<wchar_t> log_file;
 	if (!Error::Handle(PathAllocCombine(Log::Folder.c_str(), log_filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_file), Error::Level::Error, L"Failed to combine log folder and log filename! Log file not available during this session."))
 	{
 		return;
