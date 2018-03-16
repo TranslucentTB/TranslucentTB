@@ -88,7 +88,7 @@ or want to talk an idea out, don't hesitate to jump on Discord or Gitter (see th
 Also, at this time I have no plans of expanding this beyond the taskbar.
 
 The color picker used comes from [this great CodeProject article](https://www.codeproject.com/Articles/9207/An-HSV-RGBA-colour-picker).
-The code has been slightly changed to fix a few bugs, warnings and errors in newer Visual Studio versions.
+We've modernized it a bit, with things such as per-monitor high DPI awareness, faster drawing, allowing hex input and so on.
 
 ### Similar programs
 
