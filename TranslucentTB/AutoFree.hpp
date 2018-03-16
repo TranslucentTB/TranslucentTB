@@ -29,6 +29,7 @@ public:
 
 	T *operator =(T *data)
 	{
+		m_Deleter(m_DataPtr);
 		return m_DataPtr = data;
 	}
 
