@@ -979,6 +979,13 @@ LRESULT CALLBACK TrayCallback(const HWND hWnd, const uint32_t message, const WPA
 		run.is_running = false;
 		return 0;
 	}
+#ifdef STORE
+	// https://docs.microsoft.com/en-us/windows/uwp/porting/desktop-to-uwp-extensions#updates
+	else if (message == WM_QUERYENDSESSION)
+	{
+		RegisterApplicationRestart(NULL, NULL);
+	}
+#endif
 	else if (message == Tray::WM_NOTIFY_TB)
 	{
 		if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
