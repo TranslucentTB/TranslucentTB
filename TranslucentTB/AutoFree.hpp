@@ -5,29 +5,6 @@
 
 #include "ttberror.hpp"
 
-template<typename T>
-struct LocalFreeDeleter {
-
-	inline void operator ()(T *data)
-	{
-		if (LocalFree(data))
-		{
-			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free memory.");
-		}
-	}
-
-};
-
-template<typename T>
-struct CoTaskMemFreeDeleter {
-
-	inline void operator ()(T *data)
-	{
-		CoTaskMemFree(data);
-	}
-	
-};
-
 template<typename T, typename Deleter>
 class AutoFreeBase {
 
@@ -36,16 +13,20 @@ private:
 	Deleter m_Deleter;
 
 public:
-	inline AutoFreeBase(T *data = nullptr) : m_Deleter()
+	inline AutoFreeBase(T *data = nullptr)
 	{
 		m_DataPtr = data;
 	}
+
+	inline AutoFreeBase(const AutoFreeBase &) = delete;
 
 	inline T *operator =(T *data)
 	{
 		m_Deleter(m_DataPtr);
 		return m_DataPtr = data;
 	}
+
+	inline AutoFreeBase &operator =(const AutoFreeBase &) = delete;
 
 	inline T **operator &()
 	{
@@ -65,8 +46,33 @@ public:
 
 };
 
-template<typename T = void>
-using AutoLocalFree = AutoFreeBase<T, LocalFreeDeleter<T>>;
+
+
+struct LocalFreeDeleter {
+
+	inline void operator() (void *data)
+	{
+		if (LocalFree(data))
+		{
+			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free memory.");
+		}
+	}
+
+};
 
 template<typename T = void>
-using AutoCoTaskMemFree = AutoFreeBase<T, CoTaskMemFreeDeleter<T>>;
+using AutoLocalFree = AutoFreeBase<T, LocalFreeDeleter>;
+
+
+
+struct CoTaskMemFreeDeleter {
+
+	inline void operator() (void *data)
+	{
+		CoTaskMemFree(data);
+	}
+
+};
+
+template<typename T = void>
+using AutoCoTaskMemFree = AutoFreeBase<T, CoTaskMemFreeDeleter>;
