@@ -131,25 +131,11 @@ void GetPaths()
 #ifndef STORE
 	AutoCoTaskMemFree<wchar_t> appData;
 	Error::Handle(SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &appData), Error::Level::Fatal, L"Failed to determine configuration files locations!");
-
-	std::vector<wchar_t> temp(LONG_PATH);
-	if (!GetTempPath(LONG_PATH, temp.data()))
-	{
-		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to determine log files locations!");
-	}
-
-	AutoLocalFree<wchar_t> log_folder;
-	Error::Handle(PathAllocCombine(temp.data(), App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_folder), Error::Level::Fatal, L"Failed to combine temporary folder and application name!");
-
-	Log::Folder = log_folder;
 #else
 	try
 	{
 		std::wstring appData_str = UWP::GetApplicationFolderPath(UWP::FolderType::Roaming);
 		const wchar_t *appData = appData_str.c_str();
-
-		Log::Folder = UWP::GetApplicationFolderPath(UWP::FolderType::Temporary);
-
 #endif
 
 	AutoLocalFree<wchar_t> configFolder;
@@ -732,31 +718,6 @@ void ParseBlacklistFile()
 
 #pragma region Utilities
 
-void StartLogger()
-{
-	if (!win32::IsDirectory(Log::Folder.c_str()))
-	{
-		if (!CreateDirectory(Log::Folder.c_str(), NULL))
-		{
-			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Creating log files directory failed!");
-		}
-	}
-
-	std::time_t unix_epoch = std::time(0);
-	std::wstring log_filename = std::to_wstring(unix_epoch) + L".log";
-
-	AutoLocalFree<wchar_t> log_file;
-	if (!Error::Handle(PathAllocCombine(Log::Folder.c_str(), log_filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_file), Error::Level::Error, L"Failed to combine log folder and log filename! Log file not available during this session."))
-	{
-		return;
-	}
-
-	Log::Instance = new Logger(static_cast<wchar_t *>(log_file));
-	Log::File = log_file;
-
-	Log::OutputMessage(L"Basic initialization completed.");
-}
-
 void RefreshHandles()
 {
 	if (Config::VERBOSE)
@@ -818,8 +779,8 @@ bool OutputBlacklistMatchToLog(const HWND &hwnd, const bool &match)
 		std::wstring title = WindowHelper::GetWindowTitle(hwnd);
 		std::wstring exeName = WindowHelper::GetWindowFile(hwnd);
 
-		std::wstringstream message;
-		message << (match ? L"Blacklist match found for window: " : L"No blacklist match found for window: ");
+		std::wostringstream message;
+		message << (match ? L"B" : L"No b") << L"lacklist match found for window: ";
 		message << hwnd << L" [" << className << L"] [" << exeName << L"] [" << title << L"]";
 
 		Log::OutputMessage(message.str());
@@ -944,16 +905,24 @@ void RefreshMenu()
 	EnablePopupItem(IDM_DYNAMICWS_COLOR, opt.dynamic_ws);
 	EnablePopupItem(IDM_FLUENT, run.fluent_available);
 	EnablePopupItem(IDM_DYNAMICWS_FLUENT, opt.dynamic_ws && run.fluent_available);
-	EnablePopupItem(IDM_AUTOSTART, !(s_state == Autostart::StartupState::DisabledByUser || s_state == Autostart::StartupState::DisabledByPolicy));
+	EnablePopupItem(IDM_OPENLOG, !Log::File.empty());
+	EnablePopupItem(IDM_AUTOSTART, !(s_state == Autostart::StartupState::DisabledByUser
+#ifdef STORE
+		|| s_state == Autostart::StartupState::DisabledByPolicy));
+#else
+		));
+#endif
 
 	if (s_state == Autostart::StartupState::DisabledByUser)
 	{
 		ChangePopupItemText(IDM_AUTOSTART, L"Startup has been disabled in Task Manager");
 	}
+#ifdef STORE
 	else if (s_state == Autostart::StartupState::DisabledByPolicy)
 	{
 		ChangePopupItemText(IDM_AUTOSTART, L"Startup has been disabled in Group Policy");
 	}
+#endif
 	else
 	{
 		ChangePopupItemText(IDM_AUTOSTART, L"Open at boot");
@@ -984,6 +953,7 @@ LRESULT CALLBACK TrayCallback(const HWND hWnd, const uint32_t message, const WPA
 	else if (message == WM_QUERYENDSESSION)
 	{
 		RegisterApplicationRestart(NULL, NULL);
+		return TRUE;
 	}
 #endif
 	else if (message == Tray::WM_NOTIFY_TB)
@@ -1320,10 +1290,6 @@ void Terminate()
 	{
 		Shell_NotifyIcon(NIM_DELETE, &run.tray);
 	}
-	if (Log::Instance)
-	{
-		delete Log::Instance;
-	}
 	exit(run.is_running ? 1 : 0);
 }
 
@@ -1350,8 +1316,6 @@ int WINAPI WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 	{
 		std::terminate();
 	}
-
-	StartLogger();
 
 	// Verify our runtime
 	run.fluent_available = win32::IsAtLeastBuild(17063);

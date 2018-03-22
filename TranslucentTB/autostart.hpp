@@ -22,7 +22,6 @@ namespace Autostart {
 	enum class StartupState {
 		Disabled,
 		DisabledByUser,
-		DisabledByPolicy,
 		Enabled
 	};
 #else

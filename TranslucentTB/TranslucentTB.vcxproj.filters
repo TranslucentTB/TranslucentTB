@@ -63,6 +63,9 @@
     <ClInclude Include="UWP.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AutoFreeBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="AutoFree.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

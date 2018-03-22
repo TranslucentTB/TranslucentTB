@@ -33,6 +33,10 @@ namespace UWP {
 
 		case FolderType::Roaming:
 			return application_data.RoamingFolder().Path().c_str();
+
+		// Apparently we can cast any integer to an enum class, so yeah...
+		default:
+			throw std::exception(L"wtf are you doing");
 		}
 	}
 
