@@ -36,7 +36,7 @@ namespace UWP {
 
 		// Apparently we can cast any integer to an enum class, so yeah...
 		default:
-			throw std::exception(L"wtf are you doing");
+			throw std::exception("wtf are you doing");
 		}
 	}
 
