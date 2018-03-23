@@ -41,7 +41,7 @@ namespace Autostart {
 			uint8_t status[12];
 			DWORD size = sizeof(status);
 			error = RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run", App::NAME.c_str(), RRF_RT_REG_BINARY, NULL, &status, &size);
-			if (error != ERROR_FILE_NOT_FOUND && Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup disable state failed.") && status[0] == 3)
+			if (error != ERROR_FILE_NOT_FOUND && ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup disable state failed.") && status[0] == 3)
 			{
 				return StartupState::DisabledByUser;
 			}
@@ -52,7 +52,7 @@ namespace Autostart {
 		}
 		else
 		{
-			Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup state failed.");
+			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup state failed.");
 			return StartupState::Disabled;
 		}
 #else
@@ -62,7 +62,7 @@ namespace Autostart {
 		}
 		catch (const winrt::hresult_error &error)
 		{
-			Error::Handle(error.code(), Error::Level::Log, L"Getting startup task state failed.");
+			ErrorHandle(error.code(), Error::Level::Log, L"Getting startup task state failed.");
 			return StartupState::Disabled;
 		}
 #endif
@@ -73,7 +73,7 @@ namespace Autostart {
 #ifndef STORE
 		HKEY hkey;
 		LRESULT error = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
-		if (Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Opening registry key failed!")) //Creates a key
+		if (ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Opening registry key failed!")) //Creates a key
 		{
 			if (state == StartupState::Enabled)
 			{
@@ -81,22 +81,22 @@ namespace Autostart {
 				std::vector<wchar_t> exeLocation(exeLocation_size);
 				if (!QueryFullProcessImageName(GetCurrentProcess(), 0, exeLocation.data(), &exeLocation_size))
 				{
-					Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to determine executable location!");
+					ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to determine executable location!");
 					return;
 				}
 
 				std::wstring exeLocation_str(exeLocation.data());
 
 				error = RegSetValueEx(hkey, App::NAME.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE *>(exeLocation_str.c_str()), exeLocation_str.length());
-				Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while setting startup registry value!");
+				ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while setting startup registry value!");
 			}
 			else if (state == StartupState::Disabled)
 			{
 				error = RegDeleteValue(hkey, App::NAME.c_str());
-				Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while deleting startup registry value!");
+				ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while deleting startup registry value!");
 			}
 			error = RegCloseKey(hkey);
-			Error::Handle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Error closing registry key.");
+			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Error closing registry key.");
 		}
 #else
 		try
@@ -113,7 +113,7 @@ namespace Autostart {
 		}
 		catch (const winrt::hresult_error &error)
 		{
-			Error::Handle(error.code(), Error::Level::Error, L"Changing startup task state failed!");
+			ErrorHandle(error.code(), Error::Level::Error, L"Changing startup task state failed!");
 			return;
 		}
 #endif

@@ -1,8 +1,5 @@
 #pragma once
-#ifndef APP_HPP
-#define APP_HPP
-
-#include <cwchar>
+#include <string>
 
 namespace App {
 
@@ -10,5 +7,3 @@ namespace App {
 	static const std::wstring NAME = L"TranslucentTB";
 
 }
-
-#endif // !APP_HPP

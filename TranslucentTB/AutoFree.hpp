@@ -10,7 +10,7 @@ struct LocalFreeDeleter {
 	{
 		if (LocalFree(data))
 		{
-			Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free memory.");
+			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free memory.");
 		}
 	}
 

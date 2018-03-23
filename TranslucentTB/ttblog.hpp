@@ -8,7 +8,9 @@
 #include <fstream>
 #include <memory>
 #include <PathCch.h>
+#include <sstream>
 #include <string>
+#include <tuple>
 #ifndef STORE
 #include <vector>
 #endif

@@ -130,7 +130,7 @@ void GetPaths()
 {
 #ifndef STORE
 	AutoCoTaskMemFree<wchar_t> appData;
-	Error::Handle(SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &appData), Error::Level::Fatal, L"Failed to determine configuration files locations!");
+	ErrorHandle(SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &appData), Error::Level::Fatal, L"Failed to determine configuration files locations!");
 #else
 	try
 	{
@@ -142,9 +142,9 @@ void GetPaths()
 	AutoLocalFree<wchar_t> configFile;
 	AutoLocalFree<wchar_t> excludeFile;
 
-	Error::Handle(PathAllocCombine(appData, App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFolder), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
-	Error::Handle(PathAllocCombine(configFolder, Config::CONFIG_FILE.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Fatal, L"Failed to combine config folder and config file!");
-	Error::Handle(PathAllocCombine(configFolder, Config::EXCLUDE_FILE.c_str(), PATHCCH_ALLOW_LONG_PATHS, &excludeFile), Error::Level::Fatal, L"Failed to combine config folder and exclude file!");
+	ErrorHandle(PathAllocCombine(appData, App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFolder), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
+	ErrorHandle(PathAllocCombine(configFolder, Config::CONFIG_FILE.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Fatal, L"Failed to combine config folder and config file!");
+	ErrorHandle(PathAllocCombine(configFolder, Config::EXCLUDE_FILE.c_str(), PATHCCH_ALLOW_LONG_PATHS, &excludeFile), Error::Level::Fatal, L"Failed to combine config folder and exclude file!");
 
 	run.config_folder = configFolder;
 	run.config_file = configFile;
@@ -154,7 +154,7 @@ void GetPaths()
 	}
 	catch (const winrt::hresult_error &error)
 	{
-		Error::Handle(error.code(), Error::Level::Fatal, L"Getting application folder paths failed!");
+		ErrorHandle(error.code(), Error::Level::Fatal, L"Getting application folder paths failed!");
 	}
 #endif
 }
@@ -165,20 +165,20 @@ void ApplyStock(const std::wstring &filename)
 	std::vector<wchar_t> exeFolder(exeFolder_size);
 	if (!QueryFullProcessImageName(GetCurrentProcess(), 0, exeFolder.data(), &exeFolder_size))
 	{
-		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to determine executable location!");
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to determine executable location!");
 		return;
 	}
 	std::wstring exeFolder_str(exeFolder.data());
 	exeFolder_str = exeFolder_str.substr(0, exeFolder_str.find_last_of(L"/\\") + 1);
 
 	AutoLocalFree<wchar_t> stockFile;
-	if (!Error::Handle(PathAllocCombine(exeFolder_str.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &stockFile), Error::Level::Error, L"Failed to combine executable folder and config file!"))
+	if (!ErrorHandle(PathAllocCombine(exeFolder_str.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &stockFile), Error::Level::Error, L"Failed to combine executable folder and config file!"))
 	{
 		return;
 	}
 
 	AutoLocalFree<wchar_t> configFile;
-	if (!Error::Handle(PathAllocCombine(run.config_folder.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Error, L"Failed to combine config folder and config file!"))
+	if (!ErrorHandle(PathAllocCombine(run.config_folder.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Error, L"Failed to combine config folder and config file!"))
 	{
 		return;
 	}
@@ -187,7 +187,7 @@ void ApplyStock(const std::wstring &filename)
 	{
 		if (!CreateDirectory(run.config_folder.c_str(), NULL))
 		{
-			if (!Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Creating configuration files directory failed!"))
+			if (!ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Creating configuration files directory failed!"))
 			{
 				return;
 			}
@@ -196,7 +196,7 @@ void ApplyStock(const std::wstring &filename)
 
 	if (!CopyFile(stockFile, configFile, FALSE))
 	{
-		Error::Handle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Copying stock configuration file failed!");
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Copying stock configuration file failed!");
 	}
 }
 
@@ -1166,12 +1166,12 @@ void SetTaskbarBlur()
 
 			if (!app_visibility && !failed)
 			{
-				failed = !Error::Handle(app_visibility.CoCreateInstance(CLSID_AppVisibility), Error::Level::Log, L"Initialization of IAppVisibility failed.");
+				failed = !ErrorHandle(app_visibility.CoCreateInstance(CLSID_AppVisibility), Error::Level::Log, L"Initialization of IAppVisibility failed.");
 			}
 			if (!failed && app_visibility)
 			{
 				BOOL start_visible;
-				if (Error::Handle(app_visibility->IsLauncherVisible(&start_visible), Error::Level::Log, L"Checking start menu visibility failed.") && start_visible)
+				if (ErrorHandle(app_visibility->IsLauncherVisible(&start_visible), Error::Level::Log, L"Checking start menu visibility failed.") && start_visible)
 				{
 					// TODO: does this works correctly on multi-monitor
 					HWND start = FindWindow(L"Windows.UI.Core.CoreWindow", L"Start");
@@ -1226,7 +1226,7 @@ void SetTaskbarBlur()
 void InitializeAPIs()
 {
 	static Microsoft::WRL::Wrappers::RoInitializeWrapper init(RO_INIT_SINGLETHREADED);
-	Error::Handle(init, Error::Level::Log, L"Initialization of Windows Runtime failed.");
+	ErrorHandle(init, Error::Level::Log, L"Initialization of Windows Runtime failed.");
 }
 
 void InitializeTray(const HINSTANCE &hInstance)
