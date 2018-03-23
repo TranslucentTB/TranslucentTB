@@ -28,6 +28,9 @@
     <ClCompile Include="ttberror.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ttblog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

@@ -1,5 +1,10 @@
 #pragma once
+#define _X86_
 #include "AutoFreeBase.hpp"
+#include <objbase.h>
+#include <WinBase.h>
+#include <winerror.h>
+
 #include "ttberror.hpp"
 
 

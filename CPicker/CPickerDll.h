@@ -40,7 +40,7 @@ class CColourPicker
 		void Revert();
 		EXPORT void UpdateOldColour();
 		
-		void SetParent(HWND _parent){ hParent=_parent;}
+		void SetParent(HWND _parent) { hParent=_parent; }
 	private:
 		// The current selected colour and the previous selected one
 		SColour CurrCol, OldCol;

@@ -1,7 +1,4 @@
 #pragma once
-#include <objbase.h>
-#include <WinBase.h>
-#include <winerror.h>
 
 template<typename T, typename Deleter>
 class AutoFreeBase {
