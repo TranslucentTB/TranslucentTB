@@ -94,10 +94,13 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ttberror.cpp" />
     <ClCompile Include="ttblog.cpp" />
+    <ClCompile Include="UWP.cpp" />
     <ClCompile Include="win32.cpp" />
+    <ClCompile Include="windowhelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app.hpp" />
+    <ClInclude Include="arch.h" />
     <ClInclude Include="AutoFree.hpp" />
     <ClInclude Include="AutoFreeBase.hpp" />
     <ClInclude Include="autostart.hpp" />

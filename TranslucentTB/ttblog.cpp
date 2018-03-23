@@ -47,7 +47,7 @@ inline std::tuple<HRESULT, std::wstring> Log::InitStream()
 		const wchar_t *log_folder = tempFolder_str.c_str();
 #endif
 
-	if (!win32::IsDirectory(static_cast<wchar_t *>(log_folder)))
+	if (!win32::IsDirectory(static_cast<const wchar_t *>(log_folder)))
 	{
 		if (!CreateDirectory(log_folder, NULL))
 		{

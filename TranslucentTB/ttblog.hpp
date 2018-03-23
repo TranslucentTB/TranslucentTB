@@ -1,5 +1,5 @@
 #pragma once
-#define _X86_
+#include "arch.h"
 #include <memory>
 #include <ostream>
 #include <string>
@@ -12,7 +12,8 @@ class Log {
 private:
 	static std::unique_ptr<std::wostream> m_LogStream;
 	static std::tuple<HRESULT, std::wstring> InitStream();
-	// The normal AutoLocalFree would call Error::Handle even tho we aren't done initializing the log stream
+	// The normal AutoLocalFree would call Error::Handle (which logs)
+	// even tho we aren't done initializing the log stream.
 	struct LocalFreeUnsafeDeleter {
 
 		inline void operator() (void *data)

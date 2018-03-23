@@ -31,6 +31,12 @@
     <ClCompile Include="ttblog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UWP.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windowhelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -76,6 +82,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AutoFree.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="arch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

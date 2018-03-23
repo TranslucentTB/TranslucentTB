@@ -1,5 +1,5 @@
 #pragma once
-#define _X86_
+#include "arch.h"
 #include <cstdint>
 #include <string>
 #include <windef.h>
@@ -10,7 +10,10 @@
 namespace user32 {
 
 	typedef bool(WINAPI *pSetWindowCompositionAttribute)(HWND, swca::WINCOMPATTRDATA *);
-	static const pSetWindowCompositionAttribute SetWindowCompositionAttribute = reinterpret_cast<pSetWindowCompositionAttribute>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
+	static const pSetWindowCompositionAttribute SetWindowCompositionAttribute =
+		reinterpret_cast<pSetWindowCompositionAttribute>(
+			GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute")
+		);
 
 };
 

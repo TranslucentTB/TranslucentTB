@@ -1,5 +1,5 @@
 #pragma once
-#define _X86_
+#include "arch.h"
 #include <string>
 #include <windef.h>
 

@@ -1,4 +1,5 @@
 #include "win32.hpp"
+#include "arch.h"
 #include <synchapi.h>
 #include <winerror.h>
 #include <winnt.h>
@@ -7,7 +8,7 @@
 #include "app.hpp"
 #include "ttberror.hpp"
 
-bool win32::IsAtLeastBuild(const uint32_t & buildNumber)
+bool win32::IsAtLeastBuild(const uint32_t &buildNumber)
 {
 	OSVERSIONINFOEX versionInfo;
 	versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
@@ -55,13 +56,13 @@ bool win32::IsSingleInstance()
 	return return_value;
 }
 
-bool win32::IsDirectory(const std::wstring & directory)
+bool win32::IsDirectory(const std::wstring &directory)
 {
 	DWORD attributes = GetFileAttributes(directory.c_str());
 	return attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY);
 }
 
-bool win32::FileExists(const std::wstring & file)
+bool win32::FileExists(const std::wstring &file)
 {
 	DWORD attributes = GetFileAttributes(file.c_str());
 	return attributes != INVALID_FILE_ATTRIBUTES && !(attributes & FILE_ATTRIBUTE_DIRECTORY);
