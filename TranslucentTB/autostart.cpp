@@ -3,6 +3,7 @@
 #include "ttberror.hpp"
 
 #ifndef STORE
+#include "arch.h"
 #include <cstdint>
 #include <string>
 #include <vector>

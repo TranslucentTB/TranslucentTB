@@ -85,7 +85,7 @@
       <!-- TODO: Remove this when the clang bug is fixed -->
       <AdditionalOptions>
       </AdditionalOptions>
-      <PreprocessorDefinitions>STORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;STORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../cppwinrt/10.0.16299.0</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
