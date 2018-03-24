@@ -91,6 +91,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="autostart.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ttberror.cpp" />
     <ClCompile Include="ttblog.cpp" />
