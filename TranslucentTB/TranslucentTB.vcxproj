@@ -98,7 +98,7 @@
     <ClCompile Include="util.cpp" />
     <ClCompile Include="UWP.cpp" />
     <ClCompile Include="win32.cpp" />
-    <ClCompile Include="windowhelper.cpp" />
+    <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app.hpp" />
@@ -116,7 +116,7 @@
     <ClInclude Include="util.hpp" />
     <ClInclude Include="UWP.hpp" />
     <ClInclude Include="win32.hpp" />
-    <ClInclude Include="windowhelper.hpp" />
+    <ClInclude Include="window.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TranslucentTB.rc" />

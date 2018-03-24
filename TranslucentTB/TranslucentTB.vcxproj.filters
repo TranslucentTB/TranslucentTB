@@ -34,13 +34,13 @@
     <ClCompile Include="UWP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windowhelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="autostart.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -78,9 +78,6 @@
     <ClInclude Include="autostart.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windowhelper.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="UWP.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -91,6 +88,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="arch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

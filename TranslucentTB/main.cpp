@@ -45,7 +45,7 @@
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 #include "autostart.hpp"
-#include "windowhelper.hpp"
+#include "window.hpp"
 #include "AutoFree.hpp"
 
 
@@ -70,7 +70,7 @@ static struct OPTIONS
 static struct RUNTIMESTATE
 {
 	Tray::EXITREASON exit_reason = Tray::UserAction;
-	HWND main_taskbar;
+	Window main_taskbar;
 	std::unordered_map<HMONITOR, Taskbar::TASKBARPROPERTIES> taskbars;
 	bool should_show_peek;
 	bool is_running = true;
@@ -730,9 +730,9 @@ void RefreshHandles()
 	// Older handles are invalid, so clear the map to be ready for new ones
 	run.taskbars.clear();
 
-	_properties.hwnd = run.main_taskbar = FindWindow(L"Shell_TrayWnd", NULL);
+	_properties.hwnd = run.main_taskbar = Window::Find(L"Shell_TrayWnd");
 	_properties.state = Taskbar::Normal;
-	run.taskbars.insert(std::make_pair(MonitorFromWindow(run.main_taskbar, MONITOR_DEFAULTTOPRIMARY), _properties));
+	run.taskbars.insert(std::make_pair(run.main_taskbar.monitor(), _properties));
 
 	while ((secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", NULL)) != 0)
 	{
@@ -745,7 +745,7 @@ void RefreshHandles()
 void TogglePeek(const bool &status)
 {
 	static bool cached_peek = true;
-	static HWND cached_taskbar = run.main_taskbar;
+	static Window cached_taskbar = Window(run.main_taskbar);
 
 	if (status != cached_peek || cached_taskbar != run.main_taskbar)
 	{
@@ -762,7 +762,7 @@ void TogglePeek(const bool &status)
 		SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
 
 		cached_peek = status;
-		cached_taskbar = run.main_taskbar;
+		cached_taskbar = Window(run.main_taskbar);
 	}
 }
 
@@ -771,17 +771,13 @@ void ClearBlacklistCache()
 	run.cache_hits = Config::CACHE_HIT_MAX + 1;
 }
 
-bool OutputBlacklistMatchToLog(const HWND &hwnd, const bool &match)
+bool OutputBlacklistMatchToLog(Window &window, const bool &match)
 {
 	if (Config::VERBOSE)
 	{
-		std::wstring className = WindowHelper::GetWindowClass(hwnd);
-		std::wstring title = WindowHelper::GetWindowTitle(hwnd);
-		std::wstring exeName = WindowHelper::GetWindowFile(hwnd);
-
 		std::wostringstream message;
 		message << (match ? L"B" : L"No b") << L"lacklist match found for window: ";
-		message << hwnd << L" [" << className << L"] [" << exeName << L"] [" << title << L"]";
+		message << window.handle() << L" [" << window.classname() << L"] [" << window.filename() << L"] [" << window.title() << L"]";
 
 		Log::OutputMessage(message.str());
 	}
@@ -789,14 +785,14 @@ bool OutputBlacklistMatchToLog(const HWND &hwnd, const bool &match)
 	return match;
 }
 
-bool IsWindowBlacklisted(const HWND &hWnd)
+bool IsWindowBlacklisted(Window &window)
 {
 	static std::unordered_map<HWND, bool> blacklist_cache;
 
-	if (run.cache_hits <= Config::CACHE_HIT_MAX && blacklist_cache.count(hWnd) > 0)
+	if (run.cache_hits <= Config::CACHE_HIT_MAX && blacklist_cache.count(window) > 0)
 	{
 		run.cache_hits++;
-		return blacklist_cache[hWnd];
+		return blacklist_cache[window];
 	}
 	else
 	{
@@ -813,12 +809,11 @@ bool IsWindowBlacklisted(const HWND &hWnd)
 		// This is the fastest because we do the less string manipulation, so always try it first
 		if (opt.blacklisted_classes.size() > 0)
 		{
-			std::wstring className = WindowHelper::GetWindowClass(hWnd);
 			for (const std::wstring &value : opt.blacklisted_classes)
 			{
-				if (className == value)
+				if (window.classname() == value)
 				{
-					return OutputBlacklistMatchToLog(hWnd, blacklist_cache[hWnd] = true);
+					return OutputBlacklistMatchToLog(window, blacklist_cache[window] = true);
 				}
 			}
 		}
@@ -828,12 +823,11 @@ bool IsWindowBlacklisted(const HWND &hWnd)
 		// If it ends up affecting stuff, we can remove it from caching easily.
 		if (opt.blacklisted_titles.size() > 0)
 		{
-			std::wstring windowTitle = WindowHelper::GetWindowTitle(hWnd);
 			for (const std::wstring &value : opt.blacklisted_titles)
 			{
-				if (windowTitle.find(value) != std::wstring::npos)
+				if (window.title().find(value) != std::wstring::npos)
 				{
-					return OutputBlacklistMatchToLog(hWnd, blacklist_cache[hWnd] = true);
+					return OutputBlacklistMatchToLog(window, blacklist_cache[window] = true);
 				}
 			}
 		}
@@ -841,18 +835,18 @@ bool IsWindowBlacklisted(const HWND &hWnd)
 		// GetModuleFileNameEx is quite expensive according to the tracing tools, so use it as last resort.
 		if (opt.blacklisted_filenames.size() > 0)
 		{
-			std::wstring exeName = WindowHelper::GetWindowFile(hWnd);
+			std::wstring exeName = window.filename();
 			Util::ToLower(exeName);
 			for (const std::wstring &value : opt.blacklisted_filenames)
 			{
 				if (exeName == value)
 				{
-					return OutputBlacklistMatchToLog(hWnd, blacklist_cache[hWnd] = true);
+					return OutputBlacklistMatchToLog(window, blacklist_cache[window] = true);
 				}
 			}
 		}
 
-		return OutputBlacklistMatchToLog(hWnd, blacklist_cache[hWnd] = false);
+		return OutputBlacklistMatchToLog(window, blacklist_cache[window] = false);
 	}
 }
 
@@ -1112,13 +1106,13 @@ LRESULT CALLBACK TrayCallback(const HWND hWnd, const uint32_t message, const WPA
 
 BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
 {
+	Window window = hWnd;
 	// IsWindowCloaked should take care of checking if it's on the current desktop.
 	// But that's undefined behavior.
 	// So eh, do both but with IsWindowOnCurrentDesktop last.
-	if (IsWindowVisible(hWnd) && WindowHelper::IsWindowMaximised(hWnd) && !WindowHelper::IsWindowCloaked(hWnd) && !IsWindowBlacklisted(hWnd) && WindowHelper::IsWindowOnCurrentDesktop(hWnd))
+	if (window.visible() && window.state() == SW_MAXIMIZE && !window.get_attribute<BOOL>(DWMWA_CLOAKED) && !IsWindowBlacklisted(window) && window.on_current_desktop())
 	{
-		HMONITOR _monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
-		Taskbar::TASKBARPROPERTIES &taskbar = run.taskbars.at(_monitor);
+		Taskbar::TASKBARPROPERTIES &taskbar = run.taskbars.at(window.monitor());
 		if (opt.dynamic_ws)
 		{
 			taskbar.state = Taskbar::WindowMaximised;
@@ -1174,8 +1168,7 @@ void SetTaskbarBlur()
 				if (ErrorHandle(app_visibility->IsLauncherVisible(&start_visible), Error::Level::Log, L"Checking start menu visibility failed.") && start_visible)
 				{
 					// TODO: does this works correctly on multi-monitor
-					HWND start = FindWindow(L"Windows.UI.Core.CoreWindow", L"Start");
-					run.taskbars.at(MonitorFromWindow(start, MONITOR_DEFAULTTOPRIMARY)).state = Taskbar::StartMenuOpen;
+					run.taskbars.at(Window::Find(L"Windows.UI.Core.CoreWindow", L"Start").monitor()).state = Taskbar::StartMenuOpen;
 				}
 			}
 		}
@@ -1298,8 +1291,7 @@ int WINAPI WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 	// If there already is another instance running, tell it to exit
 	if (!win32::IsSingleInstance())
 	{
-		HWND oldInstance = FindWindow(App::NAME.c_str(), L"TrayWindow");
-		SendMessage(oldInstance, Tray::NEW_TTB_INSTANCE, NULL, NULL);
+		Window::Find(App::NAME, L"TrayWindow").send_message(Tray::NEW_TTB_INSTANCE);
 	}
 
 	// Set our exit handler
