@@ -3,6 +3,7 @@
 #include <wrl/wrappers/corewrappers.h>
 #include <vector>
 
+#include "common.h"
 #include "ttberror.hpp"
 
 CComPtr<IVirtualDesktopManager> Window::m_DesktopManager;
@@ -93,8 +94,8 @@ std::wstring Window::filename() const
 			return m_Filenames[m_WindowHandle] = L"";
 		}
 
-		DWORD path_Size = 33000;
-		std::vector<wchar_t> exeName_path(33000);
+		DWORD path_Size = LONG_PATH;
+		std::vector<wchar_t> exeName_path(path_Size);
 
 		if (!QueryFullProcessImageName(processHandle.Get(), 0, exeName_path.data(), &path_Size))
 		{

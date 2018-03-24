@@ -11,6 +11,7 @@
 #include <winerror.h>
 #include <winreg.h>
 
+#include "common.h"
 #include "app.hpp"
 
 Autostart::StartupState Autostart::GetStartupState()
@@ -49,7 +50,7 @@ void Autostart::SetStartupState(const StartupState &state)
 	{
 		if (state == StartupState::Enabled)
 		{
-			DWORD exeLocation_size = 33000;
+			DWORD exeLocation_size = LONG_PATH;
 			std::vector<wchar_t> exeLocation(exeLocation_size);
 			if (!QueryFullProcessImageName(GetCurrentProcess(), 0, exeLocation.data(), &exeLocation_size))
 			{

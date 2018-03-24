@@ -19,6 +19,8 @@
 #include "win32.hpp"
 #ifdef STORE
 #include "UWP.hpp"
+#else
+#include "common.h"
 #endif
 
 std::unique_ptr<std::wostream> Log::m_LogStream;
@@ -28,8 +30,8 @@ inline std::tuple<HRESULT, std::wstring> Log::InitStream()
 {
 	HRESULT hr;
 #ifndef STORE
-	std::vector<wchar_t> temp(33000);
-	if (!GetTempPath(33000, temp.data()))
+	std::vector<wchar_t> temp(LONG_PATH);
+	if (!GetTempPath(LONG_PATH, temp.data()))
 	{
 		return std::make_tuple(HRESULT_FROM_WIN32(GetLastError()), L"Failed to determine temporary folder location!");
 	}
