@@ -1,4 +1,7 @@
 #include "CPicker.h"
+#include <WinBase.h>
+#include <wingdi.h>
+#include <WinUser.h>
 
 PixelBuffer::PixelBuffer()
 {

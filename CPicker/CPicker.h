@@ -3,7 +3,7 @@
 #define __CPICKER_H
 
 #include <unordered_map>
-#include <Windows.h>
+#include "../TranslucentTB/arch.h"
 #include "CPickerDll.h"
 #include "resource.h"
 

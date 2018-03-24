@@ -30,7 +30,7 @@ public:
 	std::wstring filename() const;
 	bool on_current_desktop() const;
 	unsigned int state() const;
-	bool show(int state) const;
+	bool show(int state = SW_SHOW) const;
 	bool visible() const;
 	HMONITOR monitor() const;
 	long send_message(unsigned int message, unsigned int wparam = 0, long lparam = 0) const;

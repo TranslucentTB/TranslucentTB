@@ -1,4 +1,6 @@
 #include "CPicker.h"
+#include <WinUser.h>
+
 #include "resource.h"
 
 CColourPicker::CColourPicker(HWND hParentWindow)

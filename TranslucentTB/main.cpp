@@ -30,18 +30,19 @@
 // For the context menu
 #include "resource.h"
 
-#include "swcadata.hpp"
+#include "app.hpp"
+#include "AutoFree.hpp"
+#include "autostart.hpp"
+#include "common.h"
 #include "config.hpp"
+#include "swcadata.hpp"
 #include "taskbar.hpp"
 #include "tray.hpp"
-#include "util.hpp"
-#include "win32.hpp"
-#include "app.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
-#include "autostart.hpp"
+#include "util.hpp"
+#include "win32.hpp"
 #include "window.hpp"
-#include "AutoFree.hpp"
 
 
 #pragma region Structures
@@ -1251,7 +1252,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	wcscpy_s(run.tray.szTip, App::NAME.c_str());										// szTip
 	#pragma clang diagnostic pop
 
-	trayWindow.show(WM_SHOWWINDOW);
+	trayWindow.show();
 	RegisterTray();
 }
 

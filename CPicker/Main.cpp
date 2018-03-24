@@ -1,12 +1,13 @@
+#include "CPicker.h"
 #include <chrono>
 #include <future>
 #include <stdio.h>
 #include <string>
-
-#include "CPicker.h"
-#include "resource.h"
-
+#include <wingdi.h>
+#include <WinUser.h>
 #include <CommCtrl.h>
+
+#include "resource.h"
 
 static bool programmaticallyChangingText;
 
