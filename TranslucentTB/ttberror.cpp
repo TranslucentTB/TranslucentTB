@@ -7,7 +7,7 @@
 #include "app.hpp"
 #include "ttblog.hpp"
 
-bool Error::Handle(const HRESULT &error, const Level &level, const std::wstring &message, const std::string &file, int line, const std::string &function)
+bool Error::Handle(const HRESULT &error, const Level &level, const std::wstring &message, const std::wstring &file, int line, const std::wstring &function)
 {
 	if (FAILED(error))
 	{
@@ -26,8 +26,7 @@ bool Error::Handle(const HRESULT &error, const Level &level, const std::wstring 
 		}
 
 		Log::OutputMessage(message + L" Exception from HRESULT: " + _com_error(error).ErrorMessage() +
-			L" (" + std::wstring(file.begin(), file.end()) + L":" + std::to_wstring(line) +
-			L" at function " + std::wstring(function.begin(), function.end()) + L")");
+			L" (" + file + L":" + std::to_wstring(line) + L" at function " + function + L")");
 
 		if (level == Level::Fatal)
 		{

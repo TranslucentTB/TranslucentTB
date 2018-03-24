@@ -1,9 +1,5 @@
 #pragma once
-#ifndef CONFIG_HPP
-#define CONFIG_HPP
-
-#include <cstdint>
-#include <cwchar>
+#include <string>
 
 namespace Config {
 
@@ -17,5 +13,3 @@ namespace Config {
 #endif
 
 }
-
-#endif // !CONFIG_HPP

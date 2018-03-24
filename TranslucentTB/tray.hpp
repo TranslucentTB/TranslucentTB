@@ -1,10 +1,9 @@
 #pragma once
-#ifndef TRAY_HPP
-#define TRAY_HPP
-
 #include <cstdint>
 #include <unordered_map>
+#include <WinUser.h>
 
+#include "resource.h"
 #include "swcadata.hpp"
 #include "taskbar.hpp"
 
@@ -45,5 +44,3 @@ namespace Tray {
 	};
 
 }
-
-#endif // !TRAY_HPP

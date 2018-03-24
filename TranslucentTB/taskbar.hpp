@@ -1,7 +1,5 @@
 #pragma once
-#ifndef TASKBAR_HPP
-#define TASKBAR_HPP
-
+#include "arch.h"
 #include <windef.h>
 
 namespace Taskbar {
@@ -25,5 +23,3 @@ namespace Taskbar {
 	};
 
 }
-
-#endif // !TASKBAR_HPP

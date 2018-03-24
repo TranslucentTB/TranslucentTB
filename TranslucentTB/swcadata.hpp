@@ -1,7 +1,4 @@
 #pragma once
-#ifndef SWCADATA_HPP
-#define SWCADATA_HPP
-
 #include <cstdint>
 
 namespace swca {
@@ -37,5 +34,3 @@ namespace swca {
 	};
 
 }
-
-#endif // !SWCADATA_HPP

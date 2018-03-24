@@ -1,5 +1,5 @@
 #pragma once
-#define _X86_
+#include "arch.h"
 #include "AutoFreeBase.hpp"
 #include <objbase.h>
 #include <WinBase.h>

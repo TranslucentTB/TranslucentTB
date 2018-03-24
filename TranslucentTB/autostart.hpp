@@ -1,7 +1,4 @@
 #pragma once
-#ifndef AUTOSTART_HPP
-#define AUTOSTART_HPP
-
 #ifndef STORE
 #include <cwchar>
 #include <Shlwapi.h>
@@ -120,5 +117,3 @@ namespace Autostart {
 	}
 
 }
-
-#endif // !AUTOSTART_HPP
