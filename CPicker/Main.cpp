@@ -810,7 +810,10 @@ LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 			case IDC_OLDCOLOR:
 			{
-				picker->Revert();
+				SColour old = picker->GetOldColour();
+
+				picker->SetRGB(old.r, old.g, old.b);
+				picker->SetAlpha(old.a);
 				UpdateValues(hDlg, picker->GetCurrentColour());
 				SendMessage(hDlg, WM_PAINT, 0, 0);
 				break;

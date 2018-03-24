@@ -72,16 +72,6 @@ void CColourPicker::UpdateOldColour()
 	OldCol = CurrCol;
 }
 
-void CColourPicker::SetParent(HWND _parent)
-{
-	hParent = _parent;
-}
-
-void CColourPicker::Revert()
-{
-	CurrCol = OldCol;
-}
-
 // Updates the RGB color from the HSV
 void SColour::UpdateRGB()
 {

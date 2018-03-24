@@ -32,10 +32,7 @@ class CColourPicker
 		_declspec(dllexport) SColour GetCurrentColour();
 		_declspec(dllexport) SColour GetOldColour();
 
-		void Revert();
 		_declspec(dllexport) void UpdateOldColour();
-		
-		void SetParent(HWND _parent);
 	private:
 		// The current selected colour and the previous selected one
 		SColour CurrCol, OldCol;
