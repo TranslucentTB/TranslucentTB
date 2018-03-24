@@ -724,21 +724,19 @@ void RefreshHandles()
 	{
 		Log::OutputMessage(L"Refreshing taskbar handles");
 	}
-	HWND secondtaskbar = NULL;
-	Taskbar::TASKBARPROPERTIES _properties;
 
 	// Older handles are invalid, so clear the map to be ready for new ones
 	run.taskbars.clear();
 
-	_properties.hwnd = run.main_taskbar = Window::Find(L"Shell_TrayWnd");
-	_properties.state = Taskbar::Normal;
-	run.taskbars.insert(std::make_pair(run.main_taskbar.monitor(), _properties));
+	run.taskbars[run.main_taskbar.monitor()] = {
+		run.main_taskbar = Window::Find(L"Shell_TrayWnd"),
+		Taskbar::Normal
+	};
 
-	while ((secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", NULL)) != 0)
+	Window secondtaskbar;
+	while ((secondtaskbar = Window::FindEx(nullptr, secondtaskbar, L"Shell_SecondaryTrayWnd")) != Window())
 	{
-		_properties.hwnd = secondtaskbar;
-		_properties.state = Taskbar::Normal;
-		run.taskbars.insert(std::make_pair(MonitorFromWindow(secondtaskbar, MONITOR_DEFAULTTOPRIMARY), _properties));
+		run.taskbars[secondtaskbar.monitor()] = { secondtaskbar, Taskbar::Normal };
 	}
 }
 
@@ -749,17 +747,17 @@ void TogglePeek(const bool &status)
 
 	if (status != cached_peek || cached_taskbar != run.main_taskbar)
 	{
-		HWND _tray = FindWindowEx(run.main_taskbar, NULL, L"TrayNotifyWnd", NULL);
-		HWND _peek = FindWindowEx(_tray, NULL, L"TrayShowDesktopButtonWClass", NULL);
-		HWND _overflow = FindWindowEx(_tray, NULL, L"Button", NULL);
+		Window _tray = Window::FindEx(run.main_taskbar, nullptr, L"TrayNotifyWnd");
+		Window _peek = Window::FindEx(_tray, nullptr, L"TrayShowDesktopButtonWClass");
+		Window _overflow = Window::FindEx(_tray, nullptr, L"Button");
 
-		ShowWindow(_peek, status ? SW_SHOWNORMAL : SW_HIDE);
+		_peek.show(status ? SW_SHOWNORMAL : SW_HIDE);
 
 		// This is a really terrible hack, but it's the only way I found to make the changes reflect instantly.
 		// Toggles the overflow area popup twice. Nearly imperceptible.
 		// If you have a better solution, let me know or send a pull request
-		SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
-		SendMessage(_overflow, WM_LBUTTONUP, NULL, NULL);
+		_overflow.send_message(WM_LBUTTONUP);
+		_overflow.send_message(WM_LBUTTONUP);
 
 		cached_peek = status;
 		cached_taskbar = Window(run.main_taskbar);
@@ -1243,24 +1241,13 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 	RegisterClassEx(&wnd);
 
+	Window trayWindow = Window::Create(WS_EX_TOOLWINDOW, App::NAME, L"TrayWindow", WS_OVERLAPPEDWINDOW);
+
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wmissing-field-initializers"
 	run.tray = {
 		sizeof(run.tray),																// cbSize
-		CreateWindowEx(																	// hWnd
-			WS_EX_TOOLWINDOW,																// dwExStyle
-			App::NAME.c_str(),																// lpClassName
-			L"TrayWindow",																	// lpWindowName
-			WS_OVERLAPPEDWINDOW,															// dwStyle
-			0,																				// x
-			0,																				// y
-			0,																				// nWidth
-			0,																				// nHeight
-			NULL,																			// hWndParent
-			NULL,																			// hMenu
-			hInstance,																		// hInstance
-			NULL																			// lpParam
-		),
+		trayWindow,																		// hWnd
 		101,																			// uID
 		NIF_ICON | NIF_TIP | NIF_MESSAGE,												// uFlags
 		Tray::WM_NOTIFY_TB																// uCallbackMessage
@@ -1269,7 +1256,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	wcscpy_s(run.tray.szTip, App::NAME.c_str());										// szTip
 	#pragma clang diagnostic pop
 
-	ShowWindow(run.tray.hWnd, WM_SHOWWINDOW);
+	trayWindow.show(WM_SHOWWINDOW);
 	RegisterTray();
 }
 

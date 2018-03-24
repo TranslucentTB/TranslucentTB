@@ -12,7 +12,21 @@ std::unordered_map<HWND, std::wstring> Window::m_Filenames;
 
 Window Window::Find(const std::wstring &className, const std::wstring &windowName)
 {
-	return FindWindow(className.empty() ? NULL : className.c_str(), windowName.empty() ? NULL : windowName.c_str());
+	return FindEx(nullptr, nullptr, className, windowName);
+}
+
+Window Window::FindEx(const Window &parent, const Window &childAfter, const std::wstring &className, const std::wstring &windowName)
+{
+	return FindWindowEx(parent, childAfter, className.empty() ? NULL : className.c_str(), windowName.empty() ? NULL : windowName.c_str());
+}
+
+Window Window::Create(const unsigned long &dwExStyle, const std::wstring &className,
+	const std::wstring &windowName, const unsigned long &dwStyle, const int &x, const int &y,
+	const int &nWidth, const int &nHeight, const Window &parent, const HMENU &hMenu,
+	const HINSTANCE &hInstance, void *lpParam)
+{
+	return CreateWindowEx(dwExStyle, className.c_str(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
+		parent, hMenu, hInstance, lpParam);
 }
 
 Window::Window(HWND handle)
@@ -138,6 +152,11 @@ unsigned int Window::state() const
 	{
 		return result.showCmd;
 	}
+}
+
+bool Window::show(int state) const
+{
+	return ShowWindow(m_WindowHandle, state);
 }
 
 bool Window::visible() const
