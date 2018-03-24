@@ -27,7 +27,7 @@ public:
 	unsigned int state() const;
 	bool visible() const;
 	HMONITOR monitor() const;
-	long send_message(unsigned int message, unsigned int wparam = 0, long lparam = 0);
+	long send_message(unsigned int message, unsigned int wparam = 0, long lparam = 0) const;
 	HWND handle() const;
 	operator HWND() const;
 	inline bool operator ==(const Window &right) const

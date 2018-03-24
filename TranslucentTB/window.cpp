@@ -150,7 +150,7 @@ HMONITOR Window::monitor() const
 	return MonitorFromWindow(m_WindowHandle, MONITOR_DEFAULTTOPRIMARY);
 }
 
-long Window::send_message(unsigned int message, unsigned int wparam, long lparam)
+long Window::send_message(unsigned int message, unsigned int wparam, long lparam) const
 {
 	return SendMessage(handle(), message, wparam, lparam);
 }
