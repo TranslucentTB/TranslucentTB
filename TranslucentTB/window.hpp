@@ -14,7 +14,6 @@ private:
 	static std::unordered_map<HWND, std::wstring> m_Filenames;
 
 	HWND m_WindowHandle;
-	std::wstring m_Title;
 
 public:
 	static Window Find(const std::wstring &className = L"", const std::wstring &windowName = L"");
@@ -25,7 +24,7 @@ public:
 		const HMENU &hMenu = NULL, const HINSTANCE &hInstance = GetModuleHandle(NULL), void *lpParam = nullptr);
 
 	Window(HWND handle = nullptr);
-	std::wstring title();
+	std::wstring title() const;
 	std::wstring classname() const;
 	std::wstring filename() const;
 	bool on_current_desktop() const;

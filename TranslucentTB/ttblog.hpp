@@ -12,9 +12,10 @@ class Log {
 private:
 	static std::unique_ptr<std::wostream> m_LogStream;
 	static std::tuple<HRESULT, std::wstring> InitStream();
+	static std::wstring m_File;
 	// The normal AutoLocalFree would call Error::Handle (which logs)
 	// even tho we aren't done initializing the log stream.
-	struct LocalFreeUnsafeDeleter {
+	struct SilentLocalFreeDeleter {
 
 		inline void operator() (void *data)
 		{
@@ -24,7 +25,6 @@ private:
 	};
 
 public:
-	// If you set this outside of the class I'll burn you alive.
-	static std::wstring File;
+	static std::wstring file();
 	static void OutputMessage(const std::wstring &message);
 };

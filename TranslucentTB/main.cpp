@@ -85,7 +85,7 @@ static struct RUNTIMESTATE
 
 #pragma region That one function that does all the magic
 
-void SetWindowBlur(const HWND &hWnd, const swca::ACCENT &appearance, const uint32_t &color)
+void SetWindowBlur(const Window &window, const swca::ACCENT &appearance, const uint32_t &color)
 {
 	if (user32::SetWindowCompositionAttribute)
 	{
@@ -114,7 +114,7 @@ void SetWindowBlur(const HWND &hWnd, const swca::ACCENT &appearance, const uint3
 			sizeof(policy)
 		};
 
-		user32::SetWindowCompositionAttribute(hWnd, &data);
+		user32::SetWindowCompositionAttribute(window, &data);
 	}
 }
 
@@ -765,7 +765,7 @@ void ClearBlacklistCache()
 	run.cache_hits = Config::CACHE_HIT_MAX + 1;
 }
 
-bool OutputBlacklistMatchToLog(Window &window, const bool &match)
+bool OutputBlacklistMatchToLog(const Window &window, const bool &match)
 {
 	if (Config::VERBOSE)
 	{
@@ -779,7 +779,7 @@ bool OutputBlacklistMatchToLog(Window &window, const bool &match)
 	return match;
 }
 
-bool IsWindowBlacklisted(Window &window)
+bool IsWindowBlacklisted(const Window &window)
 {
 	static std::unordered_map<HWND, bool> blacklist_cache;
 
@@ -893,7 +893,7 @@ void RefreshMenu()
 	EnablePopupItem(IDM_DYNAMICWS_COLOR, opt.dynamic_ws);
 	EnablePopupItem(IDM_FLUENT, run.fluent_available);
 	EnablePopupItem(IDM_DYNAMICWS_FLUENT, opt.dynamic_ws && run.fluent_available);
-	EnablePopupItem(IDM_OPENLOG, !Log::File.empty());
+	EnablePopupItem(IDM_OPENLOG, !Log::file().empty());
 	EnablePopupItem(IDM_AUTOSTART, !(s_state == Autostart::StartupState::DisabledByUser
 #ifdef STORE
 		|| s_state == Autostart::StartupState::DisabledByPolicy));
@@ -1023,7 +1023,7 @@ LRESULT CALLBACK TrayCallback(const HWND hWnd, const uint32_t message, const WPA
 				opt.peek = Taskbar::AEROPEEK::Disabled;
 				break;
 			case IDM_OPENLOG:
-				Util::EditFile(Log::File);
+				Util::EditFile(Log::file());
 				break;
 			case IDM_VERBOSE:
 				Config::VERBOSE = !Config::VERBOSE;
@@ -1100,7 +1100,7 @@ LRESULT CALLBACK TrayCallback(const HWND hWnd, const uint32_t message, const WPA
 
 BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
 {
-	Window window = hWnd;
+	const Window window = hWnd;
 	// IsWindowCloaked should take care of checking if it's on the current desktop.
 	// But that's undefined behavior.
 	// So eh, do both but with IsWindowOnCurrentDesktop last.

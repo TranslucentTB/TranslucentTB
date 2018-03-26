@@ -35,25 +35,18 @@ Window::Window(HWND handle)
 	m_WindowHandle = handle;
 }
 
-std::wstring Window::title()
+std::wstring Window::title() const
 {
-	if (m_Title.empty())
-	{
-		int titleSize = GetWindowTextLength(m_WindowHandle) + 1; // For the null terminator
-		std::vector<wchar_t> windowTitleBuffer(titleSize);
+	int titleSize = GetWindowTextLength(m_WindowHandle) + 1; // For the null terminator
+	std::vector<wchar_t> windowTitleBuffer(titleSize);
 
-		if (!GetWindowText(m_WindowHandle, windowTitleBuffer.data(), titleSize))
-		{
-			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting title of a window failed.");
-			return m_Title = L"";
-		}
-
-		return m_Title = windowTitleBuffer.data();
-	}
-	else
+	if (!GetWindowText(m_WindowHandle, windowTitleBuffer.data(), titleSize))
 	{
-		return m_Title;
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting title of a window failed.");
+		return L"";
 	}
+
+	return windowTitleBuffer.data();
 }
 
 std::wstring Window::classname() const
