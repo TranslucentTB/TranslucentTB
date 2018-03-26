@@ -5,7 +5,7 @@
 #include <fileapi.h>
 #include <fstream>
 #include <PathCch.h>
-#include <Processthreadsapi.h>
+#include <processthreadsapi.h>
 #include <sstream>
 #ifndef STORE
 #include <vector>
