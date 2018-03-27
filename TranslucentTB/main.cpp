@@ -35,6 +35,7 @@
 #include "autostart.hpp"
 #include "common.h"
 #include "config.hpp"
+#include "eventhook.hpp"
 #include "swcadata.hpp"
 #include "taskbar.hpp"
 #include "tray.hpp"
@@ -78,7 +79,6 @@ static struct RUNTIMESTATE
 	std::wstring exclude_file;
 	int cache_hits;
 	bool peek_active = false;
-	HWINEVENTHOOK peek_hook;
 } run;
 
 #pragma endregion
@@ -1258,15 +1258,11 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 void Terminate()
 {
-	if (run.peek_hook)
-	{
-		UnhookWinEvent(run.peek_hook);
-	}
 	if (run.tray.cbSize)
 	{
 		Shell_NotifyIcon(NIM_DELETE, &run.tray);
 	}
-	exit(run.is_running ? 1 : 0);
+	exit(run.is_running ? EXIT_FAILURE : EXIT_SUCCESS);
 }
 
 int WINAPI WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, int)
@@ -1306,7 +1302,8 @@ int WINAPI WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 	RefreshHandles();
 
 	// Undoc'd, allows to detect when Aero Peek starts and stops
-	run.peek_hook = SetWinEventHook(0x21, 0x22, NULL, HandleAeroPeekEvent, 0, 0, WINEVENT_OUTOFCONTEXT);
+	// Marked as static because if we don't the destructor doesn't gets called when using exit()
+	static EventHook peek_hook(0x21, 0x22, HandleAeroPeekEvent, WINEVENT_OUTOFCONTEXT);
 
 	// Message loop
 	while (run.is_running)
