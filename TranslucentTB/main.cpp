@@ -44,6 +44,7 @@
 #include "util.hpp"
 #include "win32.hpp"
 #include "window.hpp"
+#include "windowclass.hpp"
 
 
 #pragma region Structures
@@ -1220,22 +1221,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 {
 	run.tray_popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU)); // Load our popup menu
 
-	WNDCLASSEX wnd = {
-		sizeof(wnd),							// cbSize
-		CS_HREDRAW | CS_VREDRAW,				// style
-		TrayCallback,							// lpfnWndProc
-		NULL,									// cbClsExtra
-		NULL,									// cbWndExtra
-		hInstance,								// hInstance
-		LoadIcon(NULL, IDI_APPLICATION),		// hIcon
-		LoadCursor(NULL, IDC_ARROW),			// hCursor
-		reinterpret_cast<HBRUSH>(BLACK_BRUSH),	// hbrBackground
-		NULL,									// lpszMenuName
-		App::NAME.c_str(),						// lpszClassName
-		NULL									// hIconSm
-	};
-
-	RegisterClassEx(&wnd);
+	static WindowClass windowClass(TrayCallback, App::NAME, MAKEINTRESOURCE(MAINICON), 0, hInstance);
 
 	Window trayWindow = Window::Create(WS_EX_TOOLWINDOW, App::NAME, L"TrayWindow", WS_OVERLAPPEDWINDOW);
 
