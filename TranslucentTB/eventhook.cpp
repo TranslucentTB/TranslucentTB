@@ -1,12 +1,12 @@
 #include "eventhook.hpp"
 #include <WinUser.h>
 
-EventHook::EventHook(HWINEVENTHOOK handle)
+EventHook::EventHook(const HWINEVENTHOOK &handle)
 {
 	m_Handle = handle;
 }
 
-EventHook::EventHook(DWORD min, DWORD max, std::function<void(HWINEVENTHOOK, DWORD, HWND, LONG, LONG, DWORD, DWORD)> callback, DWORD flags, HMODULE hMod, DWORD idProcess, DWORD idThread)
+EventHook::EventHook(const DWORD &min, const DWORD &max, const std::function<void(HWINEVENTHOOK, DWORD, HWND, LONG, LONG, DWORD, DWORD)> &callback, const DWORD &flags, const HMODULE &hMod = NULL, const DWORD &idProcess = 0, const DWORD &idThread = 0)
 {
 	m_Handle = SetWinEventHook(min, max, hMod, *callback.target<WINEVENTPROC>(), idProcess, idThread, flags);
 }
