@@ -12,7 +12,6 @@
 #include <vector>
 
 // Windows API
-#include <atlbase.h>
 #include <comdef.h>
 #include <dwmapi.h>
 #include <PathCch.h>
@@ -1114,28 +1113,10 @@ void SetTaskbarBlur()
 
 		TogglePeek(run.should_show_peek);
 
-		if (opt.dynamic_start)
+		if (opt.dynamic_start && Util::IsStartVisible())
 		{
-			static CComPtr<IAppVisibility> app_visibility;
-			static bool failed = false;
-
-			if (!failed)
-			{
-				if (!app_visibility)
-				{
-					failed = !ErrorHandle(app_visibility.CoCreateInstance(CLSID_AppVisibility), Error::Level::Log, L"Initialization of IAppVisibility failed.");
-				}
-			}
-
-			if (!failed)
-			{
-				BOOL start_visible;
-				if (ErrorHandle(app_visibility->IsLauncherVisible(&start_visible), Error::Level::Log, L"Checking start menu visibility failed.") && start_visible)
-				{
-					// TODO: does this works correctly on multi-monitor
-					run.taskbars.at(Window::Find(L"Windows.UI.Core.CoreWindow", L"Start").monitor()).state = Taskbar::StartMenuOpen;
-				}
-			}
+			// TODO: does this works correctly on multi-monitor
+			run.taskbars.at(Window::Find(L"Windows.UI.Core.CoreWindow", L"Start").monitor()).state = Taskbar::StartMenuOpen;
 		}
 
 		// TODO

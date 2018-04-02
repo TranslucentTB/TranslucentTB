@@ -1,8 +1,10 @@
 #include "util.hpp"
 #include "arch.h"
+#include <atlbase.h>
 #include <PathCch.h>
 #include <processthreadsapi.h>
 #include <ShlObj.h>
+#include <ShObjIdl.h>
 #include <synchapi.h>
 #include <WinBase.h>
 #include <winerror.h>
@@ -92,5 +94,29 @@ void Util::AddValuesToVectorByDelimiter(const std::wstring &delimiter, std::vect
 		value = Trim(line.substr(0, pos));
 		vector.push_back(value);
 		line.erase(0, pos + delimiter.length());
+	}
+}
+
+bool Util::IsStartVisible()
+{
+	static CComPtr<IAppVisibility> app_visibility;
+	static bool failed = false;
+
+	if (!failed)
+	{
+		if (!app_visibility)
+		{
+			failed = !ErrorHandle(app_visibility.CoCreateInstance(CLSID_AppVisibility), Error::Level::Log, L"Initialization of IAppVisibility failed.");
+		}
+	}
+
+	BOOL start_visible;
+	if (failed || !ErrorHandle(app_visibility->IsLauncherVisible(&start_visible), Error::Level::Log, L"Checking start menu visibility failed."))
+	{
+		return false;
+	}
+	else
+	{
+		return start_visible;
 	}
 }

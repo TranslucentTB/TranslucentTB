@@ -116,19 +116,14 @@ bool Window::on_current_desktop() const
 		}
 	}
 
-	if (failed)
+	BOOL on_current_desktop;
+	if (failed || !ErrorHandle(desktop_manager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop), Error::Level::Log, L"Verifying if a window is on the current virtual desktop failed."))
 	{
 		return true;
-	}
-
-	BOOL on_current_desktop;
-	if (ErrorHandle(desktop_manager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop), Error::Level::Log, L"Verifying if a window is on the current virtual desktop failed."))
-	{
-		return on_current_desktop;
 	}
 	else
 	{
-		return true;
+		return on_current_desktop;
 	}
 }
 
