@@ -1,4 +1,4 @@
 [submodule "cppwinrt"]
 	path = cppwinrt
 	url = https://github.com/Microsoft/cppwinrt
-	branch = e7815ab8543e0f9d4b78f3353124649d7ee5db45
+	branch = fall_2017_creators_update_for_vs_15.3
