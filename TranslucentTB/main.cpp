@@ -914,7 +914,8 @@ void RefreshMenu()
 		autostart_text = L"Startup has been disabled in Group Policy";
 		break;
 #endif
-	default:
+	case Autostart::StartupState::Enabled:
+	case Autostart::StartupState::Disabled:
 		autostart_text = L"Open at boot";
 	}
 	ChangePopupItemText(IDM_AUTOSTART, autostart_text);
