@@ -1,4 +1,5 @@
 #include "CPicker.h"
+#include <algorithm>
 #include <chrono>
 #include <future>
 #include <stdio.h>
@@ -11,7 +12,7 @@
 
 static bool programmaticallyChangingText;
 
-LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static CColourPicker *picker;
 	static PixelBuffer pbufferC1;
@@ -881,9 +882,9 @@ void DrawCheckedRect(HWND hWnd, int r, int g, int b, int a, int cx, int cy)
 		for (int y = 0; (y*cy) < HEIGHT(rect); y++)
 		{
 			r2.left = x * cx;
-			r2.right = min((x + 1)*cx, WIDTH(rect) - 2);
+			r2.right = (std::min<long>)((x + 1)*cx, WIDTH(rect) - 2);
 			r2.top = y * cy;
-			r2.bottom = min((y + 1)*cy, HEIGHT(rect) - 2);
+			r2.bottom = (std::min<long>)((y + 1)*cy, HEIGHT(rect) - 2);
 
 			FillRect(hdc, &r2, flag ? brush : brush2);
 

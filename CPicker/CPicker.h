@@ -29,7 +29,7 @@ struct PixelBuffer
 		int w, h;
 };
 
-LRESULT CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void DrawCheckedRect(HWND hWnd, int r, int g, int b, int a, int cx, int cy);
 void DrawCircle(HDC hcomp, int red, int green, int blue, float x, float y);
 void DrawArrows(HDC hcomp, int width, int height, float y);

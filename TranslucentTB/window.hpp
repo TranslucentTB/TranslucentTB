@@ -8,11 +8,10 @@
 class Window {
 
 private:
-	static CComPtr<IVirtualDesktopManager> m_DesktopManager;
-	static bool m_DesktopManagerInitFailed;
 	static std::unordered_map<HWND, std::wstring> m_ClassNames;
 	static std::unordered_map<HWND, std::wstring> m_Filenames;
 
+protected:
 	HWND m_WindowHandle;
 
 public:

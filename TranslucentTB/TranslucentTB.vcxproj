@@ -94,6 +94,7 @@
     <ClCompile Include="autostart.cpp" />
     <ClCompile Include="eventhook.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="messagewindow.cpp" />
     <ClCompile Include="ttberror.cpp" />
     <ClCompile Include="ttblog.cpp" />
     <ClCompile Include="util.cpp" />
@@ -110,6 +111,7 @@
     <ClInclude Include="autostart.hpp" />
     <ClInclude Include="common.h" />
     <ClInclude Include="eventhook.hpp" />
+    <ClInclude Include="messagewindow.hpp" />
     <ClInclude Include="swcadata.hpp" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="resource.h" />

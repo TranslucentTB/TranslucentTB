@@ -6,8 +6,6 @@
 #include "common.h"
 #include "ttberror.hpp"
 
-CComPtr<IVirtualDesktopManager> Window::m_DesktopManager;
-bool Window::m_DesktopManagerInitFailed;
 std::unordered_map<HWND, std::wstring> Window::m_ClassNames;
 std::unordered_map<HWND, std::wstring> Window::m_Filenames;
 
@@ -107,30 +105,30 @@ std::wstring Window::filename() const
 
 bool Window::on_current_desktop() const
 {
-	if (!m_DesktopManagerInitFailed)
+	static CComPtr<IVirtualDesktopManager> desktop_manager;
+	static bool failed = false;
+
+	if (!failed)
 	{
-		if (!m_DesktopManager)
+		if (!desktop_manager)
 		{
-			m_DesktopManagerInitFailed = !ErrorHandle(m_DesktopManager.CoCreateInstance(CLSID_VirtualDesktopManager), Error::Level::Log, L"Initialization of IVirtualDesktopManager failed.");
+			failed = !ErrorHandle(desktop_manager.CoCreateInstance(CLSID_VirtualDesktopManager), Error::Level::Log, L"Initialization of IVirtualDesktopManager failed.");
 		}
 	}
 
-	if (m_DesktopManagerInitFailed)
+	if (failed)
 	{
 		return true;
 	}
 
 	BOOL on_current_desktop;
-	HRESULT result = m_DesktopManager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop);
-
-	if (FAILED(result))
+	if (ErrorHandle(desktop_manager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop), Error::Level::Log, L"Verifying if a window is on the current virtual desktop failed."))
 	{
-		ErrorHandle(result, Error::Level::Log, L"Verifying if a window is on the current virtual desktop failed.");
-		return true;
+		return on_current_desktop;
 	}
 	else
 	{
-		return on_current_desktop;
+		return true;
 	}
 }
 

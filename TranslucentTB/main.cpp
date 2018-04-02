@@ -36,6 +36,7 @@
 #include "common.h"
 #include "config.hpp"
 #include "eventhook.hpp"
+#include "messagewindow.hpp"
 #include "swcadata.hpp"
 #include "taskbar.hpp"
 #include "tray.hpp"
@@ -902,20 +903,21 @@ void RefreshMenu()
 		));
 #endif
 
-	if (s_state == Autostart::StartupState::DisabledByUser)
+	std::wstring autostart_text;
+	switch (s_state)
 	{
-		ChangePopupItemText(IDM_AUTOSTART, L"Startup has been disabled in Task Manager");
-	}
+	case Autostart::StartupState::DisabledByUser:
+		autostart_text = L"Startup has been disabled in Task Manager";
+		break;
 #ifdef STORE
-	else if (s_state == Autostart::StartupState::DisabledByPolicy)
-	{
-		ChangePopupItemText(IDM_AUTOSTART, L"Startup has been disabled in Group Policy");
-	}
+	case Autostart::StartupState::DisabledByPolicy:
+		autostart_text = L"Startup has been disabled in Group Policy";
+		break;
 #endif
-	else
-	{
-		ChangePopupItemText(IDM_AUTOSTART, L"Open at boot");
+	default:
+		autostart_text = L"Open at boot";
 	}
+	ChangePopupItemText(IDM_AUTOSTART, autostart_text);
 
 	CheckPopupItem(IDM_DYNAMICWS_PEEK, opt.dynamic_ws_normal_on_peek);
 	CheckPopupItem(IDM_DYNAMICWS, opt.dynamic_ws);
@@ -930,169 +932,132 @@ void RegisterTray()
 	Shell_NotifyIcon(NIM_SETVERSION, &run.tray);
 }
 
-LRESULT CALLBACK TrayCallback(const HWND hWnd, const uint32_t message, const WPARAM wParam, const LPARAM lParam)
+long GetUserInputFromTray(const Window &hWnd, WPARAM, const LPARAM &lParam)
 {
-	if (message == WM_CLOSE)
+	if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
 	{
-		run.is_running = false;
-		return 0;
-	}
-#ifdef STORE
-	// https://docs.microsoft.com/en-us/windows/uwp/porting/desktop-to-uwp-extensions#updates
-	else if (message == WM_QUERYENDSESSION)
-	{
-		RegisterApplicationRestart(NULL, NULL);
-		return TRUE;
-	}
-#endif
-	else if (message == Tray::WM_NOTIFY_TB)
-	{
-		if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
+		static bool picker_open = false;
+		RefreshMenu();
+		POINT pt;
+		GetCursorPos(&pt);
+		SetForegroundWindow(hWnd);
+		uint32_t tray = TrackPopupMenu(GetSubMenu(run.tray_popup, 0), TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
+		switch (tray)
 		{
-			static bool picker_open = false;
-			RefreshMenu();
-			POINT pt;
-			GetCursorPos(&pt);
-			SetForegroundWindow(hWnd);
-			uint32_t tray = TrackPopupMenu(GetSubMenu(run.tray_popup, 0), TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
-			switch (tray)
+		case IDM_COLOR:
+			if (picker_open)
 			{
-			case IDM_COLOR:
-				if (picker_open)
-				{
-					break;
-				}
-				picker_open = true;
-				opt.color = Util::PickColor(opt.color);
-				picker_open = false;
-				break;
-			case IDM_NORMAL:
-				opt.taskbar_appearance = swca::ACCENT_NORMAL;
-				break;
-			case IDM_CLEAR:
-				opt.taskbar_appearance = swca::ACCENT_ENABLE_TRANSPARENTGRADIENT;
-				break;
-			case IDM_OPAQUE:
-				opt.taskbar_appearance = swca::ACCENT_ENABLE_GRADIENT;
-				break;
-			case IDM_BLUR:
-				opt.taskbar_appearance = swca::ACCENT_ENABLE_BLURBEHIND;
-				break;
-			case IDM_FLUENT:
-				opt.taskbar_appearance = swca::ACCENT_ENABLE_FLUENT;
-				break;
-			case IDM_DYNAMICWS:
-				opt.dynamic_ws = !opt.dynamic_ws;
-				break;
-			case IDM_DYNAMICWS_PEEK:
-				opt.dynamic_ws_normal_on_peek = !opt.dynamic_ws_normal_on_peek;
-				break;
-			case IDM_DYNAMICWS_COLOR:
-				if (picker_open)
-				{
-					break;
-				}
-				picker_open = true;
-				opt.dynamic_ws_color = Util::PickColor(opt.dynamic_ws_color);
-				picker_open = false;
-				break;
-			case IDM_DYNAMICWS_NORMAL:
-				opt.dynamic_ws_taskbar_appearance = swca::ACCENT_NORMAL;
-				break;
-			case IDM_DYNAMICWS_CLEAR:
-				opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_TRANSPARENTGRADIENT;
-				break;
-			case IDM_DYNAMICWS_OPAQUE:
-				opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_GRADIENT;
-				break;
-			case IDM_DYNAMICWS_BLUR:
-				opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_BLURBEHIND;
-				break;
-			case IDM_DYNAMICWS_FLUENT:
-				opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_FLUENT;
-				break;
-			case IDM_DYNAMICSTART:
-				opt.dynamic_start = !opt.dynamic_start;
-				break;
-			case IDM_PEEK:
-				opt.peek = Taskbar::AEROPEEK::Enabled;
-				break;
-			case IDM_DPEEK:
-				opt.peek = Taskbar::AEROPEEK::Dynamic;
-				break;
-			case IDM_NOPEEK:
-				opt.peek = Taskbar::AEROPEEK::Disabled;
-				break;
-			case IDM_OPENLOG:
-				Util::EditFile(Log::file());
-				break;
-			case IDM_VERBOSE:
-				Config::VERBOSE = !Config::VERBOSE;
-				break;
-			case IDM_CLEARBLACKLISTCACHE:
-				ClearBlacklistCache();
-				break;
-			case IDM_RELOADSETTINGS:
-				ParseConfigFile();
-				break;
-			case IDM_EDITSETTINGS:
-				SaveConfigFile();
-				Util::EditFile(run.config_file);
-				ParseConfigFile();
-				break;
-			case IDM_RETURNTODEFAULTSETTINGS:
-				ApplyStock(Config::CONFIG_FILE);
-				ParseConfigFile();
-				break;
-			case IDM_RELOADDYNAMICBLACKLIST:
-				ParseBlacklistFile();
-				ClearBlacklistCache();
-				break;
-			case IDM_EDITDYNAMICBLACKLIST:
-				Util::EditFile(run.exclude_file);
-				ParseBlacklistFile();
-				ClearBlacklistCache();
-				break;
-			case IDM_RETURNTODEFAULTBLACKLIST:
-				ApplyStock(Config::EXCLUDE_FILE);
-				ParseBlacklistFile();
-				ClearBlacklistCache();
-				break;
-			case IDM_AUTOSTART:
-				Autostart::SetStartupState(Autostart::GetStartupState() == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
-				break;
-			case IDM_EXITWITHOUTSAVING:
-				run.exit_reason = Tray::UserActionNoSave;
-				run.is_running = false;
-				break;
-			case IDM_EXIT:
-				run.is_running = false;
 				break;
 			}
+			picker_open = true;
+			opt.color = Util::PickColor(opt.color);
+			picker_open = false;
+			break;
+		case IDM_NORMAL:
+			opt.taskbar_appearance = swca::ACCENT_NORMAL;
+			break;
+		case IDM_CLEAR:
+			opt.taskbar_appearance = swca::ACCENT_ENABLE_TRANSPARENTGRADIENT;
+			break;
+		case IDM_OPAQUE:
+			opt.taskbar_appearance = swca::ACCENT_ENABLE_GRADIENT;
+			break;
+		case IDM_BLUR:
+			opt.taskbar_appearance = swca::ACCENT_ENABLE_BLURBEHIND;
+			break;
+		case IDM_FLUENT:
+			opt.taskbar_appearance = swca::ACCENT_ENABLE_FLUENT;
+			break;
+		case IDM_DYNAMICWS:
+			opt.dynamic_ws = !opt.dynamic_ws;
+			break;
+		case IDM_DYNAMICWS_PEEK:
+			opt.dynamic_ws_normal_on_peek = !opt.dynamic_ws_normal_on_peek;
+			break;
+		case IDM_DYNAMICWS_COLOR:
+			if (picker_open)
+			{
+				break;
+			}
+			picker_open = true;
+			opt.dynamic_ws_color = Util::PickColor(opt.dynamic_ws_color);
+			picker_open = false;
+			break;
+		case IDM_DYNAMICWS_NORMAL:
+			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_NORMAL;
+			break;
+		case IDM_DYNAMICWS_CLEAR:
+			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_TRANSPARENTGRADIENT;
+			break;
+		case IDM_DYNAMICWS_OPAQUE:
+			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_GRADIENT;
+			break;
+		case IDM_DYNAMICWS_BLUR:
+			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_BLURBEHIND;
+			break;
+		case IDM_DYNAMICWS_FLUENT:
+			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_FLUENT;
+			break;
+		case IDM_DYNAMICSTART:
+			opt.dynamic_start = !opt.dynamic_start;
+			break;
+		case IDM_PEEK:
+			opt.peek = Taskbar::AEROPEEK::Enabled;
+			break;
+		case IDM_DPEEK:
+			opt.peek = Taskbar::AEROPEEK::Dynamic;
+			break;
+		case IDM_NOPEEK:
+			opt.peek = Taskbar::AEROPEEK::Disabled;
+			break;
+		case IDM_OPENLOG:
+			Util::EditFile(Log::file());
+			break;
+		case IDM_VERBOSE:
+			Config::VERBOSE = !Config::VERBOSE;
+			break;
+		case IDM_CLEARBLACKLISTCACHE:
+			ClearBlacklistCache();
+			break;
+		case IDM_RELOADSETTINGS:
+			ParseConfigFile();
+			break;
+		case IDM_EDITSETTINGS:
+			SaveConfigFile();
+			Util::EditFile(run.config_file);
+			ParseConfigFile();
+			break;
+		case IDM_RETURNTODEFAULTSETTINGS:
+			ApplyStock(Config::CONFIG_FILE);
+			ParseConfigFile();
+			break;
+		case IDM_RELOADDYNAMICBLACKLIST:
+			ParseBlacklistFile();
+			ClearBlacklistCache();
+			break;
+		case IDM_EDITDYNAMICBLACKLIST:
+			Util::EditFile(run.exclude_file);
+			ParseBlacklistFile();
+			ClearBlacklistCache();
+			break;
+		case IDM_RETURNTODEFAULTBLACKLIST:
+			ApplyStock(Config::EXCLUDE_FILE);
+			ParseBlacklistFile();
+			ClearBlacklistCache();
+			break;
+		case IDM_AUTOSTART:
+			Autostart::SetStartupState(Autostart::GetStartupState() == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
+			break;
+		case IDM_EXITWITHOUTSAVING:
+			run.exit_reason = Tray::UserActionNoSave;
+			run.is_running = false;
+			break;
+		case IDM_EXIT:
+			run.is_running = false;
+			break;
 		}
-		return 0;
 	}
-	else if (message == Tray::WM_TASKBARCREATED)
-	{
-		RefreshHandles();
-		RegisterTray();
-		return 0;
-	}
-	else if (message == WM_DISPLAYCHANGE)
-	{
-		RefreshHandles();
-		return 0;
-	}
-	else if (message == Tray::NEW_TTB_INSTANCE)
-	{
-		run.exit_reason = Tray::NewInstance;
-		run.is_running = false;
-		return 0;
-	}
-	else
-	{
-		return DefWindowProc(hWnd, message, wParam, lParam);
-	}
+	return 0;
 }
 
 #pragma endregion
@@ -1153,11 +1118,15 @@ void SetTaskbarBlur()
 			static CComPtr<IAppVisibility> app_visibility;
 			static bool failed = false;
 
-			if (!app_visibility && !failed)
+			if (!failed)
 			{
-				failed = !ErrorHandle(app_visibility.CoCreateInstance(CLSID_AppVisibility), Error::Level::Log, L"Initialization of IAppVisibility failed.");
+				if (!app_visibility)
+				{
+					failed = !ErrorHandle(app_visibility.CoCreateInstance(CLSID_AppVisibility), Error::Level::Log, L"Initialization of IAppVisibility failed.");
+				}
 			}
-			if (!failed && app_visibility)
+
+			if (!failed)
 			{
 				BOOL start_visible;
 				if (ErrorHandle(app_visibility->IsLauncherVisible(&start_visible), Error::Level::Log, L"Checking start menu visibility failed.") && start_visible)
@@ -1211,7 +1180,7 @@ void SetTaskbarBlur()
 
 #pragma region Startup
 
-void InitializeAPIs()
+void InitializeWindowsRuntime()
 {
 	static Microsoft::WRL::Wrappers::RoInitializeWrapper init(RO_INIT_SINGLETHREADED);
 	ErrorHandle(init, Error::Level::Log, L"Initialization of Windows Runtime failed.");
@@ -1221,9 +1190,40 @@ void InitializeTray(const HINSTANCE &hInstance)
 {
 	run.tray_popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU)); // Load our popup menu
 
-	static WindowClass windowClass(TrayCallback, App::NAME, MAKEINTRESOURCE(MAINICON), 0, hInstance);
+	static MessageWindow trayWindow(App::NAME, L"TrayWindow", hInstance);
 
-	Window trayWindow = Window::Create(WS_EX_TOOLWINDOW, App::NAME, L"TrayWindow", WS_OVERLAPPEDWINDOW);
+	trayWindow.RegisterCallback(Tray::NEW_TTB_INSTANCE, [](Window, WPARAM, LPARAM) {
+		run.exit_reason = Tray::NewInstance;
+		run.is_running = false;
+		return 0;
+	});
+
+	trayWindow.RegisterCallback(WM_DISPLAYCHANGE, [](Window, WPARAM, LPARAM) {
+		RefreshHandles();
+		return 0;
+	});
+
+	trayWindow.RegisterCallback(Tray::WM_TASKBARCREATED, [](Window, WPARAM, LPARAM) {
+		RefreshHandles();
+		RegisterTray();
+		return 0;
+	});
+
+	trayWindow.RegisterCallback(Tray::WM_NOTIFY_TB, GetUserInputFromTray);
+
+	trayWindow.RegisterCallback(WM_CLOSE, [](Window, WPARAM, LPARAM) {
+		run.is_running = false;
+		return 0;
+	});
+
+#ifdef STORE
+	trayWindow.RegisterCallback(WM_QUERYENDSESSION, [](Window, WPARAM, LPARAM) {
+		// https://docs.microsoft.com/en-us/windows/uwp/porting/desktop-to-uwp-extensions#updates
+		RegisterApplicationRestart(NULL, NULL);
+		return TRUE;
+	});
+#endif
+
 
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wmissing-field-initializers"
@@ -1238,7 +1238,6 @@ void InitializeTray(const HINSTANCE &hInstance)
 	wcscpy_s(run.tray.szTip, App::NAME.c_str());										// szTip
 	#pragma clang diagnostic pop
 
-	trayWindow.show();
 	RegisterTray();
 }
 
@@ -1262,8 +1261,7 @@ int WINAPI WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 	// Set our exit handler
 	std::set_terminate(Terminate);
 
-	// Initialize COM or UWP
-	InitializeAPIs();
+	InitializeWindowsRuntime();
 
 	// Get configuration file paths
 	GetPaths();
