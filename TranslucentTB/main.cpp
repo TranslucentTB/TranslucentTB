@@ -21,27 +21,23 @@
 #include <ShlObj.h>
 #include <wrl/wrappers/corewrappers.h>
 
-// UWP
-#ifdef STORE
-#include "UWP.hpp"
-#endif
-
-// For the context menu
-#include "resource.h"
-
 #include "app.hpp"
-#include "AutoFree.hpp"
+#include "autofree.hpp"
 #include "autostart.hpp"
 #include "common.h"
 #include "config.hpp"
 #include "eventhook.hpp"
 #include "messagewindow.hpp"
+#include "resource.h"
 #include "swcadata.hpp"
 #include "taskbar.hpp"
 #include "tray.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 #include "util.hpp"
+#ifdef STORE
+#include "UWP.hpp"
+#endif
 #include "win32.hpp"
 #include "window.hpp"
 #include "windowclass.hpp"
@@ -90,6 +86,8 @@ void SetWindowBlur(const Window &window, const swca::ACCENT &appearance, const u
 {
 	if (user32::SetWindowCompositionAttribute)
 	{
+		static std::unordered_map<HWND, bool> is_normal;
+
 		swca::ACCENTPOLICY policy = {
 			appearance,
 			2,
@@ -99,9 +97,14 @@ void SetWindowBlur(const Window &window, const swca::ACCENT &appearance, const u
 
 		if (policy.nAccentState == swca::ACCENT_NORMAL)
 		{
-			// Handle fake value
-			policy.nAccentState = run.fluent_available ? swca::ACCENT_ENABLE_FLUENT : swca::ACCENT_ENABLE_TRANSPARENTGRADIENT;
-			policy.nColor = 0x99000000;
+			if (is_normal.count(window) == 0 || !is_normal[window])
+			{
+				// WM_THEMECHANGED makes the taskbar reload the theme and reapply the normal effect.
+				// Gotta memoize it because constantly sending it makes explorer's CPU usage jump.
+				window.send_message(WM_THEMECHANGED);
+				is_normal[window] = true;
+			}
+			return;
 		}
 		else if (policy.nAccentState == swca::ACCENT_ENABLE_FLUENT && policy.nColor >> 24 == 0x00)
 		{
@@ -116,6 +119,7 @@ void SetWindowBlur(const Window &window, const swca::ACCENT &appearance, const u
 		};
 
 		user32::SetWindowCompositionAttribute(window, &data);
+		is_normal[window] = false;
 	}
 }
 
@@ -126,7 +130,7 @@ void SetWindowBlur(const Window &window, const swca::ACCENT &appearance, const u
 void GetPaths()
 {
 #ifndef STORE
-	AutoCoTaskMemFree<wchar_t> appData;
+	AutoFree::CoTaskMem<wchar_t> appData;
 	ErrorHandle(SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &appData), Error::Level::Fatal, L"Failed to determine configuration files locations!");
 #else
 	try
@@ -135,9 +139,9 @@ void GetPaths()
 		const wchar_t *appData = appData_str.c_str();
 #endif
 
-	AutoLocalFree<wchar_t> configFolder;
-	AutoLocalFree<wchar_t> configFile;
-	AutoLocalFree<wchar_t> excludeFile;
+	AutoFree::Local<wchar_t> configFolder;
+	AutoFree::Local<wchar_t> configFile;
+	AutoFree::Local<wchar_t> excludeFile;
 
 	ErrorHandle(PathAllocCombine(appData, App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFolder), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
 	ErrorHandle(PathAllocCombine(configFolder, Config::CONFIG_FILE.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Fatal, L"Failed to combine config folder and config file!");
@@ -168,13 +172,13 @@ void ApplyStock(const std::wstring &filename)
 	std::wstring exeFolder_str(exeFolder.data());
 	exeFolder_str = exeFolder_str.substr(0, exeFolder_str.find_last_of(L"/\\") + 1);
 
-	AutoLocalFree<wchar_t> stockFile;
+	AutoFree::Local<wchar_t> stockFile;
 	if (!ErrorHandle(PathAllocCombine(exeFolder_str.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &stockFile), Error::Level::Error, L"Failed to combine executable folder and config file!"))
 	{
 		return;
 	}
 
-	AutoLocalFree<wchar_t> configFile;
+	AutoFree::Local<wchar_t> configFile;
 	if (!ErrorHandle(PathAllocCombine(run.config_folder.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Error, L"Failed to combine config folder and config file!"))
 	{
 		return;

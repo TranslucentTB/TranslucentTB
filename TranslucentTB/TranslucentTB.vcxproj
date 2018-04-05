@@ -106,8 +106,7 @@
   <ItemGroup>
     <ClInclude Include="app.hpp" />
     <ClInclude Include="arch.h" />
-    <ClInclude Include="AutoFree.hpp" />
-    <ClInclude Include="AutoFreeBase.hpp" />
+    <ClInclude Include="autofree.hpp" />
     <ClInclude Include="autostart.hpp" />
     <ClInclude Include="common.h" />
     <ClInclude Include="eventhook.hpp" />

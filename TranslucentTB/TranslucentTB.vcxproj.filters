@@ -90,12 +90,6 @@
     <ClInclude Include="UWP.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AutoFreeBase.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AutoFree.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="arch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -112,6 +106,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="messagewindow.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="autofree.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -17,7 +17,7 @@
 #include <WinUser.h>
 
 #include "app.hpp"
-#include "AutoFreeBase.hpp"
+#include "autofree.hpp"
 #include "win32.hpp"
 #ifdef STORE
 #include "UWP.hpp"
@@ -38,7 +38,7 @@ inline std::tuple<HRESULT, std::wstring> Log::InitStream()
 		return std::make_tuple(HRESULT_FROM_WIN32(GetLastError()), L"Failed to determine temporary folder location!");
 	}
 
-	AutoFreeBase<wchar_t, SilentLocalFreeDeleter> log_folder;
+	AutoFree::SilentLocal<wchar_t> log_folder;
 	hr = PathAllocCombine(temp.data(), App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_folder);
 	if (FAILED(hr))
 	{
@@ -91,7 +91,7 @@ inline std::tuple<HRESULT, std::wstring> Log::InitStream()
 		log_filename = std::to_wstring(unix_epoch) + L".log";
 	}
 
-	AutoFreeBase<wchar_t, SilentLocalFreeDeleter> log_file;
+	AutoFree::SilentLocal<wchar_t> log_file;
 	hr = PathAllocCombine(log_folder, log_filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_file);
 	if (FAILED(hr))
 	{

@@ -17,13 +17,13 @@
 void Util::EditFile(std::wstring file)
 {
 	// WinAPI reeeeeeeeeeeeeeeeeeeeeeeeee
-	AutoCoTaskMemFree<wchar_t> system32;
+	AutoFree::CoTaskMem<wchar_t> system32;
 	if (!ErrorHandle(SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, NULL, &system32), Error::Level::Error, L"Failed to determine System32 folder location!"))
 	{
 		return;
 	}
 
-	AutoLocalFree<wchar_t> notepad;
+	AutoFree::Local<wchar_t> notepad;
 	if (!ErrorHandle(PathAllocCombine(system32, L"notepad.exe", PATHCCH_ALLOW_LONG_PATHS, &notepad), Error::Level::Error, L"Failed to determine Notepad location!"))
 	{
 		return;
