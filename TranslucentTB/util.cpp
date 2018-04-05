@@ -10,7 +10,7 @@
 #include <winerror.h>
 #include <wrl/wrappers/corewrappers.h>
 
-#include "AutoFree.hpp"
+#include "autofree.hpp"
 #include "../CPicker/CPickerDll.h"
 #include "ttberror.hpp"
 

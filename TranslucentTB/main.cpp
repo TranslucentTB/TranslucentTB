@@ -21,6 +21,7 @@
 #include <ShlObj.h>
 #include <wrl/wrappers/corewrappers.h>
 
+// Local stuff
 #include "app.hpp"
 #include "autofree.hpp"
 #include "autostart.hpp"
