@@ -23,7 +23,7 @@ public:
 	MessageWindow(const std::wstring &className, const std::wstring &windowName, const HINSTANCE &hInstance = GetModuleHandle(NULL), const wchar_t *iconResource = MAKEINTRESOURCE(MAINICON));
 	typedef unsigned long long CALLBACKCOOKIE;
 	CALLBACKCOOKIE RegisterCallback(unsigned int message, const m_CallbackFunction &callback);
-	CALLBACKCOOKIE RegisterWindowMessageAndCallback(const std::wstring &message, const m_CallbackFunction &callback);
+	CALLBACKCOOKIE RegisterCallback(const std::wstring &message, const m_CallbackFunction &callback);
 	bool UnregisterCallback(CALLBACKCOOKIE cookie);
 	~MessageWindow();
 

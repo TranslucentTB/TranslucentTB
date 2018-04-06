@@ -53,7 +53,7 @@ MessageWindow::CALLBACKCOOKIE MessageWindow::RegisterCallback(unsigned int messa
 	return (static_cast<CALLBACKCOOKIE>(secret) << 32) + message;
 }
 
-MessageWindow::CALLBACKCOOKIE MessageWindow::RegisterWindowMessageAndCallback(const std::wstring &message, const m_CallbackFunction &callback)
+MessageWindow::CALLBACKCOOKIE MessageWindow::RegisterCallback(const std::wstring &message, const m_CallbackFunction &callback)
 {
 	return RegisterCallback(RegisterWindowMessage(message.c_str()), callback);
 }

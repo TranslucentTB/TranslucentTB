@@ -1173,7 +1173,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 	static TrayIcon tray(L"TrayWindow", MAKEINTRESOURCE(TRAYICON), 0, hInstance);
 
-	tray.RegisterWindowMessageAndCallback(Tray::NEW_TTB_INSTANCE, [](Window, WPARAM, LPARAM) {
+	tray.RegisterCallback(Tray::NEW_TTB_INSTANCE, [](Window, WPARAM, LPARAM) {
 		run.exit_reason = Tray::NewInstance;
 		run.is_running = false;
 		return 0;
@@ -1184,7 +1184,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 		return 0;
 	});
 
-	tray.RegisterWindowMessageAndCallback(Tray::WM_TASKBARCREATED, [](Window, WPARAM, LPARAM) {
+	tray.RegisterCallback(Tray::WM_TASKBARCREATED, [](Window, WPARAM, LPARAM) {
 		RefreshHandles();
 		return 0;
 	});

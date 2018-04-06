@@ -35,7 +35,7 @@ TrayIcon::TrayIcon(const std::wstring &classname, wchar_t *iconResource, const u
 
 	RegisterIcon();
 
-	RegisterWindowMessageAndCallback(Tray::WM_TASKBARCREATED, std::bind(&TrayIcon::RegisterIcon, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	RegisterCallback(Tray::WM_TASKBARCREATED, std::bind(&TrayIcon::RegisterIcon, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 }
 
 TrayIcon::CALLBACKCOOKIE TrayIcon::RegisterTrayCallback(const m_CallbackFunction &callback)
