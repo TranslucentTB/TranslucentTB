@@ -10,8 +10,10 @@
 
 class MessageWindow : public Window {
 
-private:
+protected:
 	typedef std::function<long(Window, WPARAM, LPARAM)> m_CallbackFunction;
+
+private:
 	std::unordered_map<unsigned int, std::vector<std::pair<unsigned short, m_CallbackFunction>>> m_CallbackMap;
 	WindowClass m_WindowClass;
 
@@ -21,6 +23,7 @@ public:
 	MessageWindow(const std::wstring &className, const std::wstring &windowName, const HINSTANCE &hInstance = GetModuleHandle(NULL), const wchar_t *iconResource = MAKEINTRESOURCE(MAINICON));
 	typedef unsigned long long CALLBACKCOOKIE;
 	CALLBACKCOOKIE RegisterCallback(unsigned int message, const m_CallbackFunction &callback);
+	CALLBACKCOOKIE RegisterWindowMessageAndCallback(const std::wstring &message, const m_CallbackFunction &callback);
 	bool UnregisterCallback(CALLBACKCOOKIE cookie);
 	~MessageWindow();
 

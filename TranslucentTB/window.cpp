@@ -158,7 +158,12 @@ HMONITOR Window::monitor() const
 
 long Window::send_message(unsigned int message, unsigned int wparam, long lparam) const
 {
-	return SendMessage(handle(), message, wparam, lparam);
+	return SendMessage(m_WindowHandle, message, wparam, lparam);
+}
+
+long Window::send_message(const std::wstring &message, unsigned int wparam, long lparam) const
+{
+	return send_message(RegisterWindowMessage(message.c_str()), wparam, lparam);
 }
 
 HWND Window::handle() const
@@ -168,7 +173,7 @@ HWND Window::handle() const
 
 Window::operator HWND() const
 {
-	return handle();
+	return m_WindowHandle;
 }
 
 template<typename T>

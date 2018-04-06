@@ -33,6 +33,7 @@
 #include "swcadata.hpp"
 #include "taskbar.hpp"
 #include "tray.hpp"
+#include "trayicon.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 #include "util.hpp"
@@ -70,7 +71,6 @@ static struct RUNTIMESTATE
 	bool should_show_peek;
 	bool is_running = true;
 	HMENU tray_popup;
-	NOTIFYICONDATA tray;
 	bool fluent_available = false;
 	std::wstring config_folder;
 	std::wstring config_file;
@@ -931,13 +931,7 @@ void RefreshMenu()
 	CheckPopupItem(IDM_VERBOSE, Config::VERBOSE);
 }
 
-void RegisterTray()
-{
-	Shell_NotifyIcon(NIM_ADD, &run.tray);
-	Shell_NotifyIcon(NIM_SETVERSION, &run.tray);
-}
-
-long GetUserInputFromTray(const Window &hWnd, WPARAM, const LPARAM &lParam)
+long GetUserInputFromTray(const Window &window, WPARAM, const LPARAM &lParam)
 {
 	if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
 	{
@@ -945,8 +939,8 @@ long GetUserInputFromTray(const Window &hWnd, WPARAM, const LPARAM &lParam)
 		RefreshMenu();
 		POINT pt;
 		GetCursorPos(&pt);
-		SetForegroundWindow(hWnd);
-		uint32_t tray = TrackPopupMenu(GetSubMenu(run.tray_popup, 0), TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
+		SetForegroundWindow(window);
+		uint32_t tray = TrackPopupMenu(GetSubMenu(run.tray_popup, 0), TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, window, NULL);
 		switch (tray)
 		{
 		case IDM_COLOR:
@@ -1177,28 +1171,27 @@ void InitializeTray(const HINSTANCE &hInstance)
 {
 	run.tray_popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU)); // Load our popup menu
 
-	static MessageWindow trayWindow(App::NAME, L"TrayWindow", hInstance);
+	static TrayIcon tray(L"TrayWindow", MAKEINTRESOURCE(TRAYICON), 0, hInstance);
 
-	trayWindow.RegisterCallback(Tray::NEW_TTB_INSTANCE, [](Window, WPARAM, LPARAM) {
+	tray.RegisterWindowMessageAndCallback(Tray::NEW_TTB_INSTANCE, [](Window, WPARAM, LPARAM) {
 		run.exit_reason = Tray::NewInstance;
 		run.is_running = false;
 		return 0;
 	});
 
-	trayWindow.RegisterCallback(WM_DISPLAYCHANGE, [](Window, WPARAM, LPARAM) {
+	tray.RegisterCallback(WM_DISPLAYCHANGE, [](Window, WPARAM, LPARAM) {
 		RefreshHandles();
 		return 0;
 	});
 
-	trayWindow.RegisterCallback(Tray::WM_TASKBARCREATED, [](Window, WPARAM, LPARAM) {
+	tray.RegisterWindowMessageAndCallback(Tray::WM_TASKBARCREATED, [](Window, WPARAM, LPARAM) {
 		RefreshHandles();
-		RegisterTray();
 		return 0;
 	});
 
-	trayWindow.RegisterCallback(Tray::WM_NOTIFY_TB, GetUserInputFromTray);
+	tray.RegisterTrayCallback(GetUserInputFromTray);
 
-	trayWindow.RegisterCallback(WM_CLOSE, [](Window, WPARAM, LPARAM) {
+	tray.RegisterCallback(WM_CLOSE, [](Window, WPARAM, LPARAM) {
 		run.is_running = false;
 		return 0;
 	});
@@ -1210,30 +1203,10 @@ void InitializeTray(const HINSTANCE &hInstance)
 		return TRUE;
 	});
 #endif
-
-
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wmissing-field-initializers"
-	run.tray = {
-		sizeof(run.tray),																// cbSize
-		trayWindow,																		// hWnd
-		101,																			// uID
-		NIF_ICON | NIF_TIP | NIF_MESSAGE,												// uFlags
-		Tray::WM_NOTIFY_TB																// uCallbackMessage
-	};
-	LoadIconMetric(hInstance, MAKEINTRESOURCE(TRAYICON), LIM_LARGE, &run.tray.hIcon);	// hIcon
-	wcscpy_s(run.tray.szTip, App::NAME.c_str());										// szTip
-	#pragma clang diagnostic pop
-
-	RegisterTray();
 }
 
 void Terminate()
 {
-	if (run.tray.cbSize)
-	{
-		Shell_NotifyIcon(NIM_DELETE, &run.tray);
-	}
 	exit(run.is_running ? EXIT_FAILURE : EXIT_SUCCESS);
 }
 

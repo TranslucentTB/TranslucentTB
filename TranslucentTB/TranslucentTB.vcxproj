@@ -95,6 +95,7 @@
     <ClCompile Include="eventhook.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="messagewindow.cpp" />
+    <ClCompile Include="trayicon.cpp" />
     <ClCompile Include="ttberror.cpp" />
     <ClCompile Include="ttblog.cpp" />
     <ClCompile Include="util.cpp" />
@@ -116,6 +117,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="taskbar.hpp" />
     <ClInclude Include="tray.hpp" />
+    <ClInclude Include="trayicon.hpp" />
     <ClInclude Include="ttberror.hpp" />
     <ClInclude Include="ttblog.hpp" />
     <ClInclude Include="util.hpp" />
