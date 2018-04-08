@@ -92,7 +92,7 @@ void Autostart::SetStartupState(const StartupState &state)
 {
 	try
 	{
-		auto task = UWP::GetApplicationStartupTask();
+		auto &task = UWP::GetApplicationStartupTask();
 		switch (state)
 		{
 		case StartupState::Enabled:

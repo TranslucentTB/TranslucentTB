@@ -64,13 +64,13 @@ void Util::EditFile(std::wstring file)
 
 uint32_t Util::PickColor(const uint32_t &color)
 {
-	const unsigned short a = (color & 0xFF000000) >> 24;
-	const unsigned short r = (color & 0x00FF0000) >> 16;
-	const unsigned short g = (color & 0x0000FF00) >> 8;
-	const unsigned short b = (color & 0x000000FF);
+	const uint8_t a = (color & 0xFF000000) >> 24;
+	const uint8_t r = (color & 0x00FF0000) >> 16;
+	const uint8_t g = (color & 0x0000FF00) >> 8;
+	const uint8_t b = (color & 0x000000FF);
 
 	// Bet 5 bucks a british wrote this library
-	CColourPicker picker(NULL, r, g, b, a, true);
+	CColourPicker picker(r, g, b, a);
 	picker.CreateColourPicker();
 	SColour newColor = picker.GetCurrentColour();
 

@@ -3,16 +3,7 @@
 
 #include "resource.h"
 
-CColourPicker::CColourPicker(HWND hParentWindow)
-{
-	SetRGB(0, 0, 0);
-	SetAlpha(255);
-	OldCol = CurrCol;
-
-	hParent = hParentWindow;
-}
- 
-CColourPicker::CColourPicker(HWND hParentWindow, unsigned short r, unsigned short g, unsigned short b, unsigned short a, bool IsRGB)
+CColourPicker::CColourPicker(unsigned short r, uint8_t g, uint8_t b, uint8_t a, bool IsRGB, HWND hParentWindow)
 {
 	if (IsRGB)
 	{
@@ -33,17 +24,16 @@ void CColourPicker::CreateColourPicker()
 	DialogBoxParam(GetModuleHandle(L"CPicker.dll"), MAKEINTRESOURCE(IDD_COLORPICKER), hParent, ColourPickerDlgProc, reinterpret_cast<long>(this));
 }
 
-void CColourPicker::SetRGB(unsigned short r, unsigned short g, unsigned short b)
+void CColourPicker::SetRGB(uint8_t r, uint8_t g, uint8_t b)
 {
-	// Clamp colour values to 255
-	CurrCol.r = min(r, 255);
-	CurrCol.g = min(g, 255);
-	CurrCol.b = min(b, 255);
+	CurrCol.r = r;
+	CurrCol.g = g;
+	CurrCol.b = b;
 
 	CurrCol.UpdateHSV();
 }
 
-void CColourPicker::SetHSV(unsigned short h, unsigned short s, unsigned short v)
+void CColourPicker::SetHSV(unsigned short h, uint8_t s, uint8_t v)
 {
 	// Clamp hue values to 359, sat and val to 100
 	CurrCol.h = min(h, 359);
@@ -53,10 +43,9 @@ void CColourPicker::SetHSV(unsigned short h, unsigned short s, unsigned short v)
 	CurrCol.UpdateRGB();
 }
 
-void CColourPicker::SetAlpha(unsigned short a)
+void CColourPicker::SetAlpha(uint8_t a)
 {
-	// Clamp alpha values to 255
-	CurrCol.a = min(a, 255);
+	CurrCol.a = a;
 }
 
 SColour CColourPicker::GetCurrentColour()

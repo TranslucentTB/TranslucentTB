@@ -1,11 +1,18 @@
 #pragma once
+#include <cstdint>
 #include <windef.h>
 
 struct SColour
 {
-	unsigned short r, g, b;		// Red, green and blue
-	unsigned short h, s, v;		// Hue, saturation and value
-	unsigned short a;			// Alpha
+	// Red, green and blue
+	uint8_t r, g, b;
+
+	// Hue, saturation and value
+	unsigned short h;
+	uint8_t s, v;
+
+	// Alpha
+	uint8_t a;
 
 	void UpdateRGB();			// Updates RGB from HSV
 	void UpdateHSV();			// Updates HSV from RGB
@@ -14,19 +21,17 @@ struct SColour
 class CColourPicker
 {
 	public:
-		// Constructor
-		_declspec(dllexport) CColourPicker(HWND hParentWindow);
 		// Use true for IsRGB if passing RGBA or false if passing HSVA 
-		_declspec(dllexport) CColourPicker(HWND hParentWindow, unsigned short r, unsigned short g, unsigned short b, unsigned short a, bool IsRGB);
+		_declspec(dllexport) CColourPicker(unsigned short r = 0, uint8_t g = 0, uint8_t b = 0, uint8_t a = 255, bool IsRGB = true, HWND hParentWindow = NULL);
 
 		// Creates the colour picker dialog
 		_declspec(dllexport) void CreateColourPicker();
 
 		// Functions to set the colour components
 		// NOTE: SetRGB automatically updates HSV and viceversa
-		_declspec(dllexport) void SetRGB(unsigned short r, unsigned short g, unsigned short b);
-		_declspec(dllexport) void SetHSV(unsigned short h, unsigned short s, unsigned short v);
-		_declspec(dllexport) void SetAlpha(unsigned short a);
+		_declspec(dllexport) void SetRGB(uint8_t r, uint8_t g, uint8_t b);
+		_declspec(dllexport) void SetHSV(unsigned short h, uint8_t s, uint8_t v);
+		_declspec(dllexport) void SetAlpha(uint8_t a);
 		
 		// Some easy functions to retrieve the colour components
 		_declspec(dllexport) SColour GetCurrentColour();
