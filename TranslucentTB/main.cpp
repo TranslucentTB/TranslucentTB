@@ -870,6 +870,7 @@ void RefreshMenu(HMENU menu)
 {
 	Autostart::StartupState s_state = Autostart::GetStartupState();
 
+	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, !Log::file().empty(), TrayContextMenu::ControlsEnabled);
 	TrayContextMenu::RefreshBool(IDM_DYNAMICWS_FLUENT, menu, opt.dynamic_ws && run.fluent_available, TrayContextMenu::ControlsEnabled);
 	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, !(s_state == Autostart::StartupState::DisabledByUser
 #ifdef STORE
@@ -1048,12 +1049,13 @@ void InitializeTray(const HINSTANCE &hInstance)
 		tray.BindBool(button_pair.second, opt.dynamic_ws, TrayContextMenu::ControlsEnabled);
 	}
 
-	tray.BindBool(IDM_DYNAMICWS_PEEK, opt.dynamic_ws,                TrayContextMenu::ControlsEnabled);
-	tray.BindBool(IDM_DYNAMICWS,      opt.dynamic_ws,                TrayContextMenu::Toggle);
-	tray.BindBool(IDM_DYNAMICWS_PEEK, opt.dynamic_ws_normal_on_peek, TrayContextMenu::Toggle);
-	tray.BindBool(IDM_DYNAMICSTART,   opt.dynamic_start,             TrayContextMenu::Toggle);
-	tray.BindBool(IDM_VERBOSE,        Config::VERBOSE,               TrayContextMenu::Toggle);
-	tray.BindBool(IDM_FLUENT,         run.fluent_available,          TrayContextMenu::ControlsEnabled);
+	tray.BindBool(IDM_DYNAMICWS_COLOR, opt.dynamic_ws,                TrayContextMenu::ControlsEnabled);
+	tray.BindBool(IDM_DYNAMICWS_PEEK,  opt.dynamic_ws,                TrayContextMenu::ControlsEnabled);
+	tray.BindBool(IDM_DYNAMICWS,       opt.dynamic_ws,                TrayContextMenu::Toggle);
+	tray.BindBool(IDM_DYNAMICWS_PEEK,  opt.dynamic_ws_normal_on_peek, TrayContextMenu::Toggle);
+	tray.BindBool(IDM_DYNAMICSTART,    opt.dynamic_start,             TrayContextMenu::Toggle);
+	tray.BindBool(IDM_VERBOSE,         Config::VERBOSE,               TrayContextMenu::Toggle);
+	tray.BindBool(IDM_FLUENT,          run.fluent_available,          TrayContextMenu::ControlsEnabled);
 
 	tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, std::bind(&Util::InvertBool, std::ref(run.is_running), std::placeholders::_1));
 	tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, std::bind(&Util::UpdateValue<Tray::EXITREASON>, std::ref(run.exit_reason), Tray::UserActionNoSave, std::placeholders::_1));
@@ -1062,7 +1064,6 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 	tray.RegisterContextMenuCallback(IDM_COLOR,           std::bind(&Util::UpdateColor, std::ref(opt.color),            std::placeholders::_1));
 	tray.RegisterContextMenuCallback(IDM_DYNAMICWS_COLOR, std::bind(&Util::UpdateColor, std::ref(opt.dynamic_ws_color), std::placeholders::_1));
-	tray.BindBool(IDM_DYNAMICWS_COLOR, opt.dynamic_ws, TrayContextMenu::ControlsEnabled);
 
 	tray.RegisterCustomRefresh(RefreshMenu);
 

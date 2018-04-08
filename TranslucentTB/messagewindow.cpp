@@ -3,6 +3,8 @@
 #include <limits.h>
 #include <random>
 
+#include "ttberror.hpp"
+
 long MessageWindow::m_StaticCallback(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
 {
 	MessageWindow *pThis;
@@ -11,11 +13,22 @@ long MessageWindow::m_StaticCallback(HWND hWnd, unsigned int uMsg, WPARAM wParam
 	{
 		CREATESTRUCT lpcs = *reinterpret_cast<CREATESTRUCT *>(lParam);
 		pThis = static_cast<MessageWindow *>(lpcs.lpCreateParams);
-		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<long>(pThis));
+
+		SetLastError(0);
+		if (!SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<long>(pThis)) && GetLastError() != 0)
+		{
+			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to set window pointer!");
+		}
 	}
 	else
 	{
+		SetLastError(0);
 		pThis = reinterpret_cast<MessageWindow *>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+		if (!pThis && GetLastError() != 0)
+		{
+			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to get window pointer!");
+		}
 	}
 
 	if (pThis)
@@ -40,6 +53,11 @@ MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &
 	m_WindowClass(m_StaticCallback, className, iconResource, 0, hInstance)
 {
 	m_WindowHandle = Window::Create(0, className, windowName, 0, 0, 0, 0, 0, nullptr, 0, hInstance, this);
+
+	if (!m_WindowHandle)
+	{
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to create message window!");
+	}
 }
 
 MessageWindow::CALLBACKCOOKIE MessageWindow::RegisterCallback(unsigned int message, const m_CallbackFunction &callback)
@@ -80,5 +98,8 @@ bool MessageWindow::UnregisterCallback(CALLBACKCOOKIE cookie)
 
 MessageWindow::~MessageWindow()
 {
-	DestroyWindow(m_WindowHandle);
+	if (!DestroyWindow(m_WindowHandle))
+	{
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to destroy message window!");
+	}
 }

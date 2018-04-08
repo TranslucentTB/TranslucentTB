@@ -1,5 +1,9 @@
 #include "windowclass.hpp"
 #include <CommCtrl.h>
+#include <WinBase.h>
+#include <winerror.h>
+
+#include "ttberror.hpp"
 
 WindowClass::WindowClass(const std::function<long(HWND, unsigned int, WPARAM, LPARAM)> &callback, const std::wstring &className, const wchar_t *iconResource, const unsigned int &style, const HINSTANCE &hInstance, const HBRUSH &brush, const HCURSOR &cursor) :
 	m_ClassName(className),
@@ -18,13 +22,19 @@ WindowClass::WindowClass(const std::function<long(HWND, unsigned int, WPARAM, LP
 		nullptr
 	}
 {
-	LoadIconMetric(hInstance, iconResource, LIM_LARGE, &m_ClassStruct.hIcon);
-	LoadIconMetric(hInstance, iconResource, LIM_SMALL, &m_ClassStruct.hIconSm);
+	ErrorHandle(LoadIconMetric(hInstance, iconResource, LIM_LARGE, &m_ClassStruct.hIcon), Error::Level::Log, L"Failed to load large window class icon.");
+	ErrorHandle(LoadIconMetric(hInstance, iconResource, LIM_SMALL, &m_ClassStruct.hIconSm), Error::Level::Log, L"Failed to load small window class icon.");
 
-	RegisterClassEx(&m_ClassStruct);
+	if (!RegisterClassEx(&m_ClassStruct))
+	{
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to register window class!");
+	}
 }
 
 WindowClass::~WindowClass()
 {
-	UnregisterClass(m_ClassStruct.lpszClassName, m_ClassStruct.hInstance);
+	if (!UnregisterClass(m_ClassStruct.lpszClassName, m_ClassStruct.hInstance))
+	{
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to unregister window class.");
+	}
 }

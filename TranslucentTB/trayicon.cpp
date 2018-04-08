@@ -4,11 +4,19 @@
 
 #include "app.hpp"
 #include "tray.hpp"
+#include "ttberror.hpp"
+#include "ttblog.hpp"
 
 long TrayIcon::RegisterIcon(Window, WPARAM, LPARAM)
 {
-	Shell_NotifyIcon(NIM_ADD, &m_IconData);
-	Shell_NotifyIcon(NIM_SETVERSION, &m_IconData);
+	if (!Shell_NotifyIcon(NIM_ADD, &m_IconData))
+	{
+		Log::OutputMessage(L"Failed to notify shell of icon addition.");
+	}
+	if (!Shell_NotifyIcon(NIM_SETVERSION, &m_IconData))
+	{
+		Log::OutputMessage(L"Failed to notify shell of icon version.");
+	}
 
 	return 0;
 }
@@ -30,7 +38,7 @@ TrayIcon::TrayIcon(MessageWindow &window, wchar_t *iconResource, const unsigned 
 	}
 #pragma clang diagnostic pop
 {
-	LoadIconMetric(hInstance, iconResource, LIM_SMALL, &m_IconData.hIcon);
+	ErrorHandle(LoadIconMetric(hInstance, iconResource, LIM_SMALL, &m_IconData.hIcon), Error::Level::Log, L"Failed to load tray icon.");
 	wcscpy_s(m_IconData.szTip, App::NAME.c_str());
 
 	std::random_device seed;
@@ -45,6 +53,9 @@ TrayIcon::TrayIcon(MessageWindow &window, wchar_t *iconResource, const unsigned 
 
 TrayIcon::~TrayIcon()
 {
-	Shell_NotifyIcon(NIM_DELETE, &m_IconData);
+	if (!Shell_NotifyIcon(NIM_DELETE, &m_IconData))
+	{
+		Log::OutputMessage(L"Failed to notify shell of icon deletion.");
+	}
 	m_Window.UnregisterCallback(m_Cookie);
 }
