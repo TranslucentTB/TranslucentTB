@@ -34,6 +34,30 @@ public:
 		}
 	}
 
+	// For std::bind magic
+	template<typename T>
+	inline static void UpdateValue(T &toupdate, T newvalue, unsigned int)
+	{
+		toupdate = newvalue;
+	}
+
+	inline static void InvertBool(bool &value, unsigned int)
+	{
+		value = !value;
+	}
+
+	inline static void UpdateColor(uint32_t &color, unsigned int)
+	{
+		static bool picker_open = false;
+		if (picker_open)
+		{
+			return;
+		}
+		picker_open = true;
+		color = Util::PickColor(color);
+		picker_open = false;
+	}
+
 	static void EditFile(std::wstring file);
 	static uint32_t PickColor(const uint32_t &color);
 	static void AddValuesToVectorByDelimiter(const std::wstring &delimiter, std::vector<std::wstring> &vector, std::wstring line);

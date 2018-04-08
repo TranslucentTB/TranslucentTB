@@ -2,15 +2,19 @@
 #include "messagewindow.hpp"
 #include <windef.h>
 
-class TrayIcon : public MessageWindow {
+class TrayIcon {
+
+protected:
+	MessageWindow &m_Window;
+	MessageWindow::CALLBACKCOOKIE RegisterTrayCallback(const std::function<long(Window, WPARAM, LPARAM)> &callback);
 
 private:
 	NOTIFYICONDATA m_IconData;
 	long RegisterIcon(Window = nullptr, WPARAM = NULL, LPARAM = NULL);
+	MessageWindow::CALLBACKCOOKIE m_Cookie;
 
 public:
-	TrayIcon(const std::wstring &classname, wchar_t *iconResource, const unsigned int additionalFlags = 0, const HINSTANCE &hInstance = GetModuleHandle(NULL));
-	CALLBACKCOOKIE RegisterTrayCallback(const m_CallbackFunction &callback);
+	TrayIcon(MessageWindow &window, wchar_t *iconResource, const unsigned int additionalFlags = 0, const HINSTANCE &hInstance = GetModuleHandle(NULL));
 	~TrayIcon();
 
 	inline TrayIcon(const TrayIcon &) = delete;

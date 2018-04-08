@@ -13,13 +13,18 @@ long TrayIcon::RegisterIcon(Window, WPARAM, LPARAM)
 	return 0;
 }
 
-TrayIcon::TrayIcon(const std::wstring &classname, wchar_t *iconResource, const unsigned int additionalFlags, const HINSTANCE &hInstance) :
-	MessageWindow(classname, App::NAME, hInstance),
+MessageWindow::CALLBACKCOOKIE TrayIcon::RegisterTrayCallback(const std::function<long(Window, WPARAM, LPARAM)> &callback)
+{
+	return m_Window.RegisterCallback(m_IconData.uCallbackMessage, callback);
+}
+
+TrayIcon::TrayIcon(MessageWindow &window, wchar_t *iconResource, const unsigned int additionalFlags, const HINSTANCE &hInstance) :
+	m_Window(window),
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
 	m_IconData {
 		sizeof(m_IconData),
-		m_WindowHandle,
+		m_Window,
 		101, // TODO: change this (randomly generated GUID?)
 		NIF_ICON | NIF_TIP | NIF_MESSAGE | additionalFlags
 	}
@@ -35,15 +40,11 @@ TrayIcon::TrayIcon(const std::wstring &classname, wchar_t *iconResource, const u
 
 	RegisterIcon();
 
-	RegisterCallback(Tray::WM_TASKBARCREATED, std::bind(&TrayIcon::RegisterIcon, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-}
-
-TrayIcon::CALLBACKCOOKIE TrayIcon::RegisterTrayCallback(const m_CallbackFunction &callback)
-{
-	return RegisterCallback(m_IconData.uCallbackMessage, callback);
+	m_Cookie = m_Window.RegisterCallback(Tray::WM_TASKBARCREATED, std::bind(&TrayIcon::RegisterIcon, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 }
 
 TrayIcon::~TrayIcon()
 {
 	Shell_NotifyIcon(NIM_DELETE, &m_IconData);
+	m_Window.UnregisterCallback(m_Cookie);
 }

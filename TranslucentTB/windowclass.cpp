@@ -24,11 +24,6 @@ WindowClass::WindowClass(const std::function<long(HWND, unsigned int, WPARAM, LP
 	RegisterClassEx(&m_ClassStruct);
 }
 
-std::wstring WindowClass::name()
-{
-	return m_ClassName;
-}
-
 WindowClass::~WindowClass()
 {
 	UnregisterClass(m_ClassStruct.lpszClassName, m_ClassStruct.hInstance);

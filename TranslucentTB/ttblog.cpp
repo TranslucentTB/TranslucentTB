@@ -28,21 +28,21 @@
 std::unique_ptr<std::wostream> Log::m_LogStream;
 std::wstring Log::m_File;
 
-inline std::tuple<HRESULT, std::wstring> Log::InitStream()
+inline std::pair<HRESULT, std::wstring> Log::InitStream()
 {
 	HRESULT hr;
 #ifndef STORE
 	std::vector<wchar_t> temp(LONG_PATH);
 	if (!GetTempPath(LONG_PATH, temp.data()))
 	{
-		return std::make_tuple(HRESULT_FROM_WIN32(GetLastError()), L"Failed to determine temporary folder location!");
+		return std::make_pair(HRESULT_FROM_WIN32(GetLastError()), L"Failed to determine temporary folder location!");
 	}
 
 	AutoFree::SilentLocal<wchar_t> log_folder;
 	hr = PathAllocCombine(temp.data(), App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_folder);
 	if (FAILED(hr))
 	{
-		return std::make_tuple(hr, L"Failed to combine temporary folder location and app name!");
+		return std::make_pair(hr, L"Failed to combine temporary folder location and app name!");
 	}
 #else
 	try
@@ -55,7 +55,7 @@ inline std::tuple<HRESULT, std::wstring> Log::InitStream()
 	{
 		if (!CreateDirectory(log_folder, NULL))
 		{
-			return std::make_tuple(HRESULT_FROM_WIN32(GetLastError()), L"Creating log files directory failed!");
+			return std::make_pair(HRESULT_FROM_WIN32(GetLastError()), L"Creating log files directory failed!");
 		}
 	}
 
@@ -95,19 +95,19 @@ inline std::tuple<HRESULT, std::wstring> Log::InitStream()
 	hr = PathAllocCombine(log_folder, log_filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_file);
 	if (FAILED(hr))
 	{
-		return std::make_tuple(hr, L"Failed to combine log folder location and log file name!");
+		return std::make_pair(hr, L"Failed to combine log folder location and log file name!");
 	}
 
 	m_File = log_file;
 
 	m_LogStream.reset(new std::wofstream(log_file));
-	return std::make_tuple(S_OK, L"");
+	return std::make_pair(S_OK, L"");
 
 #ifdef STORE
 	}
 	catch (const winrt::hresult_error &error)
 	{
-		return std::make_tuple(error.code(), L"Failed to determine temporary folder location!");
+		return std::make_pair(error.code(), L"Failed to determine temporary folder location!");
 	}
 #endif
 }
@@ -122,15 +122,14 @@ void Log::OutputMessage(const std::wstring &message)
 	if (m_LogStream.get() == nullptr)
 	{
 		auto result = InitStream();
-		HRESULT hr = std::get<0>(result);
-		if (FAILED(hr))
+		if (FAILED(result.first))
 		{
 			m_LogStream.reset(new std::wostringstream());
 
-			std::wstring error_message = std::get<1>(result);
+			std::wstring error_message = result.second;
 			std::wstring boxbuffer = error_message +
 				L" Logs will not be available during this session.\n\nException from HRESULT: "
-				+ _com_error(hr).ErrorMessage();
+				+ _com_error(result.first).ErrorMessage();
 
 			MessageBox(NULL, boxbuffer.c_str(), (App::NAME + L" - Error").c_str(), MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 		}

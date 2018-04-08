@@ -33,7 +33,7 @@
 #include "swcadata.hpp"
 #include "taskbar.hpp"
 #include "tray.hpp"
-#include "trayicon.hpp"
+#include "traycontextmenu.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 #include "util.hpp"
@@ -70,7 +70,6 @@ static struct RUNTIMESTATE
 	std::unordered_map<HMONITOR, Taskbar::TASKBARPROPERTIES> taskbars;
 	bool should_show_peek;
 	bool is_running = true;
-	HMENU tray_popup;
 	bool fluent_available = false;
 	std::wstring config_folder;
 	std::wstring config_file;
@@ -541,7 +540,7 @@ void ParseConfigFile()
 		}
 		else
 		{
-			Log::OutputMessage(L"Invalid line in configuration file");
+			Log::OutputMessage(L"Invalid line in configuration file: " + line);
 		}
 	}
 }
@@ -854,22 +853,7 @@ bool IsWindowBlacklisted(const Window &window)
 
 #pragma region Tray
 
-DWORD CheckPopupItem(const uint32_t &item_to_check, const bool &state)
-{
-	return CheckMenuItem(run.tray_popup, item_to_check, MF_BYCOMMAND | (state ? MF_CHECKED : MF_UNCHECKED) | MF_ENABLED);
-}
-
-bool EnablePopupItem(const uint32_t &item_to_enable, const bool &state)
-{
-	return EnableMenuItem(run.tray_popup, item_to_enable, MF_BYCOMMAND | (state ? MF_ENABLED : MF_GRAYED));
-}
-
-bool CheckPopupRadioItem(const uint32_t &from, const uint32_t &to, const uint32_t &item_to_check)
-{
-	return CheckMenuRadioItem(run.tray_popup, from, to, item_to_check, MF_BYCOMMAND);
-}
-
-void ChangePopupItemText(const uint32_t &item, const std::wstring &new_text)
+inline void ChangePopupItemText(HMENU menu, const uint32_t &item, const std::wstring &new_text)
 {
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wmissing-field-initializers"
@@ -879,33 +863,19 @@ void ChangePopupItemText(const uint32_t &item, const std::wstring &new_text)
 	std::vector<wchar_t> buf(new_text.begin(), new_text.end());
 	buf.push_back(0); // Null terminator
 	item_info.dwTypeData = buf.data();
-	SetMenuItemInfo(run.tray_popup, item, false, &item_info);
+	SetMenuItemInfo(menu, item, false, &item_info);
 }
 
-void RefreshMenu()
+void RefreshMenu(HMENU menu)
 {
 	Autostart::StartupState s_state = Autostart::GetStartupState();
 
-	// This block of CheckPopupRadioItem might throw, but if that happens we just need to update the map, or something really fucked up happened
-	CheckPopupRadioItem(IDM_BLUR, IDM_FLUENT, Tray::NORMAL_BUTTON_MAP.at(opt.taskbar_appearance));
-	CheckPopupRadioItem(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, Tray::DYNAMIC_BUTTON_MAP.at(opt.dynamic_ws_taskbar_appearance));
-	CheckPopupRadioItem(IDM_PEEK, IDM_NOPEEK, Tray::PEEK_BUTTON_MAP.at(opt.peek));
-
-	for (const std::pair<const swca::ACCENT, uint32_t> &kvp : Tray::DYNAMIC_BUTTON_MAP)
-	{
-		EnablePopupItem(kvp.second, opt.dynamic_ws);
-	}
-	EnablePopupItem(IDM_DYNAMICWS_PEEK, opt.dynamic_ws);
-	EnablePopupItem(IDM_DYNAMICWS_COLOR, opt.dynamic_ws);
-	EnablePopupItem(IDM_FLUENT, run.fluent_available);
-	EnablePopupItem(IDM_DYNAMICWS_FLUENT, opt.dynamic_ws && run.fluent_available);
-	EnablePopupItem(IDM_OPENLOG, !Log::file().empty());
-	EnablePopupItem(IDM_AUTOSTART, !(s_state == Autostart::StartupState::DisabledByUser
+	TrayContextMenu::RefreshBool(IDM_DYNAMICWS_FLUENT, menu, opt.dynamic_ws && run.fluent_available, TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, !(s_state == Autostart::StartupState::DisabledByUser
 #ifdef STORE
-		|| s_state == Autostart::StartupState::DisabledByPolicy));
-#else
-		));
+		|| s_state == Autostart::StartupState::DisabledByPolicy
 #endif
+		), TrayContextMenu::ControlsEnabled);
 
 	std::wstring autostart_text;
 	switch (s_state)
@@ -922,141 +892,9 @@ void RefreshMenu()
 	case Autostart::StartupState::Disabled:
 		autostart_text = L"Open at boot";
 	}
-	ChangePopupItemText(IDM_AUTOSTART, autostart_text);
+	ChangePopupItemText(menu, IDM_AUTOSTART, autostart_text);
 
-	CheckPopupItem(IDM_DYNAMICWS_PEEK, opt.dynamic_ws_normal_on_peek);
-	CheckPopupItem(IDM_DYNAMICWS, opt.dynamic_ws);
-	CheckPopupItem(IDM_DYNAMICSTART, opt.dynamic_start);
-	CheckPopupItem(IDM_AUTOSTART, s_state == Autostart::StartupState::Enabled);
-	CheckPopupItem(IDM_VERBOSE, Config::VERBOSE);
-}
-
-long GetUserInputFromTray(const Window &window, WPARAM, const LPARAM &lParam)
-{
-	if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
-	{
-		static bool picker_open = false;
-		RefreshMenu();
-		POINT pt;
-		GetCursorPos(&pt);
-		SetForegroundWindow(window);
-		uint32_t tray = TrackPopupMenu(GetSubMenu(run.tray_popup, 0), TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, window, NULL);
-		switch (tray)
-		{
-		case IDM_COLOR:
-			if (picker_open)
-			{
-				break;
-			}
-			picker_open = true;
-			opt.color = Util::PickColor(opt.color);
-			picker_open = false;
-			break;
-		case IDM_NORMAL:
-			opt.taskbar_appearance = swca::ACCENT_NORMAL;
-			break;
-		case IDM_CLEAR:
-			opt.taskbar_appearance = swca::ACCENT_ENABLE_TRANSPARENTGRADIENT;
-			break;
-		case IDM_OPAQUE:
-			opt.taskbar_appearance = swca::ACCENT_ENABLE_GRADIENT;
-			break;
-		case IDM_BLUR:
-			opt.taskbar_appearance = swca::ACCENT_ENABLE_BLURBEHIND;
-			break;
-		case IDM_FLUENT:
-			opt.taskbar_appearance = swca::ACCENT_ENABLE_FLUENT;
-			break;
-		case IDM_DYNAMICWS:
-			opt.dynamic_ws = !opt.dynamic_ws;
-			break;
-		case IDM_DYNAMICWS_PEEK:
-			opt.dynamic_ws_normal_on_peek = !opt.dynamic_ws_normal_on_peek;
-			break;
-		case IDM_DYNAMICWS_COLOR:
-			if (picker_open)
-			{
-				break;
-			}
-			picker_open = true;
-			opt.dynamic_ws_color = Util::PickColor(opt.dynamic_ws_color);
-			picker_open = false;
-			break;
-		case IDM_DYNAMICWS_NORMAL:
-			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_NORMAL;
-			break;
-		case IDM_DYNAMICWS_CLEAR:
-			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_TRANSPARENTGRADIENT;
-			break;
-		case IDM_DYNAMICWS_OPAQUE:
-			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_GRADIENT;
-			break;
-		case IDM_DYNAMICWS_BLUR:
-			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_BLURBEHIND;
-			break;
-		case IDM_DYNAMICWS_FLUENT:
-			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_FLUENT;
-			break;
-		case IDM_DYNAMICSTART:
-			opt.dynamic_start = !opt.dynamic_start;
-			break;
-		case IDM_PEEK:
-			opt.peek = Taskbar::AEROPEEK::Enabled;
-			break;
-		case IDM_DPEEK:
-			opt.peek = Taskbar::AEROPEEK::Dynamic;
-			break;
-		case IDM_NOPEEK:
-			opt.peek = Taskbar::AEROPEEK::Disabled;
-			break;
-		case IDM_OPENLOG:
-			Util::EditFile(Log::file());
-			break;
-		case IDM_VERBOSE:
-			Config::VERBOSE = !Config::VERBOSE;
-			break;
-		case IDM_CLEARBLACKLISTCACHE:
-			ClearBlacklistCache();
-			break;
-		case IDM_RELOADSETTINGS:
-			ParseConfigFile();
-			break;
-		case IDM_EDITSETTINGS:
-			SaveConfigFile();
-			Util::EditFile(run.config_file);
-			ParseConfigFile();
-			break;
-		case IDM_RETURNTODEFAULTSETTINGS:
-			ApplyStock(Config::CONFIG_FILE);
-			ParseConfigFile();
-			break;
-		case IDM_RELOADDYNAMICBLACKLIST:
-			ParseBlacklistFile();
-			ClearBlacklistCache();
-			break;
-		case IDM_EDITDYNAMICBLACKLIST:
-			Util::EditFile(run.exclude_file);
-			ParseBlacklistFile();
-			ClearBlacklistCache();
-			break;
-		case IDM_RETURNTODEFAULTBLACKLIST:
-			ApplyStock(Config::EXCLUDE_FILE);
-			ParseBlacklistFile();
-			ClearBlacklistCache();
-			break;
-		case IDM_AUTOSTART:
-			Autostart::SetStartupState(Autostart::GetStartupState() == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
-			break;
-		case IDM_EXITWITHOUTSAVING:
-			run.exit_reason = Tray::UserActionNoSave;
-			run.is_running = false;
-			break;
-		case IDM_EXIT:
-			run.is_running = false;
-			break;
-		}
-	}
-	return 0;
+	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, s_state == Autostart::StartupState::Enabled, TrayContextMenu::Toggle);
 }
 
 #pragma endregion
@@ -1169,40 +1007,108 @@ void InitializeWindowsRuntime()
 
 void InitializeTray(const HINSTANCE &hInstance)
 {
-	run.tray_popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU)); // Load our popup menu
+	static MessageWindow window(L"TrayWindow", App::NAME, hInstance);
+	static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYICON), MAKEINTRESOURCE(IDR_POPUP_MENU), hInstance);
 
-	static TrayIcon tray(L"TrayWindow", MAKEINTRESOURCE(TRAYICON), 0, hInstance);
-
-	tray.RegisterCallback(Tray::NEW_TTB_INSTANCE, [](Window, WPARAM, LPARAM) {
+	window.RegisterCallback(Tray::NEW_TTB_INSTANCE, [](Window, WPARAM, LPARAM) {
 		run.exit_reason = Tray::NewInstance;
 		run.is_running = false;
 		return 0;
 	});
 
-	tray.RegisterCallback(WM_DISPLAYCHANGE, [](Window, WPARAM, LPARAM) {
+	window.RegisterCallback(WM_DISPLAYCHANGE, [](Window, WPARAM, LPARAM) {
 		RefreshHandles();
 		return 0;
 	});
 
-	tray.RegisterCallback(Tray::WM_TASKBARCREATED, [](Window, WPARAM, LPARAM) {
+	window.RegisterCallback(Tray::WM_TASKBARCREATED, [](Window, WPARAM, LPARAM) {
 		RefreshHandles();
 		return 0;
 	});
 
-	tray.RegisterTrayCallback(GetUserInputFromTray);
-
-	tray.RegisterCallback(WM_CLOSE, [](Window, WPARAM, LPARAM) {
+	window.RegisterCallback(WM_CLOSE, [](Window, WPARAM, LPARAM) {
 		run.is_running = false;
 		return 0;
 	});
 
 #ifdef STORE
-	trayWindow.RegisterCallback(WM_QUERYENDSESSION, [](Window, WPARAM, LPARAM) {
+	window.RegisterCallback(WM_QUERYENDSESSION, [](Window, WPARAM, LPARAM) {
 		// https://docs.microsoft.com/en-us/windows/uwp/porting/desktop-to-uwp-extensions#updates
 		RegisterApplicationRestart(NULL, NULL);
 		return TRUE;
 	});
 #endif
+
+	tray.BindEnum(IDM_BLUR, IDM_FLUENT, opt.taskbar_appearance, Tray::NORMAL_BUTTON_MAP);
+	tray.BindEnum(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, opt.dynamic_ws_taskbar_appearance, Tray::DYNAMIC_BUTTON_MAP);
+	tray.BindEnum(IDM_PEEK, IDM_NOPEEK, opt.peek, Tray::PEEK_BUTTON_MAP);
+
+	for (const auto &button_pair : Tray::DYNAMIC_BUTTON_MAP)
+	{
+		tray.BindBool(button_pair.second, opt.dynamic_ws, TrayContextMenu::ControlsEnabled);
+	}
+
+	tray.BindBool(IDM_DYNAMICWS_PEEK, opt.dynamic_ws,                TrayContextMenu::ControlsEnabled);
+	tray.BindBool(IDM_DYNAMICWS,      opt.dynamic_ws,                TrayContextMenu::Toggle);
+	tray.BindBool(IDM_DYNAMICWS_PEEK, opt.dynamic_ws_normal_on_peek, TrayContextMenu::Toggle);
+	tray.BindBool(IDM_DYNAMICSTART,   opt.dynamic_start,             TrayContextMenu::Toggle);
+	tray.BindBool(IDM_VERBOSE,        Config::VERBOSE,               TrayContextMenu::Toggle);
+	tray.BindBool(IDM_FLUENT,         run.fluent_available,          TrayContextMenu::ControlsEnabled);
+
+	tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, std::bind(&Util::InvertBool, std::ref(run.is_running), std::placeholders::_1));
+	tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, std::bind(&Util::UpdateValue<Tray::EXITREASON>, std::ref(run.exit_reason), Tray::UserActionNoSave, std::placeholders::_1));
+
+	tray.RegisterContextMenuCallback(IDM_EXIT, std::bind(&Util::InvertBool, std::ref(run.is_running), std::placeholders::_1));
+
+	tray.RegisterContextMenuCallback(IDM_COLOR,           std::bind(&Util::UpdateColor, std::ref(opt.color),            std::placeholders::_1));
+	tray.RegisterContextMenuCallback(IDM_DYNAMICWS_COLOR, std::bind(&Util::UpdateColor, std::ref(opt.dynamic_ws_color), std::placeholders::_1));
+	tray.BindBool(IDM_DYNAMICWS_COLOR, opt.dynamic_ws, TrayContextMenu::ControlsEnabled);
+
+	tray.RegisterCustomRefresh(RefreshMenu);
+
+	tray.RegisterContextMenuCallback(IDM_OPENLOG, [](unsigned int) {
+		Util::EditFile(Log::file());
+	});
+
+	tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, [](unsigned int) {
+		ClearBlacklistCache();
+	});
+
+	tray.RegisterContextMenuCallback(IDM_RELOADSETTINGS, [](unsigned int) {
+		ParseConfigFile();
+	});
+
+	tray.RegisterContextMenuCallback(IDM_EDITSETTINGS, [](unsigned int) {
+		SaveConfigFile();
+		Util::EditFile(run.config_file);
+		ParseConfigFile();
+	});
+
+	tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTSETTINGS, [](unsigned int) {
+		ApplyStock(Config::CONFIG_FILE);
+		ParseConfigFile();
+	});
+
+	tray.RegisterContextMenuCallback(IDM_RELOADDYNAMICBLACKLIST, [](unsigned int) {
+		ParseBlacklistFile();
+		ClearBlacklistCache();
+	});
+
+	tray.RegisterContextMenuCallback(IDM_EDITDYNAMICBLACKLIST, [](unsigned int) {
+		Util::EditFile(run.exclude_file);
+		ParseBlacklistFile();
+		ClearBlacklistCache();
+	});
+
+	tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTBLACKLIST, [](unsigned int) {
+		ApplyStock(Config::EXCLUDE_FILE);
+		ParseBlacklistFile();
+		ClearBlacklistCache();
+	});
+
+	tray.RegisterContextMenuCallback(IDM_AUTOSTART, [](unsigned int) {
+		Autostart::SetStartupState(Autostart::GetStartupState() == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
+	});
 }
 
 void Terminate()

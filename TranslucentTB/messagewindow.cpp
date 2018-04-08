@@ -1,5 +1,6 @@
 #include "messagewindow.hpp"
 #include <algorithm>
+#include <limits.h>
 #include <random>
 
 long MessageWindow::m_StaticCallback(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
@@ -50,7 +51,7 @@ MessageWindow::CALLBACKCOOKIE MessageWindow::RegisterCallback(unsigned int messa
 	unsigned short secret = ushort_values(rng);
 	m_CallbackMap[message].push_back(std::make_pair(secret, callback));
 
-	return (static_cast<CALLBACKCOOKIE>(secret) << 32) + message;
+	return (static_cast<CALLBACKCOOKIE>(secret) << 32) & message;
 }
 
 MessageWindow::CALLBACKCOOKIE MessageWindow::RegisterCallback(const std::wstring &message, const m_CallbackFunction &callback)
