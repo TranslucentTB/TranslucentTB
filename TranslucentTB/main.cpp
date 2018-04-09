@@ -1174,16 +1174,15 @@ int WINAPI WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 	{
 		if (run.exit_reason != Tray::UserActionNoSave)
 		{
-			// Save configuration before we change opt
 			SaveConfigFile();
 		}
 
 		// Restore default taskbar appearance
-		opt.taskbar_appearance = swca::ACCENT_NORMAL;
-		opt.peek = Taskbar::AEROPEEK::Enabled;
-		opt.dynamic_start = false;
-		opt.dynamic_ws = false;
-		SetTaskbarBlur();
+		TogglePeek(true);
+		for (const std::pair<const HMONITOR, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
+		{
+			SetWindowBlur(taskbar.second.hwnd, swca::ACCENT_NORMAL, NULL);
+		}
 	}
 
 	std::terminate();
