@@ -1,8 +1,5 @@
 #pragma once
 #include "arch.h"
-#include <codecvt>
-#include <locale>
-#include <string>
 #include <tchar.h>
 #include <windef.h>
 
@@ -15,7 +12,7 @@ public:
 		Log		// Log to debug output
 	};
 
-	static bool Handle(const HRESULT &error, const Level &level, const std::wstring &message, const std::wstring &file, int line, const std::wstring &function);
+	static bool Handle(const HRESULT &error, const Level &level, const wchar_t *const message, const wchar_t *const file, const int &line, const char *const function);
 };
 
-#define ErrorHandle(x, y, z) (Error::Handle((x), (y), (z), _T(__FILE__), __LINE__, std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().from_bytes(__FUNCSIG__)))
+#define ErrorHandle(x, y, z) (Error::Handle((x), (y), (z), _T(__FILE__), __LINE__, __FUNCSIG__))
