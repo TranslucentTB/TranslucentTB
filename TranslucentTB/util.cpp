@@ -6,12 +6,14 @@
 #include <ShlObj.h>
 #include <ShObjIdl.h>
 #include <synchapi.h>
+#include <thread>
 #include <WinBase.h>
 #include <winerror.h>
 #include <wrl/wrappers/corewrappers.h>
 
 #include "autofree.hpp"
 #include "../CPicker/CPickerDll.h"
+#include "window.hpp"
 #include "ttberror.hpp"
 
 void Util::EditFile(std::wstring file)
@@ -62,19 +64,12 @@ void Util::EditFile(std::wstring file)
 	}
 }
 
-uint32_t Util::PickColor(const uint32_t &color)
+void Util::PickColor(uint32_t &color)
 {
-	const uint8_t a = (color & 0xFF000000) >> 24;
-	const uint8_t r = (color & 0x00FF0000) >> 16;
-	const uint8_t g = (color & 0x0000FF00) >> 8;
-	const uint8_t b = (color & 0x000000FF);
-
-	// Bet 5 bucks a british wrote this library
-	CColourPicker picker(r, g, b, a);
-	picker.CreateColourPicker();
-	SColour newColor = picker.GetCurrentColour();
-
-	return (newColor.a << 24) + (newColor.r << 16) + (newColor.g << 8) + newColor.b;
+	std::thread([&]() {
+		CColourPicker picker(&color);
+		picker.CreateColourPicker();
+	}).detach();
 }
 
 void Util::AddValuesToVectorByDelimiter(const std::wstring &delimiter, std::vector<std::wstring> &vector, std::wstring line)

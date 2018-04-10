@@ -29,11 +29,20 @@ struct PixelBuffer
 		int w, h;
 };
 
+struct PickerData
+{
+	CColourPicker *picker;
+	PixelBuffer bufferC1;
+	PixelBuffer bufferC2;
+	PixelBuffer bufferA;
+	bool changing_text;
+};
+
 int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void DrawCheckedRect(HWND hWnd, int r, int g, int b, int a, int cx, int cy);
 void DrawCircle(HDC hcomp, int red, int green, int blue, float x, float y);
 void DrawArrows(HDC hcomp, int width, int height, float y);
-void UpdateValues(HWND hDlg, SColour col);
+void UpdateValues(HWND hDlg, SColour col, bool &changing_text);
 
 const std::unordered_map<unsigned int, std::pair<unsigned int, unsigned int>> SLIDER_MAP = {
 	{ IDC_RED,			{ IDC_RSLIDER, 255 } },

@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <unordered_map>
 #include <windef.h>
 
 struct SColour
@@ -22,7 +23,7 @@ class CColourPicker
 {
 	public:
 		// Use true for IsRGB if passing RGBA or false if passing HSVA 
-		_declspec(dllexport) CColourPicker(unsigned short r = 0, uint8_t g = 0, uint8_t b = 0, uint8_t a = 255, bool IsRGB = true, HWND hParentWindow = NULL);
+		_declspec(dllexport) CColourPicker(uint32_t *value, HWND hParentWindow = NULL);
 
 		// Creates the colour picker dialog
 		_declspec(dllexport) void CreateColourPicker();
@@ -38,7 +39,13 @@ class CColourPicker
 		_declspec(dllexport) SColour GetOldColour();
 
 		_declspec(dllexport) void UpdateOldColour();
+
+		friend int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	private:
+		void UpdateValue();
+
+		static std::unordered_map<uint32_t *, HWND> PickerMap;
+		uint32_t *Value;
 		// The current selected colour and the previous selected one
 		SColour CurrCol, OldCol;
 		HWND hParent;

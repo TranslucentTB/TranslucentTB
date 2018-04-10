@@ -1028,6 +1028,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	});
 
 	window.RegisterCallback(WM_CLOSE, [](Window, WPARAM, LPARAM) {
+		run.exit_reason = Tray::UserAction;
 		run.is_running = false;
 		return 0;
 	});
@@ -1057,13 +1058,22 @@ void InitializeTray(const HINSTANCE &hInstance)
 	tray.BindBool(IDM_VERBOSE,         Config::VERBOSE,               TrayContextMenu::Toggle);
 	tray.BindBool(IDM_FLUENT,          run.fluent_available,          TrayContextMenu::ControlsEnabled);
 
-	tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, std::bind(&Util::InvertBool, std::ref(run.is_running), std::placeholders::_1));
-	tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, std::bind(&Util::UpdateValue<Tray::EXITREASON>, std::ref(run.exit_reason), Tray::UserActionNoSave, std::placeholders::_1));
+	tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, [](unsigned int) {
+		run.exit_reason = Tray::UserActionNoSave;
+		run.is_running = false;
+	});
 
-	tray.RegisterContextMenuCallback(IDM_EXIT, std::bind(&Util::InvertBool, std::ref(run.is_running), std::placeholders::_1));
+	tray.RegisterContextMenuCallback(IDM_EXIT, [](unsigned int) {
+		run.exit_reason = Tray::UserAction;
+		run.is_running = false;
+	});
 
-	tray.RegisterContextMenuCallback(IDM_COLOR,           std::bind(&Util::UpdateColor, std::ref(opt.color),            std::placeholders::_1));
-	tray.RegisterContextMenuCallback(IDM_DYNAMICWS_COLOR, std::bind(&Util::UpdateColor, std::ref(opt.dynamic_ws_color), std::placeholders::_1));
+	tray.RegisterContextMenuCallback(IDM_COLOR,           [](unsigned int) {
+		Util::PickColor(opt.color);
+	});
+	tray.RegisterContextMenuCallback(IDM_DYNAMICWS_COLOR, [](unsigned int) {
+		Util::PickColor(opt.dynamic_ws_color);
+	});
 
 	tray.RegisterCustomRefresh(RefreshMenu);
 
