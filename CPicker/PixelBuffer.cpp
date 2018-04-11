@@ -25,6 +25,7 @@ void PixelBuffer::Display(HDC dc)
 
 PixelBuffer::~PixelBuffer()
 {
+	Destroy();
 	ReleaseDC(NULL, hdc);
 }
 

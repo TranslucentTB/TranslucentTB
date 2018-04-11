@@ -777,9 +777,6 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			case IDB_OK:
 			{
 				picker_data->picker->UpdateOldColour();
-				picker_data->bufferC1.Destroy();
-				picker_data->bufferC2.Destroy();
-				picker_data->bufferA.Destroy();
 				EndDialog(hDlg, IDB_OK);
 				break;
 			}
@@ -790,9 +787,6 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 				picker_data->picker->SetRGB(old.r, old.g, old.b);
 				picker_data->picker->SetAlpha(old.a);
-				picker_data->bufferC1.Destroy();
-				picker_data->bufferC2.Destroy();
-				picker_data->bufferA.Destroy();
 				EndDialog(hDlg, IDB_CANCEL);
 				break;
 			}

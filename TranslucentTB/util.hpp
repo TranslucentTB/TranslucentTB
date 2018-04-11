@@ -48,6 +48,6 @@ public:
 
 	static void EditFile(std::wstring file);
 	static void PickColor(uint32_t &color);
-	static void AddValuesToVectorByDelimiter(const std::wstring &delimiter, std::vector<std::wstring> &vector, std::wstring line);
+	static void AddValuesToVectorByDelimiter(const wchar_t &delimiter, std::vector<std::wstring> &vector, std::wstring line);
 	static bool IsStartVisible();
 };

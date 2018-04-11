@@ -658,24 +658,24 @@ void SaveConfigFile()
 
 void ParseBlacklistFile()
 {
-	std::wstring filename(run.exclude_file);
-	for (std::vector<std::wstring> vector : { opt.blacklisted_classes, opt.blacklisted_filenames, opt.blacklisted_titles })
-	{
-		vector.clear(); // Clear our vectors
-	}
+	// Clear our vectors
+	opt.blacklisted_classes.clear();
+	opt.blacklisted_filenames.clear();
+	opt.blacklisted_titles.clear();
 
-	std::wifstream excludesfilestream(filename);
+	std::wifstream excludesfilestream(run.exclude_file);
 
-	const std::wstring delimiter = L","; // Change to change the char(s) used to split,
+	const wchar_t delimiter = L','; // Change to change the char(s) used to split,
+	const wchar_t comment = L';';
 
-	for (std::wstring line; std::getline(excludesfilestream, line); )
+	for (std::wstring line; std::getline(excludesfilestream, line);)
 	{
 		if (line.empty())
 		{
 			continue;
 		}
 
-		size_t comment_index = line.find(L';');
+		size_t comment_index = line.find(comment);
 		if (comment_index == 0)
 		{
 			continue;
@@ -685,12 +685,9 @@ void ParseBlacklistFile()
 			line = line.substr(0, comment_index);
 		}
 
-		if (line.length() > delimiter.length())
+		if (line[line.length() - 1] != delimiter)
 		{
-			if (line.compare(line.length() - delimiter.length(), delimiter.length(), delimiter))
-			{
-				line.append(delimiter);
-			}
+			line += delimiter;
 		}
 
 		std::wstring line_lowercase = line;

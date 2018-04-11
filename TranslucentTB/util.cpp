@@ -66,29 +66,26 @@ void Util::EditFile(std::wstring file)
 
 void Util::PickColor(uint32_t &color)
 {
-	std::thread([&]() {
-		CColourPicker picker(&color);
-		picker.CreateColourPicker();
+	std::thread([&color]() {
+		CColourPicker(&color).CreateColourPicker();
 	}).detach();
 }
 
-void Util::AddValuesToVectorByDelimiter(const std::wstring &delimiter, std::vector<std::wstring> &vector, std::wstring line)
+void Util::AddValuesToVectorByDelimiter(const wchar_t &delimiter, std::vector<std::wstring> &vector, std::wstring line)
 {
 	size_t pos;
-	std::wstring value;
 
 	// First lets remove the key
 	if ((pos = line.find(delimiter)) != std::wstring::npos)
 	{
-		line.erase(0, pos + delimiter.length());
+		line.erase(0, pos + 1);
 	}
 
 	// Now iterate and add the values
 	while ((pos = line.find(delimiter)) != std::wstring::npos)
 	{
-		value = Trim(line.substr(0, pos));
-		vector.push_back(value);
-		line.erase(0, pos + delimiter.length());
+		vector.push_back(Trim(line.substr(0, pos)));
+		line.erase(0, pos + 1);
 	}
 }
 
