@@ -22,8 +22,10 @@ struct PixelBuffer
 		void Destroy();
 		void SetPixel(int x, int y, unsigned int color);
 		void Display(HDC dc);
+		~PixelBuffer();
 
 	private:
+		HDC hdc;
 		HBITMAP hBmpBuffer;
 		void *lpBits;
 		int w, h;

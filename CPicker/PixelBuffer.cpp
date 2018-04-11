@@ -5,8 +5,8 @@
 
 PixelBuffer::PixelBuffer()
 {
-	hBmpBuffer=NULL;
-	lpBits=NULL;
+	hBmpBuffer = NULL;
+	lpBits = NULL;
 }
 
 void PixelBuffer::SetPixel(int x, int y, unsigned int color)
@@ -18,15 +18,20 @@ void PixelBuffer::SetPixel(int x, int y, unsigned int color)
 void PixelBuffer::Display(HDC dc)
 {
 	HDC hdcTemp = CreateCompatibleDC(dc);
-	HGDIOBJ prev = SelectObject(hdcTemp, hBmpBuffer);
+	SelectObject(hdcTemp, hBmpBuffer);
 	BitBlt(dc, 0, 0, w, h, hdcTemp, 0, 0, SRCCOPY);
-	SelectObject(hdcTemp, prev);
+	DeleteDC(hdcTemp);
+}
+
+PixelBuffer::~PixelBuffer()
+{
+	ReleaseDC(NULL, hdc);
 }
 
 void PixelBuffer::Create(int _w, int _h)
 {
-	w=_w;
-	h=_h;
+	w = _w;
+	h = _h;
 	BITMAPV5HEADER bi;
 
 	ZeroMemory(&bi,sizeof(BITMAPV5HEADER));
@@ -43,7 +48,6 @@ void PixelBuffer::Create(int _w, int _h)
 	bi.bV5BlueMask		=  0x00FF0000;
 	bi.bV5AlphaMask		=  0xFF000000;
 	// Create the DIB section with an alpha channel.
-	HDC hdc;
 	hdc = GetDC(NULL);
 	hBmpBuffer = CreateDIBSection(hdc, (BITMAPINFO *)&bi, DIB_RGB_COLORS,
 		(void **)&lpBits, NULL, (DWORD)0);

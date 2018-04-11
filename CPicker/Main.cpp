@@ -851,14 +851,16 @@ void DrawCheckedRect(HWND hWnd, int r, int g, int b, int a, int cx, int cy)
 void DrawCircle(HDC hcomp, int red, int green, int blue, float x, float y)
 {
 	HPEN pen = CreatePen(PS_SOLID, 1, RGB(255 - red, 255 - green, 255 - blue));
-	SelectObject(hcomp, pen);
+	HGDIOBJ prev = SelectObject(hcomp, pen);
 	Arc(hcomp, x - 5, y - 5, x + 5, y + 5, 0, 0, 0, 0);
+	SelectObject(hcomp, prev);
+	DeleteObject(pen);
 }
 
 void DrawArrows(HDC hcomp, int width, int height, float y)
 {
 	HPEN pen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
-	SelectObject(hcomp, pen);
+	HGDIOBJ prev = SelectObject(hcomp, pen);
 	MoveToEx(hcomp, 0, height - (y - 5), NULL);
 	LineTo(hcomp, 0, height - (y + 5));
 	LineTo(hcomp, 5, height - (y));
@@ -867,6 +869,8 @@ void DrawArrows(HDC hcomp, int width, int height, float y)
 	LineTo(hcomp, width - 1, height - (y + 5));
 	LineTo(hcomp, width - 6, height - (y));
 	LineTo(hcomp, width - 1, height - (y - 5));
+	SelectObject(hcomp, prev);
+	DeleteObject(pen);
 }
 
 void UpdateValues(HWND hDlg, SColour col, bool &changing_text)
