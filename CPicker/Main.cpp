@@ -464,6 +464,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		bf = blue / 255.0f;
 		bool flag = false;
 
+		// https://stackoverflow.com/questions/12228548/finding-equivalent-color-with-opacity#12228643
 		for (int y = heightA - 1; y > -1; y--)
 		{
 			COLORREF cb, cw;
@@ -475,8 +476,25 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			float af = 1.0f - (y / heightA);
 
-			cb = RGB((rf*af) * 255, (gf*af) * 255, (bf*af) * 255);
-			cw = RGB((rf*af + 1 - af) * 255, (gf*af + 1 - af) * 255, (bf*af + 1 - af) * 255);
+			uint8_t rs = backgroundColor.lbColor & 0xFF;
+			uint8_t gs = (backgroundColor.lbColor & 0xFF00) >> 8;
+			uint8_t bs = (backgroundColor.lbColor & 0xFF0000) >> 16;
+
+			const uint8_t rw = rs + ((rf * 255) - rs)*af;
+			const uint8_t gw = gs + ((gf * 255) - gs)*af;
+			const uint8_t bw = bs + ((bf * 255) - bs)*af;
+
+			// Make the second color a bit darker
+			rs -= 50;
+			gs -= 50;
+			bs -= 50;
+
+			const uint8_t rb = rs + ((rf * 255) - rs)*af;
+			const uint8_t gb = gs + ((gf * 255) - gs)*af;
+			const uint8_t bb = bs + ((bf * 255) - bs)*af;
+
+			cb = RGB(rb, gb, bb);
+			cw = RGB(rw, gw, bw);
 
 			for (int x = 6; x < (widthA / 2); x++)
 			{
