@@ -162,15 +162,8 @@ void GetPaths()
 
 void ApplyStock(const std::wstring &filename)
 {
-	DWORD exeFolder_size = LONG_PATH;
-	std::vector<wchar_t> exeFolder(exeFolder_size);
-	if (!QueryFullProcessImageName(GetCurrentProcess(), 0, exeFolder.data(), &exeFolder_size))
-	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to determine executable location!");
-		return;
-	}
-	std::wstring exeFolder_str(exeFolder.data());
-	exeFolder_str = exeFolder_str.substr(0, exeFolder_str.find_last_of(L"/\\") + 1);
+	std::wstring exeFolder_str = win32::GetExeLocation();
+	exeFolder_str.erase(exeFolder_str.find_last_of(L"/\\") + 1);
 
 	AutoFree::Local<wchar_t> stockFile;
 	if (!ErrorHandle(PathAllocCombine(exeFolder_str.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &stockFile), Error::Level::Error, L"Failed to combine executable folder and config file!"))
@@ -578,11 +571,11 @@ void SaveConfigFile()
 		configstream << L"; Color and opacity of the taskbar." << endl;
 
 		configstream << L"color=";
-		configstream << right << setw(6) << setfill<wchar_t>('0') << hex << (opt.color & 0x00FFFFFF);
+		configstream << right << setw(6) << setfill(L'0') << hex << (opt.color & 0x00FFFFFF);
 		configstream << L" ; A color in hexadecimal notation." << endl;
 
 		configstream << L"opacity=";
-		configstream << left << setw(3) << setfill<wchar_t>(' ') << to_wstring((opt.color & 0xFF000000) >> 24);
+		configstream << left << setw(3) << setfill(L' ') << to_wstring((opt.color & 0xFF000000) >> 24);
 		configstream << L"  ; A value in the range 0 to 255." << endl;
 
 		configstream << endl;
@@ -1003,6 +996,73 @@ void InitializeWindowsRuntime()
 	ErrorHandle(init, Error::Level::Log, L"Initialization of Windows Runtime failed.");
 }
 
+void HardenProcess()
+{
+	PROCESS_MITIGATION_ASLR_POLICY aslr_policy;
+	if (GetProcessMitigationPolicy(GetCurrentProcess(), ProcessASLRPolicy, &aslr_policy, sizeof(aslr_policy)))
+	{
+		aslr_policy.EnableForceRelocateImages = true;
+		aslr_policy.DisallowStrippedImages = true;
+		if (!SetProcessMitigationPolicy(ProcessASLRPolicy, &aslr_policy, sizeof(aslr_policy)))
+		{
+			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Couldn't disallow stripped images.");
+		}
+	}
+	else
+	{
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Couldn't get current ASLR policy.");
+	}
+
+	PROCESS_MITIGATION_DYNAMIC_CODE_POLICY code_policy {};
+	code_policy.ProhibitDynamicCode = true;
+	code_policy.AllowThreadOptOut = false;
+	code_policy.AllowRemoteDowngrade = false;
+	if (!SetProcessMitigationPolicy(ProcessDynamicCodePolicy, &code_policy, sizeof(code_policy)))
+	{
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Couldn't disable dynamic code generation.");
+	}
+
+	PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY handle_policy {};
+	handle_policy.RaiseExceptionOnInvalidHandleReference = true;
+	handle_policy.HandleExceptionsPermanentlyEnabled = true;
+	if (!SetProcessMitigationPolicy(ProcessStrictHandleCheckPolicy, &handle_policy, sizeof(handle_policy)))
+	{
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Couldn't enable strict handle checks.");
+	}
+
+	PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY extension_policy {};
+	extension_policy.DisableExtensionPoints = true;
+	if (!SetProcessMitigationPolicy(ProcessExtensionPointDisablePolicy, &extension_policy, sizeof(extension_policy)))
+	{
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Couldn't disable extension point DLLs.");
+	}
+
+	PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY signature_policy {};
+	signature_policy.MitigationOptIn = true;
+	if (!SetProcessMitigationPolicy(ProcessSignaturePolicy, &signature_policy, sizeof(signature_policy)))
+	{
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Couldn't enable image signature enforcement.");
+	}
+
+
+	PROCESS_MITIGATION_IMAGE_LOAD_POLICY load_policy {};
+	load_policy.NoLowMandatoryLabelImages = true;
+	load_policy.PreferSystem32Images = true;
+
+	int installDrive = PathGetDriveNumber(win32::GetExeLocation().c_str());
+	if (installDrive != -1)
+	{
+		wchar_t installDriveRoot[4];
+		unsigned int installDriveType = GetDriveType(PathBuildRoot(installDriveRoot, installDrive));
+		load_policy.NoRemoteImages = installDriveType != DRIVE_REMOTE;
+	}
+
+	if (!SetProcessMitigationPolicy(ProcessImageLoadPolicy, &load_policy, sizeof(load_policy)))
+	{
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Couldn't set image load policy.");
+	}
+}
+
 void InitializeTray(const HINSTANCE &hInstance)
 {
 	static MessageWindow window(L"TrayWindow", App::NAME, hInstance);
@@ -1126,6 +1186,8 @@ void Terminate()
 
 int WINAPI WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 {
+	HardenProcess();
+
 	// If there already is another instance running, tell it to exit
 	if (!win32::IsSingleInstance())
 	{

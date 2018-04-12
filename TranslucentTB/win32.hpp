@@ -19,7 +19,11 @@ namespace user32 {
 
 class win32 {
 
+private:
+	static std::wstring m_ExeLocation;
+
 public:
+	static const std::wstring &GetExeLocation();
 	static bool IsAtLeastBuild(const uint32_t &buildNumber);
 	static bool IsSingleInstance();
 	static bool IsDirectory(const std::wstring &directory);

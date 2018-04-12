@@ -11,8 +11,8 @@
 #include <winerror.h>
 #include <winreg.h>
 
-#include "common.h"
 #include "app.hpp"
+#include "win32.hpp"
 
 Autostart::StartupState Autostart::GetStartupState()
 {
@@ -50,17 +50,9 @@ void Autostart::SetStartupState(const StartupState &state)
 	{
 		if (state == StartupState::Enabled)
 		{
-			DWORD exeLocation_size = LONG_PATH;
-			std::vector<wchar_t> exeLocation(exeLocation_size);
-			if (!QueryFullProcessImageName(GetCurrentProcess(), 0, exeLocation.data(), &exeLocation_size))
-			{
-				ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to determine executable location!");
-				return;
-			}
+			const std::wstring &exeLocation = win32::GetExeLocation();
 
-			std::wstring exeLocation_str(exeLocation.data());
-
-			error = RegSetValueEx(hkey, App::NAME.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE *>(exeLocation_str.c_str()), exeLocation_str.length());
+			error = RegSetValueEx(hkey, App::NAME.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE *>(exeLocation.c_str()), exeLocation.length());
 			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while setting startup registry value!");
 		}
 		else if (state == StartupState::Disabled)
