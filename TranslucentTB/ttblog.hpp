@@ -15,6 +15,6 @@ private:
 	static std::wstring m_File;
 
 public:
-	static std::wstring file();
+	static const std::wstring &file();
 	static void OutputMessage(const std::wstring &message);
 };

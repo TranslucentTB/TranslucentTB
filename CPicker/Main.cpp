@@ -53,7 +53,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		SetWindowLongPtr(hDlg, GWLP_USERDATA, lParam);
 		picker_data = reinterpret_cast<PickerData *>(lParam);
 
-		CColourPicker::PickerMap[picker_data->picker->Value] = hDlg;
+		CColourPicker::PickerMap[&(picker_data->picker->Value)] = hDlg;
 
 		for (const std::pair<const unsigned int, std::pair<unsigned int, unsigned int>> &slider_combo : SLIDER_MAP)
 		{

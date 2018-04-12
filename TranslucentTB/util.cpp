@@ -67,7 +67,7 @@ void Util::EditFile(std::wstring file)
 void Util::PickColor(uint32_t &color)
 {
 	std::thread([&color]() {
-		CColourPicker(&color).CreateColourPicker();
+		CColourPicker(color).CreateColourPicker();
 	}).detach();
 }
 

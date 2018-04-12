@@ -23,7 +23,7 @@ class CColourPicker
 {
 	public:
 		// Use true for IsRGB if passing RGBA or false if passing HSVA 
-		_declspec(dllexport) CColourPicker(uint32_t *value, HWND hParentWindow = NULL);
+		_declspec(dllexport) CColourPicker(uint32_t &value, HWND hParentWindow = NULL);
 
 		// Creates the colour picker dialog
 		_declspec(dllexport) void CreateColourPicker();
@@ -45,7 +45,7 @@ class CColourPicker
 		void UpdateValue();
 
 		static std::unordered_map<uint32_t *, HWND> PickerMap;
-		uint32_t *Value;
+		uint32_t &Value;
 		// The current selected colour and the previous selected one
 		SColour CurrCol, OldCol;
 		HWND hParent;

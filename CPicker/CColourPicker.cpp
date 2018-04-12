@@ -5,12 +5,12 @@
 
 std::unordered_map<uint32_t *, HWND> CColourPicker::PickerMap;
 
-CColourPicker::CColourPicker(uint32_t *value, HWND hParentWindow)
+CColourPicker::CColourPicker(uint32_t &value, HWND hParentWindow) : Value(value)
 {
-	const uint8_t a = (*value & 0xFF000000) >> 24;
-	const uint8_t r = (*value & 0x00FF0000) >> 16;
-	const uint8_t g = (*value & 0x0000FF00) >> 8;
-	const uint8_t b = (*value & 0x000000FF);
+	const uint8_t a = (Value & 0xFF000000) >> 24;
+	const uint8_t r = (Value & 0x00FF0000) >> 16;
+	const uint8_t g = (Value & 0x0000FF00) >> 8;
+	const uint8_t b = (Value & 0x000000FF);
 
 	CurrCol.r = r;
 	CurrCol.g = g;
@@ -27,16 +27,16 @@ CColourPicker::CColourPicker(uint32_t *value, HWND hParentWindow)
 
 void CColourPicker::CreateColourPicker()
 {
-	if (PickerMap.count(Value) == 0)
+	if (PickerMap.count(&Value) == 0)
 	{
 		PickerData data;
 		data.picker = this;
 		DialogBoxParam(GetModuleHandle(L"CPicker.dll"), MAKEINTRESOURCE(IDD_COLORPICKER), hParent, ColourPickerDlgProc, reinterpret_cast<LPARAM>(&data));
-		PickerMap.erase(Value);
+		PickerMap.erase(&Value);
 	}
 	else
 	{
-		SetForegroundWindow(PickerMap.at(Value));
+		SetForegroundWindow(PickerMap.at(&Value));
 	}
 }
 
@@ -87,7 +87,7 @@ void CColourPicker::UpdateOldColour()
 
 void CColourPicker::UpdateValue()
 {
-	*Value = (CurrCol.a << 24) + (CurrCol.r << 16) + (CurrCol.g << 8) + CurrCol.b;
+	Value = (CurrCol.a << 24) + (CurrCol.r << 16) + (CurrCol.g << 8) + CurrCol.b;
 }
 
 // Updates the RGB color from the HSV

@@ -16,7 +16,7 @@
 
 Autostart::StartupState Autostart::GetStartupState()
 {
-	LRESULT error = RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", App::NAME.c_str(), RRF_RT_REG_SZ, NULL, NULL, NULL);
+	LRESULT error = RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", App::NAME, RRF_RT_REG_SZ, NULL, NULL, NULL);
 	if (error == ERROR_FILE_NOT_FOUND)
 	{
 		return StartupState::Disabled;
@@ -25,7 +25,7 @@ Autostart::StartupState Autostart::GetStartupState()
 	{
 		uint8_t status[12];
 		DWORD size = sizeof(status);
-		error = RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run", App::NAME.c_str(), RRF_RT_REG_BINARY, NULL, &status, &size);
+		error = RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run", App::NAME, RRF_RT_REG_BINARY, NULL, &status, &size);
 		if (error != ERROR_FILE_NOT_FOUND && ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup disable state failed.") && status[0] == 3)
 		{
 			return StartupState::DisabledByUser;
@@ -52,12 +52,12 @@ void Autostart::SetStartupState(const StartupState &state)
 		{
 			const std::wstring &exeLocation = win32::GetExeLocation();
 
-			error = RegSetValueEx(hkey, App::NAME.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE *>(exeLocation.c_str()), exeLocation.length());
+			error = RegSetValueEx(hkey, App::NAME, 0, REG_SZ, reinterpret_cast<const BYTE *>(exeLocation.c_str()), exeLocation.length());
 			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while setting startup registry value!");
 		}
 		else if (state == StartupState::Disabled)
 		{
-			error = RegDeleteValue(hkey, App::NAME.c_str());
+			error = RegDeleteValue(hkey, App::NAME);
 			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while deleting startup registry value!");
 		}
 		error = RegCloseKey(hkey);

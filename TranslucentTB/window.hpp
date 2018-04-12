@@ -24,8 +24,8 @@ public:
 
 	Window(HWND handle = nullptr);
 	std::wstring title() const;
-	std::wstring classname() const;
-	std::wstring filename() const;
+	const std::wstring &classname() const;
+	const std::wstring &filename() const;
 	bool on_current_desktop() const;
 	unsigned int state() const;
 	bool show(int state = SW_SHOW) const;

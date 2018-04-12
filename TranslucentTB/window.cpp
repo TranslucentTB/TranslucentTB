@@ -47,7 +47,7 @@ std::wstring Window::title() const
 	return windowTitleBuffer.data();
 }
 
-std::wstring Window::classname() const
+const std::wstring &Window::classname() const
 {
 	if (m_ClassNames.count(m_WindowHandle) == 0)
 	{
@@ -69,7 +69,7 @@ std::wstring Window::classname() const
 	}
 }
 
-std::wstring Window::filename() const
+const std::wstring &Window::filename() const
 {
 	if (m_Filenames.count(m_WindowHandle) == 0)
 	{

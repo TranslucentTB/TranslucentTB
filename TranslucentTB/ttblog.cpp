@@ -39,7 +39,7 @@ inline std::pair<HRESULT, std::wstring> Log::InitStream()
 	}
 
 	AutoFree::SilentLocal<wchar_t> log_folder;
-	hr = PathAllocCombine(temp.data(), App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_folder);
+	hr = PathAllocCombine(temp.data(), App::NAME, PATHCCH_ALLOW_LONG_PATHS, &log_folder);
 	if (FAILED(hr))
 	{
 		return std::make_pair(hr, L"Failed to combine temporary folder location and app name!");
@@ -112,7 +112,7 @@ inline std::pair<HRESULT, std::wstring> Log::InitStream()
 #endif
 }
 
-std::wstring Log::file()
+const std::wstring &Log::file()
 {
 	return m_File;
 }
@@ -131,7 +131,7 @@ void Log::OutputMessage(const std::wstring &message)
 				L" Logs will not be available during this session.\n\nException from HRESULT: "
 				+ _com_error(result.first).ErrorMessage();
 
-			MessageBox(NULL, boxbuffer.c_str(), (App::NAME + L" - Error").c_str(), MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+			MessageBox(NULL, boxbuffer.c_str(), (std::wstring(App::NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 		}
 	}
 

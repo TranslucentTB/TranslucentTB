@@ -57,7 +57,7 @@ bool win32::IsAtLeastBuild(const uint32_t &buildNumber)
 
 bool win32::IsSingleInstance()
 {
-	HANDLE event_handle = CreateEvent(NULL, TRUE, FALSE, App::ID.c_str());
+	HANDLE event_handle = CreateEvent(NULL, TRUE, FALSE, App::ID);
 	LRESULT error = GetLastError();
 	bool return_value;
 	switch (error)

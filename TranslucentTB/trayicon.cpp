@@ -39,7 +39,7 @@ TrayIcon::TrayIcon(MessageWindow &window, wchar_t *iconResource, const unsigned 
 #pragma clang diagnostic pop
 {
 	ErrorHandle(LoadIconMetric(hInstance, iconResource, LIM_SMALL, &m_IconData.hIcon), Error::Level::Log, L"Failed to load tray icon.");
-	wcscpy_s(m_IconData.szTip, App::NAME.c_str());
+	wcscpy_s(m_IconData.szTip, App::NAME);
 
 	std::random_device seed;
 	std::mt19937 rng(seed());

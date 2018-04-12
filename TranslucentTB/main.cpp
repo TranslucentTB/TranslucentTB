@@ -143,7 +143,7 @@ void GetPaths()
 	AutoFree::Local<wchar_t> configFile;
 	AutoFree::Local<wchar_t> excludeFile;
 
-	ErrorHandle(PathAllocCombine(appData, App::NAME.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFolder), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
+	ErrorHandle(PathAllocCombine(appData, App::NAME, PATHCCH_ALLOW_LONG_PATHS, &configFolder), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
 	ErrorHandle(PathAllocCombine(configFolder, Config::CONFIG_FILE.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Fatal, L"Failed to combine config folder and config file!");
 	ErrorHandle(PathAllocCombine(configFolder, Config::EXCLUDE_FILE.c_str(), PATHCCH_ALLOW_LONG_PATHS, &excludeFile), Error::Level::Fatal, L"Failed to combine config folder and exclude file!");
 
@@ -208,7 +208,7 @@ bool CheckAndRunWelcome()
 		message += '"';
 		message += L"\n\nDo you agree to the GPLv3 license?";
 
-		if (MessageBox(NULL, message.c_str(), App::NAME.c_str(), MB_ICONINFORMATION | MB_YESNO | MB_SETFOREGROUND) != IDYES)
+		if (MessageBox(NULL, message.c_str(), App::NAME, MB_ICONINFORMATION | MB_YESNO | MB_SETFOREGROUND) != IDYES)
 		{
 			return false;
 		}
@@ -812,9 +812,10 @@ bool IsWindowBlacklisted(const Window &window)
 		// If it ends up affecting stuff, we can remove it from caching easily.
 		if (opt.blacklisted_titles.size() > 0)
 		{
+			const std::wstring title = window.title();
 			for (const std::wstring &value : opt.blacklisted_titles)
 			{
-				if (window.title().find(value) != std::wstring::npos)
+				if (title.find(value) != std::wstring::npos)
 				{
 					return OutputBlacklistMatchToLog(window, blacklist_cache[window] = true);
 				}
