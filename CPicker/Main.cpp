@@ -67,7 +67,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 		SendDlgItemMessage(hDlg, IDC_R, BM_SETCHECK, BST_CHECKED, 0);
 
-		[[clang::fallthrough]];
+		[[fallthrough]];
 	}
 
 	case WM_DPICHANGED:
@@ -464,6 +464,14 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		bf = blue / 255.0f;
 		bool flag = false;
 
+		const uint8_t rsw = GetRValue(backgroundColor.lbColor);
+		const uint8_t gsw = GetGValue(backgroundColor.lbColor);
+		const uint8_t bsw = GetBValue(backgroundColor.lbColor);
+		// Make the second color a bit darker
+		const uint8_t rsb = rsw - 50;
+		const uint8_t gsb = gsw - 50;
+		const uint8_t bsb = bsw - 50;
+
 		// https://stackoverflow.com/questions/12228548/finding-equivalent-color-with-opacity#12228643
 		for (int y = heightA - 1; y > -1; y--)
 		{
@@ -476,22 +484,13 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			float af = 1.0f - (y / heightA);
 
-			uint8_t rs = backgroundColor.lbColor & 0xFF;
-			uint8_t gs = (backgroundColor.lbColor & 0xFF00) >> 8;
-			uint8_t bs = (backgroundColor.lbColor & 0xFF0000) >> 16;
+			const uint8_t rw = rsw + ((rf * 255) - rsw)*af;
+			const uint8_t gw = gsw + ((gf * 255) - gsw)*af;
+			const uint8_t bw = bsw + ((bf * 255) - bsw)*af;
 
-			const uint8_t rw = rs + ((rf * 255) - rs)*af;
-			const uint8_t gw = gs + ((gf * 255) - gs)*af;
-			const uint8_t bw = bs + ((bf * 255) - bs)*af;
-
-			// Make the second color a bit darker
-			rs -= 50;
-			gs -= 50;
-			bs -= 50;
-
-			const uint8_t rb = rs + ((rf * 255) - rs)*af;
-			const uint8_t gb = gs + ((gf * 255) - gs)*af;
-			const uint8_t bb = bs + ((bf * 255) - bs)*af;
+			const uint8_t rb = rsb + ((rf * 255) - rsb)*af;
+			const uint8_t gb = gsb + ((gf * 255) - gsb)*af;
+			const uint8_t bb = bsb + ((bf * 255) - bsb)*af;
 
 			cb = RGB(rb, gb, bb);
 			cw = RGB(rw, gw, bw);
@@ -518,11 +517,9 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		DeleteObject(backgroundColorBrush);
 
 
-		DrawCheckedRect(CurrentColor, picker_data->picker->GetCurrentColour().r, picker_data->picker->GetCurrentColour().g,
-			picker_data->picker->GetCurrentColour().b, picker_data->picker->GetCurrentColour().a, 10, 10);
+		DrawCheckedRect(CurrentColor, picker_data->picker->GetCurrentColour(), 10, 10);
 
-		DrawCheckedRect(OldColor, picker_data->picker->GetOldColour().r, picker_data->picker->GetOldColour().g, picker_data->picker->GetOldColour().b,
-			picker_data->picker->GetOldColour().a, 10, 10);
+		DrawCheckedRect(OldColor, picker_data->picker->GetOldColour(), 10, 10);
 
 		break;
 	}
@@ -690,7 +687,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				if (slider_combo.first == IDC_HEXCOL)
 				{
 					wchar_t buffer[11];
-					SColour col = picker_data->picker->GetCurrentColour();
+					const SColour &col = picker_data->picker->GetCurrentColour();
 
 					swprintf_s(buffer, L"0x%02X%02X%02X%02X", col.r, col.g, col.b, col.a);
 					SetDlgItemText(hDlg, slider_combo.first, buffer);
@@ -765,7 +762,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			case IDC_OLDCOLOR:
 			{
-				SColour old = picker_data->picker->GetOldColour();
+				const SColour &old = picker_data->picker->GetOldColour();
 
 				picker_data->picker->SetRGB(old.r, old.g, old.b);
 				picker_data->picker->SetAlpha(old.a);
@@ -783,7 +780,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			case IDB_CANCEL:
 			{
-				SColour old = picker_data->picker->GetOldColour();
+				const SColour &old = picker_data->picker->GetOldColour();
 
 				picker_data->picker->SetRGB(old.r, old.g, old.b);
 				picker_data->picker->SetAlpha(old.a);
@@ -802,12 +799,13 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 // Draw a b/w checked rectangle, "covered" with the rgba color provided.
 // cx and cy are the size of the checks
-void DrawCheckedRect(HWND hWnd, int r, int g, int b, int a, int cx, int cy)
+void DrawCheckedRect(HWND hWnd, const SColour &color, int cx, int cy)
 {
-	float rf = (float)r / 255.0f,
-		gf = (float)g / 255.0f,
-		bf = (float)b / 255.0f,
-		af = (float)a / 255.0f;
+	float
+		rf = color.r / 255.0f,
+		gf = color.g / 255.0f,
+		bf = color.b / 255.0f,
+		af = color.a / 255.0f;
 	HDC hdc = GetDC(hWnd);
 	HBRUSH brush, brush2;
 	RECT rect, r2;
@@ -867,7 +865,7 @@ void DrawArrows(HDC hcomp, int width, int height, float y)
 	DeleteObject(pen);
 }
 
-void UpdateValues(HWND hDlg, SColour col, bool &changing_text)
+void UpdateValues(HWND hDlg, const SColour &col, bool &changing_text)
 {
 	changing_text = true;
 

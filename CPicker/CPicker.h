@@ -1,7 +1,4 @@
 #pragma once
-#ifndef __CPICKER_H
-#define __CPICKER_H
-
 #include <unordered_map>
 #include "../TranslucentTB/arch.h"
 #include "CPickerDll.h"
@@ -41,10 +38,10 @@ struct PickerData
 };
 
 int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-void DrawCheckedRect(HWND hWnd, int r, int g, int b, int a, int cx, int cy);
+void DrawCheckedRect(HWND hWnd, const SColour &color, int cx, int cy);
 void DrawCircle(HDC hcomp, int red, int green, int blue, float x, float y);
 void DrawArrows(HDC hcomp, int width, int height, float y);
-void UpdateValues(HWND hDlg, SColour col, bool &changing_text);
+void UpdateValues(HWND hDlg, const SColour &col, bool &changing_text);
 
 const std::unordered_map<unsigned int, std::pair<unsigned int, unsigned int>> SLIDER_MAP = {
 	{ IDC_RED,			{ IDC_RSLIDER, 255 } },
@@ -56,5 +53,3 @@ const std::unordered_map<unsigned int, std::pair<unsigned int, unsigned int>> SL
 	{ IDC_VALUE,		{ IDC_VSLIDER, 100 } },
 	{ IDC_HEXCOL,		{ IDC_HEXSLIDER, 0xFFFFFFFF } }
 };
-
-#endif

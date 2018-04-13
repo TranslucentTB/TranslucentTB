@@ -98,7 +98,6 @@ BEGIN
         BEGIN
             MENUITEM "Open log file",               IDM_OPENLOG
             MENUITEM "Verbose logging",             IDM_VERBOSE
-            MENUITEM "Clear blacklist cache",       IDM_CLEARBLACKLISTCACHE
             MENUITEM SEPARATOR
             MENUITEM "Reload settings",             IDM_RELOADSETTINGS
             MENUITEM "Edit settings",               IDM_EDITSETTINGS
@@ -107,9 +106,11 @@ BEGIN
             MENUITEM "Reload blacklist",            IDM_RELOADDYNAMICBLACKLIST
             MENUITEM "Edit blacklist",              IDM_EDITDYNAMICBLACKLIST
             MENUITEM "Return to default blacklist", IDM_RETURNTODEFAULTBLACKLIST
+            MENUITEM SEPARATOR
+            MENUITEM "Clear blacklist cache",       IDM_CLEARBLACKLISTCACHE
+            MENUITEM "Exit without saving",         IDM_EXITWITHOUTSAVING
         END
         MENUITEM "Open at boot",                IDM_AUTOSTART
-        MENUITEM "Exit without saving",         IDM_EXITWITHOUTSAVING
         MENUITEM "Exit",                        IDM_EXIT
     END
 END

@@ -70,12 +70,12 @@ void CColourPicker::SetAlpha(uint8_t a)
 	UpdateValue();
 }
 
-SColour CColourPicker::GetCurrentColour()
+const SColour &CColourPicker::GetCurrentColour()
 {
 	return CurrCol;
 }
 
-SColour CColourPicker::GetOldColour()
+const SColour &CColourPicker::GetOldColour()
 {
 	return OldCol;
 }

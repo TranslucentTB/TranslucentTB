@@ -35,8 +35,8 @@ class CColourPicker
 		_declspec(dllexport) void SetAlpha(uint8_t a);
 		
 		// Some easy functions to retrieve the colour components
-		_declspec(dllexport) SColour GetCurrentColour();
-		_declspec(dllexport) SColour GetOldColour();
+		_declspec(dllexport) const SColour &GetCurrentColour();
+		_declspec(dllexport) const SColour &GetOldColour();
 
 		_declspec(dllexport) void UpdateOldColour();
 
