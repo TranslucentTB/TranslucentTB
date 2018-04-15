@@ -70,16 +70,18 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>gdi32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>gdi32.lib;user32.lib;d2d1.lib</AdditionalDependencies>
       <AdditionalManifestDependencies>"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'"</AdditionalManifestDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CColourPicker.cpp" />
+    <ClCompile Include="drawhelper.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PixelBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="drawhelper.hpp" />
     <ClInclude Include="CPicker.h" />
     <ClInclude Include="CPickerDll.h" />
     <ClInclude Include="resource.h" />

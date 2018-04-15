@@ -1,5 +1,9 @@
 #pragma once
+#include <atlbase.h>
+#include <d2d1.h>
+#include <d2d1helper.h>
 #include <unordered_map>
+
 #include "../TranslucentTB/arch.h"
 #include "CPickerDll.h"
 #include "resource.h"
@@ -31,10 +35,14 @@ struct PixelBuffer
 struct PickerData
 {
 	CColourPicker *picker;
-	PixelBuffer bufferC1;
-	PixelBuffer bufferC2;
-	PixelBuffer bufferA;
 	bool changing_text;
+	bool requires_complete_redraw;
+	CComPtr<ID2D1Factory> factory;
+	CComPtr<ID2D1HwndRenderTarget> targetC1;
+	CComPtr<ID2D1HwndRenderTarget> targetC2;
+	CComPtr<ID2D1HwndRenderTarget> targetA;
+	CComPtr<ID2D1HwndRenderTarget> targetCC;
+	CComPtr<ID2D1HwndRenderTarget> targetOC;
 };
 
 int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);

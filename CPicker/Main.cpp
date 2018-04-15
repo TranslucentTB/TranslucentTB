@@ -6,6 +6,7 @@
 #include <WinUser.h>
 #include <CommCtrl.h>
 
+#include "drawhelper.hpp"
 #include "resource.h"
 
 int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -16,31 +17,10 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		return 0;
 	}
 
-	const HWND Color1 = GetDlgItem(hDlg, IDC_COLOR);
-	const HWND Color2 = GetDlgItem(hDlg, IDC_COLOR2);
-	const HWND Alpha = GetDlgItem(hDlg, IDC_ALPHASLIDE);
-
-	RECT rectC1;
-	RECT rectC2;
-	RECT rectA;
-
-	GetWindowRect(Color1, &rectC1);
-	GetWindowRect(Color2, &rectC2);
-	GetWindowRect(Alpha, &rectA);
-
-	const float widthC1 = rectC1.right - rectC1.left;
-	const float heightC1 = rectC1.bottom - rectC1.top;
-
-	const float widthC2 = rectC2.right - rectC2.left;
-	const float heightC2 = rectC2.bottom - rectC2.top;
-
-	const float widthA = rectA.right - rectA.left;
-	const float heightA = rectA.bottom - rectA.top;
-
 	BOOL result;
-	const uint8_t red = SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
-	const uint8_t green = SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
-	const uint8_t blue = SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+	const float red = SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, (LPARAM)&result) / 255.0f;
+	const float green = SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, (LPARAM)&result) / 255.0f;
+	const float blue = SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, (LPARAM)&result) / 255.0f;
 
 	const unsigned short hue = SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
 	const uint8_t saturation = SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
@@ -52,6 +32,8 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	{
 		SetWindowLongPtr(hDlg, GWLP_USERDATA, lParam);
 		picker_data = reinterpret_cast<PickerData *>(lParam);
+
+		D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &picker_data->factory);
 
 		CColourPicker::PickerMap[&(picker_data->picker->Value)] = hDlg;
 
@@ -72,36 +54,38 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 	case WM_DPICHANGED:
 	{
-		picker_data->bufferC1.Destroy();
-		picker_data->bufferC2.Destroy();
-		picker_data->bufferA.Destroy();
-		picker_data->bufferC1.Create(widthC1, heightC1);
-		picker_data->bufferC2.Create(widthC2, heightC2);
-		picker_data->bufferA.Create(widthA, heightA);
+		RECT rect;
+		HWND item;
+
+
+		picker_data->targetC1.Release();
+		item = GetDlgItem(hDlg, IDC_COLOR);
+		GetWindowRect(item, &rect);
+		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right - rect.left, rect.bottom - rect.top)), &picker_data->targetC1);
+
+		picker_data->targetC2.Release();
+		item = GetDlgItem(hDlg, IDC_COLOR2);
+		GetWindowRect(item, &rect);
+		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right - rect.left, rect.bottom - rect.top)), &picker_data->targetC2);
+
+		picker_data->targetA.Release();
+		item = GetDlgItem(hDlg, IDC_ALPHASLIDE);
+		GetWindowRect(item, &rect);
+		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right - rect.left, rect.bottom - rect.top)), &picker_data->targetA);
+
+
+		picker_data->requires_complete_redraw = true;
 		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 
 		break;
 	}
 	case WM_PAINT:
 	{
-		const HWND CurrentColor = GetDlgItem(hDlg, IDC_CURRCOLOR);
-		const HWND OldColor = GetDlgItem(hDlg, IDC_OLDCOLOR);
+		//const D2D1_SIZE_F sizeC1 = picker_data->targetC1->GetSize();
+		//const D2D1_SIZE_F sizeCC = picker_data->targetCC->GetSize();
+		//const D2D1_SIZE_F sizeOC = picker_data->targetOC->GetSize();
 
-		HDC hdc, hcomp;
-		HBITMAP hbmp;
-		const HBRUSH backgroundColorBrush = CreateSolidBrush(GetSysColor(COLOR_BTNFACE));
-		LOGBRUSH backgroundColor;
-		GetObject(backgroundColorBrush, sizeof(backgroundColor), &backgroundColor);
-		float rf, gf, bf;
-
-		// Big color selector (displays non-selected features)
-		// For example, if G is selected (in RGB radio box) it displays red vs. blue colors
-		hdc = GetDC(Color1);
-		hcomp = CreateCompatibleDC(hdc);
-
-		hbmp = CreateCompatibleBitmap(hdc, widthC1, heightC1);
-		SelectObject(hcomp, hbmp);
-
+		/*
 		// Check who is selected.
 		// RED
 		if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
@@ -271,193 +255,24 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		DeleteObject(hbmp);
 		DeleteDC(hcomp);
 		ReleaseDC(Color1, hdc);
+		*/
 
 		// Small color selector (displays selected feature)
-		hdc = GetDC(Color2);
-		hcomp = CreateCompatibleDC(hdc);
-
-		hbmp = CreateCompatibleBitmap(hdc, widthC2, heightC2);
-		SelectObject(hcomp, hbmp);
-
-		for (int y = heightC2 - 1; y > -1; y--)
+		// TODO: if draw required
+		if (picker_data->requires_complete_redraw)
 		{
-			for (int x = 0; x < 6; x++)
-			{
-				picker_data->bufferC2.SetPixel(x, y, backgroundColor.lbColor);
-			}
-			for (int x = widthC2 - 6; x < widthC2; x++)
-			{
-				picker_data->bufferC2.SetPixel(x, y, backgroundColor.lbColor);
-			}
+			DrawColorSlider(picker_data->targetC2, hDlg, red, green, blue, hue, saturation, value);
 		}
-
-		// Check who is selected.
-		// RED
-		if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
-		{
-			for (int r = heightC2 - 1; r > -1; r--)
-			{
-				rf = ((r / heightC2) * 255.0f);
-				for (int x = 6; x < widthC2 - 6; x++)
-				{
-					picker_data->bufferC2.SetPixel(x, r, RGB(255 - rf, green, blue));
-				}
-			}
-			picker_data->bufferC2.Display(hcomp);
-			DrawArrows(hcomp, widthC2, heightC2, (red / 255.0f) * heightC2);
-		}
-		// GREEN
-		else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
-		{
-			for (int g = heightC2 - 1; g > -1; g--)
-			{
-				gf = ((g / heightC2) * 255.0f);
-				for (int x = 6; x < widthC2 - 6; x++)
-				{
-					picker_data->bufferC2.SetPixel(x, g, RGB(red, 255 - gf, blue));
-				}
-			}
-			picker_data->bufferC2.Display(hcomp);
-			DrawArrows(hcomp, widthC2, heightC2, (green / 255.0f) * heightC2);
-		}
-		// BLUE
-		else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
-		{
-			for (int b = heightC2 - 1; b > -1; b--)
-			{
-				bf = ((b / heightC2) * 255.0f);
-				for (int x = 6; x < widthC2 - 6; x++)
-				{
-					picker_data->bufferC2.SetPixel(x, b, RGB(red, green, 255 - bf));
-				}
-			}
-			picker_data->bufferC2.Display(hcomp);
-			DrawArrows(hcomp, widthC2, heightC2, (blue / 255.0f) * heightC2);
-		}
-		// HUE
-		else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
-		{
-			double temphue, step;
-			SColour tempcol;
-
-			temphue = 0.0;
-
-			tempcol.h = 0;
-			tempcol.s = 100;
-			tempcol.v = 100;
-
-			step = 359.0 / heightC2;
-
-			for (int y = heightC2 - 1; y > -1; y--)
-			{
-				tempcol.UpdateRGB();
-
-				for (int x = 6; x < widthC2 - 6; x++)
-				{
-					picker_data->bufferC2.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
-				}
-
-				temphue += step;
-				tempcol.h = temphue;
-			}
-			picker_data->bufferC2.Display(hcomp);
-
-			temphue = hue;
-			temphue = temphue / step;
-
-			DrawArrows(hcomp, widthC2, heightC2, temphue);
-		}
-		// SATURATION
-		else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
-		{
-			double sat, step;
-			SColour tempcol;
-
-			sat = 0.0;
-
-			tempcol.h = hue;
-			tempcol.s = 0;
-			tempcol.v = value;
-
-			step = 100.0 / heightC2;
-
-			for (int y = heightC2 - 1; y > -1; y--)
-			{
-				tempcol.UpdateRGB();
-
-				for (int x = 6; x < widthC2 - 6; x++)
-				{
-					picker_data->bufferC2.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
-				}
-
-				sat += step;
-				tempcol.s = sat;
-			}
-			picker_data->bufferC2.Display(hcomp);
-
-			sat = saturation;
-			sat = sat / step;
-
-			DrawArrows(hcomp, widthC2, heightC2, sat);
-		}
-		// VALUE
-		else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
-		{
-			double val, step;
-			SColour tempcol;
-
-			val = 0.0;
-
-			tempcol.h = hue;
-			tempcol.s = saturation;
-			tempcol.v = 0;
-
-			step = 100.0 / heightC2;
-
-			for (int y = heightC2 - 1; y > -1; y--)
-			{
-				tempcol.UpdateRGB();
-
-				for (int x = 6; x < widthC2 - 6; x++)
-				{
-					picker_data->bufferC2.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
-				}
-
-				val += step;
-				tempcol.v = val;
-			}
-			picker_data->bufferC2.Display(hcomp);
-
-			val = value;
-			val = val / step;
-
-			DrawArrows(hcomp, widthC2, heightC2, val);
-		}
-
-		BitBlt(hdc, 0, 0, widthC2, heightC2, hcomp, 0, 0, SRCCOPY);
-
-		DeleteObject(hbmp);
-		DeleteDC(hcomp);
-		ReleaseDC(Color2, hdc);
 
 		// Alpha slider
-		hdc = GetDC(Alpha);
-		hcomp = CreateCompatibleDC(hdc);
-
-		hbmp = CreateCompatibleBitmap(hdc, widthA, heightA);
-		SelectObject(hcomp, hbmp);
-
-		for (int y = heightA - 1; y > -1; y--)
+		// TODO: if draw required
+		if (picker_data->requires_complete_redraw)
 		{
-			for (int x = 0; x < 6; x++)
-			{
-				picker_data->bufferA.SetPixel(x, y, backgroundColor.lbColor);
-			}
-			for (int x = widthA - 6; x < widthA; x++)
-			{
-				picker_data->bufferA.SetPixel(x, y, backgroundColor.lbColor);
-			}
+			DrawAlphaSlider(picker_data->targetA, D2D1::ColorF(red, green, blue));
 		}
+
+		
+		/*
 
 		rf = red / 255.0f;
 		gf = green / 255.0f;
@@ -518,7 +333,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		DrawCheckedRect(CurrentColor, picker_data->picker->GetCurrentColour(), 10, 10);
 
 		DrawCheckedRect(OldColor, picker_data->picker->GetOldColour(), 10, 10);
-
+		*/
 		break;
 	}
 
@@ -529,6 +344,27 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		{
 			break;
 		}
+
+		const HWND Color1 = GetDlgItem(hDlg, IDC_COLOR);
+		const HWND Color2 = GetDlgItem(hDlg, IDC_COLOR2);
+		const HWND Alpha = GetDlgItem(hDlg, IDC_ALPHASLIDE);
+
+		RECT rectC1;
+		RECT rectC2;
+		RECT rectA;
+
+		GetWindowRect(Color1, &rectC1);
+		GetWindowRect(Color2, &rectC2);
+		GetWindowRect(Alpha, &rectA);
+
+		const float widthC1 = rectC1.right - rectC1.left;
+		const float heightC1 = rectC1.bottom - rectC1.top;
+
+		const float widthC2 = rectC2.right - rectC2.left;
+		const float heightC2 = rectC2.bottom - rectC2.top;
+
+		const float widthA = rectA.right - rectA.left;
+		const float heightA = rectA.bottom - rectA.top;
 
 		POINT p;
 		GetCursorPos(&p);
@@ -541,17 +377,17 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(red, fx, fy);
+				picker_data->picker->SetRGB(red * 255, fx, fy);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(fx, green, fy);
+				picker_data->picker->SetRGB(fx, green * 255, fy);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(fy, fx, blue);
+				picker_data->picker->SetRGB(fy, fx, blue * 255);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
@@ -576,17 +412,17 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(255 - fy, green, blue);
+				picker_data->picker->SetRGB(255 - fy, green * 255, blue * 255);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(red, 255 - fy, blue);
+				picker_data->picker->SetRGB(red * 255, 255 - fy, blue * 255);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(red, green, 255 - fy);
+				picker_data->picker->SetRGB(red * 255, green * 255, 255 - fy);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
