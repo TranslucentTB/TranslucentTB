@@ -1185,7 +1185,7 @@ void Terminate()
 	exit(run.is_running ? EXIT_FAILURE : EXIT_SUCCESS);
 }
 
-int WINAPI WinMain(const HINSTANCE hInstance, HINSTANCE, LPSTR, int)
+int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 {
 	HardenProcess();
 

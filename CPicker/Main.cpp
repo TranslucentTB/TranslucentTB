@@ -38,13 +38,13 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	const float heightA = rectA.bottom - rectA.top;
 
 	BOOL result;
-	const int red = SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
-	const int green = SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
-	const int blue = SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+	const uint8_t red = SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+	const uint8_t green = SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+	const uint8_t blue = SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
 
-	const int hue = SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
-	const int saturation = SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
-	const int value = SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+	const unsigned short hue = SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+	const uint8_t saturation = SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+	const uint8_t value = SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
 
 	switch (uMsg)
 	{
@@ -475,14 +475,12 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		// https://stackoverflow.com/questions/12228548/finding-equivalent-color-with-opacity#12228643
 		for (int y = heightA - 1; y > -1; y--)
 		{
-			COLORREF cb, cw;
-
 			if (!(y % (int)(widthA / 2 - 6)))
 			{
 				flag = !flag;
 			}
 
-			float af = 1.0f - (y / heightA);
+			const float af = 1.0f - (y / heightA);
 
 			const uint8_t rw = rsw + ((rf * 255) - rsw)*af;
 			const uint8_t gw = gsw + ((gf * 255) - gsw)*af;
@@ -492,8 +490,8 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			const uint8_t gb = gsb + ((gf * 255) - gsb)*af;
 			const uint8_t bb = bsb + ((bf * 255) - bsb)*af;
 
-			cb = RGB(rb, gb, bb);
-			cw = RGB(rw, gw, bw);
+			const COLORREF cb = RGB(rb, gb, bb);
+			const COLORREF cw = RGB(rw, gw, bw);
 
 			for (int x = 6; x < (widthA / 2); x++)
 			{
