@@ -1,5 +1,6 @@
 #include "CPicker.h"
 #include <algorithm>
+#include <d2d1helper.h>
 #include <stdio.h>
 #include <string>
 #include <wingdi.h>
@@ -7,7 +8,7 @@
 #include <CommCtrl.h>
 
 #include "drawhelper.hpp"
-#include "resource.h"
+#include "drawroutines.hpp"
 
 int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -73,6 +74,16 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		GetWindowRect(item, &rect);
 		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right - rect.left, rect.bottom - rect.top)), &picker_data->targetA);
 
+		picker_data->targetCC.Release();
+		item = GetDlgItem(hDlg, IDC_CURRCOLOR);
+		GetWindowRect(item, &rect);
+		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right - rect.left, rect.bottom - rect.top)), &picker_data->targetCC);
+
+		picker_data->targetOC.Release();
+		item = GetDlgItem(hDlg, IDC_OLDCOLOR);
+		GetWindowRect(item, &rect);
+		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right - rect.left, rect.bottom - rect.top)), &picker_data->targetOC);
+
 
 		picker_data->requires_complete_redraw = true;
 		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
@@ -81,10 +92,6 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	}
 	case WM_PAINT:
 	{
-		//const D2D1_SIZE_F sizeC1 = picker_data->targetC1->GetSize();
-		//const D2D1_SIZE_F sizeCC = picker_data->targetCC->GetSize();
-		//const D2D1_SIZE_F sizeOC = picker_data->targetOC->GetSize();
-
 		/*
 		// Check who is selected.
 		// RED
@@ -258,82 +265,27 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		*/
 
 		// Small color selector (displays selected feature)
-		// TODO: if draw required
-		if (picker_data->requires_complete_redraw)
+		if (picker_data->requires_complete_redraw || picker_data->requires_c2_redraw)
 		{
 			DrawColorSlider(picker_data->targetC2, hDlg, red, green, blue, hue, saturation, value);
+			picker_data->requires_c2_redraw = false;
 		}
 
 		// Alpha slider
-		// TODO: if draw required
-		if (picker_data->requires_complete_redraw)
+		if (picker_data->requires_complete_redraw || picker_data->requires_a_redraw)
 		{
 			DrawAlphaSlider(picker_data->targetA, D2D1::ColorF(red, green, blue));
+			picker_data->requires_a_redraw = false;
 		}
 
-		
-		/*
+		DrawColorIndicator(picker_data->targetCC, picker_data->picker->GetCurrentColour());
 
-		rf = red / 255.0f;
-		gf = green / 255.0f;
-		bf = blue / 255.0f;
-		bool flag = false;
-
-		const uint8_t rsw = GetRValue(backgroundColor.lbColor);
-		const uint8_t gsw = GetGValue(backgroundColor.lbColor);
-		const uint8_t bsw = GetBValue(backgroundColor.lbColor);
-		// Make the second color a bit darker
-		const uint8_t rsb = rsw - 50;
-		const uint8_t gsb = gsw - 50;
-		const uint8_t bsb = bsw - 50;
-
-		// https://stackoverflow.com/questions/12228548/finding-equivalent-color-with-opacity#12228643
-		for (int y = heightA - 1; y > -1; y--)
+		if (picker_data->requires_complete_redraw)
 		{
-			if (!(y % (int)(widthA / 2 - 6)))
-			{
-				flag = !flag;
-			}
-
-			const float af = 1.0f - (y / heightA);
-
-			const uint8_t rw = rsw + ((rf * 255) - rsw)*af;
-			const uint8_t gw = gsw + ((gf * 255) - gsw)*af;
-			const uint8_t bw = bsw + ((bf * 255) - bsw)*af;
-
-			const uint8_t rb = rsb + ((rf * 255) - rsb)*af;
-			const uint8_t gb = gsb + ((gf * 255) - gsb)*af;
-			const uint8_t bb = bsb + ((bf * 255) - bsb)*af;
-
-			const COLORREF cb = RGB(rb, gb, bb);
-			const COLORREF cw = RGB(rw, gw, bw);
-
-			for (int x = 6; x < (widthA / 2); x++)
-			{
-				picker_data->bufferA.SetPixel(x, y, flag ? cw : cb);
-			}
-			for (int x = (widthA / 2); x < widthA - 6; x++)
-			{
-				picker_data->bufferA.SetPixel(x, y, flag ? cb : cw);
-			}
+			DrawColorIndicator(picker_data->targetOC, picker_data->picker->GetOldColour());
 		}
-		picker_data->bufferA.Display(hcomp);
 
-		DrawArrows(hcomp, widthA, heightA, (SendDlgItemMessage(hDlg, IDC_ASLIDER, UDM_GETPOS, 0, (LPARAM)&result) / 255.0f) * heightA);
-
-		BitBlt(hdc, 0, 0, widthA, heightA, hcomp, 0, 0, SRCCOPY);
-
-		DeleteObject(hbmp);
-		DeleteDC(hcomp);
-		ReleaseDC(Alpha, hdc);
-
-		DeleteObject(backgroundColorBrush);
-
-
-		DrawCheckedRect(CurrentColor, picker_data->picker->GetCurrentColour(), 10, 10);
-
-		DrawCheckedRect(OldColor, picker_data->picker->GetOldColour(), 10, 10);
-		*/
+		picker_data->requires_complete_redraw = false;
 		break;
 	}
 
@@ -360,10 +312,8 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		const float widthC1 = rectC1.right - rectC1.left;
 		const float heightC1 = rectC1.bottom - rectC1.top;
 
-		const float widthC2 = rectC2.right - rectC2.left;
 		const float heightC2 = rectC2.bottom - rectC2.top;
 
-		const float widthA = rectA.right - rectA.left;
 		const float heightA = rectA.bottom - rectA.top;
 
 		POINT p;
@@ -404,6 +354,9 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			{
 				picker_data->picker->SetHSV(fx / 255.0 * 359.0, (255 - fy) / 255.0 * 100.0, value);
 			}
+
+			picker_data->requires_c2_redraw = true;
+			picker_data->requires_a_redraw = true;
 		}
 		// IDC_COLOR2 picked
 		else if (_IS_IN(rectC2.left, rectC2.right, p.x) && _IS_IN(rectC2.top, rectC2.bottom, p.y))
@@ -439,6 +392,8 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			{
 				picker_data->picker->SetHSV(hue, saturation, (255 - fy) / 255.0 * 100.0);
 			}
+			picker_data->requires_c1_redraw = true;
+			picker_data->requires_a_redraw = true;
 		}
 		// IDC_ALPHASLIDE picked
 		else if (_IS_IN(rectA.left, rectA.right, p.x) && _IS_IN(rectA.top, rectA.bottom, p.y))
@@ -510,6 +465,9 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 					}
 
 					UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
+					picker_data->requires_c1_redraw = true;
+					picker_data->requires_c2_redraw = true;
+					picker_data->requires_a_redraw = true;
 					RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 				}
 				catch (std::invalid_argument) { }
@@ -574,6 +532,9 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			// Update color
 			UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
+			picker_data->requires_c1_redraw = true;
+			picker_data->requires_c2_redraw = true;
+			picker_data->requires_a_redraw = true;
 			RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 
 			break;
@@ -590,6 +551,8 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			case IDC_S:
 			case IDC_V:
 			{
+				picker_data->requires_c1_redraw = true;
+				picker_data->requires_c2_redraw = true;
 				RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 				break;
 			}
@@ -601,6 +564,9 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				picker_data->picker->SetRGB(old.r, old.g, old.b);
 				picker_data->picker->SetAlpha(old.a);
 				UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
+				picker_data->requires_c1_redraw = true;
+				picker_data->requires_c2_redraw = true;
+				picker_data->requires_a_redraw = true;
 				RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 				break;
 			}
@@ -629,49 +595,6 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		break;
 	}
 	return 0;
-}
-
-// Draw a b/w checked rectangle, "covered" with the rgba color provided.
-// cx and cy are the size of the checks
-void DrawCheckedRect(HWND hWnd, const SColour &color, int cx, int cy)
-{
-	float
-		rf = color.r / 255.0f,
-		gf = color.g / 255.0f,
-		bf = color.b / 255.0f,
-		af = color.a / 255.0f;
-	HDC hdc = GetDC(hWnd);
-	HBRUSH brush, brush2;
-	RECT rect, r2;
-	bool flag;
-
-	brush = CreateSolidBrush(RGB((rf*af) * 255, (gf*af) * 255, (bf*af) * 255));
-	brush2 = CreateSolidBrush(RGB((rf*af + 1 - af) * 255, (gf*af + 1 - af) * 255, (bf*af + 1 - af) * 255));
-
-	GetWindowRect(hWnd, &rect);
-
-	for (int x = 0; (x*cx) < WIDTH(rect); x++)
-	{
-		if (x % 2)
-			flag = false;
-		else
-			flag = true;
-		for (int y = 0; (y*cy) < HEIGHT(rect); y++)
-		{
-			r2.left = x * cx;
-			r2.right = (std::min<long>)((x + 1)*cx, WIDTH(rect) - 2);
-			r2.top = y * cy;
-			r2.bottom = (std::min<long>)((y + 1)*cy, HEIGHT(rect) - 2);
-
-			FillRect(hdc, &r2, flag ? brush : brush2);
-
-			flag = !flag;
-		}
-	}
-
-	DeleteObject(brush);
-	DeleteObject(brush2);
-	ReleaseDC(hWnd, hdc);
 }
 
 void DrawCircle(HDC hcomp, int red, int green, int blue, float x, float y)

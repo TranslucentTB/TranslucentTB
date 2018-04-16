@@ -1,7 +1,6 @@
 #pragma once
 #include <atlbase.h>
 #include <d2d1.h>
-#include <d2d1helper.h>
 #include <unordered_map>
 
 #include "../TranslucentTB/arch.h"
@@ -37,6 +36,9 @@ struct PickerData
 	CColourPicker *picker;
 	bool changing_text;
 	bool requires_complete_redraw;
+	bool requires_c1_redraw;
+	bool requires_c2_redraw;
+	bool requires_a_redraw;
 	CComPtr<ID2D1Factory> factory;
 	CComPtr<ID2D1HwndRenderTarget> targetC1;
 	CComPtr<ID2D1HwndRenderTarget> targetC2;
