@@ -1,14 +1,30 @@
-#include "CPicker.h"
+#include "main.hpp"
 #include <algorithm>
+#include <d2d1.h>
 #include <d2d1helper.h>
 #include <stdio.h>
 #include <string>
-#include <wingdi.h>
+#include <unordered_map>
 #include <WinUser.h>
 #include <CommCtrl.h>
 
+#include "CColourPicker.hpp"
 #include "drawhelper.hpp"
 #include "drawroutines.hpp"
+#include "PickerData.hpp"
+#include "resource.h"
+#include "SColour.hpp"
+
+static const std::unordered_map<unsigned int, std::pair<unsigned int, unsigned int>> SLIDER_MAP = {
+	{ IDC_RED,{ IDC_RSLIDER, 255 } },
+	{ IDC_GREEN,{ IDC_GSLIDER, 255 } },
+	{ IDC_BLUE,{ IDC_BSLIDER, 255 } },
+	{ IDC_ALPHA,{ IDC_ASLIDER, 255 } },
+	{ IDC_HUE,{ IDC_HSLIDER, 359 } },
+	{ IDC_SATURATION,{ IDC_SSLIDER, 100 } },
+	{ IDC_VALUE,{ IDC_VSLIDER, 100 } },
+	{ IDC_HEXCOL,{ IDC_HEXSLIDER, 0xFFFFFFFF } }
+};
 
 int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {

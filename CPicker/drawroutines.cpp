@@ -1,15 +1,15 @@
 #include "drawroutines.hpp"
+#include <atlbase.h>
 
-#include "CPicker.h"
 #include "drawhelper.hpp"
+#include "resource.h"
 
 void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
 {
 	const DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);
-	const D2D1::ColorF backgroundColorF(GetRValue(backgroundColor) / 255.0f, GetGValue(backgroundColor) / 255.0f, GetBValue(backgroundColor) / 255.0f);
 
 	target->BeginDraw();
-	target->Clear(backgroundColorF);
+	target->Clear(D2D1::ColorF(GetRValue(backgroundColor) / 255.0f, GetGValue(backgroundColor) / 255.0f, GetBValue(backgroundColor) / 255.0f));
 
 	D2D1_COLOR_F top_color, bottom_color;
 

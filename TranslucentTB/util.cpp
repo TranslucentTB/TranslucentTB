@@ -12,7 +12,7 @@
 #include <wrl/wrappers/corewrappers.h>
 
 #include "autofree.hpp"
-#include "../CPicker/CPickerDll.h"
+#include "../CPicker/CColourPicker.hpp"
 #include "window.hpp"
 #include "ttberror.hpp"
 

@@ -1,6 +1,8 @@
-#include "CPicker.h"
+#include "CColourPicker.hpp"
 #include <WinUser.h>
 
+#include "main.hpp"
+#include "PickerData.hpp"
 #include "resource.h"
 
 std::unordered_map<uint32_t *, HWND> CColourPicker::PickerMap;
@@ -88,96 +90,4 @@ void CColourPicker::UpdateOldColour()
 void CColourPicker::UpdateValue()
 {
 	Value = (CurrCol.a << 24) + (CurrCol.r << 16) + (CurrCol.g << 8) + CurrCol.b;
-}
-
-// Updates the RGB color from the HSV
-void SColour::UpdateRGB()
-{
-	int conv;
-	double hue, sat, val;
-	int base;
-
-	hue = (float)h / 100.0f;
-	sat = (float)s / 100.0f;
-	val = (float)v / 100.0f;
-
-	if ((float)s == 0) // Acromatic color (gray). Hue doesn't mind.
-		{
-		conv = (unsigned short) (255.0f * val);
-		r = b = g = conv;
-		return;
-		}
-	
-	base = (unsigned short)(255.0f * (1.0 - sat) * val);
-
-	switch ((unsigned short)((float)h/60.0f))
-	{
-		case 0:
-			r = (unsigned short)(255.0f * val);
-			g = (unsigned short)((255.0f * val - base) * (h/60.0f) + base);
-			b = base;
-		break;
-
-		case 1:
-			r = (unsigned short)((255.0f * val - base) * (1.0f - ((h%60)/ 60.0f)) + base);
-			g = (unsigned short)(255.0f * val);
-			b = base;
-		break;
-
-		case 2:
-			r = base;
-			g = (unsigned short)(255.0f * val);
-			b = (unsigned short)((255.0f * val - base) * ((h%60)/60.0f) + base);
-		break;
-		
-		case 3:
-			r = base;
-			g = (unsigned short)((255.0f * val - base) * (1.0f - ((h%60) / 60.0f)) + base);
-			b = (unsigned short)(255.0f * val);
-		break;
-		
-		case 4:
-			r = (unsigned short)((255.0f * val - base) * ((h%60) / 60.0f) + base);
-			g = base;
-			b = (unsigned short)(255.0f * val);
-		break;
-		
-		case 5:
-			r = (unsigned short)(255.0f * val);
-			g = base;
-			b = (unsigned short)((255.0f * val - base) * (1.0f - ((h%60) / 60.0f)) + base);
-		break;
-	}
-}
-
-// Updates the HSV color from the RGB
-void SColour::UpdateHSV()
-{
-	unsigned short max, min, delta;
-	short temp;
-    
-	max = MAX(r, g, b);
-	min = MIN(r, g, b);
-	delta = max-min;
-
-    if (max == 0)
-		{
-		s = h = v = 0;
-		return;
-		}
-    
-	v = (unsigned short) ((double)max/255.0*100.0);
-	s = (unsigned short) (((double)delta/max)*100.0);
-
-	if (r == max)
-		temp = (short)(60 * ((g-b) / (double) delta));
-	else if (g == max)
-		temp = (short)(60 * (2.0 + (b-r) / (double) delta));
-	else
-		temp = (short)(60 * (4.0 + (r-g) / (double) delta));
-	
-	if (temp<0)
-		h = temp + 360;
-	else
-		h = temp;
 }

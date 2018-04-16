@@ -78,15 +78,17 @@
     <ClCompile Include="CColourPicker.cpp" />
     <ClCompile Include="drawhelper.cpp" />
     <ClCompile Include="drawroutines.cpp" />
-    <ClCompile Include="Main.cpp" />
-    <ClCompile Include="PixelBuffer.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="SColour.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="drawhelper.hpp" />
-    <ClInclude Include="CPicker.h" />
-    <ClInclude Include="CPickerDll.h" />
+    <ClInclude Include="main.hpp" />
+    <ClInclude Include="CColourPicker.hpp" />
     <ClInclude Include="drawroutines.hpp" />
+    <ClInclude Include="PickerData.hpp" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SColour.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DLL.rc" />

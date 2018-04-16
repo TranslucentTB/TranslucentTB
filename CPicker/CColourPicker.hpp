@@ -1,28 +1,14 @@
 #pragma once
+#include "../TranslucentTB/arch.h"
 #include <cstdint>
 #include <unordered_map>
 #include <windef.h>
 
-struct SColour
-{
-	// Red, green and blue
-	uint8_t r, g, b;
-
-	// Hue, saturation and value
-	unsigned short h;
-	uint8_t s, v;
-
-	// Alpha
-	uint8_t a;
-
-	void UpdateRGB();			// Updates RGB from HSV
-	void UpdateHSV();			// Updates HSV from RGB
-};
+#include "SColour.hpp"
 
 class CColourPicker
 {
 	public:
-		// Use true for IsRGB if passing RGBA or false if passing HSVA 
 		_declspec(dllexport) CColourPicker(uint32_t &value, HWND hParentWindow = NULL);
 
 		// Creates the colour picker dialog
