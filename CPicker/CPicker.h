@@ -35,10 +35,6 @@ struct PickerData
 {
 	CColourPicker *picker;
 	bool changing_text;
-	bool requires_complete_redraw;
-	bool requires_c1_redraw;
-	bool requires_c2_redraw;
-	bool requires_a_redraw;
 	CComPtr<ID2D1Factory> factory;
 	CComPtr<ID2D1HwndRenderTarget> targetC1;
 	CComPtr<ID2D1HwndRenderTarget> targetC2;
@@ -48,9 +44,7 @@ struct PickerData
 };
 
 int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-void DrawCheckedRect(HWND hWnd, const SColour &color, int cx, int cy);
 void DrawCircle(HDC hcomp, int red, int green, int blue, float x, float y);
-void DrawArrows(HDC hcomp, int width, int height, float y);
 void UpdateValues(HWND hDlg, const SColour &col, bool &changing_text);
 
 const std::unordered_map<unsigned int, std::pair<unsigned int, unsigned int>> SLIDER_MAP = {

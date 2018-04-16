@@ -19,13 +19,6 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	}
 
 	BOOL result;
-	const float red = SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, (LPARAM)&result) / 255.0f;
-	const float green = SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, (LPARAM)&result) / 255.0f;
-	const float blue = SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, (LPARAM)&result) / 255.0f;
-
-	const unsigned short hue = SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
-	const uint8_t saturation = SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
-	const uint8_t value = SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
 
 	switch (uMsg)
 	{
@@ -85,13 +78,13 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right - rect.left, rect.bottom - rect.top)), &picker_data->targetOC);
 
 
-		picker_data->requires_complete_redraw = true;
 		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 
 		break;
 	}
 	case WM_PAINT:
 	{
+		const SColour &color = picker_data->picker->GetCurrentColour();
 		/*
 		// Check who is selected.
 		// RED
@@ -265,27 +258,14 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		*/
 
 		// Small color selector (displays selected feature)
-		if (picker_data->requires_complete_redraw || picker_data->requires_c2_redraw)
-		{
-			DrawColorSlider(picker_data->targetC2, hDlg, red, green, blue, hue, saturation, value);
-			picker_data->requires_c2_redraw = false;
-		}
+		DrawColorSlider(picker_data->targetC2, hDlg, color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.h, color.s, color.v);
 
 		// Alpha slider
-		if (picker_data->requires_complete_redraw || picker_data->requires_a_redraw)
-		{
-			DrawAlphaSlider(picker_data->targetA, D2D1::ColorF(red, green, blue));
-			picker_data->requires_a_redraw = false;
-		}
+		DrawAlphaSlider(picker_data->targetA, D2D1::ColorF(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f), 1.0 - (color.a / 255.0f));
 
-		DrawColorIndicator(picker_data->targetCC, picker_data->picker->GetCurrentColour());
+		DrawColorIndicator(picker_data->targetCC, color);
+		DrawColorIndicator(picker_data->targetOC, picker_data->picker->GetOldColour());
 
-		if (picker_data->requires_complete_redraw)
-		{
-			DrawColorIndicator(picker_data->targetOC, picker_data->picker->GetOldColour());
-		}
-
-		picker_data->requires_complete_redraw = false;
 		break;
 	}
 
@@ -315,6 +295,14 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		const float heightC2 = rectC2.bottom - rectC2.top;
 
 		const float heightA = rectA.bottom - rectA.top;
+
+		const float red = SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, (LPARAM)&result) / 255.0f;
+		const float green = SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, (LPARAM)&result) / 255.0f;
+		const float blue = SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, (LPARAM)&result) / 255.0f;
+
+		const unsigned short hue = SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+		const uint8_t saturation = SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+		const uint8_t value = SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
 
 		POINT p;
 		GetCursorPos(&p);
@@ -354,9 +342,6 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			{
 				picker_data->picker->SetHSV(fx / 255.0 * 359.0, (255 - fy) / 255.0 * 100.0, value);
 			}
-
-			picker_data->requires_c2_redraw = true;
-			picker_data->requires_a_redraw = true;
 		}
 		// IDC_COLOR2 picked
 		else if (_IS_IN(rectC2.left, rectC2.right, p.x) && _IS_IN(rectC2.top, rectC2.bottom, p.y))
@@ -392,8 +377,6 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			{
 				picker_data->picker->SetHSV(hue, saturation, (255 - fy) / 255.0 * 100.0);
 			}
-			picker_data->requires_c1_redraw = true;
-			picker_data->requires_a_redraw = true;
 		}
 		// IDC_ALPHASLIDE picked
 		else if (_IS_IN(rectA.left, rectA.right, p.x) && _IS_IN(rectA.top, rectA.bottom, p.y))
@@ -465,9 +448,6 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 					}
 
 					UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
-					picker_data->requires_c1_redraw = true;
-					picker_data->requires_c2_redraw = true;
-					picker_data->requires_a_redraw = true;
 					RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 				}
 				catch (std::invalid_argument) { }
@@ -532,9 +512,6 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			// Update color
 			UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
-			picker_data->requires_c1_redraw = true;
-			picker_data->requires_c2_redraw = true;
-			picker_data->requires_a_redraw = true;
 			RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 
 			break;
@@ -551,8 +528,6 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			case IDC_S:
 			case IDC_V:
 			{
-				picker_data->requires_c1_redraw = true;
-				picker_data->requires_c2_redraw = true;
 				RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 				break;
 			}
@@ -564,9 +539,6 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				picker_data->picker->SetRGB(old.r, old.g, old.b);
 				picker_data->picker->SetAlpha(old.a);
 				UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
-				picker_data->requires_c1_redraw = true;
-				picker_data->requires_c2_redraw = true;
-				picker_data->requires_a_redraw = true;
 				RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 				break;
 			}
@@ -602,22 +574,6 @@ void DrawCircle(HDC hcomp, int red, int green, int blue, float x, float y)
 	HPEN pen = CreatePen(PS_SOLID, 1, RGB(255 - red, 255 - green, 255 - blue));
 	HGDIOBJ prev = SelectObject(hcomp, pen);
 	Arc(hcomp, x - 5, y - 5, x + 5, y + 5, 0, 0, 0, 0);
-	SelectObject(hcomp, prev);
-	DeleteObject(pen);
-}
-
-void DrawArrows(HDC hcomp, int width, int height, float y)
-{
-	HPEN pen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
-	HGDIOBJ prev = SelectObject(hcomp, pen);
-	MoveToEx(hcomp, 0, height - (y - 5), NULL);
-	LineTo(hcomp, 0, height - (y + 5));
-	LineTo(hcomp, 5, height - (y));
-	LineTo(hcomp, 0, height - (y - 5));
-	MoveToEx(hcomp, width - 1, height - (y - 5), NULL);
-	LineTo(hcomp, width - 1, height - (y + 5));
-	LineTo(hcomp, width - 6, height - (y));
-	LineTo(hcomp, width - 1, height - (y - 5));
 	SelectObject(hcomp, prev);
 	DeleteObject(pen);
 }
