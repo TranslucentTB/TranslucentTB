@@ -2,7 +2,7 @@
 #include <atlbase.h>
 #include <d2d1helper.h>
 
-void DrawGradient(ID2D1RenderTarget *target, const D2D1_COLOR_F &top, const D2D1_COLOR_F &bottom, const uint8_t &border_size)
+void DrawGradient(ID2D1RenderTarget *target, const D2D1_COLOR_F &top, const D2D1_COLOR_F &bottom, const uint8_t &border_size, const bool &isX)
 {
 	const D2D1_SIZE_F size = target->GetSize();
 
@@ -25,7 +25,7 @@ void DrawGradient(ID2D1RenderTarget *target, const D2D1_COLOR_F &top, const D2D1
 	target->CreateLinearGradientBrush(
 		D2D1::LinearGradientBrushProperties(
 			D2D1::Point2F(0, 0),
-			D2D1::Point2F(0, size.height)
+			D2D1::Point2F(isX ? size.width : 0, isX ? 0 : size.height)
 		),
 		pGradientStops,
 		&brush
