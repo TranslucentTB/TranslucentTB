@@ -54,22 +54,33 @@ void DrawCheckerboard(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, co
 	}
 }
 
-void DrawArrows(ID2D1RenderTarget *target, const float &position, const uint8_t &size)
+void DrawArrows(ID2D1RenderTarget *target, const float &position, const uint8_t &size, ID2D1Brush *brush)
 {
 	const D2D1_SIZE_F t_size = target->GetSize();
-	CComPtr<ID2D1SolidColorBrush> brush;
-	target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &brush);
+	const D2D1_TRIANGLE triangles[2] = {
+		{
+			D2D1::Point2F(0, (t_size.height * position) - (size / 2.0f)),
+			D2D1::Point2F(0, (t_size.height * position) + (size / 2.0f)),
+			D2D1::Point2F(size, t_size.height * position)
+		},
+		{
+			D2D1::Point2F(t_size.width, (t_size.height * position) - (size / 2.0f)),
+			D2D1::Point2F(t_size.width, (t_size.height * position) + (size / 2.0f)),
+			D2D1::Point2F(t_size.width - size, t_size.height * position)
+		}
+	};
 
-	const float arrow_y = t_size.height * position;
-	const float top_y = t_size.height * position - (size / 2.0f);
-	const float bottom_y = t_size.height * position + (size / 2.0f);
+	CComPtr<ID2D1Mesh> mesh;
+	target->CreateMesh(&mesh);
 
-	target->DrawLine(D2D1::Point2F(0, bottom_y), D2D1::Point2F(0, top_y), brush);
-	target->DrawLine(D2D1::Point2F(0, top_y), D2D1::Point2F(size, arrow_y), brush);
-	target->DrawLine(D2D1::Point2F(size, arrow_y), D2D1::Point2F(0, bottom_y), brush);
+	CComPtr<ID2D1TessellationSink> sink;
+	mesh->Open(&sink);
 
-	const float right_arraw_x = t_size.width - size;
-	target->DrawLine(D2D1::Point2F(t_size.width, bottom_y), D2D1::Point2F(t_size.width, top_y), brush);
-	target->DrawLine(D2D1::Point2F(t_size.width, top_y), D2D1::Point2F(right_arraw_x, arrow_y), brush);
-	target->DrawLine(D2D1::Point2F(right_arraw_x, arrow_y), D2D1::Point2F(t_size.width, bottom_y), brush);
+	sink->AddTriangles(triangles, 2);
+	sink->Close();
+
+	const D2D1_ANTIALIAS_MODE mode_backup = target->GetAntialiasMode();
+	target->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
+	target->FillMesh(mesh, brush);
+	target->SetAntialiasMode(mode_backup);
 }

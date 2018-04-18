@@ -16,14 +16,14 @@
 #include "SColour.hpp"
 
 static const std::unordered_map<unsigned int, std::pair<unsigned int, unsigned int>> SLIDER_MAP = {
-	{ IDC_RED,{ IDC_RSLIDER, 255 } },
-	{ IDC_GREEN,{ IDC_GSLIDER, 255 } },
-	{ IDC_BLUE,{ IDC_BSLIDER, 255 } },
-	{ IDC_ALPHA,{ IDC_ASLIDER, 255 } },
-	{ IDC_HUE,{ IDC_HSLIDER, 359 } },
-	{ IDC_SATURATION,{ IDC_SSLIDER, 100 } },
-	{ IDC_VALUE,{ IDC_VSLIDER, 100 } },
-	{ IDC_HEXCOL,{ IDC_HEXSLIDER, 0xFFFFFFFF } }
+	{ IDC_RED,        { IDC_RSLIDER,   255 } },
+	{ IDC_GREEN,      { IDC_GSLIDER,   255 } },
+	{ IDC_BLUE,       { IDC_BSLIDER,   255 } },
+	{ IDC_ALPHA,      { IDC_ASLIDER,   255 } },
+	{ IDC_HUE,        { IDC_HSLIDER,   359 } },
+	{ IDC_SATURATION, { IDC_SSLIDER,   100 } },
+	{ IDC_VALUE,      { IDC_VSLIDER,   100 } },
+	{ IDC_HEXCOL,     { IDC_HEXSLIDER, 0xFFFFFFFF } }
 };
 
 int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -165,7 +165,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		GetCursorPos(&p);
 
 		// IDC_COLOR1 picked
-		if (_IS_IN(rectC1.left, rectC1.right, p.x) && _IS_IN(rectC1.top, rectC1.bottom, p.y))
+		if (PtInRect(&rectC1, p))
 		{
 			const float fx = ((p.x - rectC1.left) / widthC1) * 255.0f;
 			const float fy = ((p.y - rectC1.top) / heightC1) * 255.0f;
@@ -201,7 +201,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			}
 		}
 		// IDC_COLOR2 picked
-		else if (_IS_IN(rectC2.left, rectC2.right, p.x) && _IS_IN(rectC2.top, rectC2.bottom, p.y))
+		else if (PtInRect(&rectC2, p))
 		{
 			const float fy = ((p.y - rectC2.top) / heightC2) * 255.0f;
 
@@ -236,7 +236,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			}
 		}
 		// IDC_ALPHASLIDE picked
-		else if (_IS_IN(rectA.left, rectA.right, p.x) && _IS_IN(rectA.top, rectA.bottom, p.y))
+		else if (PtInRect(&rectA, p))
 		{
 			const float fy = ((p.y - rectA.top) / heightA) * 255.0f;
 
@@ -426,6 +426,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	return 0;
 }
 
+/*
 void DrawCircle(HDC hcomp, int red, int green, int blue, float x, float y)
 {
 	HPEN pen = CreatePen(PS_SOLID, 1, RGB(255 - red, 255 - green, 255 - blue));
@@ -433,7 +434,7 @@ void DrawCircle(HDC hcomp, int red, int green, int blue, float x, float y)
 	Arc(hcomp, x - 5, y - 5, x + 5, y + 5, 0, 0, 0, 0);
 	SelectObject(hcomp, prev);
 	DeleteObject(pen);
-}
+}*/
 
 void UpdateValues(HWND hDlg, const SColour &col, bool &changing_text)
 {
