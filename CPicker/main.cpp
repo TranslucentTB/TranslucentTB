@@ -100,187 +100,27 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	}
 	case WM_PAINT:
 	{
+		// TODO: handle device loss
+		PAINTSTRUCT ps;
+		BeginPaint(hDlg, &ps);
+
 		const SColour &color = picker_data->picker->GetCurrentColour();
-		/*
-		// Check who is selected.
-		// RED
-		if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
-		{
-			for (int g = 0; g < widthC1; g++)
-			{
-				gf = (g / widthC1) * 255.0f;
-				for (int b = 0; b < heightC1; b++)
-				{
-					bf = (b / heightC1) * 255.0f;
-					picker_data->bufferC1.SetPixel(g, b, RGB(red, gf, bf));
-				}
-			}
+		const float rf = color.r / 255.0f;
+		const float gf = color.g / 255.0f;
+		const float bf = color.b / 255.0f;
 
-			picker_data->bufferC1.Display(hcomp);
-			DrawCircle(hcomp, red, green, blue, (green / 255.0f) * widthC1, (blue / 255.0f) * heightC1);
-		}
-
-		// GREEN
-		else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
-		{
-			for (int r = 0; r < widthC1; r++)
-			{
-				rf = (r / widthC1) * 255.0f;
-				for (int b = 0; b < heightC1; b++)
-				{
-					bf = (b / heightC1) * 255.0f;
-					picker_data->bufferC1.SetPixel(r, b, RGB(rf, green, bf));
-				}
-			}
-			picker_data->bufferC1.Display(hcomp);
-			DrawCircle(hcomp, red, green, blue, (red / 255.0f) * widthC1, (blue / 255.0f) * heightC1);
-		}
-
-		// BLUE
-		else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
-		{
-			for (int g = 0; g < widthC1; g++)
-			{
-				gf = (g / widthC1) * 255.0f;
-				for (int r = 0; r < heightC1; r++)
-				{
-					rf = (r / heightC1) * 255.0f;
-					picker_data->bufferC1.SetPixel(g, r, RGB(rf, gf, blue));
-				}
-			}
-			picker_data->bufferC1.Display(hcomp);
-			DrawCircle(hcomp, red, green, blue, (green / 255.0f) * widthC1, (red / 255.0f) * heightC1);
-		}
-
-		// HUE
-		else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
-		{
-			double sat, val, stepsat, stepval;
-			SColour tempcol;
-
-			sat = val = 0.0;
-			stepsat = 100.0 / widthC1;
-			stepval = 100.0 / heightC1;
-
-			tempcol.h = hue;
-			tempcol.s = sat;
-			tempcol.v = val;
-
-			for (int y = heightC1 - 1; y > -1; y--)
-			{
-				for (int x = 0; x < widthC1; x++)
-				{
-					sat += stepsat;
-					tempcol.s = sat;
-					tempcol.UpdateRGB();
-					picker_data->bufferC1.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
-				}
-
-				val += stepval;
-				sat = 0.0;
-				tempcol.v = val;
-			}
-			picker_data->bufferC1.Display(hcomp);
-
-			// Draws circle
-			tempcol.s = saturation;
-			tempcol.v = value;
-			tempcol.UpdateRGB();
-
-			DrawCircle(hcomp, tempcol.r, tempcol.g, tempcol.b, tempcol.s / stepsat, heightC1 - (tempcol.v / stepval));
-		}
-
-		// SATURATION
-		else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
-		{
-			double temphue, val, stepval, stephue;
-			SColour tempcol;
-
-			temphue = val = 0.0;
-			stephue = 359.0 / widthC1;
-			stepval = 100.0 / heightC1;
-
-			tempcol.h = temphue;
-			tempcol.s = saturation;
-			tempcol.v = val;
-
-			for (int y = heightC1 - 1; y > -1; y--)
-			{
-				for (int x = 0; x < widthC1; x++)
-				{
-					temphue += stephue;
-					tempcol.h = temphue;
-					tempcol.UpdateRGB();
-					picker_data->bufferC1.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
-				}
-
-				val += stepval;
-				temphue = 0.0;
-				tempcol.v = val;
-			}
-			picker_data->bufferC1.Display(hcomp);
-
-			// Draws circle
-			tempcol.h = hue;
-			tempcol.v = value;
-			tempcol.UpdateRGB();
-
-			DrawCircle(hcomp, tempcol.r, tempcol.g, tempcol.b, tempcol.h / stephue, heightC1 - (tempcol.v / stepval));
-		}
-
-		// VALUE
-		else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
-		{
-			double temphue, sat, stepsat, stephue;
-			SColour tempcol;
-
-			temphue = sat = 0.0;
-			stephue = 359.0 / widthC1;
-			stepsat = 100.0 / heightC1;
-
-			tempcol.h = temphue;
-			tempcol.s = sat;
-			tempcol.v = value;
-
-			for (int y = heightC1 - 1; y > -1; y--)
-			{
-				for (int x = 0; x < widthC1; x++)
-				{
-					temphue += stephue;
-					tempcol.h = temphue;
-					tempcol.UpdateRGB();
-					picker_data->bufferC1.SetPixel(x, y, RGB(tempcol.r, tempcol.g, tempcol.b));
-				}
-
-				sat += stepsat;
-				temphue = 0.0;
-				tempcol.s = sat;
-			}
-			picker_data->bufferC1.Display(hcomp);
-
-			// Draws circle
-			tempcol.h = hue;
-			tempcol.s = saturation;
-			tempcol.UpdateRGB();
-
-			DrawCircle(hcomp, tempcol.r, tempcol.g, tempcol.b, tempcol.h / stephue, heightC1 - (tempcol.s / stepsat));
-		}
-
-		BitBlt(hdc, 0, 0, widthC1, heightC1, hcomp, 0, 0, SRCCOPY);
-
-		DeleteObject(hbmp);
-		DeleteDC(hcomp);
-		ReleaseDC(Color1, hdc);
-		*/
+		DrawColorPicker(picker_data->targetC1, hDlg, rf, gf, bf, color.h, color.s, color.v);
 
 		// Small color selector (displays selected feature)
-		DrawColorSlider(picker_data->targetC2, hDlg, color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.h, color.s, color.v);
+		DrawColorSlider(picker_data->targetC2, hDlg, rf, gf, bf, color.h, color.s, color.v);
 
 		// Alpha slider
-		DrawAlphaSlider(picker_data->targetA, D2D1::ColorF(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f), 1.0 - (color.a / 255.0f));
+		DrawAlphaSlider(picker_data->targetA, D2D1::ColorF(rf, gf, bf), 1.0 - (color.a / 255.0f));
 
 		DrawColorIndicator(picker_data->targetCC, color);
 		DrawColorIndicator(picker_data->targetOC, picker_data->picker->GetOldColour());
+
+		EndPaint(hDlg, &ps);
 
 		break;
 	}
@@ -293,6 +133,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			break;
 		}
 
+		// TODO: cleanup this
 		const HWND Color1 = GetDlgItem(hDlg, IDC_COLOR);
 		const HWND Color2 = GetDlgItem(hDlg, IDC_COLOR2);
 		const HWND Alpha = GetDlgItem(hDlg, IDC_ALPHASLIDE);

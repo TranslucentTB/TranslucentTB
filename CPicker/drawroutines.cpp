@@ -1,8 +1,82 @@
 #include "drawroutines.hpp"
+#include <array>
 #include <atlbase.h>
 
 #include "drawhelper.hpp"
 #include "resource.h"
+
+constexpr uint8_t HueGradientPrecision = 20; // Number of steps in the hue gradient
+const std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> &GetHueGradient();
+
+void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
+{
+	target->BeginDraw();
+
+	const D2D1_SIZE_F size = target->GetSize();
+
+	// TODO: Red, green and blue
+	// HUE
+	if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
+	{
+		SColour temp;
+		temp.h = h;
+		temp.s = 100;
+		temp.v = 100;
+		temp.UpdateRGB();
+		target->Clear(D2D1::ColorF(temp.r / 255.0f, temp.g / 255.0f, temp.b / 255.0f));
+
+		DrawGradient(target, D2D1::ColorF(D2D1::ColorF::White), D2D1::ColorF(1, 1, 1, 0), 0, true);
+		DrawGradient(target, D2D1::ColorF(0, 0), D2D1::ColorF(D2D1::ColorF::Black), 0, false);
+	}
+
+	// SATURATION and VALUE
+	else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED || IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
+	{
+		CComPtr<ID2D1GradientStopCollection> pGradientStops;
+		target->CreateGradientStopCollection(
+			GetHueGradient().data(),
+			HueGradientPrecision,
+			D2D1_GAMMA_1_0,
+			D2D1_EXTEND_MODE_CLAMP,
+			&pGradientStops
+		);
+
+		CComPtr<ID2D1LinearGradientBrush> brush;
+		target->CreateLinearGradientBrush(
+			D2D1::LinearGradientBrushProperties(
+				D2D1::Point2F(size.width, 0),
+				D2D1::Point2F(0, 0)
+			),
+			pGradientStops,
+			&brush
+		);
+
+		target->FillRectangle(D2D1::RectF(0, 0, size.width, size.height), brush);
+
+		// VALUE
+		if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
+		{
+			DrawGradient(target, D2D1::ColorF(1, 1, 1, 0), D2D1::ColorF(D2D1::ColorF::White));
+
+			CComPtr<ID2D1SolidColorBrush> overlayBrush;
+			target->CreateSolidColorBrush(D2D1::ColorF(0, 1.0f - (v / 100.0f)), &overlayBrush);
+
+			target->FillRectangle(D2D1::RectF(0, 0, size.width, size.height), overlayBrush);
+		}
+
+		// SATURATION
+		else
+		{
+			CComPtr<ID2D1SolidColorBrush> underlayBrush;
+			target->CreateSolidColorBrush(D2D1::ColorF(1, 1, 1, 1.0f - (s / 100.0f)), &underlayBrush);
+
+			target->FillRectangle(D2D1::RectF(0, 0, size.width, size.height), underlayBrush);
+			DrawGradient(target, D2D1::ColorF(0, 0), D2D1::ColorF(D2D1::ColorF::Black));
+		}
+	}
+
+	target->EndDraw();
+}
 
 void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
 {
@@ -41,30 +115,12 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 	// HUE
 	else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
 	{
-		const D2D1_SIZE_F size = target->GetSize();
-
-		D2D1_GRADIENT_STOP gradientStops[20];
-		SColour tempcol;
-		tempcol.h = 359;
-		tempcol.s = 100;
-		tempcol.v = 100;
-		tempcol.UpdateRGB();
-
-		const float step = 359 / 20.0f;
-
-		for (int i = 0; i < 20; i++)
-		{
-			gradientStops[i].color = D2D1::ColorF(tempcol.r / 255.0f, tempcol.g / 255.0f, tempcol.b / 255.0f);
-			gradientStops[i].position = i / 19.0f;
-
-			tempcol.h -= step;
-			tempcol.UpdateRGB();
-		}
+		const D2D1_SIZE_F size = target->GetSize();		
 
 		CComPtr<ID2D1GradientStopCollection> pGradientStops;
 		target->CreateGradientStopCollection(
-			gradientStops,
-			20,
+			GetHueGradient().data(),
+			HueGradientPrecision,
 			D2D1_GAMMA_1_0,
 			D2D1_EXTEND_MODE_CLAMP,
 			&pGradientStops
@@ -100,7 +156,7 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 		tempcol.UpdateRGB();
 		bottom_color = D2D1::ColorF(tempcol.r / 255.0f, tempcol.g / 255.0f, tempcol.b / 255.0f);
 
-		DrawArrows(target, 1.0 - (s / 100), 7);
+		DrawArrows(target, 1.0 - (s / 100.0f), 7);
 	}
 	// VALUE
 	else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
@@ -118,7 +174,7 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 		tempcol.UpdateRGB();
 		bottom_color = D2D1::ColorF(tempcol.r / 255.0f, tempcol.g / 255.0f, tempcol.b / 255.0f);
 
-		DrawArrows(target, 1.0 - (v / 100), 7);
+		DrawArrows(target, 1.0 - (v / 100.0f), 7);
 	}
 
 	// Hue has its own drawing code (a gradient with 20 steps), because it loops over the whole color space.
@@ -167,4 +223,32 @@ void DrawColorIndicator(ID2D1RenderTarget *target, const SColour &color)
 	target->FillRectangle(D2D1::RectF(0, 0, size.width, size.height), brush);
 
 	target->EndDraw();
+}
+
+const std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> &GetHueGradient()
+{
+	static std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> gradientStops;
+	static bool calc = false;
+
+	if (!calc)
+	{
+		SColour tempcol;
+		tempcol.h = 359;
+		tempcol.s = 100;
+		tempcol.v = 100;
+		tempcol.UpdateRGB();
+
+		const float step = 359 / (float)HueGradientPrecision;
+
+		for (uint8_t i = 0; i < HueGradientPrecision; i++)
+		{
+			gradientStops[i].color = D2D1::ColorF(tempcol.r / 255.0f, tempcol.g / 255.0f, tempcol.b / 255.0f);
+			gradientStops[i].position = i / (float)(HueGradientPrecision - 1);
+
+			tempcol.h -= step;
+			tempcol.UpdateRGB();
+		}
+	}
+
+	return gradientStops;
 }
