@@ -33,8 +33,6 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		return 0;
 	}
 
-	BOOL result;
-
 	switch (uMsg)
 	{
 	case WM_INITDIALOG:
@@ -99,7 +97,14 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	}
 	case WM_PAINT:
 	{
-		// TODO: handle device loss
+		// Check if we need to recreate the render targets.
+		picker_data->targetC1->BeginDraw();
+		if (picker_data->targetC1->EndDraw() == D2DERR_RECREATE_TARGET)
+		{
+			// WM_DPICHANGED refreshes our targets and does a redraw.
+			return SendMessage(hDlg, WM_DPICHANGED, NULL, NULL);
+		}
+
 		PAINTSTRUCT ps;
 		BeginPaint(hDlg, &ps);
 
@@ -114,7 +119,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		DrawColorSlider(picker_data->targetC2, hDlg, rf, gf, bf, color.h, color.s, color.v);
 
 		// Alpha slider
-		DrawAlphaSlider(picker_data->targetA, D2D1::ColorF(rf, gf, bf), 1.0 - (color.a / 255.0f));
+		DrawAlphaSlider(picker_data->targetA, D2D1::ColorF(rf, gf, bf), 1.0f - (color.a / 255.0f));
 
 		DrawColorIndicator(picker_data->targetCC, color);
 		DrawColorIndicator(picker_data->targetOC, picker_data->picker->GetOldColour());
@@ -132,33 +137,22 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			break;
 		}
 
-		// TODO: cleanup this
-		const HWND Color1 = GetDlgItem(hDlg, IDC_COLOR);
-		const HWND Color2 = GetDlgItem(hDlg, IDC_COLOR2);
-		const HWND Alpha = GetDlgItem(hDlg, IDC_ALPHASLIDE);
-
 		RECT rectC1;
 		RECT rectC2;
 		RECT rectA;
 
-		GetWindowRect(Color1, &rectC1);
-		GetWindowRect(Color2, &rectC2);
-		GetWindowRect(Alpha, &rectA);
+		GetWindowRect(GetDlgItem(hDlg, IDC_COLOR), &rectC1);
+		GetWindowRect(GetDlgItem(hDlg, IDC_COLOR2), &rectC2);
+		GetWindowRect(GetDlgItem(hDlg, IDC_ALPHASLIDE), &rectA);
 
-		const float widthC1 = rectC1.right - rectC1.left;
-		const float heightC1 = rectC1.bottom - rectC1.top;
-
-		const float heightC2 = rectC2.bottom - rectC2.top;
-
-		const float heightA = rectA.bottom - rectA.top;
-
-		const float red = SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, (LPARAM)&result) / 255.0f;
-		const float green = SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, (LPARAM)&result) / 255.0f;
-		const float blue = SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, (LPARAM)&result) / 255.0f;
+		BOOL result;
+		const uint8_t red   = SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+		const uint8_t green = SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+		const uint8_t blue  = SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
 
 		const unsigned short hue = SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
 		const uint8_t saturation = SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
-		const uint8_t value = SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+		const uint8_t value      = SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
 
 		POINT p;
 		GetCursorPos(&p);
@@ -166,78 +160,78 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		// IDC_COLOR1 picked
 		if (PtInRect(&rectC1, p))
 		{
-			const float fx = ((p.x - rectC1.left) / widthC1) * 255.0f;
-			const float fy = ((p.y - rectC1.top) / heightC1) * 255.0f;
+			const float fx = ((p.x - rectC1.left) / (float)(rectC1.right - rectC1.left)) * 255.0f;
+			const float fy = ((p.y - rectC1.top) / (float)(rectC1.bottom - rectC1.top)) * 255.0f;
 
 			if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(red * 255, fx, fy);
+				picker_data->picker->SetRGB(red, fx, fy);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(fx, green * 255, fy);
+				picker_data->picker->SetRGB(fx, green, fy);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(fy, fx, blue * 255);
+				picker_data->picker->SetRGB(fy, fx, blue);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
 			{
-				picker_data->picker->SetHSV(hue, fx / 255.0 * 100.0, (255 - fy) / 255.0 * 100.0);
+				picker_data->picker->SetHSV(hue, fx / 255.0f * 100.0f, (255 - fy) / 255.0f * 100.0f);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
 			{
-				picker_data->picker->SetHSV(fx / 255.0 * 359.0, saturation, (255 - fy) / 255.0 * 100.0);
+				picker_data->picker->SetHSV(fx / 255.0f * 359.0f, saturation, (255 - fy) / 255.0f * 100.0f);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
 			{
-				picker_data->picker->SetHSV(fx / 255.0 * 359.0, (255 - fy) / 255.0 * 100.0, value);
+				picker_data->picker->SetHSV(fx / 255.0f * 359.0f, (255 - fy) / 255.0f * 100.0f, value);
 			}
 		}
 		// IDC_COLOR2 picked
 		else if (PtInRect(&rectC2, p))
 		{
-			const float fy = ((p.y - rectC2.top) / heightC2) * 255.0f;
+			const float fy = ((p.y - rectC2.top) / (float)(rectC2.bottom - rectC2.top)) * 255.0f;
 
 			if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(255 - fy, green * 255, blue * 255);
+				picker_data->picker->SetRGB(255 - fy, green, blue);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(red * 255, 255 - fy, blue * 255);
+				picker_data->picker->SetRGB(red, 255 - fy, blue);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(red * 255, green * 255, 255 - fy);
+				picker_data->picker->SetRGB(red, green, 255 - fy);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
 			{
-				picker_data->picker->SetHSV((255 - fy) / 255.0 * 359.0, saturation, value);
+				picker_data->picker->SetHSV((255 - fy) / 255.0f * 359.0f, saturation, value);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
 			{
-				picker_data->picker->SetHSV(hue, (255 - fy) / 255.0 * 100.0, value);
+				picker_data->picker->SetHSV(hue, (255 - fy) / 255.0f * 100.0f, value);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
 			{
-				picker_data->picker->SetHSV(hue, saturation, (255 - fy) / 255.0 * 100.0);
+				picker_data->picker->SetHSV(hue, saturation, (255 - fy) / 255.0f * 100.0f);
 			}
 		}
 		// IDC_ALPHASLIDE picked
 		else if (PtInRect(&rectA, p))
 		{
-			const float fy = ((p.y - rectA.top) / heightA) * 255.0f;
+			const float fy = ((p.y - rectA.top) / (float)(rectA.bottom - rectA.top)) * 255.0f;
 
 			picker_data->picker->SetAlpha(255 - fy);
 		}
@@ -250,6 +244,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	case WM_COMMAND:
 		switch (HIWORD(wParam))
 		{
+			BOOL result;
 		case EN_SETFOCUS:
 		{
 			if (LOWORD(wParam) != IDC_HEXCOL)

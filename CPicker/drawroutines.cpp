@@ -10,6 +10,7 @@ const std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> &GetHueGradient();
 
 constexpr uint8_t BorderSize = 7;
 
+// TODO: selection circle/crosshair
 void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
 {
 	const D2D1_SIZE_F size = target->GetSize();
@@ -42,10 +43,7 @@ void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 		temp.s = 100;
 		temp.v = 100;
 		temp.UpdateRGB();
-		target->Clear(D2D1::ColorF(temp.r / 255.0f, temp.g / 255.0f, temp.b / 255.0f));
-
-		DrawGradient(target, size, D2D1::ColorF(D2D1::ColorF::White), D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f), 0, true);
-		DrawGradient(target, size, D2D1::ColorF(0, 0.0f), D2D1::ColorF(D2D1::ColorF::Black), 0, false);
+		DrawTwoDimensionalGradient(target, size, D2D1::ColorF(D2D1::ColorF::White), D2D1::ColorF(temp.r / 255.0f, temp.g / 255.0f, temp.b / 255.0f), D2D1::ColorF(D2D1::ColorF::Black), D2D1::ColorF(D2D1::ColorF::Black));
 	}
 
 	// SATURATION and VALUE
