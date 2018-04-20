@@ -15,7 +15,7 @@
 #include "resource.h"
 #include "SColour.hpp"
 
-static const std::unordered_map<unsigned int, std::pair<unsigned int, unsigned int>> SLIDER_MAP = {
+static const std::unordered_map<unsigned int, const std::pair<const unsigned int, const unsigned int>> SLIDER_MAP = {
 	{ IDC_RED,        { IDC_RSLIDER,   255 } },
 	{ IDC_GREEN,      { IDC_GSLIDER,   255 } },
 	{ IDC_BLUE,       { IDC_BSLIDER,   255 } },
@@ -45,7 +45,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 		CColourPicker::PickerMap[&(picker_data->picker->Value)] = hDlg;
 
-		for (const std::pair<const unsigned int, std::pair<unsigned int, unsigned int>> &slider_combo : SLIDER_MAP)
+		for (const decltype(SLIDER_MAP)::value_type &slider_combo : SLIDER_MAP)
 		{
 			SendDlgItemMessage(hDlg, slider_combo.second.first, UDM_SETBUDDY, (WPARAM)GetDlgItem(hDlg, slider_combo.first), 0);
 			SendDlgItemMessage(hDlg, slider_combo.second.first, UDM_SETRANGE32, 0, slider_combo.second.second);
@@ -306,7 +306,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			}
 
 			picker_data->changing_text = true;
-			for (const std::pair<const unsigned int, std::pair<unsigned int, unsigned int>> &slider_combo : SLIDER_MAP)
+			for (const decltype(SLIDER_MAP)::value_type &slider_combo : SLIDER_MAP)
 			{
 				if (slider_combo.first == IDC_HEXCOL)
 				{
