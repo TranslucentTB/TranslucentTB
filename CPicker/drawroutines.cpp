@@ -10,29 +10,36 @@ const std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> &GetHueGradient();
 
 constexpr uint8_t BorderSize = 7;
 
-// TODO: selection circle/crosshair
 void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
 {
 	const D2D1_SIZE_F size = target->GetSize();
 
 	target->BeginDraw();
 
+	D2D1_POINT_2F indicator_point;
+
 	// RED
 	if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 	{
 		DrawTwoDimensionalGradient(target, size, D2D1::ColorF(r, 0.0f, 0.0f), D2D1::ColorF(r, 1.0f, 0.0f), D2D1::ColorF(r, 0.0f, 1.0f), D2D1::ColorF(r, 1.0f, 1.0f));
+
+		indicator_point = D2D1::Point2F(g * size.width, b * size.height);
 	}
 
 	// GREEN
 	else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 	{
 		DrawTwoDimensionalGradient(target, size, D2D1::ColorF(0.0f, g, 0.0f), D2D1::ColorF(1.0f, g, 0.0f), D2D1::ColorF(0.0f, g, 1.0f), D2D1::ColorF(1.0f, g, 1.0f));
+
+		indicator_point = D2D1::Point2F(r * size.width, b * size.height);
 	}
 
 	// BLUE
 	else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 	{
 		DrawTwoDimensionalGradient(target, size, D2D1::ColorF(0.0f, 0.0f, b), D2D1::ColorF(0.0f, 1.0f, b), D2D1::ColorF(1.0f, 0.0f, b), D2D1::ColorF(1.0f, 1.0f, b));
+
+		indicator_point = D2D1::Point2F(g * size.width, r * size.height);
 	}
 
 	// HUE
@@ -44,6 +51,8 @@ void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 		temp.v = 100;
 		temp.UpdateRGB();
 		DrawTwoDimensionalGradient(target, size, D2D1::ColorF(D2D1::ColorF::White), D2D1::ColorF(temp.r / 255.0f, temp.g / 255.0f, temp.b / 255.0f), D2D1::ColorF(D2D1::ColorF::Black), D2D1::ColorF(D2D1::ColorF::Black));
+
+		indicator_point = D2D1::Point2F(s / 100.0f * size.width, (100 - v) / 100.0f * size.height);
 	}
 
 	// SATURATION and VALUE
@@ -70,8 +79,20 @@ void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 
 		target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), brush);
 
+		// SATURATION
+		if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
+		{
+			CComPtr<ID2D1SolidColorBrush> underlayBrush;
+			target->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f - (s / 100.0f)), &underlayBrush);
+
+			target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), underlayBrush);
+			DrawGradient(target, size, D2D1::ColorF(0, 0.0f), D2D1::ColorF(D2D1::ColorF::Black));
+
+			indicator_point = D2D1::Point2F(h / 359.0f * size.width, (100 - v) / 100.0f * size.height);
+		}
+
 		// VALUE
-		if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
+		else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
 		{
 			DrawGradient(target, size, D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f), D2D1::ColorF(D2D1::ColorF::White));
 
@@ -79,18 +100,14 @@ void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 			target->CreateSolidColorBrush(D2D1::ColorF(0, 1.0f - (v / 100.0f)), &overlayBrush);
 
 			target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), overlayBrush);
-		}
 
-		// SATURATION
-		else
-		{
-			CComPtr<ID2D1SolidColorBrush> underlayBrush;
-			target->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f - (s / 100.0f)), &underlayBrush);
-
-			target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), underlayBrush);
-			DrawGradient(target, size, D2D1::ColorF(0, 0.0f), D2D1::ColorF(D2D1::ColorF::Black));
+			indicator_point = D2D1::Point2F(h / 359.0f * size.width, (100 - s) / 100.0f * size.height);
 		}
 	}
+
+	CComPtr<ID2D1SolidColorBrush> brush;
+	target->CreateSolidColorBrush(D2D1::ColorF(1.0f - r, 1.0f - g, 1.0f - b), &brush);
+	target->DrawEllipse(D2D1::Ellipse(indicator_point, 5, 5), brush);
 
 	target->EndDraw();
 }
