@@ -1,7 +1,6 @@
 #include "main.hpp"
 #include <algorithm>
 #include <d2d1.h>
-#include <d2d1helper.h>
 #include <stdio.h>
 #include <string>
 #include <unordered_map>

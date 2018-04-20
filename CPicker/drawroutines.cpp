@@ -12,13 +12,30 @@ constexpr uint8_t BorderSize = 7;
 
 void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
 {
-	target->BeginDraw();
-
 	const D2D1_SIZE_F size = target->GetSize();
 
-	// TODO: Red, green and blue
+	target->BeginDraw();
+
+	// RED
+	if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
+	{
+		DrawTwoDimensionalGradient(target, size, D2D1::ColorF(r, 0.0f, 0.0f), D2D1::ColorF(r, 1.0f, 0.0f), D2D1::ColorF(r, 0.0f, 1.0f), D2D1::ColorF(r, 1.0f, 1.0f));
+	}
+
+	// GREEN
+	else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
+	{
+		DrawTwoDimensionalGradient(target, size, D2D1::ColorF(0.0f, g, 0.0f), D2D1::ColorF(1.0f, g, 0.0f), D2D1::ColorF(0.0f, g, 1.0f), D2D1::ColorF(1.0f, g, 1.0f));
+	}
+
+	// BLUE
+	else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
+	{
+		DrawTwoDimensionalGradient(target, size, D2D1::ColorF(0.0f, 0.0f, b), D2D1::ColorF(0.0f, 1.0f, b), D2D1::ColorF(1.0f, 0.0f, b), D2D1::ColorF(1.0f, 1.0f, b));
+	}
+
 	// HUE
-	if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
+	else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
 	{
 		SColour temp;
 		temp.h = h;
@@ -27,8 +44,8 @@ void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 		temp.UpdateRGB();
 		target->Clear(D2D1::ColorF(temp.r / 255.0f, temp.g / 255.0f, temp.b / 255.0f));
 
-		DrawGradient(target, D2D1::ColorF(D2D1::ColorF::White), D2D1::ColorF(1, 1, 1, 0), 0, true);
-		DrawGradient(target, D2D1::ColorF(0, 0), D2D1::ColorF(D2D1::ColorF::Black), 0, false);
+		DrawGradient(target, size, D2D1::ColorF(D2D1::ColorF::White), D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f), 0, true);
+		DrawGradient(target, size, D2D1::ColorF(0, 0.0f), D2D1::ColorF(D2D1::ColorF::Black), 0, false);
 	}
 
 	// SATURATION and VALUE
@@ -46,34 +63,34 @@ void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 		CComPtr<ID2D1LinearGradientBrush> brush;
 		target->CreateLinearGradientBrush(
 			D2D1::LinearGradientBrushProperties(
-				D2D1::Point2F(size.width, 0),
-				D2D1::Point2F(0, 0)
+				D2D1::Point2F(size.width, 0.0f),
+				D2D1::Point2F(0.0f, 0.0f)
 			),
 			pGradientStops,
 			&brush
 		);
 
-		target->FillRectangle(D2D1::RectF(0, 0, size.width, size.height), brush);
+		target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), brush);
 
 		// VALUE
 		if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
 		{
-			DrawGradient(target, D2D1::ColorF(1, 1, 1, 0), D2D1::ColorF(D2D1::ColorF::White));
+			DrawGradient(target, size, D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f), D2D1::ColorF(D2D1::ColorF::White));
 
 			CComPtr<ID2D1SolidColorBrush> overlayBrush;
 			target->CreateSolidColorBrush(D2D1::ColorF(0, 1.0f - (v / 100.0f)), &overlayBrush);
 
-			target->FillRectangle(D2D1::RectF(0, 0, size.width, size.height), overlayBrush);
+			target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), overlayBrush);
 		}
 
 		// SATURATION
 		else
 		{
 			CComPtr<ID2D1SolidColorBrush> underlayBrush;
-			target->CreateSolidColorBrush(D2D1::ColorF(1, 1, 1, 1.0f - (s / 100.0f)), &underlayBrush);
+			target->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f - (s / 100.0f)), &underlayBrush);
 
-			target->FillRectangle(D2D1::RectF(0, 0, size.width, size.height), underlayBrush);
-			DrawGradient(target, D2D1::ColorF(0, 0), D2D1::ColorF(D2D1::ColorF::Black));
+			target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), underlayBrush);
+			DrawGradient(target, size, D2D1::ColorF(0, 0.0f), D2D1::ColorF(D2D1::ColorF::Black));
 		}
 	}
 
@@ -83,6 +100,7 @@ void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
 {
 	const DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);
+	const D2D1_SIZE_F size = target->GetSize();
 
 	target->BeginDraw();
 	target->Clear(D2D1::ColorF(GetRValue(backgroundColor) / 255.0f, GetGValue(backgroundColor) / 255.0f, GetBValue(backgroundColor) / 255.0f));
@@ -94,35 +112,33 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 	// RED
 	if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 	{
-		top_color = D2D1::ColorF(1, g, b);
-		bottom_color = D2D1::ColorF(0, g, b);
+		top_color = D2D1::ColorF(1.0f, g, b);
+		bottom_color = D2D1::ColorF(0.0f, g, b);
 
-		arrow_position = 1.0 - r;
+		arrow_position = 1.0f - r;
 		arrow_color = D2D1::ColorF(r, g, b);
 	}
 	// GREEN
 	else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 	{
-		top_color = D2D1::ColorF(r, 1, b);
-		bottom_color = D2D1::ColorF(r, 0, b);
+		top_color = D2D1::ColorF(r, 1.0f, b);
+		bottom_color = D2D1::ColorF(r, 0.0f, b);
 
-		arrow_position = 1.0 - g;
+		arrow_position = 1.0f - g;
 		arrow_color = D2D1::ColorF(r, g, b);
 	}
 	// BLUE
 	else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 	{
-		top_color = D2D1::ColorF(r, g, 1);
-		bottom_color = D2D1::ColorF(r, g, 0);
+		top_color = D2D1::ColorF(r, g, 1.0f);
+		bottom_color = D2D1::ColorF(r, g, 0.0f);
 
-		arrow_position = 1.0 - b;
+		arrow_position = 1.0f - b;
 		arrow_color = D2D1::ColorF(r, g, b);
 	}
 	// HUE
 	else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
 	{
-		const D2D1_SIZE_F size = target->GetSize();		
-
 		CComPtr<ID2D1GradientStopCollection> pGradientStops;
 		target->CreateGradientStopCollection(
 			GetHueGradient().data(),
@@ -135,16 +151,16 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 		CComPtr<ID2D1LinearGradientBrush> brush;
 		target->CreateLinearGradientBrush(
 			D2D1::LinearGradientBrushProperties(
-				D2D1::Point2F(0, 0),
-				D2D1::Point2F(0, size.height)
+				D2D1::Point2F(0.0f, 0.0f),
+				D2D1::Point2F(0.0f, size.height)
 			),
 			pGradientStops,
 			&brush
 		);
 
-		target->FillRectangle(D2D1::RectF(BorderSize, 0, size.width - BorderSize, size.height), brush);
+		target->FillRectangle(D2D1::RectF(BorderSize, 0.0f, size.width - BorderSize, size.height), brush);
 
-		arrow_position = 1.0 - (h / 359.0f);
+		arrow_position = 1.0f - (h / 359.0f);
 		SColour temp;
 		temp.h = h;
 		temp.s = 100;
@@ -168,7 +184,7 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 		tempcol.UpdateRGB();
 		bottom_color = D2D1::ColorF(tempcol.r / 255.0f, tempcol.g / 255.0f, tempcol.b / 255.0f);
 
-		arrow_position = 1.0 - (s / 100.0f);
+		arrow_position = 1.0f - (s / 100.0f);
 		arrow_color = D2D1::ColorF(r, g, b);
 	}
 	// VALUE
@@ -187,7 +203,7 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 		tempcol.UpdateRGB();
 		bottom_color = D2D1::ColorF(tempcol.r / 255.0f, tempcol.g / 255.0f, tempcol.b / 255.0f);
 
-		arrow_position = 1.0 - (v / 100.0f);
+		arrow_position = 1.0f - (v / 100.0f);
 		arrow_color = D2D1::ColorF(r, g, b);
 	}
 
@@ -195,12 +211,12 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 	// Meaning that if we use top_color and bottom_color it'll just appear as a big single-colored slider.
 	if (IsDlgButtonChecked(hDlg, IDC_H) != BST_CHECKED)
 	{
-		DrawGradient(target, top_color, bottom_color, BorderSize);
+		DrawGradient(target, size, top_color, bottom_color, BorderSize);
 	}
 
 	CComPtr<ID2D1SolidColorBrush> brush;
 	target->CreateSolidColorBrush(arrow_color, &brush);
-	DrawArrows(target, arrow_position, BorderSize, brush);
+	DrawArrows(target, size, arrow_position, BorderSize, brush);
 
 	target->EndDraw();
 }
@@ -214,27 +230,27 @@ void DrawAlphaSlider(ID2D1RenderTarget *target, const D2D1_COLOR_F &color, const
 	target->Clear(D2D1::ColorF(GetRValue(backgroundColor) / 255.0f, GetGValue(backgroundColor) / 255.0f, GetBValue(backgroundColor) / 255.0f));
 
 	CComPtr<ID2D1SolidColorBrush> brush;
-	target->CreateSolidColorBrush(D2D1::ColorF(0, 0.3), &brush);
+	target->CreateSolidColorBrush(D2D1::ColorF(0, 0.3f), &brush);
 
 	DrawCheckerboard(target, brush, size, (size.width / 2) - BorderSize, BorderSize);
 
-	DrawGradient(target, D2D1::ColorF(color.r, color.g, color.b, 1), D2D1::ColorF(color.r, color.g, color.b, 0), BorderSize);
+	DrawGradient(target, size, D2D1::ColorF(color.r, color.g, color.b, 1.0f), D2D1::ColorF(color.r, color.g, color.b, 0.0f), BorderSize);
 
-	DrawArrows(target, a, BorderSize, brush);
+	DrawArrows(target, size, a, BorderSize, brush);
 
 	CComPtr<ID2D1SolidColorBrush> brush2;
 	target->CreateSolidColorBrush(D2D1::ColorF(color.r, color.g, color.b, 1.0f - a), &brush2);
-	DrawArrows(target, a, BorderSize, brush2);
+	DrawArrows(target, size, a, BorderSize, brush2);
 
 	target->EndDraw();
 }
 
 void DrawColorIndicator(ID2D1RenderTarget *target, const SColour &color)
 {
+	const D2D1_SIZE_F size = target->GetSize();
+
 	target->BeginDraw();
 	target->Clear(D2D1::ColorF(D2D1::ColorF::White));
-
-	const D2D1_SIZE_F size = target->GetSize();
 
 	CComPtr<ID2D1SolidColorBrush> brush;
 	target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &brush);
@@ -242,7 +258,7 @@ void DrawColorIndicator(ID2D1RenderTarget *target, const SColour &color)
 	brush.Release();
 
 	target->CreateSolidColorBrush(D2D1::ColorF(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f), &brush);
-	target->FillRectangle(D2D1::RectF(0, 0, size.width, size.height), brush);
+	target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), brush);
 
 	target->EndDraw();
 }
