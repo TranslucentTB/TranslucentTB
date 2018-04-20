@@ -1190,10 +1190,10 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	HardenProcess();
 
 	// If there already is another instance running, tell it to exit
-	//if (!win32::IsSingleInstance())
-	//{
-	//	Window::Find(App::NAME, L"TrayWindow").send_message(Tray::NEW_TTB_INSTANCE);
-	//}
+	if (!win32::IsSingleInstance())
+	{
+		Window::Find(App::NAME, L"TrayWindow").send_message(Tray::NEW_TTB_INSTANCE);
+	}
 
 	// Set our exit handler
 	std::set_terminate(Terminate);
@@ -1235,7 +1235,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		//SetTaskbarBlur();
+		SetTaskbarBlur();
 		std::this_thread::sleep_for(std::chrono::milliseconds(opt.sleep_time));
 	}
 
