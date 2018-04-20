@@ -420,16 +420,6 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	return 0;
 }
 
-/*
-void DrawCircle(HDC hcomp, int red, int green, int blue, float x, float y)
-{
-	HPEN pen = CreatePen(PS_SOLID, 1, RGB(255 - red, 255 - green, 255 - blue));
-	HGDIOBJ prev = SelectObject(hcomp, pen);
-	Arc(hcomp, x - 5, y - 5, x + 5, y + 5, 0, 0, 0, 0);
-	SelectObject(hcomp, prev);
-	DeleteObject(pen);
-}*/
-
 void UpdateValues(HWND hDlg, const SColour &col, bool &changing_text)
 {
 	changing_text = true;
