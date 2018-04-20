@@ -1,7 +1,8 @@
 #include "main.hpp"
 #include <algorithm>
 #include <d2d1.h>
-#include <stdio.h>
+#include <iomanip>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <WinUser.h>
@@ -309,11 +310,13 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			{
 				if (slider_combo.first == IDC_HEXCOL)
 				{
-					wchar_t buffer[11];
 					const SColour &col = picker_data->picker->GetCurrentColour();
 
-					swprintf_s(buffer, L"0x%02X%02X%02X%02X", col.r, col.g, col.b, col.a);
-					SetDlgItemText(hDlg, slider_combo.first, buffer);
+					std::wostringstream stream;
+					stream << L"0x";
+					stream << std::setw(2) << std::setfill(L'0') << std::hex << col.r << col.g << col.b << col.a;
+
+					SetDlgItemText(hDlg, slider_combo.first, stream.str().c_str());
 				}
 				else
 				{
