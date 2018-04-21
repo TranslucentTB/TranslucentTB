@@ -1050,12 +1050,15 @@ void HardenProcess()
 	load_policy.NoLowMandatoryLabelImages = true;
 	load_policy.PreferSystem32Images = true;
 
-	int installDrive = PathGetDriveNumber(win32::GetExeLocation().c_str());
-	if (installDrive != -1)
+	// https://blogs.msdn.microsoft.com/oldnewthing/20160602-00/?p=93556
+	std::vector<wchar_t> volumePath(LONG_PATH);
+	if (GetVolumePathName(win32::GetExeLocation().c_str(), volumePath.data(), LONG_PATH))
 	{
-		wchar_t installDriveRoot[4];
-		unsigned int installDriveType = GetDriveType(PathBuildRoot(installDriveRoot, installDrive));
-		load_policy.NoRemoteImages = installDriveType != DRIVE_REMOTE;
+		load_policy.NoRemoteImages = GetDriveType(volumePath.data()) != DRIVE_REMOTE;
+	}
+	else
+	{
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Unable to get drive root.");
 	}
 
 	if (!SetProcessMitigationPolicy(ProcessImageLoadPolicy, &load_policy, sizeof(load_policy)))
