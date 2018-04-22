@@ -859,10 +859,19 @@ inline void ChangePopupItemText(HMENU menu, const uint32_t &item, const std::wst
 
 void RefreshMenu(HMENU menu)
 {
-	Autostart::StartupState s_state = Autostart::GetStartupState();
+	if (!run.fluent_available)
+	{
+		RemoveMenu(menu, IDM_FLUENT, MF_BYCOMMAND);
+		RemoveMenu(menu, IDM_DYNAMICWS_FLUENT, MF_BYCOMMAND);
+	}
+	else
+	{
+		TrayContextMenu::RefreshBool(IDM_DYNAMICWS_FLUENT, menu, opt.dynamic_ws && run.fluent_available, TrayContextMenu::ControlsEnabled);
+	}
 
 	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, !Log::file().empty(), TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(IDM_DYNAMICWS_FLUENT, menu, opt.dynamic_ws && run.fluent_available, TrayContextMenu::ControlsEnabled);
+
+	Autostart::StartupState s_state = Autostart::GetStartupState();
 	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, !(s_state == Autostart::StartupState::DisabledByUser
 #ifdef STORE
 		|| s_state == Autostart::StartupState::DisabledByPolicy
