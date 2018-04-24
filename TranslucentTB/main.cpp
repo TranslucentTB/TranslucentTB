@@ -31,7 +31,6 @@
 #include "messagewindow.hpp"
 #include "resource.h"
 #include "swcadata.hpp"
-#include "taskbar.hpp"
 #include "tray.hpp"
 #include "traycontextmenu.hpp"
 #include "ttberror.hpp"
@@ -44,30 +43,30 @@
 #include "window.hpp"
 #include "windowclass.hpp"
 
+#pragma region Enumerations
+
+enum class TASKBARSTATE {
+	Normal,				// If no dynamic options are set, act as it says in opt.taskbar_appearance
+	WindowMaximised,	// There is a window which is maximised on the monitor this HWND is in. Display as blurred.
+	StartMenuOpen		// The Start Menu is open on the monitor this HWND is in. Display as it would be without TranslucentTB active.
+};
+
+#pragma endregion
 
 #pragma region Structures
 
 static struct OPTIONS
 {
-	swca::ACCENT taskbar_appearance = swca::ACCENT_ENABLE_BLURBEHIND;
-	uint32_t color = 0x00000000;
-	bool dynamic_ws = false;
-	swca::ACCENT dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_BLURBEHIND;
-	uint32_t dynamic_ws_color = 0x00000000;
-	bool dynamic_ws_normal_on_peek = true;
-	bool dynamic_start = false;
-	Taskbar::AEROPEEK peek = Taskbar::AEROPEEK::Enabled;
 	std::vector<std::wstring> blacklisted_classes;
 	std::vector<std::wstring> blacklisted_filenames;
 	std::vector<std::wstring> blacklisted_titles;
-	uint16_t sleep_time = 10;
 } opt;
 
 static struct RUNTIMESTATE
 {
 	Tray::EXITREASON exit_reason = Tray::UserAction;
 	Window main_taskbar;
-	std::unordered_map<HMONITOR, Taskbar::TASKBARPROPERTIES> taskbars;
+	std::unordered_map<HMONITOR, std::pair<HWND, TASKBARSTATE>> taskbars;
 	bool should_show_peek;
 	bool is_running = true;
 	bool fluent_available = false;
@@ -144,8 +143,8 @@ void GetPaths()
 	AutoFree::Local<wchar_t> excludeFile;
 
 	ErrorHandle(PathAllocCombine(appData, App::NAME, PATHCCH_ALLOW_LONG_PATHS, &configFolder), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
-	ErrorHandle(PathAllocCombine(configFolder, Config::CONFIG_FILE.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Fatal, L"Failed to combine config folder and config file!");
-	ErrorHandle(PathAllocCombine(configFolder, Config::EXCLUDE_FILE.c_str(), PATHCCH_ALLOW_LONG_PATHS, &excludeFile), Error::Level::Fatal, L"Failed to combine config folder and exclude file!");
+	ErrorHandle(PathAllocCombine(configFolder, App::CONFIG_FILE, PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Fatal, L"Failed to combine config folder and config file!");
+	ErrorHandle(PathAllocCombine(configFolder, App::EXCLUDE_FILE, PATHCCH_ALLOW_LONG_PATHS, &excludeFile), Error::Level::Fatal, L"Failed to combine config folder and exclude file!");
 
 	run.config_folder = configFolder;
 	run.config_file = configFile;
@@ -215,338 +214,25 @@ bool CheckAndRunWelcome()
 	}
 	if (!win32::FileExists(run.config_file))
 	{
-		ApplyStock(Config::CONFIG_FILE);
+		ApplyStock(App::CONFIG_FILE);
 	}
 	if (!win32::FileExists(run.exclude_file))
 	{
-		ApplyStock(Config::EXCLUDE_FILE);
+		ApplyStock(App::EXCLUDE_FILE);
 	}
 	return true;
 }
 
-inline void UnknownValue(const std::wstring &key, const std::wstring &value)
-{
-	Log::OutputMessage(L"Unknown value found in configuration file: " + value + L" (for key: " + key + L")");
-}
-
-void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value)
-{
-	if (arg == L"accent")
-	{
-		if (value == L"blur")
-		{
-			opt.taskbar_appearance = swca::ACCENT_ENABLE_BLURBEHIND;
-		}
-		else if (value == L"opaque")
-		{
-			opt.taskbar_appearance = swca::ACCENT_ENABLE_GRADIENT;
-		}
-		else if (value == L"transparent" || value == L"translucent" || value == L"clear")
-		{
-			opt.taskbar_appearance = swca::ACCENT_ENABLE_TRANSPARENTGRADIENT;
-		}
-		else if (value == L"normal")
-		{
-			opt.taskbar_appearance = swca::ACCENT_NORMAL;
-		}
-		else if (value == L"fluent" && run.fluent_available)
-		{
-			opt.taskbar_appearance = swca::ACCENT_ENABLE_FLUENT;
-		}
-		else
-		{
-			UnknownValue(arg, value);
-		}
-	}
-	else if (arg == L"sleep-time")
-	{
-		try
-		{
-			int sleep_time = std::stoi(value);
-			opt.sleep_time = sleep_time;
-		}
-		catch (std::invalid_argument)
-		{
-			Log::OutputMessage(L"Could not parse sleep time found in configuration file: " + value);
-		}
-	}
-	else if (arg == L"dynamic-ws")
-	{
-		if (value == L"true" || value == L"enable")
-		{
-			opt.dynamic_ws = true;
-		}
-		else if (value == L"false" || value == L"disable")
-		{
-			opt.dynamic_ws = false;
-		}
-		else
-		{
-			UnknownValue(arg, value);
-		}
-	}
-	else if (arg == L"dynamic-ws-accent")
-	{
-		if (value == L"blur")
-		{
-			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_BLURBEHIND;
-		}
-		else if (value == L"opaque")
-		{
-			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_GRADIENT;
-		}
-		else if (value == L"clear")
-		{
-			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_TRANSPARENTGRADIENT;
-		}
-		else if (value == L"normal")
-		{
-			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_NORMAL;
-		}
-		else if (value == L"fluent" && run.fluent_available)
-		{
-			opt.dynamic_ws_taskbar_appearance = swca::ACCENT_ENABLE_FLUENT;
-		}
-		else
-		{
-			UnknownValue(arg, value);
-		}
-	}
-	else if (arg == L"dynamic-start")
-	{
-		if (value == L"true" || value == L"enable")
-		{
-			opt.dynamic_start = true;
-		}
-		else if (value == L"false" || value == L"disable")
-		{
-			opt.dynamic_start = false;
-		}
-		else
-		{
-			UnknownValue(arg, value);
-		}
-	}
-	else if (arg == L"color" || arg == L"tint")
-	{
-		std::wstring color_value = Util::Trim(value);
-
-		if (color_value.find_first_of('#') == 0)
-		{
-			color_value = color_value.substr(1, color_value.length() - 1);
-		}
-		else if (color_value.find(L"0x") == 0)
-		{
-			color_value = color_value.substr(2, color_value.length() - 2);
-		}
-
-		// Get only the last 6 characters, keeps compatibility with old version.
-		// It stored AARRGGBB in color, but now we store it as RRGGBB.
-		// We read AA from opacity instead, which the old version also saved alpha to.
-		if (color_value.length() > 6)
-		{
-			color_value = color_value.substr(color_value.length() - 6, 6);
-		}
-
-		try
-		{
-			opt.color = (opt.color & 0xFF000000) + (std::stoi(color_value, nullptr, 16) & 0x00FFFFFF);
-		}
-		catch (std::invalid_argument)
-		{
-			Log::OutputMessage(L"Could not parse color found in configuration file: " + value + L" (after processing: " + color_value + L")");
-		}
-	}
-	else if (arg == L"dynamic-ws-color")
-	{
-		std::wstring color_value = Util::Trim(value);
-
-		if (color_value.find_first_of('#') == 0)
-		{
-			color_value = color_value.substr(1, color_value.length() - 1);
-		}
-		else if (color_value.find(L"0x") == 0)
-		{
-			color_value = color_value.substr(2, color_value.length() - 2);
-		}
-
-		// Get only the last 6 characters, keeps compatibility with old version.
-		// It stored AARRGGBB in color, but now we store it as RRGGBB.
-		// We read AA from opacity instead, which the old version also saved alpha to.
-		if (color_value.length() > 6)
-		{
-			color_value = color_value.substr(color_value.length() - 6, 6);
-		}
-
-		try
-		{
-			opt.dynamic_ws_color = (opt.dynamic_ws_color & 0xFF000000) + (std::stoi(color_value, nullptr, 16) & 0x00FFFFFF);
-		}
-		catch (std::invalid_argument)
-		{
-			Log::OutputMessage(L"Could not parse dynamic windows color found in configuration file: " + value + L" (after processing: " + color_value + L")");
-		}
-	}
-	else if (arg == L"opacity")
-	{
-		int parsed;
-		try
-		{
-			parsed = std::stoi(value);
-		}
-		catch (std::invalid_argument)
-		{
-			Log::OutputMessage(L"Could not parse opacity found in configuration file: " + value);
-			return;
-		}
-
-		if (parsed < 0)
-		{
-			parsed = 0;
-		}
-		else if (parsed > 255)
-		{
-			parsed = 255;
-		}
-
-		opt.color = (parsed << 24) + (opt.color & 0x00FFFFFF);
-	}
-	else if (arg == L"dynamic-ws-opacity")
-	{
-		int parsed;
-		try
-		{
-			parsed = std::stoi(value);
-		}
-		catch (std::invalid_argument)
-		{
-			Log::OutputMessage(L"Could not parse dynamic windows opacity found in configuration file: " + value);
-			return;
-		}
-
-		if (parsed < 0)
-		{
-			parsed = 0;
-		}
-		else if (parsed > 255)
-		{
-			parsed = 255;
-		}
-
-		opt.dynamic_ws_color = (parsed << 24) + (opt.dynamic_ws_color & 0x00FFFFFF);
-	}
-	else if (arg == L"peek")
-	{
-		if (value == L"hide")
-		{
-			opt.peek = Taskbar::AEROPEEK::Disabled;
-		}
-		else if (value == L"dynamic")
-		{
-			opt.peek = Taskbar::AEROPEEK::Dynamic;
-		}
-		else if (value == L"show")
-		{
-			opt.peek = Taskbar::AEROPEEK::Enabled;
-		}
-		else
-		{
-			UnknownValue(arg, value);
-		}
-	}
-	else if (arg == L"dynamic-ws-normal-on-peek")
-	{
-		if (value == L"true" || value == L"enable")
-		{
-			opt.dynamic_ws_normal_on_peek = true;
-		}
-		else if (value == L"false" || value == L"disable")
-		{
-			opt.dynamic_ws_normal_on_peek = false;
-		}
-		else
-		{
-			UnknownValue(arg, value);
-		}
-	}
-	else if (arg == L"verbose")
-	{
-		if (value == L"true" || value == L"enable")
-		{
-			Config::VERBOSE = true;
-		}
-		else if (value == L"false" || value == L"disable")
-		{
-			Config::VERBOSE = false;
-		}
-		else
-		{
-			UnknownValue(arg, value);
-		}
-	}
-	else if (arg == L"max-cache-hits")
-	{
-		try
-		{
-			int cache_hits = std::stoi(value);
-			Config::CACHE_HIT_MAX = cache_hits;
-		}
-		catch (std::invalid_argument)
-		{
-			Log::OutputMessage(L"Could not parse max cache hits found in configuration file: " + value);
-		}
-	}
-	else
-	{
-		Log::OutputMessage(L"Unknown key found in configuration file: " + arg);
-	}
-}
-
-void ParseConfigFile()
-{
-	std::wifstream configstream(run.config_file);
-
-	for (std::wstring line; std::getline(configstream, line); )
-	{
-		if (line.empty())
-		{
-			continue;
-		}
-
-		// Skip comments
-		size_t comment_index = line.find(L';');
-		if (comment_index == 0)
-		{
-			continue;
-		}
-		else if (comment_index != std::wstring::npos)
-		{
-			line = line.substr(0, comment_index);
-		}
-
-		size_t split_index = line.find(L'=');
-		if (split_index != std::wstring::npos)
-		{
-			std::wstring key = line.substr(0, split_index);
-			std::wstring val = line.substr(split_index + 1, line.length() - split_index - 1);
-			ParseSingleConfigOption(key, val);
-		}
-		else
-		{
-			Log::OutputMessage(L"Invalid line in configuration file: " + line);
-		}
-	}
-}
-
 void SaveConfigFile()
 {
+	/*
 	std::wstring configfile(run.config_file);
 	if (!configfile.empty())
 	{
 		using namespace std;
 		wofstream configstream(configfile);
 
-		configstream << L"; Taskbar appearance: fluent, opaque, clear, normal, or blur (default)." << endl;
+		configstream << L"; Taskbar appearance: clear, normal, fluent (only on build " << MIN_FLUENT_BUILD << L" and up), opaque, normal, or blur (default)." << endl;
 
 		configstream << L"accent=";
 		switch (opt.taskbar_appearance)
@@ -575,12 +261,12 @@ void SaveConfigFile()
 		configstream << L" ; A color in hexadecimal notation." << endl;
 
 		configstream << L"opacity=";
-		configstream << left << setw(3) << setfill(L' ') << to_wstring((opt.color & 0xFF000000) >> 24);
+		configstream << left << setw(3) << setfill(L' ') << dec << ((opt.color & 0xFF000000) >> 24);
 		configstream << L"  ; A value in the range 0 to 255." << endl;
 
 		configstream << endl;
 		configstream << L"; Dynamic Windows and Start Menu" << endl;
-		configstream << L"; Available states are: clear, normal, fluent, opaque, normal, or blur (default)." << endl;
+		configstream << L"; Available states are the same as the accent configuration option." << endl;
 		configstream << L"; dynamic windows has its own color and opacity configs." << endl;
 		configstream << L"; by enabling dynamic-ws-normal-on-peek, dynamic windows will behave as if no window is maximised when using Aero Peek." << endl;
 		configstream << L"; you can also set the accent, color and opacity values, which will represent the state of dynamic windows when there is no window maximised." << endl;
@@ -647,6 +333,7 @@ void SaveConfigFile()
 		configstream << L"; maximum number of times the blacklist cache can be hit before getting cleared." << endl;
 		configstream << L"max-cache-hits=" << to_wstring(Config::CACHE_HIT_MAX) << endl;
 	}
+	*/
 }
 
 void ParseBlacklistFile()
@@ -721,13 +408,13 @@ void RefreshHandles()
 
 	run.taskbars[run.main_taskbar.monitor()] = {
 		run.main_taskbar = Window::Find(L"Shell_TrayWnd"),
-		Taskbar::Normal
+		TASKBARSTATE::Normal
 	};
 
 	Window secondtaskbar;
 	while ((secondtaskbar = Window::FindEx(nullptr, secondtaskbar, L"Shell_SecondaryTrayWnd")) != Window())
 	{
-		run.taskbars[secondtaskbar.monitor()] = { secondtaskbar, Taskbar::Normal };
+		run.taskbars[secondtaskbar.monitor()] = { secondtaskbar, TASKBARSTATE::Normal };
 	}
 }
 
@@ -864,10 +551,6 @@ void RefreshMenu(HMENU menu)
 		RemoveMenu(menu, IDM_FLUENT, MF_BYCOMMAND);
 		RemoveMenu(menu, IDM_DYNAMICWS_FLUENT, MF_BYCOMMAND);
 	}
-	else
-	{
-		TrayContextMenu::RefreshBool(IDM_DYNAMICWS_FLUENT, menu, opt.dynamic_ws && run.fluent_available, TrayContextMenu::ControlsEnabled);
-	}
 
 	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, !Log::file().empty(), TrayContextMenu::ControlsEnabled);
 
@@ -910,13 +593,13 @@ BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
 	// So eh, do both but with IsWindowOnCurrentDesktop last.
 	if (window.visible() && window.state() == SW_MAXIMIZE && !window.get_attribute<BOOL>(DWMWA_CLOAKED) && !IsWindowBlacklisted(window) && window.on_current_desktop())
 	{
-		Taskbar::TASKBARPROPERTIES &taskbar = run.taskbars.at(window.monitor());
-		if (opt.dynamic_ws)
+		auto &taskbar = run.taskbars.at(window.monitor());
+		if (Config::DYNAMIC_WS)
 		{
-			taskbar.state = Taskbar::WindowMaximised;
+			taskbar.second = TASKBARSTATE::WindowMaximised;
 		}
 
-		if (opt.peek == Taskbar::AEROPEEK::Dynamic && taskbar.hwnd == run.main_taskbar)
+		if (Config::PEEK == Config::PEEK::Dynamic && taskbar.first == run.main_taskbar)
 		{
 			run.should_show_peek = true;
 		}
@@ -937,13 +620,13 @@ void SetTaskbarBlur()
 	{					// 1 = opt.sleep_time; we use 10 (assuming the default opt.sleep_time value),
 						// because the difference is less noticeable and it has no large impact on CPU.
 						// We can change this if we feel that CPU is more important than response time.
-		run.should_show_peek = (opt.peek == Taskbar::AEROPEEK::Enabled);
+		run.should_show_peek = (Config::PEEK == Config::PEEK::Enabled);
 
-		for (std::pair<const HMONITOR, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
+		for (auto &taskbar : run.taskbars)
 		{
-			taskbar.second.state = Taskbar::Normal; // Reset taskbar state
+			taskbar.second.second = TASKBARSTATE::Normal; // Reset taskbar state
 		}
-		if (opt.dynamic_ws || opt.peek == Taskbar::AEROPEEK::Dynamic)
+		if (Config::DYNAMIC_WS || Config::PEEK == Config::PEEK::Dynamic)
 		{
 			counter = 0;
 			EnumWindows(&EnumWindowsProcess, NULL);
@@ -951,10 +634,10 @@ void SetTaskbarBlur()
 
 		TogglePeek(run.should_show_peek);
 
-		if (opt.dynamic_start && Util::IsStartVisible())
+		if (Config::DYNAMIC_START && Util::IsStartVisible())
 		{
 			// TODO: does this works correctly on multi-monitor
-			run.taskbars.at(Window::Find(L"Windows.UI.Core.CoreWindow", L"Start").monitor()).state = Taskbar::StartMenuOpen;
+			run.taskbars.at(Window::Find(L"Windows.UI.Core.CoreWindow", L"Start").monitor()).second = TASKBARSTATE::StartMenuOpen;
 		}
 
 		// TODO
@@ -967,29 +650,29 @@ void SetTaskbarBlur()
 		//	}
 		//}
 
-		if (opt.dynamic_ws && opt.dynamic_ws_normal_on_peek && run.peek_active)
+		if (Config::DYNAMIC_WS && Config::DYNAMIC_NORMAL_ON_PEEK && run.peek_active)
 		{
-			for (std::pair<const HMONITOR, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
+			for (auto &taskbar : run.taskbars)
 			{
-				taskbar.second.state = Taskbar::Normal;
+				taskbar.second.second = TASKBARSTATE::Normal;
 			}
 		}
 
 		counter = 0;
 	}
 
-	for (const std::pair<const HMONITOR, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
+	for (const auto &taskbar : run.taskbars)
 	{
-		switch (taskbar.second.state)
+		switch (taskbar.second.second)
 		{
-		case Taskbar::StartMenuOpen:
-			SetWindowBlur(taskbar.second.hwnd, swca::ACCENT_NORMAL, NULL);
+		case TASKBARSTATE::StartMenuOpen:
+			SetWindowBlur(taskbar.second.first, swca::ACCENT_NORMAL, NULL);
 			break;
-		case Taskbar::WindowMaximised:
-			SetWindowBlur(taskbar.second.hwnd, opt.dynamic_ws_taskbar_appearance, opt.dynamic_ws_color); // A window is maximised; let's make sure that we blur the taskbar.
+		case TASKBARSTATE::WindowMaximised:
+			SetWindowBlur(taskbar.second.first, Config::DYNAMIC_APPEARANCE, Config::DYNAMIC_COLOR); // A window is maximised.
 			break;
-		case Taskbar::Normal:
-			SetWindowBlur(taskbar.second.hwnd, opt.taskbar_appearance, opt.color);  // Taskbar should be normal, call using normal transparency settings
+		case TASKBARSTATE::Normal:
+			SetWindowBlur(taskbar.second.first, Config::TASKBAR_APPEARANCE, Config::TASKBAR_COLOR);  // Taskbar should be normal, call using normal transparency settings
 			break;
 		}
 	}
@@ -1111,22 +794,21 @@ void InitializeTray(const HINSTANCE &hInstance)
 	});
 #endif
 
-	tray.BindEnum(IDM_BLUR, IDM_FLUENT, opt.taskbar_appearance, Tray::NORMAL_BUTTON_MAP);
-	tray.BindEnum(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, opt.dynamic_ws_taskbar_appearance, Tray::DYNAMIC_BUTTON_MAP);
-	tray.BindEnum(IDM_PEEK, IDM_NOPEEK, opt.peek, Tray::PEEK_BUTTON_MAP);
+	tray.BindEnum(IDM_BLUR, IDM_FLUENT, Config::TASKBAR_APPEARANCE, Tray::NORMAL_BUTTON_MAP);
+	tray.BindEnum(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, Config::DYNAMIC_APPEARANCE, Tray::DYNAMIC_BUTTON_MAP);
+	tray.BindEnum(IDM_PEEK, IDM_NOPEEK, Config::PEEK, Tray::PEEK_BUTTON_MAP);
 
 	for (const auto &button_pair : Tray::DYNAMIC_BUTTON_MAP)
 	{
-		tray.BindBool(button_pair.second, opt.dynamic_ws, TrayContextMenu::ControlsEnabled);
+		tray.BindBool(button_pair.second, Config::DYNAMIC_WS, TrayContextMenu::ControlsEnabled);
 	}
 
-	tray.BindBool(IDM_DYNAMICWS_COLOR, opt.dynamic_ws,                TrayContextMenu::ControlsEnabled);
-	tray.BindBool(IDM_DYNAMICWS_PEEK,  opt.dynamic_ws,                TrayContextMenu::ControlsEnabled);
-	tray.BindBool(IDM_DYNAMICWS,       opt.dynamic_ws,                TrayContextMenu::Toggle);
-	tray.BindBool(IDM_DYNAMICWS_PEEK,  opt.dynamic_ws_normal_on_peek, TrayContextMenu::Toggle);
-	tray.BindBool(IDM_DYNAMICSTART,    opt.dynamic_start,             TrayContextMenu::Toggle);
-	tray.BindBool(IDM_VERBOSE,         Config::VERBOSE,               TrayContextMenu::Toggle);
-	tray.BindBool(IDM_FLUENT,          run.fluent_available,          TrayContextMenu::ControlsEnabled);
+	tray.BindBool(IDM_DYNAMICWS_COLOR, Config::DYNAMIC_WS,             TrayContextMenu::ControlsEnabled);
+	tray.BindBool(IDM_DYNAMICWS_PEEK,  Config::DYNAMIC_WS,             TrayContextMenu::ControlsEnabled);
+	tray.BindBool(IDM_DYNAMICWS,       Config::DYNAMIC_WS,             TrayContextMenu::Toggle);
+	tray.BindBool(IDM_DYNAMICWS_PEEK,  Config::DYNAMIC_NORMAL_ON_PEEK, TrayContextMenu::Toggle);
+	tray.BindBool(IDM_DYNAMICSTART,    Config::DYNAMIC_WS,             TrayContextMenu::Toggle);
+	tray.BindBool(IDM_VERBOSE,         Config::VERBOSE,                TrayContextMenu::Toggle);
 
 	tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, [](unsigned int) {
 		run.exit_reason = Tray::UserActionNoSave;
@@ -1139,10 +821,10 @@ void InitializeTray(const HINSTANCE &hInstance)
 	});
 
 	tray.RegisterContextMenuCallback(IDM_COLOR,           [](unsigned int) {
-		Util::PickColor(opt.color);
+		Util::PickColor(Config::TASKBAR_COLOR);
 	});
 	tray.RegisterContextMenuCallback(IDM_DYNAMICWS_COLOR, [](unsigned int) {
-		Util::PickColor(opt.dynamic_ws_color);
+		Util::PickColor(Config::DYNAMIC_COLOR);
 	});
 
 	tray.RegisterCustomRefresh(RefreshMenu);
@@ -1156,18 +838,18 @@ void InitializeTray(const HINSTANCE &hInstance)
 	});
 
 	tray.RegisterContextMenuCallback(IDM_RELOADSETTINGS, [](unsigned int) {
-		ParseConfigFile();
+		Config::Parse(run.config_file);
 	});
 
 	tray.RegisterContextMenuCallback(IDM_EDITSETTINGS, [](unsigned int) {
 		SaveConfigFile();
 		Util::EditFile(run.config_file);
-		ParseConfigFile();
+		Config::Parse(run.config_file);
 	});
 
 	tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTSETTINGS, [](unsigned int) {
-		ApplyStock(Config::CONFIG_FILE);
-		ParseConfigFile();
+		ApplyStock(App::CONFIG_FILE);
+		Config::Parse(run.config_file);
 	});
 
 	tray.RegisterContextMenuCallback(IDM_RELOADDYNAMICBLACKLIST, [](unsigned int) {
@@ -1182,7 +864,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	});
 
 	tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTBLACKLIST, [](unsigned int) {
-		ApplyStock(Config::EXCLUDE_FILE);
+		ApplyStock(App::EXCLUDE_FILE);
 		ParseBlacklistFile();
 		ClearBlacklistCache();
 	});
@@ -1222,10 +904,10 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	}
 
 	// Verify our runtime
-	run.fluent_available = win32::IsAtLeastBuild(17063);
+	run.fluent_available = win32::IsAtLeastBuild(MIN_FLUENT_BUILD);
 
 	// Parse our configuration
-	ParseConfigFile();
+	Config::Parse(run.config_file);
 	ParseBlacklistFile();
 
 	// Initialize GUI
@@ -1248,7 +930,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 			DispatchMessage(&msg);
 		}
 		SetTaskbarBlur();
-		std::this_thread::sleep_for(std::chrono::milliseconds(opt.sleep_time));
+		std::this_thread::sleep_for(std::chrono::milliseconds(Config::SLEEP_TIME));
 	}
 
 	// If it's a new instance, don't save or restore taskbar to default
@@ -1261,9 +943,9 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 
 		// Restore default taskbar appearance
 		TogglePeek(true);
-		for (const std::pair<const HMONITOR, Taskbar::TASKBARPROPERTIES> &taskbar : run.taskbars)
+		for (const auto &taskbar : run.taskbars)
 		{
-			SetWindowBlur(taskbar.second.hwnd, swca::ACCENT_NORMAL, NULL);
+			SetWindowBlur(taskbar.second.first, swca::ACCENT_NORMAL, NULL);
 		}
 	}
 

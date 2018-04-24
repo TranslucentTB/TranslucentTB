@@ -58,15 +58,15 @@
     <ClCompile Include="traycontextmenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="config.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="win32.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="taskbar.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tray.hpp">

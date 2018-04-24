@@ -95,6 +95,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="autostart.cpp" />
+    <ClCompile Include="config.cpp" />
     <ClCompile Include="eventhook.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="messagewindow.cpp" />
@@ -119,7 +120,6 @@
     <ClInclude Include="swcadata.hpp" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="taskbar.hpp" />
     <ClInclude Include="tray.hpp" />
     <ClInclude Include="traycontextmenu.hpp" />
     <ClInclude Include="trayicon.hpp" />
