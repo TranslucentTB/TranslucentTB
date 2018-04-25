@@ -47,7 +47,7 @@ Speaking of compiling...
 
 ## Building from source
 
-You can checkout one of the available branches. However, it recommended to use `master`, as the code here is stable and has been passed through peer review.
+You can checkout one of the available branches. However, it is recommended to use `master`, as the code here is stable and has been passed through peer review.
 
 Via [git](https://git-scm.com):
 ```
@@ -60,7 +60,7 @@ Receiving objects: 100% (909/909), 383.94 KiB | 2.78 MiB/s, done.
 Resolving deltas: 100% (624/624), done.
 ```
 
-You can also download a zip archive of each branch by clicking on the `Clone or download` button while browsing that branch's files.
+You can also download a zip archive of each branch by clicking on the `Clone or download` button while browsing the branch's files.
 
 Now that you have the source, you will need Visual Studio 2017. [You can get the free community edition here](https://www.visualstudio.com/vs/community/).
 You also need to check the `VC++ 2015.3 v140 toolset for desktop` option in the VS2017 installer.
@@ -90,7 +90,7 @@ Also, at this time I have no plans of expanding this beyond the taskbar.
 Thanks to [@dAKirby309](https://github.com/dAKirby309) for making the icon! You can find more of his stuff on [his DeviantArt profile](https://dakirby309.deviantart.com/).
 
 The color picker used comes from [this great CodeProject article](https://www.codeproject.com/Articles/9207/An-HSV-RGBA-colour-picker).
-We've modernized it a bit, with things such as per-monitor high DPI awareness, faster drawing, allowing hex input and so on.
+We've modernized it a bit, with things such as per-monitor high DPI awareness, faster (and hardware-accelerated) drawing and allowing hex input.
 
 ### Similar programs
 

@@ -34,17 +34,13 @@
 #include "window.hpp"
 #include "windowclass.hpp"
 
-#pragma region Enumerations
+#pragma region Data
 
 enum class TASKBARSTATE {
 	Normal,				// If no dynamic options are set, act as it says in opt.taskbar_appearance
 	WindowMaximised,	// There is a window which is maximised on the monitor this HWND is in. Display as blurred.
 	StartMenuOpen		// The Start Menu is open on the monitor this HWND is in. Display as it would be without TranslucentTB active.
 };
-
-#pragma endregion
-
-#pragma region Structures
 
 static struct RUNTIMESTATE
 {
@@ -57,7 +53,6 @@ static struct RUNTIMESTATE
 	std::wstring config_folder;
 	std::wstring config_file;
 	std::wstring exclude_file;
-	int cache_hits;
 	bool peek_active = false;
 } run;
 

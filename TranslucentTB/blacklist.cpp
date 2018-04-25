@@ -71,7 +71,7 @@ void Blacklist::Parse(const std::wstring &file)
 	ClearCache();
 }
 
-bool Blacklist::IsBlacklisted(const Window & window)
+bool Blacklist::IsBlacklisted(const Window &window)
 {
 	if (m_CacheHits <= Config::CACHE_HIT_MAX && m_Cache.count(window) > 0)
 	{
@@ -84,7 +84,7 @@ bool Blacklist::IsBlacklisted(const Window & window)
 		{
 			if (Config::VERBOSE)
 			{
-				Log::OutputMessage(L"Maximum number of " + std::to_wstring(Config::CACHE_HIT_MAX) + L" cache hits reached, clearing blacklist cache.");
+				Log::OutputMessage(L"Maximum number of cache hits reached, clearing blacklist cache.");
 			}
 			ClearCache();
 		}
@@ -101,30 +101,26 @@ bool Blacklist::IsBlacklisted(const Window & window)
 			}
 		}
 
-		// Try it second because idk
-		// Window names can change, but I don't think it will be a big issue if we cache it.
-		// If it ends up affecting stuff, we can remove it from caching easily.
-		// It's not like we invalidate the cache each 10 or so second anyways.
-		if (m_TitleBlacklist.size() > 0)
+		if (m_FileBlacklist.size() > 0)
 		{
-			const std::wstring title = window.title();
-			for (const std::wstring &value : m_TitleBlacklist)
+			std::wstring exeName = window.filename();
+			Util::ToLower(exeName);
+			for (const std::wstring &value : m_FileBlacklist)
 			{
-				if (title.find(value) != std::wstring::npos)
+				if (exeName == value)
 				{
 					return OutputMatchToLog(window, m_Cache[window] = true);
 				}
 			}
 		}
 
-		// GetModuleFileNameEx is quite expensive according to the tracing tools, so use it as last resort.
+		// Do it last because titles can change, so it's less reliable.
 		if (m_TitleBlacklist.size() > 0)
 		{
-			std::wstring exeName = window.filename();
-			Util::ToLower(exeName);
+			const std::wstring title = window.title();
 			for (const std::wstring &value : m_TitleBlacklist)
 			{
-				if (exeName == value)
+				if (title.find(value) != std::wstring::npos)
 				{
 					return OutputMatchToLog(window, m_Cache[window] = true);
 				}
@@ -139,6 +135,11 @@ void Blacklist::ClearCache()
 {
 	m_CacheHits = 0;
 	m_Cache.clear();
+
+	if (Config::VERBOSE)
+	{
+		Log::OutputMessage(L"Blacklist cache cleared.");
+	}
 }
 
 void Blacklist::AddToVector(const wchar_t &delimiter, std::vector<std::wstring> &vector, std::wstring line)
