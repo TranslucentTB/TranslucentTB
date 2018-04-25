@@ -1,10 +1,7 @@
 // Standard API
 #include <chrono>
 #include <ctime>
-#include <cwchar>
-#include <cwctype>
 #include <fstream>
-#include <iomanip>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -12,12 +9,8 @@
 #include <vector>
 
 // Windows API
-#include <comdef.h>
 #include <dwmapi.h>
 #include <PathCch.h>
-#include <Psapi.h>
-#include <shellapi.h>
-#include <ShellScalingApi.h>
 #include <ShlObj.h>
 #include <wrl/wrappers/corewrappers.h>
 
@@ -221,119 +214,6 @@ bool CheckAndRunWelcome()
 		ApplyStock(App::EXCLUDE_FILE);
 	}
 	return true;
-}
-
-void SaveConfigFile()
-{
-	/*
-	std::wstring configfile(run.config_file);
-	if (!configfile.empty())
-	{
-		using namespace std;
-		wofstream configstream(configfile);
-
-		configstream << L"; Taskbar appearance: clear, normal, fluent (only on build " << MIN_FLUENT_BUILD << L" and up), opaque, normal, or blur (default)." << endl;
-
-		configstream << L"accent=";
-		switch (opt.taskbar_appearance)
-		{
-		case swca::ACCENT_ENABLE_GRADIENT:
-			configstream << L"opaque";
-			break;
-		case swca::ACCENT_ENABLE_TRANSPARENTGRADIENT:
-			configstream << L"clear";
-			break;
-		case swca::ACCENT_ENABLE_BLURBEHIND:
-			configstream << L"blur";
-			break;
-		case swca::ACCENT_NORMAL:
-			configstream << L"normal";
-			break;
-		case swca::ACCENT_ENABLE_FLUENT:
-			configstream << L"fluent";
-			break;
-		}
-		configstream << endl;
-		configstream << L"; Color and opacity of the taskbar." << endl;
-
-		configstream << L"color=";
-		configstream << right << setw(6) << setfill(L'0') << hex << (opt.color & 0x00FFFFFF);
-		configstream << L" ; A color in hexadecimal notation." << endl;
-
-		configstream << L"opacity=";
-		configstream << left << setw(3) << setfill(L' ') << dec << ((opt.color & 0xFF000000) >> 24);
-		configstream << L"  ; A value in the range 0 to 255." << endl;
-
-		configstream << endl;
-		configstream << L"; Dynamic Windows and Start Menu" << endl;
-		configstream << L"; Available states are the same as the accent configuration option." << endl;
-		configstream << L"; dynamic windows has its own color and opacity configs." << endl;
-		configstream << L"; by enabling dynamic-ws-normal-on-peek, dynamic windows will behave as if no window is maximised when using Aero Peek." << endl;
-		configstream << L"; you can also set the accent, color and opacity values, which will represent the state of dynamic windows when there is no window maximised." << endl;
-		configstream << L"; dynamic start returns the taskbar to normal appearance when the start menu is opened." << endl;
-
-		configstream << L"dynamic-ws=" << (opt.dynamic_ws ? L"enable" : L"disable") << endl;
-
-		configstream << L"dynamic-ws-accent=";
-		switch (opt.dynamic_ws_taskbar_appearance)
-		{
-		case swca::ACCENT_ENABLE_BLURBEHIND:
-			configstream << L"blur";
-			break;
-		case swca::ACCENT_ENABLE_GRADIENT:
-			configstream << L"opaque";
-			break;
-		case swca::ACCENT_ENABLE_TRANSPARENTGRADIENT:
-			configstream << L"clear";
-			break;
-		case swca::ACCENT_NORMAL:
-			configstream << L"normal";
-			break;
-		case swca::ACCENT_ENABLE_FLUENT:
-			configstream << L"fluent";
-			break;
-		}
-		configstream << endl;
-
-
-		configstream << L"dynamic-ws-color=";
-		configstream << right << setw(6) << setfill<wchar_t>('0') << hex << (opt.dynamic_ws_color & 0x00FFFFFF);
-		configstream << L" ; A color in hexadecimal notation." << endl;
-
-		configstream << L"dynamic-ws-opacity=";
-		configstream << left << setw(3) << setfill<wchar_t>(' ') << to_wstring((opt.dynamic_ws_color & 0xFF000000) >> 24);
-		configstream << L"  ; A value in the range 0 to 255." << endl;
-
-		configstream << L"dynamic-ws-normal-on-peek=" << (opt.dynamic_ws_normal_on_peek ? L"enable" : L"disable") << endl;
-		configstream << L"dynamic-start=" << (opt.dynamic_start ? L"enable" : L"disable") << endl;
-
-		configstream << endl;
-		configstream << L"; Controls how the Aero Peek button behaves (dynamic, show or hide)" << endl;
-		configstream << L"peek=";
-		switch (opt.peek)
-		{
-		case Taskbar::AEROPEEK::Disabled:
-			configstream << L"hide";
-			break;
-		case Taskbar::AEROPEEK::Dynamic:
-			configstream << L"dynamic";
-			break;
-		case Taskbar::AEROPEEK::Enabled:
-			configstream << L"show";
-			break;
-		}
-		configstream << endl;
-
-		configstream << endl;
-		configstream << L"; Advanced settings" << endl;
-		configstream << L"; more informative logging. can make huge log files." << endl;
-		configstream << L"verbose=" << (Config::VERBOSE ? L"enable" : L"disable") << endl;
-		configstream << L"; sleep time in milliseconds, a shorter time reduces flicker when opening start, but results in higher CPU usage." << endl;
-		configstream << L"sleep-time=" << to_wstring(opt.sleep_time) << endl;
-		configstream << L"; maximum number of times the blacklist cache can be hit before getting cleared." << endl;
-		configstream << L"max-cache-hits=" << to_wstring(Config::CACHE_HIT_MAX) << endl;
-	}
-	*/
 }
 
 void ParseBlacklistFile()
@@ -830,7 +710,9 @@ void InitializeTray(const HINSTANCE &hInstance)
 	tray.RegisterCustomRefresh(RefreshMenu);
 
 	tray.RegisterContextMenuCallback(IDM_OPENLOG, [](unsigned int) {
-		Util::EditFile(Log::file());
+		std::thread([]() {
+			Util::EditFile(Log::file());
+		}).detach();
 	});
 
 	tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, [](unsigned int) {
@@ -842,9 +724,11 @@ void InitializeTray(const HINSTANCE &hInstance)
 	});
 
 	tray.RegisterContextMenuCallback(IDM_EDITSETTINGS, [](unsigned int) {
-		SaveConfigFile();
-		Util::EditFile(run.config_file);
-		Config::Parse(run.config_file);
+		Config::Save(run.config_file);
+		std::thread([]() {
+			Util::EditFile(run.config_file);
+			Config::Parse(run.config_file);
+		}).detach();
 	});
 
 	tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTSETTINGS, [](unsigned int) {
@@ -858,9 +742,11 @@ void InitializeTray(const HINSTANCE &hInstance)
 	});
 
 	tray.RegisterContextMenuCallback(IDM_EDITDYNAMICBLACKLIST, [](unsigned int) {
-		Util::EditFile(run.exclude_file);
-		ParseBlacklistFile();
-		ClearBlacklistCache();
+		std::thread([]() {
+			Util::EditFile(run.exclude_file);
+			ParseBlacklistFile();
+			ClearBlacklistCache();
+		}).detach();
 	});
 
 	tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTBLACKLIST, [](unsigned int) {
@@ -938,7 +824,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	{
 		if (run.exit_reason != Tray::UserActionNoSave)
 		{
-			SaveConfigFile();
+			Config::Save(run.config_file);
 		}
 
 		// Restore default taskbar appearance

@@ -8,7 +8,7 @@
 #include "swcadata.hpp"
 
 namespace Tray {
-	using swca::ACCENT;
+	using namespace swca;
 
 	static const wchar_t WM_TASKBARCREATED[] = L"TaskbarCreated";
 	static const wchar_t NEW_TTB_INSTANCE[]  = L"NewTTBInstance";

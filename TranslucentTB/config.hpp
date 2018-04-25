@@ -25,6 +25,7 @@ public:
 	static bool VERBOSE;
 
 	static void Parse(const std::wstring &file);
+	static void Save(const std::wstring &file);
 
 private:
 	static void UnknownValue(const std::wstring &key, const std::wstring &value);
@@ -33,4 +34,9 @@ private:
 	static bool ParseOpacity(const std::wstring &value, uint32_t &color);
 	static bool ParseBool(const std::wstring &value, bool &setting);
 	static void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value);
+
+	static std::wstring GetAccentText(const swca::ACCENT &accent);
+	static std::wstring GetColorText(const uint32_t &color);
+	static std::wstring GetOpacityText(const uint32_t &color);
+	static std::wstring GetBoolText(const bool &value);
 };
