@@ -22,7 +22,7 @@
 #ifdef STORE
 #include "UWP.hpp"
 #else
-#include "common.h"
+#include "common.hpp"
 #endif
 
 std::unique_ptr<std::wostream> Log::m_LogStream;

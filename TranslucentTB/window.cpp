@@ -3,7 +3,7 @@
 #include <wrl/wrappers/corewrappers.h>
 #include <vector>
 
-#include "common.h"
+#include "common.hpp"
 #include "ttberror.hpp"
 
 std::unordered_map<HWND, std::wstring> Window::m_ClassNames;

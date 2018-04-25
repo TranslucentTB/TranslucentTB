@@ -7,7 +7,7 @@
 #include <wrl/wrappers/corewrappers.h>
 
 #include "app.hpp"
-#include "common.h"
+#include "common.hpp"
 #include "ttberror.hpp"
 
 std::wstring win32::m_ExeLocation;

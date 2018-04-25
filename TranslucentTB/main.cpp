@@ -16,7 +16,7 @@
 #include "autofree.hpp"
 #include "autostart.hpp"
 #include "blacklist.hpp"
-#include "common.h"
+#include "common.hpp"
 #include "config.hpp"
 #include "eventhook.hpp"
 #include "messagewindow.hpp"
@@ -342,7 +342,7 @@ void SetTaskbarBlur()
 	static int counter = 10;
 
 	if (counter >= 10)	// Change this if you want to change the time it takes for the program to update.
-	{					// 1 = opt.sleep_time; we use 10 (assuming the default opt.sleep_time value),
+	{					// 1 = Config::SLEEP_TIME; we use 10 (assuming the default configuration value of 10),
 						// because the difference is less noticeable and it has no large impact on CPU.
 						// We can change this if we feel that CPU is more important than response time.
 		run.should_show_peek = (Config::PEEK == Config::PEEK::Enabled);
@@ -555,7 +555,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	tray.RegisterCustomRefresh(RefreshMenu);
 
 	tray.RegisterContextMenuCallback(IDM_OPENLOG, [](unsigned int) {
-		std::thread([]() {
+		std::thread([] {
 			Util::EditFile(Log::file());
 		}).detach();
 	});
@@ -570,7 +570,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 	tray.RegisterContextMenuCallback(IDM_EDITSETTINGS, [](unsigned int) {
 		Config::Save(run.config_file);
-		std::thread([]() {
+		std::thread([] {
 			Util::EditFile(run.config_file);
 			Config::Parse(run.config_file);
 		}).detach();
@@ -586,7 +586,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	});
 
 	tray.RegisterContextMenuCallback(IDM_EDITDYNAMICBLACKLIST, [](unsigned int) {
-		std::thread([]() {
+		std::thread([] {
 			Util::EditFile(run.exclude_file);
 			Blacklist::Parse(run.exclude_file);
 		}).detach();

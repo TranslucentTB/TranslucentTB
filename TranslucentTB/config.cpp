@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <sstream>
 
-#include "common.h"
+#include "common.hpp"
 #include "ttblog.hpp"
 #include "util.hpp"
 #include "win32.hpp"
