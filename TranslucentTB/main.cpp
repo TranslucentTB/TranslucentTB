@@ -37,7 +37,7 @@
 #pragma region Data
 
 enum class TASKBARSTATE {
-	Normal,				// If no dynamic options are set, act as it says in opt.taskbar_appearance
+	Normal,				// If no dynamic options are set, act as it says in Config::TASKBAR_APPEARANCE
 	WindowMaximised,	// There is a window which is maximised on the monitor this HWND is in. Display as blurred.
 	StartMenuOpen		// The Start Menu is open on the monitor this HWND is in. Display as it would be without TranslucentTB active.
 };
