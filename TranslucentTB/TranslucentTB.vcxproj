@@ -95,6 +95,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="autostart.cpp" />
+    <ClCompile Include="blacklist.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="eventhook.cpp" />
     <ClCompile Include="main.cpp" />
@@ -114,6 +115,7 @@
     <ClInclude Include="arch.h" />
     <ClInclude Include="autofree.hpp" />
     <ClInclude Include="autostart.hpp" />
+    <ClInclude Include="blacklist.hpp" />
     <ClInclude Include="common.h" />
     <ClInclude Include="eventhook.hpp" />
     <ClInclude Include="messagewindow.hpp" />

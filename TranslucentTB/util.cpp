@@ -71,24 +71,6 @@ void Util::PickColor(uint32_t &color)
 	}).detach();
 }
 
-void Util::AddValuesToVectorByDelimiter(const wchar_t &delimiter, std::vector<std::wstring> &vector, std::wstring line)
-{
-	size_t pos;
-
-	// First lets remove the key
-	if ((pos = line.find(delimiter)) != std::wstring::npos)
-	{
-		line.erase(0, pos + 1);
-	}
-
-	// Now iterate and add the values
-	while ((pos = line.find(delimiter)) != std::wstring::npos)
-	{
-		vector.push_back(Trim(line.substr(0, pos)));
-		line.erase(0, pos + 1);
-	}
-}
-
 bool Util::IsStartVisible()
 {
 	static CComPtr<IAppVisibility> app_visibility;

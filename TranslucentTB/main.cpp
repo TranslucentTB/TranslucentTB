@@ -1,8 +1,5 @@
 // Standard API
 #include <chrono>
-#include <ctime>
-#include <fstream>
-#include <sstream>
 #include <string>
 #include <thread>
 #include <unordered_map>
@@ -18,6 +15,7 @@
 #include "app.hpp"
 #include "autofree.hpp"
 #include "autostart.hpp"
+#include "blacklist.hpp"
 #include "common.h"
 #include "config.hpp"
 #include "eventhook.hpp"
@@ -47,13 +45,6 @@ enum class TASKBARSTATE {
 #pragma endregion
 
 #pragma region Structures
-
-static struct OPTIONS
-{
-	std::vector<std::wstring> blacklisted_classes;
-	std::vector<std::wstring> blacklisted_filenames;
-	std::vector<std::wstring> blacklisted_titles;
-} opt;
 
 static struct RUNTIMESTATE
 {
@@ -216,62 +207,6 @@ bool CheckAndRunWelcome()
 	return true;
 }
 
-void ParseBlacklistFile()
-{
-	// Clear our vectors
-	opt.blacklisted_classes.clear();
-	opt.blacklisted_filenames.clear();
-	opt.blacklisted_titles.clear();
-
-	std::wifstream excludesfilestream(run.exclude_file);
-
-	const wchar_t delimiter = L','; // Change to change the char(s) used to split,
-	const wchar_t comment = L';';
-
-	for (std::wstring line; std::getline(excludesfilestream, line);)
-	{
-		if (line.empty())
-		{
-			continue;
-		}
-
-		size_t comment_index = line.find(comment);
-		if (comment_index == 0)
-		{
-			continue;
-		}
-		else if (comment_index != std::wstring::npos)
-		{
-			line = line.substr(0, comment_index);
-		}
-
-		if (line[line.length() - 1] != delimiter)
-		{
-			line += delimiter;
-		}
-
-		std::wstring line_lowercase = line;
-		Util::ToLower(line_lowercase);
-
-		if (line_lowercase.substr(0, 5) == L"class")
-		{
-			Util::AddValuesToVectorByDelimiter(delimiter, opt.blacklisted_classes, line);
-		}
-		else if (line_lowercase.substr(0, 5) == L"title" || line.substr(0, 13) == L"windowtitle")
-		{
-			Util::AddValuesToVectorByDelimiter(delimiter, opt.blacklisted_titles, line);
-		}
-		else if (line_lowercase.substr(0, 7) == L"exename")
-		{
-			Util::AddValuesToVectorByDelimiter(delimiter, opt.blacklisted_filenames, line_lowercase);
-		}
-		else
-		{
-			Log::OutputMessage(L"Invalid line in dynamic window blacklist file");
-		}
-	}
-}
-
 #pragma endregion
 
 #pragma region Utilities
@@ -319,91 +254,6 @@ void TogglePeek(const bool &status)
 
 		cached_peek = status;
 		cached_taskbar = Window(run.main_taskbar);
-	}
-}
-
-void ClearBlacklistCache()
-{
-	run.cache_hits = Config::CACHE_HIT_MAX + 1;
-}
-
-bool OutputBlacklistMatchToLog(const Window &window, const bool &match)
-{
-	if (Config::VERBOSE)
-	{
-		std::wostringstream message;
-		message << (match ? L"B" : L"No b") << L"lacklist match found for window: ";
-		message << window.handle() << L" [" << window.classname() << L"] [" << window.filename() << L"] [" << window.title() << L"]";
-
-		Log::OutputMessage(message.str());
-	}
-
-	return match;
-}
-
-bool IsWindowBlacklisted(const Window &window)
-{
-	static std::unordered_map<HWND, bool> blacklist_cache;
-
-	if (run.cache_hits <= Config::CACHE_HIT_MAX && blacklist_cache.count(window) > 0)
-	{
-		run.cache_hits++;
-		return blacklist_cache[window];
-	}
-	else
-	{
-		if (run.cache_hits > Config::CACHE_HIT_MAX)
-		{
-			if (Config::VERBOSE)
-			{
-				Log::OutputMessage(L"Maximum number of " + std::to_wstring(Config::CACHE_HIT_MAX) + L" cache hits reached, clearing blacklist cache.");
-			}
-			run.cache_hits = 0;
-			blacklist_cache.clear();
-		}
-
-		// This is the fastest because we do the less string manipulation, so always try it first
-		if (opt.blacklisted_classes.size() > 0)
-		{
-			for (const std::wstring &value : opt.blacklisted_classes)
-			{
-				if (window.classname() == value)
-				{
-					return OutputBlacklistMatchToLog(window, blacklist_cache[window] = true);
-				}
-			}
-		}
-
-		// Try it second because idk
-		// Window names can change, but I don't think it will be a big issue if we cache it.
-		// If it ends up affecting stuff, we can remove it from caching easily.
-		if (opt.blacklisted_titles.size() > 0)
-		{
-			const std::wstring title = window.title();
-			for (const std::wstring &value : opt.blacklisted_titles)
-			{
-				if (title.find(value) != std::wstring::npos)
-				{
-					return OutputBlacklistMatchToLog(window, blacklist_cache[window] = true);
-				}
-			}
-		}
-
-		// GetModuleFileNameEx is quite expensive according to the tracing tools, so use it as last resort.
-		if (opt.blacklisted_filenames.size() > 0)
-		{
-			std::wstring exeName = window.filename();
-			Util::ToLower(exeName);
-			for (const std::wstring &value : opt.blacklisted_filenames)
-			{
-				if (exeName == value)
-				{
-					return OutputBlacklistMatchToLog(window, blacklist_cache[window] = true);
-				}
-			}
-		}
-
-		return OutputBlacklistMatchToLog(window, blacklist_cache[window] = false);
 	}
 }
 
@@ -471,7 +321,7 @@ BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
 	// IsWindowCloaked should take care of checking if it's on the current desktop.
 	// But that's undefined behavior.
 	// So eh, do both but with IsWindowOnCurrentDesktop last.
-	if (window.visible() && window.state() == SW_MAXIMIZE && !window.get_attribute<BOOL>(DWMWA_CLOAKED) && !IsWindowBlacklisted(window) && window.on_current_desktop())
+	if (window.visible() && window.state() == SW_MAXIMIZE && !window.get_attribute<BOOL>(DWMWA_CLOAKED) && !Blacklist::IsBlacklisted(window) && window.on_current_desktop())
 	{
 		auto &taskbar = run.taskbars.at(window.monitor());
 		if (Config::DYNAMIC_WS)
@@ -716,7 +566,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	});
 
 	tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, [](unsigned int) {
-		ClearBlacklistCache();
+		Blacklist::ClearCache();
 	});
 
 	tray.RegisterContextMenuCallback(IDM_RELOADSETTINGS, [](unsigned int) {
@@ -737,22 +587,19 @@ void InitializeTray(const HINSTANCE &hInstance)
 	});
 
 	tray.RegisterContextMenuCallback(IDM_RELOADDYNAMICBLACKLIST, [](unsigned int) {
-		ParseBlacklistFile();
-		ClearBlacklistCache();
+		Blacklist::Parse(run.exclude_file);
 	});
 
 	tray.RegisterContextMenuCallback(IDM_EDITDYNAMICBLACKLIST, [](unsigned int) {
 		std::thread([]() {
 			Util::EditFile(run.exclude_file);
-			ParseBlacklistFile();
-			ClearBlacklistCache();
+			Blacklist::Parse(run.exclude_file);
 		}).detach();
 	});
 
 	tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTBLACKLIST, [](unsigned int) {
 		ApplyStock(App::EXCLUDE_FILE);
-		ParseBlacklistFile();
-		ClearBlacklistCache();
+		Blacklist::Parse(run.exclude_file);
 	});
 
 	tray.RegisterContextMenuCallback(IDM_AUTOSTART, [](unsigned int) {
@@ -794,7 +641,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 
 	// Parse our configuration
 	Config::Parse(run.config_file);
-	ParseBlacklistFile();
+	Blacklist::Parse(run.exclude_file);
 
 	// Initialize GUI
 	InitializeTray(hInstance);

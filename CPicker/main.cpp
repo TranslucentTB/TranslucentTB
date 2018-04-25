@@ -106,13 +106,14 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			return SendMessage(hDlg, WM_DPICHANGED, NULL, NULL);
 		}
 
-		PAINTSTRUCT ps;
-		BeginPaint(hDlg, &ps);
-
 		const SColour &color = picker_data->picker->GetCurrentColour();
 		const float rf = color.r / 255.0f;
 		const float gf = color.g / 255.0f;
 		const float bf = color.b / 255.0f;
+		const float af = color.a / 255.0f;
+
+		PAINTSTRUCT ps;
+		BeginPaint(hDlg, &ps);
 
 		DrawColorPicker(picker_data->targetC1, hDlg, rf, gf, bf, color.h, color.s, color.v);
 
@@ -120,7 +121,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		DrawColorSlider(picker_data->targetC2, hDlg, rf, gf, bf, color.h, color.s, color.v);
 
 		// Alpha slider
-		DrawAlphaSlider(picker_data->targetA, D2D1::ColorF(rf, gf, bf), 1.0f - (color.a / 255.0f));
+		DrawAlphaSlider(picker_data->targetA, D2D1::ColorF(rf, gf, bf), 1.0f - af);
 
 		DrawColorIndicator(picker_data->targetCC, color);
 		DrawColorIndicator(picker_data->targetOC, picker_data->picker->GetOldColour());
@@ -267,7 +268,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				GetDlgItemText(hDlg, IDC_HEXCOL, rawText, 11);
 
 				std::wstring text(rawText);
-				if (text.find_first_of('#') == 0)
+				if (text.find(L'#') == 0)
 				{
 					text = text.substr(1, text.length() - 1);
 				}

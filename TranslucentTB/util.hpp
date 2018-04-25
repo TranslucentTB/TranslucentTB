@@ -15,20 +15,20 @@ public:
 
 	inline static std::wstring Trim(const std::wstring& str)
 	{
-		size_t first = str.find_first_not_of(' ');
+		size_t first = str.find_first_not_of(L' ');
 
 		if (first == std::wstring::npos)
 		{
 			return L"";
 		}
 
-		size_t last = str.find_last_not_of(' ');
+		size_t last = str.find_last_not_of(L' ');
 		return str.substr(first, (last - first + 1));
 	}
 
 	inline static void QuoteSpaces(std::wstring &path)
 	{
-		if (path.find_first_of(' ') != std::wstring::npos)
+		if (path.find(L' ') != std::wstring::npos)
 		{
 			path = L"\"" + path + L"\"";
 		}
@@ -48,6 +48,5 @@ public:
 
 	static void EditFile(std::wstring file);
 	static void PickColor(uint32_t &color);
-	static void AddValuesToVectorByDelimiter(const wchar_t &delimiter, std::vector<std::wstring> &vector, std::wstring line);
 	static bool IsStartVisible();
 };
