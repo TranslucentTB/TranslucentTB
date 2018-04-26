@@ -141,7 +141,7 @@ void GetPaths()
 void ApplyStock(const std::wstring &filename)
 {
 	std::wstring exeFolder_str = win32::GetExeLocation();
-	exeFolder_str.erase(exeFolder_str.find_last_of(L"/\\") + 1);
+	exeFolder_str.erase(exeFolder_str.find_last_of(LR"(/\)") + 1);
 
 	AutoFree::Local<wchar_t> stockFile;
 	if (!ErrorHandle(PathAllocCombine(exeFolder_str.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &stockFile), Error::Level::Error, L"Failed to combine executable folder and config file!"))
@@ -532,7 +532,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	tray.BindBool(IDM_DYNAMICWS_PEEK,  Config::DYNAMIC_WS,             TrayContextMenu::ControlsEnabled);
 	tray.BindBool(IDM_DYNAMICWS,       Config::DYNAMIC_WS,             TrayContextMenu::Toggle);
 	tray.BindBool(IDM_DYNAMICWS_PEEK,  Config::DYNAMIC_NORMAL_ON_PEEK, TrayContextMenu::Toggle);
-	tray.BindBool(IDM_DYNAMICSTART,    Config::DYNAMIC_WS,             TrayContextMenu::Toggle);
+	tray.BindBool(IDM_DYNAMICSTART,    Config::DYNAMIC_START,          TrayContextMenu::Toggle);
 	tray.BindBool(IDM_VERBOSE,         Config::VERBOSE,                TrayContextMenu::Toggle);
 
 	tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, [](unsigned int) {

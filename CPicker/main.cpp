@@ -68,28 +68,28 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 		picker_data->targetC1.Release();
 		item = GetDlgItem(hDlg, IDC_COLOR);
-		GetWindowRect(item, &rect);
-		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right - rect.left, rect.bottom - rect.top)), &picker_data->targetC1);
+		GetClientRect(item, &rect);
+		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right, rect.bottom)), &picker_data->targetC1);
 
 		picker_data->targetC2.Release();
 		item = GetDlgItem(hDlg, IDC_COLOR2);
-		GetWindowRect(item, &rect);
-		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right - rect.left, rect.bottom - rect.top)), &picker_data->targetC2);
+		GetClientRect(item, &rect);
+		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right, rect.bottom)), &picker_data->targetC2);
 
 		picker_data->targetA.Release();
 		item = GetDlgItem(hDlg, IDC_ALPHASLIDE);
-		GetWindowRect(item, &rect);
-		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right - rect.left, rect.bottom - rect.top)), &picker_data->targetA);
+		GetClientRect(item, &rect);
+		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right, rect.bottom)), &picker_data->targetA);
 
 		picker_data->targetCC.Release();
 		item = GetDlgItem(hDlg, IDC_CURRCOLOR);
-		GetWindowRect(item, &rect);
-		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right - rect.left, rect.bottom - rect.top)), &picker_data->targetCC);
+		GetClientRect(item, &rect);
+		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right, rect.bottom)), &picker_data->targetCC);
 
 		picker_data->targetOC.Release();
 		item = GetDlgItem(hDlg, IDC_OLDCOLOR);
-		GetWindowRect(item, &rect);
-		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right - rect.left, rect.bottom - rect.top)), &picker_data->targetOC);
+		GetClientRect(item, &rect);
+		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right, rect.bottom)), &picker_data->targetOC);
 
 
 		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
@@ -246,7 +246,6 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	case WM_COMMAND:
 		switch (HIWORD(wParam))
 		{
-			BOOL result;
 		case EN_SETFOCUS:
 		{
 			if (LOWORD(wParam) != IDC_HEXCOL)
@@ -321,6 +320,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				}
 				else
 				{
+					BOOL result;
 					SetDlgItemInt(hDlg, slider_combo.first, SendDlgItemMessage(hDlg, slider_combo.second.first, UDM_GETPOS, 0, (LPARAM)&result), false);
 				}
 			}
@@ -337,6 +337,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			switch (LOWORD(wParam))
 			{
+				BOOL result;
 			case IDC_RED:
 			case IDC_GREEN:
 			case IDC_BLUE:

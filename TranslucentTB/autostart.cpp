@@ -16,7 +16,7 @@
 
 Autostart::StartupState Autostart::GetStartupState()
 {
-	LRESULT error = RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", App::NAME, RRF_RT_REG_SZ, NULL, NULL, NULL);
+	LRESULT error = RegGetValue(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Run)", App::NAME, RRF_RT_REG_SZ, NULL, NULL, NULL);
 	if (error == ERROR_FILE_NOT_FOUND)
 	{
 		return StartupState::Disabled;
@@ -25,7 +25,7 @@ Autostart::StartupState Autostart::GetStartupState()
 	{
 		uint8_t status[12];
 		DWORD size = sizeof(status);
-		error = RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run", App::NAME, RRF_RT_REG_BINARY, NULL, &status, &size);
+		error = RegGetValue(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run)", App::NAME, RRF_RT_REG_BINARY, NULL, &status, &size);
 		if (error != ERROR_FILE_NOT_FOUND && ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup disable state failed.") && status[0] == 3)
 		{
 			return StartupState::DisabledByUser;
@@ -45,7 +45,7 @@ Autostart::StartupState Autostart::GetStartupState()
 void Autostart::SetStartupState(const StartupState &state)
 {
 	HKEY hkey;
-	LRESULT error = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
+	LRESULT error = RegCreateKey(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Run)", &hkey);
 	if (ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Opening registry key failed!")) //Creates a key
 	{
 		if (state == StartupState::Enabled)

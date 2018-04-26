@@ -95,7 +95,7 @@ const std::wstring &Window::filename() const
 		}
 
 		std::wstring exeName(exeName_path.data());
-		return m_Filenames[m_WindowHandle] = exeName.substr(exeName.find_last_of(L"/\\") + 1);
+		return m_Filenames[m_WindowHandle] = exeName.substr(exeName.find_last_of(LR"(/\)") + 1);
 	}
 	else
 	{

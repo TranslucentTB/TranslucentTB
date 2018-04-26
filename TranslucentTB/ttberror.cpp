@@ -1,9 +1,8 @@
 #include "ttberror.hpp"
-#include <codecvt>
 #include <comdef.h>
-#include <locale>
 #include <string>
 #include <exception>
+#include <vector>
 #include <winerror.h>
 #include <WinUser.h>
 
@@ -30,10 +29,18 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 			boxbuffer += error_message;
 		}
 
-		std::wstring functionW(std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().from_bytes(function));
+		std::wstring functionW;
+
+		const size_t functionLength = std::char_traits<char>::length(function) + 1;
+		std::vector<wchar_t> functionWtemp(functionLength);
+		if (MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, function, functionLength, functionWtemp.data(), functionLength))
+		{
+			functionW = functionWtemp.data();
+		}
 
 		Log::OutputMessage(message_str + L" Exception from HRESULT: " + error_message +
-			L" (" + file + L":" + std::to_wstring(line) + L" at function " + functionW + L")");
+			L" (" + file + L":" + std::to_wstring(line) + L" at function " +
+			(functionW.empty() ? L"[failed to convert function name to UTF-16]" : functionW) + L")");
 
 		if (level == Level::Fatal)
 		{
