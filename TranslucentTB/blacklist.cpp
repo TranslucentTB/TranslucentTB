@@ -73,14 +73,16 @@ void Blacklist::Parse(const std::wstring &file)
 
 bool Blacklist::IsBlacklisted(const Window &window)
 {
-	if (m_CacheHits <= Config::CACHE_HIT_MAX && m_Cache.count(window) > 0)
+	const bool has_title_blacklist = m_TitleBlacklist.size() > 0;
+
+	if ((!has_title_blacklist || m_CacheHits <= Config::CACHE_HIT_MAX) && m_Cache.count(window) > 0)
 	{
 		m_CacheHits++;
 		return m_Cache[window];
 	}
 	else
 	{
-		if (m_CacheHits > Config::CACHE_HIT_MAX)
+		if (has_title_blacklist && m_CacheHits > Config::CACHE_HIT_MAX)
 		{
 			if (Config::VERBOSE)
 			{
@@ -115,7 +117,7 @@ bool Blacklist::IsBlacklisted(const Window &window)
 		}
 
 		// Do it last because titles can change, so it's less reliable.
-		if (m_TitleBlacklist.size() > 0)
+		if (has_title_blacklist)
 		{
 			const std::wstring title = window.title();
 			for (const std::wstring &value : m_TitleBlacklist)

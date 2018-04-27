@@ -30,7 +30,7 @@ long TrayContextMenu::TrayCallback(Window, WPARAM, LPARAM lParam)
 		if (!item && GetLastError() != 0)
 		{
 			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to open context menu.");
-			return;
+			return 0;
 		}
 
 		const auto &callbackVector = m_MenuCallbackMap[item];

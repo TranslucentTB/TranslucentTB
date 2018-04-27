@@ -110,6 +110,7 @@ void Config::Save(const std::wstring &file)
 	configstream << L"; sleep time in milliseconds, a shorter time reduces flicker when opening start, but results in higher CPU usage." << endl;
 	configstream << L"sleep-time=" << std::dec << SLEEP_TIME << endl;
 	configstream << L"; maximum number of times the blacklist cache can be hit before getting cleared." << endl;
+	configstream << L"; (ignored when no window titles are blacklisted as the cache never clears automatically in that case)" << endl;
 	configstream << L"max-cache-hits=" << std::dec << CACHE_HIT_MAX << endl;
 	configstream << L"; more informative logging. Can make huge log files." << endl;
 	configstream << L"verbose=" << GetBoolText(VERBOSE) << endl;
