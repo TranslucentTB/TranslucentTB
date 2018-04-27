@@ -29,7 +29,8 @@ long TrayContextMenu::TrayCallback(Window, WPARAM, LPARAM lParam)
 		unsigned int item = TrackPopupMenu(GetSubMenu(m_Menu, 0), TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, m_Window, NULL);
 		if (!item && GetLastError() != 0)
 		{
-			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to open context menu.");
+			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to open context menu.");
+			return;
 		}
 
 		const auto &callbackVector = m_MenuCallbackMap[item];

@@ -49,7 +49,6 @@ static struct RUNTIMESTATE
 	std::unordered_map<HMONITOR, std::pair<HWND, TASKBARSTATE>> taskbars;
 	bool should_show_peek;
 	bool is_running = true;
-	bool fluent_available = false;
 	std::wstring config_folder;
 	std::wstring config_file;
 	std::wstring exclude_file;
@@ -271,10 +270,16 @@ inline void ChangePopupItemText(HMENU menu, const uint32_t &item, const std::wst
 
 void RefreshMenu(HMENU menu)
 {
-	if (!run.fluent_available)
+	static bool needs_to_check_fluent = true;
+	if (needs_to_check_fluent)
 	{
-		RemoveMenu(menu, IDM_FLUENT, MF_BYCOMMAND);
-		RemoveMenu(menu, IDM_DYNAMICWS_FLUENT, MF_BYCOMMAND);
+		if (!win32::IsAtLeastBuild(MIN_FLUENT_BUILD))
+		{
+			RemoveMenu(menu, IDM_FLUENT, MF_BYCOMMAND);
+			RemoveMenu(menu, IDM_DYNAMICWS_FLUENT, MF_BYCOMMAND);
+		}
+
+		needs_to_check_fluent = false;
 	}
 
 	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, !Log::file().empty(), TrayContextMenu::ControlsEnabled);
@@ -630,9 +635,6 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	{
 		std::terminate();
 	}
-
-	// Verify our runtime
-	run.fluent_available = win32::IsAtLeastBuild(MIN_FLUENT_BUILD);
 
 	// Parse our configuration
 	Config::Parse(run.config_file);
