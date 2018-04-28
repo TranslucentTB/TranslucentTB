@@ -129,16 +129,8 @@ bool Window::on_current_desktop() const
 
 unsigned int Window::state() const
 {
-	WINDOWPLACEMENT result;
-	if (!GetWindowPlacement(m_WindowHandle, &result))
-	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting placement of a window failed.");
-		return SW_SHOW;
-	}
-	else
-	{
-		return result.showCmd;
-	}
+	const WINDOWPLACEMENT result = placement();
+	return result.length != 0 ? result.showCmd : SW_SHOW;
 }
 
 bool Window::show(int state) const
@@ -149,6 +141,17 @@ bool Window::show(int state) const
 bool Window::visible() const
 {
 	return IsWindowVisible(m_WindowHandle);
+}
+
+WINDOWPLACEMENT Window::placement() const
+{
+	WINDOWPLACEMENT result {};
+	if (!GetWindowPlacement(m_WindowHandle, &result))
+	{
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting placement of a window failed.");
+	}
+
+	return result;
 }
 
 HMONITOR Window::monitor() const

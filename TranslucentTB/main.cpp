@@ -234,17 +234,18 @@ void TogglePeek(const bool &status)
 
 	if (status != cached_peek || cached_taskbar != run.main_taskbar)
 	{
-		Window _tray = Window::FindEx(run.main_taskbar, nullptr, L"TrayNotifyWnd");
-		Window _peek = Window::FindEx(_tray, nullptr, L"TrayShowDesktopButtonWClass");
-		Window _overflow = Window::FindEx(_tray, nullptr, L"Button");
+		Window _peek = Window::FindEx(Window::FindEx(run.main_taskbar, nullptr, L"TrayNotifyWnd"), nullptr, L"TrayShowDesktopButtonWClass");
 
-		_peek.show(status ? SW_SHOWNORMAL : SW_HIDE);
+		if (!status)
+		{
+			SetWindowLong(_peek, GWL_EXSTYLE, GetWindowLong(_peek, GWL_EXSTYLE) | WS_EX_LAYERED);
 
-		// This is a really terrible hack, but it's the only way I found to make the changes reflect instantly.
-		// Toggles the overflow area popup twice. Nearly imperceptible.
-		// If you have a better solution, let me know or send a pull request
-		_overflow.send_message(WM_LBUTTONUP);
-		_overflow.send_message(WM_LBUTTONUP);
+			SetLayeredWindowAttributes(_peek, 0, 0, LWA_ALPHA);
+		}
+		else
+		{
+			SetWindowLong(_peek, GWL_EXSTYLE, GetWindowLong(_peek, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+		}
 
 		cached_peek = status;
 		cached_taskbar = Window(run.main_taskbar);

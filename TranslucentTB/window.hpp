@@ -30,6 +30,7 @@ public:
 	unsigned int state() const;
 	bool show(int state = SW_SHOW) const;
 	bool visible() const;
+	WINDOWPLACEMENT placement() const;
 	HMONITOR monitor() const;
 	long send_message(unsigned int message, unsigned int wparam = 0, long lparam = 0) const;
 	long send_message(const std::wstring &message, unsigned int wparam = 0, long lparam = 0) const;
