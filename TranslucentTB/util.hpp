@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cwctype>
 #include <string>
+#include <thread>
 #include <vector>
 
 class Util {
@@ -13,16 +14,16 @@ public:
 		std::transform(data.begin(), data.end(), data.begin(), std::towlower);
 	}
 
-	inline static std::wstring Trim(const std::wstring& str)
+	inline static std::wstring Trim(const std::wstring& str, const wchar_t &character = L' ')
 	{
-		size_t first = str.find_first_not_of(L' ');
+		size_t first = str.find_first_not_of(character);
 
 		if (first == std::wstring::npos)
 		{
 			return L"";
 		}
 
-		size_t last = str.find_last_not_of(L' ');
+		size_t last = str.find_last_not_of(character);
 		return str.substr(first, (last - first + 1));
 	}
 
@@ -46,7 +47,17 @@ public:
 		value = !value;
 	}
 
+	// Opens a file in notepad.
 	static void EditFile(std::wstring file);
-	static void PickColor(uint32_t &color);
+
+	// Opens a link in the default browser.
+	// NOTE: doesn't attempts to validate the link, make sure it's correct.
+	static void OpenLink(const std::wstring &link);
+
+	// Opens a color picker.
+	// NOTE: use .join() to wait for input, because this doesn't blocks by default.
+	static std::thread PickColor(uint32_t &color);
+
+	// Checks if the start menu is open using a COM interface.
 	static bool IsStartVisible();
 };

@@ -111,6 +111,7 @@ BEGIN
             MENUITEM "Exit without saving",         IDM_EXITWITHOUTSAVING
         END
         MENUITEM "Open at boot",                IDM_AUTOSTART
+        MENUITEM "Tips and tricks",             IDM_TIPS
         MENUITEM "Exit",                        IDM_EXIT
     END
 END

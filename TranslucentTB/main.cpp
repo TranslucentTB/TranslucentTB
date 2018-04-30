@@ -606,6 +606,10 @@ void InitializeTray(const HINSTANCE &hInstance)
 	tray.RegisterContextMenuCallback(IDM_AUTOSTART, [](unsigned int) {
 		Autostart::SetStartupState(Autostart::GetStartupState() == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
 	});
+
+	tray.RegisterContextMenuCallback(IDM_TIPS, [](unsigned int) {
+		Util::OpenLink(L"https://github.com/TranslucentTB/TranslucentTB/wiki/Tips-and-tricks-for-a-better-looking-taskbar");
+	});
 }
 
 void Terminate()

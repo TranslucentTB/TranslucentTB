@@ -1,16 +1,17 @@
 #include "util.hpp"
 #include "arch.h"
 #include <atlbase.h>
+#include <comdef.h>
 #include <PathCch.h>
 #include <processthreadsapi.h>
 #include <ShlObj.h>
 #include <ShObjIdl.h>
 #include <synchapi.h>
-#include <thread>
 #include <WinBase.h>
 #include <winerror.h>
 #include <wrl/wrappers/corewrappers.h>
 
+#include "app.hpp"
 #include "autofree.hpp"
 #include "../CPicker/CColourPicker.hpp"
 #include "window.hpp"
@@ -64,11 +65,51 @@ void Util::EditFile(std::wstring file)
 	}
 }
 
-void Util::PickColor(uint32_t &color)
+void Util::OpenLink(const std::wstring &link)
 {
-	std::thread([&color]() {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-field-initializers"
+	SHELLEXECUTEINFO info = {
+		sizeof(info),		// cbSize
+		SEE_MASK_CLASSNAME,	// fMask
+		NULL,				// hwnd
+		L"open",			// lpVerb
+		link.c_str(),		// lpFile
+		NULL,				// lpParameters
+		NULL,				// lpDirectory
+		SW_SHOW,			// nShow
+		nullptr,			// hInstApp
+		nullptr,			// lpIDList
+		L"https"			// lpClass
+	};
+#pragma clang diagnostic pop
+
+	if (!ShellExecuteEx(&info))
+	{
+		std::wstring boxbuffer =
+			L"Failed to open URL \"" + link + L"\"." +
+			L"\n\nException from HRESULT: " + _com_error(HRESULT_FROM_WIN32(GetLastError())).ErrorMessage() +
+			L"\n\nCopy the URL to the clipboard?";
+
+		if (MessageBox(NULL, boxbuffer.c_str(), (std::wstring(App::NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+		{
+			std::vector<wchar_t> linkV(link.begin(), link.end());
+			if (!OpenClipboard(NULL) || !SetClipboardData(CF_UNICODETEXT, linkV.data()) || !CloseClipboard())
+			{
+				ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to copy data to clipboard.");
+			}
+		}
+	}
+}
+
+std::thread Util::PickColor(uint32_t &color)
+{
+	std::thread t([&color]() {
 		CColourPicker(color).CreateColourPicker();
-	}).detach();
+	});
+
+	t.detach();
+	return t;
 }
 
 bool Util::IsStartVisible()
