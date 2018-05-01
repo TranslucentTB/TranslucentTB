@@ -73,12 +73,28 @@ private:
 
 	};
 
+	struct GlobalFreeDeleter {
+
+		inline void operator() (void *data)
+		{
+			void *result = GlobalFree(data);
+			if (result)
+			{
+				ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free memory.");
+			}
+		}
+
+	};
+
 public:
 	template<typename T = void>
 	using CoTaskMem = Base<T, CoTaskMemFreeDeleter>;
 
 	template<typename T = void>
 	using Local = Base<T, LocalFreeDeleter<false>>;
+
+	template<typename T = void>
+	using Global = Base<T, GlobalFreeDeleter>;
 
 	// Only use this if you don't want to log it for a very valid reason.
 	template<typename T = void>

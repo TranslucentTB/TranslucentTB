@@ -116,6 +116,7 @@
     <ClInclude Include="autofree.hpp" />
     <ClInclude Include="autostart.hpp" />
     <ClInclude Include="blacklist.hpp" />
+    <ClInclude Include="clipboardcontext.hpp" />
     <ClInclude Include="common.hpp" />
     <ClInclude Include="eventhook.hpp" />
     <ClInclude Include="messagewindow.hpp" />

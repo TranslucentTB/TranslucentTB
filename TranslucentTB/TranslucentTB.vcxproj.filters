@@ -129,6 +129,9 @@
     <ClInclude Include="common.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="clipboardcontext.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TranslucentTB.rc">

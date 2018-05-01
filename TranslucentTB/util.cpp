@@ -14,6 +14,7 @@
 #include "app.hpp"
 #include "autofree.hpp"
 #include "../CPicker/CColourPicker.hpp"
+#include "clipboardcontext.hpp"
 #include "window.hpp"
 #include "ttberror.hpp"
 
@@ -93,10 +94,33 @@ void Util::OpenLink(const std::wstring &link)
 
 		if (MessageBox(NULL, boxbuffer.c_str(), (std::wstring(App::NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 		{
-			std::vector<wchar_t> linkV(link.begin(), link.end());
-			if (!OpenClipboard(NULL) || !SetClipboardData(CF_UNICODETEXT, linkV.data()) || !CloseClipboard())
+			ClipboardContext context;
+			if (!context)
+			{
+				ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to open clipboard.");
+				return;
+			}
+
+			if (!EmptyClipboard())
+			{
+				ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to empty clipboard.");
+				return;
+			}
+
+			const size_t url_size = link.length() + 1;
+			AutoFree::Global<wchar_t> data(reinterpret_cast<wchar_t *>(GlobalAlloc(GMEM_FIXED, url_size * sizeof(wchar_t))));
+			if (!data)
+			{
+				ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to allocate memory for the clipboard.");
+				return;
+			}
+
+			wcscpy_s(data, url_size, link.c_str());
+
+			if (!SetClipboardData(CF_UNICODETEXT, data))
 			{
 				ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to copy data to clipboard.");
+				return;
 			}
 		}
 	}
