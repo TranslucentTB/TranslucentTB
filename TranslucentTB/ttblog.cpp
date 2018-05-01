@@ -1,5 +1,4 @@
 #include "ttblog.hpp"
-#include <comdef.h>
 #include <ctime>
 #include <cwchar>
 #include <fileapi.h>
@@ -128,8 +127,7 @@ void Log::OutputMessage(const std::wstring &message)
 
 			std::wstring error_message = result.second;
 			std::wstring boxbuffer = error_message +
-				L" Logs will not be available during this session.\n\nException from HRESULT: "
-				+ _com_error(result.first).ErrorMessage();
+				L" Logs will not be available during this session.\n\n" + Error::ExceptionFromHRESULT(result.first);
 
 			MessageBox(NULL, boxbuffer.c_str(), (std::wstring(App::NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 		}

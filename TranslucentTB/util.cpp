@@ -1,7 +1,6 @@
 #include "util.hpp"
 #include "arch.h"
 #include <atlbase.h>
-#include <comdef.h>
 #include <PathCch.h>
 #include <processthreadsapi.h>
 #include <ShlObj.h>
@@ -89,7 +88,7 @@ void Util::OpenLink(const std::wstring &link)
 	{
 		std::wstring boxbuffer =
 			L"Failed to open URL \"" + link + L"\"." +
-			L"\n\nException from HRESULT: " + _com_error(HRESULT_FROM_WIN32(GetLastError())).ErrorMessage() +
+			L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(GetLastError())) +
 			L"\n\nCopy the URL to the clipboard?";
 
 		if (MessageBox(NULL, boxbuffer.c_str(), (std::wstring(App::NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)

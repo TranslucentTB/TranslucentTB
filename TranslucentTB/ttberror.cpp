@@ -2,6 +2,7 @@
 #include <comdef.h>
 #include <string>
 #include <exception>
+#include <sstream>
 #include <vector>
 #include <winerror.h>
 #include <WinUser.h>
@@ -14,7 +15,7 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 	if (FAILED(error))
 	{
 		std::wstring message_str(message);
-		std::wstring error_message(_com_error(error).ErrorMessage());
+		std::wstring error_message(ExceptionFromHRESULT(error));
 		std::wstring boxbuffer;
 		if (level != Level::Log)
 		{
@@ -25,7 +26,6 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 				boxbuffer += L"Program will exit.\n\n";
 			}
 
-			boxbuffer += L"Exception from HRESULT: ";
 			boxbuffer += error_message;
 		}
 
@@ -38,7 +38,7 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 			functionW = functionWtemp.data();
 		}
 
-		Log::OutputMessage(message_str + L" Exception from HRESULT: " + error_message +
+		Log::OutputMessage(message_str + L" " + error_message +
 			L" (" + file + L":" + std::to_wstring(line) + L" at function " +
 			(functionW.empty() ? L"[failed to convert function name to UTF-16]" : functionW) + L")");
 
@@ -58,4 +58,11 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 	{
 		return true;
 	}
+}
+
+std::wstring Error::ExceptionFromHRESULT(const HRESULT &result)
+{
+	std::wostringstream stream;
+	stream << L"Exception from HRESULT: " << _com_error(result).ErrorMessage() << L" (0x" << reinterpret_cast<const void *>(result) << L')';
+	return stream.str();
 }
