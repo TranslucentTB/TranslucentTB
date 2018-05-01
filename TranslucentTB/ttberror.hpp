@@ -1,5 +1,6 @@
 #pragma once
 #include "arch.h"
+#include <string>
 #include <tchar.h>
 #include <windef.h>
 

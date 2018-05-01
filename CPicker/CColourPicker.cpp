@@ -7,7 +7,7 @@
 
 std::unordered_map<uint32_t *, HWND> CColourPicker::PickerMap;
 
-CColourPicker::CColourPicker(uint32_t &value, HWND hParentWindow) : hParent(hParentWindow), Value(value)
+CColourPicker::CColourPicker(uint32_t &value, HWND hParentWindow) : Value(value), hParent(hParentWindow)
 {
 	CurrCol.r = (Value & 0x00FF0000) >> 16;
 	CurrCol.g = (Value & 0x0000FF00) >> 8;
