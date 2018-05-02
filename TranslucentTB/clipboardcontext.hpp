@@ -21,4 +21,7 @@ public:
 			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to close clipboard.");
 		}
 	}
+
+	inline ClipboardContext(const ClipboardContext &) = delete;
+	inline ClipboardContext &operator =(const ClipboardContext &) = delete;
 };
