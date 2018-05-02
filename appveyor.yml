@@ -5,8 +5,6 @@ configuration:
 - Release
 - Debug
 platform: x86
-install:
-- git submodule update --init --recursive --depth=1
 before_build:
 - ps: .\update-version.ps1
 build:
