@@ -72,7 +72,7 @@ void SetWindowBlur(const Window &window, const swca::ACCENT &appearance, const u
 			0
 		};
 
-		if (policy.nAccentState == swca::ACCENT_NORMAL)
+		if (policy.nAccentState == swca::ACCENT::ACCENT_NORMAL)
 		{
 			if (is_normal.count(window) == 0 || !is_normal[window])
 			{
@@ -83,7 +83,7 @@ void SetWindowBlur(const Window &window, const swca::ACCENT &appearance, const u
 			}
 			return;
 		}
-		else if (policy.nAccentState == swca::ACCENT_ENABLE_FLUENT && policy.nColor >> 24 == 0x00)
+		else if (policy.nAccentState == swca::ACCENT::ACCENT_ENABLE_FLUENT && policy.nColor >> 24 == 0x00)
 		{
 			// Fluent mode doesn't likes a completely 0 opacity
 			policy.nColor = (0x01 << 24) + (policy.nColor & 0x00FFFFFF);
@@ -403,7 +403,7 @@ void SetTaskbarBlur()
 		switch (taskbar.second.second)
 		{
 		case TASKBARSTATE::StartMenuOpen:
-			SetWindowBlur(taskbar.second.first, swca::ACCENT_NORMAL, NULL);
+			SetWindowBlur(taskbar.second.first, swca::ACCENT::ACCENT_NORMAL, NULL);
 			break;
 		case TASKBARSTATE::WindowMaximised:
 			SetWindowBlur(taskbar.second.first, Config::DYNAMIC_APPEARANCE, Config::DYNAMIC_COLOR); // A window is maximised.
@@ -686,7 +686,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		TogglePeek(true);
 		for (const auto &taskbar : run.taskbars)
 		{
-			SetWindowBlur(taskbar.second.first, swca::ACCENT_NORMAL, NULL);
+			SetWindowBlur(taskbar.second.first, swca::ACCENT::ACCENT_NORMAL, NULL);
 		}
 	}
 

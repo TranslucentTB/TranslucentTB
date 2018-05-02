@@ -12,6 +12,7 @@
 #include <winreg.h>
 
 #include "app.hpp"
+#include "registrykey.hpp"
 #include "win32.hpp"
 
 Autostart::StartupState Autostart::GetStartupState()
@@ -44,24 +45,24 @@ Autostart::StartupState Autostart::GetStartupState()
 
 void Autostart::SetStartupState(const StartupState &state)
 {
-	HKEY hkey;
-	LRESULT error = RegCreateKey(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Run)", &hkey);
-	if (ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Opening registry key failed!")) //Creates a key
+	RegistryKey key(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Run)");
+	if (key)
 	{
 		if (state == StartupState::Enabled)
 		{
 			const std::wstring &exeLocation = win32::GetExeLocation();
 
-			error = RegSetValueEx(hkey, App::NAME, 0, REG_SZ, reinterpret_cast<const BYTE *>(exeLocation.c_str()), exeLocation.length());
+			const LRESULT error = RegSetValueEx(key, App::NAME, 0, REG_SZ, reinterpret_cast<const BYTE *>(exeLocation.c_str()), exeLocation.length());
 			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while setting startup registry value!");
 		}
 		else if (state == StartupState::Disabled)
 		{
-			error = RegDeleteValue(hkey, App::NAME);
-			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while deleting startup registry value!");
+			ErrorHandle(HRESULT_FROM_WIN32(RegDeleteValue(key, App::NAME)), Error::Level::Error, L"Error while deleting startup registry value!");
 		}
-		error = RegCloseKey(hkey);
-		ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Error closing registry key.");
+		else
+		{
+			throw std::invalid_argument("Can only set state to enabled or disabled");
+		}
 	}
 }
 #else
@@ -96,7 +97,7 @@ void Autostart::SetStartupState(const StartupState &state)
 			break;
 
 		default:
-			throw std::exception("wtf are you doing");
+			throw std::invalid_argument("Can only set state to enabled or disabled");
 		}
 	}
 	catch (const winrt::hresult_error &error)

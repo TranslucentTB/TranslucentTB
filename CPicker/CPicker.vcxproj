@@ -70,11 +70,11 @@
       <MinimalRebuild>
       </MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>-Wrange-loop-analysis -Wnonportable-system-include-path -Wimplicit-fallthrough -Wunreachable-code-return -Wswitch-enum -Wcovered-switch-default %(AdditionalOptions) /std:c++17</AdditionalOptions>
+      <AdditionalOptions>-Wrange-loop-analysis -Wnonportable-system-include-path -Wimplicit-fallthrough -Wunreachable-code-return -Wswitch-enum %(AdditionalOptions) /std:c++17</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>user32.lib;d2d1.lib</AdditionalDependencies>
+      <AdditionalDependencies>d2d1.lib;user32.lib</AdditionalDependencies>
       <AdditionalManifestDependencies>"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'"</AdditionalManifestDependencies>
     </Link>
   </ItemDefinitionGroup>

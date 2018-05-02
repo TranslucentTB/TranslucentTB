@@ -9,10 +9,10 @@
 #include "win32.hpp"
 
 // Defaults
-swca::ACCENT Config::TASKBAR_APPEARANCE = swca::ACCENT_ENABLE_BLURBEHIND;
+swca::ACCENT Config::TASKBAR_APPEARANCE = swca::ACCENT::ACCENT_ENABLE_BLURBEHIND;
 uint32_t Config::TASKBAR_COLOR = 0x00000000;
 bool Config::DYNAMIC_WS = false;
-swca::ACCENT Config::DYNAMIC_APPEARANCE = swca::ACCENT_ENABLE_BLURBEHIND;
+swca::ACCENT Config::DYNAMIC_APPEARANCE = swca::ACCENT::ACCENT_ENABLE_BLURBEHIND;
 uint32_t Config::DYNAMIC_COLOR = 0x00000000;
 bool Config::DYNAMIC_NORMAL_ON_PEEK = true;
 bool Config::DYNAMIC_START = false;
@@ -125,23 +125,23 @@ bool Config::ParseAccent(const std::wstring &value, swca::ACCENT &accent)
 {
 	if (value == L"blur")
 	{
-		accent = swca::ACCENT_ENABLE_BLURBEHIND;
+		accent = swca::ACCENT::ACCENT_ENABLE_BLURBEHIND;
 	}
 	else if (value == L"opaque")
 	{
-		accent = swca::ACCENT_ENABLE_GRADIENT;
+		accent = swca::ACCENT::ACCENT_ENABLE_GRADIENT;
 	}
 	else if (value == L"transparent" || value == L"translucent" || value == L"clear")
 	{
-		accent = swca::ACCENT_ENABLE_TRANSPARENTGRADIENT;
+		accent = swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT;
 	}
 	else if (value == L"normal")
 	{
-		accent = swca::ACCENT_NORMAL;
+		accent = swca::ACCENT::ACCENT_NORMAL;
 	}
 	else if (value == L"fluent" && win32::IsAtLeastBuild(MIN_FLUENT_BUILD))
 	{
-		accent = swca::ACCENT_ENABLE_FLUENT;
+		accent = swca::ACCENT::ACCENT_ENABLE_FLUENT;
 	}
 	else
 	{
@@ -339,18 +339,18 @@ std::wstring Config::GetAccentText(const swca::ACCENT &accent)
 {
 	switch (accent)
 	{
-	case swca::ACCENT_ENABLE_GRADIENT:
+	case swca::ACCENT::ACCENT_ENABLE_GRADIENT:
 		return L"opaque";
-	case swca::ACCENT_ENABLE_TRANSPARENTGRADIENT:
+	case swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT:
 		return L"clear";
-	case swca::ACCENT_ENABLE_BLURBEHIND:
+	case swca::ACCENT::ACCENT_ENABLE_BLURBEHIND:
 		return L"blur";
-	case swca::ACCENT_NORMAL:
+	case swca::ACCENT::ACCENT_NORMAL:
 		return L"normal";
-	case swca::ACCENT_ENABLE_FLUENT:
+	case swca::ACCENT::ACCENT_ENABLE_FLUENT:
 		return L"fluent";
 	default:
-		return L"";
+		throw std::invalid_argument("accent was not one of the known values");
 	}
 }
 

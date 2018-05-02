@@ -71,7 +71,7 @@
       <MinimalRebuild>
       </MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>-Wrange-loop-analysis -Wnonportable-system-include-path -Wimplicit-fallthrough -Wunreachable-code-return -Wswitch-enum -Wcovered-switch-default %(AdditionalOptions) /std:c++17</AdditionalOptions>
+      <AdditionalOptions>-Wrange-loop-analysis -Wnonportable-system-include-path -Wimplicit-fallthrough -Wunreachable-code-return -Wswitch-enum %(AdditionalOptions) /std:c++17</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -114,6 +114,7 @@
     <ClInclude Include="common.hpp" />
     <ClInclude Include="eventhook.hpp" />
     <ClInclude Include="messagewindow.hpp" />
+    <ClInclude Include="registrykey.hpp" />
     <ClInclude Include="swcadata.hpp" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="resource.h" />

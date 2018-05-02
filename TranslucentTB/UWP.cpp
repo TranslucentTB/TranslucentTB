@@ -23,7 +23,7 @@ std::wstring UWP::GetApplicationFolderPath(const FolderType &type)
 
 	// Apparently we can cast any integer to an enum class, so yeah...
 	default:
-		throw std::exception("wtf are you doing");
+		throw std::invalid_argument("type was not one of the known values");
 	}
 }
 
