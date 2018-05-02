@@ -47,6 +47,9 @@ public:
 		value = !value;
 	}
 
+	// Copies text to the clipboard.
+	static void CopyToClipboard(const std::wstring &text);
+
 	// Opens a file in notepad.
 	static void EditFile(std::wstring file);
 
