@@ -31,7 +31,7 @@ public:
 	{
 		if (path.find(L' ') != std::wstring::npos)
 		{
-			path = L"\"" + path + L"\"";
+			path = L'"' + path + L'"';
 		}
 	}
 

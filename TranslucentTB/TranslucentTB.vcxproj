@@ -34,11 +34,6 @@
     <PlatformToolset>LLVM-vs2014</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <!-- TODO: Remove this when the clang bug is fixed -->
-  <PropertyGroup Condition="'$(Configuration)'=='Store'">
-    <PlatformToolset>v141</PlatformToolset>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
-  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -74,7 +69,8 @@
       <SDLCheck>true</SDLCheck>
       <MinimalRebuild>
       </MinimalRebuild>
-      <AdditionalOptions>-Wrange-loop-analysis -Wnonportable-system-include-path -Wimplicit-fallthrough -Wunreachable-code-return -Wswitch-enum -Wcovered-switch-default %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>-Wrange-loop-analysis -Wnonportable-system-include-path -Wimplicit-fallthrough -Wunreachable-code-return -Wswitch-enum -Wcovered-switch-default %(AdditionalOptions) /std:c++17</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -83,13 +79,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Store'">
     <ClCompile>
-      <!-- TODO: Remove this when the clang bug is fixed -->
-      <TreatWarningAsError>false</TreatWarningAsError>
-      <!-- TODO: Remove this when the clang bug is fixed -->
-      <AdditionalOptions>
-      </AdditionalOptions>
       <PreprocessorDefinitions>STORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

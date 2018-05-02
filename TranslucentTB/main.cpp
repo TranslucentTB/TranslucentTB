@@ -256,16 +256,14 @@ void TogglePeek(const bool &status)
 
 #pragma region Tray
 
-inline void ChangePopupItemText(HMENU menu, const uint32_t &item, const std::wstring &new_text)
+inline void ChangePopupItemText(HMENU menu, const uint32_t &item, std::wstring &new_text)
 {
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wmissing-field-initializers"
 	MENUITEMINFO item_info = { sizeof(item_info), MIIM_STRING };
 	#pragma clang diagnostic pop
 
-	std::vector<wchar_t> buf(new_text.begin(), new_text.end());
-	buf.push_back(0); // Null terminator
-	item_info.dwTypeData = buf.data();
+	item_info.dwTypeData = new_text.data();
 	SetMenuItemInfo(menu, item, false, &item_info);
 }
 

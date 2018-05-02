@@ -70,9 +70,6 @@ void Util::EditFile(std::wstring file)
 	QuoteSpaces(file);
 	std::wstring path = str_notepad + L" " + file;
 
-	std::vector<wchar_t> buf(path.begin(), path.end());
-	buf.push_back(0); // Null terminator
-
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
 	STARTUPINFO si = { sizeof(si) };
@@ -80,7 +77,7 @@ void Util::EditFile(std::wstring file)
 
 	PROCESS_INFORMATION pi;
 	// Not using lpApplicationName here because if someone has set a redirect to another editor it doesn't works. (eg Notepad2)
-	if (CreateProcess(NULL, buf.data(), NULL, NULL, FALSE, NULL, NULL, NULL, &si, &pi))
+	if (CreateProcess(NULL, path.data(), NULL, NULL, FALSE, NULL, NULL, NULL, &si, &pi))
 	{
 		namespace wrap = Microsoft::WRL::Wrappers;
 		wrap::HandleT<wrap::HandleTraits::HANDLENullTraits> processHandle(pi.hProcess);
