@@ -37,7 +37,7 @@ long MessageWindow::m_StaticCallback(HWND hWnd, unsigned int uMsg, WPARAM wParam
 		const auto &callbackVector = window.m_CallbackMap[uMsg];
 		if (callbackVector.size() > 0)
 		{
-			long result;
+			long result = 0;
 			for (const auto &callbackPair : callbackVector)
 			{
 				result = (std::max)(callbackPair.second(window, wParam, lParam), result);

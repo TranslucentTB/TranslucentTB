@@ -301,6 +301,9 @@ void RefreshMenu(HMENU menu)
 	case Autostart::StartupState::DisabledByPolicy:
 		autostart_text = L"Startup has been disabled in Group Policy";
 		break;
+	case Autostart::StartupState::EnabledByPolicy:
+		autostart_text = L"Startup has been enabled in Group Policy";
+		break;
 #endif
 	case Autostart::StartupState::Enabled:
 	case Autostart::StartupState::Disabled:

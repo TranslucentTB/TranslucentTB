@@ -349,6 +349,8 @@ std::wstring Config::GetAccentText(const swca::ACCENT &accent)
 		return L"normal";
 	case swca::ACCENT_ENABLE_FLUENT:
 		return L"fluent";
+	default:
+		return L"";
 	}
 }
 
