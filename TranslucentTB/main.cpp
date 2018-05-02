@@ -285,15 +285,16 @@ void RefreshMenu(HMENU menu)
 
 	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, !Log::file().empty(), TrayContextMenu::ControlsEnabled);
 
-	Autostart::StartupState s_state = Autostart::GetStartupState();
-	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, !(s_state == Autostart::StartupState::DisabledByUser
+	const Autostart::StartupState state = Autostart::GetStartupState();
+	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, !(state == Autostart::StartupState::DisabledByUser
 #ifdef STORE
-		|| s_state == Autostart::StartupState::DisabledByPolicy
+		|| state == Autostart::StartupState::DisabledByPolicy
+		|| state == Autostart::StartupState::EnabledByPolicy
 #endif
 		), TrayContextMenu::ControlsEnabled);
 
 	std::wstring autostart_text;
-	switch (s_state)
+	switch (state)
 	{
 	case Autostart::StartupState::DisabledByUser:
 		autostart_text = L"Startup has been disabled in Task Manager";
@@ -309,7 +310,11 @@ void RefreshMenu(HMENU menu)
 	}
 	ChangePopupItemText(menu, IDM_AUTOSTART, autostart_text);
 
-	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, s_state == Autostart::StartupState::Enabled, TrayContextMenu::Toggle);
+	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, state == Autostart::StartupState::Enabled
+#ifdef STORE
+		|| state == Autostart::StartupState::EnabledByPolicy
+#endif
+		, TrayContextMenu::Toggle);
 }
 
 #pragma endregion
