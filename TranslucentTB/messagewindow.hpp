@@ -18,6 +18,8 @@ private:
 	WindowClass m_WindowClass;
 
 	static long CALLBACK m_StaticCallback(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam);
+	void set_ptr();
+	static MessageWindow *get_ptr(const HWND &hwnd);
 
 public:
 	MessageWindow(const std::wstring &className, const std::wstring &windowName, const HINSTANCE &hInstance = GetModuleHandle(NULL), const wchar_t *iconResource = MAKEINTRESOURCE(MAINICON));

@@ -14,21 +14,11 @@ long MessageWindow::m_StaticCallback(HWND hWnd, unsigned int uMsg, WPARAM wParam
 		CREATESTRUCT lpcs = *reinterpret_cast<CREATESTRUCT *>(lParam);
 		pThis = static_cast<MessageWindow *>(lpcs.lpCreateParams);
 
-		SetLastError(0);
-		if (!SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<long>(pThis)) && GetLastError() != 0)
-		{
-			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to set window pointer!");
-		}
+		pThis->set_ptr();
 	}
 	else
 	{
-		SetLastError(0);
-		pThis = reinterpret_cast<MessageWindow *>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
-
-		if (!pThis && GetLastError() != 0)
-		{
-			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to get window pointer!");
-		}
+		pThis = get_ptr(hWnd);
 	}
 
 	if (pThis)
@@ -47,6 +37,28 @@ long MessageWindow::m_StaticCallback(HWND hWnd, unsigned int uMsg, WPARAM wParam
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+void MessageWindow::set_ptr()
+{
+	SetLastError(0);
+	if (!SetWindowLongPtr(m_WindowHandle, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this)) && GetLastError() != 0)
+	{
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to set window pointer!");
+	}
+}
+
+MessageWindow *MessageWindow::get_ptr(const HWND &hwnd)
+{
+	 SetLastError(0);
+	 MessageWindow *window = reinterpret_cast<MessageWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+
+	 if (!window && GetLastError() != 0)
+	 {
+		 ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to get window pointer!");
+	 }
+
+	 return window;
 }
 
 MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &windowName, const HINSTANCE &hInstance, const wchar_t *iconResource) :
