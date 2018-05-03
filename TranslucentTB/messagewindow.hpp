@@ -18,7 +18,7 @@ private:
 	WindowClass m_WindowClass;
 
 	static long CALLBACK m_StaticCallback(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam);
-	void set_ptr();
+	void set_ptr(const HWND &hwnd);
 	static MessageWindow *get_ptr(const HWND &hwnd);
 
 public:

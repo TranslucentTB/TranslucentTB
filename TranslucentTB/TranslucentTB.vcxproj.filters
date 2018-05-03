@@ -72,9 +72,6 @@
     <ClInclude Include="win32.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="tray.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="config.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -82,9 +79,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="swcadata.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="app.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ttberror.hpp">

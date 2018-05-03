@@ -15,13 +15,11 @@
 #include <winnt.h>
 #include <WinUser.h>
 
-#include "app.hpp"
 #include "autofree.hpp"
+#include "common.hpp"
 #include "win32.hpp"
 #ifdef STORE
 #include "UWP.hpp"
-#else
-#include "common.hpp"
 #endif
 
 std::unique_ptr<std::wostream> Log::m_LogStream;
@@ -38,7 +36,7 @@ inline std::pair<HRESULT, std::wstring> Log::InitStream()
 	}
 
 	AutoFree::SilentLocal<wchar_t> log_folder;
-	hr = PathAllocCombine(temp.data(), App::NAME, PATHCCH_ALLOW_LONG_PATHS, &log_folder);
+	hr = PathAllocCombine(temp.data(), NAME, PATHCCH_ALLOW_LONG_PATHS, &log_folder);
 	if (FAILED(hr))
 	{
 		return std::make_pair(hr, L"Failed to combine temporary folder location and app name!");
@@ -129,7 +127,7 @@ void Log::OutputMessage(const std::wstring &message)
 			std::wstring boxbuffer = error_message +
 				L" Logs will not be available during this session.\n\n" + Error::ExceptionFromHRESULT(result.first);
 
-			MessageBox(NULL, boxbuffer.c_str(), (std::wstring(App::NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+			MessageBox(NULL, boxbuffer.c_str(), (std::wstring(NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 		}
 	}
 

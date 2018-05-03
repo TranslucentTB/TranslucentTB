@@ -12,7 +12,7 @@ namespace swca {
 		ACCENT_NORMAL = 150							// (Fake value) Emulate regular taskbar appearance
 	};
 
-	enum WindowCompositionAttribute {			// Possible kinds of data sent to SetWindowCompositionAttribute
+	enum class WindowCompositionAttribute {		// Possible kinds of data sent to SetWindowCompositionAttribute
 													// ...
 		WCA_ACCENT_POLICY = 19						// The data sent is an ACCENTPOLICY struct
 													// ...
@@ -20,10 +20,10 @@ namespace swca {
 
 	struct ACCENTPOLICY				// Determines how a window's transparent region will be painted
 	{
-		ACCENT nAccentState;			// Appearance
-		int nFlags;						// Nobody knows how this value works
+		ACCENT   nAccentState;			// Appearance
+		int32_t  nFlags;				// Nobody knows how this value works
 		uint32_t nColor;				// A color in the hex format AABBGGRR
-		int nAnimationId;				// Nobody knows how this value works
+		int32_t  nAnimationId;			// Nobody knows how this value works
 	};
 
 	struct WINCOMPATTRDATA						// Composition Attributes

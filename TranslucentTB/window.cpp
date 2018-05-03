@@ -8,13 +8,9 @@
 
 std::unordered_map<HWND, std::wstring> Window::m_ClassNames;
 std::unordered_map<HWND, std::wstring> Window::m_Filenames;
+const Window Window::NullWindow = Window(nullptr);
 
-Window Window::Find(const std::wstring &className, const std::wstring &windowName)
-{
-	return FindEx(nullptr, nullptr, className, windowName);
-}
-
-Window Window::FindEx(const Window &parent, const Window &childAfter, const std::wstring &className, const std::wstring &windowName)
+Window Window::Find(const std::wstring &className, const std::wstring &windowName, const Window &parent, const Window &childAfter)
 {
 	return FindWindowEx(parent, childAfter, className.empty() ? NULL : className.c_str(), windowName.empty() ? NULL : windowName.c_str());
 }
@@ -95,7 +91,8 @@ const std::wstring &Window::filename() const
 		}
 
 		std::wstring exeName(exeName_path.data());
-		return m_Filenames[m_WindowHandle] = exeName.substr(exeName.find_last_of(LR"(/\)") + 1);
+		exeName.erase(0, exeName.find_last_of(LR"(/\)") + 1);
+		return m_Filenames[m_WindowHandle] = exeName;
 	}
 	else
 	{

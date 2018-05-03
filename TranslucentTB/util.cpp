@@ -10,10 +10,10 @@
 #include <winerror.h>
 #include <wrl/wrappers/corewrappers.h>
 
-#include "app.hpp"
 #include "autofree.hpp"
 #include "../CPicker/CColourPicker.hpp"
 #include "clipboardcontext.hpp"
+#include "common.hpp"
 #include "window.hpp"
 #include "ttberror.hpp"
 
@@ -120,7 +120,7 @@ void Util::OpenLink(const std::wstring &link)
 			L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(GetLastError())) +
 			L"\n\nCopy the URL to the clipboard?";
 
-		if (MessageBox(NULL, boxbuffer.c_str(), (std::wstring(App::NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+		if (MessageBox(NULL, boxbuffer.c_str(), (std::wstring(NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 		{
 			CopyToClipboard(link);
 		}

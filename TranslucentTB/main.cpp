@@ -12,7 +12,6 @@
 #include <wrl/wrappers/corewrappers.h>
 
 // Local stuff
-#include "app.hpp"
 #include "autofree.hpp"
 #include "autostart.hpp"
 #include "blacklist.hpp"
@@ -22,7 +21,6 @@
 #include "messagewindow.hpp"
 #include "resource.h"
 #include "swcadata.hpp"
-#include "tray.hpp"
 #include "traycontextmenu.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
@@ -36,24 +34,51 @@
 
 #pragma region Data
 
-enum class TASKBARSTATE {
-	Normal,				// If no dynamic options are set, act as it says in Config::TASKBAR_APPEARANCE
-	WindowMaximised,	// There is a window which is maximised on the monitor this HWND is in. Display as blurred.
-	StartMenuOpen		// The Start Menu is open on the monitor this HWND is in. Display as it would be without TranslucentTB active.
+enum class MONITORSTATE {
+	Normal,				// Nothing special, act as it says in Config::TASKBAR_APPEARANCE.
+	WindowMaximised,	// There is a window which is maximised on this monitor and dynamic windows is on. Display Config::DYNAMIC_APPEARANCE.
+	StartMenuOpen		// The Start Menu is open on this monitor and dynamic start is on. Display with swca::ACCENT::ACCENT_NORMAL.
 };
 
-static struct RUNTIMESTATE
-{
-	Tray::EXITREASON exit_reason = Tray::UserAction;
+enum class EXITREASON {
+	NewInstance,		// New instance told us to exit
+	UserAction,			// Triggered by the user
+	UserActionNoSave	// Triggered by the user, but doesn't saves config
+};
+
+static struct {
+	EXITREASON exit_reason = EXITREASON::UserAction;
 	Window main_taskbar;
-	std::unordered_map<HMONITOR, std::pair<HWND, TASKBARSTATE>> taskbars;
-	bool should_show_peek;
+	std::unordered_map<HMONITOR, std::pair<HWND, MONITORSTATE>> taskbars;
+	bool should_show_peek = true;
 	bool is_running = true;
 	std::wstring config_folder;
 	std::wstring config_file;
 	std::wstring exclude_file;
 	bool peek_active = false;
 } run;
+
+static const std::unordered_map<swca::ACCENT, uint32_t> NORMAL_BUTTON_MAP = {
+	{ swca::ACCENT::ACCENT_NORMAL,						IDM_NORMAL },
+	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_CLEAR  },
+	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_OPAQUE },
+	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_BLUR   },
+	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_FLUENT }
+};
+
+static const std::unordered_map<swca::ACCENT, uint32_t> DYNAMIC_BUTTON_MAP = {
+	{ swca::ACCENT::ACCENT_NORMAL,						IDM_DYNAMICWS_NORMAL },
+	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_DYNAMICWS_CLEAR  },
+	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_DYNAMICWS_OPAQUE },
+	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_DYNAMICWS_BLUR   },
+	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_DYNAMICWS_FLUENT }
+};
+
+static const std::unordered_map<enum Config::PEEK, uint32_t> PEEK_BUTTON_MAP = {
+	{ Config::PEEK::Enabled,		IDM_PEEK   },
+	{ Config::PEEK::Dynamic,		IDM_DPEEK  },
+	{ Config::PEEK::Disabled,		IDM_NOPEEK }
+};
 
 #pragma endregion
 
@@ -90,7 +115,7 @@ void SetWindowBlur(const Window &window, const swca::ACCENT &appearance, const u
 		}
 
 		swca::WINCOMPATTRDATA data = {
-			swca::WCA_ACCENT_POLICY,
+			swca::WindowCompositionAttribute::WCA_ACCENT_POLICY,
 			&policy,
 			sizeof(policy)
 		};
@@ -120,9 +145,9 @@ void GetPaths()
 	AutoFree::Local<wchar_t> configFile;
 	AutoFree::Local<wchar_t> excludeFile;
 
-	ErrorHandle(PathAllocCombine(appData, App::NAME, PATHCCH_ALLOW_LONG_PATHS, &configFolder), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
-	ErrorHandle(PathAllocCombine(configFolder, App::CONFIG_FILE, PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Fatal, L"Failed to combine config folder and config file!");
-	ErrorHandle(PathAllocCombine(configFolder, App::EXCLUDE_FILE, PATHCCH_ALLOW_LONG_PATHS, &excludeFile), Error::Level::Fatal, L"Failed to combine config folder and exclude file!");
+	ErrorHandle(PathAllocCombine(appData, NAME, PATHCCH_ALLOW_LONG_PATHS, &configFolder), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
+	ErrorHandle(PathAllocCombine(configFolder, CONFIG_FILE, PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Fatal, L"Failed to combine config folder and config file!");
+	ErrorHandle(PathAllocCombine(configFolder, EXCLUDE_FILE, PATHCCH_ALLOW_LONG_PATHS, &excludeFile), Error::Level::Fatal, L"Failed to combine config folder and exclude file!");
 
 	run.config_folder = configFolder;
 	run.config_file = configFile;
@@ -178,25 +203,25 @@ bool CheckAndRunWelcome()
 		// String concatenation is hard OK
 		std::wstring message;
 		message += L"Welcome to ";
-		message += App::NAME;
+		message += NAME;
 		message += L"!\n\n";
 		message += L"You can tweak the taskbar's appearance with the tray icon. If it's your cup of tea, you can also edit the configuration files, located at \"";
 		message += run.config_folder;
 		message += '"';
 		message += L"\n\nDo you agree to the GPLv3 license?";
 
-		if (MessageBox(NULL, message.c_str(), App::NAME, MB_ICONINFORMATION | MB_YESNO | MB_SETFOREGROUND) != IDYES)
+		if (MessageBox(NULL, message.c_str(), NAME, MB_ICONINFORMATION | MB_YESNO | MB_SETFOREGROUND) != IDYES)
 		{
 			return false;
 		}
 	}
 	if (!win32::FileExists(run.config_file))
 	{
-		ApplyStock(App::CONFIG_FILE);
+		ApplyStock(CONFIG_FILE);
 	}
 	if (!win32::FileExists(run.exclude_file))
 	{
-		ApplyStock(App::EXCLUDE_FILE);
+		ApplyStock(EXCLUDE_FILE);
 	}
 	return true;
 }
@@ -215,15 +240,16 @@ void RefreshHandles()
 	// Older handles are invalid, so clear the map to be ready for new ones
 	run.taskbars.clear();
 
+	run.main_taskbar = Window::Find(L"Shell_TrayWnd");
 	run.taskbars[run.main_taskbar.monitor()] = {
-		run.main_taskbar = Window::Find(L"Shell_TrayWnd"),
-		TASKBARSTATE::Normal
+		run.main_taskbar,
+		MONITORSTATE::Normal
 	};
 
 	Window secondtaskbar;
-	while ((secondtaskbar = Window::FindEx(nullptr, secondtaskbar, L"Shell_SecondaryTrayWnd")) != Window())
+	while ((secondtaskbar = Window::Find(L"Shell_SecondaryTrayWnd", L"", Window::NullWindow, secondtaskbar)) != Window::NullWindow)
 	{
-		run.taskbars[secondtaskbar.monitor()] = { secondtaskbar, TASKBARSTATE::Normal };
+		run.taskbars[secondtaskbar.monitor()] = { secondtaskbar, MONITORSTATE::Normal };
 	}
 }
 
@@ -234,7 +260,7 @@ void TogglePeek(const bool &status)
 
 	if (status != cached_peek || cached_taskbar != run.main_taskbar)
 	{
-		Window _peek = Window::FindEx(Window::FindEx(run.main_taskbar, nullptr, L"TrayNotifyWnd"), nullptr, L"TrayShowDesktopButtonWClass");
+		Window _peek = Window::Find(L"TrayShowDesktopButtonWClass", L"", Window::Find(L"TrayNotifyWnd", L"", run.main_taskbar));
 
 		if (!status)
 		{
@@ -333,7 +359,7 @@ BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
 		auto &taskbar = run.taskbars.at(window.monitor());
 		if (Config::DYNAMIC_WS)
 		{
-			taskbar.second = TASKBARSTATE::WindowMaximised;
+			taskbar.second = MONITORSTATE::WindowMaximised;
 		}
 
 		if (Config::PEEK == Config::PEEK::Dynamic && taskbar.first == run.main_taskbar)
@@ -361,7 +387,7 @@ void SetTaskbarBlur()
 
 		for (auto &taskbar : run.taskbars)
 		{
-			taskbar.second.second = TASKBARSTATE::Normal; // Reset taskbar state
+			taskbar.second.second = MONITORSTATE::Normal; // Reset taskbar state
 		}
 		if (Config::DYNAMIC_WS || Config::PEEK == Config::PEEK::Dynamic)
 		{
@@ -374,7 +400,7 @@ void SetTaskbarBlur()
 		if (Config::DYNAMIC_START && Util::IsStartVisible())
 		{
 			// TODO: does this works correctly on multi-monitor
-			run.taskbars.at(Window::Find(L"Windows.UI.Core.CoreWindow", L"Start").monitor()).second = TASKBARSTATE::StartMenuOpen;
+			run.taskbars.at(Window::Find(L"Windows.UI.Core.CoreWindow", L"Start").monitor()).second = MONITORSTATE::StartMenuOpen;
 		}
 
 		// TODO
@@ -391,7 +417,7 @@ void SetTaskbarBlur()
 		{
 			for (auto &taskbar : run.taskbars)
 			{
-				taskbar.second.second = TASKBARSTATE::Normal;
+				taskbar.second.second = MONITORSTATE::Normal;
 			}
 		}
 
@@ -402,13 +428,13 @@ void SetTaskbarBlur()
 	{
 		switch (taskbar.second.second)
 		{
-		case TASKBARSTATE::StartMenuOpen:
+		case MONITORSTATE::StartMenuOpen:
 			SetWindowBlur(taskbar.second.first, swca::ACCENT::ACCENT_NORMAL, NULL);
 			break;
-		case TASKBARSTATE::WindowMaximised:
+		case MONITORSTATE::WindowMaximised:
 			SetWindowBlur(taskbar.second.first, Config::DYNAMIC_APPEARANCE, Config::DYNAMIC_COLOR); // A window is maximised.
 			break;
-		case TASKBARSTATE::Normal:
+		case MONITORSTATE::Normal:
 			SetWindowBlur(taskbar.second.first, Config::TASKBAR_APPEARANCE, Config::TASKBAR_COLOR);  // Taskbar should be normal, call using normal transparency settings
 			break;
 		}
@@ -498,11 +524,11 @@ void HardenProcess()
 
 void InitializeTray(const HINSTANCE &hInstance)
 {
-	static MessageWindow window(L"TrayWindow", App::NAME, hInstance);
+	static MessageWindow window(L"TrayWindow", NAME, hInstance);
 	static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYICON), MAKEINTRESOURCE(IDR_POPUP_MENU), hInstance);
 
-	window.RegisterCallback(Tray::NEW_TTB_INSTANCE, [](Window, WPARAM, LPARAM) {
-		run.exit_reason = Tray::NewInstance;
+	window.RegisterCallback(NEW_TTB_INSTANCE, [](Window, WPARAM, LPARAM) {
+		run.exit_reason = EXITREASON::NewInstance;
 		run.is_running = false;
 		return 0;
 	});
@@ -512,13 +538,13 @@ void InitializeTray(const HINSTANCE &hInstance)
 		return 0;
 	});
 
-	window.RegisterCallback(Tray::WM_TASKBARCREATED, [](Window, WPARAM, LPARAM) {
+	window.RegisterCallback(WM_TASKBARCREATED, [](Window, WPARAM, LPARAM) {
 		RefreshHandles();
 		return 0;
 	});
 
 	window.RegisterCallback(WM_CLOSE, [](Window, WPARAM, LPARAM) {
-		run.exit_reason = Tray::UserAction;
+		run.exit_reason = EXITREASON::UserAction;
 		run.is_running = false;
 		return 0;
 	});
@@ -531,11 +557,11 @@ void InitializeTray(const HINSTANCE &hInstance)
 	});
 #endif
 
-	tray.BindEnum(IDM_BLUR, IDM_FLUENT, Config::TASKBAR_APPEARANCE, Tray::NORMAL_BUTTON_MAP);
-	tray.BindEnum(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, Config::DYNAMIC_APPEARANCE, Tray::DYNAMIC_BUTTON_MAP);
-	tray.BindEnum(IDM_PEEK, IDM_NOPEEK, Config::PEEK, Tray::PEEK_BUTTON_MAP);
+	tray.BindEnum(IDM_BLUR, IDM_FLUENT, Config::TASKBAR_APPEARANCE, NORMAL_BUTTON_MAP);
+	tray.BindEnum(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, Config::DYNAMIC_APPEARANCE, DYNAMIC_BUTTON_MAP);
+	tray.BindEnum(IDM_PEEK, IDM_NOPEEK, Config::PEEK, PEEK_BUTTON_MAP);
 
-	for (const auto &button_pair : Tray::DYNAMIC_BUTTON_MAP)
+	for (const auto &button_pair : DYNAMIC_BUTTON_MAP)
 	{
 		tray.BindBool(button_pair.second, Config::DYNAMIC_WS, TrayContextMenu::ControlsEnabled);
 	}
@@ -548,12 +574,12 @@ void InitializeTray(const HINSTANCE &hInstance)
 	tray.BindBool(IDM_VERBOSE,         Config::VERBOSE,                TrayContextMenu::Toggle);
 
 	tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, [](unsigned int) {
-		run.exit_reason = Tray::UserActionNoSave;
+		run.exit_reason = EXITREASON::UserActionNoSave;
 		run.is_running = false;
 	});
 
 	tray.RegisterContextMenuCallback(IDM_EXIT, [](unsigned int) {
-		run.exit_reason = Tray::UserAction;
+		run.exit_reason = EXITREASON::UserAction;
 		run.is_running = false;
 	});
 
@@ -589,7 +615,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	});
 
 	tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTSETTINGS, [](unsigned int) {
-		ApplyStock(App::CONFIG_FILE);
+		ApplyStock(CONFIG_FILE);
 		Config::Parse(run.config_file);
 	});
 
@@ -605,7 +631,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	});
 
 	tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTBLACKLIST, [](unsigned int) {
-		ApplyStock(App::EXCLUDE_FILE);
+		ApplyStock(EXCLUDE_FILE);
 		Blacklist::Parse(run.exclude_file);
 	});
 
@@ -625,7 +651,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	// If there already is another instance running, tell it to exit
 	if (!win32::IsSingleInstance())
 	{
-		Window::Find(App::NAME, L"TrayWindow").send_message(Tray::NEW_TTB_INSTANCE);
+		Window::Find(NAME, L"TrayWindow").send_message(NEW_TTB_INSTANCE);
 	}
 
 	InitializeWindowsRuntime();
@@ -666,9 +692,9 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	}
 
 	// If it's a new instance, don't save or restore taskbar to default
-	if (run.exit_reason != Tray::NewInstance)
+	if (run.exit_reason != EXITREASON::NewInstance)
 	{
-		if (run.exit_reason != Tray::UserActionNoSave)
+		if (run.exit_reason != EXITREASON::UserActionNoSave)
 		{
 			Config::Save(run.config_file);
 		}

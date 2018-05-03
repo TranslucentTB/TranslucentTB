@@ -6,7 +6,6 @@
 #include <winnt.h>
 #include <wrl/wrappers/corewrappers.h>
 
-#include "app.hpp"
 #include "common.hpp"
 #include "ttberror.hpp"
 
@@ -57,7 +56,7 @@ bool win32::IsAtLeastBuild(const uint32_t &buildNumber)
 
 bool win32::IsSingleInstance()
 {
-	HANDLE event_handle = CreateEvent(NULL, TRUE, FALSE, App::ID);
+	HANDLE event_handle = CreateEvent(NULL, TRUE, FALSE, ID);
 	LRESULT error = GetLastError();
 	bool return_value;
 	switch (error)

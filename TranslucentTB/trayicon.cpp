@@ -2,8 +2,7 @@
 #include <random>
 #include <shellapi.h>
 
-#include "app.hpp"
-#include "tray.hpp"
+#include "common.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 
@@ -39,7 +38,7 @@ TrayIcon::TrayIcon(MessageWindow &window, wchar_t *iconResource, const unsigned 
 #pragma clang diagnostic pop
 {
 	ErrorHandle(LoadIconMetric(hInstance, iconResource, LIM_SMALL, &m_IconData.hIcon), Error::Level::Log, L"Failed to load tray icon.");
-	wcscpy_s(m_IconData.szTip, App::NAME);
+	wcscpy_s(m_IconData.szTip, NAME);
 
 	std::random_device seed;
 	std::mt19937 rng(seed());
@@ -48,7 +47,7 @@ TrayIcon::TrayIcon(MessageWindow &window, wchar_t *iconResource, const unsigned 
 
 	RegisterIcon();
 
-	m_Cookie = m_Window.RegisterCallback(Tray::WM_TASKBARCREATED, std::bind(&TrayIcon::RegisterIcon, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	m_Cookie = m_Window.RegisterCallback(WM_TASKBARCREATED, std::bind(&TrayIcon::RegisterIcon, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 }
 
 TrayIcon::~TrayIcon()

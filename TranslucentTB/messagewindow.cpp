@@ -14,7 +14,7 @@ long MessageWindow::m_StaticCallback(HWND hWnd, unsigned int uMsg, WPARAM wParam
 		CREATESTRUCT lpcs = *reinterpret_cast<CREATESTRUCT *>(lParam);
 		pThis = static_cast<MessageWindow *>(lpcs.lpCreateParams);
 
-		pThis->set_ptr();
+		pThis->set_ptr(hWnd);
 	}
 	else
 	{
@@ -39,10 +39,10 @@ long MessageWindow::m_StaticCallback(HWND hWnd, unsigned int uMsg, WPARAM wParam
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-void MessageWindow::set_ptr()
+void MessageWindow::set_ptr(const HWND &hwnd)
 {
 	SetLastError(0);
-	if (!SetWindowLongPtr(m_WindowHandle, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this)) && GetLastError() != 0)
+	if (!SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this)) && GetLastError() != 0)
 	{
 		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to set window pointer!");
 	}
@@ -64,7 +64,7 @@ MessageWindow *MessageWindow::get_ptr(const HWND &hwnd)
 MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &windowName, const HINSTANCE &hInstance, const wchar_t *iconResource) :
 	m_WindowClass(m_StaticCallback, className, iconResource, 0, hInstance)
 {
-	m_WindowHandle = Window::Create(0, className, windowName, 0, 0, 0, 0, 0, nullptr, 0, hInstance, this);
+	m_WindowHandle = Window::Create(0, className, windowName, 0, 0, 0, 0, 0, Window::NullWindow, 0, hInstance, this);
 
 	if (!m_WindowHandle)
 	{

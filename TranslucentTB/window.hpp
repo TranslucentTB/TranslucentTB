@@ -15,14 +15,14 @@ protected:
 	HWND m_WindowHandle;
 
 public:
-	static Window Find(const std::wstring &className = L"", const std::wstring &windowName = L"");
-	static Window FindEx(const Window &parent, const Window &childAfter, const std::wstring &className = L"", const std::wstring &windowName = L"");
+	static const Window NullWindow;
+	static Window Find(const std::wstring &className = L"", const std::wstring &windowName = L"", const Window &parent = Window::NullWindow, const Window &childAfter = Window::NullWindow);
 	static Window Create(const unsigned long &dwExStyle, const std::wstring &className,
 		const std::wstring &windowName, const unsigned long &dwStyle, const int &x = 0,
-		const int &y = 0, const int &nWidth = 0, const int &nHeight = 0, const Window &parent = nullptr,
+		const int &y = 0, const int &nWidth = 0, const int &nHeight = 0, const Window &parent = Window::NullWindow,
 		const HMENU &hMenu = NULL, const HINSTANCE &hInstance = GetModuleHandle(NULL), void *lpParam = nullptr);
 
-	Window(HWND handle = nullptr);
+	Window(HWND handle = Window::NullWindow);
 	std::wstring title() const;
 	const std::wstring &classname() const;
 	const std::wstring &filename() const;

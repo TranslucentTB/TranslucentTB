@@ -14,6 +14,7 @@
 #include "PickerData.hpp"
 #include "resource.h"
 #include "SColour.hpp"
+#include "../TranslucentTB/util.hpp"
 
 static const std::unordered_map<unsigned int, const std::pair<const unsigned int, const unsigned int>> SLIDER_MAP = {
 	{ IDC_RED,        { IDC_RSLIDER,   255 } },
@@ -266,14 +267,14 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				wchar_t rawText[11];
 				GetDlgItemText(hDlg, IDC_HEXCOL, rawText, 11);
 
-				std::wstring text(rawText);
-				if (text.find(L'#') == 0)
+				std::wstring text = Util::Trim(rawText);
+				if (text[0] == L'#')
 				{
-					text = text.substr(1, text.length() - 1);
+					text.erase(0, 1);
 				}
-				else if (text.find(L"0x") == 0)
+				else if (text[0] == L'0' && text[1] == L'x')
 				{
-					text = text.substr(2, text.length() - 2);
+					text.erase(0, 2);
 				}
 
 				try
@@ -302,7 +303,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 					UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
 					RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 				}
-				catch (std::invalid_argument) { }
+				catch (std::invalid_argument) { } // Fight me
 			}
 
 			picker_data->changing_text = true;

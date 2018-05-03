@@ -7,7 +7,7 @@
 #include <winerror.h>
 #include <WinUser.h>
 
-#include "app.hpp"
+#include "common.hpp"
 #include "ttblog.hpp"
 
 bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *const message, const wchar_t *const file, const int &line, const char *const function)
@@ -38,18 +38,18 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 			functionW = functionWtemp.data();
 		}
 
-		Log::OutputMessage(message_str + L" " + error_message +
-			L" (" + file + L":" + std::to_wstring(line) + L" at function " +
-			(functionW.empty() ? L"[failed to convert function name to UTF-16]" : functionW) + L")");
+		Log::OutputMessage(message_str + L' ' + error_message +
+			L" (" + file + L':' + std::to_wstring(line) + L" at function " +
+			(functionW.empty() ? L"[failed to convert function name to UTF-16]" : functionW) + L')');
 
 		if (level == Level::Fatal)
 		{
-			MessageBox(NULL, boxbuffer.c_str(), (std::wstring(App::NAME) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
+			MessageBox(NULL, boxbuffer.c_str(), (std::wstring(NAME) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
 			std::terminate();
 		}
 		else if (level == Level::Error)
 		{
-			MessageBox(NULL, boxbuffer.c_str(), (std::wstring(App::NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+			MessageBox(NULL, boxbuffer.c_str(), (std::wstring(NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 		}
 
 		return false;

@@ -105,7 +105,6 @@
     <ClCompile Include="windowclass.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="app.hpp" />
     <ClInclude Include="arch.h" />
     <ClInclude Include="autofree.hpp" />
     <ClInclude Include="autostart.hpp" />
@@ -118,7 +117,6 @@
     <ClInclude Include="swcadata.hpp" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="tray.hpp" />
     <ClInclude Include="traycontextmenu.hpp" />
     <ClInclude Include="trayicon.hpp" />
     <ClInclude Include="ttberror.hpp" />
