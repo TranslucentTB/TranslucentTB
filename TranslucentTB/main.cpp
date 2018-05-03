@@ -618,11 +618,6 @@ void InitializeTray(const HINSTANCE &hInstance)
 	});
 }
 
-void Terminate()
-{
-	exit(run.is_running ? EXIT_FAILURE : EXIT_SUCCESS);
-}
-
 int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 {
 	HardenProcess();
@@ -632,9 +627,6 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	{
 		Window::Find(App::NAME, L"TrayWindow").send_message(Tray::NEW_TTB_INSTANCE);
 	}
-
-	// Set our exit handler
-	std::set_terminate(Terminate);
 
 	InitializeWindowsRuntime();
 
@@ -658,8 +650,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	RefreshHandles();
 
 	// Undoc'd, allows to detect when Aero Peek starts and stops
-	// Marked as static because if we don't the destructor doesn't gets called when using exit()
-	static EventHook peek_hook(0x21, 0x22, HandleAeroPeekEvent, WINEVENT_OUTOFCONTEXT);
+	EventHook peek_hook(0x21, 0x22, HandleAeroPeekEvent, WINEVENT_OUTOFCONTEXT);
 
 	// Message loop
 	while (run.is_running)
@@ -690,7 +681,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		}
 	}
 
-	std::terminate();
+	return 0;
 }
 
 #pragma endregion

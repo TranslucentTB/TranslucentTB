@@ -24,4 +24,7 @@ public:
 			ErrorHandle(HRESULT_FROM_WIN32(RegCloseKey(m_Key)), Error::Level::Log, L"Error closing registry key.");
 		}
 	}
+
+	inline RegistryKey(const RegistryKey &) = delete;
+	inline RegistryKey &operator =(const RegistryKey &) = delete;
 };
