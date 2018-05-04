@@ -9,7 +9,7 @@
 std::vector<std::wstring> Blacklist::m_ClassBlacklist;
 std::vector<std::wstring> Blacklist::m_FileBlacklist;
 std::vector<std::wstring> Blacklist::m_TitleBlacklist;
-std::unordered_map<HWND, bool> Blacklist::m_Cache;
+std::unordered_map<Window, bool> Blacklist::m_Cache;
 uint16_t Blacklist::m_CacheHits;
 
 void Blacklist::Parse(const std::wstring &file)

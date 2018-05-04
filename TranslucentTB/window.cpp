@@ -6,9 +6,11 @@
 #include "common.hpp"
 #include "ttberror.hpp"
 
-std::unordered_map<HWND, std::wstring> Window::m_ClassNames;
-std::unordered_map<HWND, std::wstring> Window::m_Filenames;
-const Window Window::NullWindow = Window(nullptr);
+std::unordered_map<Window, std::wstring> Window::m_ClassNames;
+std::unordered_map<Window, std::wstring> Window::m_Filenames;
+
+const Window Window::BroadcastWindow = HWND_BROADCAST;
+const Window Window::MessageOnlyWindow = HWND_MESSAGE;
 
 Window Window::Find(const std::wstring &className, const std::wstring &windowName, const Window &parent, const Window &childAfter)
 {
@@ -22,11 +24,6 @@ Window Window::Create(const unsigned long &dwExStyle, const std::wstring &classN
 {
 	return CreateWindowEx(dwExStyle, className.c_str(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
 		parent, hMenu, hInstance, lpParam);
-}
-
-Window::Window(HWND handle)
-{
-	m_WindowHandle = handle;
 }
 
 std::wstring Window::title() const

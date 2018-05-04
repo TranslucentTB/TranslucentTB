@@ -49,7 +49,7 @@ enum class EXITREASON {
 static struct {
 	EXITREASON exit_reason = EXITREASON::UserAction;
 	Window main_taskbar;
-	std::unordered_map<HMONITOR, std::pair<HWND, MONITORSTATE>> taskbars;
+	std::unordered_map<HMONITOR, std::pair<Window, MONITORSTATE>> taskbars;
 	bool should_show_peek = true;
 	bool is_running = true;
 	std::wstring config_folder;
@@ -88,7 +88,7 @@ void SetWindowBlur(const Window &window, const swca::ACCENT &appearance, const u
 {
 	if (user32::SetWindowCompositionAttribute)
 	{
-		static std::unordered_map<HWND, bool> is_normal;
+		static std::unordered_map<Window, bool> is_normal;
 
 		swca::ACCENTPOLICY policy = {
 			appearance,

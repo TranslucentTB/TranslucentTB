@@ -4,6 +4,7 @@
 #include <winerror.h>
 #include <WinUser.h>
 
+#include "window.hpp"
 #include "ttberror.hpp"
 
 class ClipboardContext {
@@ -12,7 +13,7 @@ private:
 	bool m_Result;
 
 public:
-	inline ClipboardContext(HWND owner = nullptr) : m_Result(OpenClipboard(owner)) { }
+	inline ClipboardContext(const Window &owner = nullptr) : m_Result(OpenClipboard(owner)) { }
 	inline operator bool() { return m_Result; }
 	inline ~ClipboardContext()
 	{

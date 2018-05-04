@@ -18,7 +18,7 @@ private:
 	static std::vector<std::wstring> m_FileBlacklist;
 	static std::vector<std::wstring> m_TitleBlacklist;
 
-	static std::unordered_map<HWND, bool> m_Cache;
+	static std::unordered_map<Window, bool> m_Cache;
 	static uint16_t m_CacheHits;
 
 	static void AddToVector(const wchar_t &delimiter, std::vector<std::wstring> &vector, std::wstring line);

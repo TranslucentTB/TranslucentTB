@@ -8,21 +8,23 @@
 class Window {
 
 private:
-	static std::unordered_map<HWND, std::wstring> m_ClassNames;
-	static std::unordered_map<HWND, std::wstring> m_Filenames;
+	static std::unordered_map<Window, std::wstring> m_ClassNames;
+	static std::unordered_map<Window, std::wstring> m_Filenames;
 
 protected:
 	HWND m_WindowHandle;
 
 public:
 	static const Window NullWindow;
+	static const Window BroadcastWindow;
+	static const Window MessageOnlyWindow;
 	static Window Find(const std::wstring &className = L"", const std::wstring &windowName = L"", const Window &parent = Window::NullWindow, const Window &childAfter = Window::NullWindow);
 	static Window Create(const unsigned long &dwExStyle, const std::wstring &className,
 		const std::wstring &windowName, const unsigned long &dwStyle, const int &x = 0,
 		const int &y = 0, const int &nWidth = 0, const int &nHeight = 0, const Window &parent = Window::NullWindow,
 		const HMENU &hMenu = NULL, const HINSTANCE &hInstance = GetModuleHandle(NULL), void *lpParam = nullptr);
 
-	Window(HWND handle = Window::NullWindow);
+	constexpr inline Window(const HWND &handle = Window::NullWindow) : m_WindowHandle(handle) { };
 	std::wstring title() const;
 	const std::wstring &classname() const;
 	const std::wstring &filename() const;
@@ -48,4 +50,19 @@ public:
 	template<typename T>
 	T get_attribute(unsigned long attrib) const;
 
+	friend std::hash<Window>;
 };
+
+constexpr Window Window::NullWindow = nullptr;
+
+// Specialize std::hash to allow the use of Window as unordered_map key
+namespace std {
+
+	template<> struct hash<Window> {
+		inline std::size_t operator()(const Window& k) const
+		{
+			return std::hash<HWND>()(k.m_WindowHandle);
+		}
+	};
+
+}

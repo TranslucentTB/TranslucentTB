@@ -64,7 +64,7 @@ MessageWindow *MessageWindow::get_ptr(const HWND &hwnd)
 MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &windowName, const HINSTANCE &hInstance, const wchar_t *iconResource) :
 	m_WindowClass(m_StaticCallback, className, iconResource, 0, hInstance)
 {
-	m_WindowHandle = Window::Create(0, className, windowName, 0, 0, 0, 0, 0, Window::NullWindow, 0, hInstance, this);
+	m_WindowHandle = Window::Create(0, className, windowName, 0, 0, 0, 0, 0, Window::MessageOnlyWindow, 0, hInstance, this);
 
 	if (!m_WindowHandle)
 	{

@@ -32,7 +32,7 @@ TrayIcon::TrayIcon(MessageWindow &window, wchar_t *iconResource, const unsigned 
 	m_IconData {
 		sizeof(m_IconData),
 		m_Window,
-		101, // TODO: change this (randomly generated GUID?)
+		LOWORD(iconResource),
 		NIF_ICON | NIF_TIP | NIF_MESSAGE | additionalFlags
 	}
 #pragma clang diagnostic pop
