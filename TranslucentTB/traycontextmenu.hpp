@@ -40,7 +40,7 @@ public:
 	{
 		for (const auto &button_pair : map)
 		{
-			RegisterContextMenuCallback(button_pair.second, std::bind(&Util::UpdateValue<T>, std::ref(value), button_pair.first, std::placeholders::_1));
+			RegisterContextMenuCallback(button_pair.second, std::bind(&Util::UpdateValue<T>, std::ref(value), button_pair.first));
 		}
 
 		m_RefreshFunctions.push_back([=, &value, &map]() {

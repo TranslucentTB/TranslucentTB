@@ -6,7 +6,7 @@
 #include <vector>
 
 // Windows API
-#include <dwmapi.h>
+#include "arch.h"
 #include <PathCch.h>
 #include <ShlObj.h>
 #include <wrl/wrappers/corewrappers.h>

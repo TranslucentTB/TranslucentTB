@@ -1,9 +1,8 @@
 #include "messagewindow.hpp"
 #include <algorithm>
-#include <limits.h>
-#include <random>
 
 #include "ttberror.hpp"
+#include "util.hpp"
 
 long MessageWindow::m_StaticCallback(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -74,11 +73,7 @@ MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &
 
 MessageWindow::CALLBACKCOOKIE MessageWindow::RegisterCallback(unsigned int message, const m_CallbackFunction &callback)
 {
-	std::random_device seed;
-	std::mt19937 rng(seed());
-	std::uniform_int_distribution<unsigned short> ushort_values(0, USHRT_MAX);
-
-	unsigned short secret = ushort_values(rng);
+	unsigned short secret = Util::GetRandomNumber<unsigned short>();
 	m_CallbackMap[message].push_back(std::make_pair(secret, callback));
 
 	return (static_cast<CALLBACKCOOKIE>(secret) << 32) & message;

@@ -1,12 +1,12 @@
 #include "trayicon.hpp"
-#include <random>
 #include <shellapi.h>
 
 #include "common.hpp"
+#include "util.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 
-long TrayIcon::RegisterIcon(Window, WPARAM, LPARAM)
+long TrayIcon::RegisterIcon(...)
 {
 	if (!Shell_NotifyIcon(NIM_ADD, &m_IconData))
 	{
@@ -40,14 +40,11 @@ TrayIcon::TrayIcon(MessageWindow &window, wchar_t *iconResource, const unsigned 
 	ErrorHandle(LoadIconMetric(hInstance, iconResource, LIM_SMALL, &m_IconData.hIcon), Error::Level::Log, L"Failed to load tray icon.");
 	wcscpy_s(m_IconData.szTip, NAME);
 
-	std::random_device seed;
-	std::mt19937 rng(seed());
-	std::uniform_int_distribution<unsigned int> app_messages(WM_APP, 0xBFFF);
-	m_IconData.uCallbackMessage = app_messages(rng);
+	m_IconData.uCallbackMessage = Util::GetRandomNumber<unsigned int>(WM_APP, 0xBFFF);
 
 	RegisterIcon();
 
-	m_Cookie = m_Window.RegisterCallback(WM_TASKBARCREATED, std::bind(&TrayIcon::RegisterIcon, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	m_Cookie = m_Window.RegisterCallback(WM_TASKBARCREATED, std::bind(&TrayIcon::RegisterIcon, this));
 }
 
 TrayIcon::~TrayIcon()

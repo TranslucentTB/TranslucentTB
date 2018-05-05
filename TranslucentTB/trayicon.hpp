@@ -10,7 +10,7 @@ protected:
 
 private:
 	NOTIFYICONDATA m_IconData;
-	long RegisterIcon(Window = Window::NullWindow, WPARAM = NULL, LPARAM = NULL);
+	long RegisterIcon(...);
 	MessageWindow::CALLBACKCOOKIE m_Cookie;
 
 public:

@@ -1,5 +1,4 @@
 #include "window.hpp"
-#include <dwmapi.h>
 #include <wrl/wrappers/corewrappers.h>
 #include <vector>
 
@@ -174,7 +173,7 @@ Window::operator HWND() const
 }
 
 template<typename T>
-T Window::get_attribute(unsigned long attrib) const
+T Window::get_attribute(const DWMWINDOWATTRIBUTE &attrib) const
 {
 	T attribute;
 	HRESULT status = DwmGetWindowAttribute(m_WindowHandle, attrib, &attribute, sizeof(attribute));
@@ -182,5 +181,5 @@ T Window::get_attribute(unsigned long attrib) const
 	return attribute;
 }
 
-template BOOL Window::get_attribute<BOOL>(unsigned long attrib) const;
-template RECT Window::get_attribute<RECT>(unsigned long attrib) const;
+template BOOL Window::get_attribute<BOOL>(const DWMWINDOWATTRIBUTE &attrib) const;
+template RECT Window::get_attribute<RECT>(const DWMWINDOWATTRIBUTE &attrib) const;

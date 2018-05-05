@@ -1,5 +1,4 @@
 #include "traycontextmenu.hpp"
-#include <random>
 
 #include "ttberror.hpp"
 #include "ttblog.hpp"
@@ -59,11 +58,7 @@ TrayContextMenu::TrayContextMenu(MessageWindow &window, wchar_t *iconResource, w
 
 TrayContextMenu::MENUCALLBACKCOOKIE TrayContextMenu::RegisterContextMenuCallback(unsigned int item, const m_MenuCallbackFunction &callback)
 {
-	std::random_device seed;
-	std::mt19937 rng(seed());
-	std::uniform_int_distribution<unsigned short> ushort_values(0, USHRT_MAX);
-
-	unsigned short secret = ushort_values(rng);
+	unsigned short secret = Util::GetRandomNumber<unsigned short>();
 	m_MenuCallbackMap[item].push_back(std::make_pair(secret, callback));
 
 	return (static_cast<MENUCALLBACKCOOKIE>(secret) << 32) & item;
@@ -109,7 +104,7 @@ void TrayContextMenu::BindBool(unsigned int item, bool &value, BoolBindingEffect
 {
 	if (effect == Toggle)
 	{
-		RegisterContextMenuCallback(item, std::bind(&Util::InvertBool, std::ref(value), std::placeholders::_1));
+		RegisterContextMenuCallback(item, std::bind(&Util::InvertBool, std::ref(value)));
 	}
 
 	m_RefreshFunctions.push_back(std::bind(&TrayContextMenu::RefreshBool, item, m_Menu, std::ref(value), effect));

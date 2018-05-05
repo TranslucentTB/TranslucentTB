@@ -1,9 +1,9 @@
 #pragma once
 #include <atlbase.h>
+#include <dwmapi.h>
 #include <ShObjIdl.h>
 #include <string>
 #include <unordered_map>
-#include <windef.h>
 
 class Window {
 
@@ -48,7 +48,7 @@ public:
 	}
 
 	template<typename T>
-	T get_attribute(unsigned long attrib) const;
+	T get_attribute(const DWMWINDOWATTRIBUTE &attrib) const;
 
 	friend std::hash<Window>;
 };
@@ -59,7 +59,7 @@ constexpr Window Window::NullWindow = nullptr;
 namespace std {
 
 	template<> struct hash<Window> {
-		inline std::size_t operator()(const Window& k) const
+		inline std::size_t operator()(const Window &k) const
 		{
 			return std::hash<HWND>()(k.m_WindowHandle);
 		}
