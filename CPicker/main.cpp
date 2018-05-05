@@ -288,8 +288,8 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 					}
 					else if (text.length() == 4)
 					{
-						picker_data->picker->SetRGB((tempcolor & 0xF000) >> 12, (tempcolor & 0x0F00) >> 8, (tempcolor & 0x00F0) >> 4);
-						picker_data->picker->SetAlpha(tempcolor & 0x000F);
+						picker_data->picker->SetRGB(ExpandOneLetterByte((tempcolor & 0xF000) >> 12), ExpandOneLetterByte((tempcolor & 0x0F00) >> 8), ExpandOneLetterByte((tempcolor & 0x00F0) >> 4));
+						picker_data->picker->SetAlpha(ExpandOneLetterByte(tempcolor & 0x000F));
 					}
 					else if (text.length() == 6)
 					{
@@ -297,7 +297,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 					}
 					else if (text.length() == 3)
 					{
-						picker_data->picker->SetRGB((tempcolor & 0xF00) >> 8, (tempcolor & 0x0F0) >> 4, tempcolor & 0x00F);
+						picker_data->picker->SetRGB(ExpandOneLetterByte((tempcolor & 0xF00) >> 8), ExpandOneLetterByte((tempcolor & 0x0F0) >> 4), ExpandOneLetterByte(tempcolor & 0x00F));
 					}
 
 					UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
@@ -424,6 +424,12 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		break;
 	}
 	return 0;
+}
+
+uint8_t ExpandOneLetterByte(const uint8_t &byte)
+{
+	const uint8_t firstDigit = byte & 0xF;
+	return (firstDigit << 4) + firstDigit;
 }
 
 void UpdateValues(HWND hDlg, const SColour &col, bool &changing_text)
