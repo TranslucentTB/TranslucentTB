@@ -16,6 +16,157 @@
 #include "SColour.hpp"
 #include "../TranslucentTB/util.hpp"
 
+static const Util::string_map<uint32_t> COLOR_MAP = {
+	{ L"aliceblue",				0xf0f8ff },
+	{ L"antiquewhite",			0xfaebd7 },
+	{ L"aqua",					0x00ffff },
+	{ L"aquamarine",			0x7fffd4 },
+	{ L"azure",					0xf0ffff },
+	{ L"beige",					0xf5f5dc },
+	{ L"bisque",				0xffe4c4 },
+	{ L"black",					0x000000 },
+	{ L"blanchedalmond",		0xffebcd },
+	{ L"blue",					0x0000ff },
+	{ L"blueviolet",			0x8a2be2 },
+	{ L"brown",					0xa52a2a },
+	{ L"burlywood",				0xdeb887 },
+	{ L"cadetblue",				0x5f9ea0 },
+	{ L"chartreuse",			0x7fff00 },
+	{ L"chocolate",				0xd2691e },
+	{ L"coral",					0xff7f50 },
+	{ L"cornflowerblue",		0x6495ed },
+	{ L"cornsilk",				0xfff8dc },
+	{ L"crimson",				0xdc143c },
+	{ L"cyan",					0x00ffff },
+	{ L"darkblue",				0x00008b },
+	{ L"darkcyan",				0x008b8b },
+	{ L"darkgoldenrod",			0xb8860b },
+	{ L"darkgray",				0xa9a9a9 },
+	{ L"darkgreen",				0x006400 },
+	{ L"darkgrey",				0xa9a9a9 },
+	{ L"darkkhaki",				0xbdb76b },
+	{ L"darkmagenta",			0x8b008b },
+	{ L"darkolivegreen",		0x556b2f },
+	{ L"darkorange",			0xff8c00 },
+	{ L"darkorchid",			0x9932cc },
+	{ L"darkred",				0x8b0000 },
+	{ L"darksalmon",			0xe9967a },
+	{ L"darkseagreen",			0x8fbc8f },
+	{ L"darkslateblue",			0x483d8b },
+	{ L"darkslategray",			0x2f4f4f },
+	{ L"darkslategrey",			0x2f4f4f },
+	{ L"darkturquoise",			0x00ced1 },
+	{ L"darkviolet",			0x9400d3 },
+	{ L"deeppink",				0xff1493 },
+	{ L"deepskyblue",			0x00bfff },
+	{ L"dimgray",				0x696969 },
+	{ L"dimgrey",				0x696969 },
+	{ L"dodgerblue",			0x1e90ff },
+	{ L"firebrick",				0xb22222 },
+	{ L"floralwhite",			0xfffaf0 },
+	{ L"forestgreen",			0x228b22 },
+	{ L"fuchsia",				0xff00ff },
+	{ L"gainsboro",				0xdcdcdc },
+	{ L"ghostwhite",			0xf8f8ff },
+	{ L"gold",					0xffd700 },
+	{ L"goldenrod",				0xdaa520 },
+	{ L"gray",					0x808080 },
+	{ L"green",					0x008000 },
+	{ L"greenyellow",			0xadff2f },
+	{ L"grey",					0x808080 },
+	{ L"honeydew",				0xf0fff0 },
+	{ L"hotpink",				0xff69b4 },
+	{ L"indianred",				0xcd5c5c },
+	{ L"indigo",				0x4b0082 },
+	{ L"ivory",					0xfffff0 },
+	{ L"khaki",					0xf0e68c },
+	{ L"lavender",				0xe6e6fa },
+	{ L"lavenderblush",			0xfff0f5 },
+	{ L"lawngreen",				0x7cfc00 },
+	{ L"lemonchiffon",			0xfffacd },
+	{ L"lightblue",				0xadd8e6 },
+	{ L"lightcoral",			0xf08080 },
+	{ L"lightcyan",				0xe0ffff },
+	{ L"lightgoldenrodyellow",	0xfafad2 },
+	{ L"lightgray",				0xd3d3d3 },
+	{ L"lightgreen",			0x90ee90 },
+	{ L"lightgrey",				0xd3d3d3 },
+	{ L"lightpink",				0xffb6c1 },
+	{ L"lightsalmon",			0xffa07a },
+	{ L"lightseagreen",			0x20b2aa },
+	{ L"lightskyblue",			0x87cefa },
+	{ L"lightslategray",		0x778899 },
+	{ L"lightslategrey",		0x778899 },
+	{ L"lightsteelblue",		0xb0c4de },
+	{ L"lightyellow",			0xffffe0 },
+	{ L"lime",					0x00ff00 },
+	{ L"limegreen",				0x32cd32 },
+	{ L"linen",					0xfaf0e6 },
+	{ L"magenta",				0xff00ff },
+	{ L"maroon",				0x800000 },
+	{ L"mediumaquamarine",		0x66cdaa },
+	{ L"mediumblue",			0x0000cd },
+	{ L"mediumorchid",			0xba55d3 },
+	{ L"mediumpurple",			0x9370db },
+	{ L"mediumseagreen",		0x3cb371 },
+	{ L"mediumslateblue",		0x7b68ee },
+	{ L"mediumspringgreen",		0x00fa9a },
+	{ L"mediumturquoise",		0x48d1cc },
+	{ L"mediumvioletred",		0xc71585 },
+	{ L"midnightblue",			0x191970 },
+	{ L"mintcream",				0xf5fffa },
+	{ L"mistyrose",				0xffe4e1 },
+	{ L"moccasin",				0xffe4b5 },
+	{ L"navajowhite",			0xffdead }, // This color is just like me inside while making this map
+	{ L"navy",					0x000080 },
+	{ L"oldlace",				0xfdf5e6 },
+	{ L"olive",					0x808000 },
+	{ L"olivedrab",				0x6b8e23 },
+	{ L"orange",				0xffa500 },
+	{ L"orangered",				0xff4500 },
+	{ L"orchid",				0xda70d6 },
+	{ L"palegoldenrod",			0xeee8aa },
+	{ L"palegreen",				0x98fb98 },
+	{ L"paleturquoise",			0xafeeee },
+	{ L"palevioletred",			0xdb7093 },
+	{ L"papayawhip",			0xffefd5 },
+	{ L"peachpuff",				0xffdab9 },
+	{ L"peru",					0xcd853f },
+	{ L"pink",					0xffc0cb },
+	{ L"plum",					0xdda0dd },
+	{ L"powderblue",			0xb0e0e6 },
+	{ L"purple",				0x800080 },
+	{ L"rebeccapurple",			0x663399 },
+	{ L"red",					0xff0000 },
+	{ L"rosybrown",				0xbc8f8f },
+	{ L"royalblue",				0x4169e1 },
+	{ L"saddlebrown",			0x8b4513 },
+	{ L"salmon",				0xfa8072 },
+	{ L"sandybrown",			0xf4a460 },
+	{ L"seagreen",				0x2e8b57 },
+	{ L"seashell",				0xfff5ee },
+	{ L"sienna",				0xa0522d },
+	{ L"silver",				0xc0c0c0 },
+	{ L"skyblue",				0x87ceeb },
+	{ L"slateblue",				0x6a5acd },
+	{ L"slategray",				0x708090 },
+	{ L"slategrey",				0x708090 },
+	{ L"snow",					0xfffafa },
+	{ L"springgreen",			0x00ff7f },
+	{ L"steelblue",				0x4682b4 },
+	{ L"tan",					0xd2b48c },
+	{ L"teal",					0x008080 },
+	{ L"thistle",				0xd8bfd8 },
+	{ L"tomato",				0xff6347 },
+	{ L"turquoise",				0x40e0d0 },
+	{ L"violet",				0xee82ee },
+	{ L"wheat",					0xf5deb3 },
+	{ L"white",					0xffffff },
+	{ L"whitesmoke",			0xf5f5f5 },
+	{ L"yellow",				0xffff00 },
+	{ L"yellowgreen",			0x9acd32 }
+};
+
 static const std::unordered_map<unsigned int, const std::pair<const unsigned int, const unsigned int>> SLIDER_MAP = {
 	{ IDC_RED,        { IDC_RSLIDER,   255 } },
 	{ IDC_GREEN,      { IDC_GSLIDER,   255 } },
@@ -46,13 +197,14 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 		CColourPicker::PickerMap[&(picker_data->picker->Value)] = hDlg;
 
-		for (const decltype(SLIDER_MAP)::value_type &slider_combo : SLIDER_MAP)
+		for (const auto &slider_combo : SLIDER_MAP)
 		{
 			SendDlgItemMessage(hDlg, slider_combo.second.first, UDM_SETBUDDY, (WPARAM)GetDlgItem(hDlg, slider_combo.first), 0);
 			SendDlgItemMessage(hDlg, slider_combo.second.first, UDM_SETRANGE32, 0, slider_combo.second.second);
 		}
 		SendDlgItemMessage(hDlg, IDC_HEXSLIDER, UDM_SETBASE, 16, 0);
-		SendDlgItemMessage(hDlg, IDC_HEXCOL, EM_SETLIMITTEXT, 10, 0);
+		SendDlgItemMessage(hDlg, IDC_HEXCOL, EM_SETLIMITTEXT, 20, 0);
+		SendDlgItemMessage(hDlg, IDC_HEXCOL, EM_SETCUEBANNER, TRUE, (LPARAM)L"HTML color");
 
 		UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
 
@@ -264,50 +416,64 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		{
 			if (LOWORD(wParam) == IDC_HEXCOL)
 			{
-				wchar_t rawText[11];
-				GetDlgItemText(hDlg, IDC_HEXCOL, rawText, 11);
+				wchar_t rawText[21];
+				GetDlgItemText(hDlg, IDC_HEXCOL, rawText, 21);
 
 				std::wstring text = Util::Trim(rawText);
-				if (text[0] == L'#')
-				{
-					text.erase(0, 1);
-				}
-				else if (text[0] == L'0' && text[1] == L'x')
-				{
-					text.erase(0, 2);
-				}
 
-				try
+				if (COLOR_MAP.count(text) != 0)
 				{
-					const unsigned int tempcolor = std::stoll(text, nullptr, 16) & 0xFFFFFFFF;
-
-					if (text.length() == 8)
+					const uint32_t &color = COLOR_MAP.at(text);
+					picker_data->picker->SetRGB((color & 0xFF0000) >> 16, (color & 0x00FF00) >> 8, color & 0x0000FF);
+				}
+				else
+				{
+					if (text.length() > 10)
 					{
-						picker_data->picker->SetRGB((tempcolor & 0xFF000000) >> 24, (tempcolor & 0x00FF0000) >> 16, (tempcolor & 0x0000FF00) >> 8);
-						picker_data->picker->SetAlpha(tempcolor & 0x000000FF);
-					}
-					else if (text.length() == 4)
-					{
-						picker_data->picker->SetRGB(ExpandOneLetterByte((tempcolor & 0xF000) >> 12), ExpandOneLetterByte((tempcolor & 0x0F00) >> 8), ExpandOneLetterByte((tempcolor & 0x00F0) >> 4));
-						picker_data->picker->SetAlpha(ExpandOneLetterByte(tempcolor & 0x000F));
-					}
-					else if (text.length() == 6)
-					{
-						picker_data->picker->SetRGB((tempcolor & 0xFF0000) >> 16, (tempcolor & 0x00FF00) >> 8, tempcolor & 0x0000FF);
-					}
-					else if (text.length() == 3)
-					{
-						picker_data->picker->SetRGB(ExpandOneLetterByte((tempcolor & 0xF00) >> 8), ExpandOneLetterByte((tempcolor & 0x0F0) >> 4), ExpandOneLetterByte(tempcolor & 0x00F));
+						text.erase(11);
 					}
 
-					UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
-					RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+					if (text[0] == L'#')
+					{
+						text.erase(0, 1);
+					}
+					else if (text[0] == L'0' && text[1] == L'x')
+					{
+						text.erase(0, 2);
+					}
+
+					try
+					{
+						const unsigned int tempcolor = std::stoll(text, nullptr, 16) & 0xFFFFFFFF;
+
+						if (text.length() == 8)
+						{
+							picker_data->picker->SetRGB((tempcolor & 0xFF000000) >> 24, (tempcolor & 0x00FF0000) >> 16, (tempcolor & 0x0000FF00) >> 8);
+							picker_data->picker->SetAlpha(tempcolor & 0x000000FF);
+						}
+						else if (text.length() == 4)
+						{
+							picker_data->picker->SetRGB(ExpandOneLetterByte((tempcolor & 0xF000) >> 12), ExpandOneLetterByte((tempcolor & 0x0F00) >> 8), ExpandOneLetterByte((tempcolor & 0x00F0) >> 4));
+							picker_data->picker->SetAlpha(ExpandOneLetterByte(tempcolor & 0x000F));
+						}
+						else if (text.length() == 6)
+						{
+							picker_data->picker->SetRGB((tempcolor & 0xFF0000) >> 16, (tempcolor & 0x00FF00) >> 8, tempcolor & 0x0000FF);
+						}
+						else if (text.length() == 3)
+						{
+							picker_data->picker->SetRGB(ExpandOneLetterByte((tempcolor & 0xF00) >> 8), ExpandOneLetterByte((tempcolor & 0x0F0) >> 4), ExpandOneLetterByte(tempcolor & 0x00F));
+						}
+					}
+					catch (std::invalid_argument) { } // Fight me
 				}
-				catch (std::invalid_argument) { } // Fight me
+
+				UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
+				RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 			}
 
 			picker_data->changing_text = true;
-			for (const decltype(SLIDER_MAP)::value_type &slider_combo : SLIDER_MAP)
+			for (const auto &slider_combo : SLIDER_MAP)
 			{
 				if (slider_combo.first == IDC_HEXCOL)
 				{
@@ -315,7 +481,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 					std::wostringstream stream;
 					stream << L"0x";
-					stream << std::setw(2) << std::setfill(L'0') << std::hex << col.r << col.g << col.b << col.a;
+					stream << std::setw(2) << std::setfill(L'0') << std::hex << std::uppercase << col.r << col.g << col.b << col.a;
 
 					SetDlgItemText(hDlg, slider_combo.first, stream.str().c_str());
 				}

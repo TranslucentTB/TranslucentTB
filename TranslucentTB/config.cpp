@@ -16,7 +16,7 @@ swca::ACCENT Config::DYNAMIC_APPEARANCE = swca::ACCENT::ACCENT_ENABLE_BLURBEHIND
 uint32_t Config::DYNAMIC_COLOR = 0x00000000;
 bool Config::DYNAMIC_NORMAL_ON_PEEK = true;
 bool Config::DYNAMIC_START = false;
-decltype(Config::PEEK) Config::PEEK = PEEK::Enabled;
+enum Config::PEEK Config::PEEK = PEEK::Enabled;
 
 uint8_t Config::SLEEP_TIME = 10;
 uint16_t Config::CACHE_HIT_MAX = 500;

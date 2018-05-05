@@ -6,6 +6,7 @@
 #include <random>
 #include <string>
 #include <thread>
+#include <unordered_map>
 #include <vector>
 
 class Util {
@@ -17,7 +18,32 @@ public:
 		std::transform(data.begin(), data.end(), data.begin(), std::towlower);
 	}
 
-	// Removes instances of character at the beginning and end of the string
+private:
+	struct string_hash {
+		inline std::size_t operator()(std::wstring k) const
+		{
+			ToLower(k);
+			return std::hash<std::wstring>()(k);
+		}
+	};
+
+	struct string_compare {
+		inline bool operator()(const std::wstring &l, const std::wstring &r) const
+		{
+			return l.size() == r.size() &&
+				std::equal(l.begin(), l.end(), r.begin(), [](wchar_t a, wchar_t b) -> bool
+				{
+					return std::towlower(a) == std::towlower(b);
+				});
+		}
+	};
+
+public:
+	// Case-insensitive std::unordered_map with string keys.
+	template<typename T>
+	using string_map = std::unordered_map<std::wstring, T, string_hash, string_compare>;
+
+	// Removes instances of character at the beginning and end of the string.
 	inline static std::wstring Trim(const std::wstring& str, const wchar_t &character = L' ')
 	{
 		size_t first = str.find_first_not_of(character);
