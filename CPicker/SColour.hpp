@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-struct SColour
+struct _declspec(dllexport) SColour
 {
 	// Red, green and blue
 	uint8_t r, g, b;
@@ -13,6 +13,6 @@ struct SColour
 	// Alpha
 	uint8_t a;
 
-	_declspec(dllexport) void UpdateRGB();			// Updates RGB from HSV
-	_declspec(dllexport) void UpdateHSV();			// Updates HSV from RGB
+	void UpdateRGB();			// Updates RGB from HSV
+	void UpdateHSV();			// Updates HSV from RGB
 };

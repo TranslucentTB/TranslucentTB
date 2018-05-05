@@ -6,25 +6,25 @@
 
 #include "SColour.hpp"
 
-class CColourPicker
+class _declspec(dllexport) CColourPicker
 {
 	public:
-		_declspec(dllexport) CColourPicker(uint32_t &value, HWND hParentWindow = NULL);
+		CColourPicker(uint32_t &value, HWND hParentWindow = NULL);
 
 		// Creates the colour picker dialog
-		_declspec(dllexport) void CreateColourPicker();
+		void CreateColourPicker();
 
 		// Functions to set the colour components
 		// NOTE: SetRGB automatically updates HSV and viceversa
-		_declspec(dllexport) void SetRGB(uint8_t r, uint8_t g, uint8_t b);
-		_declspec(dllexport) void SetHSV(unsigned short h, uint8_t s, uint8_t v);
-		_declspec(dllexport) void SetAlpha(uint8_t a);
+		void SetRGB(uint8_t r, uint8_t g, uint8_t b);
+		void SetHSV(unsigned short h, uint8_t s, uint8_t v);
+		void SetAlpha(uint8_t a);
 		
 		// Some easy functions to retrieve the colour components
-		_declspec(dllexport) const SColour &GetCurrentColour();
-		_declspec(dllexport) const SColour &GetOldColour();
+		const SColour &GetCurrentColour();
+		const SColour &GetOldColour();
 
-		_declspec(dllexport) void UpdateOldColour();
+		void UpdateOldColour();
 
 		friend int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	private:
