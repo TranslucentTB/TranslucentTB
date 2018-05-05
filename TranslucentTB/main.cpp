@@ -525,7 +525,6 @@ void HardenProcess()
 void InitializeTray(const HINSTANCE &hInstance)
 {
 	static MessageWindow window(L"TrayWindow", NAME, hInstance);
-	static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYICON), MAKEINTRESOURCE(IDR_POPUP_MENU), hInstance);
 
 	window.RegisterCallback(NEW_TTB_INSTANCE, [](Window, WPARAM, LPARAM) {
 		run.exit_reason = EXITREASON::NewInstance;
@@ -556,6 +555,9 @@ void InitializeTray(const HINSTANCE &hInstance)
 		return TRUE;
 	});
 #endif
+
+
+	static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYICON), MAKEINTRESOURCE(IDR_POPUP_MENU), hInstance);
 
 	tray.BindEnum(IDM_BLUR, IDM_FLUENT, Config::TASKBAR_APPEARANCE, NORMAL_BUTTON_MAP);
 	tray.BindEnum(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, Config::DYNAMIC_APPEARANCE, DYNAMIC_BUTTON_MAP);
