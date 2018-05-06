@@ -9,6 +9,7 @@ struct PickerData
 {
 	CColourPicker *picker;
 	bool changing_text;
+	WNDPROC button_proc;
 	CComPtr<ID2D1Factory> factory;
 	CComPtr<ID2D1HwndRenderTarget> targetC1;
 	CComPtr<ID2D1HwndRenderTarget> targetC2;

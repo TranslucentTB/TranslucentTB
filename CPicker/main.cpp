@@ -206,6 +206,11 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		SendDlgItemMessage(hDlg, IDC_HEXCOL, EM_SETLIMITTEXT, 20, 0);
 		SendDlgItemMessage(hDlg, IDC_HEXCOL, EM_SETCUEBANNER, TRUE, (LPARAM)L"HTML color");
 
+		for (const int &button : { IDC_R, IDC_G, IDC_B, IDC_H, IDC_S, IDC_V })
+		{
+			picker_data->button_proc = (WNDPROC)SetWindowLongPtr(GetDlgItem(hDlg, button), GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(NoOutlineButtonProc));
+		}
+
 		UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
 
 		SendDlgItemMessage(hDlg, IDC_R, BM_SETCHECK, BST_CHECKED, 0);
@@ -590,6 +595,17 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		break;
 	}
 	return 0;
+}
+
+int NoOutlineButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	if (uMsg == WM_SETFOCUS)
+	{
+		return 0;
+	}
+
+	const HWND hDlg = GetParent(hWnd);
+	return CallWindowProc(reinterpret_cast<PickerData *>(GetWindowLongPtr(hDlg, GWLP_USERDATA))->button_proc, hWnd, uMsg, wParam, lParam);
 }
 
 uint8_t ExpandOneLetterByte(const uint8_t &byte)
