@@ -45,7 +45,7 @@ public:
 	using string_map = std::unordered_map<std::wstring, T, string_hash, string_compare>;
 
 	// Removes instances of character at the beginning and end of the string.
-	inline static std::wstring Trim(const std::wstring& str, const wchar_t &character = L' ')
+	inline static std::wstring Trim(const std::wstring &str, const wchar_t &character = L' ')
 	{
 		size_t first = str.find_first_not_of(character);
 
