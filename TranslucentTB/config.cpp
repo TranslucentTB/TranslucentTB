@@ -72,7 +72,7 @@ void Config::Save(const std::wstring &file)
 	using namespace std;
 	wofstream configstream(file);
 
-	configstream << L"; Taskbar appearance: clear, normal, fluent (only on build " << MIN_FLUENT_BUILD << L" and up), opaque, normal, or blur (default)." << endl;
+	configstream << L"; Taskbar appearance: clear (default), normal, fluent (only on build " << MIN_FLUENT_BUILD << L" and up), opaque, normal, or blur." << endl;
 	configstream << L"accent=" << GetAccentText(TASKBAR_APPEARANCE) << endl;
 	configstream << L"; Color and opacity of the taskbar." << endl;
 	configstream << L"color=" << GetColorText(TASKBAR_COLOR) << L" ; A color in hexadecimal notation." << endl;
