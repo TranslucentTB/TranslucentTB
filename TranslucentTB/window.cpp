@@ -8,6 +8,7 @@
 std::unordered_map<Window, std::wstring> Window::m_ClassNames;
 std::unordered_map<Window, std::wstring> Window::m_Filenames;
 
+const Window Window::NullWindow = nullptr;
 const Window Window::BroadcastWindow = HWND_BROADCAST;
 const Window Window::MessageOnlyWindow = HWND_MESSAGE;
 

@@ -84,7 +84,7 @@
       <!-- TODO: Remove those when the clang bug is fixed -->
       <AdditionalOptions>
       </AdditionalOptions>
-      <DisableSpecificWarnings>4068</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4068;4251</DisableSpecificWarnings>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -24,7 +24,7 @@ public:
 		const int &y = 0, const int &nWidth = 0, const int &nHeight = 0, const Window &parent = Window::NullWindow,
 		const HMENU &hMenu = NULL, const HINSTANCE &hInstance = GetModuleHandle(NULL), void *lpParam = nullptr);
 
-	constexpr inline Window(const HWND &handle = Window::NullWindow) : m_WindowHandle(handle) { };
+	constexpr Window(const HWND &handle = Window::NullWindow) : m_WindowHandle(handle) { };
 	std::wstring title() const;
 	const std::wstring &classname() const;
 	const std::wstring &filename() const;
@@ -52,8 +52,6 @@ public:
 
 	friend std::hash<Window>;
 };
-
-constexpr Window Window::NullWindow = nullptr;
 
 // Specialize std::hash to allow the use of Window as unordered_map key
 namespace std {

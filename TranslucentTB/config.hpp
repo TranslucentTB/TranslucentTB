@@ -15,7 +15,7 @@ public:
 	static bool DYNAMIC_REGULAR_ON_PEEK;
 	static bool DYNAMIC_USE_REGULAR_COLOR;
 	static bool DYNAMIC_START;
-	static enum class PEEK {
+	static enum /*class*/ PEEK {
 		Disabled,		// Hide the button
 		Dynamic,		// Show when a window is maximised
 		Enabled			// Don't hide the button
