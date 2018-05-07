@@ -308,6 +308,7 @@ void RefreshMenu(HMENU menu)
 	}
 
 	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, !Log::file().empty(), TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(IDM_DYNAMICWS_COLOR, menu, Config::DYNAMIC_WS && !Config::DYNAMIC_USE_REGULAR_COLOR, TrayContextMenu::ControlsEnabled);
 
 	const Autostart::StartupState state = Autostart::GetStartupState();
 	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, !(state == Autostart::StartupState::DisabledByUser
@@ -413,7 +414,7 @@ void SetTaskbarBlur()
 		//	}
 		//}
 
-		if (Config::DYNAMIC_WS && Config::DYNAMIC_NORMAL_ON_PEEK && run.peek_active)
+		if (Config::DYNAMIC_WS && Config::DYNAMIC_REGULAR_ON_PEEK && run.peek_active)
 		{
 			for (auto &taskbar : run.taskbars)
 			{
@@ -432,7 +433,8 @@ void SetTaskbarBlur()
 			SetWindowBlur(taskbar.second.first, swca::ACCENT::ACCENT_NORMAL, NULL);
 			break;
 		case MONITORSTATE::WindowMaximised:
-			SetWindowBlur(taskbar.second.first, Config::DYNAMIC_APPEARANCE, Config::DYNAMIC_COLOR); // A window is maximised.
+			SetWindowBlur(taskbar.second.first, Config::DYNAMIC_APPEARANCE,
+				Config::DYNAMIC_USE_REGULAR_COLOR ? Config::TASKBAR_COLOR : Config::DYNAMIC_COLOR); // A window is maximised.
 			break;
 		case MONITORSTATE::Normal:
 			SetWindowBlur(taskbar.second.first, Config::TASKBAR_APPEARANCE, Config::TASKBAR_COLOR);  // Taskbar should be normal, call using normal transparency settings
@@ -568,12 +570,12 @@ void InitializeTray(const HINSTANCE &hInstance)
 		tray.BindBool(button_pair.second, Config::DYNAMIC_WS, TrayContextMenu::ControlsEnabled);
 	}
 
-	tray.BindBool(IDM_DYNAMICWS_COLOR, Config::DYNAMIC_WS,             TrayContextMenu::ControlsEnabled);
-	tray.BindBool(IDM_DYNAMICWS_PEEK,  Config::DYNAMIC_WS,             TrayContextMenu::ControlsEnabled);
-	tray.BindBool(IDM_DYNAMICWS,       Config::DYNAMIC_WS,             TrayContextMenu::Toggle);
-	tray.BindBool(IDM_DYNAMICWS_PEEK,  Config::DYNAMIC_NORMAL_ON_PEEK, TrayContextMenu::Toggle);
-	tray.BindBool(IDM_DYNAMICSTART,    Config::DYNAMIC_START,          TrayContextMenu::Toggle);
-	tray.BindBool(IDM_VERBOSE,         Config::VERBOSE,                TrayContextMenu::Toggle);
+	tray.BindBool(IDM_DYNAMICWS_PEEK,          Config::DYNAMIC_WS,                TrayContextMenu::ControlsEnabled);
+	tray.BindBool(IDM_DYNAMICWS,               Config::DYNAMIC_WS,                TrayContextMenu::Toggle);
+	tray.BindBool(IDM_DYNAMICWS_REGULAR_COLOR, Config::DYNAMIC_USE_REGULAR_COLOR, TrayContextMenu::Toggle);
+	tray.BindBool(IDM_DYNAMICWS_PEEK,          Config::DYNAMIC_REGULAR_ON_PEEK,   TrayContextMenu::Toggle);
+	tray.BindBool(IDM_DYNAMICSTART,            Config::DYNAMIC_START,             TrayContextMenu::Toggle);
+	tray.BindBool(IDM_VERBOSE,                 Config::VERBOSE,                   TrayContextMenu::Toggle);
 
 	tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, [](unsigned int) {
 		run.exit_reason = EXITREASON::UserActionNoSave;

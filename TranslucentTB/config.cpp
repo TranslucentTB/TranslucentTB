@@ -9,14 +9,15 @@
 #include "win32.hpp"
 
 // Defaults
-swca::ACCENT Config::TASKBAR_APPEARANCE = swca::ACCENT::ACCENT_ENABLE_BLURBEHIND;
+swca::ACCENT Config::TASKBAR_APPEARANCE = swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT;
 uint32_t Config::TASKBAR_COLOR = 0x00000000;
-bool Config::DYNAMIC_WS = false;
-swca::ACCENT Config::DYNAMIC_APPEARANCE = swca::ACCENT::ACCENT_ENABLE_BLURBEHIND;
+bool Config::DYNAMIC_WS = true;
+swca::ACCENT Config::DYNAMIC_APPEARANCE = swca::ACCENT::ACCENT_NORMAL;
 uint32_t Config::DYNAMIC_COLOR = 0x00000000;
-bool Config::DYNAMIC_NORMAL_ON_PEEK = true;
+bool Config::DYNAMIC_REGULAR_ON_PEEK = true;
+bool Config::DYNAMIC_USE_REGULAR_COLOR = false;
 bool Config::DYNAMIC_START = false;
-enum Config::PEEK Config::PEEK = PEEK::Enabled;
+enum Config::PEEK Config::PEEK = PEEK::Dynamic;
 
 uint8_t Config::SLEEP_TIME = 10;
 uint16_t Config::CACHE_HIT_MAX = 500;
@@ -54,7 +55,10 @@ void Config::Parse(const std::wstring &file)
 		{
 			std::wstring key = line.substr(0, split_index);
 			std::wstring val = line.substr(split_index + 1, line.length() - split_index - 1);
-			ParseSingleConfigOption(key, val);
+
+			Util::ToLower(key);
+			Util::ToLower(val);
+			ParseSingleConfigOption(key, Util::Trim(val));
 		}
 		else
 		{
@@ -78,14 +82,15 @@ void Config::Save(const std::wstring &file)
 	configstream << L"; Dynamic Windows and Start Menu" << endl;
 	configstream << L"; Available states are the same as the accent configuration option." << endl;
 	configstream << L"; dynamic windows has its own color and opacity configs." << endl;
-	configstream << L"; by enabling dynamic-ws-normal-on-peek, dynamic windows will behave as if no window is maximised when using Aero Peek." << endl;
+	configstream << L"; by enabling dynamic-ws-regular-on-peek, dynamic windows will behave as if no window is maximised when using Aero Peek." << endl;
 	configstream << L"; you can also set the accent, color and opacity values, which will represent the state of dynamic windows when there is no window maximised." << endl;
 	configstream << L"; dynamic start returns the taskbar to normal appearance when the start menu is opened." << endl;
 	configstream << L"dynamic-ws=" << GetBoolText(DYNAMIC_WS) << endl;
 	configstream << L"dynamic-ws-accent=" << GetAccentText(DYNAMIC_APPEARANCE) << endl;
 	configstream << L"dynamic-ws-color=" << GetColorText(DYNAMIC_COLOR) << L" ; A color in hexadecimal notation." << endl;
 	configstream << L"dynamic-ws-opacity=" << GetOpacityText(DYNAMIC_COLOR) << L"  ; A value in the range 0 to 255." << endl;
-	configstream << L"dynamic-ws-normal-on-peek=" << GetBoolText(DYNAMIC_NORMAL_ON_PEEK) << endl;
+	configstream << L"dynamic-ws-regular-on-peek=" << GetBoolText(DYNAMIC_REGULAR_ON_PEEK) << endl;
+	configstream << L"dynamic-ws-use-regular-color=" << GetBoolText(DYNAMIC_USE_REGULAR_COLOR) << L" ; Use the color of the regular state instead of dynamic-ws-color." << endl;
 	configstream << L"dynamic-start=" << GetBoolText(DYNAMIC_START) << endl;
 
 	configstream << endl;
@@ -267,9 +272,16 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 			Log::OutputMessage(L"Could not parse dynamic windows opacity found in configuration file: " + value);
 		}
 	}
-	else if (arg == L"dynamic-ws-normal-on-peek")
+	else if (arg == L"dynamic-ws-regular-on-peek")
 	{
-		if (!ParseBool(value, DYNAMIC_NORMAL_ON_PEEK))
+		if (!ParseBool(value, DYNAMIC_REGULAR_ON_PEEK))
+		{
+			UnknownValue(arg, value);
+		}
+	}
+	else if (arg == L"dynamic-ws-use-regular-color")
+	{
+		if (!ParseBool(value, DYNAMIC_USE_REGULAR_COLOR))
 		{
 			UnknownValue(arg, value);
 		}

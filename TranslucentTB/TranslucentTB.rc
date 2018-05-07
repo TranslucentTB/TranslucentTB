@@ -79,6 +79,7 @@ BEGIN
             MENUITEM "Enabled",                     IDM_DYNAMICWS
             MENUITEM "Regular state when peeking",  IDM_DYNAMICWS_PEEK
             MENUITEM "Accent Color",                IDM_DYNAMICWS_COLOR
+            MENUITEM "Use regular color",           IDM_DYNAMICWS_REGULAR_COLOR
             MENUITEM SEPARATOR
             MENUITEM "Normal",                      IDM_DYNAMICWS_NORMAL
             MENUITEM "Clear",                       IDM_DYNAMICWS_CLEAR

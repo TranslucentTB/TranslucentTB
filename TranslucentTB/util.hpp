@@ -20,10 +20,11 @@ public:
 
 private:
 	struct string_hash {
+		std::hash<std::wstring> m_Hasher;
 		inline std::size_t operator()(std::wstring k) const
 		{
 			ToLower(k);
-			return std::hash<std::wstring>()(k);
+			return m_Hasher(k);
 		}
 	};
 

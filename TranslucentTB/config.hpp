@@ -12,7 +12,8 @@ public:
 	static bool DYNAMIC_WS;
 	static swca::ACCENT DYNAMIC_APPEARANCE;
 	static uint32_t DYNAMIC_COLOR;
-	static bool DYNAMIC_NORMAL_ON_PEEK;
+	static bool DYNAMIC_REGULAR_ON_PEEK;
+	static bool DYNAMIC_USE_REGULAR_COLOR;
 	static bool DYNAMIC_START;
 	static enum class PEEK {
 		Disabled,		// Hide the button

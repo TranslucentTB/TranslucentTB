@@ -59,9 +59,10 @@ constexpr Window Window::NullWindow = nullptr;
 namespace std {
 
 	template<> struct hash<Window> {
+		std::hash<HWND> m_Hasher;
 		inline std::size_t operator()(const Window &k) const
 		{
-			return std::hash<HWND>()(k.m_WindowHandle);
+			return m_Hasher(k.m_WindowHandle);
 		}
 	};
 
