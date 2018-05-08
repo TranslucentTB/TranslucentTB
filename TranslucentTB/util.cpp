@@ -8,7 +8,6 @@
 #include <synchapi.h>
 #include <WinBase.h>
 #include <winerror.h>
-#include <wrl/wrappers/corewrappers.h>
 
 #include "autofree.hpp"
 #include "../CPicker/CColourPicker.hpp"
@@ -68,7 +67,7 @@ void Util::EditFile(std::wstring file)
 
 	QuoteSpaces(str_notepad);
 	QuoteSpaces(file);
-	std::wstring path = str_notepad + L" " + file;
+	std::wstring path = str_notepad + L' ' + file;
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
@@ -79,14 +78,14 @@ void Util::EditFile(std::wstring file)
 	// Not using lpApplicationName here because if someone has set a redirect to another editor it doesn't works. (eg Notepad2)
 	if (CreateProcess(NULL, path.data(), NULL, NULL, FALSE, NULL, NULL, NULL, &si, &pi))
 	{
-		namespace wrap = Microsoft::WRL::Wrappers;
-		wrap::HandleT<wrap::HandleTraits::HANDLENullTraits> processHandle(pi.hProcess);
-		wrap::HandleT<wrap::HandleTraits::HANDLENullTraits> threadHandle(pi.hThread);
+		CloseHandle(pi.hThread);
 
-		if (WaitForSingleObject(processHandle.Get(), INFINITE) == WAIT_FAILED)
+		if (WaitForSingleObject(pi.hProcess, INFINITE) == WAIT_FAILED)
 		{
 			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to wait for Notepad close.");
 		}
+
+		CloseHandle(pi.hProcess);
 	}
 	else
 	{

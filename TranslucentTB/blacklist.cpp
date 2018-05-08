@@ -168,7 +168,7 @@ bool Blacklist::OutputMatchToLog(const Window &window, const bool &isMatch)
 	{
 		std::wostringstream message;
 		message << (isMatch ? L"B" : L"No b") << L"lacklist match found for window: ";
-		message << window.handle() << L" [" << window.classname() << L"] [" << window.filename() << L"] [" << window.title() << L"]";
+		message << window.handle() << L" [" << window.classname() << L"] [" << window.filename() << L"] [" << window.title() << L']';
 
 		Log::OutputMessage(message.str());
 	}

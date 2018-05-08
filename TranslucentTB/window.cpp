@@ -44,9 +44,10 @@ const std::wstring &Window::classname() const
 {
 	if (m_ClassNames.count(m_WindowHandle) == 0)
 	{
-		wchar_t className[256];
+		wchar_t className[257]; // According to docs, maximum length of a class name is 256, but it's ambiguous
+		                        // wether this includes the null terminator or not.
 
-		if (!GetClassName(m_WindowHandle, className, 256))
+		if (!GetClassName(m_WindowHandle, className, 257))
 		{
 			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting class name of a window failed.");
 			return m_ClassNames[m_WindowHandle] = L"";
@@ -66,11 +67,10 @@ const std::wstring &Window::filename() const
 {
 	if (m_Filenames.count(m_WindowHandle) == 0)
 	{
-		namespace wrap = Microsoft::WRL::Wrappers;
-
 		DWORD ProcessId;
 		GetWindowThreadProcessId(m_WindowHandle, &ProcessId);
 
+		namespace wrap = Microsoft::WRL::Wrappers;
 		wrap::HandleT<wrap::HandleTraits::HANDLENullTraits> processHandle(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, ProcessId));
 		if (!processHandle.IsValid())
 		{

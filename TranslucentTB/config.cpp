@@ -123,7 +123,7 @@ void Config::Save(const std::wstring &file)
 
 void Config::UnknownValue(const std::wstring & key, const std::wstring & value)
 {
-	Log::OutputMessage(L"Unknown value found in configuration file: " + value + L" (for key: " + key + L")");
+	Log::OutputMessage(L"Unknown value found in configuration file: " + value + L" (for key: " + key + L')');
 }
 
 bool Config::ParseAccent(const std::wstring &value, swca::ACCENT &accent)
