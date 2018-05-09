@@ -534,6 +534,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 		return 0;
 	});
 
+	// TODO: doesn't works
 	window.RegisterCallback(WM_DISPLAYCHANGE, [](Window, WPARAM, LPARAM) {
 		RefreshHandles();
 		return 0;
@@ -666,7 +667,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	// If the configuration files don't exist, restore the files and show welcome to the users
 	if (!CheckAndRunWelcome())
 	{
-		std::terminate();
+		return EXIT_FAILURE;
 	}
 
 	// Parse our configuration
@@ -711,7 +712,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		}
 	}
 
-	return 0;
+	return EXIT_SUCCESS;
 }
 
 #pragma endregion
