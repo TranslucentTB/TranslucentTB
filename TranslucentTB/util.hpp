@@ -95,7 +95,7 @@ public:
 	static void CopyToClipboard(const std::wstring &text);
 
 	// Opens a file in notepad.
-	static void EditFile(std::wstring file);
+	static void EditFile(const std::wstring &file);
 
 	// Opens a link in the default browser.
 	// NOTE: doesn't attempts to validate the link, make sure it's correct.

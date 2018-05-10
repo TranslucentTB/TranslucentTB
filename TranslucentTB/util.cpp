@@ -2,7 +2,7 @@
 #include "arch.h"
 #include <atlbase.h>
 #include <PathCch.h>
-#include <processthreadsapi.h>
+#include <shellapi.h>
 #include <ShlObj.h>
 #include <ShObjIdl.h>
 #include <synchapi.h>
@@ -48,48 +48,45 @@ void Util::CopyToClipboard(const std::wstring &text)
 	}
 }
 
-void Util::EditFile(std::wstring file)
+void Util::EditFile(const std::wstring &file)
 {
-	// WinAPI reeeeeeeeeeeeeeeeeeeeeeeeee
-	AutoFree::CoTaskMem<wchar_t> system32;
-	if (!ErrorHandle(SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, NULL, &system32), Error::Level::Error, L"Failed to determine System32 folder location!"))
-	{
-		return;
-	}
-
-	AutoFree::Local<wchar_t> notepad;
-	if (!ErrorHandle(PathAllocCombine(system32, L"notepad.exe", PATHCCH_ALLOW_LONG_PATHS, &notepad), Error::Level::Error, L"Failed to determine Notepad location!"))
-	{
-		return;
-	}
-
-	std::wstring str_notepad(notepad);
-
-	QuoteSpaces(str_notepad);
-	QuoteSpaces(file);
-	std::wstring path = str_notepad + L' ' + file;
-
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
-	STARTUPINFO si = { sizeof(si) };
+	SHELLEXECUTEINFO info = {
+		sizeof(info),									// cbSize
+		SEE_MASK_CLASSNAME | SEE_MASK_NOCLOSEPROCESS,	// fMask
+		NULL,											// hwnd
+		L"open",										// lpVerb
+		file.c_str(),									// lpFile
+		NULL,											// lpParameters
+		NULL,											// lpDirectory
+		SW_SHOW,										// nShow
+		nullptr,										// hInstApp
+		nullptr,										// lpIDList
+		L"txtfile"										// lpClass
+	};
 #pragma clang diagnostic pop
 
-	PROCESS_INFORMATION pi;
-	// Not using lpApplicationName here because if someone has set a redirect to another editor it doesn't works. (eg Notepad2)
-	if (CreateProcess(NULL, path.data(), NULL, NULL, FALSE, NULL, NULL, NULL, &si, &pi))
+	if (ShellExecuteEx(&info))
 	{
-		CloseHandle(pi.hThread);
-
-		if (WaitForSingleObject(pi.hProcess, INFINITE) == WAIT_FAILED)
+		if (WaitForSingleObject(info.hProcess, INFINITE) == WAIT_FAILED)
 		{
-			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to wait for Notepad close.");
+			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to wait for text editor close.");
 		}
 
-		CloseHandle(pi.hProcess);
+		CloseHandle(info.hProcess);
 	}
 	else
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to start Notepad!");
+		std::wstring boxbuffer =
+			L"Failed to open file \"" + file + L"\"." +
+			L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(GetLastError())) +
+			L"\n\nCopy the file location to the clipboard?";
+
+		if (MessageBox(NULL, boxbuffer.c_str(), (std::wstring(NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+		{
+			CopyToClipboard(file);
+		}
 	}
 }
 
@@ -98,17 +95,17 @@ void Util::OpenLink(const std::wstring &link)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
 	SHELLEXECUTEINFO info = {
-		sizeof(info),		// cbSize
-		SEE_MASK_CLASSNAME,	// fMask
-		NULL,				// hwnd
-		L"open",			// lpVerb
-		link.c_str(),		// lpFile
-		NULL,				// lpParameters
-		NULL,				// lpDirectory
-		SW_SHOW,			// nShow
-		nullptr,			// hInstApp
-		nullptr,			// lpIDList
-		L"https"			// lpClass
+		sizeof(info),							// cbSize
+		SEE_MASK_CLASSNAME,						// fMask
+		NULL,									// hwnd
+		L"open",								// lpVerb
+		link.c_str(),							// lpFile
+		NULL,									// lpParameters
+		NULL,									// lpDirectory
+		SW_SHOW,								// nShow
+		nullptr,								// hInstApp
+		nullptr,								// lpIDList
+		link[4] == L's' ? L"https" : L"http"	// lpClass
 	};
 #pragma clang diagnostic pop
 
