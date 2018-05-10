@@ -22,7 +22,6 @@ public:
 	} PEEK;
 
 	static uint8_t SLEEP_TIME;
-	static uint16_t CACHE_HIT_MAX;
 	static bool VERBOSE;
 
 	static void Parse(const std::wstring &file);

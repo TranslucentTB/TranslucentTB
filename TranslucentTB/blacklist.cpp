@@ -10,7 +10,7 @@ std::vector<std::wstring> Blacklist::m_ClassBlacklist;
 std::vector<std::wstring> Blacklist::m_FileBlacklist;
 std::vector<std::wstring> Blacklist::m_TitleBlacklist;
 std::unordered_map<Window, bool> Blacklist::m_Cache;
-uint16_t Blacklist::m_CacheHits;
+EventHook Blacklist::m_TitleHook(EVENT_OBJECT_NAMECHANGE, EVENT_OBJECT_NAMECHANGE, Blacklist::HandleNameChange, WINEVENT_OUTOFCONTEXT);
 
 void Blacklist::Parse(const std::wstring &file)
 {
@@ -73,24 +73,12 @@ void Blacklist::Parse(const std::wstring &file)
 
 bool Blacklist::IsBlacklisted(const Window &window)
 {
-	const bool has_title_blacklist = m_TitleBlacklist.size() > 0;
-
-	if ((!has_title_blacklist || m_CacheHits <= Config::CACHE_HIT_MAX) && m_Cache.count(window) > 0)
+	if (m_Cache.count(window) > 0)
 	{
-		m_CacheHits++;
-		return m_Cache[window];
+		return m_Cache.at(window);
 	}
 	else
 	{
-		if (has_title_blacklist && m_CacheHits > Config::CACHE_HIT_MAX)
-		{
-			if (Config::VERBOSE)
-			{
-				Log::OutputMessage(L"Maximum number of cache hits reached, clearing blacklist cache.");
-			}
-			ClearCache();
-		}
-
 		// This is the fastest because we do the less string manipulation, so always try it first
 		if (m_ClassBlacklist.size() > 0)
 		{
@@ -117,7 +105,7 @@ bool Blacklist::IsBlacklisted(const Window &window)
 		}
 
 		// Do it last because titles can change, so it's less reliable.
-		if (has_title_blacklist)
+		if (m_TitleBlacklist.size() > 0)
 		{
 			const std::wstring title = window.title();
 			for (const std::wstring &value : m_TitleBlacklist)
@@ -135,12 +123,29 @@ bool Blacklist::IsBlacklisted(const Window &window)
 
 void Blacklist::ClearCache()
 {
-	m_CacheHits = 0;
 	m_Cache.clear();
 
 	if (Config::VERBOSE)
 	{
 		Log::OutputMessage(L"Blacklist cache cleared.");
+	}
+}
+
+void Blacklist::HandleNameChange(HWINEVENTHOOK, DWORD, const HWND window, const LONG idObject, LONG, DWORD, DWORD)
+{
+	if (idObject == OBJID_WINDOW)
+	{
+		const Window eventWindow(window);
+
+		if (m_Cache.count(eventWindow) != 0)
+		{
+			m_Cache.erase(eventWindow);
+		}
+
+		if (Config::VERBOSE)
+		{
+			Log::OutputMessage(L"Title of a window changed to \"" + eventWindow.title() + L'"');
+		}
 	}
 }
 

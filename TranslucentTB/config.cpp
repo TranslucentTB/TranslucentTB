@@ -20,7 +20,6 @@ bool Config::DYNAMIC_START = false;
 enum Config::PEEK Config::PEEK = PEEK::Dynamic;
 
 uint8_t Config::SLEEP_TIME = 10;
-uint16_t Config::CACHE_HIT_MAX = 500;
 bool Config::VERBOSE =
 #ifndef _DEBUG
 	false;
@@ -114,9 +113,6 @@ void Config::Save(const std::wstring &file)
 	configstream << L"; Advanced settings" << endl;
 	configstream << L"; sleep time in milliseconds, a shorter time reduces flicker when opening start, but results in higher CPU usage." << endl;
 	configstream << L"sleep-time=" << std::dec << SLEEP_TIME << endl;
-	configstream << L"; maximum number of times the blacklist cache can be hit before getting cleared." << endl;
-	configstream << L"; (ignored when no window titles are blacklisted as the cache never clears automatically in that case)" << endl;
-	configstream << L"max-cache-hits=" << std::dec << CACHE_HIT_MAX << endl;
 	configstream << L"; more informative logging. Can make huge log files." << endl;
 	configstream << L"verbose=" << GetBoolText(VERBOSE) << endl;
 }
@@ -321,17 +317,6 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 		catch (std::invalid_argument)
 		{
 			Log::OutputMessage(L"Could not parse sleep time found in configuration file: " + value);
-		}
-	}
-	else if (arg == L"max-cache-hits")
-	{
-		try
-		{
-			CACHE_HIT_MAX = std::stoi(value) & 0xFFFF;
-		}
-		catch (std::invalid_argument)
-		{
-			Log::OutputMessage(L"Could not parse max cache hits found in configuration file: " + value);
 		}
 	}
 	else if (arg == L"verbose")
