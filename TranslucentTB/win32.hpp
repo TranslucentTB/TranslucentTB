@@ -3,17 +3,16 @@
 #include <cstdint>
 #include <string>
 #include <windef.h>
-#include <WinBase.h>
 
 #include "swcadata.hpp"
 
-namespace user32 {
+class user32 {
 
+private:
 	typedef bool(WINAPI *pSetWindowCompositionAttribute)(HWND, swca::WINCOMPATTRDATA *);
-	static const pSetWindowCompositionAttribute SetWindowCompositionAttribute =
-		reinterpret_cast<pSetWindowCompositionAttribute>(
-			GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute")
-		);
+
+public:
+	static const pSetWindowCompositionAttribute SetWindowCompositionAttribute;
 
 };
 

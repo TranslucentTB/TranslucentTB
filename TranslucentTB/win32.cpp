@@ -2,12 +2,18 @@
 #include "arch.h"
 #include <synchapi.h>
 #include <vector>
+#include <WinBase.h>
 #include <winerror.h>
 #include <winnt.h>
 #include <wrl/wrappers/corewrappers.h>
 
 #include "common.hpp"
 #include "ttberror.hpp"
+
+const user32::pSetWindowCompositionAttribute user32::SetWindowCompositionAttribute =
+	reinterpret_cast<pSetWindowCompositionAttribute>(
+		GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute")
+	);
 
 std::wstring win32::m_ExeLocation;
 
