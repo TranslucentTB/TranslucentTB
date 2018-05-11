@@ -400,7 +400,6 @@ void SetTaskbarBlur()
 
 		if (Config::DYNAMIC_START && Util::IsStartVisible())
 		{
-			// TODO: does this works correctly on multi-monitor
 			run.taskbars.at(Window::Find(L"Windows.UI.Core.CoreWindow", L"Start").monitor()).second = MONITORSTATE::StartMenuOpen;
 		}
 
