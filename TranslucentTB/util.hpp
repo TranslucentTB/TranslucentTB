@@ -32,7 +32,7 @@ private:
 		inline bool operator()(const std::wstring &l, const std::wstring &r) const
 		{
 			return l.size() == r.size() &&
-				std::equal(l.begin(), l.end(), r.begin(), [](wchar_t a, wchar_t b) -> bool
+				std::equal(l.begin(), l.end(), r.begin(), [](const wchar_t &a, const wchar_t &b) -> bool
 				{
 					return std::towlower(a) == std::towlower(b);
 				});
@@ -58,23 +58,14 @@ public:
 		return str.substr(first, (last - first + 1));
 	}
 
-	// Encloses a string with double quotation marks if there is a space in it.
-	inline static void QuoteSpaces(std::wstring &path)
-	{
-		if (path.find(L' ') != std::wstring::npos)
-		{
-			path = L'"' + path + L'"';
-		}
-	}
-
-	// Changes a value. Use with std::bind and context menu callbacks.
+	// Changes a value. Use with std::bind and context menu callbacks (BindEnum preferred).
 	template<typename T>
 	inline static void UpdateValue(T &toupdate, T newvalue, ...)
 	{
 		toupdate = newvalue;
 	}
 
-	// Inverts a boolean. Use with std::bind and context menu callbacks.
+	// Inverts a boolean. Use with std::bind and context menu callbacks (BindBool preferred).
 	inline static void InvertBool(bool &value, ...)
 	{
 		value = !value;
@@ -94,7 +85,7 @@ public:
 	// Copies text to the clipboard.
 	static void CopyToClipboard(const std::wstring &text);
 
-	// Opens a file in notepad.
+	// Opens a file in the default text editor.
 	static void EditFile(const std::wstring &file);
 
 	// Opens a link in the default browser.
