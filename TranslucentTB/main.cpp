@@ -533,9 +533,15 @@ void InitializeTray(const HINSTANCE &hInstance)
 		return 0;
 	});
 
-	// TODO: doesn't works
 	window.RegisterCallback(WM_DISPLAYCHANGE, [](Window, WPARAM, LPARAM) {
-		RefreshHandles();
+		std::thread([] {
+			std::this_thread::sleep_for(std::chrono::seconds(10)); // Sleeping because the taskbar hasn't
+																   // been created yet when we get this.
+																   // 10 seconds gives enough time to even
+																   // the slowest of computers to create
+			                                                       // the taskbar. (I hope)
+			RefreshHandles();
+		}).detach();
 		return 0;
 	});
 
