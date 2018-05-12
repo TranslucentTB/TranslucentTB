@@ -50,7 +50,7 @@ void Autostart::SetStartupState(const StartupState &state)
 	{
 		if (state == StartupState::Enabled)
 		{
-			const std::wstring &exeLocation = win32::GetExeLocation();
+			const std::wstring exeLocation = L'"' + win32::GetExeLocation() + L'"';
 
 			const LRESULT error = RegSetValueEx(key, NAME, 0, REG_SZ, reinterpret_cast<const BYTE *>(exeLocation.c_str()), exeLocation.length());
 			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while setting startup registry value!");
