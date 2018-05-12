@@ -661,7 +661,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	// If there already is another instance running, tell it to exit
 	if (!win32::IsSingleInstance())
 	{
-		Window::Find(NAME, L"TrayWindow").send_message(NEW_TTB_INSTANCE);
+		Window::Find(L"TrayWindow", NAME).send_message(NEW_TTB_INSTANCE);
 	}
 
 	InitializeWindowsRuntime();
