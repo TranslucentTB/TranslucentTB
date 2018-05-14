@@ -9,8 +9,9 @@ class Error {
 public:
 	enum class Level {
 		Fatal,	// Show an error message to the user and immediatly exit
-		Error,	// Show an error message to the user and log to debug output
-		Log		// Log to debug output
+		Error,	// Show an error message to the user and log
+		Log,	// Log to file and debug output
+		Debug	// Log to debug output. For use in file log implementation.
 	};
 
 	static bool Handle(const HRESULT &error, const Level &level, const wchar_t *const message, const wchar_t *const file, const int &line, const char *const function);

@@ -22,7 +22,7 @@
 #include "UWP.hpp"
 #endif
 
-std::unique_ptr<std::wostream> Log::m_LogStream;
+std::unique_ptr<File> Log::m_FileHandle;
 std::wstring Log::m_File;
 
 inline std::pair<HRESULT, std::wstring> Log::InitStream()
@@ -97,7 +97,19 @@ inline std::pair<HRESULT, std::wstring> Log::InitStream()
 
 	m_File = log_file;
 
-	m_LogStream.reset(new std::wofstream(log_file));
+	HANDLE file = CreateFile(log_file, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (file == INVALID_HANDLE_VALUE)
+	{
+		return std::make_pair(HRESULT_FROM_WIN32(GetLastError()), L"Failed to create and open log file!");
+	}
+
+	DWORD bytesWritten;
+	if (!WriteFile(file, L"\uFEFF", sizeof(wchar_t), &bytesWritten, NULL))
+	{
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Debug, L"Failed to write byte-order marker.");
+	}
+
+	m_FileHandle.reset(new File(file));
 	return std::make_pair(S_OK, L"");
 
 #ifdef STORE
@@ -116,12 +128,12 @@ const std::wstring &Log::file()
 
 void Log::OutputMessage(const std::wstring &message)
 {
-	if (m_LogStream.get() == nullptr)
+	if (m_FileHandle.get() == nullptr)
 	{
 		auto result = InitStream();
 		if (FAILED(result.first))
 		{
-			m_LogStream.reset(new std::wostringstream());
+			m_FileHandle.reset(new File);
 
 			std::wstring error_message = result.second;
 			std::wstring boxbuffer = error_message +
@@ -134,13 +146,29 @@ void Log::OutputMessage(const std::wstring &message)
 	std::time_t current_time = std::time(0);
 
 	std::wstring buffer;
-	buffer += '(';
+	buffer += L'(';
 	buffer += _wctime(&current_time);
-	buffer = buffer.substr(0, buffer.length() - 1);
+	buffer.erase(buffer.length() - 1); // Remove the newline created by _wctime
 	buffer += L") ";
 	buffer += message;
+	buffer += L'\n';
 
-	*m_LogStream << buffer << std::endl;
+	OutputDebugString((message + L'\n').c_str());
 
-	OutputDebugString((message + L"\n").c_str());
+	if (m_FileHandle)
+	{
+		DWORD bytesWritten;
+		if (!WriteFile(*m_FileHandle, buffer.c_str(), buffer.length() * sizeof(wchar_t), &bytesWritten, NULL))
+		{
+			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Debug, L"Writing to log file failed.");
+		}
+	}
+}
+
+void Log::Flush()
+{
+	if (!FlushFileBuffers(*m_FileHandle))
+	{
+		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Debug, L"Flusing log file buffer failed.");
+	}
 }

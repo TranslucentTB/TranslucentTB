@@ -14,12 +14,13 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 {
 	if (FAILED(error))
 	{
-		std::wstring message_str(message);
-		std::wstring error_message(ExceptionFromHRESULT(error));
+		const std::wstring message_str(message);
+		const std::wstring error_message = ExceptionFromHRESULT(error);
 		std::wstring boxbuffer;
-		if (level != Level::Log)
+		if (level != Level::Log && level != Level::Debug)
 		{
-			boxbuffer += message_str + L"\n\n";
+			boxbuffer += message_str;
+			boxbuffer += L"\n\n";
 
 			if (level == Level::Fatal)
 			{
@@ -38,18 +39,29 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 			functionW = functionWtemp.data();
 		}
 
-		Log::OutputMessage(message_str + L' ' + error_message +
+		const std::wstring error =
+			message_str + L' ' + error_message +
 			L" (" + file + L':' + std::to_wstring(line) + L" at function " +
-			(functionW.empty() ? L"[failed to convert function name to UTF-16]" : functionW) + L')');
+			(functionW.empty() ? L"[failed to convert function name to UTF-16]" : functionW) + L')';
 
-		if (level == Level::Fatal)
+		switch (level)
 		{
+		case Level::Debug:
+			OutputDebugString((error + L'\n').c_str());
+			break;
+		case Level::Log:
+			Log::OutputMessage(error);
+			break;
+		case Level::Error:
+			MessageBox(NULL, boxbuffer.c_str(), (std::wstring(NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+			break;
+		case Level::Fatal:
 			MessageBox(NULL, boxbuffer.c_str(), (std::wstring(NAME) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
 			std::terminate();
-		}
-		else if (level == Level::Error)
-		{
-			MessageBox(NULL, boxbuffer.c_str(), (std::wstring(NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+			break;
+		default:
+			throw std::invalid_argument("level was not one of known values");
+			break;
 		}
 
 		return false;

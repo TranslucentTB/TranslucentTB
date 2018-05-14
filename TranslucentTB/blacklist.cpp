@@ -19,11 +19,10 @@ void Blacklist::Parse(const std::wstring &file)
 	m_TitleBlacklist.clear();
 	m_FileBlacklist.clear();
 
-	std::wifstream excludesfilestream(file);
-
 	const wchar_t delimiter = L',';
 	const wchar_t comment = L';';
 
+	std::wifstream excludesfilestream(file);
 	for (std::wstring line; std::getline(excludesfilestream, line);)
 	{
 		line = Util::Trim(line);
@@ -73,7 +72,7 @@ void Blacklist::Parse(const std::wstring &file)
 
 bool Blacklist::IsBlacklisted(const Window &window)
 {
-	if (m_Cache.count(window) > 0)
+	if (m_Cache.count(window) != 0)
 	{
 		return m_Cache.at(window);
 	}

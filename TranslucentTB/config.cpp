@@ -30,7 +30,6 @@ bool Config::VERBOSE =
 void Config::Parse(const std::wstring &file)
 {
 	std::wifstream configstream(file);
-
 	for (std::wstring line; std::getline(configstream, line);)
 	{
 		if (line.empty())

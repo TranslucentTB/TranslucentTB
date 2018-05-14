@@ -604,6 +604,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 	tray.RegisterContextMenuCallback(IDM_OPENLOG, [](unsigned int) {
 		std::thread([] {
+			Log::Flush();
 			Util::EditFile(Log::file());
 		}).detach();
 	});
