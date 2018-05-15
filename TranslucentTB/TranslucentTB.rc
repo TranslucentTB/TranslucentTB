@@ -64,7 +64,7 @@ IDR_POPUP_MENU MENU
 BEGIN
     POPUP "POPUP"
     BEGIN
-        POPUP "Regular State"
+        POPUP "Regular"
         BEGIN
             MENUITEM "Accent Color",                IDM_COLOR
             MENUITEM SEPARATOR
@@ -74,12 +74,11 @@ BEGIN
             MENUITEM "Blur",                        IDM_BLUR
             MENUITEM "Fluent",                      IDM_FLUENT
         END
-        POPUP "Dynamic State"
+        POPUP "Maximised window"
         BEGIN
             MENUITEM "Enabled",                     IDM_DYNAMICWS
-            MENUITEM "Regular state when peeking",  IDM_DYNAMICWS_PEEK
+            MENUITEM "Regular when peeking",        IDM_DYNAMICWS_PEEK
             MENUITEM "Accent Color",                IDM_DYNAMICWS_COLOR
-            MENUITEM "Use regular color",           IDM_DYNAMICWS_REGULAR_COLOR
             MENUITEM SEPARATOR
             MENUITEM "Normal",                      IDM_DYNAMICWS_NORMAL
             MENUITEM "Clear",                       IDM_DYNAMICWS_CLEAR
@@ -87,8 +86,18 @@ BEGIN
             MENUITEM "Blur",                        IDM_DYNAMICWS_BLUR
             MENUITEM "Fluent",                      IDM_DYNAMICWS_FLUENT
         END
+        POPUP "Start Menu opened"
+        BEGIN
+            MENUITEM "Enabled",                     IDM_DYNAMICSTART
+            MENUITEM "Accent Color",                IDM_DYNAMICSM_COLOR
+            MENUITEM SEPARATOR
+            MENUITEM "Normal",                      IDM_DYNAMICSM_NORMAL
+            MENUITEM "Clear",                       IDM_DYNAMICSM_CLEAR
+            MENUITEM "Opaque",                      IDM_DYNAMICSM_OPAQUE
+            MENUITEM "Blur",                        IDM_DYNAMICSM_BLUR
+            MENUITEM "Fluent",                      IDM_DYNAMICSM_FLUENT
+        END
         MENUITEM SEPARATOR
-        MENUITEM "Dynamic Start",               IDM_DYNAMICSTART
         POPUP "Show Aero Peek"
         BEGIN
             MENUITEM "Always",                      IDM_PEEK

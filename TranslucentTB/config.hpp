@@ -7,20 +7,29 @@
 class Config {
 
 public:
-	static swca::ACCENT TASKBAR_APPEARANCE;
-	static uint32_t TASKBAR_COLOR;
-	static bool DYNAMIC_WS;
-	static swca::ACCENT DYNAMIC_APPEARANCE;
-	static uint32_t DYNAMIC_COLOR;
-	static bool DYNAMIC_REGULAR_ON_PEEK;
-	static bool DYNAMIC_USE_REGULAR_COLOR;
-	static bool DYNAMIC_START;
+	// Regular
+	static swca::ACCENT REGULAR_APPEARANCE;
+	static uint32_t REGULAR_COLOR;
+
+	// Maximised
+	static bool MAXIMISED_ENABLED;
+	static swca::ACCENT MAXIMISED_APPEARANCE;
+	static uint32_t MAXIMISED_COLOR;
+	static bool MAXIMISED_REGULAR_ON_PEEK;
+
+	// Start menu
+	static bool START_ENABLED;
+	static swca::ACCENT START_APPEARANCE;
+	static uint32_t START_COLOR;
+
+	// Various
 	static enum /*class*/ PEEK {
 		Disabled,		// Hide the button
 		Dynamic,		// Show when a window is maximised
 		Enabled			// Don't hide the button
 	} PEEK;
 
+	// Advanced
 	static uint8_t SLEEP_TIME;
 	static bool VERBOSE;
 

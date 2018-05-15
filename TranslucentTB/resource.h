@@ -37,14 +37,19 @@
 #define IDM_VERBOSE                     40020
 #define IDM_DYNAMICWS_COLOR             40021
 #define IDM_TIPS                        40022
-#define IDM_DYNAMICWS_REGULAR_COLOR     40023
+#define IDM_DYNAMICSM_BLUR              40024
+#define IDM_DYNAMICSM_NORMAL            40025
+#define IDM_DYNAMICSM_OPAQUE            40026
+#define IDM_DYNAMICSM_FLUENT            40027
+#define IDM_DYNAMICSM_CLEAR             40028
+#define IDM_DYNAMICSM_COLOR             40030
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        103
-#define _APS_NEXT_COMMAND_VALUE         40024
+#define _APS_NEXT_COMMAND_VALUE         40031
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

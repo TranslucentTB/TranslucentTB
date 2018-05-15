@@ -9,16 +9,26 @@
 #include "win32.hpp"
 
 // Defaults
-swca::ACCENT Config::TASKBAR_APPEARANCE = swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT;
-uint32_t Config::TASKBAR_COLOR = 0x00000000;
-bool Config::DYNAMIC_WS = true;
-swca::ACCENT Config::DYNAMIC_APPEARANCE = swca::ACCENT::ACCENT_NORMAL;
-uint32_t Config::DYNAMIC_COLOR = 0x00000000;
-bool Config::DYNAMIC_REGULAR_ON_PEEK = true;
-bool Config::DYNAMIC_USE_REGULAR_COLOR = false;
-bool Config::DYNAMIC_START = false;
+
+// Regular
+swca::ACCENT Config::REGULAR_APPEARANCE = swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT;
+uint32_t Config::REGULAR_COLOR = 0x00000000;
+
+// Maximised
+bool Config::MAXIMISED_ENABLED = true;
+swca::ACCENT Config::MAXIMISED_APPEARANCE = swca::ACCENT::ACCENT_ENABLE_FLUENT;
+uint32_t Config::MAXIMISED_COLOR = 0xaa000000;
+bool Config::MAXIMISED_REGULAR_ON_PEEK = true;
+
+// Start
+bool Config::START_ENABLED = true;
+swca::ACCENT Config::START_APPEARANCE = swca::ACCENT::ACCENT_NORMAL;
+uint32_t Config::START_COLOR = 0x00000000;
+
+// Various
 enum Config::PEEK Config::PEEK = PEEK::Dynamic;
 
+// Advanced
 uint8_t Config::SLEEP_TIME = 10;
 bool Config::VERBOSE =
 #ifndef _DEBUG
@@ -71,10 +81,10 @@ void Config::Save(const std::wstring &file)
 	wofstream configstream(file);
 
 	configstream << L"; Taskbar appearance: clear (default), normal, fluent (only on build " << MIN_FLUENT_BUILD << L" and up), opaque, normal, or blur." << endl;
-	configstream << L"accent=" << GetAccentText(TASKBAR_APPEARANCE) << endl;
+	configstream << L"accent=" << GetAccentText(REGULAR_APPEARANCE) << endl;
 	configstream << L"; Color and opacity of the taskbar." << endl;
-	configstream << L"color=" << GetColorText(TASKBAR_COLOR) << L" ; A color in hexadecimal notation." << endl;
-	configstream << L"opacity=" << GetOpacityText(TASKBAR_COLOR) << L"  ; A value in the range 0 to 255." << endl;
+	configstream << L"color=" << GetColorText(REGULAR_COLOR) << L" ; A color in hexadecimal notation." << endl;
+	configstream << L"opacity=" << GetOpacityText(REGULAR_COLOR) << L"  ; A value in the range 0 to 255." << endl;
 
 	configstream << endl;
 	configstream << L"; Dynamic Windows and Start Menu" << endl;
@@ -83,13 +93,12 @@ void Config::Save(const std::wstring &file)
 	configstream << L"; by enabling dynamic-ws-regular-on-peek, dynamic windows will behave as if no window is maximised when using Aero Peek." << endl;
 	configstream << L"; you can also set the accent, color and opacity values, which will represent the state of dynamic windows when there is no window maximised." << endl;
 	configstream << L"; dynamic start returns the taskbar to normal appearance when the start menu is opened." << endl;
-	configstream << L"dynamic-ws=" << GetBoolText(DYNAMIC_WS) << endl;
-	configstream << L"dynamic-ws-accent=" << GetAccentText(DYNAMIC_APPEARANCE) << endl;
-	configstream << L"dynamic-ws-color=" << GetColorText(DYNAMIC_COLOR) << L" ; A color in hexadecimal notation." << endl;
-	configstream << L"dynamic-ws-opacity=" << GetOpacityText(DYNAMIC_COLOR) << L"  ; A value in the range 0 to 255." << endl;
-	configstream << L"dynamic-ws-regular-on-peek=" << GetBoolText(DYNAMIC_REGULAR_ON_PEEK) << endl;
-	configstream << L"dynamic-ws-use-regular-color=" << GetBoolText(DYNAMIC_USE_REGULAR_COLOR) << L" ; Use the color of the regular state instead of dynamic-ws-color." << endl;
-	configstream << L"dynamic-start=" << GetBoolText(DYNAMIC_START) << endl;
+	configstream << L"dynamic-ws=" << GetBoolText(MAXIMISED_ENABLED) << endl;
+	configstream << L"dynamic-ws-accent=" << GetAccentText(MAXIMISED_APPEARANCE) << endl;
+	configstream << L"dynamic-ws-color=" << GetColorText(MAXIMISED_COLOR) << L" ; A color in hexadecimal notation." << endl;
+	configstream << L"dynamic-ws-opacity=" << GetOpacityText(MAXIMISED_COLOR) << L"  ; A value in the range 0 to 255." << endl;
+	configstream << L"dynamic-ws-regular-on-peek=" << GetBoolText(MAXIMISED_REGULAR_ON_PEEK) << endl;
+	configstream << L"dynamic-start=" << GetBoolText(START_ENABLED) << endl;
 
 	configstream << endl;
 	configstream << L"; Controls how the Aero Peek button behaves (dynamic, show or hide)" << endl;
@@ -220,70 +229,63 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 {
 	if (arg == L"accent")
 	{
-		if (!ParseAccent(value, TASKBAR_APPEARANCE))
+		if (!ParseAccent(value, REGULAR_APPEARANCE))
 		{
 			UnknownValue(arg, value);
 		}
 	}
 	else if (arg == L"color" || arg == L"tint")
 	{
-		if (!ParseColor(value, TASKBAR_COLOR))
+		if (!ParseColor(value, REGULAR_COLOR))
 		{
 			Log::OutputMessage(L"Could not parse color found in configuration file: " + value);
 		}
 	}
 	else if (arg == L"opacity")
 	{
-		if (!ParseOpacity(value, TASKBAR_COLOR))
+		if (!ParseOpacity(value, REGULAR_COLOR))
 		{
 			Log::OutputMessage(L"Could not parse opacity found in configuration file: " + value);
 		}
 	}
 	else if (arg == L"dynamic-ws")
 	{
-		if (!ParseBool(value, DYNAMIC_WS))
+		if (!ParseBool(value, MAXIMISED_ENABLED))
 		{
 			UnknownValue(arg, value);
 		}
 	}
 	else if (arg == L"dynamic-ws-accent")
 	{
-		if (!ParseAccent(value, DYNAMIC_APPEARANCE))
+		if (!ParseAccent(value, MAXIMISED_APPEARANCE))
 		{
 			UnknownValue(arg, value);
 		}
 	}
 	else if (arg == L"dynamic-ws-color" || arg == L"dynamic-ws-tint")
 	{
-		if (!ParseColor(value, DYNAMIC_COLOR))
+		if (!ParseColor(value, MAXIMISED_COLOR))
 		{
 			Log::OutputMessage(L"Could not parse dynamic windows color found in configuration file: " + value);
 		}
 	}
 	else if (arg == L"dynamic-ws-opacity")
 	{
-		if (!ParseOpacity(value, DYNAMIC_COLOR))
+		if (!ParseOpacity(value, MAXIMISED_COLOR))
 		{
 			Log::OutputMessage(L"Could not parse dynamic windows opacity found in configuration file: " + value);
 		}
 	}
 	else if (arg == L"dynamic-ws-regular-on-peek")
 	{
-		if (!ParseBool(value, DYNAMIC_REGULAR_ON_PEEK))
-		{
-			UnknownValue(arg, value);
-		}
-	}
-	else if (arg == L"dynamic-ws-use-regular-color")
-	{
-		if (!ParseBool(value, DYNAMIC_USE_REGULAR_COLOR))
+		if (!ParseBool(value, MAXIMISED_REGULAR_ON_PEEK))
 		{
 			UnknownValue(arg, value);
 		}
 	}
 	else if (arg == L"dynamic-start")
 	{
-		if (!ParseBool(value, DYNAMIC_START))
+		if (!ParseBool(value, START_ENABLED))
 		{
 			UnknownValue(arg, value);
 		}
