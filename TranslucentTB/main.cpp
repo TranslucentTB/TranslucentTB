@@ -53,33 +53,33 @@ static struct {
 } run;
 
 static const std::unordered_map<swca::ACCENT, uint32_t> REGULAR_BUTTOM_MAP = {
-	{ swca::ACCENT::ACCENT_NORMAL,						IDM_NORMAL },
-	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_CLEAR  },
-	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_OPAQUE },
-	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_BLUR   },
-	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_FLUENT }
+	{ swca::ACCENT::ACCENT_NORMAL,						IDM_REGULAR_NORMAL },
+	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_REGULAR_CLEAR  },
+	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_REGULAR_OPAQUE },
+	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_REGULAR_BLUR   },
+	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_REGULAR_FLUENT }
 };
 
 static const std::unordered_map<swca::ACCENT, uint32_t> MAXIMISED_BUTTON_MAP = {
-	{ swca::ACCENT::ACCENT_NORMAL,						IDM_DYNAMICWS_NORMAL },
-	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_DYNAMICWS_CLEAR  },
-	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_DYNAMICWS_OPAQUE },
-	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_DYNAMICWS_BLUR   },
-	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_DYNAMICWS_FLUENT }
+	{ swca::ACCENT::ACCENT_NORMAL,						IDM_MAXIMISED_NORMAL },
+	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_MAXIMISED_CLEAR  },
+	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_MAXIMISED_OPAQUE },
+	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_MAXIMISED_BLUR   },
+	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_MAXIMISED_FLUENT }
 };
 
 static const std::unordered_map<swca::ACCENT, uint32_t> START_BUTTON_MAP = {
-	{ swca::ACCENT::ACCENT_NORMAL,						IDM_DYNAMICSM_NORMAL },
-	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_DYNAMICSM_CLEAR  },
-	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_DYNAMICSM_OPAQUE },
-	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_DYNAMICSM_BLUR   },
-	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_DYNAMICSM_FLUENT }
+	{ swca::ACCENT::ACCENT_NORMAL,						IDM_START_NORMAL },
+	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_START_CLEAR  },
+	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_START_OPAQUE },
+	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_START_BLUR   },
+	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_START_FLUENT }
 };
 
 static const std::unordered_map<enum Config::PEEK, uint32_t> PEEK_BUTTON_MAP = {
-	{ Config::PEEK::Enabled,		IDM_PEEK   },
-	{ Config::PEEK::Dynamic,		IDM_DPEEK  },
-	{ Config::PEEK::Disabled,		IDM_NOPEEK }
+	{ Config::PEEK::Enabled,		IDM_PEEK_SHOW    },
+	{ Config::PEEK::Dynamic,		IDM_PEEK_DYNAMIC },
+	{ Config::PEEK::Disabled,		IDM_PEEK_HIDE    }
 };
 
 #pragma endregion
@@ -299,9 +299,9 @@ void RefreshMenu(HMENU menu)
 	{
 		if (!win32::IsAtLeastBuild(MIN_FLUENT_BUILD))
 		{
-			RemoveMenu(menu, IDM_FLUENT, MF_BYCOMMAND);
-			RemoveMenu(menu, IDM_DYNAMICWS_FLUENT, MF_BYCOMMAND);
-			RemoveMenu(menu, IDM_DYNAMICSM_FLUENT, MF_BYCOMMAND);
+			RemoveMenu(menu, IDM_REGULAR_FLUENT,   MF_BYCOMMAND);
+			RemoveMenu(menu, IDM_MAXIMISED_FLUENT, MF_BYCOMMAND);
+			RemoveMenu(menu, IDM_START_FLUENT,     MF_BYCOMMAND);
 		}
 
 		needs_to_check_fluent = false;
@@ -309,14 +309,14 @@ void RefreshMenu(HMENU menu)
 
 	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, !Log::file().empty(), TrayContextMenu::ControlsEnabled);
 
-	TrayContextMenu::RefreshBool(IDM_COLOR, menu,
+	TrayContextMenu::RefreshBool(IDM_REGULAR_COLOR,   menu,
 		Config::REGULAR_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(IDM_DYNAMICWS_COLOR, menu,
+	TrayContextMenu::RefreshBool(IDM_MAXIMISED_COLOR, menu,
 		Config::MAXIMISED_ENABLED && Config::MAXIMISED_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(IDM_DYNAMICSM_COLOR, menu,
-		Config::START_ENABLED && Config::START_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
+	TrayContextMenu::RefreshBool(IDM_START_COLOR,     menu,
+		Config::START_ENABLED     && Config::START_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
 
 	const Autostart::StartupState state = Autostart::GetStartupState();
@@ -567,10 +567,10 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 	static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYICON), MAKEINTRESOURCE(IDR_POPUP_MENU), hInstance);
 
-	tray.BindEnum(IDM_BLUR, IDM_FLUENT, Config::REGULAR_APPEARANCE.ACCENT, REGULAR_BUTTOM_MAP);
-	tray.BindEnum(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, Config::MAXIMISED_APPEARANCE.ACCENT, MAXIMISED_BUTTON_MAP);
-	tray.BindEnum(IDM_DYNAMICSM_BLUR, IDM_DYNAMICSM_CLEAR, Config::START_APPEARANCE.ACCENT, START_BUTTON_MAP);
-	tray.BindEnum(IDM_PEEK, IDM_NOPEEK, Config::PEEK, PEEK_BUTTON_MAP);
+	tray.BindEnum(IDM_REGULAR_BLUR,   IDM_REGULAR_FLUENT,  Config::REGULAR_APPEARANCE.ACCENT,   REGULAR_BUTTOM_MAP);
+	tray.BindEnum(IDM_MAXIMISED_BLUR, IDM_MAXIMISED_CLEAR, Config::MAXIMISED_APPEARANCE.ACCENT, MAXIMISED_BUTTON_MAP);
+	tray.BindEnum(IDM_START_BLUR,     IDM_START_CLEAR,     Config::START_APPEARANCE.ACCENT,     START_BUTTON_MAP);
+	tray.BindEnum(IDM_PEEK_SHOW,      IDM_PEEK_HIDE,       Config::PEEK,                        PEEK_BUTTON_MAP);
 
 	for (const auto &button_pair : MAXIMISED_BUTTON_MAP)
 	{
@@ -581,10 +581,10 @@ void InitializeTray(const HINSTANCE &hInstance)
 		tray.BindBool(button_pair.second, Config::START_ENABLED, TrayContextMenu::ControlsEnabled);
 	}
 
-	tray.BindBool(IDM_DYNAMICWS_PEEK, Config::MAXIMISED_ENABLED,         TrayContextMenu::ControlsEnabled);
-	tray.BindBool(IDM_DYNAMICWS,      Config::MAXIMISED_ENABLED,         TrayContextMenu::Toggle);
-	tray.BindBool(IDM_DYNAMICWS_PEEK, Config::MAXIMISED_REGULAR_ON_PEEK, TrayContextMenu::Toggle);
-	tray.BindBool(IDM_DYNAMICSTART,   Config::START_ENABLED,             TrayContextMenu::Toggle);
+	tray.BindBool(IDM_MAXIMISED_PEEK, Config::MAXIMISED_ENABLED,         TrayContextMenu::ControlsEnabled);
+	tray.BindBool(IDM_MAXIMISED,      Config::MAXIMISED_ENABLED,         TrayContextMenu::Toggle);
+	tray.BindBool(IDM_MAXIMISED_PEEK, Config::MAXIMISED_REGULAR_ON_PEEK, TrayContextMenu::Toggle);
+	tray.BindBool(IDM_START,          Config::START_ENABLED,             TrayContextMenu::Toggle);
 	tray.BindBool(IDM_VERBOSE,        Config::VERBOSE,                   TrayContextMenu::Toggle);
 
 	tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, [](unsigned int) {
@@ -597,13 +597,13 @@ void InitializeTray(const HINSTANCE &hInstance)
 		run.is_running = false;
 	});
 
-	tray.RegisterContextMenuCallback(IDM_COLOR,           [](unsigned int) {
+	tray.RegisterContextMenuCallback(IDM_REGULAR_COLOR,   [](unsigned int) {
 		Util::PickColor(Config::REGULAR_APPEARANCE.COLOR);
 	});
-	tray.RegisterContextMenuCallback(IDM_DYNAMICWS_COLOR, [](unsigned int) {
+	tray.RegisterContextMenuCallback(IDM_MAXIMISED_COLOR, [](unsigned int) {
 		Util::PickColor(Config::MAXIMISED_APPEARANCE.COLOR);
 	});
-	tray.RegisterContextMenuCallback(IDM_DYNAMICSM_COLOR, [](unsigned int) {
+	tray.RegisterContextMenuCallback(IDM_START_COLOR,     [](unsigned int) {
 		Util::PickColor(Config::START_APPEARANCE.COLOR);
 	});
 
