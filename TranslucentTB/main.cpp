@@ -34,12 +34,6 @@
 
 #pragma region Data
 
-enum class MONITORSTATE {
-	Normal,				// Nothing special, act as it says in Config::REGULAR_APPEARANCE.
-	WindowMaximised,	// There is a window which is maximised on this monitor and dynamic windows is on. Display Config::MAXIMISED_APPEARANCE.
-	StartMenuOpen		// The Start Menu is open on this monitor and dynamic start is on. Display with Config::START_APPEARANCE.
-};
-
 enum class EXITREASON {
 	NewInstance,		// New instance told us to exit
 	UserAction,			// Triggered by the user
@@ -49,7 +43,7 @@ enum class EXITREASON {
 static struct {
 	EXITREASON exit_reason = EXITREASON::UserAction;
 	Window main_taskbar;
-	std::unordered_map<HMONITOR, std::pair<Window, MONITORSTATE>> taskbars;
+	std::unordered_map<HMONITOR, std::pair<Window, const Config::TASKBAR_APPEARANCE *>> taskbars;
 	bool should_show_peek = true;
 	bool is_running = true;
 	std::wstring config_folder;
@@ -249,15 +243,12 @@ void RefreshHandles()
 	run.taskbars.clear();
 
 	run.main_taskbar = Window::Find(L"Shell_TrayWnd");
-	run.taskbars[run.main_taskbar.monitor()] = {
-		run.main_taskbar,
-		MONITORSTATE::Normal
-	};
+	run.taskbars[run.main_taskbar.monitor()] = { run.main_taskbar, &Config::REGULAR_APPEARANCE };
 
 	Window secondtaskbar;
 	while ((secondtaskbar = Window::Find(L"Shell_SecondaryTrayWnd", L"", Window::NullWindow, secondtaskbar)) != Window::NullWindow)
 	{
-		run.taskbars[secondtaskbar.monitor()] = { secondtaskbar, MONITORSTATE::Normal };
+		run.taskbars[secondtaskbar.monitor()] = { secondtaskbar, &Config::REGULAR_APPEARANCE };
 	}
 }
 
@@ -319,13 +310,13 @@ void RefreshMenu(HMENU menu)
 	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, !Log::file().empty(), TrayContextMenu::ControlsEnabled);
 
 	TrayContextMenu::RefreshBool(IDM_COLOR, menu,
-		Config::REGULAR_APPEARANCE != swca::ACCENT::ACCENT_NORMAL,
+		Config::REGULAR_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
 	TrayContextMenu::RefreshBool(IDM_DYNAMICWS_COLOR, menu,
-		Config::MAXIMISED_ENABLED && Config::MAXIMISED_APPEARANCE != swca::ACCENT::ACCENT_NORMAL,
+		Config::MAXIMISED_ENABLED && Config::MAXIMISED_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
 	TrayContextMenu::RefreshBool(IDM_DYNAMICSM_COLOR, menu,
-		Config::START_ENABLED && Config::START_APPEARANCE != swca::ACCENT::ACCENT_NORMAL,
+		Config::START_ENABLED && Config::START_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
 
 	const Autostart::StartupState state = Autostart::GetStartupState();
@@ -378,7 +369,7 @@ BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
 		auto &taskbar = run.taskbars.at(window.monitor());
 		if (Config::MAXIMISED_ENABLED)
 		{
-			taskbar.second = MONITORSTATE::WindowMaximised;
+			taskbar.second = &Config::MAXIMISED_APPEARANCE;
 		}
 
 		if (Config::PEEK == Config::PEEK::Dynamic && taskbar.first == run.main_taskbar)
@@ -406,7 +397,7 @@ void SetTaskbarBlur()
 
 		for (auto &taskbar : run.taskbars)
 		{
-			taskbar.second.second = MONITORSTATE::Normal; // Reset taskbar state
+			taskbar.second.second = &Config::REGULAR_APPEARANCE; // Reset taskbar state
 		}
 		if (Config::MAXIMISED_ENABLED || Config::PEEK == Config::PEEK::Dynamic)
 		{
@@ -417,7 +408,7 @@ void SetTaskbarBlur()
 
 		if (Config::START_ENABLED && Util::IsStartVisible())
 		{
-			run.taskbars.at(Window::Find(L"Windows.UI.Core.CoreWindow", L"Start").monitor()).second = MONITORSTATE::StartMenuOpen;
+			run.taskbars.at(Window::Find(L"Windows.UI.Core.CoreWindow", L"Start").monitor()).second = &Config::START_APPEARANCE;
 		}
 
 		// TODO
@@ -434,7 +425,7 @@ void SetTaskbarBlur()
 		{
 			for (auto &taskbar : run.taskbars)
 			{
-				taskbar.second.second = MONITORSTATE::Normal;
+				taskbar.second.second = &Config::REGULAR_APPEARANCE;
 			}
 		}
 
@@ -447,18 +438,8 @@ void SetTaskbarBlur()
 
 	for (const auto &taskbar : run.taskbars)
 	{
-		switch (taskbar.second.second)
-		{
-		case MONITORSTATE::StartMenuOpen:
-			SetWindowBlur(taskbar.second.first, Config::START_APPEARANCE, Config::START_COLOR);
-			break;
-		case MONITORSTATE::WindowMaximised:
-			SetWindowBlur(taskbar.second.first, Config::MAXIMISED_APPEARANCE, Config::MAXIMISED_COLOR); // A window is maximised.
-			break;
-		case MONITORSTATE::Normal:
-			SetWindowBlur(taskbar.second.first, Config::REGULAR_APPEARANCE, Config::REGULAR_COLOR);  // Taskbar should be normal, call using normal transparency settings
-			break;
-		}
+		const Config::TASKBAR_APPEARANCE &appearance = *taskbar.second.second;
+		SetWindowBlur(taskbar.second.first, appearance.ACCENT, appearance.COLOR);
 	}
 }
 
@@ -586,9 +567,9 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 	static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYICON), MAKEINTRESOURCE(IDR_POPUP_MENU), hInstance);
 
-	tray.BindEnum(IDM_BLUR, IDM_FLUENT, Config::REGULAR_APPEARANCE, REGULAR_BUTTOM_MAP);
-	tray.BindEnum(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, Config::MAXIMISED_APPEARANCE, MAXIMISED_BUTTON_MAP);
-	tray.BindEnum(IDM_DYNAMICSM_BLUR, IDM_DYNAMICSM_CLEAR, Config::START_APPEARANCE, START_BUTTON_MAP);
+	tray.BindEnum(IDM_BLUR, IDM_FLUENT, Config::REGULAR_APPEARANCE.ACCENT, REGULAR_BUTTOM_MAP);
+	tray.BindEnum(IDM_DYNAMICWS_BLUR, IDM_DYNAMICWS_CLEAR, Config::MAXIMISED_APPEARANCE.ACCENT, MAXIMISED_BUTTON_MAP);
+	tray.BindEnum(IDM_DYNAMICSM_BLUR, IDM_DYNAMICSM_CLEAR, Config::START_APPEARANCE.ACCENT, START_BUTTON_MAP);
 	tray.BindEnum(IDM_PEEK, IDM_NOPEEK, Config::PEEK, PEEK_BUTTON_MAP);
 
 	for (const auto &button_pair : MAXIMISED_BUTTON_MAP)
@@ -617,13 +598,13 @@ void InitializeTray(const HINSTANCE &hInstance)
 	});
 
 	tray.RegisterContextMenuCallback(IDM_COLOR,           [](unsigned int) {
-		Util::PickColor(Config::REGULAR_COLOR);
+		Util::PickColor(Config::REGULAR_APPEARANCE.COLOR);
 	});
 	tray.RegisterContextMenuCallback(IDM_DYNAMICWS_COLOR, [](unsigned int) {
-		Util::PickColor(Config::MAXIMISED_COLOR);
+		Util::PickColor(Config::MAXIMISED_APPEARANCE.COLOR);
 	});
 	tray.RegisterContextMenuCallback(IDM_DYNAMICSM_COLOR, [](unsigned int) {
-		Util::PickColor(Config::START_COLOR);
+		Util::PickColor(Config::START_APPEARANCE.COLOR);
 	});
 
 	tray.RegisterCustomRefresh(RefreshMenu);

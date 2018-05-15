@@ -11,19 +11,16 @@
 // Defaults
 
 // Regular
-swca::ACCENT Config::REGULAR_APPEARANCE = swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT;
-uint32_t Config::REGULAR_COLOR = 0x00000000;
+Config::TASKBAR_APPEARANCE Config::REGULAR_APPEARANCE = { swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT, 0x0 };
 
 // Maximised
 bool Config::MAXIMISED_ENABLED = true;
-swca::ACCENT Config::MAXIMISED_APPEARANCE = swca::ACCENT::ACCENT_ENABLE_FLUENT;
-uint32_t Config::MAXIMISED_COLOR = 0xaa000000;
+Config::TASKBAR_APPEARANCE Config::MAXIMISED_APPEARANCE = { swca::ACCENT::ACCENT_ENABLE_FLUENT, 0xaa000000 };
 bool Config::MAXIMISED_REGULAR_ON_PEEK = true;
 
 // Start
 bool Config::START_ENABLED = true;
-swca::ACCENT Config::START_APPEARANCE = swca::ACCENT::ACCENT_NORMAL;
-uint32_t Config::START_COLOR = 0x00000000;
+Config::TASKBAR_APPEARANCE Config::START_APPEARANCE = { swca::ACCENT::ACCENT_NORMAL, 0x0 };
 
 // Various
 enum Config::PEEK Config::PEEK = PEEK::Dynamic;
@@ -81,10 +78,10 @@ void Config::Save(const std::wstring &file)
 	wofstream configstream(file);
 
 	configstream << L"; Taskbar appearance: clear (default), normal, fluent (only on build " << MIN_FLUENT_BUILD << L" and up), opaque, normal, or blur." << endl;
-	configstream << L"accent=" << GetAccentText(REGULAR_APPEARANCE) << endl;
+	configstream << L"accent=" << GetAccentText(REGULAR_APPEARANCE.ACCENT) << endl;
 	configstream << L"; Color and opacity of the taskbar." << endl;
-	configstream << L"color=" << GetColorText(REGULAR_COLOR) << L" ; A color in hexadecimal notation." << endl;
-	configstream << L"opacity=" << GetOpacityText(REGULAR_COLOR) << L"  ; A value in the range 0 to 255." << endl;
+	configstream << L"color=" << GetColorText(REGULAR_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << endl;
+	configstream << L"opacity=" << GetOpacityText(REGULAR_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << endl;
 
 	configstream << endl;
 	configstream << L"; Dynamic Windows and Start Menu" << endl;
@@ -94,9 +91,9 @@ void Config::Save(const std::wstring &file)
 	configstream << L"; you can also set the accent, color and opacity values, which will represent the state of dynamic windows when there is no window maximised." << endl;
 	configstream << L"; dynamic start returns the taskbar to normal appearance when the start menu is opened." << endl;
 	configstream << L"dynamic-ws=" << GetBoolText(MAXIMISED_ENABLED) << endl;
-	configstream << L"dynamic-ws-accent=" << GetAccentText(MAXIMISED_APPEARANCE) << endl;
-	configstream << L"dynamic-ws-color=" << GetColorText(MAXIMISED_COLOR) << L" ; A color in hexadecimal notation." << endl;
-	configstream << L"dynamic-ws-opacity=" << GetOpacityText(MAXIMISED_COLOR) << L"  ; A value in the range 0 to 255." << endl;
+	configstream << L"dynamic-ws-accent=" << GetAccentText(MAXIMISED_APPEARANCE.ACCENT) << endl;
+	configstream << L"dynamic-ws-color=" << GetColorText(MAXIMISED_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << endl;
+	configstream << L"dynamic-ws-opacity=" << GetOpacityText(MAXIMISED_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << endl;
 	configstream << L"dynamic-ws-regular-on-peek=" << GetBoolText(MAXIMISED_REGULAR_ON_PEEK) << endl;
 	configstream << L"dynamic-start=" << GetBoolText(START_ENABLED) << endl;
 
@@ -229,21 +226,21 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 {
 	if (arg == L"accent")
 	{
-		if (!ParseAccent(value, REGULAR_APPEARANCE))
+		if (!ParseAccent(value, REGULAR_APPEARANCE.ACCENT))
 		{
 			UnknownValue(arg, value);
 		}
 	}
 	else if (arg == L"color" || arg == L"tint")
 	{
-		if (!ParseColor(value, REGULAR_COLOR))
+		if (!ParseColor(value, REGULAR_APPEARANCE.COLOR))
 		{
 			Log::OutputMessage(L"Could not parse color found in configuration file: " + value);
 		}
 	}
 	else if (arg == L"opacity")
 	{
-		if (!ParseOpacity(value, REGULAR_COLOR))
+		if (!ParseOpacity(value, REGULAR_APPEARANCE.COLOR))
 		{
 			Log::OutputMessage(L"Could not parse opacity found in configuration file: " + value);
 		}
@@ -257,21 +254,21 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 	}
 	else if (arg == L"dynamic-ws-accent")
 	{
-		if (!ParseAccent(value, MAXIMISED_APPEARANCE))
+		if (!ParseAccent(value, MAXIMISED_APPEARANCE.ACCENT))
 		{
 			UnknownValue(arg, value);
 		}
 	}
 	else if (arg == L"dynamic-ws-color" || arg == L"dynamic-ws-tint")
 	{
-		if (!ParseColor(value, MAXIMISED_COLOR))
+		if (!ParseColor(value, MAXIMISED_APPEARANCE.COLOR))
 		{
 			Log::OutputMessage(L"Could not parse dynamic windows color found in configuration file: " + value);
 		}
 	}
 	else if (arg == L"dynamic-ws-opacity")
 	{
-		if (!ParseOpacity(value, MAXIMISED_COLOR))
+		if (!ParseOpacity(value, MAXIMISED_APPEARANCE.COLOR))
 		{
 			Log::OutputMessage(L"Could not parse dynamic windows opacity found in configuration file: " + value);
 		}

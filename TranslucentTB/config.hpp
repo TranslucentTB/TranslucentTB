@@ -7,26 +7,28 @@
 class Config {
 
 public:
+	typedef struct TASKBAR_APPEARANCE {
+		swca::ACCENT ACCENT;
+		uint32_t     COLOR;
+	};
+
 	// Regular
-	static swca::ACCENT REGULAR_APPEARANCE;
-	static uint32_t REGULAR_COLOR;
+	static TASKBAR_APPEARANCE REGULAR_APPEARANCE;
 
 	// Maximised
 	static bool MAXIMISED_ENABLED;
-	static swca::ACCENT MAXIMISED_APPEARANCE;
-	static uint32_t MAXIMISED_COLOR;
+	static TASKBAR_APPEARANCE MAXIMISED_APPEARANCE;
 	static bool MAXIMISED_REGULAR_ON_PEEK;
 
 	// Start menu
 	static bool START_ENABLED;
-	static swca::ACCENT START_APPEARANCE;
-	static uint32_t START_COLOR;
+	static TASKBAR_APPEARANCE START_APPEARANCE;
 
 	// Various
 	static enum /*class*/ PEEK {
-		Disabled,		// Hide the button
-		Dynamic,		// Show when a window is maximised
-		Enabled			// Don't hide the button
+		Disabled, // Hide the button
+		Dynamic,  // Show when a window is maximised
+		Enabled   // Don't hide the button
 	} PEEK;
 
 	// Advanced
