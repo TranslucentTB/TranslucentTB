@@ -66,43 +66,43 @@ BEGIN
     BEGIN
         POPUP "Regular"
         BEGIN
-            MENUITEM "Accent Color",                IDM_COLOR
+            MENUITEM "Accent Color",                IDM_REGULAR_COLOR
             MENUITEM SEPARATOR
-            MENUITEM "Normal",                      IDM_NORMAL
-            MENUITEM "Clear",                       IDM_CLEAR
-            MENUITEM "Opaque",                      IDM_OPAQUE
-            MENUITEM "Blur",                        IDM_BLUR
-            MENUITEM "Fluent",                      IDM_FLUENT
+            MENUITEM "Normal",                      IDM_REGULAR_NORMAL
+            MENUITEM "Clear",                       IDM_REGULAR_CLEAR
+            MENUITEM "Opaque",                      IDM_REGULAR_OPAQUE
+            MENUITEM "Blur",                        IDM_REGULAR_BLUR
+            MENUITEM "Fluent",                      IDM_REGULAR_FLUENT
         END
         POPUP "Maximised window"
         BEGIN
-            MENUITEM "Enabled",                     IDM_DYNAMICWS
-            MENUITEM "Regular when peeking",        IDM_DYNAMICWS_PEEK
-            MENUITEM "Accent Color",                IDM_DYNAMICWS_COLOR
+            MENUITEM "Enabled",                     IDM_MAXIMISED
+            MENUITEM "Regular when peeking",        IDM_MAXIMISED_PEEK
+            MENUITEM "Accent Color",                IDM_MAXIMISED_COLOR
             MENUITEM SEPARATOR
-            MENUITEM "Normal",                      IDM_DYNAMICWS_NORMAL
-            MENUITEM "Clear",                       IDM_DYNAMICWS_CLEAR
-            MENUITEM "Opaque",                      IDM_DYNAMICWS_OPAQUE
-            MENUITEM "Blur",                        IDM_DYNAMICWS_BLUR
-            MENUITEM "Fluent",                      IDM_DYNAMICWS_FLUENT
+            MENUITEM "Normal",                      IDM_MAXIMISED_NORMAL
+            MENUITEM "Clear",                       IDM_MAXIMISED_CLEAR
+            MENUITEM "Opaque",                      IDM_MAXIMISED_OPAQUE
+            MENUITEM "Blur",                        IDM_MAXIMISED_BLUR
+            MENUITEM "Fluent",                      IDM_MAXIMISED_FLUENT
         END
         POPUP "Start Menu opened"
         BEGIN
-            MENUITEM "Enabled",                     IDM_DYNAMICSTART
-            MENUITEM "Accent Color",                IDM_DYNAMICSM_COLOR
+            MENUITEM "Enabled",                     IDM_START
+            MENUITEM "Accent Color",                IDM_START_COLOR
             MENUITEM SEPARATOR
-            MENUITEM "Normal",                      IDM_DYNAMICSM_NORMAL
-            MENUITEM "Clear",                       IDM_DYNAMICSM_CLEAR
-            MENUITEM "Opaque",                      IDM_DYNAMICSM_OPAQUE
-            MENUITEM "Blur",                        IDM_DYNAMICSM_BLUR
-            MENUITEM "Fluent",                      IDM_DYNAMICSM_FLUENT
+            MENUITEM "Normal",                      IDM_START_NORMAL
+            MENUITEM "Clear",                       IDM_START_CLEAR
+            MENUITEM "Opaque",                      IDM_START_OPAQUE
+            MENUITEM "Blur",                        IDM_START_BLUR
+            MENUITEM "Fluent",                      IDM_START_FLUENT
         END
         MENUITEM SEPARATOR
         POPUP "Show Aero Peek"
         BEGIN
-            MENUITEM "Always",                      IDM_PEEK
-            MENUITEM "Dynamic",                     IDM_DPEEK
-            MENUITEM "Never",                       IDM_NOPEEK
+            MENUITEM "Always",                      IDM_PEEK_SHOW
+            MENUITEM "Dynamic",                     IDM_PEEK_DYNAMIC
+            MENUITEM "Never",                       IDM_PEEK_HIDE
         END
         POPUP "Advanced"
         BEGIN
