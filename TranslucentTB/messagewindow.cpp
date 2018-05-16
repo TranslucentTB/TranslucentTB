@@ -43,7 +43,7 @@ void MessageWindow::set_ptr(const HWND &hwnd)
 	SetLastError(0);
 	if (!SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this)) && GetLastError() != 0)
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to set window pointer!");
+		LastErrorHandle(Error::Level::Fatal, L"Failed to set window pointer!");
 	}
 }
 
@@ -54,7 +54,7 @@ MessageWindow *MessageWindow::get_ptr(const HWND &hwnd)
 
 	 if (!window && GetLastError() != 0)
 	 {
-		 ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to get window pointer!");
+		 LastErrorHandle(Error::Level::Fatal, L"Failed to get window pointer!");
 	 }
 
 	 return window;
@@ -67,7 +67,7 @@ MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &
 
 	if (!m_WindowHandle)
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to create message window!");
+		LastErrorHandle(Error::Level::Fatal, L"Failed to create message window!");
 	}
 }
 
@@ -107,6 +107,6 @@ MessageWindow::~MessageWindow()
 {
 	if (!DestroyWindow(m_WindowHandle))
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to destroy message window!");
+		LastErrorHandle(Error::Level::Log, L"Failed to destroy message window!");
 	}
 }

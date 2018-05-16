@@ -21,13 +21,13 @@ void Util::CopyToClipboard(const std::wstring &text)
 	ClipboardContext context;
 	if (!context)
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to open clipboard.");
+		LastErrorHandle(Error::Level::Error, L"Failed to open clipboard.");
 		return;
 	}
 
 	if (!EmptyClipboard())
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to empty clipboard.");
+		LastErrorHandle(Error::Level::Error, L"Failed to empty clipboard.");
 		return;
 	}
 
@@ -35,7 +35,7 @@ void Util::CopyToClipboard(const std::wstring &text)
 	AutoFree::Global<wchar_t> data(reinterpret_cast<wchar_t *>(GlobalAlloc(GMEM_FIXED, url_size * sizeof(wchar_t))));
 	if (!data)
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to allocate memory for the clipboard.");
+		LastErrorHandle(Error::Level::Error, L"Failed to allocate memory for the clipboard.");
 		return;
 	}
 
@@ -43,7 +43,7 @@ void Util::CopyToClipboard(const std::wstring &text)
 
 	if (!SetClipboardData(CF_UNICODETEXT, data))
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to copy data to clipboard.");
+		LastErrorHandle(Error::Level::Error, L"Failed to copy data to clipboard.");
 		return;
 	}
 }
@@ -71,7 +71,7 @@ void Util::EditFile(const std::wstring &file)
 	{
 		if (WaitForSingleObject(info.hProcess, INFINITE) == WAIT_FAILED)
 		{
-			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to wait for text editor close.");
+			LastErrorHandle(Error::Level::Log, L"Failed to wait for text editor close.");
 		}
 
 		CloseHandle(info.hProcess);

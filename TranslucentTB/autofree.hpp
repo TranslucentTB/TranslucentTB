@@ -58,7 +58,7 @@ private:
 			void *result = LocalFree(data);
 			if (result && !silent)
 			{
-				ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free memory.");
+				LastErrorHandle(Error::Level::Log, L"Failed to free memory.");
 			}
 		}
 
@@ -80,7 +80,7 @@ private:
 			void *result = GlobalFree(data);
 			if (result)
 			{
-				ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to free memory.");
+				LastErrorHandle(Error::Level::Log, L"Failed to free memory.");
 			}
 		}
 

@@ -3,6 +3,7 @@
 #include <string>
 #include <tchar.h>
 #include <windef.h>
+#include <winerror.h>
 
 class Error {
 
@@ -19,3 +20,4 @@ public:
 };
 
 #define ErrorHandle(x, y, z) (Error::Handle((x), (y), (z), _T(__FILE__), __LINE__, __FUNCSIG__))
+#define LastErrorHandle(x, y) (ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), (x), (y)))

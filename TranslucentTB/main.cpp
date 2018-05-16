@@ -185,16 +185,14 @@ void ApplyStock(const std::wstring &filename)
 	{
 		if (!CreateDirectory(run.config_folder.c_str(), NULL))
 		{
-			if (!ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Creating configuration files directory failed!"))
-			{
-				return;
-			}
+			LastErrorHandle(Error::Level::Error, L"Creating configuration files directory failed!");
+			return;
 		}
 	}
 
 	if (!CopyFile(stockFile, configFile, FALSE))
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Copying stock configuration file failed!");
+		LastErrorHandle(Error::Level::Error, L"Copying stock configuration file failed!");
 	}
 }
 
@@ -462,12 +460,12 @@ void HardenProcess()
 		aslr_policy.DisallowStrippedImages = true;
 		if (!SetProcessMitigationPolicy(ProcessASLRPolicy, &aslr_policy, sizeof(aslr_policy)))
 		{
-			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Couldn't disallow stripped images.");
+			LastErrorHandle(Error::Level::Log, L"Couldn't disallow stripped images.");
 		}
 	}
 	else
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Couldn't get current ASLR policy.");
+		LastErrorHandle(Error::Level::Log, L"Couldn't get current ASLR policy.");
 	}
 
 	PROCESS_MITIGATION_DYNAMIC_CODE_POLICY code_policy {};
@@ -476,7 +474,7 @@ void HardenProcess()
 	code_policy.AllowRemoteDowngrade = false;
 	if (!SetProcessMitigationPolicy(ProcessDynamicCodePolicy, &code_policy, sizeof(code_policy)))
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Couldn't disable dynamic code generation.");
+		LastErrorHandle(Error::Level::Log, L"Couldn't disable dynamic code generation.");
 	}
 
 	PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY handle_policy {};
@@ -484,21 +482,21 @@ void HardenProcess()
 	handle_policy.HandleExceptionsPermanentlyEnabled = true;
 	if (!SetProcessMitigationPolicy(ProcessStrictHandleCheckPolicy, &handle_policy, sizeof(handle_policy)))
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Couldn't enable strict handle checks.");
+		LastErrorHandle(Error::Level::Log, L"Couldn't enable strict handle checks.");
 	}
 
 	PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY extension_policy {};
 	extension_policy.DisableExtensionPoints = true;
 	if (!SetProcessMitigationPolicy(ProcessExtensionPointDisablePolicy, &extension_policy, sizeof(extension_policy)))
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Couldn't disable extension point DLLs.");
+		LastErrorHandle(Error::Level::Log, L"Couldn't disable extension point DLLs.");
 	}
 
 	PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY signature_policy {};
 	signature_policy.MitigationOptIn = true;
 	if (!SetProcessMitigationPolicy(ProcessSignaturePolicy, &signature_policy, sizeof(signature_policy)))
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Couldn't enable image signature enforcement.");
+		LastErrorHandle(Error::Level::Log, L"Couldn't enable image signature enforcement.");
 	}
 
 
@@ -514,12 +512,12 @@ void HardenProcess()
 	}
 	else
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Unable to get drive root.");
+		LastErrorHandle(Error::Level::Log, L"Unable to get drive root.");
 	}
 
 	if (!SetProcessMitigationPolicy(ProcessImageLoadPolicy, &load_policy, sizeof(load_policy)))
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Couldn't set image load policy.");
+		LastErrorHandle(Error::Level::Log, L"Couldn't set image load policy.");
 	}
 }
 

@@ -25,7 +25,7 @@ const std::wstring &win32::GetExeLocation()
 		std::vector<wchar_t> exeLocation(exeLocation_size);
 		if (!QueryFullProcessImageName(GetCurrentProcess(), 0, exeLocation.data(), &exeLocation_size))
 		{
-			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to determine executable location!");
+			LastErrorHandle(Error::Level::Fatal, L"Failed to determine executable location!");
 		}
 		else
 		{

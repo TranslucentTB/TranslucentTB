@@ -19,7 +19,7 @@ public:
 	{
 		if (m_Result && !CloseClipboard())
 		{
-			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Error, L"Failed to close clipboard.");
+			LastErrorHandle(Error::Level::Error, L"Failed to close clipboard.");
 		}
 	}
 

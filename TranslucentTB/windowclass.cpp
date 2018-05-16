@@ -27,7 +27,7 @@ WindowClass::WindowClass(const std::function<long(HWND, unsigned int, WPARAM, LP
 
 	if (!RegisterClassEx(&m_ClassStruct))
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Fatal, L"Failed to register window class!");
+		LastErrorHandle(Error::Level::Fatal, L"Failed to register window class!");
 	}
 }
 
@@ -35,6 +35,6 @@ WindowClass::~WindowClass()
 {
 	if (!UnregisterClass(m_ClassStruct.lpszClassName, m_ClassStruct.hInstance))
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to unregister window class.");
+		LastErrorHandle(Error::Level::Log, L"Failed to unregister window class.");
 	}
 }

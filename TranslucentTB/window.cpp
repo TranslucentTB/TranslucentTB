@@ -33,7 +33,7 @@ std::wstring Window::title() const
 
 	if (!GetWindowText(m_WindowHandle, windowTitleBuffer.data(), titleSize))
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting title of a window failed.");
+		LastErrorHandle(Error::Level::Log, L"Getting title of a window failed.");
 		return L"";
 	}
 
@@ -49,7 +49,7 @@ const std::wstring &Window::classname() const
 
 		if (!GetClassName(m_WindowHandle, className, 257))
 		{
-			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting class name of a window failed.");
+			LastErrorHandle(Error::Level::Log, L"Getting class name of a window failed.");
 			return m_ClassNames[m_WindowHandle] = L"";
 		}
 		else
@@ -74,7 +74,7 @@ const std::wstring &Window::filename() const
 		wrap::HandleT<wrap::HandleTraits::HANDLENullTraits> processHandle(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, ProcessId));
 		if (!processHandle.IsValid())
 		{
-			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting process handle of a window failed.");
+			LastErrorHandle(Error::Level::Log, L"Getting process handle of a window failed.");
 			return m_Filenames[m_WindowHandle] = L"";
 		}
 
@@ -83,7 +83,7 @@ const std::wstring &Window::filename() const
 
 		if (!QueryFullProcessImageName(processHandle.Get(), 0, exeName_path.data(), &path_Size))
 		{
-			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting file name of a window failed.");
+			LastErrorHandle(Error::Level::Log, L"Getting file name of a window failed.");
 			return m_Filenames[m_WindowHandle] = L"";
 		}
 
@@ -142,7 +142,7 @@ WINDOWPLACEMENT Window::placement() const
 	WINDOWPLACEMENT result {};
 	if (!GetWindowPlacement(m_WindowHandle, &result))
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Getting placement of a window failed.");
+		LastErrorHandle(Error::Level::Log, L"Getting placement of a window failed.");
 	}
 
 	return result;

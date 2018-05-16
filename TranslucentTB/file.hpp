@@ -19,7 +19,7 @@ public:
 	{
 		if (m_Handle != nullptr && !CloseHandle(m_Handle))
 		{
-			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Log, L"Failed to close a file handle.");
+			LastErrorHandle(Error::Level::Log, L"Failed to close a file handle.");
 		}
 	}
 

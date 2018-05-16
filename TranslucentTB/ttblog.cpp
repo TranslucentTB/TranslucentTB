@@ -106,7 +106,7 @@ inline std::pair<HRESULT, std::wstring> Log::InitStream()
 	DWORD bytesWritten;
 	if (!WriteFile(file, L"\uFEFF", sizeof(wchar_t), &bytesWritten, NULL))
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Debug, L"Failed to write byte-order marker.");
+		LastErrorHandle(Error::Level::Debug, L"Failed to write byte-order marker.");
 	}
 
 	m_FileHandle.reset(new File(file));
@@ -160,7 +160,7 @@ void Log::OutputMessage(const std::wstring &message)
 		DWORD bytesWritten;
 		if (!WriteFile(*m_FileHandle, buffer.c_str(), buffer.length() * sizeof(wchar_t), &bytesWritten, NULL))
 		{
-			ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Debug, L"Writing to log file failed.");
+			LastErrorHandle(Error::Level::Debug, L"Writing to log file failed.");
 		}
 	}
 }
@@ -169,6 +169,6 @@ void Log::Flush()
 {
 	if (!FlushFileBuffers(*m_FileHandle))
 	{
-		ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), Error::Level::Debug, L"Flusing log file buffer failed.");
+		LastErrorHandle(Error::Level::Debug, L"Flusing log file buffer failed.");
 	}
 }
