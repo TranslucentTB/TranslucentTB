@@ -570,7 +570,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	tray.RegisterContextMenuCallback(IDM_REGULAR_COLOR, [](unsigned int) {
 		Util::PickColor(Config::REGULAR_APPEARANCE.COLOR);
 	});
-	tray.BindEnum(IDM_REGULAR_NORMAL,   IDM_REGULAR_FLUENT,  Config::REGULAR_APPEARANCE.ACCENT,   REGULAR_BUTTOM_MAP);
+	tray.BindEnum(IDM_REGULAR_NORMAL, IDM_REGULAR_FLUENT, Config::REGULAR_APPEARANCE.ACCENT, REGULAR_BUTTOM_MAP);
 
 
 	tray.BindBool(IDM_MAXIMISED, Config::MAXIMISED_ENABLED, TrayContextMenu::Toggle);
@@ -579,7 +579,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	tray.RegisterContextMenuCallback(IDM_MAXIMISED_COLOR, [](unsigned int) {
 		Util::PickColor(Config::MAXIMISED_APPEARANCE.COLOR);
 	});
-	tray.BindEnum(IDM_MAXIMISED_NORMAL, IDM_MAXIMISED_CLEAR, Config::MAXIMISED_APPEARANCE.ACCENT, MAXIMISED_BUTTON_MAP);
+	tray.BindEnum(IDM_MAXIMISED_NORMAL, IDM_MAXIMISED_FLUENT, Config::MAXIMISED_APPEARANCE.ACCENT, MAXIMISED_BUTTON_MAP);
 	for (const auto &button_pair : MAXIMISED_BUTTON_MAP)
 	{
 		tray.BindBool(button_pair.second, Config::MAXIMISED_ENABLED, TrayContextMenu::ControlsEnabled);
@@ -590,7 +590,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	tray.RegisterContextMenuCallback(IDM_START_COLOR, [](unsigned int) {
 		Util::PickColor(Config::START_APPEARANCE.COLOR);
 	});
-	tray.BindEnum(IDM_START_NORMAL,     IDM_START_CLEAR,     Config::START_APPEARANCE.ACCENT,     START_BUTTON_MAP);
+	tray.BindEnum(IDM_START_NORMAL, IDM_START_FLUENT, Config::START_APPEARANCE.ACCENT, START_BUTTON_MAP);
 	for (const auto &button_pair : START_BUTTON_MAP)
 	{
 		tray.BindBool(button_pair.second, Config::START_ENABLED, TrayContextMenu::ControlsEnabled);

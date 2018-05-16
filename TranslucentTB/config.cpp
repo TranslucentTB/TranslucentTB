@@ -288,6 +288,27 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 			UnknownValue(arg, value);
 		}
 	}
+	else if (arg == L"dynamic-start-accent")
+	{
+		if (!ParseAccent(value, START_APPEARANCE.ACCENT))
+		{
+			UnknownValue(arg, value);
+		}
+	}
+	else if (arg == L"dynamic-start-color" || arg == L"dynamic-start-tint")
+	{
+		if (!ParseColor(value, START_APPEARANCE.COLOR))
+		{
+			Log::OutputMessage(L"Could not parse dynamic start color found in configuration file: " + value);
+		}
+	}
+	else if (arg == L"dynamic-start-opacity")
+	{
+		if (!ParseOpacity(value, START_APPEARANCE.COLOR))
+		{
+			Log::OutputMessage(L"Could not parse dynamic start opacity found in configuration file: " + value);
+		}
+	}
 	else if (arg == L"peek")
 	{
 		if (value == L"hide")
