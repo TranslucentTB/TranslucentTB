@@ -567,47 +567,38 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 	static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYICON), MAKEINTRESOURCE(IDR_POPUP_MENU), hInstance);
 
-	tray.BindEnum(IDM_REGULAR_BLUR,   IDM_REGULAR_FLUENT,  Config::REGULAR_APPEARANCE.ACCENT,   REGULAR_BUTTOM_MAP);
-	tray.BindEnum(IDM_MAXIMISED_BLUR, IDM_MAXIMISED_CLEAR, Config::MAXIMISED_APPEARANCE.ACCENT, MAXIMISED_BUTTON_MAP);
-	tray.BindEnum(IDM_START_BLUR,     IDM_START_CLEAR,     Config::START_APPEARANCE.ACCENT,     START_BUTTON_MAP);
-	tray.BindEnum(IDM_PEEK_SHOW,      IDM_PEEK_HIDE,       Config::PEEK,                        PEEK_BUTTON_MAP);
+	tray.RegisterContextMenuCallback(IDM_REGULAR_COLOR, [](unsigned int) {
+		Util::PickColor(Config::REGULAR_APPEARANCE.COLOR);
+	});
+	tray.BindEnum(IDM_REGULAR_NORMAL,   IDM_REGULAR_FLUENT,  Config::REGULAR_APPEARANCE.ACCENT,   REGULAR_BUTTOM_MAP);
 
+
+	tray.BindBool(IDM_MAXIMISED, Config::MAXIMISED_ENABLED, TrayContextMenu::Toggle);
+	tray.BindBool(IDM_MAXIMISED_PEEK, Config::MAXIMISED_ENABLED,         TrayContextMenu::ControlsEnabled);
+	tray.BindBool(IDM_MAXIMISED_PEEK, Config::MAXIMISED_REGULAR_ON_PEEK, TrayContextMenu::Toggle);
+	tray.RegisterContextMenuCallback(IDM_MAXIMISED_COLOR, [](unsigned int) {
+		Util::PickColor(Config::MAXIMISED_APPEARANCE.COLOR);
+	});
+	tray.BindEnum(IDM_MAXIMISED_NORMAL, IDM_MAXIMISED_CLEAR, Config::MAXIMISED_APPEARANCE.ACCENT, MAXIMISED_BUTTON_MAP);
 	for (const auto &button_pair : MAXIMISED_BUTTON_MAP)
 	{
 		tray.BindBool(button_pair.second, Config::MAXIMISED_ENABLED, TrayContextMenu::ControlsEnabled);
 	}
+
+
+	tray.BindBool(IDM_START, Config::START_ENABLED, TrayContextMenu::Toggle);
+	tray.RegisterContextMenuCallback(IDM_START_COLOR, [](unsigned int) {
+		Util::PickColor(Config::START_APPEARANCE.COLOR);
+	});
+	tray.BindEnum(IDM_START_NORMAL,     IDM_START_CLEAR,     Config::START_APPEARANCE.ACCENT,     START_BUTTON_MAP);
 	for (const auto &button_pair : START_BUTTON_MAP)
 	{
 		tray.BindBool(button_pair.second, Config::START_ENABLED, TrayContextMenu::ControlsEnabled);
 	}
 
-	tray.BindBool(IDM_MAXIMISED_PEEK, Config::MAXIMISED_ENABLED,         TrayContextMenu::ControlsEnabled);
-	tray.BindBool(IDM_MAXIMISED,      Config::MAXIMISED_ENABLED,         TrayContextMenu::Toggle);
-	tray.BindBool(IDM_MAXIMISED_PEEK, Config::MAXIMISED_REGULAR_ON_PEEK, TrayContextMenu::Toggle);
-	tray.BindBool(IDM_START,          Config::START_ENABLED,             TrayContextMenu::Toggle);
-	tray.BindBool(IDM_VERBOSE,        Config::VERBOSE,                   TrayContextMenu::Toggle);
 
-	tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, [](unsigned int) {
-		run.exit_reason = EXITREASON::UserActionNoSave;
-		run.is_running = false;
-	});
+	tray.BindEnum(IDM_PEEK_SHOW, IDM_PEEK_HIDE, Config::PEEK, PEEK_BUTTON_MAP);
 
-	tray.RegisterContextMenuCallback(IDM_EXIT, [](unsigned int) {
-		run.exit_reason = EXITREASON::UserAction;
-		run.is_running = false;
-	});
-
-	tray.RegisterContextMenuCallback(IDM_REGULAR_COLOR,   [](unsigned int) {
-		Util::PickColor(Config::REGULAR_APPEARANCE.COLOR);
-	});
-	tray.RegisterContextMenuCallback(IDM_MAXIMISED_COLOR, [](unsigned int) {
-		Util::PickColor(Config::MAXIMISED_APPEARANCE.COLOR);
-	});
-	tray.RegisterContextMenuCallback(IDM_START_COLOR,     [](unsigned int) {
-		Util::PickColor(Config::START_APPEARANCE.COLOR);
-	});
-
-	tray.RegisterCustomRefresh(RefreshMenu);
 
 	tray.RegisterContextMenuCallback(IDM_OPENLOG, [](unsigned int) {
 		std::thread([] {
@@ -615,15 +606,10 @@ void InitializeTray(const HINSTANCE &hInstance)
 			Util::EditFile(Log::file());
 		}).detach();
 	});
-
-	tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, [](unsigned int) {
-		Blacklist::ClearCache();
-	});
-
+	tray.BindBool(IDM_VERBOSE, Config::VERBOSE, TrayContextMenu::Toggle);
 	tray.RegisterContextMenuCallback(IDM_RELOADSETTINGS, [](unsigned int) {
 		Config::Parse(run.config_file);
 	});
-
 	tray.RegisterContextMenuCallback(IDM_EDITSETTINGS, [](unsigned int) {
 		Config::Save(run.config_file);
 		std::thread([] {
@@ -631,35 +617,45 @@ void InitializeTray(const HINSTANCE &hInstance)
 			Config::Parse(run.config_file);
 		}).detach();
 	});
-
 	tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTSETTINGS, [](unsigned int) {
 		ApplyStock(CONFIG_FILE);
 		Config::Parse(run.config_file);
 	});
-
 	tray.RegisterContextMenuCallback(IDM_RELOADDYNAMICBLACKLIST, [](unsigned int) {
 		Blacklist::Parse(run.exclude_file);
 	});
-
 	tray.RegisterContextMenuCallback(IDM_EDITDYNAMICBLACKLIST, [](unsigned int) {
 		std::thread([] {
 			Util::EditFile(run.exclude_file);
 			Blacklist::Parse(run.exclude_file);
 		}).detach();
 	});
-
 	tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTBLACKLIST, [](unsigned int) {
 		ApplyStock(EXCLUDE_FILE);
 		Blacklist::Parse(run.exclude_file);
 	});
+	tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, [](unsigned int) {
+		Blacklist::ClearCache();
+	});
+	tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, [](unsigned int) {
+		run.exit_reason = EXITREASON::UserActionNoSave;
+		run.is_running = false;
+	});
+
 
 	tray.RegisterContextMenuCallback(IDM_AUTOSTART, [](unsigned int) {
 		Autostart::SetStartupState(Autostart::GetStartupState() == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
 	});
-
 	tray.RegisterContextMenuCallback(IDM_TIPS, [](unsigned int) {
 		Util::OpenLink(L"https://github.com/TranslucentTB/TranslucentTB/wiki/Tips-and-tricks-for-a-better-looking-taskbar");
 	});
+	tray.RegisterContextMenuCallback(IDM_EXIT, [](unsigned int) {
+		run.exit_reason = EXITREASON::UserAction;
+		run.is_running = false;
+	});
+
+
+	tray.RegisterCustomRefresh(RefreshMenu);
 }
 
 int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
