@@ -1,6 +1,6 @@
 #pragma once
 #include "arch.h"
-#include <winbase.h>
+#include <WinBase.h>
 #include <windef.h>
 #include <winerror.h>
 

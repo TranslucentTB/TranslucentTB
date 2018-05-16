@@ -7,10 +7,10 @@
 class Config {
 
 public:
-	typedef struct TASKBAR_APPEARANCE {
+	typedef struct {
 		swca::ACCENT ACCENT;
 		uint32_t     COLOR;
-	};
+	} TASKBAR_APPEARANCE;
 
 	// Regular
 	static TASKBAR_APPEARANCE REGULAR_APPEARANCE;

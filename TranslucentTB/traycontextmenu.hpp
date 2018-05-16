@@ -1,6 +1,7 @@
 #pragma once
 #include "arch.h"
 #include <string>
+#include <type_traits>
 #include <windef.h>
 
 #include "trayicon.hpp"
@@ -35,9 +36,10 @@ public:
 
 	void BindBool(unsigned int item, bool &value, BoolBindingEffect effect);
 
-	template<typename T>
+	template<class T>
 	inline void BindEnum(unsigned int first, unsigned int last, T &value, const std::unordered_map<T, unsigned int> &map)
 	{
+		static_assert(std::is_enum<T>::value, "T is not an enum.");
 		for (const auto &button_pair : map)
 		{
 			RegisterContextMenuCallback(button_pair.second, std::bind(&Util::UpdateValue<T>, std::ref(value), button_pair.first));

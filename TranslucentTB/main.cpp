@@ -207,7 +207,7 @@ bool CheckAndRunWelcome()
 		message += L"!\n\n";
 		message += L"You can tweak the taskbar's appearance with the tray icon. If it's your cup of tea, you can also edit the configuration files, located at \"";
 		message += run.config_folder;
-		message += '"';
+		message += L'"';
 		message += L"\n\nDo you agree to the GPLv3 license?";
 
 		if (MessageBox(NULL, message.c_str(), NAME, MB_ICONINFORMATION | MB_YESNO | MB_SETFOREGROUND) != IDYES)
@@ -571,7 +571,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	tray.BindEnum(IDM_REGULAR_NORMAL, IDM_REGULAR_FLUENT, Config::REGULAR_APPEARANCE.ACCENT, REGULAR_BUTTOM_MAP);
 
 
-	tray.BindBool(IDM_MAXIMISED, Config::MAXIMISED_ENABLED, TrayContextMenu::Toggle);
+	tray.BindBool(IDM_MAXIMISED,      Config::MAXIMISED_ENABLED,         TrayContextMenu::Toggle);
 	tray.BindBool(IDM_MAXIMISED_PEEK, Config::MAXIMISED_ENABLED,         TrayContextMenu::ControlsEnabled);
 	tray.BindBool(IDM_MAXIMISED_PEEK, Config::MAXIMISED_REGULAR_ON_PEEK, TrayContextMenu::Toggle);
 	tray.RegisterContextMenuCallback(IDM_MAXIMISED_COLOR, [](unsigned int) {

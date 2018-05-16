@@ -23,6 +23,7 @@ public:
 		const std::wstring &windowName, const unsigned long &dwStyle, const int &x = 0,
 		const int &y = 0, const int &nWidth = 0, const int &nHeight = 0, const Window &parent = Window::NullWindow,
 		const HMENU &hMenu = NULL, const HINSTANCE &hInstance = GetModuleHandle(NULL), void *lpParam = nullptr);
+	static Window ForegroundWindow();
 
 	constexpr Window(const HWND &handle = Window::NullWindow) : m_WindowHandle(handle) { };
 	std::wstring title() const;

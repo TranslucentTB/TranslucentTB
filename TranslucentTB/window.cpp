@@ -26,6 +26,11 @@ Window Window::Create(const unsigned long &dwExStyle, const std::wstring &classN
 		parent, hMenu, hInstance, lpParam);
 }
 
+Window Window::ForegroundWindow()
+{
+	return GetForegroundWindow();
+}
+
 std::wstring Window::title() const
 {
 	int titleSize = GetWindowTextLength(m_WindowHandle) + 1; // For the null terminator
