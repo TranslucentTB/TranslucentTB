@@ -39,7 +39,7 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 			functionW = functionWtemp.data();
 		}
 
-		const std::wstring error =
+		const std::wstring err =
 			message_str + L' ' + error_message +
 			L" (" + file + L':' + std::to_wstring(line) + L" at function " +
 			(functionW.empty() ? L"[failed to convert function name to UTF-16]" : functionW) + L')';
@@ -47,10 +47,10 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 		switch (level)
 		{
 		case Level::Debug:
-			OutputDebugString((error + L'\n').c_str());
+			OutputDebugString((err + L'\n').c_str());
 			break;
 		case Level::Log:
-			Log::OutputMessage(error);
+			Log::OutputMessage(err);
 			break;
 		case Level::Error:
 			MessageBox(NULL, boxbuffer.c_str(), (std::wstring(NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
