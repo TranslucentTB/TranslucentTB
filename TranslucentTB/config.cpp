@@ -15,7 +15,7 @@ Config::TASKBAR_APPEARANCE Config::REGULAR_APPEARANCE = { swca::ACCENT::ACCENT_E
 
 // Maximised
 bool Config::MAXIMISED_ENABLED = true;
-Config::TASKBAR_APPEARANCE Config::MAXIMISED_APPEARANCE = { swca::ACCENT::ACCENT_ENABLE_FLUENT, 0xaa000000 };
+Config::TASKBAR_APPEARANCE Config::MAXIMISED_APPEARANCE = { swca::ACCENT::ACCENT_ENABLE_BLURBEHIND, 0xaa000000 };
 bool Config::MAXIMISED_REGULAR_ON_PEEK = true;
 
 // Start
@@ -77,25 +77,26 @@ void Config::Save(const std::wstring &file)
 	using namespace std;
 	wofstream configstream(file);
 
-	configstream << L"; Taskbar appearance: clear (default), normal, fluent (only on build " << MIN_FLUENT_BUILD << L" and up), opaque, normal, or blur." << endl;
-	configstream << L"accent=" << GetAccentText(REGULAR_APPEARANCE.ACCENT) << endl;
-	configstream << L"; Color and opacity of the taskbar." << endl;
+	configstream << L"accent=" << left << setw(6) << setfill(L' ') << GetAccentText(REGULAR_APPEARANCE.ACCENT) << L"; accent values are: clear (default), fluent (only on build " << MIN_FLUENT_BUILD << L" and up), opaque, normal, or blur." << endl;
 	configstream << L"color=" << GetColorText(REGULAR_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << endl;
 	configstream << L"opacity=" << GetOpacityText(REGULAR_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << endl;
 
 	configstream << endl;
-	configstream << L"; Dynamic Windows and Start Menu" << endl;
-	configstream << L"; Available states are the same as the accent configuration option." << endl;
-	configstream << L"; dynamic windows has its own color and opacity configs." << endl;
-	configstream << L"; by enabling dynamic-ws-regular-on-peek, dynamic windows will behave as if no window is maximised when using Aero Peek." << endl;
-	configstream << L"; you can also set the accent, color and opacity values, which will represent the state of dynamic windows when there is no window maximised." << endl;
-	configstream << L"; dynamic start returns the taskbar to normal appearance when the start menu is opened." << endl;
+	configstream << L"; Dynamic Modes" << endl;
+	configstream << L"; they all have their own accent, color and opacity configs." << endl;
+	configstream << endl;
+	configstream << L"; Dynamic Windows. State to use when a window is maximised." << endl;
 	configstream << L"dynamic-ws=" << GetBoolText(MAXIMISED_ENABLED) << endl;
 	configstream << L"dynamic-ws-accent=" << GetAccentText(MAXIMISED_APPEARANCE.ACCENT) << endl;
 	configstream << L"dynamic-ws-color=" << GetColorText(MAXIMISED_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << endl;
 	configstream << L"dynamic-ws-opacity=" << GetOpacityText(MAXIMISED_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << endl;
-	configstream << L"dynamic-ws-regular-on-peek=" << GetBoolText(MAXIMISED_REGULAR_ON_PEEK) << endl;
+	configstream << L"dynamic-ws-regular-on-peek=" << GetBoolText(MAXIMISED_REGULAR_ON_PEEK) << L" ; when using aero peek, behave as if no window was maximised." << endl;
+	configstream << endl;
+	configstream << L"; Dynamic Start. State to use when the start menu is opened." << endl;
 	configstream << L"dynamic-start=" << GetBoolText(START_ENABLED) << endl;
+	configstream << L"dynamic-start-accent=" << GetAccentText(START_APPEARANCE.ACCENT) << endl;
+	configstream << L"dynamic-start-color=" << GetColorText(START_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << endl;
+	configstream << L"dynamic-start-opacity=" << GetOpacityText(START_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << endl;
 
 	configstream << endl;
 	configstream << L"; Controls how the Aero Peek button behaves (dynamic, show or hide)" << endl;
