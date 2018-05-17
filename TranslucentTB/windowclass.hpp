@@ -12,6 +12,7 @@ private:
 
 public:
 	WindowClass(const std::function<long(HWND, unsigned int, WPARAM, LPARAM)> &callback, const std::wstring &className, const wchar_t *iconResource, const unsigned int &style = 0, const HINSTANCE &hInstance = GetModuleHandle(NULL), const HBRUSH &brush = reinterpret_cast<HBRUSH>(COLOR_BACKGROUND), const HCURSOR &cursor = LoadCursor(NULL, IDC_ARROW));
+	inline const std::wstring &name() const { return m_ClassName; }
 	~WindowClass();
 
 	inline WindowClass(const WindowClass &) = delete;

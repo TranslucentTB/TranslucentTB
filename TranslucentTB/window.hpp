@@ -5,6 +5,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "windowclass.hpp"
+
 class Window {
 
 private:
@@ -23,6 +25,13 @@ public:
 		const std::wstring &windowName, const unsigned long &dwStyle, const int &x = 0,
 		const int &y = 0, const int &nWidth = 0, const int &nHeight = 0, const Window &parent = Window::NullWindow,
 		const HMENU &hMenu = NULL, const HINSTANCE &hInstance = GetModuleHandle(NULL), void *lpParam = nullptr);
+	inline static Window Create(const unsigned long &dwExStyle, const WindowClass &winClass,
+		const std::wstring &windowName, const unsigned long &dwStyle, const int &x = 0,
+		const int &y = 0, const int &nWidth = 0, const int &nHeight = 0, const Window &parent = Window::NullWindow,
+		const HMENU &hMenu = NULL, const HINSTANCE &hInstance = GetModuleHandle(NULL), void *lpParam = nullptr)
+	{
+		return Create(dwExStyle, winClass.name(), windowName, dwStyle, x, y, nWidth, nHeight, parent, hMenu, hInstance, lpParam);
+	}
 	static Window ForegroundWindow();
 
 	constexpr Window(const HWND &handle = Window::NullWindow) : m_WindowHandle(handle) { };

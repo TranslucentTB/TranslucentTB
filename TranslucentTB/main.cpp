@@ -358,10 +358,10 @@ void RefreshMenu(HMENU menu)
 
 BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
 {
-	const Window window = hWnd;
-	// IsWindowCloaked should take care of checking if it's on the current desktop.
-	// But that's undefined behavior.
-	// So eh, do both but with IsWindowOnCurrentDesktop last.
+	const Window window(hWnd);
+	// DWMWA_CLOAKED should take care of checking if it's on the current desktop.
+	// But that's undocumented behavior.
+	// Do both but with on_current_desktop last.
 	if (window.visible() && window.state() == SW_MAXIMIZE && !window.get_attribute<BOOL>(DWMWA_CLOAKED) && !Blacklist::IsBlacklisted(window) && window.on_current_desktop())
 	{
 		auto &taskbar = run.taskbars.at(window.monitor());
