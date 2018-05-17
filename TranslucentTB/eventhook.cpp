@@ -14,8 +14,11 @@ EventHook::EventHook(const DWORD &min, const DWORD &max, const std::function<voi
 
 EventHook::~EventHook()
 {
-	if (!UnhookWinEvent(m_Handle))
+	if (m_Handle)
 	{
-		Log::OutputMessage(L"Failed to delete a Windows event hook.");
+		if (!UnhookWinEvent(m_Handle))
+		{
+			Log::OutputMessage(L"Failed to delete a Windows event hook.");
+		}
 	}
 }
