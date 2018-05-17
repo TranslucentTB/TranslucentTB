@@ -1,8 +1,7 @@
 #include "main.hpp"
 #include <algorithm>
 #include <d2d1.h>
-#include <iomanip>
-#include <sstream>
+#include <stdio.h>
 #include <string>
 #include <unordered_map>
 #include <WinUser.h>
@@ -421,57 +420,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		{
 			if (LOWORD(wParam) == IDC_HEXCOL)
 			{
-				wchar_t rawText[21];
-				GetDlgItemText(hDlg, IDC_HEXCOL, rawText, 21);
-
-				std::wstring text = Util::Trim(rawText);
-
-				if (COLOR_MAP.count(text) != 0)
-				{
-					const uint32_t &color = COLOR_MAP.at(text);
-					picker_data->picker->SetRGB((color & 0xFF0000) >> 16, (color & 0x00FF00) >> 8, color & 0x0000FF);
-				}
-				else
-				{
-					if (text.length() > 10)
-					{
-						text.erase(11);
-					}
-
-					if (text[0] == L'#')
-					{
-						text.erase(0, 1);
-					}
-					else if (text[0] == L'0' && text[1] == L'x')
-					{
-						text.erase(0, 2);
-					}
-
-					try
-					{
-						const unsigned int tempcolor = std::stoll(text, nullptr, 16) & 0xFFFFFFFF;
-
-						if (text.length() == 8)
-						{
-							picker_data->picker->SetRGB((tempcolor & 0xFF000000) >> 24, (tempcolor & 0x00FF0000) >> 16, (tempcolor & 0x0000FF00) >> 8);
-							picker_data->picker->SetAlpha(tempcolor & 0x000000FF);
-						}
-						else if (text.length() == 4)
-						{
-							picker_data->picker->SetRGB(ExpandOneLetterByte((tempcolor & 0xF000) >> 12), ExpandOneLetterByte((tempcolor & 0x0F00) >> 8), ExpandOneLetterByte((tempcolor & 0x00F0) >> 4));
-							picker_data->picker->SetAlpha(ExpandOneLetterByte(tempcolor & 0x000F));
-						}
-						else if (text.length() == 6)
-						{
-							picker_data->picker->SetRGB((tempcolor & 0xFF0000) >> 16, (tempcolor & 0x00FF00) >> 8, tempcolor & 0x0000FF);
-						}
-						else if (text.length() == 3)
-						{
-							picker_data->picker->SetRGB(ExpandOneLetterByte((tempcolor & 0xF00) >> 8), ExpandOneLetterByte((tempcolor & 0x0F0) >> 4), ExpandOneLetterByte(tempcolor & 0x00F));
-						}
-					}
-					catch (std::invalid_argument) { } // Fight me
-				}
+				ParseHex(hDlg, picker_data->picker);
 
 				UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
 				RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
@@ -484,11 +433,10 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				{
 					const SColour &col = picker_data->picker->GetCurrentColour();
 
-					std::wostringstream stream;
-					stream << L"0x";
-					stream << std::setw(2) << std::setfill(L'0') << std::hex << std::uppercase << col.r << col.g << col.b << col.a;
+					wchar_t buff[11];
+					_snwprintf_s(buff, 10, L"0x%02X%02X%02X%02X", col.r, col.g, col.b, col.a);
 
-					SetDlgItemText(hDlg, slider_combo.first, stream.str().c_str());
+					SetDlgItemText(hDlg, slider_combo.first, buff);
 				}
 				else
 				{
@@ -534,7 +482,15 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			case IDC_HEXCOL:
 			{
-				return 0;
+				if (!picker_data->changing_hex_via_spin)
+				{
+					return 0;
+				}
+				else
+				{
+					ParseHex(hDlg, picker_data->picker);
+					picker_data->changing_hex_via_spin = false;
+				}
 			}
 			}
 
@@ -593,6 +549,23 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		}
 		}
 		break;
+
+	case WM_NOTIFY:
+	{
+		const LPNMHDR notify = reinterpret_cast<LPNMHDR>(lParam);
+		switch (notify->code)
+		{
+		case UDN_DELTAPOS:
+		{
+			if (notify->idFrom == IDC_HEXSLIDER)
+			{
+				picker_data->changing_hex_via_spin = true;
+			}
+			break;
+		}
+		}
+		break;
+	}
 	}
 	return 0;
 }
@@ -628,4 +601,59 @@ void UpdateValues(HWND hDlg, const SColour &col, bool &changing_text)
 	SendDlgItemMessage(hDlg, IDC_HEXSLIDER, UDM_SETPOS32, 0, (col.r << 24) + (col.g << 16) + (col.b << 8) + col.a);
 
 	changing_text = false;
+}
+
+void ParseHex(HWND hDlg, CColourPicker *picker)
+{
+	wchar_t rawText[21];
+	GetDlgItemText(hDlg, IDC_HEXCOL, rawText, 21);
+
+	std::wstring text = Util::Trim(rawText);
+
+	if (COLOR_MAP.count(text) != 0)
+	{
+		const uint32_t &color = COLOR_MAP.at(text);
+		picker->SetRGB((color & 0xFF0000) >> 16, (color & 0x00FF00) >> 8, color & 0x0000FF);
+	}
+	else
+	{
+		if (text.length() > 10)
+		{
+			text.erase(11);
+		}
+
+		if (text[0] == L'#')
+		{
+			text.erase(0, 1);
+		}
+		else if (text[0] == L'0' && text[1] == L'x')
+		{
+			text.erase(0, 2);
+		}
+
+		try
+		{
+			const unsigned int tempcolor = std::stoll(text, nullptr, 16) & 0xFFFFFFFF;
+
+			if (text.length() == 8)
+			{
+				picker->SetRGB((tempcolor & 0xFF000000) >> 24, (tempcolor & 0x00FF0000) >> 16, (tempcolor & 0x0000FF00) >> 8);
+				picker->SetAlpha(tempcolor & 0x000000FF);
+			}
+			else if (text.length() == 4)
+			{
+				picker->SetRGB(ExpandOneLetterByte((tempcolor & 0xF000) >> 12), ExpandOneLetterByte((tempcolor & 0x0F00) >> 8), ExpandOneLetterByte((tempcolor & 0x00F0) >> 4));
+				picker->SetAlpha(ExpandOneLetterByte(tempcolor & 0x000F));
+			}
+			else if (text.length() == 6)
+			{
+				picker->SetRGB((tempcolor & 0xFF0000) >> 16, (tempcolor & 0x00FF00) >> 8, tempcolor & 0x0000FF);
+			}
+			else if (text.length() == 3)
+			{
+				picker->SetRGB(ExpandOneLetterByte((tempcolor & 0xF00) >> 8), ExpandOneLetterByte((tempcolor & 0x0F0) >> 4), ExpandOneLetterByte(tempcolor & 0x00F));
+			}
+		}
+		catch (std::invalid_argument) { } // Fight me
+	}
 }
