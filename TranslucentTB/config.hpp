@@ -24,6 +24,10 @@ public:
 	static bool START_ENABLED;
 	static TASKBAR_APPEARANCE START_APPEARANCE;
 
+	// Timeline/Task View
+	static bool TIMELINE_ENABLED;
+	static TASKBAR_APPEARANCE TIMELINE_APPEARANCE;
+
 	// Various
 	static enum /*class*/ PEEK {
 		Disabled, // Hide the button

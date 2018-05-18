@@ -22,6 +22,10 @@ bool Config::MAXIMISED_REGULAR_ON_PEEK = true;
 bool Config::START_ENABLED = true;
 Config::TASKBAR_APPEARANCE Config::START_APPEARANCE = { swca::ACCENT::ACCENT_NORMAL, 0x0 };
 
+// Timeline/Task View
+bool Config::TIMELINE_ENABLED = true;
+Config::TASKBAR_APPEARANCE Config::TIMELINE_APPEARANCE = { swca::ACCENT::ACCENT_NORMAL, 0x0 };
+
 // Various
 enum Config::PEEK Config::PEEK = PEEK::Dynamic;
 
@@ -97,6 +101,12 @@ void Config::Save(const std::wstring &file)
 	configstream << L"dynamic-start-accent=" << GetAccentText(START_APPEARANCE.ACCENT) << endl;
 	configstream << L"dynamic-start-color=" << GetColorText(START_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << endl;
 	configstream << L"dynamic-start-opacity=" << GetOpacityText(START_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << endl;
+	configstream << endl;
+	configstream << L"; Dynamic Timeline. State to use when the timeline (or task view on older builds) is opened." << endl;
+	configstream << L"dynamic-timeline=" << GetBoolText(TIMELINE_ENABLED) << endl;
+	configstream << L"dynamic-timeline-accent=" << GetAccentText(TIMELINE_APPEARANCE.ACCENT) << endl;
+	configstream << L"dynamic-timeline-color=" << GetColorText(TIMELINE_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << endl;
+	configstream << L"dynamic-timeline-opacity=" << GetOpacityText(TIMELINE_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << endl;
 
 	configstream << endl;
 	configstream << L"; Controls how the Aero Peek button behaves (dynamic, show or hide)" << endl;
@@ -307,6 +317,34 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 		if (!ParseOpacity(value, START_APPEARANCE.COLOR))
 		{
 			Log::OutputMessage(L"Could not parse dynamic start opacity found in configuration file: " + value);
+		}
+	}
+	else if (arg == L"dynamic-timeline")
+	{
+		if (!ParseBool(value, TIMELINE_ENABLED))
+		{
+			UnknownValue(arg, value);
+		}
+	}
+	else if (arg == L"dynamic-timeline-accent")
+	{
+		if (!ParseAccent(value, TIMELINE_APPEARANCE.ACCENT))
+		{
+			UnknownValue(arg, value);
+		}
+	}
+	else if (arg == L"dynamic-timeline-color" || arg == L"dynamic-timeline-tint")
+	{
+		if (!ParseColor(value, TIMELINE_APPEARANCE.COLOR))
+		{
+			Log::OutputMessage(L"Could not parse dynamic timeline color found in configuration file: " + value);
+		}
+	}
+	else if (arg == L"dynamic-timeline-opacity")
+	{
+		if (!ParseOpacity(value, TIMELINE_APPEARANCE.COLOR))
+		{
+			Log::OutputMessage(L"Could not parse dynamic timeline opacity found in configuration file: " + value);
 		}
 	}
 	else if (arg == L"peek")

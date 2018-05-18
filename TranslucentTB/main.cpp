@@ -409,21 +409,19 @@ void SetTaskbarBlur()
 			run.taskbars.at(Window::Find(L"Windows.UI.Core.CoreWindow", L"Start").monitor()).second = &Config::START_APPEARANCE;
 		}
 
-		// TODO
-		//if (true)
-		//{
-		//	HWND task_view = FindWindow(L"Windows.UI.Core.CoreWindow", L"Task view");
-		//	if (task_view == GetForegroundWindow())
-		//	{
-		//		run.taskbars.at(MonitorFromWindow(task_view, MONITOR_DEFAULTTOPRIMARY)).state = Taskbar::StartMenuOpen;
-		//	}
-		//}
-
 		if (Config::MAXIMISED_ENABLED && Config::MAXIMISED_REGULAR_ON_PEEK && run.peek_active)
 		{
 			for (auto &taskbar : run.taskbars)
 			{
 				taskbar.second.second = &Config::REGULAR_APPEARANCE;
+			}
+		}
+
+		if (Config::TIMELINE_ENABLED && Window::Find(L"Windows.UI.Core.CoreWindow", L"Task view") == Window::ForegroundWindow())
+		{
+			for (auto &taskbar : run.taskbars)
+			{
+				taskbar.second.second = &Config::TIMELINE_APPEARANCE;
 			}
 		}
 
