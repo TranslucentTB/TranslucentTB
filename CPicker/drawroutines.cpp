@@ -301,6 +301,8 @@ const std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> &GetHueGradient()
 			tempcol.h -= step;
 			tempcol.UpdateRGB();
 		}
+
+		calc = true;
 	}
 
 	return gradientStops;
