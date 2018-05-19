@@ -292,7 +292,7 @@ inline void ChangePopupItemText(HMENU menu, const uint32_t &item, std::wstring &
 	MENUITEMINFO item_info = { sizeof(item_info), MIIM_STRING };
 
 	item_info.dwTypeData = new_text.data();
-	SetMenuItemInfo(menu, item, byIndex, &item_info);
+	SetMenuItemInfo(GetSubMenu(menu, 0), item, byIndex, &item_info);
 }
 
 void RefreshMenu(HMENU menu)
@@ -309,7 +309,7 @@ void RefreshMenu(HMENU menu)
 
 			// Same build for Timeline and fluent
 			std::wstring text = L"Task View opened";
-			ChangePopupItemText(menu, 4, text, true); // We must use index here because POPUP resource directives
+			ChangePopupItemText(menu, 3, text, true); // We must use index here because POPUP resource directives
 			                                          // can't store an ID. And MENUEX fucks up rc.exe to no end.
 		}
 
