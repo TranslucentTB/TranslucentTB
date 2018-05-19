@@ -27,15 +27,12 @@ MessageWindow::CALLBACKCOOKIE TrayIcon::RegisterTrayCallback(const std::function
 
 TrayIcon::TrayIcon(MessageWindow &window, wchar_t *iconResource, const unsigned int additionalFlags, const HINSTANCE &hInstance) :
 	m_Window(window),
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmissing-field-initializers"
 	m_IconData {
 		sizeof(m_IconData),
 		m_Window,
 		LOWORD(iconResource),
 		NIF_ICON | NIF_TIP | NIF_MESSAGE | additionalFlags
 	}
-#pragma clang diagnostic pop
 {
 	ErrorHandle(LoadIconMetric(hInstance, iconResource, LIM_SMALL, &m_IconData.hIcon), Error::Level::Log, L"Failed to load tray icon.");
 	wcscpy_s(m_IconData.szTip, NAME);

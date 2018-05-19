@@ -71,7 +71,7 @@
       <MinimalRebuild>
       </MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>-Wrange-loop-analysis -Wnonportable-system-include-path -Wimplicit-fallthrough -Wunreachable-code-return -Wswitch-enum %(AdditionalOptions) /std:c++17</AdditionalOptions>
+      <AdditionalOptions>-Wno-missing-field-initializers -Wrange-loop-analysis -Wnonportable-system-include-path -Wimplicit-fallthrough -Wunreachable-code-return -Wswitch-enum %(AdditionalOptions) /std:c++17</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -84,7 +84,7 @@
       <!-- TODO: Remove those when the clang bug is fixed -->
       <AdditionalOptions>
       </AdditionalOptions>
-      <DisableSpecificWarnings>4068;4251</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4251</DisableSpecificWarnings>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -1,9 +1,11 @@
 #pragma once
 #include "arch.h"
+#include <algorithm>
 #include <string>
 #include <type_traits>
 #include <windef.h>
 
+#include "util.hpp"
 #include "trayicon.hpp"
 
 class TrayContextMenu : public TrayIcon {
@@ -37,7 +39,7 @@ public:
 	void BindBool(unsigned int item, bool &value, BoolBindingEffect effect);
 
 	template<class T>
-	inline void BindEnum(unsigned int first, unsigned int last, T &value, const std::unordered_map<T, unsigned int> &map)
+	inline void BindEnum(T &value, const std::unordered_map<T, unsigned int> &map)
 	{
 		static_assert(std::is_enum<T>::value, "T is not an enum.");
 		for (const auto &button_pair : map)
@@ -45,8 +47,12 @@ public:
 			RegisterContextMenuCallback(button_pair.second, std::bind(&Util::UpdateValue<T>, std::ref(value), button_pair.first));
 		}
 
-		m_RefreshFunctions.push_back([=, &value, &map]() {
-			RefreshEnum(m_Menu, first, last, map.at(value));
+		auto minmax = std::minmax_element(map.begin(), map.end(), Util::map_value_compare<T, unsigned int>());
+		unsigned int min = minmax.first->second;
+		unsigned int max = minmax.second->second;
+
+		m_RefreshFunctions.push_back([this, min, max, &value, &map]() {
+			RefreshEnum(m_Menu, min, max, map.at(value));
 		});
 	}
 

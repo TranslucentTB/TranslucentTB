@@ -76,6 +76,14 @@ static const std::unordered_map<swca::ACCENT, uint32_t> START_BUTTON_MAP = {
 	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_START_FLUENT }
 };
 
+static const std::unordered_map<swca::ACCENT, uint32_t> TIMELINE_BUTTON_MAP = {
+	{ swca::ACCENT::ACCENT_NORMAL,						IDM_TIMELINE_NORMAL },
+	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_TIMELINE_CLEAR  },
+	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_TIMELINE_OPAQUE },
+	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_TIMELINE_BLUR   },
+	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_TIMELINE_FLUENT }
+};
+
 static const std::unordered_map<enum Config::PEEK, uint32_t> PEEK_BUTTON_MAP = {
 	{ Config::PEEK::Enabled,		IDM_PEEK_SHOW    },
 	{ Config::PEEK::Dynamic,		IDM_PEEK_DYNAMIC },
@@ -279,30 +287,33 @@ void TogglePeek(const bool &status)
 
 #pragma region Tray
 
-inline void ChangePopupItemText(HMENU menu, const uint32_t &item, std::wstring &new_text)
+inline void ChangePopupItemText(HMENU menu, const uint32_t &item, std::wstring &new_text, const bool &byIndex = false)
 {
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wmissing-field-initializers"
 	MENUITEMINFO item_info = { sizeof(item_info), MIIM_STRING };
-	#pragma clang diagnostic pop
 
 	item_info.dwTypeData = new_text.data();
-	SetMenuItemInfo(menu, item, false, &item_info);
+	SetMenuItemInfo(menu, item, byIndex, &item_info);
 }
 
 void RefreshMenu(HMENU menu)
 {
-	static bool needs_to_check_fluent = true;
-	if (needs_to_check_fluent)
+	static bool initial_check_done = false;
+	if (!initial_check_done)
 	{
 		if (!win32::IsAtLeastBuild(MIN_FLUENT_BUILD))
 		{
 			RemoveMenu(menu, IDM_REGULAR_FLUENT,   MF_BYCOMMAND);
 			RemoveMenu(menu, IDM_MAXIMISED_FLUENT, MF_BYCOMMAND);
 			RemoveMenu(menu, IDM_START_FLUENT,     MF_BYCOMMAND);
+			RemoveMenu(menu, IDM_TIMELINE_FLUENT,  MF_BYCOMMAND);
+
+			// Same build for Timeline and fluent
+			std::wstring text = L"Task View opened";
+			ChangePopupItemText(menu, 4, text, true); // We must use index here because POPUP resource directives
+			                                          // can't store an ID. And MENUEX fucks up rc.exe to no end.
 		}
 
-		needs_to_check_fluent = false;
+		initial_check_done = true;
 	}
 
 	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, !Log::file().empty(), TrayContextMenu::ControlsEnabled);
@@ -315,6 +326,9 @@ void RefreshMenu(HMENU menu)
 		TrayContextMenu::ControlsEnabled);
 	TrayContextMenu::RefreshBool(IDM_START_COLOR,     menu,
 		Config::START_ENABLED     && Config::START_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
+		TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(IDM_TIMELINE_COLOR,  menu,
+		Config::TIMELINE_ENABLED  && Config::TIMELINE_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
 
 	const Autostart::StartupState state = Autostart::GetStartupState();
@@ -566,7 +580,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	tray.RegisterContextMenuCallback(IDM_REGULAR_COLOR, [](unsigned int) {
 		Util::PickColor(Config::REGULAR_APPEARANCE.COLOR);
 	});
-	tray.BindEnum(IDM_REGULAR_NORMAL, IDM_REGULAR_FLUENT, Config::REGULAR_APPEARANCE.ACCENT, REGULAR_BUTTOM_MAP);
+	tray.BindEnum(Config::REGULAR_APPEARANCE.ACCENT, REGULAR_BUTTOM_MAP);
 
 
 	tray.BindBool(IDM_MAXIMISED,      Config::MAXIMISED_ENABLED,         TrayContextMenu::Toggle);
@@ -575,7 +589,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	tray.RegisterContextMenuCallback(IDM_MAXIMISED_COLOR, [](unsigned int) {
 		Util::PickColor(Config::MAXIMISED_APPEARANCE.COLOR);
 	});
-	tray.BindEnum(IDM_MAXIMISED_NORMAL, IDM_MAXIMISED_FLUENT, Config::MAXIMISED_APPEARANCE.ACCENT, MAXIMISED_BUTTON_MAP);
+	tray.BindEnum(Config::MAXIMISED_APPEARANCE.ACCENT, MAXIMISED_BUTTON_MAP);
 	for (const auto &button_pair : MAXIMISED_BUTTON_MAP)
 	{
 		tray.BindBool(button_pair.second, Config::MAXIMISED_ENABLED, TrayContextMenu::ControlsEnabled);
@@ -586,14 +600,25 @@ void InitializeTray(const HINSTANCE &hInstance)
 	tray.RegisterContextMenuCallback(IDM_START_COLOR, [](unsigned int) {
 		Util::PickColor(Config::START_APPEARANCE.COLOR);
 	});
-	tray.BindEnum(IDM_START_NORMAL, IDM_START_FLUENT, Config::START_APPEARANCE.ACCENT, START_BUTTON_MAP);
+	tray.BindEnum(Config::START_APPEARANCE.ACCENT, START_BUTTON_MAP);
 	for (const auto &button_pair : START_BUTTON_MAP)
 	{
 		tray.BindBool(button_pair.second, Config::START_ENABLED, TrayContextMenu::ControlsEnabled);
 	}
 
 
-	tray.BindEnum(IDM_PEEK_SHOW, IDM_PEEK_HIDE, Config::PEEK, PEEK_BUTTON_MAP);
+	tray.BindBool(IDM_TIMELINE, Config::TIMELINE_ENABLED, TrayContextMenu::Toggle);
+	tray.RegisterContextMenuCallback(IDM_TIMELINE_COLOR, [](unsigned int) {
+		Util::PickColor(Config::TIMELINE_APPEARANCE.COLOR);
+	});
+	tray.BindEnum(Config::TIMELINE_APPEARANCE.ACCENT, TIMELINE_BUTTON_MAP);
+	for (const auto &button_pair : TIMELINE_BUTTON_MAP)
+	{
+		tray.BindBool(button_pair.second, Config::TIMELINE_ENABLED, TrayContextMenu::ControlsEnabled);
+	}
+
+
+	tray.BindEnum(Config::PEEK, PEEK_BUTTON_MAP);
 
 
 	tray.RegisterContextMenuCallback(IDM_OPENLOG, [](unsigned int) {

@@ -50,8 +50,6 @@ void Util::CopyToClipboard(const std::wstring &text)
 
 void Util::EditFile(const std::wstring &file)
 {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmissing-field-initializers"
 	SHELLEXECUTEINFO info = {
 		sizeof(info),									// cbSize
 		SEE_MASK_CLASSNAME | SEE_MASK_NOCLOSEPROCESS,	// fMask
@@ -65,7 +63,6 @@ void Util::EditFile(const std::wstring &file)
 		nullptr,										// lpIDList
 		L"txtfile"										// lpClass
 	};
-#pragma clang diagnostic pop
 
 	if (ShellExecuteEx(&info))
 	{
@@ -92,8 +89,6 @@ void Util::EditFile(const std::wstring &file)
 
 void Util::OpenLink(const std::wstring &link)
 {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmissing-field-initializers"
 	SHELLEXECUTEINFO info = {
 		sizeof(info),							// cbSize
 		SEE_MASK_CLASSNAME,						// fMask
@@ -107,7 +102,6 @@ void Util::OpenLink(const std::wstring &link)
 		nullptr,								// lpIDList
 		link[4] == L's' ? L"https" : L"http"	// lpClass
 	};
-#pragma clang diagnostic pop
 
 	if (!ShellExecuteEx(&info))
 	{

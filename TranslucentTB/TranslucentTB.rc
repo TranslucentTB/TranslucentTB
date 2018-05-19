@@ -97,6 +97,17 @@ BEGIN
             MENUITEM "Blur",                        IDM_START_BLUR
             MENUITEM "Fluent",                      IDM_START_FLUENT
         END
+        POPUP "Timeline opened"
+        BEGIN
+            MENUITEM "Enabled",                     IDM_TIMELINE
+            MENUITEM "Accent Color",                IDM_TIMELINE_COLOR
+            MENUITEM SEPARATOR
+            MENUITEM "Normal",                      IDM_TIMELINE_NORMAL
+            MENUITEM "Clear",                       IDM_TIMELINE_CLEAR
+            MENUITEM "Opaque",                      IDM_TIMELINE_OPAQUE
+            MENUITEM "Blur",                        IDM_TIMELINE_BLUR
+            MENUITEM "Fluent",                      IDM_TIMELINE_FLUENT
+        END
         MENUITEM SEPARATOR
         POPUP "Show Aero Peek"
         BEGIN

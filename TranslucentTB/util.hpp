@@ -43,6 +43,15 @@ public:
 	template<typename T>
 	using string_map = std::unordered_map<std::wstring, T, string_hash, string_compare>;
 
+	template<typename K, typename V, class Compare = std::less<V>>
+	struct map_value_compare {
+		Compare m_Compare;
+		inline bool operator()(const std::pair<K, V> &a, const std::pair<K, V> &b)
+		{
+			return m_Compare(a.second, b.second);
+		}
+	};
+
 	// Removes instances of character at the beginning and end of the string.
 	inline static std::wstring Trim(const std::wstring &str, const wchar_t &character = L' ')
 	{
