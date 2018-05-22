@@ -603,6 +603,20 @@ void UpdateValues(HWND hDlg, const SColour &col, bool &changing_text)
 	changing_text = false;
 }
 
+void FailedParse(HWND hDlg)
+{
+	EDITBALLOONTIP ebt = {
+		sizeof(ebt),
+		L"Error when parsing color code!",
+		L"Make sure the code is valid hexadecimal. (0x and # prefixes accepted)\n"
+		L"Code can be 3 (RGB), 4 (RGBA), 6 (RRGGBB) or 8 (RRGGBBAA) characters.\n\n"
+		L"HTML color names are also understood. (for example: yellow, white, blue)",
+		TTI_WARNING_LARGE
+	};
+
+	Edit_ShowBalloonTip(GetDlgItem(hDlg, IDC_HEXCOL), &ebt);
+}
+
 void ParseHex(HWND hDlg, CColourPicker *picker)
 {
 	wchar_t rawText[21];
@@ -619,7 +633,8 @@ void ParseHex(HWND hDlg, CColourPicker *picker)
 	{
 		if (text.length() > 10)
 		{
-			text.erase(11);
+			FailedParse(hDlg);
+			return;
 		}
 
 		if (text[0] == L'#')
@@ -653,7 +668,14 @@ void ParseHex(HWND hDlg, CColourPicker *picker)
 			{
 				picker->SetRGB(ExpandOneLetterByte((tempcolor & 0xF00) >> 8), ExpandOneLetterByte((tempcolor & 0x0F0) >> 4), ExpandOneLetterByte(tempcolor & 0x00F));
 			}
+			else
+			{
+				FailedParse(hDlg);
+			}
 		}
-		catch (std::invalid_argument) { } // Fight me
+		catch (std::invalid_argument)
+		{
+			FailedParse(hDlg);
+		}
 	}
 }

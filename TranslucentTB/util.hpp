@@ -11,7 +11,7 @@
 class Util {
 
 public:
-	// Converts a string to it's lowercase variant
+	// Converts a string to its lowercase variant
 	inline static void ToLower(std::wstring &data)
 	{
 		std::transform(data.begin(), data.end(), data.begin(), std::towlower);
