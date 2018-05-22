@@ -49,15 +49,15 @@ void MessageWindow::set_ptr(const HWND &hwnd)
 
 MessageWindow *MessageWindow::get_ptr(const HWND &hwnd)
 {
-	 SetLastError(0);
-	 MessageWindow *window = reinterpret_cast<MessageWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+	SetLastError(0);
+	MessageWindow *window = reinterpret_cast<MessageWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
-	 if (!window && GetLastError() != 0)
-	 {
-		 LastErrorHandle(Error::Level::Fatal, L"Failed to get window pointer!");
-	 }
+	if (!window && GetLastError() != 0)
+	{
+		LastErrorHandle(Error::Level::Fatal, L"Failed to get window pointer!");
+	}
 
-	 return window;
+	return window;
 }
 
 MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &windowName, const HINSTANCE &hInstance, const wchar_t *iconResource) :

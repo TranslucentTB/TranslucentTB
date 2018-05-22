@@ -30,8 +30,8 @@ const std::wstring &Window::classname() const
 {
 	if (m_ClassNames.count(m_WindowHandle) == 0)
 	{
-		wchar_t className[257]; // According to docs, maximum length of a class name is 256, but it's ambiguous
-		                        // wether this includes the null terminator or not.
+		wchar_t className[257];	// According to docs, maximum length of a class name is 256, but it's ambiguous
+								// wether this includes the null terminator or not.
 
 		if (!GetClassName(m_WindowHandle, className, 257))
 		{

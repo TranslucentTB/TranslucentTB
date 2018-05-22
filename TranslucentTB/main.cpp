@@ -309,8 +309,8 @@ void RefreshMenu(HMENU menu)
 
 			// Same build for Timeline and fluent
 			std::wstring text = L"Task View opened";
-			ChangePopupItemText(menu, 3, text, true); // We must use index here because POPUP resource directives
-			                                          // can't store an ID. And MENUEX fucks up rc.exe to no end.
+			ChangePopupItemText(menu, 3, text, true);	// We must use index here because POPUP resource directives
+														// can't store an ID. And MENUEX fucks up rc.exe to no end.
 		}
 
 		initial_check_done = true;
@@ -545,11 +545,11 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 	window.RegisterCallback(WM_DISPLAYCHANGE, [](Window, WPARAM, LPARAM) {
 		std::thread([] {
-			std::this_thread::sleep_for(std::chrono::seconds(10)); // Sleeping because the taskbar hasn't
-																   // been created yet when we get this.
-																   // 10 seconds gives enough time to even
-																   // the slowest of computers to create
-			                                                       // the taskbar. (I hope)
+			std::this_thread::sleep_for(std::chrono::seconds(10));	// Sleeping because the taskbar hasn't
+																	// been created yet when we get this.
+																	// 10 seconds gives enough time to even
+																	// the slowest of computers to create
+																	// the taskbar. (I hope)
 			RefreshHandles();
 		}).detach();
 		return 0;

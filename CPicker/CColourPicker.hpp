@@ -19,7 +19,7 @@ class _declspec(dllexport) CColourPicker
 		void SetRGB(uint8_t r, uint8_t g, uint8_t b);
 		void SetHSV(unsigned short h, uint8_t s, uint8_t v);
 		void SetAlpha(uint8_t a);
-		
+
 		// Some easy functions to retrieve the colour components
 		const SColour &GetCurrentColour();
 		const SColour &GetOldColour();
