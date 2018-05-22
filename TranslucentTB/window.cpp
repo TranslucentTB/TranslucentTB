@@ -12,25 +12,6 @@ const Window Window::NullWindow = nullptr;
 const Window Window::BroadcastWindow = HWND_BROADCAST;
 const Window Window::MessageOnlyWindow = HWND_MESSAGE;
 
-Window Window::Find(const std::wstring &className, const std::wstring &windowName, const Window &parent, const Window &childAfter)
-{
-	return FindWindowEx(parent, childAfter, className.empty() ? NULL : className.c_str(), windowName.empty() ? NULL : windowName.c_str());
-}
-
-Window Window::Create(const unsigned long &dwExStyle, const std::wstring &className,
-	const std::wstring &windowName, const unsigned long &dwStyle, const int &x, const int &y,
-	const int &nWidth, const int &nHeight, const Window &parent, const HMENU &hMenu,
-	const HINSTANCE &hInstance, void *lpParam)
-{
-	return CreateWindowEx(dwExStyle, className.c_str(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
-		parent, hMenu, hInstance, lpParam);
-}
-
-Window Window::ForegroundWindow()
-{
-	return GetForegroundWindow();
-}
-
 std::wstring Window::title() const
 {
 	int titleSize = GetWindowTextLength(m_WindowHandle) + 1; // For the null terminator
@@ -126,22 +107,6 @@ bool Window::on_current_desktop() const
 	}
 }
 
-unsigned int Window::state() const
-{
-	const WINDOWPLACEMENT result = placement();
-	return result.length != 0 ? result.showCmd : SW_SHOW;
-}
-
-bool Window::show(int state) const
-{
-	return ShowWindow(m_WindowHandle, state);
-}
-
-bool Window::visible() const
-{
-	return IsWindowVisible(m_WindowHandle);
-}
-
 WINDOWPLACEMENT Window::placement() const
 {
 	WINDOWPLACEMENT result {};
@@ -151,31 +116,6 @@ WINDOWPLACEMENT Window::placement() const
 	}
 
 	return result;
-}
-
-HMONITOR Window::monitor() const
-{
-	return MonitorFromWindow(m_WindowHandle, MONITOR_DEFAULTTOPRIMARY);
-}
-
-long Window::send_message(unsigned int message, unsigned int wparam, long lparam) const
-{
-	return SendMessage(m_WindowHandle, message, wparam, lparam);
-}
-
-long Window::send_message(const std::wstring &message, unsigned int wparam, long lparam) const
-{
-	return send_message(RegisterWindowMessage(message.c_str()), wparam, lparam);
-}
-
-HWND Window::handle() const
-{
-	return m_WindowHandle;
-}
-
-Window::operator HWND() const
-{
-	return m_WindowHandle;
 }
 
 template<typename T>
