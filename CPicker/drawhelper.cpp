@@ -73,12 +73,11 @@ void DrawTwoDimensionalGradient(ID2D1RenderTarget *target, const D2D1_SIZE_F &si
 	context->DrawGradientMesh(mesh);
 }
 
-void DrawCheckerboard(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, const D2D1_SIZE_F &size, const uint8_t &square_size, const uint8_t &border_size)
+void DrawCheckerboard(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, const D2D1_SIZE_F &size, const float &square_size, const float &border_size, bool flag)
 {
-	bool flag = true;
 	for (float y = 0.0f; y < size.height; y += square_size)
 	{
-		for (float x = flag ? border_size : border_size + square_size; x < size.width - border_size; x += square_size * 2)
+		for (float x = flag ? border_size : border_size + square_size; x < size.width - border_size; x += square_size * 2.0f)
 		{
 			target->FillRectangle(
 				D2D1::RectF(

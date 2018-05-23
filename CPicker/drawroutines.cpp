@@ -260,7 +260,7 @@ void DrawAlphaSlider(ID2D1RenderTarget *target, const D2D1_COLOR_F &color, const
 	target->EndDraw();
 }
 
-void DrawColorIndicator(ID2D1RenderTarget *target, const SColour &color)
+void DrawColorIndicator(ID2D1RenderTarget *target, const SColour &color, bool flag)
 {
 	const D2D1_SIZE_F size = target->GetSize();
 
@@ -269,7 +269,7 @@ void DrawColorIndicator(ID2D1RenderTarget *target, const SColour &color)
 
 	CComPtr<ID2D1SolidColorBrush> brush;
 	target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &brush);
-	DrawCheckerboard(target, brush, size, 10);
+	DrawCheckerboard(target, brush, size, size.height / 2.0f, 0, flag);
 	brush.Release();
 
 	target->CreateSolidColorBrush(D2D1::ColorF(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f), &brush);
