@@ -260,7 +260,7 @@ void DrawAlphaSlider(ID2D1RenderTarget *target, const D2D1_COLOR_F &color, const
 	target->EndDraw();
 }
 
-void DrawColorIndicator(ID2D1RenderTarget *target, const SColour &color, bool flag)
+void DrawColorIndicator(ID2D1RenderTarget *target, const float &rf, const float &gf, const float &bf, const float &af, const SColour &oldcolor, bool flag)
 {
 	const D2D1_SIZE_F size = target->GetSize();
 
@@ -269,11 +269,15 @@ void DrawColorIndicator(ID2D1RenderTarget *target, const SColour &color, bool fl
 
 	CComPtr<ID2D1SolidColorBrush> brush;
 	target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &brush);
-	DrawCheckerboard(target, brush, size, size.height / 2.0f, 0, flag);
+	DrawCheckerboard(target, brush, size, size.height / 4.0f, 0, flag);
 	brush.Release();
 
-	target->CreateSolidColorBrush(D2D1::ColorF(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f), &brush);
-	target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), brush);
+	target->CreateSolidColorBrush(D2D1::ColorF(rf, gf, bf, af), &brush);
+	target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height / 2.0f), brush);
+	brush.Release();
+
+	target->CreateSolidColorBrush(D2D1::ColorF(oldcolor.r / 255.0f, oldcolor.g / 255.0f, oldcolor.b / 255.0f, oldcolor.a / 255.0f), &brush);
+	target->FillRectangle(D2D1::RectF(0.0f, size.height / 2.0f, size.width, size.height), brush);
 
 	target->EndDraw();
 }

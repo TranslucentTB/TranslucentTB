@@ -78,10 +78,10 @@ BEGIN
     EDITTEXT        IDC_SATURATION,207,87,33,12,ES_NUMBER
     LTEXT           "%",-1,243,89,8,9
     EDITTEXT        IDC_VALUE,207,102,33,12,ES_NUMBER
-    LTEXT           "%",-1,243,104 8,9
+    LTEXT           "%",-1,243,104,8,9
     EDITTEXT        IDC_HEXCOL,187,117,64,12,ES_CENTER | ES_AUTOHSCROLL
-    CONTROL         "",IDC_CURRCOLOR,"Static",SS_OWNERDRAW,195,140,38,18
-    CONTROL         "",IDC_OLDCOLOR,"Static",SS_OWNERDRAW | SS_NOTIFY,195,158,38,18
+    CONTROL         "",IDC_COLORS,"Static",SS_OWNERDRAW,195,140,39,36
+    CONTROL         "",IDC_OLDCOLOR,"Static",SS_OWNERDRAW | SS_NOTIFY,195,158,39,18,WS_EX_TRANSPARENT
     CONTROL         "",IDC_COLOR,"Static",SS_OWNERDRAW,10,12,128,128
     CONTROL         "",IDC_COLOR2,"Static",SS_OWNERDRAW,142,12,17,128
     CONTROL         "",IDC_ALPHASLIDE,"Static",SS_OWNERDRAW,163,12,17,128
@@ -148,7 +148,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "Comments", "A simple colour picker dialog complete with RGB/HSV and alpha selection."
-            VALUE "CompanyName", "by nICO (chick80@libero.it) - 2004.  Modified by TranslucentTB devs"
+            VALUE "CompanyName", "by nICO (chick80@libero.it) - 2004. Modified by TranslucentTB devs"
             VALUE "FileDescription", "Color Picker Dialog"
             VALUE "FileVersion", "1.0"
             VALUE "InternalName", "CPicker.dll"

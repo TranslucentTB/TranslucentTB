@@ -238,15 +238,10 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		GetClientRect(item, &rect);
 		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right, rect.bottom)), &picker_data->targetA);
 
-		picker_data->targetCC.Release();
-		item = GetDlgItem(hDlg, IDC_CURRCOLOR);
+		picker_data->targetC.Release();
+		item = GetDlgItem(hDlg, IDC_COLORS);
 		GetClientRect(item, &rect);
-		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right, rect.bottom)), &picker_data->targetCC);
-
-		picker_data->targetOC.Release();
-		item = GetDlgItem(hDlg, IDC_OLDCOLOR);
-		GetClientRect(item, &rect);
-		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right, rect.bottom)), &picker_data->targetOC);
+		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right, rect.bottom)), &picker_data->targetC);
 
 
 		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
@@ -280,8 +275,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		// Alpha slider
 		DrawAlphaSlider(picker_data->targetA, D2D1::ColorF(rf, gf, bf), 1.0f - af);
 
-		DrawColorIndicator(picker_data->targetCC, color);
-		DrawColorIndicator(picker_data->targetOC, picker_data->picker->GetOldColour());
+		DrawColorIndicator(picker_data->targetC, rf, gf, bf, af, picker_data->picker->GetOldColour());
 
 		EndPaint(hDlg, &ps);
 

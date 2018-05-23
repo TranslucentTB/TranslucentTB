@@ -17,7 +17,7 @@
 #define IDC_HUE                         1045
 #define IDC_SATURATION                  1046
 #define IDC_VALUE                       1047
-#define IDC_CURRCOLOR                   1048
+#define IDC_COLORS                      1048
 #define IDC_ALPHA                       1049
 #define IDC_ALPHASLIDE                  1050
 #define IDC_OLDCOLOR                    1051

@@ -15,6 +15,5 @@ struct PickerData
 	CComPtr<ID2D1HwndRenderTarget> targetC1;
 	CComPtr<ID2D1HwndRenderTarget> targetC2;
 	CComPtr<ID2D1HwndRenderTarget> targetA;
-	CComPtr<ID2D1HwndRenderTarget> targetCC;
-	CComPtr<ID2D1HwndRenderTarget> targetOC;
+	CComPtr<ID2D1HwndRenderTarget> targetC;
 };
