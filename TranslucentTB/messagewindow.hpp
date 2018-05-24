@@ -17,7 +17,7 @@ private:
 	std::unordered_map<unsigned int, std::vector<std::pair<unsigned short, m_CallbackFunction>>> m_CallbackMap;
 	WindowClass m_WindowClass;
 
-	static long CALLBACK m_StaticCallback(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam);
+	static long CALLBACK WindowProcedure(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam);
 	void set_ptr(const HWND &hwnd);
 	static MessageWindow *get_ptr(const HWND &hwnd);
 
@@ -25,7 +25,10 @@ public:
 	MessageWindow(const std::wstring &className, const std::wstring &windowName, const HINSTANCE &hInstance = GetModuleHandle(NULL), const wchar_t *iconResource = MAKEINTRESOURCE(MAINICON));
 	typedef unsigned long long CALLBACKCOOKIE;
 	CALLBACKCOOKIE RegisterCallback(unsigned int message, const m_CallbackFunction &callback);
-	CALLBACKCOOKIE RegisterCallback(const std::wstring &message, const m_CallbackFunction &callback);
+	inline CALLBACKCOOKIE RegisterCallback(const std::wstring &message, const m_CallbackFunction &callback)
+	{
+		return RegisterCallback(RegisterWindowMessage(message.c_str()), callback);
+	}
 	bool UnregisterCallback(CALLBACKCOOKIE cookie);
 	~MessageWindow();
 

@@ -287,7 +287,7 @@ void TogglePeek(const bool &status)
 
 #pragma region Tray
 
-inline void ChangePopupItemText(HMENU menu, const uint32_t &item, std::wstring &new_text, const bool &byIndex = false)
+inline void ChangePopupItemText(HMENU menu, const uint32_t &item, std::wstring &&new_text, const bool &byIndex = false)
 {
 	MENUITEMINFO item_info = { sizeof(item_info), MIIM_STRING };
 
@@ -308,9 +308,8 @@ void RefreshMenu(HMENU menu)
 			RemoveMenu(menu, IDM_TIMELINE_FLUENT,  MF_BYCOMMAND);
 
 			// Same build for Timeline and fluent
-			std::wstring text = L"Task View opened";
-			ChangePopupItemText(menu, 3, text, true);	// We must use index here because POPUP resource directives
-														// can't store an ID. And MENUEX fucks up rc.exe to no end.
+			ChangePopupItemText(menu, 3, L"Task View opened", true);	// We must use index here because POPUP resource directives
+																		// can't store an ID. And MENUEX fucks up rc.exe to no end.
 		}
 
 		initial_check_done = true;
@@ -357,7 +356,7 @@ void RefreshMenu(HMENU menu)
 	case Autostart::StartupState::Disabled:
 		autostart_text = L"Open at boot";
 	}
-	ChangePopupItemText(menu, IDM_AUTOSTART, autostart_text);
+	ChangePopupItemText(menu, IDM_AUTOSTART, std::move(autostart_text));
 
 	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, state == Autostart::StartupState::Enabled
 #ifdef STORE
@@ -537,13 +536,13 @@ void InitializeTray(const HINSTANCE &hInstance)
 {
 	static MessageWindow window(L"TrayWindow", NAME, hInstance);
 
-	window.RegisterCallback(NEW_TTB_INSTANCE, [](Window, WPARAM, LPARAM) {
+	window.RegisterCallback(NEW_TTB_INSTANCE, [](...) {
 		run.exit_reason = EXITREASON::NewInstance;
 		run.is_running = false;
 		return 0;
 	});
 
-	window.RegisterCallback(WM_DISPLAYCHANGE, [](Window, WPARAM, LPARAM) {
+	window.RegisterCallback(WM_DISPLAYCHANGE, [](...) {
 		std::thread([] {
 			std::this_thread::sleep_for(std::chrono::seconds(10));	// Sleeping because the taskbar hasn't
 																	// been created yet when we get this.
@@ -555,19 +554,19 @@ void InitializeTray(const HINSTANCE &hInstance)
 		return 0;
 	});
 
-	window.RegisterCallback(WM_TASKBARCREATED, [](Window, WPARAM, LPARAM) {
+	window.RegisterCallback(WM_TASKBARCREATED, [](...) {
 		RefreshHandles();
 		return 0;
 	});
 
-	window.RegisterCallback(WM_CLOSE, [](Window, WPARAM, LPARAM) {
+	window.RegisterCallback(WM_CLOSE, [](...) {
 		run.exit_reason = EXITREASON::UserAction;
 		run.is_running = false;
 		return 0;
 	});
 
 #ifdef STORE
-	window.RegisterCallback(WM_QUERYENDSESSION, [](Window, WPARAM, LPARAM) {
+	window.RegisterCallback(WM_QUERYENDSESSION, [](...) {
 		// https://docs.microsoft.com/en-us/windows/uwp/porting/desktop-to-uwp-extensions#updates
 		RegisterApplicationRestart(NULL, NULL);
 		return TRUE;

@@ -61,7 +61,7 @@ TrayContextMenu::MENUCALLBACKCOOKIE TrayContextMenu::RegisterContextMenuCallback
 	unsigned short secret = Util::GetRandomNumber<unsigned short>();
 	m_MenuCallbackMap[item].push_back(std::make_pair(secret, callback));
 
-	return (static_cast<MENUCALLBACKCOOKIE>(secret) << 32) & item;
+	return (static_cast<MENUCALLBACKCOOKIE>(secret) << 32) + item;
 }
 
 bool TrayContextMenu::UnregisterContextMenuCallback(MENUCALLBACKCOOKIE cookie)

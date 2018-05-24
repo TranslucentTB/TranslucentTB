@@ -4,7 +4,7 @@
 #include "ttberror.hpp"
 #include "util.hpp"
 
-long MessageWindow::m_StaticCallback(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
+long MessageWindow::WindowProcedure(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
 {
 	MessageWindow *pThis;
 
@@ -61,7 +61,7 @@ MessageWindow *MessageWindow::get_ptr(const HWND &hwnd)
 }
 
 MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &windowName, const HINSTANCE &hInstance, const wchar_t *iconResource) :
-	m_WindowClass(m_StaticCallback, className, iconResource, 0, hInstance)
+	m_WindowClass(WindowProcedure, className, iconResource, 0, hInstance)
 {
 	m_WindowHandle = Window::Create(0, m_WindowClass, windowName, 0, 0, 0, 0, 0, Window::NullWindow, 0, hInstance, this);
 
@@ -76,12 +76,7 @@ MessageWindow::CALLBACKCOOKIE MessageWindow::RegisterCallback(unsigned int messa
 	unsigned short secret = Util::GetRandomNumber<unsigned short>();
 	m_CallbackMap[message].push_back(std::make_pair(secret, callback));
 
-	return (static_cast<CALLBACKCOOKIE>(secret) << 32) & message;
-}
-
-MessageWindow::CALLBACKCOOKIE MessageWindow::RegisterCallback(const std::wstring &message, const m_CallbackFunction &callback)
-{
-	return RegisterCallback(RegisterWindowMessage(message.c_str()), callback);
+	return (static_cast<CALLBACKCOOKIE>(secret) << 32) + message;
 }
 
 bool MessageWindow::UnregisterCallback(CALLBACKCOOKIE cookie)
