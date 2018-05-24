@@ -8,8 +8,6 @@
 constexpr uint8_t HueGradientPrecision = 20; // Number of steps in the hue gradient
 const std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> &GetHueGradient();
 
-constexpr uint8_t BorderSize = 7;
-
 void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
 {
 	const D2D1_SIZE_F size = target->GetSize();
@@ -107,7 +105,8 @@ void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 
 	CComPtr<ID2D1SolidColorBrush> brush;
 	target->CreateSolidColorBrush(D2D1::ColorF(1.0f - r, 1.0f - g, 1.0f - b), &brush);
-	target->DrawEllipse(D2D1::Ellipse(indicator_point, 5, 5), brush);
+	const float circle_radius = size.width / 50.0f;
+	target->DrawEllipse(D2D1::Ellipse(indicator_point, circle_radius, circle_radius), brush);
 
 	target->EndDraw();
 }
@@ -116,11 +115,13 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 {
 	const DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);
 	const D2D1_SIZE_F size = target->GetSize();
+	const float border_size = size.width / 4.0f;
 
 	target->BeginDraw();
 	target->Clear(D2D1::ColorF(GetRValue(backgroundColor) / 255.0f, GetGValue(backgroundColor) / 255.0f, GetBValue(backgroundColor) / 255.0f));
 
-	D2D1_COLOR_F top_color, bottom_color, arrow_color;
+	D2D1_COLOR_F top_color, bottom_color;
+	D2D1_COLOR_F arrow_color = D2D1::ColorF(r, g, b);
 	float arrow_position;
 
 	// Check who is selected.
@@ -131,7 +132,6 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 		bottom_color = D2D1::ColorF(0.0f, g, b);
 
 		arrow_position = 1.0f - r;
-		arrow_color = D2D1::ColorF(r, g, b);
 	}
 	// GREEN
 	else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
@@ -140,7 +140,6 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 		bottom_color = D2D1::ColorF(r, 0.0f, b);
 
 		arrow_position = 1.0f - g;
-		arrow_color = D2D1::ColorF(r, g, b);
 	}
 	// BLUE
 	else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
@@ -149,7 +148,6 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 		bottom_color = D2D1::ColorF(r, g, 0.0f);
 
 		arrow_position = 1.0f - b;
-		arrow_color = D2D1::ColorF(r, g, b);
 	}
 	// HUE
 	else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
@@ -173,7 +171,7 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 			&brush
 		);
 
-		target->FillRectangle(D2D1::RectF(BorderSize, 0.0f, size.width - BorderSize, size.height), brush);
+		target->FillRectangle(D2D1::RectF(border_size, 0.0f, size.width - border_size, size.height), brush);
 
 		arrow_position = 1.0f - (h / 359.0f);
 		SColour temp;
@@ -200,7 +198,6 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 		bottom_color = D2D1::ColorF(tempcol.r / 255.0f, tempcol.g / 255.0f, tempcol.b / 255.0f);
 
 		arrow_position = 1.0f - (s / 100.0f);
-		arrow_color = D2D1::ColorF(r, g, b);
 	}
 	// VALUE
 	else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
@@ -219,24 +216,23 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 		bottom_color = D2D1::ColorF(tempcol.r / 255.0f, tempcol.g / 255.0f, tempcol.b / 255.0f);
 
 		arrow_position = 1.0f - (v / 100.0f);
-		arrow_color = D2D1::ColorF(r, g, b);
 	}
 
 	// Hue has its own drawing code (a gradient with 20 steps), because it loops over the whole color space.
 	// Meaning that if we use top_color and bottom_color it'll just appear as a big single-colored slider.
 	if (IsDlgButtonChecked(hDlg, IDC_H) != BST_CHECKED)
 	{
-		DrawGradient(target, size, top_color, bottom_color, BorderSize);
+		DrawGradient(target, size, top_color, bottom_color, border_size);
 	}
 
 	CComPtr<ID2D1SolidColorBrush> brush;
 	target->CreateSolidColorBrush(arrow_color, &brush);
-	DrawArrows(target, size, arrow_position, BorderSize, brush);
+	DrawArrows(target, size, arrow_position, border_size, brush);
 
 	target->EndDraw();
 }
 
-void DrawAlphaSlider(ID2D1RenderTarget *target, const D2D1_COLOR_F &color, const float &a)
+void DrawAlphaSlider(ID2D1RenderTarget *target,  const float &r, const float &g, const float &b, const float &a)
 {
 	const DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);
 	const D2D1_SIZE_F size = target->GetSize();
@@ -247,15 +243,17 @@ void DrawAlphaSlider(ID2D1RenderTarget *target, const D2D1_COLOR_F &color, const
 	CComPtr<ID2D1SolidColorBrush> brush;
 	target->CreateSolidColorBrush(D2D1::ColorF(0, 0.3f), &brush);
 
-	DrawCheckerboard(target, brush, size, (size.width / 2) - BorderSize, BorderSize);
+	const float border_size = size.width / 4.0f;
 
-	DrawGradient(target, size, D2D1::ColorF(color.r, color.g, color.b, 1.0f), D2D1::ColorF(color.r, color.g, color.b, 0.0f), BorderSize);
+	DrawCheckerboard(target, brush, size, border_size, border_size);
 
-	DrawArrows(target, size, a, BorderSize, brush);
+	DrawGradient(target, size, D2D1::ColorF(r, g, b, 1.0f), D2D1::ColorF(r, g, b, 0.0f), border_size);
+
+	DrawArrows(target, size, a, border_size, brush);
 
 	CComPtr<ID2D1SolidColorBrush> brush2;
-	target->CreateSolidColorBrush(D2D1::ColorF(color.r, color.g, color.b, 1.0f - a), &brush2);
-	DrawArrows(target, size, a, BorderSize, brush2);
+	target->CreateSolidColorBrush(D2D1::ColorF(r, g, b, 1.0f - a), &brush2);
+	DrawArrows(target, size, a, border_size, brush2);
 
 	target->EndDraw();
 }

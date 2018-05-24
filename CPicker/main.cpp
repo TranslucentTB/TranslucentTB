@@ -273,7 +273,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		DrawColorSlider(picker_data->targetC2, hDlg, rf, gf, bf, color.h, color.s, color.v);
 
 		// Alpha slider
-		DrawAlphaSlider(picker_data->targetA, D2D1::ColorF(rf, gf, bf), 1.0f - af);
+		DrawAlphaSlider(picker_data->targetA, rf, gf, bf, 1.0f - af);
 
 		DrawColorIndicator(picker_data->targetC, rf, gf, bf, af, picker_data->picker->GetOldColour());
 
