@@ -222,7 +222,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			hDlg,
 			(UINT_PTR)GetDlgItem(hDlg, IDC_OLDCOLOR),
 		};
-		ti.lpszText = L"Click to restore old color";
+		ti.lpszText = LPSTR_TEXTCALLBACK;
 		SendMessage(picker_data->old_color_tip, TTM_ADDTOOL, 0, (LPARAM)&ti);
 		SendMessage(picker_data->old_color_tip, TTM_ACTIVATE, TRUE, 0);
 
@@ -569,6 +569,13 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			{
 				picker_data->changing_hex_via_spin = true;
 			}
+			break;
+		}
+
+		case TTN_GETDISPINFO:
+		{
+			NMTTDISPINFO *dispinfo = (NMTTDISPINFO *)notify;
+			wcscpy_s(dispinfo->szText, L"Click to restore old color");
 			break;
 		}
 		}
