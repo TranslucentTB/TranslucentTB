@@ -203,7 +203,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		}
 		SendDlgItemMessage(hDlg, IDC_HEXSLIDER, UDM_SETBASE, 16, 0);
 		SendDlgItemMessage(hDlg, IDC_HEXCOL, EM_SETLIMITTEXT, 20, 0);
-		SendDlgItemMessage(hDlg, IDC_HEXCOL, EM_SETCUEBANNER, TRUE, (LPARAM)L"HTML color");
+		Edit_SetCueBannerTextFocused(GetDlgItem(hDlg, IDC_HEXCOL), L"HTML color", TRUE);
 
 		for (const int &button : { IDC_R, IDC_G, IDC_B, IDC_H, IDC_S, IDC_V })
 		{
