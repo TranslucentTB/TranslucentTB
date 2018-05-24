@@ -214,6 +214,18 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 		SendDlgItemMessage(hDlg, IDC_R, BM_SETCHECK, BST_CHECKED, 0);
 
+		picker_data->old_color_tip = CreateWindow(TOOLTIPS_CLASS, NULL, TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, GetModuleHandle(L"CPicker.dll"), NULL);
+
+		TOOLINFO ti = {
+			sizeof(ti),
+			TTF_IDISHWND | TTF_SUBCLASS,
+			hDlg,
+			(UINT_PTR)GetDlgItem(hDlg, IDC_OLDCOLOR),
+		};
+		ti.lpszText = L"Click to restore old color";
+		SendMessage(picker_data->old_color_tip, TTM_ADDTOOL, 0, (LPARAM)&ti);
+		SendMessage(picker_data->old_color_tip, TTM_ACTIVATE, TRUE, 0);
+
 		[[fallthrough]];
 	}
 
@@ -524,6 +536,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			case IDB_OK:
 			{
 				picker_data->picker->UpdateOldColour();
+				DestroyWindow(picker_data->old_color_tip);
 				EndDialog(hDlg, IDB_OK);
 				break;
 			}
@@ -534,6 +547,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 				picker_data->picker->SetRGB(old.r, old.g, old.b);
 				picker_data->picker->SetAlpha(old.a);
+				DestroyWindow(picker_data->old_color_tip);
 				EndDialog(hDlg, IDB_CANCEL);
 				break;
 			}

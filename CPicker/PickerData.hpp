@@ -10,6 +10,7 @@ struct PickerData
 	CColourPicker *picker;
 	bool changing_text;
 	bool changing_hex_via_spin;
+	HWND old_color_tip;
 	WNDPROC button_proc;
 	CComPtr<ID2D1Factory> factory;
 	CComPtr<ID2D1HwndRenderTarget> targetC1;
