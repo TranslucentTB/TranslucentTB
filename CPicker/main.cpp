@@ -179,7 +179,7 @@ static const std::unordered_map<unsigned int, const std::pair<const unsigned int
 
 int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	PickerData *picker_data = reinterpret_cast<PickerData *>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+	PickerData *picker_data = reinterpret_cast<PickerData *>(GetWindowLongPtr(hDlg, DWLP_USER));
 	if (!picker_data && uMsg != WM_INITDIALOG)
 	{
 		return 0;
@@ -189,7 +189,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	{
 	case WM_INITDIALOG:
 	{
-		SetWindowLongPtr(hDlg, GWLP_USERDATA, lParam);
+		SetWindowLongPtr(hDlg, DWLP_USER, lParam);
 		picker_data = reinterpret_cast<PickerData *>(lParam);
 
 		D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &picker_data->factory);
@@ -572,7 +572,7 @@ int CALLBACK NoOutlineButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	}
 
 	const HWND hDlg = GetParent(hWnd);
-	return CallWindowProc(reinterpret_cast<PickerData *>(GetWindowLongPtr(hDlg, GWLP_USERDATA))->button_proc, hWnd, uMsg, wParam, lParam);
+	return CallWindowProc(reinterpret_cast<PickerData *>(GetWindowLongPtr(hDlg, DWLP_USER))->button_proc, hWnd, uMsg, wParam, lParam);
 }
 
 uint8_t ExpandOneLetterByte(const uint8_t &byte)
