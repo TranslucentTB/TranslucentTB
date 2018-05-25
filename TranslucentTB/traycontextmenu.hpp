@@ -36,7 +36,15 @@ public:
 	static void RefreshBool(unsigned int item, HMENU menu, const bool &value, BoolBindingEffect effect);
 	static void RefreshEnum(HMENU menu, unsigned int first, unsigned int last, unsigned int position);
 
-	void BindBool(unsigned int item, bool &value, BoolBindingEffect effect);
+	inline void BindBool(unsigned int item, bool &value, BoolBindingEffect effect)
+	{
+		if (effect == Toggle)
+		{
+			RegisterContextMenuCallback(item, std::bind(&Util::InvertBool, std::ref(value)));
+		}
+
+		m_RefreshFunctions.push_back(std::bind(&TrayContextMenu::RefreshBool, item, m_Menu, std::ref(value), effect));
+	}
 
 	template<class T>
 	inline void BindEnum(T &value, const std::unordered_map<T, unsigned int> &map)

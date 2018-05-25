@@ -100,16 +100,6 @@ void TrayContextMenu::RefreshEnum(HMENU menu, unsigned int first, unsigned int l
 	CheckMenuRadioItem(menu, first, last, position, MF_BYCOMMAND);
 }
 
-void TrayContextMenu::BindBool(unsigned int item, bool &value, BoolBindingEffect effect)
-{
-	if (effect == Toggle)
-	{
-		RegisterContextMenuCallback(item, std::bind(&Util::InvertBool, std::ref(value)));
-	}
-
-	m_RefreshFunctions.push_back(std::bind(&TrayContextMenu::RefreshBool, item, m_Menu, std::ref(value), effect));
-}
-
 void TrayContextMenu::RegisterCustomRefresh(const std::function<void(HMENU menu)> &function)
 {
 	m_RefreshFunctions.push_back(std::bind(function, m_Menu));

@@ -560,7 +560,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 	case WM_NOTIFY:
 	{
-		const LPNMHDR notify = reinterpret_cast<LPNMHDR>(lParam);
+		const NMHDR *const notify = reinterpret_cast<const NMHDR *>(lParam);
 		switch (notify->code)
 		{
 		case UDN_DELTAPOS:
@@ -574,7 +574,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 		case TTN_GETDISPINFO:
 		{
-			NMTTDISPINFO *dispinfo = (NMTTDISPINFO *)notify;
+			NMTTDISPINFO *const dispinfo = reinterpret_cast<NMTTDISPINFO *>(lParam);
 			wcscpy_s(dispinfo->szText, L"Click to restore old color");
 			break;
 		}
