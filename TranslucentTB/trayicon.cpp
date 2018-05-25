@@ -20,11 +20,6 @@ long TrayIcon::RegisterIcon(...)
 	return 0;
 }
 
-MessageWindow::CALLBACKCOOKIE TrayIcon::RegisterTrayCallback(const std::function<long(Window, WPARAM, LPARAM)> &callback)
-{
-	return m_Window.RegisterCallback(m_IconData.uCallbackMessage, callback);
-}
-
 TrayIcon::TrayIcon(MessageWindow &window, wchar_t *iconResource, const unsigned int additionalFlags, const HINSTANCE &hInstance) :
 	m_Window(window),
 	m_IconData {

@@ -68,13 +68,13 @@ public:
 
 	// Changes a value. Use with std::bind and context menu callbacks (BindEnum preferred).
 	template<typename T>
-	inline static void UpdateValue(T &toupdate, T newvalue, ...)
+	inline static void UpdateValue(T &toupdate, T newvalue)
 	{
 		toupdate = newvalue;
 	}
 
 	// Inverts a boolean. Use with std::bind and context menu callbacks (BindBool preferred).
-	inline static void InvertBool(bool &value, ...)
+	inline static void InvertBool(bool &value)
 	{
 		value = !value;
 	}

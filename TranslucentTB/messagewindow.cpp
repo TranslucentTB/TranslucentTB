@@ -10,8 +10,8 @@ long MessageWindow::WindowProcedure(HWND hWnd, unsigned int uMsg, WPARAM wParam,
 
 	if (uMsg == WM_NCCREATE)
 	{
-		CREATESTRUCT lpcs = *reinterpret_cast<CREATESTRUCT *>(lParam);
-		pThis = static_cast<MessageWindow *>(lpcs.lpCreateParams);
+		const CREATESTRUCT *const lpcs = reinterpret_cast<const CREATESTRUCT *>(lParam);
+		pThis = static_cast<MessageWindow *>(lpcs->lpCreateParams);
 
 		pThis->set_ptr(hWnd);
 	}
@@ -29,7 +29,7 @@ long MessageWindow::WindowProcedure(HWND hWnd, unsigned int uMsg, WPARAM wParam,
 			long result = 0;
 			for (const auto &callbackPair : callbackVector)
 			{
-				result = (std::max)(callbackPair.second(window, wParam, lParam), result);
+				result = (std::max)(callbackPair.second(wParam, lParam), result);
 			}
 			return result;
 		}

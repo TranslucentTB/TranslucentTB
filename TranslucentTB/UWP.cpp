@@ -4,8 +4,7 @@
 
 winrt::Windows::ApplicationModel::StartupTask &UWP::GetApplicationStartupTask()
 {
-	namespace am = winrt::Windows::ApplicationModel;
-	static am::StartupTask task = am::StartupTask::GetForCurrentPackageAsync().get().GetAt(0);
+	static auto task = winrt::Windows::ApplicationModel::StartupTask::GetForCurrentPackageAsync().get().GetAt(0);
 	return task;
 }
 

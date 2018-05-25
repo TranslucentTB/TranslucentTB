@@ -2,9 +2,8 @@
 
 #include "ttberror.hpp"
 #include "ttblog.hpp"
-#include "util.hpp"
 
-long TrayContextMenu::TrayCallback(Window, WPARAM, LPARAM lParam)
+long TrayContextMenu::TrayCallback(WPARAM, LPARAM lParam)
 {
 	if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
 	{
@@ -37,7 +36,7 @@ long TrayContextMenu::TrayCallback(Window, WPARAM, LPARAM lParam)
 		{
 			for (const auto &callbackPair : callbackVector)
 			{
-				callbackPair.second(item);
+				callbackPair.second();
 			}
 		}
 	}
@@ -53,7 +52,7 @@ TrayContextMenu::TrayContextMenu(MessageWindow &window, wchar_t *iconResource, w
 		LastErrorHandle(Error::Level::Fatal, L"Failed to load context menu.");
 	}
 
-	m_Cookie = RegisterTrayCallback(std::bind(&TrayContextMenu::TrayCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	m_Cookie = RegisterTrayCallback(std::bind(&TrayContextMenu::TrayCallback, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 TrayContextMenu::MENUCALLBACKCOOKIE TrayContextMenu::RegisterContextMenuCallback(unsigned int item, const m_MenuCallbackFunction &callback)
@@ -98,11 +97,6 @@ void TrayContextMenu::RefreshBool(unsigned int item, HMENU menu, const bool &val
 void TrayContextMenu::RefreshEnum(HMENU menu, unsigned int first, unsigned int last, unsigned int position)
 {
 	CheckMenuRadioItem(menu, first, last, position, MF_BYCOMMAND);
-}
-
-void TrayContextMenu::RegisterCustomRefresh(const std::function<void(HMENU menu)> &function)
-{
-	m_RefreshFunctions.push_back(std::bind(function, m_Menu));
 }
 
 TrayContextMenu::~TrayContextMenu()

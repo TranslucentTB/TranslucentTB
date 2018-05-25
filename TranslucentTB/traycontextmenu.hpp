@@ -11,12 +11,12 @@
 class TrayContextMenu : public TrayIcon {
 
 protected:
-	typedef std::function<void(unsigned int)> m_MenuCallbackFunction;
+	typedef std::function<void()> m_MenuCallbackFunction;
 
 private:
 	HMENU m_Menu;
 	std::unordered_map<unsigned int, std::vector<std::pair<unsigned short, m_MenuCallbackFunction>>> m_MenuCallbackMap;
-	long TrayCallback(Window, WPARAM, LPARAM);
+	long TrayCallback(WPARAM, LPARAM);
 	MessageWindow::CALLBACKCOOKIE m_Cookie;
 
 	std::vector<std::function<void()>> m_RefreshFunctions;
@@ -59,12 +59,20 @@ public:
 		unsigned int min = minmax.first->second;
 		unsigned int max = minmax.second->second;
 
-		m_RefreshFunctions.push_back([this, min, max, &value, &map]() {
+		m_RefreshFunctions.push_back([this, min, max, &value, &map] {
 			RefreshEnum(m_Menu, min, max, map.at(value));
 		});
 	}
 
-	void RegisterCustomRefresh(const std::function<void(HMENU menu)> &function);
+	inline void BindColor(unsigned int item, uint32_t &color)
+	{
+		RegisterContextMenuCallback(item, std::bind(&Util::PickColor, std::ref(color)));
+	}
+
+	inline void RegisterCustomRefresh(const std::function<void(HMENU menu)> &function)
+	{
+		m_RefreshFunctions.push_back(std::bind(function, m_Menu));
+	}
 
 	~TrayContextMenu();
 };

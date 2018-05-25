@@ -38,7 +38,8 @@ public:
 		const int &y = 0, const int &nWidth = 0, const int &nHeight = 0, const Window &parent = Window::NullWindow,
 		const HMENU &hMenu = NULL, const HINSTANCE &hInstance = GetModuleHandle(NULL), void *lpParam = nullptr)
 	{
-		return Create(dwExStyle, winClass.name(), windowName, dwStyle, x, y, nWidth, nHeight, parent, hMenu, hInstance, lpParam);
+		return CreateWindowEx(dwExStyle, winClass.atom(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
+			parent, hMenu, hInstance, lpParam);
 	}
 	inline static Window ForegroundWindow()
 	{

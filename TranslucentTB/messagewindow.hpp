@@ -11,7 +11,7 @@
 class MessageWindow : public Window {
 
 protected:
-	typedef std::function<long(Window, WPARAM, LPARAM)> m_CallbackFunction;
+	typedef std::function<long(WPARAM, LPARAM)> m_CallbackFunction;
 
 private:
 	std::unordered_map<unsigned int, std::vector<std::pair<unsigned short, m_CallbackFunction>>> m_CallbackMap;

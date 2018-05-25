@@ -6,7 +6,10 @@ class TrayIcon {
 
 protected:
 	MessageWindow &m_Window;
-	MessageWindow::CALLBACKCOOKIE RegisterTrayCallback(const std::function<long(Window, WPARAM, LPARAM)> &callback);
+	inline MessageWindow::CALLBACKCOOKIE RegisterTrayCallback(const std::function<long(WPARAM, LPARAM)> &callback)
+	{
+		return m_Window.RegisterCallback(m_IconData.uCallbackMessage, callback);
+	}
 
 private:
 	NOTIFYICONDATA m_IconData;
