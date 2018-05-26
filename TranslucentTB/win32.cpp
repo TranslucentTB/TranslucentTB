@@ -31,14 +31,16 @@ const std::wstring &win32::GetExeLocation()
 	if (m_ExeLocation.empty())
 	{
 		DWORD exeLocation_size = LONG_PATH;
-		std::vector<wchar_t> exeLocation(exeLocation_size);
-		if (!QueryFullProcessImageName(GetCurrentProcess(), 0, exeLocation.data(), &exeLocation_size))
+		std::wstring exeLocation;
+		exeLocation.resize(exeLocation_size);
+		if (QueryFullProcessImageName(GetCurrentProcess(), 0, exeLocation.data(), &exeLocation_size))
 		{
-			LastErrorHandle(Error::Level::Fatal, L"Failed to determine executable location!");
+			exeLocation.resize(exeLocation_size);
+			m_ExeLocation = std::move(exeLocation);
 		}
 		else
 		{
-			m_ExeLocation = exeLocation.data();
+			LastErrorHandle(Error::Level::Fatal, L"Failed to determine executable location!");
 		}
 	}
 

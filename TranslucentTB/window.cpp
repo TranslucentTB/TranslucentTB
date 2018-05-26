@@ -14,16 +14,19 @@ const Window Window::MessageOnlyWindow = HWND_MESSAGE;
 
 std::wstring Window::title() const
 {
+	std::wstring windowTitle;
 	int titleSize = GetWindowTextLength(m_WindowHandle) + 1; // For the null terminator
-	std::vector<wchar_t> windowTitleBuffer(titleSize);
+	windowTitle.resize(titleSize);
 
-	if (!GetWindowText(m_WindowHandle, windowTitleBuffer.data(), titleSize))
+	int copiedChars = GetWindowText(m_WindowHandle, windowTitle.data(), titleSize);
+	if (!copiedChars)
 	{
 		LastErrorHandle(Error::Level::Log, L"Getting title of a window failed.");
 		return L"";
 	}
 
-	return windowTitleBuffer.data();
+	windowTitle.resize(copiedChars);
+	return windowTitle;
 }
 
 const std::wstring &Window::classname() const
@@ -65,15 +68,16 @@ const std::wstring &Window::filename() const
 		}
 
 		DWORD path_Size = LONG_PATH;
-		std::vector<wchar_t> exeName_path(path_Size);
+		std::wstring exeName;
+		exeName.resize(path_Size);
 
-		if (!QueryFullProcessImageName(processHandle.Get(), 0, exeName_path.data(), &path_Size))
+		if (!QueryFullProcessImageName(processHandle.Get(), 0, exeName.data(), &path_Size))
 		{
 			LastErrorHandle(Error::Level::Log, L"Getting file name of a window failed.");
 			return m_Filenames[m_WindowHandle] = L"";
 		}
 
-		std::wstring exeName(exeName_path.data());
+		exeName.resize(path_Size);
 		exeName.erase(0, exeName.find_last_of(LR"(/\)") + 1);
 		return m_Filenames[m_WindowHandle] = exeName;
 	}

@@ -29,14 +29,17 @@ inline std::pair<HRESULT, std::wstring> Log::InitStream()
 {
 	HRESULT hr;
 #ifndef STORE
-	std::vector<wchar_t> temp(LONG_PATH);
-	if (!GetTempPath(LONG_PATH, temp.data()))
+	std::wstring temp;
+	temp.resize(LONG_PATH);
+	int size = GetTempPath(LONG_PATH, temp.data());
+	if (!size)
 	{
 		return std::make_pair(HRESULT_FROM_WIN32(GetLastError()), L"Failed to determine temporary folder location!");
 	}
+	temp.resize(size);
 
 	AutoFree::SilentLocal<wchar_t> log_folder;
-	hr = PathAllocCombine(temp.data(), NAME, PATHCCH_ALLOW_LONG_PATHS, &log_folder);
+	hr = PathAllocCombine(temp.c_str(), NAME, PATHCCH_ALLOW_LONG_PATHS, &log_folder);
 	if (FAILED(hr))
 	{
 		return std::make_pair(hr, L"Failed to combine temporary folder location and app name!");

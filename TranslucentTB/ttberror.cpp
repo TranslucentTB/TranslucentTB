@@ -30,19 +30,17 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 			boxbuffer += error_message;
 		}
 
+		const size_t functionLength = std::char_traits<char>::length(function);
 		std::wstring functionW;
-
-		const size_t functionLength = std::char_traits<char>::length(function) + 1;
-		std::vector<wchar_t> functionWtemp(functionLength);
-		if (MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, function, functionLength, functionWtemp.data(), functionLength))
+		functionW.resize(functionLength);
+		if (!MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, function, functionLength, functionW.data(), functionLength))
 		{
-			functionW = functionWtemp.data();
+			functionW = L"[failed to convert function name to UTF-16]";
 		}
 
 		const std::wstring err =
 			message_str + L' ' + error_message +
-			L" (" + file + L':' + std::to_wstring(line) + L" at function " +
-			(functionW.empty() ? L"[failed to convert function name to UTF-16]" : functionW) + L')';
+			L" (" + file + L':' + std::to_wstring(line) + L" at function " + functionW + L')';
 
 		switch (level)
 		{

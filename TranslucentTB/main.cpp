@@ -523,7 +523,7 @@ void HardenProcess()
 	}
 	else
 	{
-		LastErrorHandle(Error::Level::Log, L"Unable to get drive root.");
+		LastErrorHandle(Error::Level::Log, L"Unable to volume path name.");
 	}
 
 	if (!SetProcessMitigationPolicy(ProcessImageLoadPolicy, &load_policy, sizeof(load_policy)))
