@@ -43,6 +43,7 @@ void Config::Parse(const std::wstring &file)
 	std::wifstream configstream(file);
 	for (std::wstring line; std::getline(configstream, line);)
 	{
+		Util::ToLowerInplace(line);
 		if (line.empty())
 		{
 			continue;
@@ -62,12 +63,10 @@ void Config::Parse(const std::wstring &file)
 		size_t split_index = line.find(L'=');
 		if (split_index != std::wstring::npos)
 		{
-			std::wstring key = line.substr(0, split_index);
-			std::wstring val = line.substr(split_index + 1, line.length() - split_index - 1);
+			std::wstring key = Util::Trim(line.substr(0, split_index));
+			std::wstring val = Util::Trim(line.substr(split_index + 1, line.length() - split_index - 1));
 
-			Util::ToLower(key);
-			Util::ToLower(val);
-			ParseSingleConfigOption(key, Util::Trim(val));
+			ParseSingleConfigOption(key, val);
 		}
 		else
 		{
@@ -168,30 +167,30 @@ bool Config::ParseAccent(const std::wstring &value, swca::ACCENT &accent)
 	return true;
 }
 
-bool Config::ParseColor(const std::wstring &value, uint32_t &color)
+bool Config::ParseColor(std::wstring value, uint32_t &color)
 {
-	std::wstring color_value = Util::Trim(value);
+	Util::TrimInplace(value);
 
-	if (color_value.find(L'#') == 0)
+	if (value[0] == L'#')
 	{
-		color_value = color_value.substr(1, color_value.length() - 1);
+		value.erase(0, 1);
 	}
-	else if (color_value.find(L"0x") == 0)
+	else if (value[0] == L'0' && value[1] == L'x')
 	{
-		color_value = color_value.substr(2, color_value.length() - 2);
+		value.erase(0, 2);
 	}
 
 	// Get only the last 6 characters, keeps compatibility with old version.
 	// It stored AARRGGBB in color, but now we store it as RRGGBB.
 	// We read AA from opacity instead, which the old version also saved alpha to.
-	if (color_value.length() > 6)
+	if (value.length() > 6)
 	{
-		color_value = color_value.substr(color_value.length() - 6, 6);
+		value.erase(7);
 	}
 
 	try
 	{
-		color = (color & 0xFF000000) + (std::stoi(color_value, nullptr, 16) & 0x00FFFFFF);
+		color = (color & 0xFF000000) + (std::stoi(value, nullptr, 16) & 0x00FFFFFF);
 	}
 	catch (std::invalid_argument)
 	{

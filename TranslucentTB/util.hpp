@@ -11,7 +11,16 @@ class Util {
 
 public:
 	// Converts a string to its lowercase variant
-	inline static void ToLower(std::wstring &data)
+	inline static std::wstring ToLower(const std::wstring &data)
+	{
+		std::wstring lower;
+		lower.resize(data.length());
+		std::transform(data.begin(), data.end(), lower.begin(), std::towlower);
+		return lower;
+	}
+
+	// Converts a string to its lowercase variant
+	inline static void ToLowerInplace(std::wstring &data)
 	{
 		std::transform(data.begin(), data.end(), data.begin(), std::towlower);
 	}
@@ -19,10 +28,9 @@ public:
 private:
 	struct string_hash {
 		std::hash<std::wstring> m_Hasher;
-		inline std::size_t operator()(std::wstring k) const
+		inline std::size_t operator()(const std::wstring &k) const
 		{
-			ToLower(k);
-			return m_Hasher(k);
+			return m_Hasher(ToLower(k));
 		}
 	};
 
@@ -51,7 +59,7 @@ public:
 		}
 	};
 
-	// Removes instances of character at the beginning and end of the string.
+	// Removes instances of a character at the beginning and end of the string.
 	inline static std::wstring Trim(const std::wstring &str, const wchar_t &character = L' ')
 	{
 		size_t first = str.find_first_not_of(character);
@@ -64,6 +72,23 @@ public:
 		size_t last = str.find_last_not_of(character);
 		return str.substr(first, (last - first + 1));
 	}
+
+	// Removes instances of a character at the beginning and end of the string.
+	inline static void TrimInplace(std::wstring &str, const wchar_t &character = L' ')
+	{
+		size_t first = str.find_first_not_of(character);
+
+		if (first == std::wstring::npos)
+		{
+			str = L"";
+			return;
+		}
+
+		size_t last = str.find_last_not_of(character);
+		str.erase(last + 1);
+		str.erase(0, first);
+	}
+
 
 	// Changes a value. Use with std::bind and context menu callbacks (BindEnum preferred).
 	template<typename T>

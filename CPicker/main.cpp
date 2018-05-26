@@ -634,10 +634,11 @@ void FailedParse(HWND hDlg)
 
 void ParseHex(HWND hDlg, CColourPicker *picker)
 {
-	wchar_t rawText[21];
-	GetDlgItemText(hDlg, IDC_HEXCOL, rawText, 21);
-
-	std::wstring text = Util::Trim(rawText);
+	std::wstring text;
+	text.resize(21);
+	int count = GetDlgItemText(hDlg, IDC_HEXCOL, text.data(), 21);
+	text.resize(count);
+	Util::TrimInplace(text);
 
 	if (COLOR_MAP.count(text) != 0)
 	{

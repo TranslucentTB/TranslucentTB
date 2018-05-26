@@ -25,7 +25,7 @@ void Blacklist::Parse(const std::wstring &file)
 	std::wifstream excludesfilestream(file);
 	for (std::wstring line; std::getline(excludesfilestream, line);)
 	{
-		line = Util::Trim(line);
+		Util::TrimInplace(line);
 		if (line.empty())
 		{
 			continue;
@@ -46,8 +46,7 @@ void Blacklist::Parse(const std::wstring &file)
 			line += delimiter;
 		}
 
-		std::wstring line_lowercase = line;
-		Util::ToLower(line_lowercase);
+		std::wstring line_lowercase = Util::ToLower(line);
 
 		if (line_lowercase.substr(0, 5) == L"class")
 		{
@@ -92,8 +91,7 @@ bool Blacklist::IsBlacklisted(const Window &window)
 
 		if (m_FileBlacklist.size() > 0)
 		{
-			std::wstring exeName = window.filename();
-			Util::ToLower(exeName);
+			std::wstring exeName = Util::ToLower(window.filename());
 			for (const std::wstring &value : m_FileBlacklist)
 			{
 				if (exeName == value)

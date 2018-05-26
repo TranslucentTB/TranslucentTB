@@ -33,17 +33,20 @@ const std::wstring &Window::classname() const
 {
 	if (m_ClassNames.count(m_WindowHandle) == 0)
 	{
-		wchar_t className[257];	// According to docs, maximum length of a class name is 256, but it's ambiguous
+		std::wstring className;
+		className.resize(257);	// According to docs, maximum length of a class name is 256, but it's ambiguous
 								// wether this includes the null terminator or not.
 
-		if (!GetClassName(m_WindowHandle, className, 257))
+		int count = GetClassName(m_WindowHandle, className.data(), 257);
+		if (count)
 		{
-			LastErrorHandle(Error::Level::Log, L"Getting class name of a window failed.");
-			return m_ClassNames[m_WindowHandle] = L"";
+			className.resize(count);
+			return m_ClassNames[m_WindowHandle] = std::move(className);
 		}
 		else
 		{
-			return m_ClassNames[m_WindowHandle] = className;
+			LastErrorHandle(Error::Level::Log, L"Getting class name of a window failed.");
+			return m_ClassNames[m_WindowHandle] = L"";
 		}
 	}
 	else
