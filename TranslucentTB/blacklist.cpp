@@ -52,7 +52,7 @@ void Blacklist::Parse(const std::wstring &file)
 		{
 			AddToVector(delimiter, m_ClassBlacklist, line);
 		}
-		else if (line_lowercase.substr(0, 5) == L"title" || line.substr(0, 13) == L"windowtitle")
+		else if (line_lowercase.substr(0, 5) == L"title" || line_lowercase.substr(0, 13) == L"windowtitle")
 		{
 			AddToVector(delimiter, m_TitleBlacklist, line);
 		}
