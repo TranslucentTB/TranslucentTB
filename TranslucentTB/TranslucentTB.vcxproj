@@ -98,7 +98,6 @@
     <ClCompile Include="trayicon.cpp" />
     <ClCompile Include="ttberror.cpp" />
     <ClCompile Include="ttblog.cpp" />
-    <ClCompile Include="util.cpp" />
     <ClCompile Include="UWP.cpp" />
     <ClCompile Include="win32.cpp" />
     <ClCompile Include="window.cpp" />

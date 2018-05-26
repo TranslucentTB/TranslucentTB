@@ -34,9 +34,6 @@
     <ClCompile Include="UWP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="util.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="autostart.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

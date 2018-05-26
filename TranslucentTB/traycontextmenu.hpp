@@ -5,8 +5,9 @@
 #include <type_traits>
 #include <windef.h>
 
-#include "util.hpp"
 #include "trayicon.hpp"
+#include "util.hpp"
+#include "win32.hpp"
 
 class TrayContextMenu : public TrayIcon {
 
@@ -66,7 +67,7 @@ public:
 
 	inline void BindColor(unsigned int item, uint32_t &color)
 	{
-		RegisterContextMenuCallback(item, std::bind(&Util::PickColor, std::ref(color)));
+		RegisterContextMenuCallback(item, std::bind(&win32::PickColor, std::ref(color)));
 	}
 
 	inline void RegisterCustomRefresh(const std::function<void(HMENU menu)> &function)

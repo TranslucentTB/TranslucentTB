@@ -417,7 +417,7 @@ void SetTaskbarBlur()
 
 		TogglePeek(run.should_show_peek);
 
-		if (Config::START_ENABLED && Util::IsStartVisible())
+		if (Config::START_ENABLED && win32::IsStartVisible())
 		{
 			run.taskbars.at(Window::Find(L"Windows.UI.Core.CoreWindow", L"Start").monitor()).second = &Config::START_APPEARANCE;
 		}
@@ -615,7 +615,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	tray.RegisterContextMenuCallback(IDM_OPENLOG, [] {
 		std::thread([] {
 			Log::Flush();
-			Util::EditFile(Log::file());
+			win32::EditFile(Log::file());
 		}).detach();
 	});
 	tray.BindBool(IDM_VERBOSE, Config::VERBOSE, TrayContextMenu::Toggle);
@@ -623,7 +623,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	tray.RegisterContextMenuCallback(IDM_EDITSETTINGS, [] {
 		Config::Save(run.config_file);
 		std::thread([] {
-			Util::EditFile(run.config_file);
+			win32::EditFile(run.config_file);
 			Config::Parse(run.config_file);
 		}).detach();
 	});
@@ -634,7 +634,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	tray.RegisterContextMenuCallback(IDM_RELOADDYNAMICBLACKLIST, std::bind(&Blacklist::Parse, std::ref(run.exclude_file)));
 	tray.RegisterContextMenuCallback(IDM_EDITDYNAMICBLACKLIST, [] {
 		std::thread([] {
-			Util::EditFile(run.exclude_file);
+			win32::EditFile(run.exclude_file);
 			Blacklist::Parse(run.exclude_file);
 		}).detach();
 	});
@@ -652,7 +652,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	tray.RegisterContextMenuCallback(IDM_AUTOSTART, [] {
 		Autostart::SetStartupState(Autostart::GetStartupState() == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
 	});
-	tray.RegisterContextMenuCallback(IDM_TIPS, std::bind(&Util::OpenLink,
+	tray.RegisterContextMenuCallback(IDM_TIPS, std::bind(&win32::OpenLink,
 		L"https://github.com/TranslucentTB/TranslucentTB/wiki/Tips-and-tricks-for-a-better-looking-taskbar"));
 	tray.RegisterContextMenuCallback(IDM_EXIT, [] {
 		run.exit_reason = EXITREASON::UserAction;

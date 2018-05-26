@@ -5,7 +5,6 @@
 #include <limits>
 #include <random>
 #include <string>
-#include <thread>
 #include <unordered_map>
 
 class Util {
@@ -89,21 +88,4 @@ public:
 
 		return distribution(rng);
 	}
-
-	// Copies text to the clipboard.
-	static void CopyToClipboard(const std::wstring &text);
-
-	// Opens a file in the default text editor.
-	static void EditFile(const std::wstring &file);
-
-	// Opens a link in the default browser.
-	// NOTE: doesn't attempts to validate the link, make sure it's correct.
-	static void OpenLink(const std::wstring &link);
-
-	// Opens a color picker.
-	// NOTE: use .join() to wait for input, because this doesn't blocks by default.
-	static std::thread PickColor(uint32_t &color);
-
-	// Checks if the start menu is open using a COM interface.
-	static bool IsStartVisible();
 };
