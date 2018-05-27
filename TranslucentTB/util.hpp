@@ -26,8 +26,12 @@ public:
 	}
 
 private:
-	struct string_hash {
+	class string_hash {
+
+	private:
 		std::hash<std::wstring> m_Hasher;
+
+	public:
 		inline std::size_t operator()(const std::wstring &k) const
 		{
 			return m_Hasher(ToLower(k));
@@ -51,8 +55,11 @@ public:
 	using string_map = std::unordered_map<std::wstring, T, string_hash, string_compare>;
 
 	template<typename K, typename V, class Compare = std::less<V>>
-	struct map_value_compare {
+	class map_value_compare {
+	private:
 		Compare m_Compare;
+
+	public:
 		inline bool operator()(const std::pair<K, V> &a, const std::pair<K, V> &b)
 		{
 			return m_Compare(a.second, b.second);
@@ -89,6 +96,24 @@ public:
 		str.erase(0, first);
 	}
 
+	// Checks if a string begins with another string. More efficient than str.find(text) == 0.
+	inline static bool StringBeginsWith(const std::wstring &string, const std::wstring &text_to_test)
+	{
+		const size_t length = text_to_test.length();
+		if (string.length() < length)
+		{
+			return false;
+		}
+
+		for (size_t i = 0; i < length; i++)
+		{
+			if (text_to_test[i] != string[i])
+			{
+				return false;
+			}
+		}
+		return true;
+	}
 
 	// Changes a value. Use with std::bind and context menu callbacks (BindEnum preferred).
 	template<typename T>

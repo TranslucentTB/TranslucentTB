@@ -38,7 +38,7 @@ void Blacklist::Parse(const std::wstring &file)
 		}
 		else if (comment_index != std::wstring::npos)
 		{
-			line = line.substr(0, comment_index);
+			line.erase(comment_index);
 		}
 
 		if (line[line.length() - 1] != delimiter)
@@ -48,17 +48,17 @@ void Blacklist::Parse(const std::wstring &file)
 
 		std::wstring line_lowercase = Util::ToLower(line);
 
-		if (line_lowercase.substr(0, 5) == L"class")
+		if (Util::StringBeginsWith(line_lowercase, L"class"))
 		{
-			AddToVector(delimiter, m_ClassBlacklist, line);
+			AddToVector(std::move(line), m_ClassBlacklist, delimiter);
 		}
-		else if (line_lowercase.substr(0, 5) == L"title" || line_lowercase.substr(0, 13) == L"windowtitle")
+		else if (Util::StringBeginsWith(line_lowercase, L"title") || Util::StringBeginsWith(line_lowercase, L"windowtitle"))
 		{
-			AddToVector(delimiter, m_TitleBlacklist, line);
+			AddToVector(std::move(line), m_TitleBlacklist, delimiter);
 		}
-		else if (line_lowercase.substr(0, 7) == L"exename")
+		else if (Util::StringBeginsWith(line_lowercase, L"exename"))
 		{
-			AddToVector(delimiter, m_FileBlacklist, line_lowercase);
+			AddToVector(std::move(line_lowercase), m_FileBlacklist, delimiter);
 		}
 		else
 		{
@@ -146,7 +146,7 @@ void Blacklist::HandleNameChange(HWINEVENTHOOK, DWORD, const HWND window, const 
 	}
 }
 
-void Blacklist::AddToVector(const wchar_t &delimiter, std::vector<std::wstring> &vector, std::wstring line)
+void Blacklist::AddToVector(std::wstring line, std::vector<std::wstring> &vector, const wchar_t &delimiter)
 {
 	size_t pos;
 

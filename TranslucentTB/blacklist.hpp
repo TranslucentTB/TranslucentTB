@@ -24,7 +24,7 @@ private:
 	static EventHook m_TitleHook;
 	static void CALLBACK HandleNameChange(HWINEVENTHOOK, DWORD, const HWND window, const LONG idObject, LONG, DWORD, DWORD);
 
-	static void AddToVector(const wchar_t &delimiter, std::vector<std::wstring> &vector, std::wstring line);
+	static void AddToVector(std::wstring line, std::vector<std::wstring> &vector, const wchar_t &delimiter = L',');
 	static bool OutputMatchToLog(const Window &window, const bool &isMatch);
 
 };

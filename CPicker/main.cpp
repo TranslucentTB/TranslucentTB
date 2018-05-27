@@ -653,11 +653,11 @@ void ParseHex(HWND hDlg, CColourPicker *picker)
 			return;
 		}
 
-		if (text[0] == L'#')
+		if (Util::StringBeginsWith(text, L"#"))
 		{
 			text.erase(0, 1);
 		}
-		else if (text[0] == L'0' && text[1] == L'x')
+		else if (Util::StringBeginsWith(text, L"0x"))
 		{
 			text.erase(0, 2);
 		}

@@ -103,9 +103,13 @@ public:
 // Specialize std::hash to allow the use of Window as unordered_map key
 namespace std {
 
-	template<> struct hash<Window> {
+	template<> class hash<Window> {
+
+	private:
 		std::hash<HWND> m_Hasher;
-		inline std::size_t operator()(const Window &k) const
+
+	public:
+		inline size_t operator()(const Window &k) const
 		{
 			return m_Hasher(k.m_WindowHandle);
 		}

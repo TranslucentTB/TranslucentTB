@@ -57,7 +57,7 @@ void Config::Parse(const std::wstring &file)
 		}
 		else if (comment_index != std::wstring::npos)
 		{
-			line = line.substr(0, comment_index);
+			line.erase(comment_index);
 		}
 
 		size_t split_index = line.find(L'=');
@@ -171,11 +171,11 @@ bool Config::ParseColor(std::wstring value, uint32_t &color)
 {
 	Util::TrimInplace(value);
 
-	if (value[0] == L'#')
+	if (Util::StringBeginsWith(value, L"#"))
 	{
 		value.erase(0, 1);
 	}
-	else if (value[0] == L'0' && value[1] == L'x')
+	else if (Util::StringBeginsWith(value, L"0x"))
 	{
 		value.erase(0, 2);
 	}
@@ -185,7 +185,7 @@ bool Config::ParseColor(std::wstring value, uint32_t &color)
 	// We read AA from opacity instead, which the old version also saved alpha to.
 	if (value.length() > 6)
 	{
-		value.erase(7);
+		value.erase(0, 2);
 	}
 
 	try
