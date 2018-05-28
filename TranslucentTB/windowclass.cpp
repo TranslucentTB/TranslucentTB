@@ -24,7 +24,8 @@ WindowClass::WindowClass(WNDPROC callback, const std::wstring &className, const 
 	ErrorHandle(LoadIconMetric(hInstance, iconResource, LIM_LARGE, &m_ClassStruct.hIcon), Error::Level::Log, L"Failed to load large window class icon.");
 	ErrorHandle(LoadIconMetric(hInstance, iconResource, LIM_SMALL, &m_ClassStruct.hIconSm), Error::Level::Log, L"Failed to load small window class icon.");
 
-	if (!(m_Atom = RegisterClassEx(&m_ClassStruct)))
+	m_Atom = RegisterClassEx(&m_ClassStruct);
+	if (!m_Atom)
 	{
 		LastErrorHandle(Error::Level::Fatal, L"Failed to register window class!");
 	}
