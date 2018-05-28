@@ -36,4 +36,13 @@ WindowClass::~WindowClass()
 	{
 		LastErrorHandle(Error::Level::Log, L"Failed to unregister window class.");
 	}
+
+	if (!DestroyIcon(m_ClassStruct.hIcon))
+	{
+		LastErrorHandle(Error::Level::Log, L"Failed to destroy large window class icon.");
+	}
+	if (!DestroyIcon(m_ClassStruct.hIconSm))
+	{
+		LastErrorHandle(Error::Level::Log, L"Failed to destory small window class icon.");
+	}
 }

@@ -1,8 +1,8 @@
 #pragma once
 #include <cstdint>
 
-struct _declspec(dllexport) SColour
-{
+struct _declspec(dllexport) SColour {
+
 	// Red, green and blue
 	uint8_t r, g, b;
 

@@ -46,4 +46,8 @@ TrayIcon::~TrayIcon()
 		Log::OutputMessage(L"Failed to notify shell of icon deletion.");
 	}
 	m_Window.UnregisterCallback(m_Cookie);
+	if (!DestroyIcon(m_IconData.hIcon))
+	{
+		LastErrorHandle(Error::Level::Log, L"Failed to destroy tray icon.");
+	}
 }

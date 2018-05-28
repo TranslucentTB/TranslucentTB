@@ -17,7 +17,7 @@ private:
 	std::unordered_map<unsigned int, std::vector<std::pair<unsigned short, m_CallbackFunction>>> m_CallbackMap;
 	WindowClass m_WindowClass;
 
-	static long CALLBACK WindowProcedure(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK WindowProcedure(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam);
 	void set_ptr(const HWND &hwnd);
 	static MessageWindow *get_ptr(const HWND &hwnd);
 

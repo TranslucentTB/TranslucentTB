@@ -287,12 +287,12 @@ void TogglePeek(const bool &status)
 
 #pragma region Tray
 
-inline void ChangePopupItemText(HMENU menu, const uint32_t &item, std::wstring &&new_text, const bool &byIndex = false)
+inline void ChangePopupItemText(HMENU menu, const uint32_t &item, std::wstring &&new_text)
 {
 	MENUITEMINFO item_info = { sizeof(item_info), MIIM_STRING };
 
 	item_info.dwTypeData = new_text.data();
-	SetMenuItemInfo(GetSubMenu(menu, 0), item, byIndex, &item_info);
+	SetMenuItemInfo(menu, item, false, &item_info);
 }
 
 void RefreshMenu(HMENU menu)
@@ -308,8 +308,7 @@ void RefreshMenu(HMENU menu)
 			RemoveMenu(menu, IDM_TIMELINE_FLUENT,  MF_BYCOMMAND);
 
 			// Same build for Timeline and fluent
-			ChangePopupItemText(menu, 3, L"Task View opened", true);	// We must use index here because POPUP resource directives
-																		// can't store an ID. And MENUEX fucks up rc.exe to no end.
+			ChangePopupItemText(menu, IDM_TIMELINE_POPUP, L"Task View opened");
 		}
 
 		initial_check_done = true;

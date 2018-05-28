@@ -4,7 +4,7 @@
 #include "ttberror.hpp"
 #include "util.hpp"
 
-long MessageWindow::WindowProcedure(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT MessageWindow::WindowProcedure(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
 {
 	MessageWindow *pThis;
 

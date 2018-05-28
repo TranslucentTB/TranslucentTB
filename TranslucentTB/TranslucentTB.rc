@@ -62,14 +62,14 @@ TRAYICON                ICON                    "TTB_white.ico"
 // Menu
 //
 
-IDR_POPUP_MENU MENU
+IDR_POPUP_MENU MENUEX
 BEGIN
-    POPUP "POPUP"
+    POPUP ""
     BEGIN
         POPUP "Regular"
         BEGIN
             MENUITEM "Accent Color",                IDM_REGULAR_COLOR
-            MENUITEM SEPARATOR
+            MENUITEM "",                            0, MFT_SEPARATOR
             MENUITEM "Normal",                      IDM_REGULAR_NORMAL
             MENUITEM "Clear",                       IDM_REGULAR_CLEAR
             MENUITEM "Opaque",                      IDM_REGULAR_OPAQUE
@@ -81,7 +81,7 @@ BEGIN
             MENUITEM "Enabled",                     IDM_MAXIMISED
             MENUITEM "Regular when peeking",        IDM_MAXIMISED_PEEK
             MENUITEM "Accent Color",                IDM_MAXIMISED_COLOR
-            MENUITEM SEPARATOR
+            MENUITEM "",                            0, MFT_SEPARATOR
             MENUITEM "Normal",                      IDM_MAXIMISED_NORMAL
             MENUITEM "Clear",                       IDM_MAXIMISED_CLEAR
             MENUITEM "Opaque",                      IDM_MAXIMISED_OPAQUE
@@ -92,25 +92,25 @@ BEGIN
         BEGIN
             MENUITEM "Enabled",                     IDM_START
             MENUITEM "Accent Color",                IDM_START_COLOR
-            MENUITEM SEPARATOR
+            MENUITEM "",                            0, MFT_SEPARATOR
             MENUITEM "Normal",                      IDM_START_NORMAL
             MENUITEM "Clear",                       IDM_START_CLEAR
             MENUITEM "Opaque",                      IDM_START_OPAQUE
             MENUITEM "Blur",                        IDM_START_BLUR
             MENUITEM "Fluent",                      IDM_START_FLUENT
         END
-        POPUP "Timeline opened"
+        POPUP "Timeline opened",                IDM_TIMELINE_POPUP
         BEGIN
             MENUITEM "Enabled",                     IDM_TIMELINE
             MENUITEM "Accent Color",                IDM_TIMELINE_COLOR
-            MENUITEM SEPARATOR
+            MENUITEM "",                            0, MFT_SEPARATOR
             MENUITEM "Normal",                      IDM_TIMELINE_NORMAL
             MENUITEM "Clear",                       IDM_TIMELINE_CLEAR
             MENUITEM "Opaque",                      IDM_TIMELINE_OPAQUE
             MENUITEM "Blur",                        IDM_TIMELINE_BLUR
             MENUITEM "Fluent",                      IDM_TIMELINE_FLUENT
         END
-        MENUITEM SEPARATOR
+        MENUITEM "",                            0, MFT_SEPARATOR
         POPUP "Show Aero Peek"
         BEGIN
             MENUITEM "Always",                      IDM_PEEK_SHOW
@@ -121,15 +121,15 @@ BEGIN
         BEGIN
             MENUITEM "Open log file",               IDM_OPENLOG
             MENUITEM "Verbose logging",             IDM_VERBOSE
-            MENUITEM SEPARATOR
+            MENUITEM "",                            0, MFT_SEPARATOR
             MENUITEM "Reload settings",             IDM_RELOADSETTINGS
             MENUITEM "Edit settings",               IDM_EDITSETTINGS
             MENUITEM "Return to default settings",  IDM_RETURNTODEFAULTSETTINGS
-            MENUITEM SEPARATOR
+            MENUITEM "",                            0, MFT_SEPARATOR
             MENUITEM "Reload blacklist",            IDM_RELOADDYNAMICBLACKLIST
             MENUITEM "Edit blacklist",              IDM_EDITDYNAMICBLACKLIST
             MENUITEM "Return to default blacklist", IDM_RETURNTODEFAULTBLACKLIST
-            MENUITEM SEPARATOR
+            MENUITEM "",                            0, MFT_SEPARATOR
             MENUITEM "Clear blacklist cache",       IDM_CLEARBLACKLISTCACHE
             MENUITEM "Exit without saving",         IDM_EXITWITHOUTSAVING
         END

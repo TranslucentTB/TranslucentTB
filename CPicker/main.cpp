@@ -177,7 +177,7 @@ static const std::unordered_map<unsigned int, const std::pair<const unsigned int
 	{ IDC_HEXCOL,     { IDC_HEXSLIDER, 0xFFFFFFFF } }
 };
 
-int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	PickerData *picker_data = reinterpret_cast<PickerData *>(GetWindowLongPtr(hDlg, DWLP_USER));
 	if (!picker_data && uMsg != WM_INITDIALOG)
@@ -585,7 +585,7 @@ int CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	return 0;
 }
 
-int CALLBACK NoOutlineButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK NoOutlineButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_SETFOCUS)
 	{
