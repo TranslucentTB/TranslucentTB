@@ -128,14 +128,21 @@ public:
 		value = !value;
 	}
 
+private:
+	// Gets a static instance of a Mersenne Twister engine. Can't be put directly in
+	// GetRandomNumber because every different template instantion will get a different static variable.
+	inline static std::mt19937 &GetRandomEngine()
+	{
+		static std::mt19937 rng(std::random_device{}());
+		return rng;
+	}
+
+public:
 	// Gets a random number from an distribution of numbers.
 	template<typename T = int>
 	inline static T GetRandomNumber(const T &begin = (std::numeric_limits<T>::min)(), const T &end = (std::numeric_limits<T>::max)())
 	{
-		std::random_device seed;
-		std::mt19937 rng(seed());
 		std::uniform_int_distribution<T> distribution(begin, end);
-
-		return distribution(rng);
+		return distribution(GetRandomEngine());
 	}
 };
