@@ -5,8 +5,7 @@
 
 #include "CColourPicker.hpp"
 
-struct PickerData
-{
+struct PickerData {
 	CColourPicker *picker;
 	bool changing_text;
 	bool changing_hex_via_spin;
