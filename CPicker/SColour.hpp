@@ -1,7 +1,9 @@
 #pragma once
 #include <cstdint>
 
-struct _declspec(dllexport) SColour {
+#include "extern.h"
+
+struct EXTERN SColour {
 
 	// Red, green and blue
 	uint8_t r, g, b;
@@ -16,3 +18,5 @@ struct _declspec(dllexport) SColour {
 	void UpdateRGB();			// Updates RGB from HSV
 	void UpdateHSV();			// Updates HSV from RGB
 };
+
+#undef EXTERN

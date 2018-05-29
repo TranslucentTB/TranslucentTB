@@ -5,8 +5,9 @@
 #include <windef.h>
 
 #include "SColour.hpp"
+#include "extern.h"
 
-class _declspec(dllexport) CColourPicker {
+class EXTERN CColourPicker {
 
 public:
 	CColourPicker(uint32_t &value, HWND hParentWindow = NULL);
@@ -26,10 +27,9 @@ public:
 
 	void UpdateOldColour();
 
-	friend INT_PTR CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
 private:
 	void UpdateValue();
+	static INT_PTR CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	static std::unordered_map<uint32_t *, HWND> PickerMap;
 	uint32_t &Value;
@@ -37,3 +37,5 @@ private:
 	SColour CurrCol, OldCol;
 	HWND hParent;
 };
+
+#undef EXTERN

@@ -53,6 +53,9 @@
     <ClInclude Include="PickerData.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="extern.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DLL.rc">

@@ -177,7 +177,7 @@ static const std::unordered_map<unsigned int, const std::pair<const unsigned int
 	{ IDC_HEXCOL,     { IDC_HEXSLIDER, 0xFFFFFFFF } }
 };
 
-INT_PTR CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	PickerData *picker_data = reinterpret_cast<PickerData *>(GetWindowLongPtr(hDlg, DWLP_USER));
 	if (!picker_data && uMsg != WM_INITDIALOG)
@@ -194,7 +194,7 @@ INT_PTR CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 		D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &picker_data->factory);
 
-		CColourPicker::PickerMap[&(picker_data->picker->Value)] = hDlg;
+		CColourPicker::PickerMap[&picker_data->picker->Value] = hDlg;
 
 		for (const auto &slider_combo : SLIDER_MAP)
 		{
