@@ -210,7 +210,7 @@ void win32::OpenLink(const std::wstring &link)
 
 std::thread win32::PickColor(uint32_t &color)
 {
-	std::thread t([&color]()
+	std::thread t([&color]
 	{
 		CColourPicker(color).CreateColourPicker();
 	});

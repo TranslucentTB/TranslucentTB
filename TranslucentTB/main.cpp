@@ -522,7 +522,7 @@ void HardenProcess()
 	}
 	else
 	{
-		LastErrorHandle(Error::Level::Log, L"Unable to volume path name.");
+		LastErrorHandle(Error::Level::Log, L"Unable to get volume path name.");
 	}
 
 	if (!SetProcessMitigationPolicy(ProcessImageLoadPolicy, &load_policy, sizeof(load_policy)))
