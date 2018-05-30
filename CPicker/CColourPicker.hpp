@@ -30,6 +30,7 @@ public:
 private:
 	void UpdateValue();
 	static INT_PTR CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static const HINSTANCE Instance;
 
 	static std::unordered_map<uint32_t *, HWND> PickerMap;
 	uint32_t &Value;

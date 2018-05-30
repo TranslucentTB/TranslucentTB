@@ -6,6 +6,9 @@
 #include "resource.h"
 
 std::unordered_map<uint32_t *, HWND> CColourPicker::PickerMap;
+// https://blogs.msdn.microsoft.com/oldnewthing/20041025-00/?p=37483/
+// __ImageBase is already declared by atlbase.h, which is imported in PickerData.hpp
+const HINSTANCE CColourPicker::Instance = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
 CColourPicker::CColourPicker(uint32_t &value, HWND hParentWindow) : Value(value), hParent(hParentWindow)
 {
@@ -24,7 +27,7 @@ void CColourPicker::CreateColourPicker()
 	{
 		PickerData data;
 		data.picker = this;
-		DialogBoxParam(GetModuleHandle(L"CPicker.dll"), MAKEINTRESOURCE(IDD_COLORPICKER), hParent, ColourPickerDlgProc, reinterpret_cast<LPARAM>(&data));
+		DialogBoxParam(Instance, MAKEINTRESOURCE(IDD_COLORPICKER), hParent, ColourPickerDlgProc, reinterpret_cast<LPARAM>(&data));
 		PickerMap.erase(&Value);
 	}
 	else
