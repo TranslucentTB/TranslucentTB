@@ -3,7 +3,6 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
-#include <vector>
 
 // Windows API
 #include "arch.h"
@@ -461,76 +460,6 @@ void InitializeWindowsRuntime()
 	ErrorHandle(init, Error::Level::Log, L"Initialization of Windows Runtime failed.");
 }
 
-void HardenProcess()
-{
-	PROCESS_MITIGATION_ASLR_POLICY aslr_policy;
-	if (GetProcessMitigationPolicy(GetCurrentProcess(), ProcessASLRPolicy, &aslr_policy, sizeof(aslr_policy)))
-	{
-		aslr_policy.EnableForceRelocateImages = true;
-		aslr_policy.DisallowStrippedImages = true;
-		if (!SetProcessMitigationPolicy(ProcessASLRPolicy, &aslr_policy, sizeof(aslr_policy)))
-		{
-			LastErrorHandle(Error::Level::Log, L"Couldn't disallow stripped images.");
-		}
-	}
-	else
-	{
-		LastErrorHandle(Error::Level::Log, L"Couldn't get current ASLR policy.");
-	}
-
-	PROCESS_MITIGATION_DYNAMIC_CODE_POLICY code_policy {};
-	code_policy.ProhibitDynamicCode = true;
-	code_policy.AllowThreadOptOut = false;
-	code_policy.AllowRemoteDowngrade = false;
-	if (!SetProcessMitigationPolicy(ProcessDynamicCodePolicy, &code_policy, sizeof(code_policy)))
-	{
-		LastErrorHandle(Error::Level::Log, L"Couldn't disable dynamic code generation.");
-	}
-
-	PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY handle_policy {};
-	handle_policy.RaiseExceptionOnInvalidHandleReference = true;
-	handle_policy.HandleExceptionsPermanentlyEnabled = true;
-	if (!SetProcessMitigationPolicy(ProcessStrictHandleCheckPolicy, &handle_policy, sizeof(handle_policy)))
-	{
-		LastErrorHandle(Error::Level::Log, L"Couldn't enable strict handle checks.");
-	}
-
-	PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY extension_policy {};
-	extension_policy.DisableExtensionPoints = true;
-	if (!SetProcessMitigationPolicy(ProcessExtensionPointDisablePolicy, &extension_policy, sizeof(extension_policy)))
-	{
-		LastErrorHandle(Error::Level::Log, L"Couldn't disable extension point DLLs.");
-	}
-
-	PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY signature_policy {};
-	signature_policy.MitigationOptIn = true;
-	if (!SetProcessMitigationPolicy(ProcessSignaturePolicy, &signature_policy, sizeof(signature_policy)))
-	{
-		LastErrorHandle(Error::Level::Log, L"Couldn't enable image signature enforcement.");
-	}
-
-
-	PROCESS_MITIGATION_IMAGE_LOAD_POLICY load_policy {};
-	load_policy.NoLowMandatoryLabelImages = true;
-	load_policy.PreferSystem32Images = true;
-
-	// https://blogs.msdn.microsoft.com/oldnewthing/20160602-00/?p=93556
-	std::vector<wchar_t> volumePath(LONG_PATH);
-	if (GetVolumePathName(win32::GetExeLocation().c_str(), volumePath.data(), LONG_PATH))
-	{
-		load_policy.NoRemoteImages = GetDriveType(volumePath.data()) != DRIVE_REMOTE;
-	}
-	else
-	{
-		LastErrorHandle(Error::Level::Log, L"Unable to get volume path name.");
-	}
-
-	if (!SetProcessMitigationPolicy(ProcessImageLoadPolicy, &load_policy, sizeof(load_policy)))
-	{
-		LastErrorHandle(Error::Level::Log, L"Couldn't set image load policy.");
-	}
-}
-
 void InitializeTray(const HINSTANCE &hInstance)
 {
 	static MessageWindow window(L"TrayWindow", NAME, hInstance);
@@ -573,98 +502,101 @@ void InitializeTray(const HINSTANCE &hInstance)
 #endif
 
 
-	static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYICON), MAKEINTRESOURCE(IDR_POPUP_MENU), hInstance);
-
-	tray.BindColor(IDM_REGULAR_COLOR, Config::REGULAR_APPEARANCE.COLOR);
-	tray.BindEnum(Config::REGULAR_APPEARANCE.ACCENT, REGULAR_BUTTOM_MAP);
-
-
-	tray.BindBool(IDM_MAXIMISED,      Config::MAXIMISED_ENABLED,         TrayContextMenu::Toggle);
-	tray.BindBool(IDM_MAXIMISED_PEEK, Config::MAXIMISED_ENABLED,         TrayContextMenu::ControlsEnabled);
-	tray.BindBool(IDM_MAXIMISED_PEEK, Config::MAXIMISED_REGULAR_ON_PEEK, TrayContextMenu::Toggle);
-	tray.BindColor(IDM_MAXIMISED_COLOR, Config::MAXIMISED_APPEARANCE.COLOR);
-	tray.BindEnum(Config::MAXIMISED_APPEARANCE.ACCENT, MAXIMISED_BUTTON_MAP);
-	for (const auto &button_pair : MAXIMISED_BUTTON_MAP)
+	if (!Config::NO_TRAY)
 	{
-		tray.BindBool(button_pair.second, Config::MAXIMISED_ENABLED, TrayContextMenu::ControlsEnabled);
-	}
+		static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYICON), MAKEINTRESOURCE(IDR_POPUP_MENU), hInstance);
+
+		tray.BindColor(IDM_REGULAR_COLOR, Config::REGULAR_APPEARANCE.COLOR);
+		tray.BindEnum(Config::REGULAR_APPEARANCE.ACCENT, REGULAR_BUTTOM_MAP);
 
 
-	tray.BindBool(IDM_START, Config::START_ENABLED, TrayContextMenu::Toggle);
-	tray.BindColor(IDM_START_COLOR, Config::START_APPEARANCE.COLOR);
-	tray.BindEnum(Config::START_APPEARANCE.ACCENT, START_BUTTON_MAP);
-	for (const auto &button_pair : START_BUTTON_MAP)
-	{
-		tray.BindBool(button_pair.second, Config::START_ENABLED, TrayContextMenu::ControlsEnabled);
-	}
+		tray.BindBool(IDM_MAXIMISED,      Config::MAXIMISED_ENABLED,         TrayContextMenu::Toggle);
+		tray.BindBool(IDM_MAXIMISED_PEEK, Config::MAXIMISED_ENABLED,         TrayContextMenu::ControlsEnabled);
+		tray.BindBool(IDM_MAXIMISED_PEEK, Config::MAXIMISED_REGULAR_ON_PEEK, TrayContextMenu::Toggle);
+		tray.BindColor(IDM_MAXIMISED_COLOR, Config::MAXIMISED_APPEARANCE.COLOR);
+		tray.BindEnum(Config::MAXIMISED_APPEARANCE.ACCENT, MAXIMISED_BUTTON_MAP);
+		for (const auto &button_pair : MAXIMISED_BUTTON_MAP)
+		{
+			tray.BindBool(button_pair.second, Config::MAXIMISED_ENABLED, TrayContextMenu::ControlsEnabled);
+		}
 
 
-	tray.BindBool(IDM_TIMELINE, Config::TIMELINE_ENABLED, TrayContextMenu::Toggle);
-	tray.BindColor(IDM_TIMELINE_COLOR, Config::TIMELINE_APPEARANCE.COLOR);
-	tray.BindEnum(Config::TIMELINE_APPEARANCE.ACCENT, TIMELINE_BUTTON_MAP);
-	for (const auto &button_pair : TIMELINE_BUTTON_MAP)
-	{
-		tray.BindBool(button_pair.second, Config::TIMELINE_ENABLED, TrayContextMenu::ControlsEnabled);
-	}
+		tray.BindBool(IDM_START, Config::START_ENABLED, TrayContextMenu::Toggle);
+		tray.BindColor(IDM_START_COLOR, Config::START_APPEARANCE.COLOR);
+		tray.BindEnum(Config::START_APPEARANCE.ACCENT, START_BUTTON_MAP);
+		for (const auto &button_pair : START_BUTTON_MAP)
+		{
+			tray.BindBool(button_pair.second, Config::START_ENABLED, TrayContextMenu::ControlsEnabled);
+		}
 
 
-	tray.BindEnum(Config::PEEK, PEEK_BUTTON_MAP);
+		tray.BindBool(IDM_TIMELINE, Config::TIMELINE_ENABLED, TrayContextMenu::Toggle);
+		tray.BindColor(IDM_TIMELINE_COLOR, Config::TIMELINE_APPEARANCE.COLOR);
+		tray.BindEnum(Config::TIMELINE_APPEARANCE.ACCENT, TIMELINE_BUTTON_MAP);
+		for (const auto &button_pair : TIMELINE_BUTTON_MAP)
+		{
+			tray.BindBool(button_pair.second, Config::TIMELINE_ENABLED, TrayContextMenu::ControlsEnabled);
+		}
 
 
-	tray.RegisterContextMenuCallback(IDM_OPENLOG, [] {
-		std::thread([] {
-			Log::Flush();
-			win32::EditFile(Log::file());
-		}).detach();
-	});
-	tray.BindBool(IDM_VERBOSE, Config::VERBOSE, TrayContextMenu::Toggle);
-	tray.RegisterContextMenuCallback(IDM_RELOADSETTINGS, std::bind(&Config::Parse, std::ref(run.config_file)));
-	tray.RegisterContextMenuCallback(IDM_EDITSETTINGS, [] {
-		Config::Save(run.config_file);
-		std::thread([] {
-			win32::EditFile(run.config_file);
+		tray.BindEnum(Config::PEEK, PEEK_BUTTON_MAP);
+
+
+		tray.RegisterContextMenuCallback(IDM_OPENLOG, [] {
+			std::thread([] {
+				Log::Flush();
+				win32::EditFile(Log::file());
+			}).detach();
+		});
+		tray.BindBool(IDM_VERBOSE, Config::VERBOSE, TrayContextMenu::Toggle);
+		tray.RegisterContextMenuCallback(IDM_RELOADSETTINGS, std::bind(&Config::Parse, std::ref(run.config_file)));
+		tray.RegisterContextMenuCallback(IDM_EDITSETTINGS, [] {
+			Config::Save(run.config_file);
+			std::thread([] {
+				win32::EditFile(run.config_file);
+				Config::Parse(run.config_file);
+			}).detach();
+		});
+		tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTSETTINGS, [] {
+			ApplyStock(CONFIG_FILE);
 			Config::Parse(run.config_file);
-		}).detach();
-	});
-	tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTSETTINGS, [] {
-		ApplyStock(CONFIG_FILE);
-		Config::Parse(run.config_file);
-	});
-	tray.RegisterContextMenuCallback(IDM_RELOADDYNAMICBLACKLIST, std::bind(&Blacklist::Parse, std::ref(run.exclude_file)));
-	tray.RegisterContextMenuCallback(IDM_EDITDYNAMICBLACKLIST, [] {
-		std::thread([] {
-			win32::EditFile(run.exclude_file);
+		});
+		tray.RegisterContextMenuCallback(IDM_RELOADDYNAMICBLACKLIST, std::bind(&Blacklist::Parse, std::ref(run.exclude_file)));
+		tray.RegisterContextMenuCallback(IDM_EDITDYNAMICBLACKLIST, [] {
+			std::thread([] {
+				win32::EditFile(run.exclude_file);
+				Blacklist::Parse(run.exclude_file);
+			}).detach();
+		});
+		tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTBLACKLIST, [] {
+			ApplyStock(EXCLUDE_FILE);
 			Blacklist::Parse(run.exclude_file);
-		}).detach();
-	});
-	tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTBLACKLIST, [] {
-		ApplyStock(EXCLUDE_FILE);
-		Blacklist::Parse(run.exclude_file);
-	});
-	tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, Blacklist::ClearCache);
-	tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, [] {
-		run.exit_reason = EXITREASON::UserActionNoSave;
-		run.is_running = false;
-	});
+		});
+		tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, Blacklist::ClearCache);
+		tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, [] {
+			run.exit_reason = EXITREASON::UserActionNoSave;
+			run.is_running = false;
+		});
 
 
-	tray.RegisterContextMenuCallback(IDM_AUTOSTART, [] {
-		Autostart::SetStartupState(Autostart::GetStartupState() == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
-	});
-	tray.RegisterContextMenuCallback(IDM_TIPS, std::bind(&win32::OpenLink,
-		L"https://github.com/TranslucentTB/TranslucentTB/wiki/Tips-and-tricks-for-a-better-looking-taskbar"));
-	tray.RegisterContextMenuCallback(IDM_EXIT, [] {
-		run.exit_reason = EXITREASON::UserAction;
-		run.is_running = false;
-	});
+		tray.RegisterContextMenuCallback(IDM_AUTOSTART, [] {
+			Autostart::SetStartupState(Autostart::GetStartupState() == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
+		});
+		tray.RegisterContextMenuCallback(IDM_TIPS, std::bind(&win32::OpenLink,
+			L"https://github.com/TranslucentTB/TranslucentTB/wiki/Tips-and-tricks-for-a-better-looking-taskbar"));
+		tray.RegisterContextMenuCallback(IDM_EXIT, [] {
+			run.exit_reason = EXITREASON::UserAction;
+			run.is_running = false;
+		});
 
 
-	tray.RegisterCustomRefresh(RefreshMenu);
+		tray.RegisterCustomRefresh(RefreshMenu);
+	}
 }
 
 int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 {
-	HardenProcess();
+	win32::HardenProcess();
 
 	// If there already is another instance running, tell it to exit
 	if (!win32::IsSingleInstance())
@@ -690,7 +622,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	// Initialize GUI
 	InitializeTray(hInstance);
 
-	// Populate our vectors
+	// Populate our map
 	RefreshHandles();
 
 	// Undoc'd, allows to detect when Aero Peek starts and stops

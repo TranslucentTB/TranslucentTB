@@ -55,4 +55,7 @@ public:
 	// Checks if the start menu is open using a COM interface.
 	static bool IsStartVisible();
 
+	// Applies various settings that make code execution more secure.
+	static void HardenProcess();
+
 };

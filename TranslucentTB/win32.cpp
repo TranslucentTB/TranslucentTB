@@ -2,6 +2,7 @@
 #include "arch.h"
 #include <atlbase.h>
 #include <PathCch.h>
+#include <processthreadsapi.h>
 #include <shellapi.h>
 #include <ShlObj.h>
 #include <ShObjIdl.h>
@@ -240,5 +241,75 @@ bool win32::IsStartVisible()
 	else
 	{
 		return start_visible;
+	}
+}
+
+void win32::HardenProcess()
+{
+	PROCESS_MITIGATION_ASLR_POLICY aslr_policy;
+	if (GetProcessMitigationPolicy(GetCurrentProcess(), ProcessASLRPolicy, &aslr_policy, sizeof(aslr_policy)))
+	{
+		aslr_policy.EnableForceRelocateImages = true;
+		aslr_policy.DisallowStrippedImages = true;
+		if (!SetProcessMitigationPolicy(ProcessASLRPolicy, &aslr_policy, sizeof(aslr_policy)))
+		{
+			LastErrorHandle(Error::Level::Log, L"Couldn't disallow stripped images.");
+		}
+	}
+	else
+	{
+		LastErrorHandle(Error::Level::Log, L"Couldn't get current ASLR policy.");
+	}
+
+	PROCESS_MITIGATION_DYNAMIC_CODE_POLICY code_policy {};
+	code_policy.ProhibitDynamicCode = true;
+	code_policy.AllowThreadOptOut = false;
+	code_policy.AllowRemoteDowngrade = false;
+	if (!SetProcessMitigationPolicy(ProcessDynamicCodePolicy, &code_policy, sizeof(code_policy)))
+	{
+		LastErrorHandle(Error::Level::Log, L"Couldn't disable dynamic code generation.");
+	}
+
+	PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY handle_policy {};
+	handle_policy.RaiseExceptionOnInvalidHandleReference = true;
+	handle_policy.HandleExceptionsPermanentlyEnabled = true;
+	if (!SetProcessMitigationPolicy(ProcessStrictHandleCheckPolicy, &handle_policy, sizeof(handle_policy)))
+	{
+		LastErrorHandle(Error::Level::Log, L"Couldn't enable strict handle checks.");
+	}
+
+	PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY extension_policy {};
+	extension_policy.DisableExtensionPoints = true;
+	if (!SetProcessMitigationPolicy(ProcessExtensionPointDisablePolicy, &extension_policy, sizeof(extension_policy)))
+	{
+		LastErrorHandle(Error::Level::Log, L"Couldn't disable extension point DLLs.");
+	}
+
+	PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY signature_policy {};
+	signature_policy.MitigationOptIn = true;
+	if (!SetProcessMitigationPolicy(ProcessSignaturePolicy, &signature_policy, sizeof(signature_policy)))
+	{
+		LastErrorHandle(Error::Level::Log, L"Couldn't enable image signature enforcement.");
+	}
+
+
+	PROCESS_MITIGATION_IMAGE_LOAD_POLICY load_policy {};
+	load_policy.NoLowMandatoryLabelImages = true;
+	load_policy.PreferSystem32Images = true;
+
+	// https://blogs.msdn.microsoft.com/oldnewthing/20160602-00/?p=93556
+	std::vector<wchar_t> volumePath(LONG_PATH);
+	if (GetVolumePathName(GetExeLocation().c_str(), volumePath.data(), LONG_PATH))
+	{
+		load_policy.NoRemoteImages = GetDriveType(volumePath.data()) != DRIVE_REMOTE;
+	}
+	else
+	{
+		LastErrorHandle(Error::Level::Log, L"Unable to get volume path name.");
+	}
+
+	if (!SetProcessMitigationPolicy(ProcessImageLoadPolicy, &load_policy, sizeof(load_policy)))
+	{
+		LastErrorHandle(Error::Level::Log, L"Couldn't set image load policy.");
 	}
 }

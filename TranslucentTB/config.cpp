@@ -31,6 +31,7 @@ enum Config::PEEK Config::PEEK = PEEK::Dynamic;
 
 // Advanced
 uint8_t Config::SLEEP_TIME = 10;
+bool Config::NO_TRAY = false;
 bool Config::VERBOSE =
 #ifndef _DEBUG
 	false;
@@ -127,12 +128,14 @@ void Config::Save(const std::wstring &file)
 	configstream << endl;
 	configstream << L"; Advanced settings" << endl;
 	configstream << L"; sleep time in milliseconds, a shorter time reduces flicker when opening start, but results in higher CPU usage." << endl;
-	configstream << L"sleep-time=" << std::dec << SLEEP_TIME << endl;
+	configstream << L"sleep-time=" << dec << SLEEP_TIME << endl;
+	configstream << L"; hide icon in system tray. Changes to this requires a restart of the application." << endl;
+	configstream << L"no-tray=" << GetBoolText(NO_TRAY) << endl;
 	configstream << L"; more informative logging. Can make huge log files." << endl;
 	configstream << L"verbose=" << GetBoolText(VERBOSE) << endl;
 }
 
-void Config::UnknownValue(const std::wstring & key, const std::wstring & value)
+void Config::UnknownValue(const std::wstring &key, const std::wstring &value)
 {
 	Log::OutputMessage(L"Unknown value found in configuration file: " + value + L" (for key: " + key + L')');
 }
@@ -376,9 +379,16 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 			Log::OutputMessage(L"Could not parse sleep time found in configuration file: " + value);
 		}
 	}
+	else if (arg == L"no-tray")
+	{
+		if (!ParseBool(value, NO_TRAY))
+		{
+			UnknownValue(arg, value);
+		}
+	}
 	else if (arg == L"verbose")
 	{
-		if (!ParseBool(value, Config::VERBOSE))
+		if (!ParseBool(value, VERBOSE))
 		{
 			UnknownValue(arg, value);
 		}

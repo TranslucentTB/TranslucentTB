@@ -131,7 +131,7 @@ const std::wstring &Log::file()
 
 void Log::OutputMessage(const std::wstring &message)
 {
-	if (m_FileHandle.get() == nullptr)
+	if (!m_FileHandle)
 	{
 		auto result = InitStream();
 		if (FAILED(result.first))
@@ -158,7 +158,7 @@ void Log::OutputMessage(const std::wstring &message)
 
 	OutputDebugString((message + L'\n').c_str());
 
-	if (m_FileHandle)
+	if (*m_FileHandle)
 	{
 		DWORD bytesWritten;
 		if (!WriteFile(*m_FileHandle, buffer.c_str(), buffer.length() * sizeof(wchar_t), &bytesWritten, NULL))

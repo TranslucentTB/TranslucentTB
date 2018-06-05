@@ -592,7 +592,7 @@ LRESULT CALLBACK NoOutlineButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 		return 0;
 	}
 
-	const HWND hDlg = GetParent(hWnd);
+	const HWND hDlg = GetAncestor(hWnd, GA_PARENT);
 	return CallWindowProc(reinterpret_cast<PickerData *>(GetWindowLongPtr(hDlg, DWLP_USER))->button_proc, hWnd, uMsg, wParam, lParam);
 }
 

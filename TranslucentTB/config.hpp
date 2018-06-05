@@ -37,6 +37,7 @@ public:
 
 	// Advanced
 	static uint8_t SLEEP_TIME;
+	static bool NO_TRAY;
 	static bool VERBOSE;
 
 	static void Parse(const std::wstring &file);
