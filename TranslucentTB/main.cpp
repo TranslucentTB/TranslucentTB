@@ -209,13 +209,11 @@ bool CheckAndRunWelcome()
 	{
 		// String concatenation is hard OK
 		std::wstring message;
-		message += L"Welcome to ";
-		message += NAME;
-		message += L"!\n\n";
-		message += L"You can tweak the taskbar's appearance with the tray icon. If it's your cup of tea, you can also edit the configuration files, located at \"";
+		message +=
+			L"Welcome to " NAME L"!\n\n"
+			L"You can tweak the taskbar's appearance with the tray icon. If it's your cup of tea, you can also edit the configuration files, located at \"";
 		message += run.config_folder;
-		message += L'"';
-		message += L"\n\nDo you agree to the GPLv3 license?";
+		message += L"\"\n\nDo you agree to the GPLv3 license?";
 
 		if (MessageBox(NULL, message.c_str(), NAME, MB_ICONINFORMATION | MB_YESNO | MB_SETFOREGROUND) != IDYES)
 		{
@@ -313,7 +311,9 @@ void RefreshMenu(HMENU menu)
 		initial_check_done = true;
 	}
 
-	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, !Log::file().empty(), TrayContextMenu::ControlsEnabled);
+	const bool has_log = !Log::file().empty();
+	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, has_log, TrayContextMenu::ControlsEnabled);
+	ChangePopupItemText(menu, IDM_OPENLOG, has_log ? L"Open log file" : L"Nothing has been logged yet");
 
 	TrayContextMenu::RefreshBool(IDM_REGULAR_COLOR,   menu,
 		Config::REGULAR_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,

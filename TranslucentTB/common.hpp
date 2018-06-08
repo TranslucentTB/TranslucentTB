@@ -9,11 +9,12 @@ constexpr uint16_t LONG_PATH = 33000;
 // Minimum build number that supports Fluent
 constexpr uint16_t MIN_FLUENT_BUILD = 17063;
 
-// Message id for app uniqueness
+// Event id for app uniqueness
 constexpr wchar_t ID[] = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
 
 // App name
-constexpr wchar_t NAME[] = L"TranslucentTB";
+// Using a define so when can concatenate it in strings just by putting another one near it
+#define NAME L"TranslucentTB"
 
 // Config file name
 constexpr wchar_t CONFIG_FILE[] = L"config.cfg";

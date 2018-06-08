@@ -23,4 +23,7 @@ public:
 		}
 	}
 
+	inline File(const File &) = delete;
+	inline File &operator =(const File &) = delete;
+
 };

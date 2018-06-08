@@ -98,8 +98,6 @@ inline std::pair<HRESULT, std::wstring> Log::InitStream()
 		return std::make_pair(hr, L"Failed to combine log folder location and log file name!");
 	}
 
-	m_File = log_file;
-
 	HANDLE file = CreateFile(log_file, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (file == INVALID_HANDLE_VALUE)
 	{
@@ -112,6 +110,7 @@ inline std::pair<HRESULT, std::wstring> Log::InitStream()
 		LastErrorHandle(Error::Level::Debug, L"Failed to write byte-order marker.");
 	}
 
+	m_File = log_file;
 	m_FileHandle.reset(new File(file));
 	return std::make_pair(S_OK, L"");
 
@@ -142,7 +141,7 @@ void Log::OutputMessage(const std::wstring &message)
 			std::wstring boxbuffer = error_message +
 				L" Logs will not be available during this session.\n\n" + Error::ExceptionFromHRESULT(result.first);
 
-			MessageBox(NULL, boxbuffer.c_str(), (std::wstring(NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+			MessageBox(NULL, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 		}
 	}
 

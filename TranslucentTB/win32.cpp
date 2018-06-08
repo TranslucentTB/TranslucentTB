@@ -17,8 +17,8 @@
 #include "../CPicker/CColourPicker.hpp"
 #include "clipboardcontext.hpp"
 #include "common.hpp"
-#include "window.hpp"
 #include "ttberror.hpp"
+#include "window.hpp"
 
 const user32::pSetWindowCompositionAttribute user32::SetWindowCompositionAttribute =
 	reinterpret_cast<pSetWindowCompositionAttribute>(
@@ -172,7 +172,7 @@ void win32::EditFile(const std::wstring &file)
 			L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(GetLastError())) +
 			L"\n\nCopy the file location to the clipboard?";
 
-		if (MessageBox(NULL, boxbuffer.c_str(), (std::wstring(NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+		if (MessageBox(NULL, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 		{
 			CopyToClipboard(file);
 		}
@@ -202,7 +202,7 @@ void win32::OpenLink(const std::wstring &link)
 			L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(GetLastError())) +
 			L"\n\nCopy the URL to the clipboard?";
 
-		if (MessageBox(NULL, boxbuffer.c_str(), (std::wstring(NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+		if (MessageBox(NULL, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 		{
 			CopyToClipboard(link);
 		}

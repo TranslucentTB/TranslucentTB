@@ -52,11 +52,11 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 			break;
 		case Level::Error:
 			Log::OutputMessage(err);
-			MessageBox(NULL, boxbuffer.c_str(), (std::wstring(NAME) + L" - Error").c_str(), MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+			MessageBox(NULL, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 			break;
 		case Level::Fatal:
 			Log::OutputMessage(err);
-			MessageBox(NULL, boxbuffer.c_str(), (std::wstring(NAME) + L" - Fatal error").c_str(), MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
+			MessageBox(NULL, boxbuffer.c_str(), NAME L" - Fatal error", MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
 			std::terminate();
 			break;
 		default:
