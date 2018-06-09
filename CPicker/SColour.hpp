@@ -14,6 +14,8 @@ struct SColour {
 	// Alpha
 	uint8_t a;
 
+#pragma warning(push)
+#pragma warning(disable: 4244)
 	// Updates RGB from HSV
 	constexpr void UpdateRGB()
 	{
@@ -106,4 +108,5 @@ struct SColour {
 			h = temp;
 		}
 	}
+#pragma warning(pop)
 };
