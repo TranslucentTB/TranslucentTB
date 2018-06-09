@@ -6,7 +6,46 @@
 #include "resource.h"
 
 constexpr uint8_t HueGradientPrecision = 20; // Number of steps in the hue gradient
-const std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> &GetHueGradient();
+constexpr const std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> CalculateHueGradient()
+{
+	std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> gradientStops{};
+
+	SColour tempcol{};
+	tempcol.h = 359;
+	tempcol.s = 100;
+	tempcol.v = 100;
+	tempcol.UpdateRGB();
+
+	const float step = 359 / (float)HueGradientPrecision;
+
+	for (uint8_t i = 0; i < HueGradientPrecision; i++)
+	{
+		// Due to some weird MSBuild thing, C++17 is half implemented in Clang-CL.
+		// Because of that, we don't have constexpr operator[] on std::array.
+		// Access the raw underlying array directly instead.
+		gradientStops._Elems[i] = {
+			i / (float)(HueGradientPrecision - 1),
+			{
+				tempcol.r / 255.0f,
+				tempcol.g / 255.0f,
+				tempcol.b / 255.0f,
+				1.0f
+			}
+		};
+
+		// Clang errors out on the use of -= here
+		tempcol.h = tempcol.h - step;
+		tempcol.UpdateRGB();
+	}
+
+	return gradientStops;
+}
+
+inline const auto &GetHueGradient()
+{
+	static constexpr auto value = CalculateHueGradient();
+	return value;
+}
 
 void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
 {
@@ -278,34 +317,4 @@ void DrawColorIndicator(ID2D1RenderTarget *target, const float &rf, const float 
 	target->FillRectangle(D2D1::RectF(0.0f, size.height / 2.0f, size.width, size.height), brush);
 
 	target->EndDraw();
-}
-
-const std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> &GetHueGradient()
-{
-	static std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> gradientStops;
-	static bool calc = false;
-
-	if (!calc)
-	{
-		SColour tempcol;
-		tempcol.h = 359;
-		tempcol.s = 100;
-		tempcol.v = 100;
-		tempcol.UpdateRGB();
-
-		const float step = 359 / (float)HueGradientPrecision;
-
-		for (uint8_t i = 0; i < HueGradientPrecision; i++)
-		{
-			gradientStops[i].color = D2D1::ColorF(tempcol.r / 255.0f, tempcol.g / 255.0f, tempcol.b / 255.0f);
-			gradientStops[i].position = i / (float)(HueGradientPrecision - 1);
-
-			tempcol.h -= step;
-			tempcol.UpdateRGB();
-		}
-
-		calc = true;
-	}
-
-	return gradientStops;
 }

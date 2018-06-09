@@ -76,11 +76,9 @@
     <ClCompile Include="drawhelper.cpp" />
     <ClCompile Include="drawroutines.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="SColour.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="drawhelper.hpp" />
-    <ClInclude Include="extern.h" />
     <ClInclude Include="main.hpp" />
     <ClInclude Include="CColourPicker.hpp" />
     <ClInclude Include="drawroutines.hpp" />

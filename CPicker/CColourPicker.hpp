@@ -5,9 +5,14 @@
 #include <windef.h>
 
 #include "SColour.hpp"
-#include "extern.h"
 
-class EXTERN CColourPicker {
+class __declspec(
+#if defined(_CPICKER_DLL)
+dllexport
+#else
+dllimport
+#endif
+) CColourPicker {
 
 public:
 	CColourPicker(uint32_t &value, HWND hParentWindow = NULL);
@@ -38,5 +43,3 @@ private:
 	SColour CurrCol, OldCol;
 	HWND hParent;
 };
-
-#undef EXTERN
