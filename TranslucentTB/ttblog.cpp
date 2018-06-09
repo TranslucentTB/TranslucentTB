@@ -145,22 +145,22 @@ void Log::OutputMessage(const std::wstring &message)
 		}
 	}
 
-	std::time_t current_time = std::time(0);
-
-	std::wstring buffer;
-	buffer += L'(';
-	buffer += _wctime(&current_time);
-	buffer.erase(buffer.length() - 1); // Remove the newline created by _wctime
-	buffer += L") ";
-	buffer += message;
-	buffer += L'\n';
-
-	OutputDebugString((message + L'\n').c_str());
+	const std::wstring message_with_newline = message + L'\n';
+	OutputDebugString(message_with_newline.c_str());
 
 	if (*m_FileHandle)
 	{
+		std::time_t current_time = std::time(0);
+
+		std::wostringstream buffer;
+		buffer << L'(' << _wctime(&current_time);
+		buffer.seekp(-1, std::ios_base::end); // Seek behind the newline created by _wctime
+		buffer << L") " << message_with_newline;
+
+		const std::wstring error = buffer.str();
+
 		DWORD bytesWritten;
-		if (!WriteFile(*m_FileHandle, buffer.c_str(), buffer.length() * sizeof(wchar_t), &bytesWritten, NULL))
+		if (!WriteFile(*m_FileHandle, error.c_str(), error.length() * sizeof(wchar_t), &bytesWritten, NULL))
 		{
 			LastErrorHandle(Error::Level::Debug, L"Writing to log file failed.");
 		}

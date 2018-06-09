@@ -17,18 +17,17 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 	{
 		const std::wstring message_str(message);
 		const std::wstring error_message = ExceptionFromHRESULT(error);
-		std::wstring boxbuffer;
+		std::wostringstream boxbuffer;
 		if (level != Level::Log && level != Level::Debug)
 		{
-			boxbuffer += message_str;
-			boxbuffer += L"\n\n";
+			boxbuffer << message_str << L"\n\n";
 
 			if (level == Level::Fatal)
 			{
-				boxbuffer += L"Program will exit.\n\n";
+				boxbuffer << L"Program will exit.\n\n";
 			}
 
-			boxbuffer += error_message;
+			boxbuffer << error_message;
 		}
 
 		const size_t functionLength = std::char_traits<char>::length(function);
@@ -39,25 +38,26 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 			functionW = L"[failed to convert function name to UTF-16]";
 		}
 
-		const std::wstring err =
-			message_str + L' ' + error_message +
-			L" (" + file + L':' + std::to_wstring(line) + L" at function " + functionW + L')';
+		std::wostringstream err;
+		err << message_str << L' ' << error_message <<
+			L" (" << file << L':' << line << L" at function " << functionW << L')';
 
 		switch (level)
 		{
 		case Level::Debug:
-			OutputDebugString((err + L'\n').c_str());
+			err << L'\n';
+			OutputDebugString(err.str().c_str());
 			break;
 		case Level::Log:
-			Log::OutputMessage(err);
+			Log::OutputMessage(err.str());
 			break;
 		case Level::Error:
-			Log::OutputMessage(err);
-			MessageBox(NULL, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+			Log::OutputMessage(err.str());
+			MessageBox(NULL, boxbuffer.str().c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 			break;
 		case Level::Fatal:
-			Log::OutputMessage(err);
-			MessageBox(NULL, boxbuffer.c_str(), NAME L" - Fatal error", MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
+			Log::OutputMessage(err.str());
+			MessageBox(NULL, boxbuffer.str().c_str(), NAME L" - Fatal error", MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
 			std::terminate();
 			break;
 		default:
