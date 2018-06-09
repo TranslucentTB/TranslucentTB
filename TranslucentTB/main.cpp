@@ -1,5 +1,6 @@
 // Standard API
 #include <chrono>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <unordered_map>
@@ -208,14 +209,14 @@ bool CheckAndRunWelcome()
 	if (!win32::IsDirectory(run.config_folder))
 	{
 		// String concatenation is hard OK
-		std::wstring message;
-		message +=
+		std::wostringstream message;
+		message <<
 			L"Welcome to " NAME L"!\n\n"
-			L"You can tweak the taskbar's appearance with the tray icon. If it's your cup of tea, you can also edit the configuration files, located at \"";
-		message += run.config_folder;
-		message += L"\"\n\nDo you agree to the GPLv3 license?";
+			L"You can tweak the taskbar's appearance with the tray icon. If it's your cup of tea, you can also edit the configuration files, located at \"" <<
+			run.config_folder <<
+			L"\"\n\nDo you agree to the GPLv3 license?";
 
-		if (MessageBox(NULL, message.c_str(), NAME, MB_ICONINFORMATION | MB_YESNO | MB_SETFOREGROUND) != IDYES)
+		if (MessageBox(NULL, message.str().c_str(), NAME, MB_ICONINFORMATION | MB_YESNO | MB_SETFOREGROUND) != IDYES)
 		{
 			return false;
 		}

@@ -1,8 +1,9 @@
 #include "ttberror.hpp"
 #include <comdef.h>
-#include <string>
 #include <exception>
+#include <iomanip>
 #include <sstream>
+#include <string>
 #include <vector>
 #include <winerror.h>
 #include <WinUser.h>
@@ -75,6 +76,7 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 std::wstring Error::ExceptionFromHRESULT(const HRESULT &result)
 {
 	std::wostringstream stream;
-	stream << L"Exception from HRESULT: " << _com_error(result).ErrorMessage() << L" (0x" << reinterpret_cast<const void *>(result) << L')';
+	stream << L"Exception from HRESULT: " << _com_error(result).ErrorMessage() <<
+		L" (0x" << std::setw(sizeof(HRESULT) * 2) << std::setfill(L'0') << std::hex << result << L')';
 	return stream.str();
 }
