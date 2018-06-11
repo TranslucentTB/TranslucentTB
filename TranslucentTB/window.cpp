@@ -82,7 +82,7 @@ const std::wstring &Window::filename() const
 
 		exeName.resize(path_Size);
 		exeName.erase(0, exeName.find_last_of(LR"(/\)") + 1);
-		return m_Filenames[m_WindowHandle] = exeName;
+		return m_Filenames[m_WindowHandle] = std::move(exeName);
 	}
 	else
 	{

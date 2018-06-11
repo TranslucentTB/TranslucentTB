@@ -23,11 +23,11 @@ TranslucentTB supports multiple taskbar states and dynamic taskbar states.
    - **Normal**: Regular Windows style. (as if TranslucentTB was closed)
    - **Opaque**: No transparency.
    - **Fluent**: Windows 10 April 2018 update and up only. Will give the taskbar an appearance similar to Microsoft's Fluent Design guidelines.
- - **Dynamic** modes (these can be used together):
-   - **Dynamic Windows**: Will change the taskbar to a different state and color if a window is currently maximised.
-   - **Dynamic Peek**: Will hide the Aero Peek button if no window is currently maximised.
-   - **Dynamic Start Menu**: Will restore default taskbar appearance when the start menu is opened.
- - Ability to **show or hide the Aero Peek** button.
+ - **Dynamic** modes (these can be used together and each of them provides a taskbar state and color you can customize):
+   - **Dynamic Windows**: Will change the taskbar to a different appearance if a window is currently maximised.
+   - **Dynamic Start Menu**: Will change the taskbar appearance when the start menu is opened.
+   - **Dynamic Timeline/Task View**: Will change the taskbar apperance when the Timeline (or Task View on older builds) is open.
+ - Ability to **show or hide the Aero Peek** button. Can be customized **at will** or **dynamic**.
 
 You can see it in action [here](https://gfycat.com/EverlastingCreamyIlladopsis) (Thanks [@Gunny123](https://github.com/Gunny123)!).
 
