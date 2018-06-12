@@ -116,6 +116,8 @@ BEGIN
             MENUITEM "Always",                      IDM_PEEK_SHOW
             MENUITEM "Dynamic",                     IDM_PEEK_DYNAMIC
             MENUITEM "Never",                       IDM_PEEK_HIDE
+			MENUITEM "",							0, MFT_SEPARATOR
+			MENUITEM "Dynamic only for main monitor", IDM_PEEK_ON_MAIN
         END
         POPUP "Advanced"
         BEGIN
