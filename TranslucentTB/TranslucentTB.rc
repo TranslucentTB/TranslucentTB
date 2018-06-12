@@ -117,7 +117,7 @@ BEGIN
             MENUITEM "Dynamic",                     IDM_PEEK_DYNAMIC
             MENUITEM "Never",                       IDM_PEEK_HIDE
             MENUITEM "",                            0, MFT_SEPARATOR
-            MENUITEM "Consider only main monitor",  IDM_PEEK_ON_MAIN
+            MENUITEM "Consider only main monitor",  IDM_PEEK_ONLY_MAIN
         END
         POPUP "Advanced"
         BEGIN
@@ -169,7 +169,7 @@ BEGIN
             VALUE "FileDescription", "TranslucentTB"
             VALUE "FileVersion", "1.0.0.1"
             VALUE "InternalName", "TranslucentTB.exe"
-            VALUE "LegalCopyright", "Copyright � 2018 TranslucentTB Open Source Developers"
+            VALUE "LegalCopyright", "Copyright © 2018 TranslucentTB Open Source Developers"
             VALUE "OriginalFilename", "TranslucentTB.exe"
             VALUE "ProductName", "TranslucentTB"
             VALUE "ProductVersion", "1.0.0.1"
