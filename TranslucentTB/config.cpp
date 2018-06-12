@@ -28,7 +28,6 @@ Config::TASKBAR_APPEARANCE Config::TIMELINE_APPEARANCE = { swca::ACCENT::ACCENT_
 
 // Various
 enum Config::PEEK Config::PEEK = PEEK::Dynamic;
-bool Config::PEEK_ON_MAIN = true;
 
 // Advanced
 uint8_t Config::SLEEP_TIME = 10;
@@ -125,7 +124,6 @@ void Config::Save(const std::wstring &file)
 		break;
 	}
 	configstream << endl;
-	configstream << "peek-on-main=" << GetBoolText(PEEK_ON_MAIN) << endl;
 
 	configstream << endl;
 	configstream << L"; Advanced settings" << endl;
@@ -366,13 +364,6 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 			PEEK = PEEK::Enabled;
 		}
 		else
-		{
-			UnknownValue(arg, value);
-		}
-	}
-	else if (arg == L"peek-on-main")
-	{
-		if (!ParseBool(value, PEEK_ON_MAIN))
 		{
 			UnknownValue(arg, value);
 		}

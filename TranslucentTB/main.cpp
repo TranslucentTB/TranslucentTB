@@ -328,9 +328,6 @@ void RefreshMenu(HMENU menu)
 	TrayContextMenu::RefreshBool(IDM_TIMELINE_COLOR,  menu,
 		Config::TIMELINE_ENABLED  && Config::TIMELINE_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(IDM_PEEK_ON_MAIN, menu,
-		Config::PEEK == Config::PEEK::Dynamic,
-		TrayContextMenu::ControlsEnabled);
 
 	const Autostart::StartupState state = Autostart::GetStartupState();
 	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, !(state == Autostart::StartupState::DisabledByUser
@@ -544,7 +541,6 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 
 		tray.BindEnum(Config::PEEK, PEEK_BUTTON_MAP);
-		tray.BindBool(IDM_PEEK_ON_MAIN, Config::PEEK_ON_MAIN, TrayContextMenu::Toggle);
 
 
 		tray.RegisterContextMenuCallback(IDM_OPENLOG, [] {

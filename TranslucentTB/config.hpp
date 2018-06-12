@@ -34,7 +34,6 @@ public:
 		Dynamic,  // Show when a window is maximised
 		Enabled   // Don't hide the button
 	} PEEK;
-	static bool PEEK_ON_MAIN;
 
 	// Advanced
 	static uint8_t SLEEP_TIME;
