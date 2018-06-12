@@ -385,9 +385,19 @@ BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
 			taskbar.second = &Config::MAXIMISED_APPEARANCE;
 		}
 
-		if (Config::PEEK == Config::PEEK::Dynamic && taskbar.first == run.main_taskbar)
+		if (Config::PEEK == Config::PEEK::Dynamic)
 		{
-			run.should_show_peek = true;
+			if (Config::PEEK_ONLY_MAIN)
+			{
+				 if (taskbar.first == run.main_taskbar)
+				 {
+					 run.should_show_peek = true;
+				 }
+			}
+			else
+			{
+				run.should_show_peek = true;
+			}
 		}
 	}
 	return true;

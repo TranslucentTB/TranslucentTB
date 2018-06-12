@@ -45,7 +45,6 @@ void Config::Parse(const std::wstring &file)
 	std::wifstream configstream(file);
 	for (std::wstring line; std::getline(configstream, line);)
 	{
-		Util::ToLowerInplace(line);
 		if (line.empty())
 		{
 			continue;
@@ -65,8 +64,9 @@ void Config::Parse(const std::wstring &file)
 		size_t split_index = line.find(L'=');
 		if (split_index != std::wstring::npos)
 		{
-			std::wstring key = Util::Trim(line.substr(0, split_index));
-			std::wstring val = Util::Trim(line.substr(split_index + 1, line.length() - split_index - 1));
+			Util::ToLowerInplace(line);
+			const std::wstring key = Util::Trim(line.substr(0, split_index));
+			const std::wstring val = Util::Trim(line.substr(split_index + 1, line.length() - split_index - 1));
 
 			ParseSingleConfigOption(key, val);
 		}
