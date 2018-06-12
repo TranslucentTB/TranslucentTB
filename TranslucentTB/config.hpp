@@ -28,12 +28,13 @@ public:
 	static bool TIMELINE_ENABLED;
 	static TASKBAR_APPEARANCE TIMELINE_APPEARANCE;
 
-	// Various
+	// Peek
 	static enum /*class*/ PEEK {
 		Disabled, // Hide the button
 		Dynamic,  // Show when a window is maximised
 		Enabled   // Don't hide the button
 	} PEEK;
+	static bool PEEK_ONLY_MAIN;
 
 	// Advanced
 	static uint8_t SLEEP_TIME;

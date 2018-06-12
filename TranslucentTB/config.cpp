@@ -26,8 +26,9 @@ Config::TASKBAR_APPEARANCE Config::START_APPEARANCE = { swca::ACCENT::ACCENT_NOR
 bool Config::TIMELINE_ENABLED = true;
 Config::TASKBAR_APPEARANCE Config::TIMELINE_APPEARANCE = { swca::ACCENT::ACCENT_NORMAL, 0x0 };
 
-// Various
+// Peek
 enum Config::PEEK Config::PEEK = PEEK::Dynamic;
+bool Config::PEEK_ONLY_MAIN = true;
 
 // Advanced
 uint8_t Config::SLEEP_TIME = 10;
@@ -111,6 +112,7 @@ void Config::Save(const std::wstring &file)
 	configstream << endl;
 	configstream << L"; Controls how the Aero Peek button behaves (dynamic, show or hide)" << endl;
 	configstream << L"peek=";
+	configstream << L"peek-only-main=" << GetBoolText(PEEK_ONLY_MAIN) << L" ; Decides wether only the main monitor is considered when dynamic peek is enabled." << endl;
 	switch (PEEK)
 	{
 	case PEEK::Disabled:
@@ -364,6 +366,13 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 			PEEK = PEEK::Enabled;
 		}
 		else
+		{
+			UnknownValue(arg, value);
+		}
+	}
+	else if (arg == L"peek-only-main")
+	{
+		if (!ParseBool(value, PEEK_ONLY_MAIN))
 		{
 			UnknownValue(arg, value);
 		}
