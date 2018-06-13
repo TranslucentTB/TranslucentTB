@@ -423,7 +423,7 @@ void CALLBACK HandleAeroPeekEvent(HWINEVENTHOOK, const DWORD event, HWND, LONG, 
 
 void SetTaskbarBlur()
 {
-	static int counter = 10;
+	static uint8_t counter = 10;
 
 	if (counter >= 10)	// Change this if you want to change the time it takes for the program to update.
 	{					// 1 = Config::SLEEP_TIME; we use 10 (assuming the default configuration value of 10),
@@ -444,7 +444,7 @@ void SetTaskbarBlur()
 
 		if (Config::START_ENABLED && win32::IsStartVisible())
 		{
-			run.taskbars.at(Window::Find(L"Windows.UI.Core.CoreWindow", L"Start").monitor()).second = &Config::START_APPEARANCE;
+			run.taskbars.at(Window::Find(CORE_WINDOW, L"Start").monitor()).second = &Config::START_APPEARANCE;
 		}
 
 		if (Config::MAXIMISED_ENABLED && Config::MAXIMISED_REGULAR_ON_PEEK && run.peek_active)
@@ -456,25 +456,24 @@ void SetTaskbarBlur()
 		}
 
 		const Window fg_window = Window::ForegroundWindow();
+		const std::wstring fg_window_title = fg_window.title();
+		const static bool timeline_av = win32::IsAtLeastBuild(MIN_FLUENT_BUILD);
 
-		if (fg_window.classname() == L"Windows.UI.Core.CoreWindow")
+		// TODO: test on other locales
+		if (Config::TIMELINE_ENABLED && fg_window_title == L"Task View" &&
+			fg_window.classname() == (timeline_av ? CORE_WINDOW : L"MultitaskingViewFrame"))
 		{
-			const std::wstring fg_window_title = fg_window.title();
-
-			// TODO: test on other locales and older builds without Timeline
-			if (Config::TIMELINE_ENABLED && fg_window_title == L"Task view")
+			for (auto &taskbar : run.taskbars)
 			{
-				for (auto &taskbar : run.taskbars)
-				{
-					taskbar.second.second = &Config::TIMELINE_APPEARANCE;
-				}
+				taskbar.second.second = &Config::TIMELINE_APPEARANCE;
 			}
+		}
 
-			// TODO: test on multi-monitor and other locales and cortana disabled
-			if (Config::CORTANA_ENABLED && fg_window_title == L"Cortana" && fg_window.visible() && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED))
-			{
-				run.taskbars.at(fg_window.monitor()).second = &Config::CORTANA_APPEARANCE;
-			}
+		// TODO: test on multi-monitor and other locales
+		if (Config::CORTANA_ENABLED && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
+			fg_window_title == L"Cortana" && fg_window.classname() == CORE_WINDOW)
+		{
+			run.taskbars.at(fg_window.monitor()).second = &Config::CORTANA_APPEARANCE;
 		}
 
 		counter = 0;

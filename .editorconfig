@@ -10,4 +10,3 @@ trim_trailing_whitespace = true
 
 [resource.h]
 insert_final_newline = true
-trim_trailing_whitespace = false

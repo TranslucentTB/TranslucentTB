@@ -27,3 +27,6 @@ constexpr wchar_t WM_TASKBARCREATED[] = L"TaskbarCreated";
 
 // Message used by a new instance to close the old instance
 constexpr wchar_t NEW_TTB_INSTANCE[] = L"NewTTBInstance";
+
+// Window class used by UWP
+constexpr wchar_t CORE_WINDOW[] = L"Windows.UI.Core.CoreWindow";

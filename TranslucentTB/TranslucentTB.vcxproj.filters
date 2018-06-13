@@ -131,7 +131,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="TranslucentTB.rc">
+    <ResourceCompile Include="TranslucentTB.rc2">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
