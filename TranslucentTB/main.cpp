@@ -397,7 +397,6 @@ BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
 			taskbar.second = &Config::MAXIMISED_APPEARANCE;
 		}
 
-		// TODO: test on multi-monitor
 		if (Config::PEEK == Config::PEEK::Dynamic)
 		{
 			if (Config::PEEK_ONLY_MAIN)
@@ -442,6 +441,16 @@ void SetTaskbarBlur()
 
 		TogglePeek(run.should_show_peek);
 
+		const Window fg_window = Window::ForegroundWindow();
+		const std::wstring fg_window_title = fg_window.title();
+
+		// TODO: test on other locales
+		if (Config::CORTANA_ENABLED && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
+			fg_window_title == L"Cortana" && fg_window.classname() == CORE_WINDOW)
+		{
+			run.taskbars.at(fg_window.monitor()).second = &Config::CORTANA_APPEARANCE;
+		}
+
 		if (Config::START_ENABLED && win32::IsStartVisible())
 		{
 			run.taskbars.at(Window::Find(CORE_WINDOW, L"Start").monitor()).second = &Config::START_APPEARANCE;
@@ -455,8 +464,6 @@ void SetTaskbarBlur()
 			}
 		}
 
-		const Window fg_window = Window::ForegroundWindow();
-		const std::wstring fg_window_title = fg_window.title();
 		const static bool timeline_av = win32::IsAtLeastBuild(MIN_FLUENT_BUILD);
 
 		// TODO: test on other locales
@@ -467,13 +474,6 @@ void SetTaskbarBlur()
 			{
 				taskbar.second.second = &Config::TIMELINE_APPEARANCE;
 			}
-		}
-
-		// TODO: test on multi-monitor and other locales
-		if (Config::CORTANA_ENABLED && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
-			fg_window_title == L"Cortana" && fg_window.classname() == CORE_WINDOW)
-		{
-			run.taskbars.at(fg_window.monitor()).second = &Config::CORTANA_APPEARANCE;
 		}
 
 		counter = 0;
@@ -511,14 +511,12 @@ void InitializeTray(const HINSTANCE &hInstance)
 	});
 
 	window.RegisterCallback(WM_DISPLAYCHANGE, [](...) {
-		std::thread([] {
-			std::this_thread::sleep_for(std::chrono::seconds(10));	// Sleeping because the taskbar hasn't
-																	// been created yet when we get this.
-																	// 10 seconds gives enough time to even
-																	// the slowest of computers to create
-																	// the taskbar. (I hope)
-			RefreshHandles();
-		}).detach();
+		std::this_thread::sleep_for(std::chrono::seconds(10));	// Sleeping because the taskbar hasn't
+																// been created yet when we get this.
+																// 10 seconds gives enough time to even
+																// the slowest of computers to create
+																// the taskbar. (I hope)
+		RefreshHandles();
 		return 0;
 	});
 
