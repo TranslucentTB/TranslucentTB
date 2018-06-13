@@ -99,6 +99,17 @@ BEGIN
             MENUITEM "Blur",                        IDM_START_BLUR
             MENUITEM "Fluent",                      IDM_START_FLUENT
         END
+        POPUP "Cortana/Search opened"
+        BEGIN
+            MENUITEM "Enabled",                     IDM_CORTANA
+            MENUITEM "Accent Color",                IDM_CORTANA_COLOR
+            MENUITEM "",                            0, MFT_SEPARATOR
+            MENUITEM "Normal",                      IDM_CORTANA_NORMAL
+            MENUITEM "Clear",                       IDM_CORTANA_CLEAR
+            MENUITEM "Opaque",                      IDM_CORTANA_OPAQUE
+            MENUITEM "Blur",                        IDM_CORTANA_BLUR
+            MENUITEM "Fluent",                      IDM_CORTANA_FLUENT
+        END
         POPUP "Timeline opened",                IDM_TIMELINE_POPUP
         BEGIN
             MENUITEM "Enabled",                     IDM_TIMELINE

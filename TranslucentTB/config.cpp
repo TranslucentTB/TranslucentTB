@@ -22,6 +22,10 @@ bool Config::MAXIMISED_REGULAR_ON_PEEK = true;
 bool Config::START_ENABLED = true;
 Config::TASKBAR_APPEARANCE Config::START_APPEARANCE = { swca::ACCENT::ACCENT_NORMAL, 0x0 };
 
+// Cortana
+bool Config::CORTANA_ENABLED = true;
+Config::TASKBAR_APPEARANCE Config::CORTANA_APPEARANCE = { swca::ACCENT::ACCENT_NORMAL, 0x0 };
+
 // Timeline/Task View
 bool Config::TIMELINE_ENABLED = true;
 Config::TASKBAR_APPEARANCE Config::TIMELINE_APPEARANCE = { swca::ACCENT::ACCENT_NORMAL, 0x0 };
@@ -102,6 +106,12 @@ void Config::Save(const std::wstring &file)
 	configstream << L"dynamic-start-accent=" << GetAccentText(START_APPEARANCE.ACCENT) << endl;
 	configstream << L"dynamic-start-color=" << GetColorText(START_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << endl;
 	configstream << L"dynamic-start-opacity=" << GetOpacityText(START_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << endl;
+	configstream << endl;
+	configstream << L"; Dynamic Cortana. State to use when Cortana or the search menu is opened." << endl;
+	configstream << L"dynamic-cortana=" << GetBoolText(CORTANA_ENABLED) << endl;
+	configstream << L"dynamic-cortana-accent=" << GetAccentText(CORTANA_APPEARANCE.ACCENT) << endl;
+	configstream << L"dynamic-cortana-color=" << GetColorText(CORTANA_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << endl;
+	configstream << L"dynamic-cortana-opacity=" << GetOpacityText(CORTANA_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << endl;
 	configstream << endl;
 	configstream << L"; Dynamic Timeline. State to use when the timeline (or task view on older builds) is opened." << endl;
 	configstream << L"dynamic-timeline=" << GetBoolText(TIMELINE_ENABLED) << endl;
@@ -321,6 +331,34 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 		if (!ParseOpacity(value, START_APPEARANCE.COLOR))
 		{
 			Log::OutputMessage(L"Could not parse dynamic start opacity found in configuration file: " + value);
+		}
+	}
+	else if (arg == L"dynamic-cortana")
+	{
+		if (!ParseBool(value, CORTANA_ENABLED))
+		{
+			UnknownValue(arg, value);
+		}
+	}
+	else if (arg == L"dynamic-cortana-accent")
+	{
+		if (!ParseAccent(value, CORTANA_APPEARANCE.ACCENT))
+		{
+			UnknownValue(arg, value);
+		}
+	}
+	else if (arg == L"dynamic-cortana-color" || arg == L"dynamic-cortana-tint")
+	{
+		if (!ParseColor(value, CORTANA_APPEARANCE.COLOR))
+		{
+			Log::OutputMessage(L"Could not parse dynamic Cortana color found in configuration file: " + value);
+		}
+	}
+	else if (arg == L"dynamic-cortana-opacity")
+	{
+		if (!ParseOpacity(value, CORTANA_APPEARANCE.COLOR))
+		{
+			Log::OutputMessage(L"Could not parse dynamic Cortana opacity found in configuration file: " + value);
 		}
 	}
 	else if (arg == L"dynamic-timeline")

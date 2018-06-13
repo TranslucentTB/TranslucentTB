@@ -27,38 +27,45 @@
 #define IDM_START_OPAQUE                40019
 #define IDM_START_BLUR                  40020
 #define IDM_START_FLUENT                40021
-#define IDM_TIMELINE_POPUP              40022
-#define IDM_TIMELINE                    40023
-#define IDM_TIMELINE_COLOR              40024
-#define IDM_TIMELINE_NORMAL             40025
-#define IDM_TIMELINE_CLEAR              40026
-#define IDM_TIMELINE_OPAQUE             40027
-#define IDM_TIMELINE_BLUR               40028
-#define IDM_TIMELINE_FLUENT             40029
-#define IDM_PEEK_SHOW                   40030
-#define IDM_PEEK_DYNAMIC                40031
-#define IDM_PEEK_HIDE                   40032
-#define IDM_PEEK_ONLY_MAIN              40033
-#define IDM_OPENLOG                     40034
-#define IDM_VERBOSE                     40035
-#define IDM_RELOADSETTINGS              40036
-#define IDM_EDITSETTINGS                40037
-#define IDM_RETURNTODEFAULTSETTINGS     40038
-#define IDM_RELOADDYNAMICBLACKLIST      40039
-#define IDM_EDITDYNAMICBLACKLIST        40040
-#define IDM_RETURNTODEFAULTBLACKLIST    40041
-#define IDM_CLEARBLACKLISTCACHE         40042
-#define IDM_EXITWITHOUTSAVING           40043
-#define IDM_AUTOSTART                   40044
-#define IDM_TIPS                        40045
-#define IDM_EXIT                        40046
+#define IDM_CORTANA                     40022
+#define IDM_CORTANA_COLOR               40023
+#define IDM_CORTANA_NORMAL              40024
+#define IDM_CORTANA_CLEAR               40025
+#define IDM_CORTANA_OPAQUE              40026
+#define IDM_CORTANA_BLUR                40027
+#define IDM_CORTANA_FLUENT              40028
+#define IDM_TIMELINE_POPUP              40029
+#define IDM_TIMELINE                    40030
+#define IDM_TIMELINE_COLOR              40031
+#define IDM_TIMELINE_NORMAL             40032
+#define IDM_TIMELINE_CLEAR              40033
+#define IDM_TIMELINE_OPAQUE             40034
+#define IDM_TIMELINE_BLUR               40035
+#define IDM_TIMELINE_FLUENT             40036
+#define IDM_PEEK_SHOW                   40037
+#define IDM_PEEK_DYNAMIC                40038
+#define IDM_PEEK_HIDE                   40039
+#define IDM_PEEK_ONLY_MAIN              40040
+#define IDM_OPENLOG                     40041
+#define IDM_VERBOSE                     40042
+#define IDM_RELOADSETTINGS              40043
+#define IDM_EDITSETTINGS                40044
+#define IDM_RETURNTODEFAULTSETTINGS     40045
+#define IDM_RELOADDYNAMICBLACKLIST      40046
+#define IDM_EDITDYNAMICBLACKLIST        40047
+#define IDM_RETURNTODEFAULTBLACKLIST    40048
+#define IDM_CLEARBLACKLISTCACHE         40049
+#define IDM_EXITWITHOUTSAVING           40050
+#define IDM_AUTOSTART                   40051
+#define IDM_TIPS                        40052
+#define IDM_EXIT                        40053
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        103
-#define _APS_NEXT_COMMAND_VALUE         40047
+#define _APS_NEXT_COMMAND_VALUE         40054
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

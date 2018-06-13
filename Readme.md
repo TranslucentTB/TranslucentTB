@@ -10,24 +10,25 @@ A lightweight (uses a few MB of RAM and almost no CPU) utility that makes the Wi
 
 You can see examples of the customizations you can make in the images below:
 
-![](https://charles.getsharex.com/GbOX4b.png) ![](https://charles.getsharex.com/yX37Vc.png) ![](https://charles.getsharex.com/MPaxeO.png)
+![blur](https://files.charlesmilette.net/GbOX4b.png) ![transparent](https://files.charlesmilette.net/yX37Vc.png) ![acrylic](https://files.charlesmilette.net/MPaxeO.png)
 
 ## Features
 
 TranslucentTB supports multiple taskbar states and dynamic taskbar states.
 
- - Advanced **color picker** supporting alpha to change the taskbar's color.
- - **Taskbar states** (choose one):
-   - **Blur**: Will make the taskbar slightly blurred.
-   - **Clear**: Transparent taskbar.
-   - **Normal**: Regular Windows style. (as if TranslucentTB was closed)
-   - **Opaque**: No transparency.
-   - **Fluent**: Windows 10 April 2018 update and up only. Will give the taskbar an appearance similar to Microsoft's Fluent Design guidelines.
- - **Dynamic** modes (these can be used together and each of them provides a taskbar state and color you can customize):
-   - **Dynamic Windows**: Will change the taskbar to a different appearance if a window is currently maximised.
-   - **Dynamic Start Menu**: Will change the taskbar appearance when the start menu is opened.
-   - **Dynamic Timeline/Task View**: Will change the taskbar apperance when the Timeline (or Task View on older builds) is open.
- - Ability to **show or hide the Aero Peek** button. Can be customized **at will** or **dynamic**.
+- Advanced **color picker** supporting alpha to change the taskbar's color.
+- **Taskbar states** (choose one):
+  - **Blur**: Will make the taskbar slightly blurred.
+  - **Clear**: Transparent taskbar.
+  - **Normal**: Regular Windows style. (as if TranslucentTB was closed)
+  - **Opaque**: No transparency.
+  - **Fluent**: Windows 10 April 2018 update and up only. Will give the taskbar an appearance similar to Microsoft's Fluent Design guidelines.
+- **Dynamic** modes (these can be used together and each of them provides a taskbar state and color you can customize):
+  - **Dynamic Windows**: Will change the taskbar to a different appearance if a window is currently maximised.
+  - **Dynamic Start Menu**: Will change the taskbar appearance when the start menu is opened.
+  - **Dynamic Cortana**: Will change the taskbar appearance when Cortana (or the search menu if Cortana is disabled) is open.
+  - **Dynamic Timeline/Task View**: Will change the taskbar apperance when the Timeline (or Task View on older builds) is open.
+- Ability to **show or hide the Aero Peek** button. Can be customized **at will** or **dynamic**.
 
 You can see it in action [here](https://gfycat.com/EverlastingCreamyIlladopsis) (Thanks [@Gunny123](https://github.com/Gunny123)!).
 
@@ -55,7 +56,8 @@ Speaking of compiling...
 You can checkout one of the available branches. However, it is recommended to use `master`, as the code here is stable and has been passed through peer review.
 
 Via [git](https://git-scm.com):
-```
+
+```sh
 $ git clone -b [branch-you-want] https://github.com/TranslucentTB/TranslucentTB
 Cloning into 'TranslucentTB'...
 remote: Counting objects: 909, done.
@@ -82,11 +84,12 @@ Then open the `Visual C++ MSBuild Command Prompt` (or `Developer Command Prompt 
 ## Thanks
 
 TranslucentTB is a team effort! It is the result of the collective efforts of many people:
- - [@ethanhs](https://github.com/ethanhs),
- - [@sylveon](https://github.com/sylveon),
- - [@MrAksel](https://github.com/MrAksel),
- - [@denosawr](https://github.com/denosawr),
- - [@PFCKrutonium](https://github.com/PFCKrutonium).
+
+- [@ethanhs](https://github.com/ethanhs),
+- [@sylveon](https://github.com/sylveon),
+- [@MrAksel](https://github.com/MrAksel),
+- [@denosawr](https://github.com/denosawr),
+- [@PFCKrutonium](https://github.com/PFCKrutonium).
 
 If you would like to contribute, everyone is welcome to! If you are considering a major feature, need guidance, or want to talk an idea out, don't hesitate to jump on Discord or Gitter (see the badges on the top of the README), or file an issue here. The main contributors are often on Discord, Gitter and GitHub, so we should reply fairly quickly.
 Also, at this time I have no plans of expanding this beyond the taskbar.

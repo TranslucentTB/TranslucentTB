@@ -76,6 +76,14 @@ static const std::unordered_map<swca::ACCENT, uint32_t> START_BUTTON_MAP = {
 	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_START_FLUENT }
 };
 
+static const std::unordered_map<swca::ACCENT, uint32_t> CORTANA_BUTTON_MAP = {
+	{ swca::ACCENT::ACCENT_NORMAL,						IDM_CORTANA_NORMAL },
+	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_CORTANA_CLEAR  },
+	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_CORTANA_OPAQUE },
+	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_CORTANA_BLUR   },
+	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_CORTANA_FLUENT }
+};
+
 static const std::unordered_map<swca::ACCENT, uint32_t> TIMELINE_BUTTON_MAP = {
 	{ swca::ACCENT::ACCENT_NORMAL,						IDM_TIMELINE_NORMAL },
 	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_TIMELINE_CLEAR  },
@@ -303,6 +311,7 @@ void RefreshMenu(HMENU menu)
 			RemoveMenu(menu, IDM_REGULAR_FLUENT,   MF_BYCOMMAND);
 			RemoveMenu(menu, IDM_MAXIMISED_FLUENT, MF_BYCOMMAND);
 			RemoveMenu(menu, IDM_START_FLUENT,     MF_BYCOMMAND);
+			RemoveMenu(menu, IDM_CORTANA_FLUENT,   MF_BYCOMMAND);
 			RemoveMenu(menu, IDM_TIMELINE_FLUENT,  MF_BYCOMMAND);
 
 			// Same build for Timeline and fluent
@@ -324,6 +333,9 @@ void RefreshMenu(HMENU menu)
 		TrayContextMenu::ControlsEnabled);
 	TrayContextMenu::RefreshBool(IDM_START_COLOR,     menu,
 		Config::START_ENABLED     && Config::START_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
+		TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(IDM_CORTANA_COLOR,     menu,
+		Config::CORTANA_ENABLED   && Config::CORTANA_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
 	TrayContextMenu::RefreshBool(IDM_TIMELINE_COLOR,  menu,
 		Config::TIMELINE_ENABLED  && Config::TIMELINE_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
@@ -385,6 +397,7 @@ BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
 			taskbar.second = &Config::MAXIMISED_APPEARANCE;
 		}
 
+		// TODO: test on multi-monitor
 		if (Config::PEEK == Config::PEEK::Dynamic)
 		{
 			if (Config::PEEK_ONLY_MAIN)
@@ -442,11 +455,25 @@ void SetTaskbarBlur()
 			}
 		}
 
-		if (Config::TIMELINE_ENABLED && Window::Find(L"Windows.UI.Core.CoreWindow", L"Task view") == Window::ForegroundWindow())
+		const Window fg_window = Window::ForegroundWindow();
+
+		if (fg_window.classname() == L"Windows.UI.Core.CoreWindow")
 		{
-			for (auto &taskbar : run.taskbars)
+			const std::wstring fg_window_title = fg_window.title();
+
+			// TODO: test on other locales and older builds without Timeline
+			if (Config::TIMELINE_ENABLED && fg_window_title == L"Task view")
 			{
-				taskbar.second.second = &Config::TIMELINE_APPEARANCE;
+				for (auto &taskbar : run.taskbars)
+				{
+					taskbar.second.second = &Config::TIMELINE_APPEARANCE;
+				}
+			}
+
+			// TODO: test on multi-monitor and other locales and cortana disabled
+			if (Config::CORTANA_ENABLED && fg_window_title == L"Cortana" && fg_window.visible() && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED))
+			{
+				run.taskbars.at(fg_window.monitor()).second = &Config::CORTANA_APPEARANCE;
 			}
 		}
 
@@ -541,6 +568,14 @@ void InitializeTray(const HINSTANCE &hInstance)
 		for (const auto &button_pair : START_BUTTON_MAP)
 		{
 			tray.BindBool(button_pair.second, Config::START_ENABLED, TrayContextMenu::ControlsEnabled);
+		}
+
+		tray.BindBool(IDM_CORTANA, Config::CORTANA_ENABLED, TrayContextMenu::Toggle);
+		tray.BindColor(IDM_CORTANA_COLOR, Config::CORTANA_APPEARANCE.COLOR);
+		tray.BindEnum(Config::CORTANA_APPEARANCE.ACCENT, CORTANA_BUTTON_MAP);
+		for (const auto &button_pair : CORTANA_BUTTON_MAP)
+		{
+			tray.BindBool(button_pair.second, Config::CORTANA_ENABLED, TrayContextMenu::ControlsEnabled);
 		}
 
 
