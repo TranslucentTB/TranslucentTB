@@ -401,10 +401,10 @@ BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
 		{
 			if (Config::PEEK_ONLY_MAIN)
 			{
-				 if (taskbar.first == run.main_taskbar)
-				 {
-					 run.should_show_peek = true;
-				 }
+				if (taskbar.first == run.main_taskbar)
+				{
+					run.should_show_peek = true;
+				}
 			}
 			else
 			{
