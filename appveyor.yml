@@ -5,15 +5,29 @@ configuration:
 - Release
 - Debug
 platform: x86
+
 before_build:
 - ps: .\update-version.ps1
+
 build:
   parallel: true
   project: TranslucentTB.sln
+
 test: off
+
 artifacts:
 - path: $(CONFIGURATION)
   name: Build artifacts
 - path: StorePackage\AppPackages
   name: App packages
-deploy: off
+
+deploy:
+  provider: GitHub
+  description: 'TODO: Fill this'
+  draft: true
+  artifact: Build artifacts
+  auth_token:
+    secure: KofMs1LM/RjB79NyxThnuOxkUUZxaN98cJdRJepe9ZIwf4/5nxMi+cNiZVe83QxD
+  on:
+    configuration: Release
+    appveyor_repo_tag: true
