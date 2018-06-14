@@ -13,6 +13,9 @@ build:
   parallel: true
   project: TranslucentTB.sln
 
+after_build:
+- ps: .\create-installer.ps1
+
 test: off
 
 artifacts:
