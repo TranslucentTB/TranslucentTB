@@ -74,7 +74,7 @@ bool win32::IsAtLeastBuild(const uint32_t &buildNumber)
 
 bool win32::IsSingleInstance()
 {
-	HANDLE event_handle = CreateEvent(NULL, TRUE, FALSE, ID);
+	HANDLE mutex = CreateMutex(NULL, FALSE, ID);
 	LRESULT error = GetLastError();
 	bool return_value;
 	switch (error)
@@ -88,11 +88,11 @@ bool win32::IsSingleInstance()
 		break;
 
 	default:
-		ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Failed to open app handle!");
+		ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Failed to open app mutex!");
 		return_value = true;
 	}
 
-	static Microsoft::WRL::Wrappers::Event event(event_handle); // RAII, the event automatically closes when we exit.
+	static Microsoft::WRL::Wrappers::Mutex mutex_safe(mutex); // RAII, the mutex automatically closes when we exit.
 	return return_value;
 }
 
