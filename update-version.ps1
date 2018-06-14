@@ -1,4 +1,6 @@
-﻿$tag = git describe --abbrev=0 --tags
+﻿$ErrorActionPreference = "Stop"
+
+$tag = git describe --abbrev=0 --tags
 $tag_hash = git show-ref -s $tag
 $commits = git rev-list $tag_hash`...HEAD --count
 $tags = (git tag | Measure-Object -Line).Lines
