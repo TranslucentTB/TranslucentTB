@@ -7,7 +7,7 @@
 class UWP {
 
 public:
-	static winrt::Windows::ApplicationModel::StartupTask &GetApplicationStartupTask();
+	static const winrt::Windows::ApplicationModel::StartupTask &GetApplicationStartupTask();
 
 	enum class FolderType {
 		Temporary,

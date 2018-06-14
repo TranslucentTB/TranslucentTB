@@ -2,15 +2,15 @@
 #include "UWP.hpp"
 #include <winrt/Windows.Storage.h>
 
-winrt::Windows::ApplicationModel::StartupTask &UWP::GetApplicationStartupTask()
+const winrt::Windows::ApplicationModel::StartupTask &UWP::GetApplicationStartupTask()
 {
-	static auto task = winrt::Windows::ApplicationModel::StartupTask::GetForCurrentPackageAsync().get().GetAt(0);
+	static const auto task = winrt::Windows::ApplicationModel::StartupTask::GetForCurrentPackageAsync().get().GetAt(0);
 	return task;
 }
 
 std::wstring UWP::GetApplicationFolderPath(const FolderType &type)
 {
-	static auto application_data = winrt::Windows::Storage::ApplicationData::Current();
+	static const auto application_data = winrt::Windows::Storage::ApplicationData::Current();
 
 	switch (type)
 	{
