@@ -35,11 +35,15 @@ Global
 		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Release|x86.Build.0 = Release|Win32
 		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Store|x86.ActiveCfg = Release|Win32
 		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Store|x86.Build.0 = Release|Win32
+		{0E91E5C8-0EE0-49C9-A0DA-D25AB61A90C4}.Debug|x86.ActiveCfg = Release|x86
+		{0E91E5C8-0EE0-49C9-A0DA-D25AB61A90C4}.Release|x86.ActiveCfg = Release|x86
 		{0E91E5C8-0EE0-49C9-A0DA-D25AB61A90C4}.Store|x86.ActiveCfg = Release|x86
 		{0E91E5C8-0EE0-49C9-A0DA-D25AB61A90C4}.Store|x86.Build.0 = Release|x86
 		{0E91E5C8-0EE0-49C9-A0DA-D25AB61A90C4}.Store|x86.Deploy.0 = Release|x86
+		{C88EE074-FAFD-4872-8BAF-2BC6198337E5}.Debug|x86.ActiveCfg = Release|Any CPU
 		{C88EE074-FAFD-4872-8BAF-2BC6198337E5}.Release|x86.ActiveCfg = Release|Any CPU
 		{C88EE074-FAFD-4872-8BAF-2BC6198337E5}.Release|x86.Build.0 = Release|Any CPU
+		{C88EE074-FAFD-4872-8BAF-2BC6198337E5}.Store|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
