@@ -26,6 +26,8 @@ OutputDir=.
 PrivilegesRequired=none
 SetupIconFile=DesktopInstaller\setup.ico
 SourceDir=..
+UninstallDisplayIcon={app}\{#AppName}.exe
+UninstallDisplayName={#AppName}
 WizardImageFile=DesktopInstaller\sidebar.bmp
 WizardSmallImageFile=DesktopInstaller\header.bmp
 
