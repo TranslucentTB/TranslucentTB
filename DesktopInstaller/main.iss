@@ -1,20 +1,23 @@
 ﻿#define AppMutex "344635E9-9AE4-4E60-B128-D53E25AB70A7"
 #define AppName "TranslucentTB"
+#define AppPublisher AppName + " Open Source Developers"
 #define AppVersion GetFileVersion('..\Release\' + AppName + '.exe')
 
 [Setup]
 AllowNoIcons=yes
 AllowRootDirectory=yes
-AppCopyright=Copyright © 2018 {#AppName} Open Source Developers
+AppCopyright=Copyright © 2018 {#AppPublisher}
 AppendDefaultDirName=no
+AppendDefaultGroupName=no
 AppMutex={#AppMutex}
 AppName={#AppName}
-AppPublisher={#AppName} Open Source Developers
+AppPublisher={#AppPublisher}
 AppPublisherURL=https://github.com/{#AppName}
 AppReadmeFile=https://github.com/{#AppName}/{#AppName}/blob/master/Readme.md
 AppSupportURL=https://github.com/{#AppName}/{#AppName}/issues/new
 AppVersion={#AppVersion}
 DefaultDirName={code:GetDefaultDirName}
+DefaultGroupName={#AppName}
 DisableWelcomePage=no
 LicenseFile=LICENSE.md
 MinVersion=10
@@ -23,8 +26,8 @@ OutputDir=.
 PrivilegesRequired=none
 SetupIconFile=DesktopInstaller\setup.ico
 SourceDir=..
-;WizardImageFile=DesktopInstaller\sidebar.bmp
-;WizardSmallImageFile=DesktopInstaller\header.bmp
+WizardImageFile=DesktopInstaller\sidebar.bmp
+WizardSmallImageFile=DesktopInstaller\header.bmp
 
 [Files]
 Source: "Release\*"; Excludes: "*.pdb, *.lib, *.exp"; DestDir: "{app}"
