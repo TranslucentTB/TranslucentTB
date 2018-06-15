@@ -21,16 +21,18 @@ test: off
 artifacts:
 - path: $(CONFIGURATION)
   name: Raw build artifacts
+- path: $(CONFIGURATION)\*.pdb
+  name: Debug symbols
 - path: TranslucentTB-setup.exe
-  name: Desktop Installer
+  name: Desktop installer
 - path: StorePackage\AppPackages
-  name: Store App Package
+  name: Store app package
 
 deploy:
   provider: GitHub
   description: 'TODO: Fill this'
   draft: true
-  artifact: Desktop Installer,$(CONFIGURATION)\*.pdb
+  artifact: Desktop installer,Debug symbols
   auth_token:
     secure: KofMs1LM/RjB79NyxThnuOxkUUZxaN98cJdRJepe9ZIwf4/5nxMi+cNiZVe83QxD
   on:
