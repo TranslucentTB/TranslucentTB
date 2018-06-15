@@ -122,7 +122,6 @@ void Config::Save(const std::wstring &file)
 	configstream << endl;
 	configstream << L"; Controls how the Aero Peek button behaves (dynamic, show or hide)" << endl;
 	configstream << L"peek=";
-	configstream << L"peek-only-main=" << GetBoolText(PEEK_ONLY_MAIN) << L" ; Decides wether only the main monitor is considered when dynamic peek is enabled." << endl;
 	switch (PEEK)
 	{
 	case PEEK::Disabled:
@@ -136,6 +135,7 @@ void Config::Save(const std::wstring &file)
 		break;
 	}
 	configstream << endl;
+	configstream << L"peek-only-main=" << GetBoolText(PEEK_ONLY_MAIN) << L" ; Decides wether only the main monitor is considered when dynamic peek is enabled." << endl;
 
 	configstream << endl;
 	configstream << L"; Advanced settings" << endl;

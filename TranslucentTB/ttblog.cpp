@@ -145,8 +145,7 @@ void Log::OutputMessage(const std::wstring &message)
 		}
 	}
 
-	const std::wstring message_with_newline = message + L'\n';
-	OutputDebugString(message_with_newline.c_str());
+	OutputDebugString((message + L'\n').c_str());
 
 	if (*m_FileHandle)
 	{
@@ -155,7 +154,7 @@ void Log::OutputMessage(const std::wstring &message)
 		std::wostringstream buffer;
 		buffer << L'(' << _wctime(&current_time);
 		buffer.seekp(-1, std::ios_base::end); // Seek behind the newline created by _wctime
-		buffer << L") " << message_with_newline;
+		buffer << L") " << message << L"\r\n";
 
 		const std::wstring error = buffer.str();
 
