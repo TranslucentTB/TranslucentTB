@@ -42,6 +42,9 @@ Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"; Wo
 [Run]
 Filename: "{app}\{#AppName}.exe"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall
 
+[CustomMessages]
+DependenciesDir=deps
+
 #include "deps\lang\english.iss"
 #include "deps\products.iss"
 #include "deps\products\stringversion.iss"
