@@ -2,7 +2,7 @@
 ; http://www.visualstudio.com/en-us/downloads/
 
 [CustomMessages]
-vcredist2017_title=Visual C++ 2017 Redistributable
+vcredist2017_title=Visual C++ 2017 Redistributable (x86)
 vcredist2017_size=13.7 MB
 
 [Code]

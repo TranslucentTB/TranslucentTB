@@ -136,12 +136,9 @@ begin
 					end;
 				end;
 
-				case MsgBox(FmtMessage(SetupMessage(msgErrorFunctionFailed), [products[i].Title, IntToStr(resultCode)]), mbError, MB_ABORTRETRYIGNORE) of
-					IDABORT: begin
+				case MsgBox(FmtMessage(SetupMessage(msgErrorFunctionFailed), [products[i].Title, IntToStr(resultCode)]), mbError, MB_RETRYCANCEL) of
+					IDCANCEL: begin
 						Result := InstallError;
-						break;
-					end;
-					IDIGNORE: begin
 						break;
 					end;
 				end;
