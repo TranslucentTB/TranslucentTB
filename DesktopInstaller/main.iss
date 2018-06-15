@@ -42,15 +42,28 @@ Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"; Wo
 [Run]
 Filename: "{app}\{#AppName}.exe"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall
 
+#include "deps\lang\english.iss"
+#include "deps\products.iss"
+#include "deps\products\stringversion.iss"
+#include "deps\products\msiproduct.iss"
+#include "deps\products\vcredist2017.iss"
+
 [Code]
 function GetDefaultDirName(Param: string): string;
 begin
-  if IsAdminLoggedOn then
-  begin
-    Result := ExpandConstant('{pf}\{#AppName}');
-  end
-    else
-  begin
-    Result := ExpandConstant('{localappdata}\{#AppName}');
-  end;
+	if IsAdminLoggedOn then
+	begin
+		Result := ExpandConstant('{pf}\{#AppName}');
+	end
+	else
+	begin
+		Result := ExpandConstant('{localappdata}\{#AppName}');
+	end;
+end;
+
+function InitializeSetup(): boolean;
+begin
+	vcredist2017('14');
+
+	Result := true;
 end;
