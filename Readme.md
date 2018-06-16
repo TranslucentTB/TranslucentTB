@@ -70,16 +70,26 @@ Resolving deltas: 100% (624/624), done.
 You can also download a zip archive of each branch by clicking on the `Clone or download` button while browsing the branch's files.
 
 Now that you have the source, you will need Visual Studio 2017. [You can get the free community edition here](https://www.visualstudio.com/vs/community/).
-You also need to check the `VC++ 2015.3 v140 toolset for desktop` option in the VS2017 installer.
+Check the following workloads:
 
-You also need the [Clang compiler for Windows](http://releases.llvm.org/download.html).
+- Desktop development with C++
+- .NET desktop development
 
-Once you have that installed (make sure you have the C++ components and the Windows SDK version 10.0.17134 installed). Then you can open TranslucentTB.sln, and press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to build the solution.
-The output will be in either the Release, Debug or Store folder (depending on which configuration is currently active).
+Make sure you also install the following components:
 
-If you don't want to install Visual Studio, you can install the [Visual C++ 2015 Build Tools](http://landinghub.visualstudio.com/visual-cpp-build-tools), the [Windows SDK](https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk) version 10.0.17134 and the [Clang compiler for Windows](http://releases.llvm.org/download.html). You can also follow the instructions below if you have Visual Studio installed (with the requirements listed earlier) but don't want to open it.
+- VC++ 2015.3 v14.00 (v140) toolset for desktop
+- Windows 10 SDK (10.0.17134.0)
+- .NET Framework 4.6.2 SDK
+- .NET Framework 4.6.2 targeting pack
 
-Then open the `Visual C++ MSBuild Command Prompt` (or `Developer Command Prompt for VS 2017`) and `cd` into the root directory of this project, before running `msbuild /p:Configuration=Release`.
+You also need the [Clang compiler for Windows](http://releases.llvm.org/download.html) and [Inno Setup](http://jrsoftware.org/isdl.php).
+
+Once you have that installed, open `TranslucentTB.sln`, and press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to build the solution.
+The output will be in either the Debug or Release folder (depending on which solution configuration is currently active).
+
+To build the desktop installer, run the DesktopInstallerBuilder project.
+
+To build the Microsoft Store app package, build the solution with the Store configuration.
 
 ## Thanks
 
@@ -98,6 +108,10 @@ Thanks to [@dAKirby309](https://github.com/dAKirby309) for making the icon! You 
 
 The color picker used comes from [this great CodeProject article](https://www.codeproject.com/Articles/9207/An-HSV-RGBA-colour-picker).
 We've modernized it a bit, with things such as (glorious) per-monitor high DPI awareness, faster (and hardware-accelerated) drawing as well as allowing to input any valid HTML color code or [name](https://www.w3schools.com/colors/colors_names.asp).
+
+The picture we used for the installer screenshot is by [Michael D Beckwith](https://unsplash.com/photos/M-nHIqkO4-o) from [Unsplash](https://unsplash.com/).
+
+We use [Inno Setup Dependency Installer](https://github.com/stfx/innodependencyinstaller) to install the Visual C++ redistribuable.
 
 ### Similar programs
 
