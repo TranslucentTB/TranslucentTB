@@ -52,9 +52,6 @@ public:
 	// NOTE: use .join() to wait for input, because this doesn't blocks by default.
 	static std::thread PickColor(uint32_t &color);
 
-	// Checks if the start menu is open using a COM interface.
-	static bool IsStartVisible();
-
 	// Applies various settings that make code execution more secure.
 	static void HardenProcess();
 

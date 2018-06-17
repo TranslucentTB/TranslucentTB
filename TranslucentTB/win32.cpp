@@ -1,11 +1,9 @@
 #include "win32.hpp"
 #include "arch.h"
-#include <atlbase.h>
 #include <PathCch.h>
 #include <processthreadsapi.h>
 #include <shellapi.h>
 #include <ShlObj.h>
-#include <ShObjIdl.h>
 #include <synchapi.h>
 #include <vector>
 #include <WinBase.h>
@@ -243,30 +241,6 @@ std::thread win32::PickColor(uint32_t &color)
 
 	t.detach();
 	return t;
-}
-
-bool win32::IsStartVisible()
-{
-	static CComPtr<IAppVisibility> app_visibility;
-	static bool failed = false;
-
-	if (!failed)
-	{
-		if (!app_visibility)
-		{
-			failed = !ErrorHandle(app_visibility.CoCreateInstance(CLSID_AppVisibility), Error::Level::Log, L"Initialization of IAppVisibility failed.");
-		}
-	}
-
-	BOOL start_visible;
-	if (failed || !ErrorHandle(app_visibility->IsLauncherVisible(&start_visible), Error::Level::Log, L"Checking start menu visibility failed."))
-	{
-		return false;
-	}
-	else
-	{
-		return start_visible;
-	}
 }
 
 void win32::HardenProcess()

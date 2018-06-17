@@ -7,11 +7,14 @@
 
 // Windows API
 #include "arch.h"
+#include <atlbase.h>
 #include <PathCch.h>
 #include <ShlObj.h>
+#include <wrl.h>
 #include <wrl/wrappers/corewrappers.h>
 
 // Local stuff
+#include "appvisibilitysink.hpp"
 #include "autofree.hpp"
 #include "autostart.hpp"
 #include "blacklist.hpp"
@@ -50,6 +53,7 @@ static struct {
 	std::wstring config_file;
 	std::wstring exclude_file;
 	bool peek_active = false;
+	bool start_opened = false;
 } run;
 
 static const std::unordered_map<swca::ACCENT, uint32_t> REGULAR_BUTTOM_MAP = {
@@ -451,7 +455,7 @@ void SetTaskbarBlur()
 				run.taskbars.at(fg_window.monitor()).second = &Config::CORTANA_APPEARANCE;
 			}
 
-			if (Config::START_ENABLED && win32::IsStartVisible())
+			if (Config::START_ENABLED && run.start_opened)
 			{
 				run.taskbars.at(fg_window.monitor()).second = &Config::START_APPEARANCE;
 			}
@@ -680,6 +684,16 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	// Undoc'd, allows to detect when Aero Peek starts and stops
 	EventHook peek_hook(0x21, 0x22, HandleAeroPeekEvent, WINEVENT_OUTOFCONTEXT);
 
+	// Register our start menu detection sink
+	CComPtr<IAppVisibility> app_visibility;
+	DWORD av_cookie = 0;
+	Microsoft::WRL::ComPtr<IAppVisibilityEvents> av_sink; // Why use one COM smart pointer type when you can use two?
+	if (ErrorHandle(app_visibility.CoCreateInstance(CLSID_AppVisibility), Error::Level::Log, L"Initialization of IAppVisibility failed."))
+	{
+		av_sink = Microsoft::WRL::Make<AppVisibilitySink>(run.start_opened);
+		ErrorHandle(app_visibility->Advise(av_sink.Get(), &av_cookie), Error::Level::Log, L"Failed to register app visibility sink.");
+	}
+
 	// Message loop
 	while (run.is_running)
 	{
@@ -691,6 +705,11 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		}
 		SetTaskbarBlur();
 		std::this_thread::sleep_for(std::chrono::milliseconds(Config::SLEEP_TIME));
+	}
+
+	if (av_cookie)
+	{
+		ErrorHandle(app_visibility->Unadvise(av_cookie), Error::Level::Log, L"Failed to unregister app visibility sink.");
 	}
 
 	// If it's a new instance, don't save or restore taskbar to default
