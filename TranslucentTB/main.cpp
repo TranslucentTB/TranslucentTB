@@ -442,19 +442,23 @@ void SetTaskbarBlur()
 		TogglePeek(run.should_show_peek);
 
 		const Window fg_window = Window::ForegroundWindow();
-
-		// TODO: test on other locales
-		if (Config::CORTANA_ENABLED && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
-			fg_window.title() == L"Cortana" && fg_window.classname() == CORE_WINDOW)
+		if (fg_window != Window::NullWindow)
 		{
-			run.taskbars.at(fg_window.monitor()).second = &Config::CORTANA_APPEARANCE;
+			// TODO: test on multiple monitors
+			if (Config::CORTANA_ENABLED && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
+				Util::IgnoreCaseStringEquals(fg_window.filename(), L"SearchUI.exe"))
+			{
+				run.taskbars.at(fg_window.monitor()).second = &Config::CORTANA_APPEARANCE;
+			}
+
+			if (Config::START_ENABLED && win32::IsStartVisible())
+			{
+				run.taskbars.at(fg_window.monitor()).second = &Config::START_APPEARANCE;
+			}
 		}
 
-		if (Config::START_ENABLED && win32::IsStartVisible())
-		{
-			run.taskbars.at(Window::Find(CORE_WINDOW, L"Start").monitor()).second = &Config::START_APPEARANCE;
-		}
-
+		// Put this between Start/Cortana and Task view/Timeline
+		// Task view and Timeline show over Aero Peek, but not Start or Cortana
 		if (Config::MAXIMISED_ENABLED && Config::MAXIMISED_REGULAR_ON_PEEK && run.peek_active)
 		{
 			for (auto &taskbar : run.taskbars)
@@ -463,15 +467,17 @@ void SetTaskbarBlur()
 			}
 		}
 
-		const static bool timeline_av = win32::IsAtLeastBuild(MIN_FLUENT_BUILD);
-
-		// TODO: test on other locales
-		if (Config::TIMELINE_ENABLED && fg_window.title() == L"Task View" &&
-			fg_window.classname() == (timeline_av ? CORE_WINDOW : L"MultitaskingViewFrame"))
+		if (fg_window != Window::NullWindow)
 		{
-			for (auto &taskbar : run.taskbars)
+			const static bool timeline_av = win32::IsAtLeastBuild(MIN_FLUENT_BUILD);
+			if (Config::TIMELINE_ENABLED && (timeline_av
+				? (fg_window.classname() == CORE_WINDOW && Util::IgnoreCaseStringEquals(fg_window.filename(), L"Explorer.exe"))
+				: (fg_window.classname() == L"MultitaskingViewFrame")))
 			{
-				taskbar.second.second = &Config::TIMELINE_APPEARANCE;
+				for (auto &taskbar : run.taskbars)
+				{
+					taskbar.second.second = &Config::TIMELINE_APPEARANCE;
+				}
 			}
 		}
 

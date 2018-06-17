@@ -91,10 +91,9 @@ bool Blacklist::IsBlacklisted(const Window &window)
 
 		if (m_FileBlacklist.size() > 0)
 		{
-			std::wstring exeName = Util::ToLower(window.filename());
 			for (const std::wstring &value : m_FileBlacklist)
 			{
-				if (exeName == value)
+				if (Util::IgnoreCaseStringEquals(window.filename(), value))
 				{
 					return OutputMatchToLog(window, m_Cache[window] = true);
 				}
