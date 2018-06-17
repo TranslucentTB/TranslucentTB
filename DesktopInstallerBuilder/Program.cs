@@ -14,7 +14,7 @@ namespace DesktopInstallerBuilder
 
             foreach (int _ in Enumerable.Range(0, count))
             {
-                dir = dir.Parent ?? throw new Exception("Tried to get parent of folder structure root.");;
+                dir = dir.Parent ?? throw new Exception("Tried to get parent of folder structure root.");
             }
 
             return dir.FullName;

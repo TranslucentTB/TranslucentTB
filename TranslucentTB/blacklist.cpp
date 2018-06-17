@@ -10,7 +10,7 @@ std::vector<std::wstring> Blacklist::m_ClassBlacklist;
 std::vector<std::wstring> Blacklist::m_FileBlacklist;
 std::vector<std::wstring> Blacklist::m_TitleBlacklist;
 std::unordered_map<Window, bool> Blacklist::m_Cache;
-EventHook Blacklist::m_TitleHook(EVENT_OBJECT_NAMECHANGE, EVENT_OBJECT_NAMECHANGE, Blacklist::HandleNameChange, WINEVENT_OUTOFCONTEXT);
+EventHook Blacklist::m_Hook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_NAMECHANGE, Blacklist::HandleWinEvent, WINEVENT_OUTOFCONTEXT);
 
 void Blacklist::Parse(const std::wstring &file)
 {
@@ -104,10 +104,9 @@ bool Blacklist::IsBlacklisted(const Window &window)
 		// Do it last because titles can change, so it's less reliable.
 		if (m_TitleBlacklist.size() > 0)
 		{
-			const std::wstring title = window.title();
 			for (const std::wstring &value : m_TitleBlacklist)
 			{
-				if (title.find(value) != std::wstring::npos)
+				if (window.title().find(value) != std::wstring::npos)
 				{
 					return OutputMatchToLog(window, m_Cache[window] = true);
 				}
@@ -128,21 +127,11 @@ void Blacklist::ClearCache()
 	}
 }
 
-void Blacklist::HandleNameChange(HWINEVENTHOOK, DWORD, const HWND window, const LONG idObject, LONG, DWORD, DWORD)
+void Blacklist::HandleWinEvent(HWINEVENTHOOK, const DWORD event, const HWND window, LONG, LONG, DWORD, DWORD)
 {
-	if (idObject == OBJID_WINDOW)
+	if (event == EVENT_OBJECT_DESTROY || event == EVENT_OBJECT_NAMECHANGE)
 	{
-		const Window eventWindow(window);
-
-		if (m_Cache.count(eventWindow) != 0)
-		{
-			m_Cache.erase(eventWindow);
-		}
-
-		if (Config::VERBOSE)
-		{
-			Log::OutputMessage(L"Title of a window changed to \"" + eventWindow.title() + L'"');
-		}
+		m_Cache.erase(window);
 	}
 }
 

@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "eventhook.hpp"
 #include "windowclass.hpp"
 
 class Window {
@@ -12,6 +13,9 @@ class Window {
 private:
 	static std::unordered_map<Window, std::wstring> m_ClassNames;
 	static std::unordered_map<Window, std::wstring> m_Filenames;
+	static std::unordered_map<Window, std::wstring> m_Titles;
+	static EventHook m_Hook;
+	static void CALLBACK HandleWinEvent(HWINEVENTHOOK, const DWORD event, const HWND window, LONG, LONG, DWORD, DWORD);
 
 protected:
 	HWND m_WindowHandle;
@@ -47,7 +51,7 @@ public:
 	}
 
 	constexpr Window(const HWND &handle = Window::NullWindow) : m_WindowHandle(handle) { };
-	std::wstring title() const;
+	const std::wstring &title() const;
 	const std::wstring &classname() const;
 	const std::wstring &filename() const;
 	bool on_current_desktop() const;

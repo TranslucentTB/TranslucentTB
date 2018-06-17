@@ -7,26 +7,50 @@
 
 std::unordered_map<Window, std::wstring> Window::m_ClassNames;
 std::unordered_map<Window, std::wstring> Window::m_Filenames;
+std::unordered_map<Window, std::wstring> Window::m_Titles;
+EventHook Window::m_Hook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_NAMECHANGE, Window::HandleWinEvent, WINEVENT_OUTOFCONTEXT);
+
+void Window::HandleWinEvent(HWINEVENTHOOK, const DWORD event, const HWND window, LONG, LONG, DWORD, DWORD)
+{
+	const Window eventWindow(window);
+	switch (event)
+	{
+	case EVENT_OBJECT_DESTROY:
+		m_ClassNames.erase(eventWindow);
+		m_Filenames.erase(eventWindow);
+		[[fallthrough]];
+	case EVENT_OBJECT_NAMECHANGE:
+		m_Titles.erase(eventWindow);
+		break;
+	}
+}
 
 const Window Window::NullWindow = nullptr;
 const Window Window::BroadcastWindow = HWND_BROADCAST;
 const Window Window::MessageOnlyWindow = HWND_MESSAGE;
 
-std::wstring Window::title() const
+const std::wstring &Window::title() const
 {
-	std::wstring windowTitle;
-	int titleSize = GetWindowTextLength(m_WindowHandle) + 1; // For the null terminator
-	windowTitle.resize(titleSize);
-
-	int copiedChars = GetWindowText(m_WindowHandle, windowTitle.data(), titleSize);
-	if (!copiedChars)
+	if (m_Titles.count(m_WindowHandle) == 0)
 	{
-		LastErrorHandle(Error::Level::Log, L"Getting title of a window failed.");
-		return L"";
-	}
+		std::wstring windowTitle;
+		int titleSize = GetWindowTextLength(m_WindowHandle) + 1; // For the null terminator
+		windowTitle.resize(titleSize);
 
-	windowTitle.resize(copiedChars);
-	return windowTitle;
+		int copiedChars = GetWindowText(m_WindowHandle, windowTitle.data(), titleSize);
+		if (!copiedChars)
+		{
+			LastErrorHandle(Error::Level::Log, L"Getting title of a window failed.");
+			return m_Titles[m_WindowHandle] = L"";
+		}
+
+		windowTitle.resize(copiedChars);
+		return m_Titles[m_WindowHandle] = std::move(windowTitle);
+	}
+	else
+	{
+		return m_Titles.at(m_WindowHandle);
+	}
 }
 
 const std::wstring &Window::classname() const

@@ -442,11 +442,10 @@ void SetTaskbarBlur()
 		TogglePeek(run.should_show_peek);
 
 		const Window fg_window = Window::ForegroundWindow();
-		const std::wstring fg_window_title = fg_window.title();
 
 		// TODO: test on other locales
 		if (Config::CORTANA_ENABLED && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
-			fg_window_title == L"Cortana" && fg_window.classname() == CORE_WINDOW)
+			fg_window.title() == L"Cortana" && fg_window.classname() == CORE_WINDOW)
 		{
 			run.taskbars.at(fg_window.monitor()).second = &Config::CORTANA_APPEARANCE;
 		}
@@ -467,7 +466,7 @@ void SetTaskbarBlur()
 		const static bool timeline_av = win32::IsAtLeastBuild(MIN_FLUENT_BUILD);
 
 		// TODO: test on other locales
-		if (Config::TIMELINE_ENABLED && fg_window_title == L"Task View" &&
+		if (Config::TIMELINE_ENABLED && fg_window.title() == L"Task View" &&
 			fg_window.classname() == (timeline_av ? CORE_WINDOW : L"MultitaskingViewFrame"))
 		{
 			for (auto &taskbar : run.taskbars)
