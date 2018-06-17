@@ -17,7 +17,7 @@ private:
 		Deleter m_Deleter;
 
 	public:
-		inline Base(T *data = nullptr)
+		explicit inline Base(T *data = nullptr)
 		{
 			m_DataPtr = data;
 		}
@@ -39,6 +39,16 @@ private:
 		}
 
 		inline operator T *()
+		{
+			return m_DataPtr;
+		}
+
+		inline T *data()
+		{
+			return m_DataPtr;
+		}
+
+		inline const T *data() const
 		{
 			return m_DataPtr;
 		}

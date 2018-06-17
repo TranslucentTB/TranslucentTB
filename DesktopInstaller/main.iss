@@ -32,7 +32,7 @@ WizardImageFile=DesktopInstaller\sidebar.bmp
 WizardSmallImageFile=DesktopInstaller\header.bmp
 
 [Files]
-Source: "Release\*"; Excludes: "*.pdb, *.lib, *.exp"; DestDir: "{app}"
+Source: "Release\*"; Excludes: "*.pdb, *.lib, *.exp"; DestDir: "{app}"; Flags: ignoreversion
 
 [Registry]
 Root: HKCU; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueName: {#AppName}; Flags: dontcreatekey uninsdeletevalue
