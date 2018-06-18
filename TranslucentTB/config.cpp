@@ -186,14 +186,8 @@ bool Config::ParseColor(std::wstring value, uint32_t &color)
 {
 	Util::TrimInplace(value);
 
-	if (Util::StringBeginsWith(value, L"#"))
-	{
-		value.erase(0, 1);
-	}
-	else if (Util::StringBeginsWith(value, L"0x"))
-	{
-		value.erase(0, 2);
-	}
+	Util::RemovePrefixInplace(value, L"#");
+	Util::RemovePrefixInplace(value, L"0x");
 
 	// Get only the last 6 characters, keeps compatibility with old version.
 	// It stored AARRGGBB in color, but now we store it as RRGGBB.

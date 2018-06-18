@@ -1,7 +1,5 @@
 #pragma once
-#include <atlbase.h>
 #include <dwmapi.h>
-#include <ShObjIdl.h>
 #include <string>
 #include <unordered_map>
 

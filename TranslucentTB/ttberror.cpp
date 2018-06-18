@@ -12,6 +12,7 @@
 #include "common.hpp"
 #include "ttblog.hpp"
 #include "util.hpp"
+#include "win32.hpp"
 
 bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *const message, const wchar_t *const file, const int &line, const char *const function)
 {
@@ -32,10 +33,8 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 			boxbuffer << error_message;
 		}
 
-		const size_t functionLength = std::char_traits<char>::length(function);
-		std::wstring functionW;
-		functionW.resize(functionLength);
-		if (!MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, function, functionLength, functionW.data(), functionLength))
+		std::wstring functionW = win32::CharToWchar(function);
+		if (functionW.empty())
 		{
 			functionW = L"[failed to convert function name to UTF-16]";
 		}

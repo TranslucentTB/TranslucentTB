@@ -653,14 +653,8 @@ void ParseHex(HWND hDlg, CColourPicker *picker)
 			return;
 		}
 
-		if (Util::StringBeginsWith(text, L"#"))
-		{
-			text.erase(0, 1);
-		}
-		else if (Util::StringBeginsWith(text, L"0x"))
-		{
-			text.erase(0, 2);
-		}
+		Util::RemovePrefixInplace(text, L"#");
+		Util::RemovePrefixInplace(text, L"0x");
 
 		try
 		{

@@ -1,7 +1,9 @@
 #include "window.hpp"
+#include <ShObjIdl.h>
 #include <wrl/wrappers/corewrappers.h>
 #include <vector>
 
+#include "classiccomptr.hpp"
 #include "common.hpp"
 #include "ttberror.hpp"
 
@@ -116,25 +118,16 @@ const std::wstring &Window::filename() const
 
 bool Window::on_current_desktop() const
 {
-	static CComPtr<IVirtualDesktopManager> desktop_manager;
-	static bool failed = false;
-
-	if (!failed)
-	{
-		if (!desktop_manager)
-		{
-			failed = !ErrorHandle(desktop_manager.CoCreateInstance(CLSID_VirtualDesktopManager), Error::Level::Log, L"Initialization of IVirtualDesktopManager failed.");
-		}
-	}
+	static ClassicComPtr<IVirtualDesktopManager> desktop_manager(CLSID_VirtualDesktopManager);
 
 	BOOL on_current_desktop;
-	if (failed || !ErrorHandle(desktop_manager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop), Error::Level::Log, L"Verifying if a window is on the current virtual desktop failed."))
+	if (desktop_manager.Get() != nullptr && ErrorHandle(desktop_manager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop), Error::Level::Log, L"Verifying if a window is on the current virtual desktop failed."))
 	{
-		return true;
+		return on_current_desktop;
 	}
 	else
 	{
-		return on_current_desktop;
+		return true;
 	}
 }
 

@@ -7,10 +7,10 @@
 
 // Windows API
 #include "arch.h"
-#include <atlbase.h>
 #include <PathCch.h>
 #include <ShlObj.h>
-#include <wrl.h>
+#include <wrl/client.h>
+#include <wrl/implements.h>
 #include <wrl/wrappers/corewrappers.h>
 
 // Local stuff
@@ -18,6 +18,7 @@
 #include "autofree.hpp"
 #include "autostart.hpp"
 #include "blacklist.hpp"
+#include "classiccomptr.hpp"
 #include "common.hpp"
 #include "config.hpp"
 #include "eventhook.hpp"
@@ -685,10 +686,10 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	EventHook peek_hook(0x21, 0x22, HandleAeroPeekEvent, WINEVENT_OUTOFCONTEXT);
 
 	// Register our start menu detection sink
-	CComPtr<IAppVisibility> app_visibility;
+	ClassicComPtr<IAppVisibility> app_visibility(CLSID_AppVisibility);
+	Microsoft::WRL::ComPtr<IAppVisibilityEvents> av_sink;
 	DWORD av_cookie = 0;
-	Microsoft::WRL::ComPtr<IAppVisibilityEvents> av_sink; // Why use one COM smart pointer type when you can use two?
-	if (ErrorHandle(app_visibility.CoCreateInstance(CLSID_AppVisibility), Error::Level::Log, L"Initialization of IAppVisibility failed."))
+	if (app_visibility.Get() != nullptr)
 	{
 		av_sink = Microsoft::WRL::Make<AppVisibilitySink>(run.start_opened);
 		ErrorHandle(app_visibility->Advise(av_sink.Get(), &av_cookie), Error::Level::Log, L"Failed to register app visibility sink.");

@@ -312,3 +312,21 @@ void win32::HardenProcess()
 		LastErrorHandle(Error::Level::Log, L"Couldn't set image load policy.");
 	}
 }
+
+std::wstring win32::CharToWchar(const char *str)
+{
+	const size_t strLength = std::char_traits<char>::length(str);
+	std::wstring strW;
+	strW.resize(strLength);
+	int count = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, str, strLength, strW.data(), strLength + 1);
+	if (count)
+	{
+		strW.resize(count);
+	}
+	else
+	{
+		strW.erase();
+	}
+
+	return strW;
+}

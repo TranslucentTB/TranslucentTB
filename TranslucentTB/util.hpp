@@ -128,6 +128,28 @@ public:
 		return true;
 	}
 
+	// Removes a string at the beginning of another string.
+	inline static std::wstring RemovePrefix(const std::wstring &str, const std::wstring &prefix)
+	{
+		if (StringBeginsWith(str, prefix))
+		{
+			return str.substr(prefix.length());
+		}
+		else
+		{
+			return str;
+		}
+	}
+
+	// Removes a string at the beginning of another string.
+	inline static void RemovePrefixInplace(std::wstring &str, const std::wstring &prefix)
+	{
+		if (StringBeginsWith(str, prefix))
+		{
+			str.erase(0, prefix.length());
+		}
+	}
+
 	// Changes a value. Use with std::bind and context menu callbacks (BindEnum preferred).
 	template<typename T>
 	inline static void UpdateValue(T &toupdate, T newvalue)

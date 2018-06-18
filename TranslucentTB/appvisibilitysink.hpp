@@ -1,6 +1,6 @@
 #pragma once
 #include <ShObjIdl.h>
-#include <wrl.h>
+#include <wrl/implements.h>
 
 class AppVisibilitySink : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, IAppVisibilityEvents> {
 

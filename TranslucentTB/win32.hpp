@@ -55,4 +55,7 @@ public:
 	// Applies various settings that make code execution more secure.
 	static void HardenProcess();
 
+	// Converts a ASCII string to a wide character string
+	static std::wstring CharToWchar(const char *str);
+
 };
