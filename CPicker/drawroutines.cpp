@@ -55,6 +55,9 @@ void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 
 	D2D1_POINT_2F indicator_point;
 
+	CComPtr<ID2D1SolidColorBrush> brush;
+	target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &brush);
+
 	// RED
 	if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 	{
@@ -95,23 +98,23 @@ void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 	// SATURATION and VALUE
 	else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED || IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
 	{
-		CComPtr<ID2D1GradientStopCollection> pGradientStops;
+		CComPtr<ID2D1GradientStopCollection> gradientStops;
 		target->CreateGradientStopCollection(
 			GetHueGradient().data(),
 			HueGradientPrecision,
 			D2D1_GAMMA_1_0,
 			D2D1_EXTEND_MODE_CLAMP,
-			&pGradientStops
+			&gradientStops
 		);
 
-		CComPtr<ID2D1LinearGradientBrush> brush;
+		CComPtr<ID2D1LinearGradientBrush> gradientBrush;
 		target->CreateLinearGradientBrush(
 			D2D1::LinearGradientBrushProperties(
 				D2D1::Point2F(size.width, 0.0f),
 				D2D1::Point2F(0.0f, 0.0f)
 			),
-			pGradientStops,
-			&brush
+			gradientStops,
+			&gradientBrush
 		);
 
 		target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), brush);
@@ -119,10 +122,9 @@ void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 		// SATURATION
 		if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
 		{
-			CComPtr<ID2D1SolidColorBrush> underlayBrush;
-			target->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f - (s / 100.0f)), &underlayBrush);
+			brush->SetColor(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f - (s / 100.0f)));
 
-			target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), underlayBrush);
+			target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), brush);
 			DrawGradient(target, size, D2D1::ColorF(0, 0.0f), D2D1::ColorF(D2D1::ColorF::Black));
 
 			indicator_point = D2D1::Point2F(h / 359.0f * size.width, (100 - v) / 100.0f * size.height);
@@ -133,17 +135,15 @@ void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 		{
 			DrawGradient(target, size, D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f), D2D1::ColorF(D2D1::ColorF::White));
 
-			CComPtr<ID2D1SolidColorBrush> overlayBrush;
-			target->CreateSolidColorBrush(D2D1::ColorF(0, 1.0f - (v / 100.0f)), &overlayBrush);
+			brush->SetColor(D2D1::ColorF(0, 1.0f - (v / 100.0f)));
 
-			target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), overlayBrush);
+			target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), brush);
 
 			indicator_point = D2D1::Point2F(h / 359.0f * size.width, (100 - s) / 100.0f * size.height);
 		}
 	}
 
-	CComPtr<ID2D1SolidColorBrush> brush;
-	target->CreateSolidColorBrush(D2D1::ColorF(1.0f - r, 1.0f - g, 1.0f - b), &brush);
+	brush->SetColor(D2D1::ColorF(1.0f - r, 1.0f - g, 1.0f - b));
 	const float circle_radius = size.width / 50.0f;
 	target->DrawEllipse(D2D1::Ellipse(indicator_point, circle_radius, circle_radius), brush);
 
@@ -191,13 +191,13 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 	// HUE
 	else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
 	{
-		CComPtr<ID2D1GradientStopCollection> pGradientStops;
+		CComPtr<ID2D1GradientStopCollection> gradientStops;
 		target->CreateGradientStopCollection(
 			GetHueGradient().data(),
 			HueGradientPrecision,
 			D2D1_GAMMA_1_0,
 			D2D1_EXTEND_MODE_CLAMP,
-			&pGradientStops
+			&gradientStops
 		);
 
 		CComPtr<ID2D1LinearGradientBrush> brush;
@@ -206,7 +206,7 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 				D2D1::Point2F(0.0f, 0.0f),
 				D2D1::Point2F(0.0f, size.height)
 			),
-			pGradientStops,
+			gradientStops,
 			&brush
 		);
 
@@ -290,9 +290,8 @@ void DrawAlphaSlider(ID2D1RenderTarget *target,  const float &r, const float &g,
 
 	DrawArrows(target, size, a, border_size, brush);
 
-	CComPtr<ID2D1SolidColorBrush> brush2;
-	target->CreateSolidColorBrush(D2D1::ColorF(r, g, b, 1.0f - a), &brush2);
-	DrawArrows(target, size, a, border_size, brush2);
+	brush->SetColor(D2D1::ColorF(r, g, b, 1.0f - a));
+	DrawArrows(target, size, a, border_size, brush);
 
 	target->EndDraw();
 }
@@ -307,13 +306,11 @@ void DrawColorIndicator(ID2D1RenderTarget *target, const float &rf, const float 
 	CComPtr<ID2D1SolidColorBrush> brush;
 	target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &brush);
 	DrawCheckerboard(target, brush, size, size.height / 4.0f, 0, flag);
-	brush.Release();
 
-	target->CreateSolidColorBrush(D2D1::ColorF(rf, gf, bf, af), &brush);
+	brush->SetColor(D2D1::ColorF(rf, gf, bf, af));
 	target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height / 2.0f), brush);
-	brush.Release();
 
-	target->CreateSolidColorBrush(D2D1::ColorF(oldcolor.r / 255.0f, oldcolor.g / 255.0f, oldcolor.b / 255.0f, oldcolor.a / 255.0f), &brush);
+	brush->SetColor(D2D1::ColorF(oldcolor.r / 255.0f, oldcolor.g / 255.0f, oldcolor.b / 255.0f, oldcolor.a / 255.0f));
 	target->FillRectangle(D2D1::RectF(0.0f, size.height / 2.0f, size.width, size.height), brush);
 
 	target->EndDraw();
