@@ -1,53 +1,10 @@
 #include "drawroutines.hpp"
-#include <array>
 #include <atlbase.h>
 
 #include "drawhelper.hpp"
 #include "resource.h"
 
-constexpr uint8_t HueGradientPrecision = 20; // Number of steps in the hue gradient
-constexpr const std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> CalculateHueGradient()
-{
-	std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> gradientStops{};
-
-	SColour tempcol{};
-	tempcol.h = 359;
-	tempcol.s = 100;
-	tempcol.v = 100;
-	tempcol.UpdateRGB();
-
-	const float step = 359 / (float)HueGradientPrecision;
-
-	for (uint8_t i = 0; i < HueGradientPrecision; i++)
-	{
-		// Due to some weird MSBuild thing, C++17 is half implemented in Clang-CL.
-		// Because of that, we don't have constexpr operator[] on std::array.
-		// Access the raw underlying array directly instead.
-		gradientStops._Elems[i] = {
-			i / (float)(HueGradientPrecision - 1),
-			{
-				tempcol.r / 255.0f,
-				tempcol.g / 255.0f,
-				tempcol.b / 255.0f,
-				1.0f
-			}
-		};
-
-		// Clang errors out on the use of -= here
-		tempcol.h = tempcol.h - step;
-		tempcol.UpdateRGB();
-	}
-
-	return gradientStops;
-}
-
-inline const auto &GetHueGradient()
-{
-	static constexpr auto value = CalculateHueGradient();
-	return value;
-}
-
-void DrawColorPicker(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
+void DrawColorPicker(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, ID2D1LinearGradientBrush *hue, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
 {
 	const D2D1_SIZE_F size = target->GetSize();
 
@@ -95,26 +52,7 @@ void DrawColorPicker(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, con
 	// SATURATION and VALUE
 	else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED || IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
 	{
-		CComPtr<ID2D1GradientStopCollection> gradientStops;
-		target->CreateGradientStopCollection(
-			GetHueGradient().data(),
-			HueGradientPrecision,
-			D2D1_GAMMA_1_0,
-			D2D1_EXTEND_MODE_CLAMP,
-			&gradientStops
-		);
-
-		CComPtr<ID2D1LinearGradientBrush> gradientBrush;
-		target->CreateLinearGradientBrush(
-			D2D1::LinearGradientBrushProperties(
-				D2D1::Point2F(size.width, 0.0f),
-				D2D1::Point2F(0.0f, 0.0f)
-			),
-			gradientStops,
-			&gradientBrush
-		);
-
-		target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), brush);
+		target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), hue);
 
 		// SATURATION
 		if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
@@ -147,7 +85,7 @@ void DrawColorPicker(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, con
 	target->EndDraw();
 }
 
-void DrawColorSlider(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
+void DrawColorSlider(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, ID2D1LinearGradientBrush *hue, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
 {
 	const DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);
 	const D2D1_SIZE_F size = target->GetSize();
@@ -188,26 +126,7 @@ void DrawColorSlider(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, con
 	// HUE
 	else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
 	{
-		CComPtr<ID2D1GradientStopCollection> gradientStops;
-		target->CreateGradientStopCollection(
-			GetHueGradient().data(),
-			HueGradientPrecision,
-			D2D1_GAMMA_1_0,
-			D2D1_EXTEND_MODE_CLAMP,
-			&gradientStops
-		);
-
-		CComPtr<ID2D1LinearGradientBrush> brush;
-		target->CreateLinearGradientBrush(
-			D2D1::LinearGradientBrushProperties(
-				D2D1::Point2F(0.0f, 0.0f),
-				D2D1::Point2F(0.0f, size.height)
-			),
-			gradientStops,
-			&brush
-		);
-
-		target->FillRectangle(D2D1::RectF(border_size, 0.0f, size.width - border_size, size.height), brush);
+		target->FillRectangle(D2D1::RectF(border_size, 0.0f, size.width - border_size, size.height), hue);
 
 		arrow_position = 1.0f - (h / 359.0f);
 		SColour temp;

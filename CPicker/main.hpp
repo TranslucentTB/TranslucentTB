@@ -14,3 +14,4 @@ void UpdateValues(HWND hDlg, const SColour &col, bool &changing_text);
 void FailedParse(HWND hDlg);
 void ParseHex(HWND hDlg, CColourPicker *picker);
 void CreateTarget(ID2D1Factory *factory, CComPtr<ID2D1HwndRenderTarget> &target, CComPtr<ID2D1SolidColorBrush> &brush, HWND hDlg, int item);
+void CreateHueGradient(ID2D1RenderTarget *target, CComPtr<ID2D1LinearGradientBrush> &gradient, bool isHoriz);

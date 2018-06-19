@@ -9,6 +9,7 @@
 #include "CColourPicker.hpp"
 #include "drawhelper.hpp"
 #include "drawroutines.hpp"
+#include "huegradient.hpp"
 #include "PickerData.hpp"
 #include "resource.h"
 #include "SColour.hpp"
@@ -231,7 +232,9 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 	case WM_DPICHANGED:
 	{
 		CreateTarget(picker_data->factory, picker_data->targetC1, picker_data->brushC1, hDlg, IDC_COLOR);
+		CreateHueGradient(picker_data->targetC1, picker_data->hueC1, false);
 		CreateTarget(picker_data->factory, picker_data->targetC2, picker_data->brushC2, hDlg, IDC_COLOR2);
+		CreateHueGradient(picker_data->targetC2, picker_data->hueC2, true);
 		CreateTarget(picker_data->factory, picker_data->targetA, picker_data->brushA, hDlg, IDC_ALPHASLIDE);
 		CreateTarget(picker_data->factory, picker_data->targetC, picker_data->brushC, hDlg, IDC_COLORS);
 
@@ -258,10 +261,10 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 		PAINTSTRUCT ps;
 		BeginPaint(hDlg, &ps);
 
-		DrawColorPicker(picker_data->targetC1, picker_data->brushC1, hDlg, rf, gf, bf, color.h, color.s, color.v);
+		DrawColorPicker(picker_data->targetC1, picker_data->brushC1, picker_data->hueC1, hDlg, rf, gf, bf, color.h, color.s, color.v);
 
 		// Small color selector (displays selected feature)
-		DrawColorSlider(picker_data->targetC2, picker_data->brushC2, hDlg, rf, gf, bf, color.h, color.s, color.v);
+		DrawColorSlider(picker_data->targetC2, picker_data->brushC2, picker_data->hueC2, hDlg, rf, gf, bf, color.h, color.s, color.v);
 
 		// Alpha slider
 		DrawAlphaSlider(picker_data->targetA, picker_data->brushA, rf, gf, bf, 1.0f - af);
@@ -679,4 +682,27 @@ void CreateTarget(ID2D1Factory *factory, CComPtr<ID2D1HwndRenderTarget> &target,
 
 	brush.Release();
 	target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &brush);
+}
+
+void CreateHueGradient(ID2D1RenderTarget *target, CComPtr<ID2D1LinearGradientBrush> &gradient, bool isSlider)
+{
+	CComPtr<ID2D1GradientStopCollection> gradientStops;
+	target->CreateGradientStopCollection(
+		GetHueGradient().data(),
+		HueGradientPrecision,
+		D2D1_GAMMA_1_0,
+		D2D1_EXTEND_MODE_CLAMP,
+		&gradientStops
+	);
+
+	const D2D1_SIZE_F size = target->GetSize();
+	gradient.Release();
+	target->CreateLinearGradientBrush(
+		D2D1::LinearGradientBrushProperties(
+			D2D1::Point2F(isSlider ? 0.0f : size.width, 0.0f),
+			D2D1::Point2F(0.0f, isSlider ? size.height : 0.0f)
+		),
+		gradientStops,
+		&gradient
+	);
 }

@@ -79,6 +79,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="drawhelper.hpp" />
+    <ClInclude Include="huegradient.hpp" />
     <ClInclude Include="main.hpp" />
     <ClInclude Include="CColourPicker.hpp" />
     <ClInclude Include="drawroutines.hpp" />
