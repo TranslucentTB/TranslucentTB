@@ -4,7 +4,7 @@
 #include "drawhelper.hpp"
 #include "resource.h"
 
-void DrawColorPicker(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, ID2D1LinearGradientBrush *hue, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
+void DrawColorPicker(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, ID2D1LinearGradientBrush *hue, ID2D1LinearGradientBrush *ttb, ID2D1LinearGradientBrush *ttw, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
 {
 	const D2D1_SIZE_F size = target->GetSize();
 
@@ -49,33 +49,29 @@ void DrawColorPicker(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, ID2
 		indicator_point = D2D1::Point2F(s / 100.0f * size.width, (100 - v) / 100.0f * size.height);
 	}
 
-	// SATURATION and VALUE
-	else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED || IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
+	// SATURATION
+	else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
 	{
 		target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), hue);
 
-		// SATURATION
-		if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
-		{
-			brush->SetColor(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f - (s / 100.0f)));
+		brush->SetColor(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f - (s / 100.0f)));
+		target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), brush);
 
-			target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), brush);
-			DrawGradient(target, size, D2D1::ColorF(0, 0.0f), D2D1::ColorF(D2D1::ColorF::Black));
+		target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), ttb);
 
-			indicator_point = D2D1::Point2F(h / 359.0f * size.width, (100 - v) / 100.0f * size.height);
-		}
+		indicator_point = D2D1::Point2F(h / 359.0f * size.width, (100 - v) / 100.0f * size.height);
+	}
 
-		// VALUE
-		else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
-		{
-			DrawGradient(target, size, D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f), D2D1::ColorF(D2D1::ColorF::White));
+	// VALUE
+	else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
+	{
+		target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), hue);
+		target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), ttw);
 
-			brush->SetColor(D2D1::ColorF(0, 1.0f - (v / 100.0f)));
+		brush->SetColor(D2D1::ColorF(0, 1.0f - (v / 100.0f)));
+		target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), brush);
 
-			target->FillRectangle(D2D1::RectF(0.0f, 0.0f, size.width, size.height), brush);
-
-			indicator_point = D2D1::Point2F(h / 359.0f * size.width, (100 - s) / 100.0f * size.height);
-		}
+		indicator_point = D2D1::Point2F(h / 359.0f * size.width, (100 - s) / 100.0f * size.height);
 	}
 
 	brush->SetColor(D2D1::ColorF(1.0f - r, 1.0f - g, 1.0f - b));

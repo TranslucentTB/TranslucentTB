@@ -231,11 +231,20 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 
 	case WM_DPICHANGED:
 	{
+		// Main picker
 		CreateTarget(picker_data->factory, picker_data->targetC1, picker_data->brushC1, hDlg, IDC_COLOR);
+		CreateGradient(picker_data->targetC1, picker_data->transparentToBlackC1, D2D1::ColorF(0, 0.0f), D2D1::ColorF(D2D1::ColorF::Black));
+		CreateGradient(picker_data->targetC1, picker_data->transparentToWhiteC1, D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f), D2D1::ColorF(D2D1::ColorF::White));
 		CreateHueGradient(picker_data->targetC1, picker_data->hueC1, false);
+
+		// Color slider
 		CreateTarget(picker_data->factory, picker_data->targetC2, picker_data->brushC2, hDlg, IDC_COLOR2);
 		CreateHueGradient(picker_data->targetC2, picker_data->hueC2, true);
+
+		// Alpha slider
 		CreateTarget(picker_data->factory, picker_data->targetA, picker_data->brushA, hDlg, IDC_ALPHASLIDE);
+
+		// Old/new indicator
 		CreateTarget(picker_data->factory, picker_data->targetC, picker_data->brushC, hDlg, IDC_COLORS);
 
 		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
@@ -261,7 +270,7 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 		PAINTSTRUCT ps;
 		BeginPaint(hDlg, &ps);
 
-		DrawColorPicker(picker_data->targetC1, picker_data->brushC1, picker_data->hueC1, hDlg, rf, gf, bf, color.h, color.s, color.v);
+		DrawColorPicker(picker_data->targetC1, picker_data->brushC1, picker_data->hueC1, picker_data->transparentToBlackC1, picker_data->transparentToWhiteC1, hDlg, rf, gf, bf, color.h, color.s, color.v);
 
 		// Small color selector (displays selected feature)
 		DrawColorSlider(picker_data->targetC2, picker_data->brushC2, picker_data->hueC2, hDlg, rf, gf, bf, color.h, color.s, color.v);
@@ -704,5 +713,39 @@ void CreateHueGradient(ID2D1RenderTarget *target, CComPtr<ID2D1LinearGradientBru
 		),
 		gradientStops,
 		&gradient
+	);
+}
+
+void CreateGradient(ID2D1RenderTarget *target, CComPtr<ID2D1LinearGradientBrush> &brush, const D2D1_COLOR_F &top, const D2D1_COLOR_F &bottom)
+{
+	const D2D1_GRADIENT_STOP gradientStops[] = {
+		{
+			0.0f,
+			top
+		},
+		{
+			1.0f,
+			bottom
+		}
+	};
+
+	CComPtr<ID2D1GradientStopCollection> pGradientStops;
+	target->CreateGradientStopCollection(
+		gradientStops,
+		2,
+		D2D1_GAMMA_1_0,
+		D2D1_EXTEND_MODE_CLAMP,
+		&pGradientStops
+	);
+
+	brush.Release();
+	const D2D1_SIZE_F size = target->GetSize();
+	target->CreateLinearGradientBrush(
+		D2D1::LinearGradientBrushProperties(
+			D2D1::Point2F(0.0f, 0.0f),
+			D2D1::Point2F(0.0f, size.height)
+		),
+		pGradientStops,
+		&brush
 	);
 }
