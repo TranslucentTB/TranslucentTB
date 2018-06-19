@@ -1,6 +1,5 @@
 #include "main.hpp"
 #include <algorithm>
-#include <d2d1.h>
 #include <stdio.h>
 #include <string>
 #include <unordered_map>
@@ -231,30 +230,10 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 
 	case WM_DPICHANGED:
 	{
-		RECT rect;
-		HWND item;
-
-
-		picker_data->targetC1.Release();
-		item = GetDlgItem(hDlg, IDC_COLOR);
-		GetClientRect(item, &rect);
-		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right, rect.bottom)), &picker_data->targetC1);
-
-		picker_data->targetC2.Release();
-		item = GetDlgItem(hDlg, IDC_COLOR2);
-		GetClientRect(item, &rect);
-		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right, rect.bottom)), &picker_data->targetC2);
-
-		picker_data->targetA.Release();
-		item = GetDlgItem(hDlg, IDC_ALPHASLIDE);
-		GetClientRect(item, &rect);
-		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right, rect.bottom)), &picker_data->targetA);
-
-		picker_data->targetC.Release();
-		item = GetDlgItem(hDlg, IDC_COLORS);
-		GetClientRect(item, &rect);
-		picker_data->factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item, D2D1::SizeU(rect.right, rect.bottom)), &picker_data->targetC);
-
+		CreateTarget(picker_data->factory, picker_data->targetC1, picker_data->brushC1, hDlg, IDC_COLOR);
+		CreateTarget(picker_data->factory, picker_data->targetC2, picker_data->brushC2, hDlg, IDC_COLOR2);
+		CreateTarget(picker_data->factory, picker_data->targetA, picker_data->brushA, hDlg, IDC_ALPHASLIDE);
+		CreateTarget(picker_data->factory, picker_data->targetC, picker_data->brushC, hDlg, IDC_COLORS);
 
 		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 
@@ -279,15 +258,15 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 		PAINTSTRUCT ps;
 		BeginPaint(hDlg, &ps);
 
-		DrawColorPicker(picker_data->targetC1, hDlg, rf, gf, bf, color.h, color.s, color.v);
+		DrawColorPicker(picker_data->targetC1, picker_data->brushC1, hDlg, rf, gf, bf, color.h, color.s, color.v);
 
 		// Small color selector (displays selected feature)
-		DrawColorSlider(picker_data->targetC2, hDlg, rf, gf, bf, color.h, color.s, color.v);
+		DrawColorSlider(picker_data->targetC2, picker_data->brushC2, hDlg, rf, gf, bf, color.h, color.s, color.v);
 
 		// Alpha slider
-		DrawAlphaSlider(picker_data->targetA, rf, gf, bf, 1.0f - af);
+		DrawAlphaSlider(picker_data->targetA, picker_data->brushA, rf, gf, bf, 1.0f - af);
 
-		DrawColorIndicator(picker_data->targetC, rf, gf, bf, af, picker_data->picker->GetOldColour());
+		DrawColorIndicator(picker_data->targetC, picker_data->brushC, rf, gf, bf, af, picker_data->picker->GetOldColour());
 
 		EndPaint(hDlg, &ps);
 
@@ -688,4 +667,16 @@ void ParseHex(HWND hDlg, CColourPicker *picker)
 			FailedParse(hDlg);
 		}
 	}
+}
+
+void CreateTarget(ID2D1Factory *factory, CComPtr<ID2D1HwndRenderTarget> &target, CComPtr<ID2D1SolidColorBrush> &brush, HWND hDlg, int item)
+{
+	const HWND item_handle = GetDlgItem(hDlg, item);
+	RECT rect;
+	GetClientRect(item_handle, &rect);
+	target.Release();
+	factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item_handle, D2D1::SizeU(rect.right, rect.bottom)), &target);
+
+	brush.Release();
+	target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &brush);
 }

@@ -47,16 +47,13 @@ inline const auto &GetHueGradient()
 	return value;
 }
 
-void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
+void DrawColorPicker(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
 {
 	const D2D1_SIZE_F size = target->GetSize();
 
 	target->BeginDraw();
 
 	D2D1_POINT_2F indicator_point;
-
-	CComPtr<ID2D1SolidColorBrush> brush;
-	target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &brush);
 
 	// RED
 	if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
@@ -150,7 +147,7 @@ void DrawColorPicker(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 	target->EndDraw();
 }
 
-void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
+void DrawColorSlider(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, const HWND &hDlg, const float &r, const float &g, const float &b, const unsigned short &h, const uint8_t &s, const uint8_t &v)
 {
 	const DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);
 	const D2D1_SIZE_F size = target->GetSize();
@@ -264,14 +261,13 @@ void DrawColorSlider(ID2D1RenderTarget *target, const HWND &hDlg, const float &r
 		DrawGradient(target, size, top_color, bottom_color, border_size);
 	}
 
-	CComPtr<ID2D1SolidColorBrush> brush;
-	target->CreateSolidColorBrush(arrow_color, &brush);
+	brush->SetColor(arrow_color);
 	DrawArrows(target, size, arrow_position, border_size, brush);
 
 	target->EndDraw();
 }
 
-void DrawAlphaSlider(ID2D1RenderTarget *target,  const float &r, const float &g, const float &b, const float &a)
+void DrawAlphaSlider(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, const float &r, const float &g, const float &b, const float &a)
 {
 	const DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);
 	const D2D1_SIZE_F size = target->GetSize();
@@ -279,8 +275,7 @@ void DrawAlphaSlider(ID2D1RenderTarget *target,  const float &r, const float &g,
 	target->BeginDraw();
 	target->Clear(D2D1::ColorF(GetRValue(backgroundColor) / 255.0f, GetGValue(backgroundColor) / 255.0f, GetBValue(backgroundColor) / 255.0f));
 
-	CComPtr<ID2D1SolidColorBrush> brush;
-	target->CreateSolidColorBrush(D2D1::ColorF(0, 0.3f), &brush);
+	brush->SetColor(D2D1::ColorF(0, 0.3f));
 
 	const float border_size = size.width / 4.0f;
 
@@ -296,15 +291,14 @@ void DrawAlphaSlider(ID2D1RenderTarget *target,  const float &r, const float &g,
 	target->EndDraw();
 }
 
-void DrawColorIndicator(ID2D1RenderTarget *target, const float &rf, const float &gf, const float &bf, const float &af, const SColour &oldcolor, bool flag)
+void DrawColorIndicator(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, const float &rf, const float &gf, const float &bf, const float &af, const SColour &oldcolor, bool flag)
 {
 	const D2D1_SIZE_F size = target->GetSize();
 
 	target->BeginDraw();
 	target->Clear(D2D1::ColorF(D2D1::ColorF::White));
 
-	CComPtr<ID2D1SolidColorBrush> brush;
-	target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &brush);
+	brush->SetColor(D2D1::ColorF(D2D1::ColorF::Black));
 	DrawCheckerboard(target, brush, size, size.height / 4.0f, 0, flag);
 
 	brush->SetColor(D2D1::ColorF(rf, gf, bf, af));

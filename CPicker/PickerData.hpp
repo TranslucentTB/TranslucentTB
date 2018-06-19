@@ -13,7 +13,11 @@ struct PickerData {
 	WNDPROC button_proc;
 	CComPtr<ID2D1Factory> factory;
 	CComPtr<ID2D1HwndRenderTarget> targetC1;
+	CComPtr<ID2D1SolidColorBrush> brushC1;
 	CComPtr<ID2D1HwndRenderTarget> targetC2;
+	CComPtr<ID2D1SolidColorBrush> brushC2;
 	CComPtr<ID2D1HwndRenderTarget> targetA;
+	CComPtr<ID2D1SolidColorBrush> brushA;
 	CComPtr<ID2D1HwndRenderTarget> targetC;
+	CComPtr<ID2D1SolidColorBrush> brushC;
 };
