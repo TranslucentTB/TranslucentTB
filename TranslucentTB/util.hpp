@@ -25,20 +25,20 @@ public:
 		std::transform(data.begin(), data.end(), data.begin(), std::towlower);
 	}
 
-	inline static bool IgnoreCaseStringEquals(const std::wstring &l, const std::wstring &r)
+	template<size_t s>
+	inline static bool IgnoreCaseStringEquals(const std::wstring &l, const wchar_t(&r)[s])
 	{
-		return l.size() == r.size() &&
-			std::equal(l.begin(), l.end(), r.begin(), [](const wchar_t &a, const wchar_t &b) -> bool
-			{
-				return std::towlower(a) == std::towlower(b);
-			});
-	}
-
-	inline static bool IgnoreCaseStringEquals(const std::wstring &l, const wchar_t *r)
-	{
-		return std::equal(l.begin(), l.end(), r, [](const wchar_t &a, const wchar_t &b) -> bool
+		return std::equal(l.begin(), l.end(), r, r + s, [](const wchar_t &a, const wchar_t &b) -> bool
 		{
 			return b != L'\0' && std::towlower(a) == std::towlower(b);
+		});
+	}
+
+	inline static bool IgnoreCaseStringEquals(const std::wstring &l, const std::wstring &r)
+	{
+		return std::equal(l.begin(), l.end(), r.begin(), r.end(), [](const wchar_t &a, const wchar_t &b) -> bool
+		{
+			return std::towlower(a) == std::towlower(b);
 		});
 	}
 

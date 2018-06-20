@@ -25,8 +25,7 @@ void CColourPicker::CreateColourPicker()
 {
 	if (PickerMap.count(&Value) == 0)
 	{
-		PickerData data;
-		data.picker = this;
+		PickerData data = { this };
 		DialogBoxParam(Instance, MAKEINTRESOURCE(IDD_COLORPICKER), hParent, ColourPickerDlgProc, reinterpret_cast<LPARAM>(&data));
 		PickerMap.erase(&Value);
 	}
