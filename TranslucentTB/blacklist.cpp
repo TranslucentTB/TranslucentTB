@@ -126,7 +126,7 @@ void Blacklist::ClearCache()
 	}
 }
 
-void Blacklist::HandleWinEvent(HWINEVENTHOOK, const DWORD event, const HWND window, LONG, LONG, DWORD, DWORD)
+void Blacklist::HandleWinEvent(const DWORD event, const Window &window, ...)
 {
 	if (event == EVENT_OBJECT_DESTROY || event == EVENT_OBJECT_NAMECHANGE)
 	{

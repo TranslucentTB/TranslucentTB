@@ -59,7 +59,10 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 		case Level::Fatal:
 			Log::OutputMessage(err.str());
 			MessageBox(NULL, boxbuffer.str().c_str(), NAME L" - Fatal error", MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
-			std::terminate();
+			RaiseFailFastException(NULL, NULL, FAIL_FAST_GENERATE_EXCEPTION_ADDRESS);	// Calling abort() will generate a dialog box,
+																						// but we already have our own. Raising a fail-fast
+																						// exception skips it but also allows WER to do its
+																						// job.
 			break;
 		default:
 			throw std::invalid_argument("level was not one of known values");

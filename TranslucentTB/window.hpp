@@ -3,8 +3,9 @@
 #include <string>
 #include <unordered_map>
 
-#include "eventhook.hpp"
 #include "windowclass.hpp"
+
+class EventHook; // Forward declare to avoid circular deps
 
 class Window {
 
@@ -13,7 +14,7 @@ private:
 	static std::unordered_map<Window, std::wstring> m_Filenames;
 	static std::unordered_map<Window, std::wstring> m_Titles;
 	static EventHook m_Hook;
-	static void CALLBACK HandleWinEvent(HWINEVENTHOOK, const DWORD event, const HWND window, LONG, LONG, DWORD, DWORD);
+	static void HandleWinEvent(const DWORD event, const Window &window, ...);
 
 protected:
 	HWND m_WindowHandle;

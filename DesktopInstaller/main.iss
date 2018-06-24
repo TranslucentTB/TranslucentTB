@@ -4,11 +4,9 @@
 #define AppVersion GetFileVersion('..\Release\' + AppName + '.exe')
 
 [Setup]
-AllowNoIcons=yes
 AllowRootDirectory=yes
 AppCopyright=Copyright © 2018 {#AppPublisher}
 AppendDefaultDirName=no
-AppendDefaultGroupName=no
 AppMutex={#AppMutex}
 AppName={#AppName}
 AppPublisher={#AppPublisher}
@@ -17,8 +15,8 @@ AppReadmeFile=https://github.com/{#AppName}/{#AppName}/blob/master/Readme.md
 AppSupportURL=https://github.com/{#AppName}/{#AppName}/issues/new
 AppVersion={#AppVersion}
 DefaultDirName={code:GetDefaultDirName}
-DefaultGroupName={#AppName}
 DisableWelcomePage=no
+DisableProgramGroupPage=yes
 LicenseFile=LICENSE.md
 MinVersion=10
 OutputBaseFilename={#AppName}-setup
@@ -38,8 +36,7 @@ Source: "Release\*"; Excludes: "*.pdb, *.lib, *.exp"; DestDir: "{app}"; Flags: i
 Root: HKCU; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueName: {#AppName}; Flags: dontcreatekey uninsdeletevalue
 
 [Icons]
-Name: "{group}\{#AppName}"; Filename: "{app}\{#AppName}.exe"; WorkingDir: "{app}"
-Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"; WorkingDir: "{app}"
+Name: "{commonprograms}\{#AppName}"; Filename: "{app}\{#AppName}.exe"; WorkingDir: "{app}"
 
 [Run]
 Filename: "{app}\{#AppName}.exe"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall

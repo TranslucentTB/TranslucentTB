@@ -98,7 +98,7 @@ inline std::pair<HRESULT, std::wstring> Log::InitStream()
 		return std::make_pair(hr, L"Failed to combine log folder location and log file name!");
 	}
 
-	HANDLE file = CreateFile(log_file, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE file = CreateFile(log_file, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 	if (file == INVALID_HANDLE_VALUE)
 	{
 		return std::make_pair(HRESULT_FROM_WIN32(GetLastError()), L"Failed to create and open log file!");

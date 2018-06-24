@@ -238,7 +238,7 @@ begin
 
 	if CurPageID = wpReady then begin
 		if downloadMessage <> '' then begin
-			if isxdl_DownloadFiles(StrToInt(ExpandConstant('{wizardhwnd}'))) = 0 then
+			if isxdl_DownloadFiles(WizardForm.Handle) = 0 then
 				Result := false;
 		end;
 	end;

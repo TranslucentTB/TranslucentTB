@@ -5,6 +5,7 @@
 
 #include "classiccomptr.hpp"
 #include "common.hpp"
+#include "eventhook.hpp"
 #include "ttberror.hpp"
 
 std::unordered_map<Window, std::wstring> Window::m_ClassNames;
@@ -12,17 +13,16 @@ std::unordered_map<Window, std::wstring> Window::m_Filenames;
 std::unordered_map<Window, std::wstring> Window::m_Titles;
 EventHook Window::m_Hook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_NAMECHANGE, Window::HandleWinEvent, WINEVENT_OUTOFCONTEXT);
 
-void Window::HandleWinEvent(HWINEVENTHOOK, const DWORD event, const HWND window, LONG, LONG, DWORD, DWORD)
+void Window::HandleWinEvent(const DWORD event, const Window &window, ...)
 {
-	const Window eventWindow(window);
 	switch (event)
 	{
 	case EVENT_OBJECT_DESTROY:
-		m_ClassNames.erase(eventWindow);
-		m_Filenames.erase(eventWindow);
+		m_ClassNames.erase(window);
+		m_Filenames.erase(window);
 		[[fallthrough]];
 	case EVENT_OBJECT_NAMECHANGE:
-		m_Titles.erase(eventWindow);
+		m_Titles.erase(window);
 		break;
 	}
 }

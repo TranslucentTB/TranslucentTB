@@ -2,10 +2,26 @@
 
 #include "ttblog.hpp"
 
-EventHook::EventHook(const DWORD &min, const DWORD &max, WINEVENTPROC callback, const DWORD &flags, const HMODULE &hMod, const DWORD &idProcess, const DWORD &idThread)
+// As function because static initialization order.
+std::unordered_map<HWINEVENTHOOK, EventHook::callback_t> &EventHook::GetMap()
 {
-	m_Handle = SetWinEventHook(min, max, hMod, callback, idProcess, idThread, flags);
-	if (!m_Handle)
+	static std::unordered_map<HWINEVENTHOOK, callback_t> map;
+	return map;
+}
+
+void CALLBACK EventHook::RawHookCallback(HWINEVENTHOOK hook, DWORD event, HWND window, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
+{
+	GetMap()[hook](event, window, idObject, idChild, dwEventThread, dwmsEventTime);
+}
+
+EventHook::EventHook(const DWORD &min, const DWORD &max, const callback_t &callback, const DWORD &flags, const HMODULE &hMod, const DWORD &idProcess, const DWORD &idThread)
+{
+	m_Handle = SetWinEventHook(min, max, hMod, RawHookCallback, idProcess, idThread, flags);
+	if (m_Handle)
+	{
+		GetMap()[m_Handle] = callback;
+	}
+	else
 	{
 		Log::OutputMessage(L"Failed to create a Windows event hook.");
 	}
@@ -15,6 +31,7 @@ EventHook::~EventHook()
 {
 	if (m_Handle)
 	{
+		GetMap().erase(m_Handle);
 		if (!UnhookWinEvent(m_Handle))
 		{
 			Log::OutputMessage(L"Failed to delete a Windows event hook.");

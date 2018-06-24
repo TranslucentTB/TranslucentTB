@@ -420,11 +420,6 @@ BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
 	return true;
 }
 
-void CALLBACK HandleAeroPeekEvent(HWINEVENTHOOK, const DWORD event, HWND, LONG, LONG, DWORD, DWORD)
-{
-	run.peek_active = event == 0x21;
-}
-
 void SetTaskbarBlur()
 {
 	static uint8_t counter = 10;
@@ -683,7 +678,15 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	RefreshHandles();
 
 	// Undoc'd, allows to detect when Aero Peek starts and stops
-	EventHook peek_hook(0x21, 0x22, HandleAeroPeekEvent, WINEVENT_OUTOFCONTEXT);
+	EventHook peek_hook(
+		0x21,
+		0x22,
+		[](const DWORD event, ...)
+		{
+			run.peek_active = event == 0x21;
+		},
+		WINEVENT_OUTOFCONTEXT
+	);
 
 	// Register our start menu detection sink
 	ClassicComPtr<IAppVisibility> app_visibility(CLSID_AppVisibility);

@@ -17,9 +17,7 @@ private:
 	std::unordered_map<unsigned int, std::vector<std::pair<unsigned short, m_CallbackFunction>>> m_CallbackMap;
 	WindowClass m_WindowClass;
 
-	static LRESULT CALLBACK WindowProcedure(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam);
-	void set_ptr(const HWND &hwnd);
-	static MessageWindow *get_ptr(const HWND &hwnd);
+	LRESULT WindowProcedure(const Window &window, unsigned int uMsg, WPARAM wParam, LPARAM lParam);
 
 public:
 	MessageWindow(const std::wstring &className, const std::wstring &windowName, const HINSTANCE &hInstance = GetModuleHandle(NULL), const wchar_t *iconResource = MAKEINTRESOURCE(MAINICON));

@@ -4,64 +4,30 @@
 #include "ttberror.hpp"
 #include "util.hpp"
 
-LRESULT MessageWindow::WindowProcedure(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT MessageWindow::WindowProcedure(const Window &window, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
 {
-	MessageWindow *pThis;
-
-	if (uMsg == WM_NCCREATE)
+	const auto &callbackVector = m_CallbackMap[uMsg];
+	if (callbackVector.size() > 0)
 	{
-		const CREATESTRUCT *const lpcs = reinterpret_cast<const CREATESTRUCT *>(lParam);
-		pThis = static_cast<MessageWindow *>(lpcs->lpCreateParams);
-
-		pThis->set_ptr(hWnd);
-	}
-	else
-	{
-		pThis = get_ptr(hWnd);
-	}
-
-	if (pThis)
-	{
-		MessageWindow &window = *pThis;
-		const auto &callbackVector = window.m_CallbackMap[uMsg];
-		if (callbackVector.size() > 0)
+		long result = 0;
+		for (const auto &callbackPair : callbackVector)
 		{
-			long result = 0;
-			for (const auto &callbackPair : callbackVector)
-			{
-				result = (std::max)(callbackPair.second(wParam, lParam), result);
-			}
-			return result;
+			result = (std::max)(callbackPair.second(wParam, lParam), result);
 		}
+		return result;
 	}
 
-	return DefWindowProc(hWnd, uMsg, wParam, lParam);
-}
-
-void MessageWindow::set_ptr(const HWND &hwnd)
-{
-	SetLastError(0);
-	if (!SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this)) && GetLastError() != 0)
-	{
-		LastErrorHandle(Error::Level::Fatal, L"Failed to set window pointer!");
-	}
-}
-
-MessageWindow *MessageWindow::get_ptr(const HWND &hwnd)
-{
-	SetLastError(0);
-	MessageWindow *window = reinterpret_cast<MessageWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-
-	if (!window && GetLastError() != 0)
-	{
-		LastErrorHandle(Error::Level::Fatal, L"Failed to get window pointer!");
-	}
-
-	return window;
+	return DefWindowProc(window, uMsg, wParam, lParam);
 }
 
 MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &windowName, const HINSTANCE &hInstance, const wchar_t *iconResource) :
-	m_WindowClass(WindowProcedure, className, iconResource, 0, hInstance)
+	m_WindowClass(
+		std::bind(&MessageWindow::WindowProcedure, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+		className,
+		iconResource,
+		0,
+		hInstance
+	)
 {
 	m_WindowHandle = Window::Create(0, m_WindowClass, windowName, 0, 0, 0, 0, 0, Window::NullWindow, 0, hInstance, this);
 

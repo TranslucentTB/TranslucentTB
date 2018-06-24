@@ -5,7 +5,7 @@ Source: "DesktopInstaller\deps\isxdl\isxdl.dll"; Flags: dontcopy
 procedure isxdl_AddFile(URL, Filename: PAnsiChar);
 external 'isxdl_AddFile@files:isxdl.dll stdcall';
 
-function isxdl_DownloadFiles(hWnd: Integer): Integer;
+function isxdl_DownloadFiles(hWnd: HWND): Integer;
 external 'isxdl_DownloadFiles@files:isxdl.dll stdcall';
 
 function isxdl_SetOption(Option, Value: PAnsiChar): Integer;
