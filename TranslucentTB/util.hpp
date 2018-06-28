@@ -26,9 +26,9 @@ public:
 	}
 
 	template<size_t s>
-	inline static bool IgnoreCaseStringEquals(const std::wstring &l, const wchar_t(&r)[s])
+	inline static bool IgnoreCaseStringEquals(const std::wstring &l, const wchar_t (&r)[s])
 	{
-		return std::equal(l.begin(), l.end(), r, r + s, [](const wchar_t &a, const wchar_t &b) -> bool
+		return std::equal(l.begin(), l.end(), r, r + s - 1, [](const wchar_t &a, const wchar_t &b) -> bool
 		{
 			return b != L'\0' && std::towlower(a) == std::towlower(b);
 		});
