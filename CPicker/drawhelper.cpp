@@ -1,15 +1,19 @@
 #include "drawhelper.hpp"
 #include <atlbase.h>
-#include <d2d1_3.h>
 #include <d2d1helper.h>
 
 void DrawGradient(ID2D1RenderTarget *target, const D2D1_SIZE_F &size, const D2D1_COLOR_F &top, const D2D1_COLOR_F &bottom, const uint8_t &border_size, const bool &isX)
 {
-	D2D1_GRADIENT_STOP gradientStops[2];
-	gradientStops[0].color = top;
-	gradientStops[0].position = 0.0f;
-	gradientStops[1].color = bottom;
-	gradientStops[1].position = 1.0f;
+	const D2D1_GRADIENT_STOP gradientStops[] = {
+		{
+			0.0f,
+			top
+		},
+		{
+			1.0f,
+			bottom
+		}
+	};
 
 	CComPtr<ID2D1GradientStopCollection> pGradientStops;
 	target->CreateGradientStopCollection(
@@ -33,7 +37,7 @@ void DrawGradient(ID2D1RenderTarget *target, const D2D1_SIZE_F &size, const D2D1
 	target->FillRectangle(D2D1::RectF(border_size, 0.0f, size.width - border_size, size.height), brush);
 }
 
-void DrawTwoDimensionalGradient(ID2D1RenderTarget *target, const D2D1_SIZE_F &size, const D2D1_COLOR_F &top_left, const D2D1_COLOR_F &top_right, const D2D1_COLOR_F &bottom_left, const D2D1_COLOR_F &bottom_right)
+void DrawTwoDimensionalGradient(ID2D1DeviceContext2 *context, const D2D1_SIZE_F &size, const D2D1_COLOR_F &top_left, const D2D1_COLOR_F &top_right, const D2D1_COLOR_F &bottom_left, const D2D1_COLOR_F &bottom_right)
 {
 	// IDK man.
 	const D2D1_GRADIENT_MESH_PATCH meshPatch = D2D1::GradientMeshPatch(
@@ -62,11 +66,6 @@ void DrawTwoDimensionalGradient(ID2D1RenderTarget *target, const D2D1_SIZE_F &si
 		D2D1_PATCH_EDGE_MODE_ANTIALIASED,
 		D2D1_PATCH_EDGE_MODE_ANTIALIASED
 	);
-
-	// Not really safe, but the Direct2D 1.1 and up initialization is so complex when compared
-	// to what we have with 1.0. So screw it.
-	CComPtr<ID2D1DeviceContext2> context;
-	target->QueryInterface(&context);
 
 	CComPtr<ID2D1GradientMesh> mesh;
 	context->CreateGradientMesh(&meshPatch, 1, &mesh);

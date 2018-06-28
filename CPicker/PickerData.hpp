@@ -2,6 +2,7 @@
 #include "../TranslucentTB/arch.h"
 #include <atlbase.h>
 #include <d2d1.h>
+#include <d2d1_3.h>
 
 #include "CColourPicker.hpp"
 
@@ -14,7 +15,7 @@ struct PickerData {
 	CComPtr<ID2D1Factory> factory;
 
 	// Main picker
-	CComPtr<ID2D1HwndRenderTarget> targetC1;
+	CComPtr<ID2D1DeviceContext2> targetC1;
 	CComPtr<ID2D1SolidColorBrush> brushC1;
 	CComPtr<ID2D1LinearGradientBrush> hueC1;
 	CComPtr<ID2D1LinearGradientBrush> transparentToBlackC1;

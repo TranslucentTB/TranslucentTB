@@ -232,10 +232,13 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 	case WM_DPICHANGED:
 	{
 		// Main picker
-		CreateTarget(picker_data->factory, picker_data->targetC1, picker_data->brushC1, hDlg, IDC_COLOR);
-		CreateGradient(picker_data->targetC1, picker_data->transparentToBlackC1, D2D1::ColorF(0, 0.0f), D2D1::ColorF(D2D1::ColorF::Black));
-		CreateGradient(picker_data->targetC1, picker_data->transparentToWhiteC1, D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f), D2D1::ColorF(D2D1::ColorF::White));
-		CreateHueGradient(picker_data->targetC1, picker_data->hueC1, false);
+		CComPtr<ID2D1HwndRenderTarget> targetC1tmp;
+		CreateTarget(picker_data->factory, targetC1tmp, picker_data->brushC1, hDlg, IDC_COLOR);
+		CreateGradient(targetC1tmp, picker_data->transparentToBlackC1, D2D1::ColorF(0, 0.0f), D2D1::ColorF(D2D1::ColorF::Black));
+		CreateGradient(targetC1tmp, picker_data->transparentToWhiteC1, D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f), D2D1::ColorF(D2D1::ColorF::White));
+		CreateHueGradient(targetC1tmp, picker_data->hueC1, false);
+
+		picker_data->targetC1 = targetC1tmp;
 
 		// Color slider
 		CreateTarget(picker_data->factory, picker_data->targetC2, picker_data->brushC2, hDlg, IDC_COLOR2);
