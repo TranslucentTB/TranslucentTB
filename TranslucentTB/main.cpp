@@ -394,7 +394,8 @@ BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
 	// DWMWA_CLOAKED should take care of checking if it's on the current desktop.
 	// But that's undocumented behavior.
 	// Do both but with on_current_desktop last.
-	if (window.visible() && window.state() == SW_MAXIMIZE && !window.get_attribute<BOOL>(DWMWA_CLOAKED) && !Blacklist::IsBlacklisted(window) && window.on_current_desktop())
+	if (window.visible() && window.state() == SW_MAXIMIZE && !window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
+		!Blacklist::IsBlacklisted(window) && window.on_current_desktop() && run.taskbars.count(window.monitor()) != 0)
 	{
 		auto &taskbar = run.taskbars.at(window.monitor());
 		if (Config::MAXIMISED_ENABLED)
@@ -442,9 +443,8 @@ void SetTaskbarBlur()
 		TogglePeek(run.should_show_peek);
 
 		const Window fg_window = Window::ForegroundWindow();
-		if (fg_window != Window::NullWindow)
+		if (fg_window != Window::NullWindow && run.taskbars.count(fg_window.monitor()) != 0)
 		{
-			// TODO: test on multiple monitors
 			if (Config::CORTANA_ENABLED && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
 				Util::IgnoreCaseStringEquals(fg_window.filename(), L"SearchUI.exe"))
 			{
@@ -516,11 +516,6 @@ void InitializeTray(const HINSTANCE &hInstance)
 	});
 
 	window.RegisterCallback(WM_DISPLAYCHANGE, [](...) {
-		std::this_thread::sleep_for(std::chrono::seconds(10));	// Sleeping because the taskbar hasn't
-																// been created yet when we get this.
-																// 10 seconds gives enough time to even
-																// the slowest of computers to create
-																// the taskbar. (I hope)
 		RefreshHandles();
 		return 0;
 	});
@@ -684,6 +679,20 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		[](const DWORD event, ...)
 		{
 			run.peek_active = event == 0x21;
+		},
+		WINEVENT_OUTOFCONTEXT
+	);
+
+	// Detect additional monitor connection
+	EventHook creation_hook(
+		EVENT_OBJECT_CREATE,
+		EVENT_OBJECT_CREATE,
+		[](DWORD, const Window &window, ...)
+		{
+			if (IsWindow(window) && window.classname() == L"Shell_SecondaryTrayWnd")
+			{
+				run.taskbars[window.monitor()] = { window, &Config::REGULAR_APPEARANCE };
+			}
 		},
 		WINEVENT_OUTOFCONTEXT
 	);
