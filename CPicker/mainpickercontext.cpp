@@ -82,17 +82,21 @@ HRESULT MainPickerContext::Refresh(HWND hwnd)
 	return S_OK;
 }
 
-// TODO: dropped hrs
 HRESULT MainPickerContext::Draw(const HWND hDlg, const SColourF &col, const SColourF &)
 {
 	m_dc->BeginDraw();
 
 	D2D1_POINT_2F indicator_point;
+	HRESULT hr;
 
 	// RED
 	if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 	{
-		DrawTwoDimensionalGradient(D2D1::ColorF(col.r, 0.0f, 0.0f), D2D1::ColorF(col.r, 1.0f, 0.0f), D2D1::ColorF(col.r, 0.0f, 1.0f), D2D1::ColorF(col.r, 1.0f, 1.0f));
+		hr = DrawTwoDimensionalGradient(D2D1::ColorF(col.r, 0.0f, 0.0f), D2D1::ColorF(col.r, 1.0f, 0.0f), D2D1::ColorF(col.r, 0.0f, 1.0f), D2D1::ColorF(col.r, 1.0f, 1.0f));
+		if (FAILED(hr))
+		{
+			return hr;
+		}
 
 		indicator_point = D2D1::Point2F(col.g * m_size.width, col.b * m_size.height);
 	}
@@ -100,7 +104,11 @@ HRESULT MainPickerContext::Draw(const HWND hDlg, const SColourF &col, const SCol
 	// GREEN
 	else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 	{
-		DrawTwoDimensionalGradient(D2D1::ColorF(0.0f, col.g, 0.0f), D2D1::ColorF(1.0f, col.g, 0.0f), D2D1::ColorF(0.0f, col.g, 1.0f), D2D1::ColorF(1.0f, col.g, 1.0f));
+		hr = DrawTwoDimensionalGradient(D2D1::ColorF(0.0f, col.g, 0.0f), D2D1::ColorF(1.0f, col.g, 0.0f), D2D1::ColorF(0.0f, col.g, 1.0f), D2D1::ColorF(1.0f, col.g, 1.0f));
+		if (FAILED(hr))
+		{
+			return hr;
+		}
 
 		indicator_point = D2D1::Point2F(col.r * m_size.width, col.b * m_size.height);
 	}
@@ -108,7 +116,11 @@ HRESULT MainPickerContext::Draw(const HWND hDlg, const SColourF &col, const SCol
 	// BLUE
 	else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 	{
-		DrawTwoDimensionalGradient(D2D1::ColorF(0.0f, 0.0f, col.b), D2D1::ColorF(0.0f, 1.0f, col.b), D2D1::ColorF(1.0f, 0.0f, col.b), D2D1::ColorF(1.0f, 1.0f, col.b));
+		hr = DrawTwoDimensionalGradient(D2D1::ColorF(0.0f, 0.0f, col.b), D2D1::ColorF(0.0f, 1.0f, col.b), D2D1::ColorF(1.0f, 0.0f, col.b), D2D1::ColorF(1.0f, 1.0f, col.b));
+		if (FAILED(hr))
+		{
+			return hr;
+		}
 
 		indicator_point = D2D1::Point2F(col.g * m_size.width, col.r * m_size.height);
 	}
@@ -117,11 +129,15 @@ HRESULT MainPickerContext::Draw(const HWND hDlg, const SColourF &col, const SCol
 	else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
 	{
 		SColour temp;
-		temp.h = col.h * 100.0f;
+		temp.h = col.h * 359.0f;
 		temp.s = 100;
 		temp.v = 100;
 		temp.UpdateRGB();
-		DrawTwoDimensionalGradient(D2D1::ColorF(D2D1::ColorF::White), D2D1::ColorF(temp.r / 255.0f, temp.g / 255.0f, temp.b / 255.0f), D2D1::ColorF(D2D1::ColorF::Black), D2D1::ColorF(D2D1::ColorF::Black));
+		hr = DrawTwoDimensionalGradient(D2D1::ColorF(D2D1::ColorF::White), D2D1::ColorF(temp.r / 255.0f, temp.g / 255.0f, temp.b / 255.0f), D2D1::ColorF(D2D1::ColorF::Black), D2D1::ColorF(D2D1::ColorF::Black));
+		if (FAILED(hr))
+		{
+			return hr;
+		}
 
 		indicator_point = D2D1::Point2F(col.s * m_size.width, (1.0f - col.v) * m_size.height);
 	}

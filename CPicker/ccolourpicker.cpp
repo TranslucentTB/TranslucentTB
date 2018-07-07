@@ -3,6 +3,7 @@
 
 #include "alphaslidercontext.hpp"
 #include "colorpreviewcontext.hpp"
+#include "colorslidercontext.hpp"
 #include "main.hpp"
 #include "mainpickercontext.hpp"
 #include "pickerdata.hpp"
@@ -24,27 +25,46 @@ CColourPicker::CColourPicker(uint32_t &value, HWND hParentWindow) : Value(value)
 	OldCol = CurrCol;
 }
 
-void CColourPicker::CreateColourPicker()
+HRESULT CColourPicker::CreateColourPicker()
 {
 	if (PickerMap.count(&Value) == 0)
 	{
 		MainPickerContext c1;
+		ColorSliderContext c2;
 		AlphaSliderContext a;
 		ColorPreviewContext c;
 		PickerData data = {
 			this,
 			{{
 				{ &c1, IDC_COLOR },
+				{ &c2, IDC_COLOR2 },
 				{ &a,  IDC_ALPHASLIDE },
 				{ &c,  IDC_COLORS }
 			}}
 		};
-		DialogBoxParam(Instance, MAKEINTRESOURCE(IDD_COLORPICKER), hParent, ColourPickerDlgProc, reinterpret_cast<LPARAM>(&data));
+		INT_PTR result = DialogBoxParam(Instance, MAKEINTRESOURCE(IDD_COLORPICKER), hParent, ColourPickerDlgProc, reinterpret_cast<LPARAM>(&data));
 		PickerMap.erase(&Value);
+		if (result == 0)
+		{
+			return ERROR_INVALID_WINDOW_HANDLE;
+		}
+		else if (result == -1)
+		{
+			return HRESULT_FROM_WIN32(GetLastError());
+		}
+		else if (result == 0xfff)
+		{
+			return S_OK;
+		}
+		else
+		{
+			return static_cast<HRESULT>(result);
+		}
 	}
 	else
 	{
 		SetForegroundWindow(PickerMap.at(&Value));
+		return S_OK;
 	}
 }
 

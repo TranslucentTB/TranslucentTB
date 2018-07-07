@@ -18,7 +18,7 @@ public:
 	CColourPicker(uint32_t &value, HWND hParentWindow = NULL);
 
 	// Creates the colour picker dialog
-	void CreateColourPicker();
+	HRESULT CreateColourPicker();
 
 	// Functions to set the colour components
 	// NOTE: SetRGB automatically updates HSV and viceversa

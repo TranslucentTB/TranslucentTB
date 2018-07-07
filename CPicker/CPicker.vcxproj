@@ -76,8 +76,6 @@
     <ClCompile Include="ccolourpicker.cpp" />
     <ClCompile Include="colorpreviewcontext.cpp" />
     <ClCompile Include="colorslidercontext.cpp" />
-    <ClCompile Include="drawhelper.cpp" />
-    <ClCompile Include="drawroutines.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainpickercontext.cpp" />
     <ClCompile Include="rendercontext.cpp" />
@@ -87,11 +85,9 @@
     <ClInclude Include="alphaslidercontext.hpp" />
     <ClInclude Include="colorpreviewcontext.hpp" />
     <ClInclude Include="colorslidercontext.hpp" />
-    <ClInclude Include="drawhelper.hpp" />
     <ClInclude Include="huegradient.hpp" />
     <ClInclude Include="main.hpp" />
     <ClInclude Include="ccolourpicker.hpp" />
-    <ClInclude Include="drawroutines.hpp" />
     <ClInclude Include="mainpickercontext.hpp" />
     <ClInclude Include="pickerdata.hpp" />
     <ClInclude Include="rendercontext.hpp" />

@@ -236,7 +236,7 @@ std::thread win32::PickColor(uint32_t &color)
 {
 	std::thread t([&color]
 	{
-		CColourPicker(color).CreateColourPicker();
+		ErrorHandle(CColourPicker(color).CreateColourPicker(), Error::Level::Error, L"An error occured during the rendering of the color picker!");
 	});
 
 	t.detach();

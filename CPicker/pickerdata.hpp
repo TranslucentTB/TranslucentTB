@@ -8,8 +8,7 @@
 
 struct PickerData {
 	CColourPicker *picker;
-	// TODO: change std::array size
-	const std::array<const std::pair<RenderContext *const, const unsigned int>, 3> contexts;
+	const std::array<const std::pair<RenderContext *const, const unsigned int>, 4> contexts;
 
 	bool changing_text;
 	bool changing_hex_via_spin;

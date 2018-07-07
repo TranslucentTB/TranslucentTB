@@ -7,8 +7,6 @@
 #include <CommCtrl.h>
 
 #include "ccolourpicker.hpp"
-#include "drawhelper.hpp"
-#include "drawroutines.hpp"
 #include "huegradient.hpp"
 #include "pickerdata.hpp"
 #include "resource.h"
@@ -229,9 +227,15 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 
 	case WM_DPICHANGED:
 	{
+		HRESULT hr;
 		for (const auto &context_pair : picker_data->contexts)
 		{
-			context_pair.first->Refresh(GetDlgItem(hDlg, context_pair.second));
+			hr = context_pair.first->Refresh(GetDlgItem(hDlg, context_pair.second));
+			if (FAILED(hr))
+			{
+				EndDialog(hDlg, hr);
+				return 0;
+			}
 		}
 
 		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
@@ -243,12 +247,34 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 		const SColourF color = picker_data->picker->GetCurrentColour();
 		const SColourF old = picker_data->picker->GetOldColour();
 
+		HRESULT hr;
 		PAINTSTRUCT ps;
 		BeginPaint(hDlg, &ps);
 
 		for (const auto &context_pair : picker_data->contexts)
 		{
-			context_pair.first->Draw(hDlg, color, old);
+			hr = context_pair.first->Draw(hDlg, color, old);
+			if (hr == D2DERR_RECREATE_TARGET)
+			{
+				hr = context_pair.first->Refresh(GetDlgItem(hDlg, context_pair.second));
+				if (FAILED(hr))
+				{
+					EndDialog(hDlg, hr);
+					return 0;
+				}
+
+				hr = context_pair.first->Draw(hDlg, color, old);
+				if (FAILED(hr))
+				{
+					EndDialog(hDlg, hr);
+					return 0;
+				}
+			}
+			else if (FAILED(hr))
+			{
+				EndDialog(hDlg, hr);
+				return 0;
+			}
 		}
 
 		EndPaint(hDlg, &ps);
@@ -498,8 +524,7 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 			case IDB_OK:
 			{
 				picker_data->picker->UpdateOldColour();
-				DestroyWindow(picker_data->old_color_tip);
-				EndDialog(hDlg, IDB_OK);
+				EndDialog(hDlg, 0xfff);
 				break;
 			}
 
@@ -509,8 +534,7 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 
 				picker_data->picker->SetRGB(old.r, old.g, old.b);
 				picker_data->picker->SetAlpha(old.a);
-				DestroyWindow(picker_data->old_color_tip);
-				EndDialog(hDlg, IDB_CANCEL);
+				EndDialog(hDlg, 0xfff);
 				break;
 			}
 			}
@@ -541,6 +565,12 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 			break;
 		}
 		}
+		break;
+	}
+
+	case WM_DESTROY:
+	{
+		DestroyWindow(picker_data->old_color_tip);
 		break;
 	}
 	}
