@@ -37,41 +37,6 @@ void DrawGradient(ID2D1RenderTarget *target, const D2D1_SIZE_F &size, const D2D1
 	target->FillRectangle(D2D1::RectF(border_size, 0.0f, size.width - border_size, size.height), brush);
 }
 
-void DrawTwoDimensionalGradient(ID2D1DeviceContext2 *context, const D2D1_SIZE_F &size, const D2D1_COLOR_F &top_left, const D2D1_COLOR_F &top_right, const D2D1_COLOR_F &bottom_left, const D2D1_COLOR_F &bottom_right)
-{
-	// IDK man.
-	const D2D1_GRADIENT_MESH_PATCH meshPatch = D2D1::GradientMeshPatch(
-		D2D1::Point2F(),
-		D2D1::Point2F(size.width / 2.0f),
-		D2D1::Point2F(size.width / 2.0f),
-		D2D1::Point2F(size.width),
-		D2D1::Point2F(0.0f, size.height / 2.0f),
-		D2D1::Point2F(size.width / 3.0f, size.height / 3.0f),
-		D2D1::Point2F(size.width / 3.0f * 2.0f, size.height / 3.0f),
-		D2D1::Point2F(size.width, size.height / 2.0f),
-		D2D1::Point2F(0.0f, size.height / 2.0f),
-		D2D1::Point2F(size.width / 3.0f, size.height / 3.0f * 2.0f),
-		D2D1::Point2F(size.width / 3.0f * 2.0f, size.height / 3.0f * 2.0f),
-		D2D1::Point2F(size.width, size.height / 2.0f),
-		D2D1::Point2F(0.0f, size.height),
-		D2D1::Point2F(size.width / 2.0f, size.height),
-		D2D1::Point2F(size.width / 2.0f, size.height),
-		D2D1::Point2F(size.width, size.height),
-		top_left,
-		top_right,
-		bottom_left,
-		bottom_right,
-		D2D1_PATCH_EDGE_MODE_ANTIALIASED,
-		D2D1_PATCH_EDGE_MODE_ANTIALIASED,
-		D2D1_PATCH_EDGE_MODE_ANTIALIASED,
-		D2D1_PATCH_EDGE_MODE_ANTIALIASED
-	);
-
-	CComPtr<ID2D1GradientMesh> mesh;
-	context->CreateGradientMesh(&meshPatch, 1, &mesh);
-	context->DrawGradientMesh(mesh);
-}
-
 void DrawCheckerboard(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, const D2D1_SIZE_F &size, const float &square_size, const float &border_size, bool flag)
 {
 	for (float y = 0.0f; y < size.height; y += square_size)

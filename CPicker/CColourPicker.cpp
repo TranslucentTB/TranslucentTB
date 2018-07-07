@@ -2,6 +2,7 @@
 #include <WinUser.h>
 
 #include "main.hpp"
+#include "mainpickercontext.hpp"
 #include "PickerData.hpp"
 #include "resource.h"
 
@@ -25,7 +26,13 @@ void CColourPicker::CreateColourPicker()
 {
 	if (PickerMap.count(&Value) == 0)
 	{
-		PickerData data = { this };
+		MainPickerContext c1;
+		PickerData data = {
+			this,
+			{{
+				{ &c1, IDC_COLOR }
+			}}
+		};
 		DialogBoxParam(Instance, MAKEINTRESOURCE(IDD_COLORPICKER), hParent, ColourPickerDlgProc, reinterpret_cast<LPARAM>(&data));
 		PickerMap.erase(&Value);
 	}

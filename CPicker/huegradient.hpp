@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <atlbase.h>
 #include <d2d1.h>
 
 #include "SColour.hpp"
@@ -40,8 +41,38 @@ constexpr const std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> CalculateHu
 	return gradientStops;
 }
 
-inline const auto &GetHueGradient()
+inline HRESULT CreateHueGradient(ID2D1RenderTarget *target, CComPtr<ID2D1LinearGradientBrush> &gradient, bool vertical = false)
 {
 	static constexpr auto value = CalculateHueGradient();
-	return value;
+
+	CComPtr<ID2D1GradientStopCollection> gradientStops;
+	HRESULT hr = target->CreateGradientStopCollection(
+		value.data(),
+		HueGradientPrecision,
+		D2D1_GAMMA_1_0,
+		D2D1_EXTEND_MODE_CLAMP,
+		&gradientStops
+	);
+
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	const D2D1_SIZE_F size = target->GetSize();
+	hr = target->CreateLinearGradientBrush(
+		D2D1::LinearGradientBrushProperties(
+			D2D1::Point2F(vertical ? 0.0f : size.width, 0.0f),
+			D2D1::Point2F(0.0f, vertical ? size.height : 0.0f)
+		),
+		gradientStops,
+		&gradient
+	);
+
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	return S_OK;
 }

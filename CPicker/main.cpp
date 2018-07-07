@@ -192,8 +192,6 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 		SetWindowLongPtr(hDlg, DWLP_USER, lParam);
 		picker_data = reinterpret_cast<PickerData *>(lParam);
 
-		D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &picker_data->factory);
-
 		CColourPicker::PickerMap[&picker_data->picker->Value] = hDlg;
 
 		for (const auto &slider_combo : SLIDER_MAP)
@@ -231,24 +229,10 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 
 	case WM_DPICHANGED:
 	{
-		// Main picker
-		CComPtr<ID2D1HwndRenderTarget> targetC1tmp;
-		CreateTarget(picker_data->factory, targetC1tmp, picker_data->brushC1, hDlg, IDC_COLOR);
-		CreateGradient(targetC1tmp, picker_data->transparentToBlackC1, D2D1::ColorF(0, 0.0f), D2D1::ColorF(D2D1::ColorF::Black));
-		CreateGradient(targetC1tmp, picker_data->transparentToWhiteC1, D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f), D2D1::ColorF(D2D1::ColorF::White));
-		CreateHueGradient(targetC1tmp, picker_data->hueC1, false);
-
-		picker_data->targetC1 = targetC1tmp;
-
-		// Color slider
-		CreateTarget(picker_data->factory, picker_data->targetC2, picker_data->brushC2, hDlg, IDC_COLOR2);
-		CreateHueGradient(picker_data->targetC2, picker_data->hueC2, true);
-
-		// Alpha slider
-		CreateTarget(picker_data->factory, picker_data->targetA, picker_data->brushA, hDlg, IDC_ALPHASLIDE);
-
-		// Old/new indicator
-		CreateTarget(picker_data->factory, picker_data->targetC, picker_data->brushC, hDlg, IDC_COLORS);
+		for (const auto &context_pair : picker_data->contexts)
+		{
+			context_pair.first->Refresh(GetDlgItem(hDlg, context_pair.second));
+		}
 
 		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 
@@ -256,32 +240,16 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 	}
 	case WM_PAINT:
 	{
-		// Check if we need to recreate the render targets.
-		picker_data->targetC1->BeginDraw();
-		if (picker_data->targetC1->EndDraw() == D2DERR_RECREATE_TARGET)
-		{
-			// WM_DPICHANGED refreshes our targets and does a redraw.
-			return SendMessage(hDlg, WM_DPICHANGED, NULL, NULL);
-		}
-
-		const SColour &color = picker_data->picker->GetCurrentColour();
-		const float rf = color.r / 255.0f;
-		const float gf = color.g / 255.0f;
-		const float bf = color.b / 255.0f;
-		const float af = color.a / 255.0f;
+		const SColourF color = picker_data->picker->GetCurrentColour();
+		const SColourF old = picker_data->picker->GetOldColour();
 
 		PAINTSTRUCT ps;
 		BeginPaint(hDlg, &ps);
 
-		DrawColorPicker(picker_data->targetC1, picker_data->brushC1, picker_data->hueC1, picker_data->transparentToBlackC1, picker_data->transparentToWhiteC1, hDlg, rf, gf, bf, color.h, color.s, color.v);
-
-		// Small color selector (displays selected feature)
-		DrawColorSlider(picker_data->targetC2, picker_data->brushC2, picker_data->hueC2, hDlg, rf, gf, bf, color.h, color.s, color.v);
-
-		// Alpha slider
-		DrawAlphaSlider(picker_data->targetA, picker_data->brushA, rf, gf, bf, 1.0f - af);
-
-		DrawColorIndicator(picker_data->targetC, picker_data->brushC, rf, gf, bf, af, picker_data->picker->GetOldColour());
+		for (const auto &context_pair : picker_data->contexts)
+		{
+			context_pair.first->Draw(hDlg, color, old);
+		}
 
 		EndPaint(hDlg, &ps);
 
@@ -682,73 +650,4 @@ void ParseHex(HWND hDlg, CColourPicker *picker)
 			FailedParse(hDlg);
 		}
 	}
-}
-
-void CreateTarget(ID2D1Factory *factory, CComPtr<ID2D1HwndRenderTarget> &target, CComPtr<ID2D1SolidColorBrush> &brush, HWND hDlg, int item)
-{
-	const HWND item_handle = GetDlgItem(hDlg, item);
-	RECT rect;
-	GetClientRect(item_handle, &rect);
-	target.Release();
-	factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(), D2D1::HwndRenderTargetProperties(item_handle, D2D1::SizeU(rect.right, rect.bottom)), &target);
-
-	brush.Release();
-	target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &brush);
-}
-
-void CreateHueGradient(ID2D1RenderTarget *target, CComPtr<ID2D1LinearGradientBrush> &gradient, bool isSlider)
-{
-	CComPtr<ID2D1GradientStopCollection> gradientStops;
-	target->CreateGradientStopCollection(
-		GetHueGradient().data(),
-		HueGradientPrecision,
-		D2D1_GAMMA_1_0,
-		D2D1_EXTEND_MODE_CLAMP,
-		&gradientStops
-	);
-
-	const D2D1_SIZE_F size = target->GetSize();
-	gradient.Release();
-	target->CreateLinearGradientBrush(
-		D2D1::LinearGradientBrushProperties(
-			D2D1::Point2F(isSlider ? 0.0f : size.width, 0.0f),
-			D2D1::Point2F(0.0f, isSlider ? size.height : 0.0f)
-		),
-		gradientStops,
-		&gradient
-	);
-}
-
-void CreateGradient(ID2D1RenderTarget *target, CComPtr<ID2D1LinearGradientBrush> &brush, const D2D1_COLOR_F &top, const D2D1_COLOR_F &bottom)
-{
-	const D2D1_GRADIENT_STOP gradientStops[] = {
-		{
-			0.0f,
-			top
-		},
-		{
-			1.0f,
-			bottom
-		}
-	};
-
-	CComPtr<ID2D1GradientStopCollection> pGradientStops;
-	target->CreateGradientStopCollection(
-		gradientStops,
-		2,
-		D2D1_GAMMA_1_0,
-		D2D1_EXTEND_MODE_CLAMP,
-		&pGradientStops
-	);
-
-	brush.Release();
-	const D2D1_SIZE_F size = target->GetSize();
-	target->CreateLinearGradientBrush(
-		D2D1::LinearGradientBrushProperties(
-			D2D1::Point2F(0.0f, 0.0f),
-			D2D1::Point2F(0.0f, size.height)
-		),
-		pGradientStops,
-		&brush
-	);
 }

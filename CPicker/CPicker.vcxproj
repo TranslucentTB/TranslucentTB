@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -67,7 +67,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>d2d1.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>d2d1.lib;d3d11.lib;user32.lib</AdditionalDependencies>
       <AdditionalManifestDependencies>"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'"</AdditionalManifestDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -76,6 +76,8 @@
     <ClCompile Include="drawhelper.cpp" />
     <ClCompile Include="drawroutines.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="mainpickercontext.cpp" />
+    <ClCompile Include="rendercontext.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="drawhelper.hpp" />
@@ -83,7 +85,9 @@
     <ClInclude Include="main.hpp" />
     <ClInclude Include="CColourPicker.hpp" />
     <ClInclude Include="drawroutines.hpp" />
+    <ClInclude Include="mainpickercontext.hpp" />
     <ClInclude Include="PickerData.hpp" />
+    <ClInclude Include="rendercontext.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SColour.hpp" />
   </ItemGroup>

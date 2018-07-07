@@ -110,3 +110,18 @@ struct SColour {
 	}
 #pragma warning(pop)
 };
+
+// Used for Direct2D rendering
+struct SColourF {
+	float r, g, b, a, h, s, v;
+
+	constexpr SColourF(const SColour &col) :
+		r(col.r / 255.0f),
+		g(col.g / 255.0f),
+		b(col.b / 255.0f),
+		a(col.a / 255.0f),
+		h(col.h / 359.0f),
+		s(col.s / 100.0f),
+		v(col.v / 100.0f)
+	{ }
+};
