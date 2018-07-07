@@ -1,5 +1,5 @@
 #ifdef STORE
-#include "UWP.hpp"
+#include "uwp.hpp"
 #include <winrt/Windows.Storage.h>
 
 const winrt::Windows::ApplicationModel::StartupTask &UWP::GetApplicationStartupTask()

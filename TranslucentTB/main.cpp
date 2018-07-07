@@ -30,7 +30,7 @@
 #include "ttblog.hpp"
 #include "util.hpp"
 #ifdef STORE
-#include "UWP.hpp"
+#include "uwp.hpp"
 #endif
 #include "win32.hpp"
 #include "window.hpp"

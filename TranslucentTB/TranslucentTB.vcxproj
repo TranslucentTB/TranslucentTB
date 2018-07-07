@@ -99,7 +99,7 @@
     <ClCompile Include="trayicon.cpp" />
     <ClCompile Include="ttberror.cpp" />
     <ClCompile Include="ttblog.cpp" />
-    <ClCompile Include="UWP.cpp" />
+    <ClCompile Include="uwp.cpp" />
     <ClCompile Include="win32.cpp" />
     <ClCompile Include="window.cpp" />
     <ClCompile Include="windowclass.cpp" />
@@ -125,7 +125,7 @@
     <ClInclude Include="ttberror.hpp" />
     <ClInclude Include="ttblog.hpp" />
     <ClInclude Include="util.hpp" />
-    <ClInclude Include="UWP.hpp" />
+    <ClInclude Include="uwp.hpp" />
     <ClInclude Include="win32.hpp" />
     <ClInclude Include="window.hpp" />
     <ClInclude Include="windowclass.hpp" />

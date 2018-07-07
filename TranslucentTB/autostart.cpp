@@ -66,7 +66,7 @@ void Autostart::SetStartupState(const StartupState &state)
 	}
 }
 #else
-#include "UWP.hpp"
+#include "uwp.hpp"
 
 Autostart::StartupState Autostart::GetStartupState()
 {

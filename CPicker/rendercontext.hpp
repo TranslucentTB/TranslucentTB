@@ -4,7 +4,7 @@
 #include <dxgi1_2.h>
 #include <d3d11.h>
 
-#include "SColour.hpp"
+#include "scolour.hpp"
 
 class RenderContext {
 private:

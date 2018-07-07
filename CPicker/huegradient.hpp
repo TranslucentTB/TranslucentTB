@@ -3,7 +3,7 @@
 #include <atlbase.h>
 #include <d2d1.h>
 
-#include "SColour.hpp"
+#include "scolour.hpp"
 
 constexpr uint8_t HueGradientPrecision = 20; // Number of steps in the hue gradient
 constexpr const std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> CalculateHueGradient()

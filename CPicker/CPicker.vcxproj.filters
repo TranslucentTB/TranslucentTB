@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CColourPicker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="drawhelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -31,6 +28,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mainpickercontext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="slidercontext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="colorpreviewcontext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="colorslidercontext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="alphaslidercontext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ccolourpicker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -47,15 +59,6 @@
     <ClInclude Include="main.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CColourPicker.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SColour.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PickerData.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="huegradient.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -65,9 +68,30 @@
     <ClInclude Include="mainpickercontext.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="slidercontext.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="colorpreviewcontext.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="colorslidercontext.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="alphaslidercontext.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="scolour.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pickerdata.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ccolourpicker.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="DLL.rc">
+    <ResourceCompile Include="CPicker.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

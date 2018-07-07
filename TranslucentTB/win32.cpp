@@ -12,7 +12,7 @@
 #include <wrl/wrappers/corewrappers.h>
 
 #include "autofree.hpp"
-#include "../CPicker/CColourPicker.hpp"
+#include "../CPicker/ccolourpicker.hpp"
 #include "clipboardcontext.hpp"
 #include "common.hpp"
 #include "ttberror.hpp"

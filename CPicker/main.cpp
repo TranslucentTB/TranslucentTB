@@ -6,13 +6,13 @@
 #include <WinUser.h>
 #include <CommCtrl.h>
 
-#include "CColourPicker.hpp"
+#include "ccolourpicker.hpp"
 #include "drawhelper.hpp"
 #include "drawroutines.hpp"
 #include "huegradient.hpp"
-#include "PickerData.hpp"
+#include "pickerdata.hpp"
 #include "resource.h"
-#include "SColour.hpp"
+#include "scolour.hpp"
 #include "../TranslucentTB/util.hpp"
 
 static const Util::string_map<uint32_t> COLOR_MAP = {

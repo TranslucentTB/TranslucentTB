@@ -3,7 +3,7 @@
 #include <array>
 #include <windef.h>
 
-#include "CColourPicker.hpp"
+#include "ccolourpicker.hpp"
 #include "rendercontext.hpp"
 
 struct PickerData {

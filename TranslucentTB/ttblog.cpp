@@ -19,7 +19,7 @@
 #include "common.hpp"
 #include "win32.hpp"
 #ifdef STORE
-#include "UWP.hpp"
+#include "uwp.hpp"
 #endif
 
 std::unique_ptr<File> Log::m_FileHandle;

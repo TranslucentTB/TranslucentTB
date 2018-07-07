@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <windef.h>
 
-#include "SColour.hpp"
+#include "scolour.hpp"
 
 class __declspec(
 #if defined(_CPICKER_DLL)

@@ -1,14 +1,14 @@
-#include "CColourPicker.hpp"
+#include "ccolourpicker.hpp"
 #include <WinUser.h>
 
 #include "main.hpp"
 #include "mainpickercontext.hpp"
-#include "PickerData.hpp"
+#include "pickerdata.hpp"
 #include "resource.h"
 
 std::unordered_map<uint32_t *, HWND> CColourPicker::PickerMap;
 // https://blogs.msdn.microsoft.com/oldnewthing/20041025-00/?p=37483/
-// __ImageBase is already declared by atlbase.h, which is imported in PickerData.hpp
+// __ImageBase is already declared by atlbase.h, which is imported in pickerdata.hpp
 const HINSTANCE CColourPicker::Instance = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
 CColourPicker::CColourPicker(uint32_t &value, HWND hParentWindow) : Value(value), hParent(hParentWindow)

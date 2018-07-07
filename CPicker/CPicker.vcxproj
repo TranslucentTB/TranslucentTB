@@ -72,26 +72,34 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CColourPicker.cpp" />
+    <ClCompile Include="alphaslidercontext.cpp" />
+    <ClCompile Include="ccolourpicker.cpp" />
+    <ClCompile Include="colorpreviewcontext.cpp" />
+    <ClCompile Include="colorslidercontext.cpp" />
     <ClCompile Include="drawhelper.cpp" />
     <ClCompile Include="drawroutines.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainpickercontext.cpp" />
     <ClCompile Include="rendercontext.cpp" />
+    <ClCompile Include="slidercontext.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="alphaslidercontext.hpp" />
+    <ClInclude Include="colorpreviewcontext.hpp" />
+    <ClInclude Include="colorslidercontext.hpp" />
     <ClInclude Include="drawhelper.hpp" />
     <ClInclude Include="huegradient.hpp" />
     <ClInclude Include="main.hpp" />
-    <ClInclude Include="CColourPicker.hpp" />
+    <ClInclude Include="ccolourpicker.hpp" />
     <ClInclude Include="drawroutines.hpp" />
     <ClInclude Include="mainpickercontext.hpp" />
-    <ClInclude Include="PickerData.hpp" />
+    <ClInclude Include="pickerdata.hpp" />
     <ClInclude Include="rendercontext.hpp" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="SColour.hpp" />
+    <ClInclude Include="scolour.hpp" />
+    <ClInclude Include="slidercontext.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="DLL.rc" />
+    <ResourceCompile Include="CPicker.rc" />
   </ItemGroup>
 </Project>

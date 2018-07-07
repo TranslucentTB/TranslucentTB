@@ -31,7 +31,7 @@
     <ClCompile Include="ttblog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UWP.cpp">
+    <ClCompile Include="uwp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="autostart.cpp">
@@ -90,7 +90,7 @@
     <ClInclude Include="autostart.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UWP.hpp">
+    <ClInclude Include="uwp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="arch.h">
