@@ -1,6 +1,8 @@
 #include "ccolourpicker.hpp"
 #include <WinUser.h>
 
+#include "alphaslidercontext.hpp"
+#include "colorpreviewcontext.hpp"
 #include "main.hpp"
 #include "mainpickercontext.hpp"
 #include "pickerdata.hpp"
@@ -27,10 +29,14 @@ void CColourPicker::CreateColourPicker()
 	if (PickerMap.count(&Value) == 0)
 	{
 		MainPickerContext c1;
+		AlphaSliderContext a;
+		ColorPreviewContext c;
 		PickerData data = {
 			this,
 			{{
-				{ &c1, IDC_COLOR }
+				{ &c1, IDC_COLOR },
+				{ &a,  IDC_ALPHASLIDE },
+				{ &c,  IDC_COLORS }
 			}}
 		};
 		DialogBoxParam(Instance, MAKEINTRESOURCE(IDD_COLORPICKER), hParent, ColourPickerDlgProc, reinterpret_cast<LPARAM>(&data));

@@ -61,8 +61,17 @@ HRESULT MainPickerContext::Refresh(HWND hwnd)
 		return hr;
 	}
 
-	CreateGradient(m_transparentToBlack, D2D1::ColorF(0, 0.0f), D2D1::ColorF(D2D1::ColorF::Black));
-	CreateGradient(m_transparentToWhite, D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f), D2D1::ColorF(D2D1::ColorF::White));
+	hr = CreateGradient(m_transparentToBlack, D2D1::ColorF(0, 0.0f), D2D1::ColorF(D2D1::ColorF::Black));
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	hr = CreateGradient(m_transparentToWhite, D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f), D2D1::ColorF(D2D1::ColorF::White));
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 
 	hr = CreateHueGradient(m_dc, m_hueGradient);
 	if (FAILED(hr))
@@ -70,11 +79,10 @@ HRESULT MainPickerContext::Refresh(HWND hwnd)
 		return hr;
 	}
 
-	// TODO: bw gradients
-
 	return S_OK;
 }
 
+// TODO: dropped hrs
 HRESULT MainPickerContext::Draw(const HWND hDlg, const SColourF &col, const SColourF &)
 {
 	m_dc->BeginDraw();

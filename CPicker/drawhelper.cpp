@@ -37,25 +37,6 @@ void DrawGradient(ID2D1RenderTarget *target, const D2D1_SIZE_F &size, const D2D1
 	target->FillRectangle(D2D1::RectF(border_size, 0.0f, size.width - border_size, size.height), brush);
 }
 
-void DrawCheckerboard(ID2D1RenderTarget *target, ID2D1SolidColorBrush *brush, const D2D1_SIZE_F &size, const float &square_size, const float &border_size, bool flag)
-{
-	for (float y = 0.0f; y < size.height; y += square_size)
-	{
-		for (float x = flag ? border_size : border_size + square_size; x < size.width - border_size; x += square_size * 2.0f)
-		{
-			target->FillRectangle(
-				D2D1::RectF(
-					x,
-					y,
-					x + square_size,
-					y + square_size
-				),
-				brush);
-		}
-		flag = !flag;
-	}
-}
-
 void DrawArrows(ID2D1RenderTarget *target, const D2D1_SIZE_F &t_size, const float &position, const uint8_t &size, ID2D1Brush *brush)
 {
 	const D2D1_TRIANGLE triangles[2] = {
