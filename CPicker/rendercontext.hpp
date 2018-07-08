@@ -12,10 +12,11 @@ protected:
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 private:
-	static HRESULT CreateDevice(const D3D_DRIVER_TYPE &type, ID3D11Device **device);
+	static HRESULT CreateDevice(const D3D_DRIVER_TYPE &type, ID3D11Device **device, ID3D11DeviceContext **context);
 
 	ID2D1Factory3 *m_factory;
 	ComPtr<IDXGISwapChain1> m_swapChain;
+	ComPtr<ID3D11DeviceContext> m_d3dc;
 
 protected:
 	ComPtr<ID2D1DeviceContext2> m_dc;

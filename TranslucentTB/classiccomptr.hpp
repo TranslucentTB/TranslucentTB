@@ -9,17 +9,10 @@
 
 template<typename T>
 class ClassicComPtr : public Microsoft::WRL::ComPtr<T> {
-
-private:
-	inline HRESULT InternalCreateInstance(REFCLSID rclsid, IUnknown *pUnkOuter, DWORD dwClsContext) throw()
-	{
-		return CoCreateInstance(rclsid, pUnkOuter, dwClsContext, __uuidof(T), reinterpret_cast<void **>(this->ReleaseAndGetAddressOf()));
-	}
-
 public:
 	inline void CreateInstance(REFCLSID rclsid, IUnknown *pUnkOuter = nullptr, DWORD dwClsContext = CLSCTX_ALL) throw()
 	{
-		const HRESULT hr = InternalCreateInstance(rclsid, pUnkOuter, dwClsContext);
+		const HRESULT hr = CoCreateInstance(rclsid, pUnkOuter, dwClsContext, IID_PPV_ARGS(this->ReleaseAndGetAddressOf()));
 		if (FAILED(hr))
 		{
 			std::wstring iname = win32::CharToWchar(typeid(T).name());
@@ -40,5 +33,4 @@ public:
 	{
 		CreateInstance(rclsid, pUnkOuter, dwClsContext);
 	}
-
 };
