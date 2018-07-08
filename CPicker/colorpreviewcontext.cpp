@@ -20,16 +20,16 @@ HRESULT ColorPreviewContext::Draw(const HWND, const SColourF &col, const SColour
 					x + square_size,
 					y + square_size
 				),
-				m_brush);
+				m_brush.Get());
 		}
 		flag = !flag;
 	}
 
 	m_brush->SetColor(D2D1::ColorF(col.r, col.g, col.b, col.a));
-	m_dc->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_size.width, m_size.height / 2.0f), m_brush);
+	m_dc->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_size.width, m_size.height / 2.0f), m_brush.Get());
 
 	m_brush->SetColor(D2D1::ColorF(old.r, old.g, old.b, old.a));
-	m_dc->FillRectangle(D2D1::RectF(0.0f, m_size.height / 2.0f, m_size.width, m_size.height), m_brush);
+	m_dc->FillRectangle(D2D1::RectF(0.0f, m_size.height / 2.0f, m_size.width, m_size.height), m_brush.Get());
 
 	return EndDraw();
 }

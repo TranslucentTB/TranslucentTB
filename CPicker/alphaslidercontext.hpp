@@ -3,5 +3,6 @@
 
 class AlphaSliderContext : public SliderContext {
 public:
+	inline AlphaSliderContext(ID2D1Factory3 *factory) : SliderContext(factory) { }
 	HRESULT Draw(const HWND, const SColourF &col, const SColourF &);
 };

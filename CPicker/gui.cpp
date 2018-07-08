@@ -14,7 +14,7 @@
 #include "pickerdata.hpp"
 #include "resource.h"
 
-const Util::string_map<uint32_t> GUI::COLOR_MAP = {
+const Util::string_map<const uint32_t> GUI::COLOR_MAP = {
 	{ L"aliceblue",				0xf0f8ff },
 	{ L"antiquewhite",			0xfaebd7 },
 	{ L"aqua",					0x00ffff },
@@ -176,7 +176,7 @@ const std::unordered_map<unsigned int, const std::pair<const unsigned int, const
 	{ IDC_HEXCOL,     { IDC_HEXSLIDER, 0xFFFFFFFF } }
 };
 
-std::unordered_map<uint32_t *, HWND> GUI::m_pickerMap;
+std::unordered_map<const uint32_t *, HWND> GUI::m_pickerMap;
 
 INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -683,22 +683,36 @@ HRESULT GUI::CreateGUI(CColourPicker *picker, uint32_t &value, HWND hParent)
 {
 	if (m_pickerMap.count(&value) == 0)
 	{
-		MainPickerContext c1;
-		ColorSliderContext c2;
-		AlphaSliderContext a;
-		ColorPreviewContext c;
+		ID2D1Factory3 *factory;
+		const D2D1_FACTORY_OPTIONS fo = {
+#ifdef _DEBUG
+			D2D1_DEBUG_LEVEL_INFORMATION
+#endif
+		};
+
+		const HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, fo, &factory);
+		if (FAILED(hr))
+		{
+			return hr;
+		}
+
+		MainPickerContext c1(factory);
+		ColorSliderContext c2(factory);
+		AlphaSliderContext a(factory);
+		ColorPreviewContext c(factory);
 		PickerData data = {
 			picker,
-			{{
+			{
 				{ &c1, IDC_COLOR },
 				{ &c2, IDC_COLOR2 },
 				{ &a,  IDC_ALPHASLIDE },
 				{ &c,  IDC_COLORS }
-			}},
+			},
 			&value
 		};
 		INT_PTR result = DialogBoxParam(DllData::GetInstanceHandle(), MAKEINTRESOURCE(IDD_COLORPICKER), hParent, ColourPickerDlgProc, reinterpret_cast<LPARAM>(&data));
 		m_pickerMap.erase(&value);
+		factory->Release();
 		if (result == 0)
 		{
 			return ERROR_INVALID_WINDOW_HANDLE;

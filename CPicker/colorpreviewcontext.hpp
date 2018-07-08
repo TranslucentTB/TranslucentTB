@@ -3,5 +3,6 @@
 
 class ColorPreviewContext : public RenderContext {
 public:
+	inline ColorPreviewContext(ID2D1Factory3 *factory) : RenderContext(factory) { }
 	HRESULT Draw(const HWND, const SColourF &col, const SColourF &old);
 };

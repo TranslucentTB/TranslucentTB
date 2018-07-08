@@ -3,12 +3,11 @@
 
 class ColorSliderContext : public SliderContext {
 private:
-	CComPtr<ID2D1LinearGradientBrush> m_hueGradient;
-
-protected:
-	void ReleaseAll();
+	ComPtr<ID2D1LinearGradientBrush> m_hueGradient;
 
 public:
+	inline ColorSliderContext(ID2D1Factory3 *factory) : SliderContext(factory) { }
+
 	HRESULT Refresh(HWND hwnd);
 	HRESULT Draw(const HWND hDlg, const SColourF &col, const SColourF &);
 };

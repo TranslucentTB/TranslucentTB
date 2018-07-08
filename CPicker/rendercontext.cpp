@@ -1,16 +1,16 @@
 #include "rendercontext.hpp"
 
-HRESULT RenderContext::CreateDevice(const D3D_DRIVER_TYPE &type, CComPtr<ID3D11Device> &device)
+HRESULT RenderContext::CreateDevice(const D3D_DRIVER_TYPE &type, ID3D11Device **device)
 {
 	UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #ifdef _DEBUG
 	flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-	return D3D11CreateDevice(nullptr, type, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, &device, nullptr, nullptr);
+	return D3D11CreateDevice(nullptr, type, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, device, nullptr, nullptr);
 }
 
-HRESULT RenderContext::CreateGradient(CComPtr<ID2D1LinearGradientBrush> &brush, const D2D1_COLOR_F &top, const D2D1_COLOR_F &bottom)
+HRESULT RenderContext::CreateGradient(ID2D1LinearGradientBrush **brush, const D2D1_COLOR_F &top, const D2D1_COLOR_F &bottom)
 {
 	const D2D1_GRADIENT_STOP gradientStops[] = {
 		{
@@ -24,7 +24,7 @@ HRESULT RenderContext::CreateGradient(CComPtr<ID2D1LinearGradientBrush> &brush, 
 	};
 
 	HRESULT hr;
-	CComPtr<ID2D1GradientStopCollection> pGradientStops;
+	ComPtr<ID2D1GradientStopCollection> pGradientStops;
 	hr = m_dc->CreateGradientStopCollection(
 		gradientStops,
 		2,
@@ -42,8 +42,8 @@ HRESULT RenderContext::CreateGradient(CComPtr<ID2D1LinearGradientBrush> &brush, 
 			D2D1::Point2F(0.0f, 0.0f),
 			D2D1::Point2F(0.0f, m_size.height)
 		),
-		pGradientStops,
-		&brush
+		pGradientStops.Get(),
+		brush
 	);
 
 	if (FAILED(hr))
@@ -54,38 +54,15 @@ HRESULT RenderContext::CreateGradient(CComPtr<ID2D1LinearGradientBrush> &brush, 
 	return S_OK;
 }
 
-void RenderContext::ReleaseAll()
-{
-	m_brush.Release();
-	m_dc.Release();
-	m_swapChain.Release();
-}
-
 HRESULT RenderContext::Refresh(HWND hwnd)
 {
-	ReleaseAll();
-
 	HRESULT hr;
-	if (!m_factory)
-	{
-		const D2D1_FACTORY_OPTIONS fo = {
-#ifdef _DEBUG
-			D2D1_DEBUG_LEVEL_INFORMATION
-#endif
-		};
 
-		hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, fo, &m_factory);
-		if (FAILED(hr))
-		{
-			return hr;
-		}
-	}
-
-	CComPtr<ID3D11Device> d3device;
-	hr = CreateDevice(D3D_DRIVER_TYPE_HARDWARE, d3device);
+	ComPtr<ID3D11Device> d3device;
+	hr = CreateDevice(D3D_DRIVER_TYPE_HARDWARE, &d3device);
 	if (hr == DXGI_ERROR_UNSUPPORTED)
 	{
-		hr = CreateDevice(D3D_DRIVER_TYPE_WARP, d3device);
+		hr = CreateDevice(D3D_DRIVER_TYPE_WARP, &d3device);
 	}
 
 	if (FAILED(hr))
@@ -93,8 +70,8 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 		return hr;
 	}
 
-	CComPtr<IDXGIDevice1> dxdevice;
-	hr = d3device.QueryInterface(&dxdevice);
+	ComPtr<IDXGIDevice1> dxdevice;
+	hr = d3device.As(&dxdevice);
 	if (FAILED(hr))
 	{
 		return hr;
@@ -106,14 +83,14 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 		return hr;
 	}
 
-	CComPtr<IDXGIAdapter> adapter;
+	ComPtr<IDXGIAdapter> adapter;
 	hr = dxdevice->GetAdapter(&adapter);
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	CComPtr<IDXGIFactory2> factory;
+	ComPtr<IDXGIFactory2> factory;
 	hr = adapter->GetParent(IID_PPV_ARGS(&factory));
 	if (FAILED(hr))
 	{
@@ -128,14 +105,14 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 	swapdesc.BufferCount = 2;
 	swapdesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
 
-	hr = factory->CreateSwapChainForHwnd(d3device, hwnd, &swapdesc, nullptr, nullptr, &m_swapChain);
+	hr = factory->CreateSwapChainForHwnd(d3device.Get(), hwnd, &swapdesc, nullptr, nullptr, &m_swapChain);
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	CComPtr<ID2D1Device2> device;
-	hr = m_factory->CreateDevice(dxdevice, &device);
+	ComPtr<ID2D1Device2> device;
+	hr = m_factory->CreateDevice(dxdevice.Get(), &device);
 	if (FAILED(hr))
 	{
 		return hr;
@@ -147,7 +124,7 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 		return hr;
 	}
 
-	CComPtr<IDXGISurface> surface;
+	ComPtr<IDXGISurface> surface;
 	hr = m_swapChain->GetBuffer(0, IID_PPV_ARGS(&surface));
 	if (FAILED(hr))
 	{
@@ -159,14 +136,14 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 		D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE)
 	);
 
-	CComPtr<ID2D1Bitmap1> bitmap;
-	hr = m_dc->CreateBitmapFromDxgiSurface(surface, props, &bitmap);
+	ComPtr<ID2D1Bitmap1> bitmap;
+	hr = m_dc->CreateBitmapFromDxgiSurface(surface.Get(), props, &bitmap);
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	m_dc->SetTarget(bitmap);
+	m_dc->SetTarget(bitmap.Get());
 
 	const UINT dpi = GetDpiForWindow(hwnd);
 	m_dc->SetDpi(dpi, dpi);
