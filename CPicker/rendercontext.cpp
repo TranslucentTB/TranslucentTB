@@ -1,5 +1,4 @@
 #include "rendercontext.hpp"
-#include "dlldata.hpp"
 
 HRESULT RenderContext::CreateDevice(const D3D_DRIVER_TYPE &type, CComPtr<ID3D11Device> &device)
 {
