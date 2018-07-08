@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="rendercontext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -39,12 +36,15 @@
     <ClCompile Include="ccolourpicker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="dlldata.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="main.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="huegradient.hpp">
@@ -75,6 +75,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ccolourpicker.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dlldata.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gui.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

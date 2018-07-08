@@ -1,18 +1,6 @@
 #include "ccolourpicker.hpp"
-#include <WinUser.h>
 
-#include "alphaslidercontext.hpp"
-#include "colorpreviewcontext.hpp"
-#include "colorslidercontext.hpp"
-#include "main.hpp"
-#include "mainpickercontext.hpp"
-#include "pickerdata.hpp"
-#include "resource.h"
-
-std::unordered_map<uint32_t *, HWND> CColourPicker::PickerMap;
-// https://blogs.msdn.microsoft.com/oldnewthing/20041025-00/?p=37483/
-// __ImageBase is already declared by atlbase.h, which is imported in pickerdata.hpp
-const HINSTANCE CColourPicker::Instance = reinterpret_cast<HINSTANCE>(&__ImageBase);
+#include "gui.hpp"
 
 CColourPicker::CColourPicker(uint32_t &value, HWND hParentWindow) : Value(value), hParent(hParentWindow)
 {
@@ -27,45 +15,7 @@ CColourPicker::CColourPicker(uint32_t &value, HWND hParentWindow) : Value(value)
 
 HRESULT CColourPicker::CreateColourPicker()
 {
-	if (PickerMap.count(&Value) == 0)
-	{
-		MainPickerContext c1;
-		ColorSliderContext c2;
-		AlphaSliderContext a;
-		ColorPreviewContext c;
-		PickerData data = {
-			this,
-			{{
-				{ &c1, IDC_COLOR },
-				{ &c2, IDC_COLOR2 },
-				{ &a,  IDC_ALPHASLIDE },
-				{ &c,  IDC_COLORS }
-			}}
-		};
-		INT_PTR result = DialogBoxParam(Instance, MAKEINTRESOURCE(IDD_COLORPICKER), hParent, ColourPickerDlgProc, reinterpret_cast<LPARAM>(&data));
-		PickerMap.erase(&Value);
-		if (result == 0)
-		{
-			return ERROR_INVALID_WINDOW_HANDLE;
-		}
-		else if (result == -1)
-		{
-			return HRESULT_FROM_WIN32(GetLastError());
-		}
-		else if (result == 0xfff)
-		{
-			return S_OK;
-		}
-		else
-		{
-			return static_cast<HRESULT>(result);
-		}
-	}
-	else
-	{
-		SetForegroundWindow(PickerMap.at(&Value));
-		return S_OK;
-	}
+	return GUI::CreateGUI(this, Value, hParent);
 }
 
 void CColourPicker::SetRGB(uint8_t r, uint8_t g, uint8_t b)

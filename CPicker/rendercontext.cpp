@@ -1,6 +1,5 @@
 #include "rendercontext.hpp"
-
-CComPtr<ID2D1Factory3> RenderContext::m_factory;
+#include "dlldata.hpp"
 
 HRESULT RenderContext::CreateDevice(const D3D_DRIVER_TYPE &type, CComPtr<ID3D11Device> &device)
 {

@@ -8,9 +8,9 @@
 
 class RenderContext {
 private:
-	static CComPtr<ID2D1Factory3> m_factory;
 	static HRESULT CreateDevice(const D3D_DRIVER_TYPE &type, CComPtr<ID3D11Device> &device);
 
+	CComPtr<ID2D1Factory3> m_factory;
 	CComPtr<IDXGISwapChain1> m_swapChain;
 
 protected:

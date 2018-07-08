@@ -1,19 +1,20 @@
-#include "main.hpp"
+#include "gui.hpp"
 #include <algorithm>
 #include <stdio.h>
 #include <string>
-#include <unordered_map>
 #include <WinUser.h>
 #include <CommCtrl.h>
 
+#include "alphaslidercontext.hpp"
+#include "colorslidercontext.hpp"
+#include "colorpreviewcontext.hpp"
 #include "ccolourpicker.hpp"
-#include "huegradient.hpp"
+#include "dlldata.hpp"
+#include "mainpickercontext.hpp"
 #include "pickerdata.hpp"
 #include "resource.h"
-#include "scolour.hpp"
-#include "../TranslucentTB/util.hpp"
 
-static const Util::string_map<uint32_t> COLOR_MAP = {
+const Util::string_map<uint32_t> GUI::COLOR_MAP = {
 	{ L"aliceblue",				0xf0f8ff },
 	{ L"antiquewhite",			0xfaebd7 },
 	{ L"aqua",					0x00ffff },
@@ -164,7 +165,7 @@ static const Util::string_map<uint32_t> COLOR_MAP = {
 	{ L"yellowgreen",			0x9acd32 }
 };
 
-static const std::unordered_map<unsigned int, const std::pair<const unsigned int, const unsigned int>> SLIDER_MAP = {
+const std::unordered_map<unsigned int, const std::pair<const unsigned int, const unsigned int>> GUI::SLIDER_MAP = {
 	{ IDC_RED,        { IDC_RSLIDER,   255 } },
 	{ IDC_GREEN,      { IDC_GSLIDER,   255 } },
 	{ IDC_BLUE,       { IDC_BSLIDER,   255 } },
@@ -175,7 +176,9 @@ static const std::unordered_map<unsigned int, const std::pair<const unsigned int
 	{ IDC_HEXCOL,     { IDC_HEXSLIDER, 0xFFFFFFFF } }
 };
 
-INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+std::unordered_map<uint32_t *, HWND> GUI::m_pickerMap;
+
+INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	PickerData *picker_data = reinterpret_cast<PickerData *>(GetWindowLongPtr(hDlg, DWLP_USER));
 	if (!picker_data && uMsg != WM_INITDIALOG)
@@ -190,7 +193,7 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 		SetWindowLongPtr(hDlg, DWLP_USER, lParam);
 		picker_data = reinterpret_cast<PickerData *>(lParam);
 
-		CColourPicker::PickerMap[&picker_data->picker->Value] = hDlg;
+		m_pickerMap[picker_data->value_ptr] = hDlg;
 
 		for (const auto &slider_combo : SLIDER_MAP)
 		{
@@ -210,7 +213,7 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 
 		SendDlgItemMessage(hDlg, IDC_R, BM_SETCHECK, BST_CHECKED, 0);
 
-		picker_data->old_color_tip = CreateWindow(TOOLTIPS_CLASS, NULL, TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, Instance, NULL);
+		picker_data->old_color_tip = CreateWindow(TOOLTIPS_CLASS, NULL, TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, DllData::GetInstanceHandle(), NULL);
 
 		TOOLINFO ti = {
 			sizeof(ti),
@@ -577,7 +580,7 @@ INT_PTR CColourPicker::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 	return 0;
 }
 
-LRESULT CALLBACK NoOutlineButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK GUI::NoOutlineButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_SETFOCUS)
 	{
@@ -588,13 +591,7 @@ LRESULT CALLBACK NoOutlineButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 	return CallWindowProc(reinterpret_cast<PickerData *>(GetWindowLongPtr(hDlg, DWLP_USER))->button_proc, hWnd, uMsg, wParam, lParam);
 }
 
-uint8_t ExpandOneLetterByte(const uint8_t &byte)
-{
-	const uint8_t firstDigit = byte & 0xF;
-	return (firstDigit << 4) + firstDigit;
-}
-
-void UpdateValues(HWND hDlg, const SColour &col, bool &changing_text)
+void GUI::UpdateValues(HWND hDlg, const SColour &col, bool &changing_text)
 {
 	changing_text = true;
 
@@ -610,7 +607,7 @@ void UpdateValues(HWND hDlg, const SColour &col, bool &changing_text)
 	changing_text = false;
 }
 
-void FailedParse(HWND hDlg)
+void GUI::FailedParse(HWND hDlg)
 {
 	EDITBALLOONTIP ebt = {
 		sizeof(ebt),
@@ -624,7 +621,7 @@ void FailedParse(HWND hDlg)
 	Edit_ShowBalloonTip(GetDlgItem(hDlg, IDC_HEXCOL), &ebt);
 }
 
-void ParseHex(HWND hDlg, CColourPicker *picker)
+void GUI::ParseHex(HWND hDlg, CColourPicker *picker)
 {
 	std::wstring text;
 	text.resize(21);
@@ -679,5 +676,49 @@ void ParseHex(HWND hDlg, CColourPicker *picker)
 		{
 			FailedParse(hDlg);
 		}
+	}
+}
+
+HRESULT GUI::CreateGUI(CColourPicker *picker, uint32_t &value, HWND hParent)
+{
+	if (m_pickerMap.count(&value) == 0)
+	{
+		MainPickerContext c1;
+		ColorSliderContext c2;
+		AlphaSliderContext a;
+		ColorPreviewContext c;
+		PickerData data = {
+			picker,
+			{{
+				{ &c1, IDC_COLOR },
+				{ &c2, IDC_COLOR2 },
+				{ &a,  IDC_ALPHASLIDE },
+				{ &c,  IDC_COLORS }
+			}},
+			&value
+		};
+		INT_PTR result = DialogBoxParam(DllData::GetInstanceHandle(), MAKEINTRESOURCE(IDD_COLORPICKER), hParent, ColourPickerDlgProc, reinterpret_cast<LPARAM>(&data));
+		m_pickerMap.erase(&value);
+		if (result == 0)
+		{
+			return ERROR_INVALID_WINDOW_HANDLE;
+		}
+		else if (result == -1)
+		{
+			return HRESULT_FROM_WIN32(GetLastError());
+		}
+		else if (result == 0xfff)
+		{
+			return S_OK;
+		}
+		else
+		{
+			return static_cast<HRESULT>(result);
+		}
+	}
+	else
+	{
+		SetForegroundWindow(m_pickerMap.at(&value));
+		return S_OK;
 	}
 }

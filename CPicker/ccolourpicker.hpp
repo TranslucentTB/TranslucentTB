@@ -1,7 +1,6 @@
 #pragma once
 #include "../TranslucentTB/arch.h"
 #include <cstdint>
-#include <unordered_map>
 #include <windef.h>
 
 #include "scolour.hpp"
@@ -34,10 +33,7 @@ public:
 
 private:
 	void UpdateValue();
-	static INT_PTR CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static const HINSTANCE Instance;
 
-	static std::unordered_map<uint32_t *, HWND> PickerMap;
 	uint32_t &Value;
 	// The current selected colour and the previous selected one
 	SColour CurrCol, OldCol;
