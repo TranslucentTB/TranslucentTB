@@ -715,7 +715,7 @@ HRESULT GUI::CreateGUI(CColourPicker *picker, uint32_t &value, HWND hParent)
 		factory->Release();
 		if (result == 0)
 		{
-			return ERROR_INVALID_WINDOW_HANDLE;
+			return HRESULT_FROM_WIN32(ERROR_INVALID_WINDOW_HANDLE);
 		}
 		else if (result == -1)
 		{

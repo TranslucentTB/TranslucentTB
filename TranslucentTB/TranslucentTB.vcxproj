@@ -81,10 +81,9 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Store'">
     <ClCompile>
       <PreprocessorDefinitions>STORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <!-- TODO: Remove those when the clang bug is fixed -->
+      <!-- TODO: Remove this when the clang bug is fixed -->
       <AdditionalOptions>
       </AdditionalOptions>
-      <DisableSpecificWarnings>4251</DisableSpecificWarnings>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

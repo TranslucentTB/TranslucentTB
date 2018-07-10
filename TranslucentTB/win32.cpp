@@ -24,6 +24,51 @@ const user32::pSetWindowCompositionAttribute user32::SetWindowCompositionAttribu
 	);
 
 std::wstring win32::m_ExeLocation;
+std::unordered_map<DWORD, bool> win32::m_PickerThreads;
+
+DWORD win32::PickerThreadProc(LPVOID data)
+{
+	const HRESULT hr = CColourPicker(*reinterpret_cast<uint32_t *>(data)).CreateColourPicker();
+	const DWORD tid = GetCurrentThreadId();
+	if (FAILED(hr))
+	{
+		m_PickerThreads[tid] = true;
+		ErrorHandle(hr, Error::Level::Error, L"An error occured in the color picker!");
+	}
+
+	m_PickerThreads.erase(tid);
+	return 0;
+}
+
+BOOL win32::EnumThreadWindowsProc(HWND hwnd, LPARAM lParam)
+{
+	Window wnd(hwnd);
+	auto &pair = *reinterpret_cast<std::pair<bool *, bool> *>(lParam);
+
+	if (!pair.second)
+	{
+		if (wnd.title() == L"Color Picker")
+		{
+			// 1068 == IDB_CANCEL
+			wnd.send_message(WM_COMMAND, MAKEWPARAM(1068, BN_CLICKED));
+
+			*pair.first = true;
+			return false;
+		}
+	}
+	else
+	{
+		if (wnd.title() == NAME L" - Error")
+		{
+			wnd.send_message(WM_CLOSE);
+
+			*pair.first = true;
+			return false;
+		}
+	}
+
+	return true;
+}
 
 const std::wstring &win32::GetExeLocation()
 {
@@ -232,15 +277,45 @@ void win32::OpenLink(const std::wstring &link)
 	}
 }
 
-std::thread win32::PickColor(uint32_t &color)
+DWORD win32::PickColor(uint32_t &color)
 {
-	std::thread t([&color]
-	{
-		ErrorHandle(CColourPicker(color).CreateColourPicker(), Error::Level::Error, L"An error occured during the rendering of the color picker!");
-	});
+	DWORD threadId;
+	const HANDLE hThread = CreateThread(nullptr, 0, PickerThreadProc, &color, CREATE_SUSPENDED, &threadId);
 
-	t.detach();
-	return t;
+	if (hThread)
+	{
+		m_PickerThreads[threadId] = false;
+
+		ResumeThread(hThread);
+		CloseHandle(hThread);
+		return threadId;
+	}
+	else
+	{
+		LastErrorHandle(Error::Level::Error, L"Failed to spawn color picker thread!");
+		return 0;
+	}
+}
+
+void win32::ClosePickers()
+{
+	while (m_PickerThreads.size() != 0)
+	{
+		const auto &lpair = *m_PickerThreads.begin();
+		bool needs_wait = false;
+		auto epair = std::make_pair(&needs_wait, lpair.second);
+		EnumThreadWindows(lpair.first, EnumThreadWindowsProc, reinterpret_cast<LPARAM>(&epair));
+
+		if (needs_wait)
+		{
+			const HANDLE thread = OpenThread(SYNCHRONIZE, FALSE, lpair.first);
+			if (thread)
+			{
+				WaitForSingleObject(thread, INFINITE);
+				CloseHandle(thread);
+			}
+		}
+	}
 }
 
 void win32::HardenProcess()

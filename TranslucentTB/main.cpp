@@ -725,6 +725,13 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		ErrorHandle(app_visibility->Unadvise(av_cookie), Error::Level::Log, L"Failed to unregister app visibility sink.");
 	}
 
+	// Close all open CPicker windows to avoid:
+	// 1. Saving the colors currently previewed.
+	// 2. Direct2D and Direct3D bothering us about leaks in debug mode (because CPicker gets unloaded after Direct2D so Direct2D
+	//    does a leak check before CPicker even has a chance to cleanup anything). We don't care about them because we are closing,
+	//    and if we have actual leaks, they won't be drowned in the noise since closing the window will make CPicker cleanup.
+	win32::ClosePickers();
+
 	// If it's a new instance, don't save or restore taskbar to default
 	if (run.exit_reason != EXITREASON::NewInstance)
 	{

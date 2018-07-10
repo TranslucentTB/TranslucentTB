@@ -2,7 +2,7 @@
 #include "arch.h"
 #include <cstdint>
 #include <string>
-#include <thread>
+#include <unordered_map>
 #include <windef.h>
 
 #include "swcadata.hpp"
@@ -21,6 +21,10 @@ class win32 {
 
 private:
 	static std::wstring m_ExeLocation;
+	static std::unordered_map<DWORD, bool> m_PickerThreads;
+
+	static DWORD WINAPI PickerThreadProc(LPVOID data);
+	static BOOL CALLBACK EnumThreadWindowsProc(HWND hwnd, LPARAM lParam);
 
 public:
 	// Gets location of current module, fatally dies if failed.
@@ -49,8 +53,12 @@ public:
 	static void OpenLink(const std::wstring &link);
 
 	// Opens a color picker.
-	// NOTE: use .join() to wait for input, because this doesn't blocks by default.
-	static std::thread PickColor(uint32_t &color);
+	// NOTE: the function returns the thread ID, use it with OpenThread and
+	// WaitForSingleObject if you want to block for input.
+	static DWORD PickColor(uint32_t &color);
+
+	// Cancels all active color pickers.
+	static void ClosePickers();
 
 	// Applies various settings that make code execution more secure.
 	static void HardenProcess();
