@@ -25,7 +25,7 @@ HRESULT ColorSliderContext::Draw(const HWND hDlg, const SColourF &col, const SCo
 {
 	ComPtr<ID2D1LinearGradientBrush> brush;
 	const DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);
-	m_dc->BeginDraw();
+	DrawContext dc = BeginDraw();
 	m_dc->Clear(D2D1::ColorF(GetRValue(backgroundColor) / 255.0f, GetGValue(backgroundColor) / 255.0f, GetBValue(backgroundColor) / 255.0f));
 
 	D2D1_COLOR_F arrow_color = D2D1::ColorF(col.r, col.g, col.b);
@@ -134,5 +134,5 @@ HRESULT ColorSliderContext::Draw(const HWND hDlg, const SColourF &col, const SCo
 		return hr;
 	}
 
-	return EndDraw();
+	return dc.EndDraw();
 }

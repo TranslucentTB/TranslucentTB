@@ -2,7 +2,7 @@
 
 HRESULT ColorPreviewContext::Draw(const HWND, const SColourF &col, const SColourF &old)
 {
-	m_dc->BeginDraw();
+	DrawContext dc = BeginDraw();
 
 	m_dc->Clear(D2D1::ColorF(D2D1::ColorF::White));
 
@@ -31,5 +31,5 @@ HRESULT ColorPreviewContext::Draw(const HWND, const SColourF &col, const SColour
 	m_brush->SetColor(D2D1::ColorF(old.r, old.g, old.b, old.a));
 	m_dc->FillRectangle(D2D1::RectF(0.0f, m_size.height / 2.0f, m_size.width, m_size.height), m_brush.Get());
 
-	return EndDraw();
+	return dc.EndDraw();
 }

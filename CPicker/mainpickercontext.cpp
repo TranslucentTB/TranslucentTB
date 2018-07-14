@@ -75,7 +75,7 @@ HRESULT MainPickerContext::Refresh(HWND hwnd)
 
 HRESULT MainPickerContext::Draw(const HWND hDlg, const SColourF &col, const SColourF &)
 {
-	m_dc->BeginDraw();
+	DrawContext dc = BeginDraw();
 
 	D2D1_POINT_2F indicator_point;
 	HRESULT hr;
@@ -162,5 +162,5 @@ HRESULT MainPickerContext::Draw(const HWND hDlg, const SColourF &col, const SCol
 	const float circle_radius = m_size.width / 50.0f;
 	m_dc->DrawEllipse(D2D1::Ellipse(indicator_point, circle_radius, circle_radius), m_brush.Get());
 
-	return EndDraw();
+	return dc.EndDraw();
 }

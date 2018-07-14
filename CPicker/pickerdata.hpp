@@ -14,5 +14,4 @@ struct PickerData {
 	bool changing_text;
 	bool changing_hex_via_spin;
 	HWND old_color_tip;
-	WNDPROC button_proc;
 };

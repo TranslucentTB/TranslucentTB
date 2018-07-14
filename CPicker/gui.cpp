@@ -206,7 +206,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 		for (const int &button : { IDC_R, IDC_G, IDC_B, IDC_H, IDC_S, IDC_V })
 		{
-			picker_data->button_proc = (WNDPROC)SetWindowLongPtr(GetDlgItem(hDlg, button), GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(NoOutlineButtonProc));
+			SetWindowSubclass(GetDlgItem(hDlg, button), NoOutlineButtonSubclass, button, NULL);
 		}
 
 		UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
@@ -580,15 +580,18 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	return 0;
 }
 
-LRESULT CALLBACK GUI::NoOutlineButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK GUI::NoOutlineButtonSubclass(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR)
 {
-	if (uMsg == WM_SETFOCUS)
+	switch (uMsg)
 	{
+	case WM_SETFOCUS:
 		return 0;
+
+	case WM_NCDESTROY:
+		RemoveWindowSubclass(hWnd, NoOutlineButtonSubclass, uIdSubclass);
 	}
 
-	const HWND hDlg = GetAncestor(hWnd, GA_PARENT);
-	return CallWindowProc(reinterpret_cast<PickerData *>(GetWindowLongPtr(hDlg, DWLP_USER))->button_proc, hWnd, uMsg, wParam, lParam);
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 void GUI::UpdateValues(HWND hDlg, const SColour &col, bool &changing_text)

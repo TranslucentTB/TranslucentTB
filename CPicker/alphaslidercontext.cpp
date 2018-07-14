@@ -7,7 +7,7 @@ HRESULT AlphaSliderContext::Draw(const HWND, const SColourF &col, const SColourF
 	const float bg = GetGValue(c) / 255.0f;
 	const float bb = GetBValue(c) / 255.0f;
 
-	m_dc->BeginDraw();
+	DrawContext dc = BeginDraw();
 	m_dc->Clear(D2D1::ColorF(br, bg, bb));
 
 	m_brush->SetColor(D2D1::ColorF(0, 0.3f));
@@ -50,5 +50,5 @@ HRESULT AlphaSliderContext::Draw(const HWND, const SColourF &col, const SColourF
 		return hr;
 	}
 
-	return EndDraw();
+	return dc.EndDraw();
 }

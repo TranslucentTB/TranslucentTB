@@ -15,7 +15,7 @@ private:
 	static std::unordered_map<const uint32_t *, HWND> m_pickerMap;
 
 	static INT_PTR CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static LRESULT CALLBACK NoOutlineButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK NoOutlineButtonSubclass(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR);
 	static void UpdateValues(HWND hDlg, const SColour &col, bool &changing_text);
 	static void FailedParse(HWND hDlg);
 	static void ParseHex(HWND hDlg, CColourPicker *picker);

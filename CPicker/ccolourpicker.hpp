@@ -45,9 +45,9 @@ public:
 	constexpr void SetHSV(uint16_t h, uint8_t s, uint8_t v)
 	{
 		// Clamp hue values to 359, sat and val to 100
-		CurrCol.h = std::clamp(h, uint16_t(0), uint16_t(359));
-		CurrCol.s = std::clamp(s, uint8_t(0), uint8_t(100));
-		CurrCol.v = std::clamp(v, uint8_t(0), uint8_t(100));
+		CurrCol.h = std::clamp<uint16_t>(h, 0, 359);
+		CurrCol.s = std::clamp<uint8_t>(s, 0, 100);
+		CurrCol.v = std::clamp<uint8_t>(v, 0, 100);
 
 		CurrCol.UpdateRGB();
 
@@ -62,15 +62,8 @@ public:
 	}
 
 	// Some easy functions to retrieve the colour components
-	constexpr const SColour &GetCurrentColour()
-	{
-		return CurrCol;
-	}
-
-	constexpr const SColour &GetOldColour()
-	{
-		return OldCol;
-	}
+	constexpr const SColour &GetCurrentColour() { return CurrCol; }
+	constexpr const SColour &GetOldColour() { return OldCol; }
 
 	constexpr void UpdateOldColour()
 	{
