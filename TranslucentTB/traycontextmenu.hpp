@@ -12,11 +12,11 @@
 class TrayContextMenu : public TrayIcon {
 
 protected:
-	typedef std::function<void()> m_MenuCallbackFunction;
+	using callback_t = std::function<void()>;
 
 private:
 	HMENU m_Menu;
-	std::unordered_map<unsigned int, std::vector<std::pair<unsigned short, m_MenuCallbackFunction>>> m_MenuCallbackMap;
+	std::unordered_map<unsigned int, std::vector<std::pair<unsigned short, callback_t>>> m_MenuCallbackMap;
 	long TrayCallback(WPARAM, LPARAM);
 	MessageWindow::CALLBACKCOOKIE m_Cookie;
 
@@ -25,8 +25,8 @@ private:
 public:
 	TrayContextMenu(MessageWindow &window, wchar_t *iconResource, wchar_t *menuResource, const HINSTANCE &hInstance = GetModuleHandle(NULL));
 
-	typedef unsigned long long MENUCALLBACKCOOKIE;
-	MENUCALLBACKCOOKIE RegisterContextMenuCallback(unsigned int item, const m_MenuCallbackFunction &callback);
+	using MENUCALLBACKCOOKIE = unsigned long long;
+	MENUCALLBACKCOOKIE RegisterContextMenuCallback(unsigned int item, const callback_t &callback);
 	bool UnregisterContextMenuCallback(MENUCALLBACKCOOKIE cookie);
 
 	enum BoolBindingEffect {

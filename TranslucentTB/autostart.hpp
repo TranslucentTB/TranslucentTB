@@ -13,7 +13,7 @@ public:
 		Enabled
 	};
 #else
-	typedef winrt::Windows::ApplicationModel::StartupTaskState StartupState;
+	using StartupState = winrt::Windows::ApplicationModel::StartupTaskState;
 #endif
 
 	static StartupState GetStartupState();

@@ -1,5 +1,6 @@
 #pragma once
 #include "../TranslucentTB/arch.h"
+#include <algorithm>
 #include <cstdint>
 #include <windef.h>
 
@@ -14,25 +15,73 @@ dllimport
 ) CColourPicker {
 
 public:
-	CColourPicker(uint32_t &value, HWND hParentWindow = NULL);
+	constexpr CColourPicker(uint32_t &value, HWND hParentWindow = NULL) : Value(value), CurrCol(), OldCol(), hParent(hParentWindow)
+	{
+		CurrCol.r = (Value & 0x00FF0000) >> 16;
+		CurrCol.g = (Value & 0x0000FF00) >> 8;
+		CurrCol.b = (Value & 0x000000FF);
+		CurrCol.a = (Value & 0xFF000000) >> 24;
+		CurrCol.UpdateHSV();
+
+		OldCol = CurrCol;
+	}
 
 	// Creates the colour picker dialog
 	HRESULT CreateColourPicker();
 
 	// Functions to set the colour components
 	// NOTE: SetRGB automatically updates HSV and viceversa
-	void SetRGB(uint8_t r, uint8_t g, uint8_t b);
-	void SetHSV(unsigned short h, uint8_t s, uint8_t v);
-	void SetAlpha(uint8_t a);
+	constexpr void SetRGB(uint8_t r, uint8_t g, uint8_t b)
+	{
+		CurrCol.r = r;
+		CurrCol.g = g;
+		CurrCol.b = b;
+
+		CurrCol.UpdateHSV();
+
+		UpdateValue();
+	}
+
+	constexpr void SetHSV(uint16_t h, uint8_t s, uint8_t v)
+	{
+		// Clamp hue values to 359, sat and val to 100
+		CurrCol.h = std::clamp(h, uint16_t(0), uint16_t(359));
+		CurrCol.s = std::clamp(s, uint8_t(0), uint8_t(100));
+		CurrCol.v = std::clamp(v, uint8_t(0), uint8_t(100));
+
+		CurrCol.UpdateRGB();
+
+		UpdateValue();
+	}
+
+	constexpr void SetAlpha(uint8_t a)
+	{
+		CurrCol.a = a;
+
+		UpdateValue();
+	}
 
 	// Some easy functions to retrieve the colour components
-	const SColour &GetCurrentColour();
-	const SColour &GetOldColour();
+	constexpr const SColour &GetCurrentColour()
+	{
+		return CurrCol;
+	}
 
-	void UpdateOldColour();
+	constexpr const SColour &GetOldColour()
+	{
+		return OldCol;
+	}
+
+	constexpr void UpdateOldColour()
+	{
+		OldCol = CurrCol;
+	}
 
 private:
-	void UpdateValue();
+	constexpr void UpdateValue()
+	{
+		Value = (CurrCol.a << 24) + (CurrCol.r << 16) + (CurrCol.g << 8) + CurrCol.b;
+	}
 
 	uint32_t &Value;
 	// The current selected colour and the previous selected one

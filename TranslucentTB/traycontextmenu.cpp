@@ -55,7 +55,7 @@ TrayContextMenu::TrayContextMenu(MessageWindow &window, wchar_t *iconResource, w
 	m_Cookie = RegisterTrayCallback(std::bind(&TrayContextMenu::TrayCallback, this, std::placeholders::_1, std::placeholders::_2));
 }
 
-TrayContextMenu::MENUCALLBACKCOOKIE TrayContextMenu::RegisterContextMenuCallback(unsigned int item, const m_MenuCallbackFunction &callback)
+TrayContextMenu::MENUCALLBACKCOOKIE TrayContextMenu::RegisterContextMenuCallback(unsigned int item, const callback_t &callback)
 {
 	unsigned short secret = Util::GetRandomNumber<unsigned short>();
 	m_MenuCallbackMap[item].push_back(std::make_pair(secret, callback));

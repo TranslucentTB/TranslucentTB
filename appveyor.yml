@@ -31,7 +31,7 @@ artifacts:
 
 deploy:
   provider: GitHub
-  description: 'TODO: Fill this'
+  description: 'To be filled'
   draft: true
   artifact: Desktop installer,Debug symbols
   auth_token:

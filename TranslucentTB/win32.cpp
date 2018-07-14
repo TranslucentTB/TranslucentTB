@@ -93,13 +93,18 @@ const std::wstring &win32::GetExeLocation()
 
 bool win32::IsAtLeastBuild(const uint32_t &buildNumber)
 {
-	OSVERSIONINFOEX versionInfo;
-	versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
-	versionInfo.dwBuildNumber = buildNumber;
+	OSVERSIONINFOEX versionInfo = { sizeof(versionInfo), 10, 0, buildNumber };
 
-	unsigned long long mask = VerSetConditionMask(0, VER_BUILDNUMBER, VER_GREATER_EQUAL);
+	DWORDLONG mask = 0;
+	VER_SET_CONDITION(mask, VER_MAJORVERSION, VER_GREATER_EQUAL);
+	VER_SET_CONDITION(mask, VER_MINORVERSION, VER_GREATER_EQUAL);
+	VER_SET_CONDITION(mask, VER_BUILDNUMBER, VER_GREATER_EQUAL);
 
-	if (!VerifyVersionInfo(&versionInfo, VER_BUILDNUMBER, mask))
+	if (VerifyVersionInfo(&versionInfo, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, mask))
+	{
+		return true;
+	}
+	else
 	{
 		DWORD error = GetLastError();
 		if (error != ERROR_OLD_WIN_VERSION)
@@ -108,10 +113,6 @@ bool win32::IsAtLeastBuild(const uint32_t &buildNumber)
 		}
 
 		return false;
-	}
-	else
-	{
-		return true;
 	}
 }
 

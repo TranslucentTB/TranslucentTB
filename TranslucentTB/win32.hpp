@@ -10,7 +10,7 @@
 class user32 {
 
 private:
-	typedef bool(WINAPI *pSetWindowCompositionAttribute)(HWND, swca::WINCOMPATTRDATA *);
+	using pSetWindowCompositionAttribute = bool(WINAPI *)(HWND, swca::WINCOMPATTRDATA *);
 
 public:
 	static const pSetWindowCompositionAttribute SetWindowCompositionAttribute;

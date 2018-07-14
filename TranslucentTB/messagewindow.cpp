@@ -37,7 +37,7 @@ MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &
 	}
 }
 
-MessageWindow::CALLBACKCOOKIE MessageWindow::RegisterCallback(unsigned int message, const m_CallbackFunction &callback)
+MessageWindow::CALLBACKCOOKIE MessageWindow::RegisterCallback(unsigned int message, const callback_t &callback)
 {
 	unsigned short secret = Util::GetRandomNumber<unsigned short>();
 	m_CallbackMap[message].push_back(std::make_pair(secret, callback));
