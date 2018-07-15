@@ -1,8 +1,8 @@
 ﻿# TranslucentTB
 
 [![Build status](https://ci.appveyor.com/api/projects/status/9yym3vr6s5gc7vk3/branch/master?svg=true)](https://ci.appveyor.com/project/sylveon/translucenttb/branch/master)
-[![Join on Discord](https://img.shields.io/discord/304387206552879116.svg)](https://discord.gg/w95DGTK)
-[![Join on Gitter](https://badges.gitter.im/TranslucentTB/Lobby.svg)](https://gitter.im/TranslucentTB/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join on Discord](https://img.shields.io/discord/304387206552879116.svg)][Discord]
+[![Join on Gitter](https://badges.gitter.im/TranslucentTB/Lobby.svg)][Gitter]
 [![Total downloads](https://img.shields.io/github/downloads/TranslucentTB/TranslucentTB/total.svg)](https://github.com/TranslucentTB/TranslucentTB/releases)
 [![Liberapay patrons](https://img.shields.io/liberapay/patrons/TranslucentTB.svg)](https://liberapay.com/TranslucentTB/)
 
@@ -14,9 +14,7 @@ You can see examples of the customizations you can make in the images below:
 
 ## Features
 
-TranslucentTB supports multiple taskbar states and dynamic taskbar states.
-
-- Advanced **color picker** supporting alpha to change the taskbar's color.
+- Advanced **color picker** supporting alpha and live preview to change the taskbar's color.
 - **Taskbar states** (choose one):
   - **Blur**: Will make the taskbar slightly blurred.
   - **Clear**: Transparent taskbar.
@@ -84,12 +82,56 @@ Make sure you also install the following components:
 
 You also need the [Clang compiler for Windows](http://releases.llvm.org/download.html) and [Inno Setup](http://jrsoftware.org/isdl.php).
 
+<!-- markdownlint-disable MD033 -->
 Once you have that installed, open `TranslucentTB.sln`, and press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to build the solution.
+<!-- markdownlint-enable MD033 -->
+
 The output will be in either the Debug or Release folder (depending on which solution configuration is currently active).
 
 To build the desktop installer, run the DesktopInstallerBuilder project.
 
 To build the Microsoft Store app package, build the solution with the Store configuration.
+
+## Contributing
+
+If you would like to contribute, everyone is welcome to! If you are considering a major feature, need guidance, or want to talk an idea out, don't hesitate to jump on [Discord], [Gitter], or file an issue here. The main contributors are often on [Discord], [Gitter] and GitHub, so we should reply fairly quickly.
+At this time we have no plans of expanding this beyond the taskbar.
+
+When contributing, please respect the style used by the codebase. This means Allman braces everywhere, even on one line blocks:
+
+```cpp
+// Bad!
+if (condition) {
+    statement;
+}
+
+// Bad!
+if (condition) statement;
+
+// Bad!
+if (condition)
+    statement;
+
+// Good!
+if (condition)
+{
+    statement;
+}
+```
+
+The only exception to this rule is the opening brace of a class or structure, in which K&R braces apply:
+
+```cpp
+class Foo {
+    // content
+};
+
+struct Bar {
+    // content
+};
+```
+
+Indentation style is 4 spaces large tabs, and your editor should enforce it with this repo's `.editorconfig` automatically.
 
 ## Thanks
 
@@ -99,15 +141,13 @@ TranslucentTB is a team effort! It is the result of the collective efforts of ma
 - [@sylveon](https://github.com/sylveon),
 - [@MrAksel](https://github.com/MrAksel),
 - [@denosawr](https://github.com/denosawr),
-- [@PFCKrutonium](https://github.com/PFCKrutonium).
-
-If you would like to contribute, everyone is welcome to! If you are considering a major feature, need guidance, or want to talk an idea out, don't hesitate to jump on Discord or Gitter (see the badges on the top of the README), or file an issue here. The main contributors are often on Discord, Gitter and GitHub, so we should reply fairly quickly.
-Also, at this time I have no plans of expanding this beyond the taskbar.
+- [@PFCKrutonium](https://github.com/PFCKrutonium),
+- and last but not least, all of [our contributors](https://github.com/TranslucentTB/TranslucentTB/graphs/contributors)!
 
 Thanks to [@dAKirby309](https://github.com/dAKirby309) for making the icon! You can find more of his stuff on [his DeviantArt profile](https://dakirby309.deviantart.com/).
 
 The color picker used comes from [this great CodeProject article](https://www.codeproject.com/Articles/9207/An-HSV-RGBA-colour-picker).
-We've modernized it a bit, with things such as (glorious) per-monitor high DPI awareness, faster (and hardware-accelerated) drawing as well as allowing to input any valid HTML color code or [name](https://www.w3schools.com/colors/colors_names.asp).
+We've modernized it a bit, with per-monitor high DPI awareness, faster (and hardware-accelerated) drawing as well as allowing to input any valid HTML color code or [name](https://www.w3schools.com/colors/colors_names.asp).
 
 The picture we used for the installer screenshot is by [Michael D Beckwith](https://unsplash.com/photos/M-nHIqkO4-o) from [Unsplash](https://unsplash.com/).
 
@@ -125,3 +165,6 @@ TranslucentTB also allows for more customizability over the taskbar with feature
 ### License
 
 This program is free (as in speech) software under the GPLv3. Please see the [LICENSE.md](LICENSE.md) file for more.
+
+[Discord]: https://discord.gg/w95DGTK
+[Gitter]: https://gitter.im/TranslucentTB/Lobby
