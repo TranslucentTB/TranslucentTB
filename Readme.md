@@ -15,10 +15,10 @@ You can see examples of the customizations you can make in the images below:
 ## Features
 
 - Advanced **color picker** supporting alpha and live preview to change the taskbar's color.
-- **Taskbar states** (choose one):
+- **Taskbar states** (choose one - color can be customized on every state except Normal):
   - **Blur**: Will make the taskbar slightly blurred.
   - **Clear**: Transparent taskbar.
-  - **Normal**: Regular Windows style. (as if TranslucentTB was closed)
+  - **Normal**: Regular Windows style. (as if TranslucentTB was not running)
   - **Opaque**: No transparency.
   - **Fluent**: Windows 10 April 2018 update and up only. Will give the taskbar an appearance similar to Microsoft's Fluent Design guidelines.
 - **Dynamic** modes (these can be used together and each of them provides a taskbar state and color you can customize):
@@ -28,7 +28,7 @@ You can see examples of the customizations you can make in the images below:
   - **Dynamic Timeline/Task View**: Will change the taskbar apperance when the Timeline (or Task View on older builds) is open.
 - Ability to **show or hide the Aero Peek** button. Can be customized **at will** or **dynamic**.
 
-You can see it in action [here](https://gfycat.com/EverlastingCreamyIlladopsis) (Thanks [@Gunny123](https://github.com/Gunny123)!).
+You can see it in action [here](https://gfycat.com/TidyFelineCrownofthornsstarfish) (short) and [here](https://gfycat.com/ConsciousCriminalDassie) (longer).
 
 ## Download
 
