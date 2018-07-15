@@ -251,15 +251,16 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		const SColourF old = picker_data->picker->GetOldColour();
 
 		HRESULT hr;
-		PAINTSTRUCT ps;
-		BeginPaint(hDlg, &ps);
 
 		for (const auto &context_pair : picker_data->contexts)
 		{
+			const HWND item_handle = GetDlgItem(hDlg, context_pair.second);
+			const PaintContext pc(item_handle);
+
 			hr = context_pair.first->Draw(hDlg, color, old);
 			if (hr == D2DERR_RECREATE_TARGET)
 			{
-				hr = context_pair.first->Refresh(GetDlgItem(hDlg, context_pair.second));
+				hr = context_pair.first->Refresh(item_handle);
 				if (FAILED(hr))
 				{
 					EndDialog(hDlg, hr);
@@ -279,8 +280,6 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				return 0;
 			}
 		}
-
-		EndPaint(hDlg, &ps);
 
 		break;
 	}

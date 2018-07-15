@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <unordered_map>
 #include <windef.h>
+#include <WinUser.h>
 
 #include "ccolourpicker.hpp"
 #include "scolour.hpp"
@@ -25,6 +26,26 @@ private:
 		const uint8_t firstDigit = byte & 0xF;
 		return (firstDigit << 4) + firstDigit;
 	}
+
+	class PaintContext {
+	private:
+		HWND m_handle;
+		PAINTSTRUCT m_ps;
+
+	public:
+		inline PaintContext(HWND hWnd) : m_handle(hWnd)
+		{
+			BeginPaint(m_handle, &m_ps);
+		}
+
+		inline ~PaintContext()
+		{
+			EndPaint(m_handle, &m_ps);
+		}
+
+		inline PaintContext(const PaintContext &) = delete;
+		inline PaintContext &operator =(const PaintContext &) = delete;
+	};
 
 public:
 	static HRESULT CreateGUI(CColourPicker *picker, uint32_t &value, HWND hParent);
