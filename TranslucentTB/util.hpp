@@ -11,18 +11,16 @@ class Util {
 
 public:
 	// Converts a string to its lowercase variant
-	inline static std::wstring ToLower(const std::wstring &data)
-	{
-		std::wstring lower;
-		lower.resize(data.length());
-		std::transform(data.begin(), data.end(), lower.begin(), std::towlower);
-		return lower;
-	}
-
-	// Converts a string to its lowercase variant
 	inline static void ToLowerInplace(std::wstring &data)
 	{
 		std::transform(data.begin(), data.end(), data.begin(), std::towlower);
+	}
+
+	// Converts a string to its lowercase variant
+	inline static std::wstring ToLower(std::wstring data)
+	{
+		ToLowerInplace(data);
+		return data;
 	}
 
 	template<size_t s>

@@ -50,7 +50,7 @@ public:
 	template<class T>
 	inline void BindEnum(T &value, const std::unordered_map<T, unsigned int> &map)
 	{
-		static_assert(std::is_enum<T>::value, "T is not an enum.");
+		static_assert(std::is_enum_v<T>, "T is not an enum.");
 		for (const auto &button_pair : map)
 		{
 			RegisterContextMenuCallback(button_pair.second, std::bind(&Util::UpdateValue<T>, std::ref(value), button_pair.first));

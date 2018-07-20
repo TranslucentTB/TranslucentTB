@@ -63,9 +63,13 @@ public:
 	{
 		return ShowWindow(m_WindowHandle, state);
 	}
-	bool visible() const
+	inline bool visible() const
 	{
 		return IsWindowVisible(m_WindowHandle);
+	}
+	inline bool valid() const
+	{
+		return IsWindow(m_WindowHandle);
 	}
 	WINDOWPLACEMENT placement() const;
 	inline HMONITOR monitor() const

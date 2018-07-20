@@ -2,6 +2,7 @@
 #include "arch.h"
 #include <cstdint>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <windef.h>
 
@@ -10,7 +11,7 @@
 class user32 {
 
 private:
-	using pSetWindowCompositionAttribute = bool(WINAPI *)(HWND, swca::WINCOMPATTRDATA *);
+	using pSetWindowCompositionAttribute = std::add_pointer_t<BOOL WINAPI(HWND, swca::WINCOMPATTRDATA *)>;
 
 public:
 	static const pSetWindowCompositionAttribute SetWindowCompositionAttribute;

@@ -689,7 +689,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		EVENT_OBJECT_CREATE,
 		[](DWORD, const Window &window, ...)
 		{
-			if (IsWindow(window) && window.classname() == L"Shell_SecondaryTrayWnd")
+			if (window.valid() && window.classname() == L"Shell_SecondaryTrayWnd")
 			{
 				run.taskbars[window.monitor()] = { window, &Config::REGULAR_APPEARANCE };
 			}
