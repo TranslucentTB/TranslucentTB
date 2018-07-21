@@ -262,8 +262,7 @@ void RefreshHandles()
 	run.main_taskbar = Window::Find(L"Shell_TrayWnd");
 	run.taskbars[run.main_taskbar.monitor()] = { run.main_taskbar, &Config::REGULAR_APPEARANCE };
 
-	Window secondtaskbar;
-	while ((secondtaskbar = Window::Find(L"Shell_SecondaryTrayWnd", L"", Window::NullWindow, secondtaskbar)) != Window::NullWindow)
+	for (const Window secondtaskbar : Window::FindEnum(L"Shell_SecondaryTrayWnd"))
 	{
 		run.taskbars[secondtaskbar.monitor()] = { secondtaskbar, &Config::REGULAR_APPEARANCE };
 	}

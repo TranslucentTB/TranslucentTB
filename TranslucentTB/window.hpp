@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "findwindowiterator.hpp"
 #include "windowclass.hpp"
 
 class EventHook; // Forward declare to avoid circular deps
@@ -23,6 +24,29 @@ public:
 	static const Window NullWindow;
 	static const Window BroadcastWindow;
 	static const Window MessageOnlyWindow;
+
+	class FindEnum {
+	private:
+		const std::wstring m_class;
+		const std::wstring m_name;
+		const HWND m_parent;
+	public:
+		inline FindEnum(const std::wstring &className = L"", const std::wstring &windowName = L"", const Window &parent = Window::NullWindow) :
+			m_class(className),
+			m_name(windowName),
+			m_parent(parent)
+		{ }
+
+		inline FindWindowIterator begin()
+		{
+			return FindWindowIterator(m_class, m_name, m_parent);
+		}
+
+		inline const FindWindowIterator &end()
+		{
+			return FindWindowIterator::EndIterator;
+		}
+	};
 
 	inline static Window Find(const std::wstring &className = L"", const std::wstring &windowName = L"", const Window &parent = Window::NullWindow, const Window &childAfter = Window::NullWindow)
 	{
