@@ -1,6 +1,7 @@
 #pragma once
 #include "../TranslucentTB/arch.h"
 #include <cstdint>
+#include <tuple>
 #include <unordered_map>
 #include <windef.h>
 #include <WinUser.h>
@@ -12,7 +13,7 @@
 class GUI {
 private:
 	static const Util::string_map<const uint32_t> COLOR_MAP;
-	static const std::unordered_map<unsigned int, const std::pair<const unsigned int, const unsigned int>> SLIDER_MAP;
+	static const std::tuple<const unsigned int, const unsigned int, const unsigned int> SLIDERS[8];
 	static std::unordered_map<const uint32_t *, HWND> m_pickerMap;
 
 	static INT_PTR CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);

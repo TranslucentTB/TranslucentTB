@@ -34,9 +34,9 @@ long TrayContextMenu::TrayCallback(WPARAM, LPARAM lParam)
 		const auto &callbackVector = m_MenuCallbackMap[item];
 		if (callbackVector.size() > 0)
 		{
-			for (const auto &callbackPair : callbackVector)
+			for (const auto& [_, callback] : callbackVector)
 			{
-				callbackPair.second();
+				callback();
 			}
 		}
 	}
@@ -58,7 +58,7 @@ TrayContextMenu::TrayContextMenu(MessageWindow &window, wchar_t *iconResource, w
 TrayContextMenu::MENUCALLBACKCOOKIE TrayContextMenu::RegisterContextMenuCallback(unsigned int item, const callback_t &callback)
 {
 	unsigned short secret = Util::GetRandomNumber<unsigned short>();
-	m_MenuCallbackMap[item].push_back(std::make_pair(secret, callback));
+	m_MenuCallbackMap[item].push_back({ secret, callback });
 
 	return (static_cast<MENUCALLBACKCOOKIE>(secret) << 32) + item;
 }

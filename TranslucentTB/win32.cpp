@@ -43,16 +43,16 @@ DWORD win32::PickerThreadProc(LPVOID data)
 BOOL win32::EnumThreadWindowsProc(HWND hwnd, LPARAM lParam)
 {
 	Window wnd(hwnd);
-	auto &pair = *reinterpret_cast<std::pair<bool *, bool> *>(lParam);
+	auto& [needs_wait, failed] = *reinterpret_cast<std::pair<bool &, bool> *>(lParam);
 
-	if (!pair.second)
+	if (!failed)
 	{
 		if (wnd.title() == L"Color Picker")
 		{
 			// 1068 == IDB_CANCEL
 			wnd.send_message(WM_COMMAND, MAKEWPARAM(1068, BN_CLICKED));
 
-			*pair.first = true;
+			needs_wait = true;
 			return false;
 		}
 	}
@@ -62,7 +62,7 @@ BOOL win32::EnumThreadWindowsProc(HWND hwnd, LPARAM lParam)
 		{
 			wnd.send_message(WM_CLOSE);
 
-			*pair.first = true;
+			needs_wait = true;
 			return false;
 		}
 	}
@@ -302,14 +302,14 @@ void win32::ClosePickers()
 {
 	while (m_PickerThreads.size() != 0)
 	{
-		const auto &lpair = *m_PickerThreads.begin();
+		const auto& [tid, failed] = *m_PickerThreads.begin();
 		bool needs_wait = false;
-		auto epair = std::make_pair(&needs_wait, lpair.second);
-		EnumThreadWindows(lpair.first, EnumThreadWindowsProc, reinterpret_cast<LPARAM>(&epair));
+		std::pair<bool &, bool> epair(needs_wait, failed);
+		EnumThreadWindows(tid, EnumThreadWindowsProc, reinterpret_cast<LPARAM>(&epair));
 
 		if (needs_wait)
 		{
-			const HANDLE thread = OpenThread(SYNCHRONIZE, FALSE, lpair.first);
+			const HANDLE thread = OpenThread(SYNCHRONIZE, FALSE, tid);
 			if (thread)
 			{
 				WaitForSingleObject(thread, INFINITE);

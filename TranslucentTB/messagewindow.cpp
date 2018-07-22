@@ -10,9 +10,9 @@ LRESULT MessageWindow::WindowProcedure(const Window &window, unsigned int uMsg, 
 	if (callbackVector.size() > 0)
 	{
 		long result = 0;
-		for (const auto &callbackPair : callbackVector)
+		for (const auto& [_, callback] : callbackVector)
 		{
-			result = (std::max)(callbackPair.second(wParam, lParam), result);
+			result = (std::max)(callback(wParam, lParam), result);
 		}
 		return result;
 	}
@@ -40,7 +40,7 @@ MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &
 MessageWindow::CALLBACKCOOKIE MessageWindow::RegisterCallback(unsigned int message, const callback_t &callback)
 {
 	unsigned short secret = Util::GetRandomNumber<unsigned short>();
-	m_CallbackMap[message].push_back(std::make_pair(secret, callback));
+	m_CallbackMap[message].push_back({ secret, callback });
 
 	return (static_cast<CALLBACKCOOKIE>(secret) << 32) + message;
 }

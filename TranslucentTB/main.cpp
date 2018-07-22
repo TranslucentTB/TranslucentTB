@@ -430,9 +430,9 @@ void SetTaskbarBlur()
 						// We can change this if we feel that CPU is more important than response time.
 		run.should_show_peek = (Config::PEEK == Config::PEEK::Enabled);
 
-		for (auto &taskbar : run.taskbars)
+		for (auto& [_, pair] : run.taskbars)
 		{
-			taskbar.second.second = &Config::REGULAR_APPEARANCE; // Reset taskbar state
+			pair.second = &Config::REGULAR_APPEARANCE; // Reset taskbar state
 		}
 		if (Config::MAXIMISED_ENABLED || Config::PEEK == Config::PEEK::Dynamic)
 		{
@@ -460,9 +460,9 @@ void SetTaskbarBlur()
 		// Task view and Timeline show over Aero Peek, but not Start or Cortana
 		if (Config::MAXIMISED_ENABLED && Config::MAXIMISED_REGULAR_ON_PEEK && run.peek_active)
 		{
-			for (auto &taskbar : run.taskbars)
+			for (auto& [_, pair] : run.taskbars)
 			{
-				taskbar.second.second = &Config::REGULAR_APPEARANCE;
+				pair.second = &Config::REGULAR_APPEARANCE;
 			}
 		}
 
@@ -473,9 +473,9 @@ void SetTaskbarBlur()
 				? (fg_window.classname() == CORE_WINDOW && Util::IgnoreCaseStringEquals(fg_window.filename(), L"Explorer.exe"))
 				: (fg_window.classname() == L"MultitaskingViewFrame")))
 			{
-				for (auto &taskbar : run.taskbars)
+				for (auto& [_, pair] : run.taskbars)
 				{
-					taskbar.second.second = &Config::TIMELINE_APPEARANCE;
+					pair.second = &Config::TIMELINE_APPEARANCE;
 				}
 			}
 		}
@@ -487,10 +487,10 @@ void SetTaskbarBlur()
 		counter++;
 	}
 
-	for (const auto &taskbar : run.taskbars)
+	for (const auto& [_, pair] : run.taskbars)
 	{
-		const Config::TASKBAR_APPEARANCE &appearance = *taskbar.second.second;
-		SetWindowBlur(taskbar.second.first, appearance.ACCENT, appearance.COLOR);
+		const Config::TASKBAR_APPEARANCE &appearance = *pair.second;
+		SetWindowBlur(pair.first, appearance.ACCENT, appearance.COLOR);
 	}
 }
 
@@ -552,35 +552,35 @@ void InitializeTray(const HINSTANCE &hInstance)
 		tray.BindBool(IDM_MAXIMISED_PEEK, Config::MAXIMISED_REGULAR_ON_PEEK, TrayContextMenu::Toggle);
 		tray.BindColor(IDM_MAXIMISED_COLOR, Config::MAXIMISED_APPEARANCE.COLOR);
 		tray.BindEnum(Config::MAXIMISED_APPEARANCE.ACCENT, MAXIMISED_BUTTON_MAP);
-		for (const auto &button_pair : MAXIMISED_BUTTON_MAP)
+		for (const auto& [_, id] : MAXIMISED_BUTTON_MAP)
 		{
-			tray.BindBool(button_pair.second, Config::MAXIMISED_ENABLED, TrayContextMenu::ControlsEnabled);
+			tray.BindBool(id, Config::MAXIMISED_ENABLED, TrayContextMenu::ControlsEnabled);
 		}
 
 
 		tray.BindBool(IDM_START, Config::START_ENABLED, TrayContextMenu::Toggle);
 		tray.BindColor(IDM_START_COLOR, Config::START_APPEARANCE.COLOR);
 		tray.BindEnum(Config::START_APPEARANCE.ACCENT, START_BUTTON_MAP);
-		for (const auto &button_pair : START_BUTTON_MAP)
+		for (const auto& [_, id] : START_BUTTON_MAP)
 		{
-			tray.BindBool(button_pair.second, Config::START_ENABLED, TrayContextMenu::ControlsEnabled);
+			tray.BindBool(id, Config::START_ENABLED, TrayContextMenu::ControlsEnabled);
 		}
 
 		tray.BindBool(IDM_CORTANA, Config::CORTANA_ENABLED, TrayContextMenu::Toggle);
 		tray.BindColor(IDM_CORTANA_COLOR, Config::CORTANA_APPEARANCE.COLOR);
 		tray.BindEnum(Config::CORTANA_APPEARANCE.ACCENT, CORTANA_BUTTON_MAP);
-		for (const auto &button_pair : CORTANA_BUTTON_MAP)
+		for (const auto& [_, id] : CORTANA_BUTTON_MAP)
 		{
-			tray.BindBool(button_pair.second, Config::CORTANA_ENABLED, TrayContextMenu::ControlsEnabled);
+			tray.BindBool(id, Config::CORTANA_ENABLED, TrayContextMenu::ControlsEnabled);
 		}
 
 
 		tray.BindBool(IDM_TIMELINE, Config::TIMELINE_ENABLED, TrayContextMenu::Toggle);
 		tray.BindColor(IDM_TIMELINE_COLOR, Config::TIMELINE_APPEARANCE.COLOR);
 		tray.BindEnum(Config::TIMELINE_APPEARANCE.ACCENT, TIMELINE_BUTTON_MAP);
-		for (const auto &button_pair : TIMELINE_BUTTON_MAP)
+		for (const auto& [_, id] : TIMELINE_BUTTON_MAP)
 		{
-			tray.BindBool(button_pair.second, Config::TIMELINE_ENABLED, TrayContextMenu::ControlsEnabled);
+			tray.BindBool(id, Config::TIMELINE_ENABLED, TrayContextMenu::ControlsEnabled);
 		}
 
 

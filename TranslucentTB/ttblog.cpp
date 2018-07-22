@@ -34,7 +34,7 @@ inline std::pair<HRESULT, std::wstring> Log::InitStream()
 	int size = GetTempPath(LONG_PATH, temp.data());
 	if (!size)
 	{
-		return std::make_pair(HRESULT_FROM_WIN32(GetLastError()), L"Failed to determine temporary folder location!");
+		return { HRESULT_FROM_WIN32(GetLastError()), L"Failed to determine temporary folder location!" };
 	}
 	temp.resize(size);
 
@@ -42,7 +42,7 @@ inline std::pair<HRESULT, std::wstring> Log::InitStream()
 	hr = PathAllocCombine(temp.c_str(), NAME, PATHCCH_ALLOW_LONG_PATHS, &log_folder);
 	if (FAILED(hr))
 	{
-		return std::make_pair(hr, L"Failed to combine temporary folder location and app name!");
+		return { hr, L"Failed to combine temporary folder location and app name!" };
 	}
 #else
 	try
@@ -55,7 +55,7 @@ inline std::pair<HRESULT, std::wstring> Log::InitStream()
 	{
 		if (!CreateDirectory(log_folder, NULL))
 		{
-			return std::make_pair(HRESULT_FROM_WIN32(GetLastError()), L"Creating log files directory failed!");
+			return { HRESULT_FROM_WIN32(GetLastError()), L"Creating log files directory failed!" };
 		}
 	}
 
@@ -95,13 +95,13 @@ inline std::pair<HRESULT, std::wstring> Log::InitStream()
 	hr = PathAllocCombine(log_folder, log_filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_file);
 	if (FAILED(hr))
 	{
-		return std::make_pair(hr, L"Failed to combine log folder location and log file name!");
+		return { hr, L"Failed to combine log folder location and log file name!" };
 	}
 
 	HANDLE file = CreateFile(log_file, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 	if (file == INVALID_HANDLE_VALUE)
 	{
-		return std::make_pair(HRESULT_FROM_WIN32(GetLastError()), L"Failed to create and open log file!");
+		return { HRESULT_FROM_WIN32(GetLastError()), L"Failed to create and open log file!" };
 	}
 
 	DWORD bytesWritten;
@@ -112,13 +112,13 @@ inline std::pair<HRESULT, std::wstring> Log::InitStream()
 
 	m_File = log_file;
 	m_FileHandle.reset(new File(file));
-	return std::make_pair(S_OK, L"");
+	return { S_OK, L"" };
 
 #ifdef STORE
 	}
 	catch (const winrt::hresult_error &error)
 	{
-		return std::make_pair(error.code(), L"Failed to determine temporary folder location!");
+		return { error.code(), L"Failed to determine temporary folder location!" };
 	}
 #endif
 }
@@ -132,14 +132,12 @@ void Log::OutputMessage(const std::wstring &message)
 {
 	if (!m_FileHandle)
 	{
-		auto result = InitStream();
-		if (FAILED(result.first))
+		auto [hr, message] = InitStream();
+		if (FAILED(hr))
 		{
 			m_FileHandle.reset(new File);
-
-			std::wstring error_message = result.second;
-			std::wstring boxbuffer = error_message +
-				L" Logs will not be available during this session.\n\n" + Error::ExceptionFromHRESULT(result.first);
+			std::wstring boxbuffer = message +
+				L" Logs will not be available during this session.\n\n" + Error::ExceptionFromHRESULT(hr);
 
 			MessageBox(NULL, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 		}

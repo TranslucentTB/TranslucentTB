@@ -51,9 +51,9 @@ public:
 	inline void BindEnum(T &value, const std::unordered_map<T, unsigned int> &map)
 	{
 		static_assert(std::is_enum_v<T>, "T is not an enum.");
-		for (const auto &button_pair : map)
+		for (const auto& [item_value, item] : map)
 		{
-			RegisterContextMenuCallback(button_pair.second, std::bind(&Util::UpdateValue<T>, std::ref(value), button_pair.first));
+			RegisterContextMenuCallback(item, std::bind(&Util::UpdateValue<T>, std::ref(value), item_value));
 		}
 
 		auto minmax = std::minmax_element(map.begin(), map.end(), Util::map_value_compare<T, unsigned int>());

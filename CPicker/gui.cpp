@@ -165,15 +165,15 @@ const Util::string_map<const uint32_t> GUI::COLOR_MAP = {
 	{ L"yellowgreen",			0x9acd32 }
 };
 
-const std::unordered_map<unsigned int, const std::pair<const unsigned int, const unsigned int>> GUI::SLIDER_MAP = {
-	{ IDC_RED,        { IDC_RSLIDER,   255 } },
-	{ IDC_GREEN,      { IDC_GSLIDER,   255 } },
-	{ IDC_BLUE,       { IDC_BSLIDER,   255 } },
-	{ IDC_ALPHA,      { IDC_ASLIDER,   255 } },
-	{ IDC_HUE,        { IDC_HSLIDER,   359 } },
-	{ IDC_SATURATION, { IDC_SSLIDER,   100 } },
-	{ IDC_VALUE,      { IDC_VSLIDER,   100 } },
-	{ IDC_HEXCOL,     { IDC_HEXSLIDER, 0xFFFFFFFF } }
+const std::tuple<const unsigned int, const unsigned int, const unsigned int> GUI::SLIDERS[] = {
+	{ IDC_RED,        IDC_RSLIDER,   255 },
+	{ IDC_GREEN,      IDC_GSLIDER,   255 },
+	{ IDC_BLUE,       IDC_BSLIDER,   255 },
+	{ IDC_ALPHA,      IDC_ASLIDER,   255 },
+	{ IDC_HUE,        IDC_HSLIDER,   359 },
+	{ IDC_SATURATION, IDC_SSLIDER,   100 },
+	{ IDC_VALUE,      IDC_VSLIDER,   100 },
+	{ IDC_HEXCOL,     IDC_HEXSLIDER, 0xFFFFFFFF }
 };
 
 std::unordered_map<const uint32_t *, HWND> GUI::m_pickerMap;
@@ -195,10 +195,10 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 		m_pickerMap[picker_data->value_ptr] = hDlg;
 
-		for (const auto &slider_combo : SLIDER_MAP)
+		for (const auto& [buddy_id, slider_id, slider_max] : SLIDERS)
 		{
-			SendDlgItemMessage(hDlg, slider_combo.second.first, UDM_SETBUDDY, (WPARAM)GetDlgItem(hDlg, slider_combo.first), 0);
-			SendDlgItemMessage(hDlg, slider_combo.second.first, UDM_SETRANGE32, 0, slider_combo.second.second);
+			SendDlgItemMessage(hDlg, slider_id, UDM_SETBUDDY, (WPARAM)GetDlgItem(hDlg, buddy_id), 0);
+			SendDlgItemMessage(hDlg, slider_id, UDM_SETRANGE32, 0, slider_max);
 		}
 		SendDlgItemMessage(hDlg, IDC_HEXSLIDER, UDM_SETBASE, 16, 0);
 		SendDlgItemMessage(hDlg, IDC_HEXCOL, EM_SETLIMITTEXT, 20, 0);
@@ -231,9 +231,9 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	case WM_DPICHANGED:
 	{
 		HRESULT hr;
-		for (const auto &context_pair : picker_data->contexts)
+		for (const auto& [context, item_id] : picker_data->contexts)
 		{
-			hr = context_pair.first->Refresh(GetDlgItem(hDlg, context_pair.second));
+			hr = context->Refresh(GetDlgItem(hDlg, item_id));
 			if (FAILED(hr))
 			{
 				EndDialog(hDlg, hr);
@@ -252,22 +252,22 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 		HRESULT hr;
 
-		for (const auto &context_pair : picker_data->contexts)
+		for (const auto& [context, item_id] : picker_data->contexts)
 		{
-			const HWND item_handle = GetDlgItem(hDlg, context_pair.second);
+			const HWND item_handle = GetDlgItem(hDlg, item_id);
 			const PaintContext pc(item_handle);
 
-			hr = context_pair.first->Draw(hDlg, color, old);
+			hr = context->Draw(hDlg, color, old);
 			if (hr == D2DERR_RECREATE_TARGET)
 			{
-				hr = context_pair.first->Refresh(item_handle);
+				hr = context->Refresh(item_handle);
 				if (FAILED(hr))
 				{
 					EndDialog(hDlg, hr);
 					return 0;
 				}
 
-				hr = context_pair.first->Draw(hDlg, color, old);
+				hr = context->Draw(hDlg, color, old);
 				if (FAILED(hr))
 				{
 					EndDialog(hDlg, hr);
@@ -423,21 +423,21 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			}
 
 			picker_data->changing_text = true;
-			for (const auto &slider_combo : SLIDER_MAP)
+			for (const auto& [buddy_id, slider_id, _] : SLIDERS)
 			{
-				if (slider_combo.first == IDC_HEXCOL)
+				if (buddy_id == IDC_HEXCOL)
 				{
 					const SColour &col = picker_data->picker->GetCurrentColour();
 
 					wchar_t buff[11];
 					_snwprintf_s(buff, 10, L"0x%02X%02X%02X%02X", col.r, col.g, col.b, col.a);
 
-					SetDlgItemText(hDlg, slider_combo.first, buff);
+					SetDlgItemText(hDlg, buddy_id, buff);
 				}
 				else
 				{
 					BOOL result;
-					SetDlgItemInt(hDlg, slider_combo.first, SendDlgItemMessage(hDlg, slider_combo.second.first, UDM_GETPOS, 0, (LPARAM)&result), false);
+					SetDlgItemInt(hDlg, buddy_id, SendDlgItemMessage(hDlg, slider_id, UDM_GETPOS, 0, (LPARAM)&result), false);
 				}
 			}
 			picker_data->changing_text = false;
