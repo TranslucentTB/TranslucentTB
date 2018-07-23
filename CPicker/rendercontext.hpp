@@ -16,7 +16,7 @@ protected:
 private:
 	static HRESULT CreateDevice(const D3D_DRIVER_TYPE &type, ID3D11Device **device, ID3D11DeviceContext **context);
 
-	ID2D1Factory3 *m_factory;
+	ID2D1Factory3 *const m_factory;
 	ComPtr<IDXGISwapChain1> m_swapChain;
 	ComPtr<ID3D11DeviceContext> m_d3dc;
 
@@ -25,14 +25,14 @@ protected:
 	ComPtr<ID2D1SolidColorBrush> m_brush;
 	D2D1_SIZE_F m_size;
 
-	HRESULT CreateGradient(ID2D1LinearGradientBrush **brush, const D2D1_COLOR_F &top, const D2D1_COLOR_F &bottom);
+	HRESULT CreateGradient(ID2D1LinearGradientBrush **const brush, const D2D1_COLOR_F &top, const D2D1_COLOR_F &bottom);
 
 	class DrawContext {
 	private:
 		bool m_needsEnd;
 		ID2D1RenderTarget *m_target;
 		IDXGISwapChain *m_swapChain;
-		inline DrawContext(ID2D1RenderTarget *target, IDXGISwapChain *swapChain) : m_needsEnd(true), m_target(target), m_swapChain(swapChain)
+		inline DrawContext(ID2D1RenderTarget *const target, IDXGISwapChain *const swapChain) : m_needsEnd(true), m_target(target), m_swapChain(swapChain)
 		{
 			m_target->BeginDraw();
 		}
@@ -100,7 +100,7 @@ public:
 	virtual HRESULT Refresh(HWND hwnd);
 	virtual HRESULT Draw(const HWND hDlg, const SColourF &col, const SColourF &old) = 0;
 
-	inline RenderContext(ID2D1Factory3 *factory) : m_factory(factory) { }
+	inline RenderContext(ID2D1Factory3 *const factory) : m_factory(factory) { }
 
 	inline RenderContext(const RenderContext &) = delete;
 	inline RenderContext &operator =(const RenderContext &) = delete;

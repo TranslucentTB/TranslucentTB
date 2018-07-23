@@ -91,7 +91,7 @@
     <ClInclude Include="huegradient.hpp" />
     <ClInclude Include="ccolourpicker.hpp" />
     <ClInclude Include="mainpickercontext.hpp" />
-    <ClInclude Include="pickerdata.hpp" />
+    <ClInclude Include="paintcontext.hpp" />
     <ClInclude Include="rendercontext.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="scolour.hpp" />

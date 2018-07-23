@@ -71,9 +71,6 @@
     <ClInclude Include="scolour.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pickerdata.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ccolourpicker.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -81,6 +78,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="gui.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="paintcontext.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

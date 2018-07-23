@@ -2,17 +2,9 @@
 #include <algorithm>
 #include <stdio.h>
 #include <string>
-#include <WinUser.h>
-#include <CommCtrl.h>
 
-#include "alphaslidercontext.hpp"
-#include "colorslidercontext.hpp"
-#include "colorpreviewcontext.hpp"
-#include "ccolourpicker.hpp"
 #include "dlldata.hpp"
-#include "mainpickercontext.hpp"
-#include "pickerdata.hpp"
-#include "resource.h"
+#include "paintcontext.hpp"
 
 const Util::string_map<const uint32_t> GUI::COLOR_MAP = {
 	{ L"aliceblue",				0xf0f8ff },
@@ -180,8 +172,8 @@ std::unordered_map<const uint32_t *, HWND> GUI::m_pickerMap;
 
 INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	PickerData *picker_data = reinterpret_cast<PickerData *>(GetWindowLongPtr(hDlg, DWLP_USER));
-	if (!picker_data && uMsg != WM_INITDIALOG)
+	GUI *const gui_data = reinterpret_cast<GUI *>(GetWindowLongPtr(hDlg, DWLP_USER));
+	if (!gui_data && uMsg != WM_INITDIALOG)
 	{
 		return 0;
 	}
@@ -190,10 +182,10 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	{
 	case WM_INITDIALOG:
 	{
-		SetWindowLongPtr(hDlg, DWLP_USER, lParam);
-		picker_data = reinterpret_cast<PickerData *>(lParam);
+		initdialog_pair_t *const init_pair = reinterpret_cast<initdialog_pair_t *>(lParam);
+		SetWindowLongPtr(hDlg, DWLP_USER, reinterpret_cast<LONG_PTR>(init_pair->first));
 
-		m_pickerMap[picker_data->value_ptr] = hDlg;
+		m_pickerMap[init_pair->second] = hDlg;
 
 		for (const auto& [buddy_id, slider_id, slider_max] : SLIDERS)
 		{
@@ -209,11 +201,11 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			SetWindowSubclass(GetDlgItem(hDlg, button), NoOutlineButtonSubclass, button, NULL);
 		}
 
-		UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
+		init_pair->first->UpdateValues(hDlg);
 
 		SendDlgItemMessage(hDlg, IDC_R, BM_SETCHECK, BST_CHECKED, 0);
 
-		picker_data->old_color_tip = CreateWindow(TOOLTIPS_CLASS, NULL, TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, DllData::GetInstanceHandle(), NULL);
+		init_pair->first->m_oldColorTip = CreateWindow(TOOLTIPS_CLASS, NULL, TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, DllData::GetInstanceHandle(), NULL);
 
 		TOOLINFO ti = {
 			sizeof(ti),
@@ -222,18 +214,18 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			(UINT_PTR)GetDlgItem(hDlg, IDC_OLDCOLOR),
 		};
 		ti.lpszText = LPSTR_TEXTCALLBACK;
-		SendMessage(picker_data->old_color_tip, TTM_ADDTOOL, 0, (LPARAM)&ti);
-		SendMessage(picker_data->old_color_tip, TTM_ACTIVATE, TRUE, 0);
+		SendMessage(init_pair->first->m_oldColorTip, TTM_ADDTOOL, 0, (LPARAM)&ti);
+		SendMessage(init_pair->first->m_oldColorTip, TTM_ACTIVATE, TRUE, 0);
 
-		[[fallthrough]];
+		return SendMessage(hDlg, WM_DPICHANGED, NULL, NULL);
 	}
 
 	case WM_DPICHANGED:
 	{
 		HRESULT hr;
-		for (const auto& [context, item_id] : picker_data->contexts)
+		for (auto& [context, item_id] : gui_data->m_contextPairs)
 		{
-			hr = context->Refresh(GetDlgItem(hDlg, item_id));
+			hr = context.Refresh(GetDlgItem(hDlg, item_id));
 			if (FAILED(hr))
 			{
 				EndDialog(hDlg, hr);
@@ -247,27 +239,27 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	}
 	case WM_PAINT:
 	{
-		const SColourF color = picker_data->picker->GetCurrentColour();
-		const SColourF old = picker_data->picker->GetOldColour();
+		const SColourF color = gui_data->m_picker->GetCurrentColour();
+		const SColourF old = gui_data->m_picker->GetOldColour();
 
 		HRESULT hr;
 
-		for (const auto& [context, item_id] : picker_data->contexts)
+		for (auto& [context, item_id] : gui_data->m_contextPairs)
 		{
 			const HWND item_handle = GetDlgItem(hDlg, item_id);
 			const PaintContext pc(item_handle);
 
-			hr = context->Draw(hDlg, color, old);
+			hr = context.Draw(hDlg, color, old);
 			if (hr == D2DERR_RECREATE_TARGET)
 			{
-				hr = context->Refresh(item_handle);
+				hr = context.Refresh(item_handle);
 				if (FAILED(hr))
 				{
 					EndDialog(hDlg, hr);
 					return 0;
 				}
 
-				hr = context->Draw(hDlg, color, old);
+				hr = context.Draw(hDlg, color, old);
 				if (FAILED(hr))
 				{
 					EndDialog(hDlg, hr);
@@ -320,32 +312,32 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(red, fx, fy);
+				gui_data->m_picker->SetRGB(red, fx, fy);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(fx, green, fy);
+				gui_data->m_picker->SetRGB(fx, green, fy);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(fy, fx, blue);
+				gui_data->m_picker->SetRGB(fy, fx, blue);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
 			{
-				picker_data->picker->SetHSV(hue, fx / 255.0f * 100.0f, (255 - fy) / 255.0f * 100.0f);
+				gui_data->m_picker->SetHSV(hue, fx / 255.0f * 100.0f, (255 - fy) / 255.0f * 100.0f);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
 			{
-				picker_data->picker->SetHSV(fx / 255.0f * 359.0f, saturation, (255 - fy) / 255.0f * 100.0f);
+				gui_data->m_picker->SetHSV(fx / 255.0f * 359.0f, saturation, (255 - fy) / 255.0f * 100.0f);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
 			{
-				picker_data->picker->SetHSV(fx / 255.0f * 359.0f, (255 - fy) / 255.0f * 100.0f, value);
+				gui_data->m_picker->SetHSV(fx / 255.0f * 359.0f, (255 - fy) / 255.0f * 100.0f, value);
 			}
 		}
 		// IDC_COLOR2 picked
@@ -355,32 +347,32 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(255 - fy, green, blue);
+				gui_data->m_picker->SetRGB(255 - fy, green, blue);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(red, 255 - fy, blue);
+				gui_data->m_picker->SetRGB(red, 255 - fy, blue);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 			{
-				picker_data->picker->SetRGB(red, green, 255 - fy);
+				gui_data->m_picker->SetRGB(red, green, 255 - fy);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
 			{
-				picker_data->picker->SetHSV((255 - fy) / 255.0f * 359.0f, saturation, value);
+				gui_data->m_picker->SetHSV((255 - fy) / 255.0f * 359.0f, saturation, value);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
 			{
-				picker_data->picker->SetHSV(hue, (255 - fy) / 255.0f * 100.0f, value);
+				gui_data->m_picker->SetHSV(hue, (255 - fy) / 255.0f * 100.0f, value);
 			}
 
 			else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
 			{
-				picker_data->picker->SetHSV(hue, saturation, (255 - fy) / 255.0f * 100.0f);
+				gui_data->m_picker->SetHSV(hue, saturation, (255 - fy) / 255.0f * 100.0f);
 			}
 		}
 		// IDC_ALPHASLIDE picked
@@ -388,10 +380,10 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		{
 			const float fy = ((p.y - rectA.top) / (float)(rectA.bottom - rectA.top)) * 255.0f;
 
-			picker_data->picker->SetAlpha(255 - fy);
+			gui_data->m_picker->SetAlpha(255 - fy);
 		}
 
-		UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
+		gui_data->UpdateValues(hDlg);
 		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 		break;
 	}
@@ -416,18 +408,18 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		{
 			if (LOWORD(wParam) == IDC_HEXCOL)
 			{
-				ParseHex(hDlg, picker_data->picker);
+				gui_data->ParseHex(hDlg);
 
-				UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
+				gui_data->UpdateValues(hDlg);
 				RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 			}
 
-			picker_data->changing_text = true;
+			gui_data->m_changingText = true;
 			for (const auto& [buddy_id, slider_id, _] : SLIDERS)
 			{
 				if (buddy_id == IDC_HEXCOL)
 				{
-					const SColour &col = picker_data->picker->GetCurrentColour();
+					const SColour &col = gui_data->m_picker->GetCurrentColour();
 
 					wchar_t buff[11];
 					_snwprintf_s(buff, 10, L"0x%02X%02X%02X%02X", col.r, col.g, col.b, col.a);
@@ -440,13 +432,13 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 					SetDlgItemInt(hDlg, buddy_id, SendDlgItemMessage(hDlg, slider_id, UDM_GETPOS, 0, (LPARAM)&result), false);
 				}
 			}
-			picker_data->changing_text = false;
+			gui_data->m_changingText = false;
 			break;
 		}
 
 		case EN_CHANGE:
 		{
-			if (picker_data->changing_text)
+			if (gui_data->m_changingText)
 			{
 				break;
 			}
@@ -458,7 +450,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			case IDC_GREEN:
 			case IDC_BLUE:
 			{
-				picker_data->picker->SetRGB(SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, (LPARAM)&result), SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, (LPARAM)&result), SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, (LPARAM)&result));
+				gui_data->m_picker->SetRGB(SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, (LPARAM)&result), SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, (LPARAM)&result), SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, (LPARAM)&result));
 				break;
 			}
 
@@ -466,32 +458,32 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			case IDC_SATURATION:
 			case IDC_VALUE:
 			{
-				picker_data->picker->SetHSV(SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, (LPARAM)&result), SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, (LPARAM)&result), SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, (LPARAM)&result));
+				gui_data->m_picker->SetHSV(SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, (LPARAM)&result), SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, (LPARAM)&result), SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, (LPARAM)&result));
 				break;
 			}
 
 			case IDC_ALPHA:
 			{
-				picker_data->picker->SetAlpha(SendDlgItemMessage(hDlg, IDC_ASLIDER, UDM_GETPOS, 0, (LPARAM)&result));
+				gui_data->m_picker->SetAlpha(SendDlgItemMessage(hDlg, IDC_ASLIDER, UDM_GETPOS, 0, (LPARAM)&result));
 				break;
 			}
 
 			case IDC_HEXCOL:
 			{
-				if (!picker_data->changing_hex_via_spin)
+				if (!gui_data->m_changingHexViaSpin)
 				{
 					return 0;
 				}
 				else
 				{
-					ParseHex(hDlg, picker_data->picker);
-					picker_data->changing_hex_via_spin = false;
+					gui_data->ParseHex(hDlg);
+					gui_data->m_changingHexViaSpin = false;
 				}
 			}
 			}
 
 			// Update color
-			UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
+			gui_data->UpdateValues(hDlg);
 			RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 
 			break;
@@ -514,28 +506,28 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			case IDC_OLDCOLOR:
 			{
-				const SColour &old = picker_data->picker->GetOldColour();
+				const SColour &old = gui_data->m_picker->GetOldColour();
 
-				picker_data->picker->SetRGB(old.r, old.g, old.b);
-				picker_data->picker->SetAlpha(old.a);
-				UpdateValues(hDlg, picker_data->picker->GetCurrentColour(), picker_data->changing_text);
+				gui_data->m_picker->SetRGB(old.r, old.g, old.b);
+				gui_data->m_picker->SetAlpha(old.a);
+				gui_data->UpdateValues(hDlg);
 				RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 				break;
 			}
 
 			case IDB_OK:
 			{
-				picker_data->picker->UpdateOldColour();
+				gui_data->m_picker->UpdateOldColour();
 				EndDialog(hDlg, 0xfff);
 				break;
 			}
 
 			case IDB_CANCEL:
 			{
-				const SColour &old = picker_data->picker->GetOldColour();
+				const SColour &old = gui_data->m_picker->GetOldColour();
 
-				picker_data->picker->SetRGB(old.r, old.g, old.b);
-				picker_data->picker->SetAlpha(old.a);
+				gui_data->m_picker->SetRGB(old.r, old.g, old.b);
+				gui_data->m_picker->SetAlpha(old.a);
 				EndDialog(hDlg, 0xfff);
 				break;
 			}
@@ -555,7 +547,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		{
 			if (notify->idFrom == IDC_HEXSLIDER)
 			{
-				picker_data->changing_hex_via_spin = true;
+				gui_data->m_changingHexViaSpin = true;
 			}
 			break;
 		}
@@ -572,7 +564,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 	case WM_DESTROY:
 	{
-		DestroyWindow(picker_data->old_color_tip);
+		DestroyWindow(gui_data->m_oldColorTip);
 		break;
 	}
 	}
@@ -593,9 +585,27 @@ LRESULT CALLBACK GUI::NoOutlineButtonSubclass(HWND hWnd, UINT uMsg, WPARAM wPara
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
-void GUI::UpdateValues(HWND hDlg, const SColour &col, bool &changing_text)
+
+
+GUI::GUI(CColourPicker *picker, ID2D1Factory3 *factory) :
+	m_picker(picker),
+	m_pickerContext(factory),
+	m_colorSliderContext(factory),
+	m_alphaSliderContext(factory),
+	m_colorPreviewContext(factory),
+	m_contextPairs
+	{
+		{ m_pickerContext, IDC_COLOR },
+		{ m_colorSliderContext, IDC_COLOR2 },
+		{ m_alphaSliderContext, IDC_ALPHASLIDE },
+		{ m_colorPreviewContext, IDC_COLORS },
+	}
+{ }
+
+void GUI::UpdateValues(HWND hDlg)
 {
-	changing_text = true;
+	const SColour &col = m_picker->GetCurrentColour();
+	m_changingText = true;
 
 	SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_SETPOS, 0, col.r);
 	SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_SETPOS, 0, col.g);
@@ -606,24 +616,10 @@ void GUI::UpdateValues(HWND hDlg, const SColour &col, bool &changing_text)
 	SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_SETPOS, 0, col.v);
 	SendDlgItemMessage(hDlg, IDC_HEXSLIDER, UDM_SETPOS32, 0, (col.r << 24) + (col.g << 16) + (col.b << 8) + col.a);
 
-	changing_text = false;
+	m_changingText = false;
 }
 
-void GUI::FailedParse(HWND hDlg)
-{
-	EDITBALLOONTIP ebt = {
-		sizeof(ebt),
-		L"Error when parsing color code!",
-		L"Make sure the code is valid hexadecimal. (0x and # prefixes accepted)\n"
-		L"Code can be 3 (RGB), 4 (RGBA), 6 (RRGGBB) or 8 (RRGGBBAA) characters.\n\n"
-		L"HTML color names are also understood. (for example: yellow, white, blue)",
-		TTI_WARNING_LARGE
-	};
-
-	Edit_ShowBalloonTip(GetDlgItem(hDlg, IDC_HEXCOL), &ebt);
-}
-
-void GUI::ParseHex(HWND hDlg, CColourPicker *picker)
+void GUI::ParseHex(HWND hDlg)
 {
 	std::wstring text;
 	text.resize(21);
@@ -634,7 +630,7 @@ void GUI::ParseHex(HWND hDlg, CColourPicker *picker)
 	if (COLOR_MAP.count(text) != 0)
 	{
 		const uint32_t &color = COLOR_MAP.at(text);
-		picker->SetRGB((color & 0xFF0000) >> 16, (color & 0x00FF00) >> 8, color & 0x0000FF);
+		m_picker->SetRGB((color & 0xFF0000) >> 16, (color & 0x00FF00) >> 8, color & 0x0000FF);
 	}
 	else
 	{
@@ -653,21 +649,21 @@ void GUI::ParseHex(HWND hDlg, CColourPicker *picker)
 
 			if (text.length() == 8)
 			{
-				picker->SetRGB((tempcolor & 0xFF000000) >> 24, (tempcolor & 0x00FF0000) >> 16, (tempcolor & 0x0000FF00) >> 8);
-				picker->SetAlpha(tempcolor & 0x000000FF);
+				m_picker->SetRGB((tempcolor & 0xFF000000) >> 24, (tempcolor & 0x00FF0000) >> 16, (tempcolor & 0x0000FF00) >> 8);
+				m_picker->SetAlpha(tempcolor & 0x000000FF);
 			}
 			else if (text.length() == 4)
 			{
-				picker->SetRGB(ExpandOneLetterByte((tempcolor & 0xF000) >> 12), ExpandOneLetterByte((tempcolor & 0x0F00) >> 8), ExpandOneLetterByte((tempcolor & 0x00F0) >> 4));
-				picker->SetAlpha(ExpandOneLetterByte(tempcolor & 0x000F));
+				m_picker->SetRGB(ExpandOneLetterByte((tempcolor & 0xF000) >> 12), ExpandOneLetterByte((tempcolor & 0x0F00) >> 8), ExpandOneLetterByte((tempcolor & 0x00F0) >> 4));
+				m_picker->SetAlpha(ExpandOneLetterByte(tempcolor & 0x000F));
 			}
 			else if (text.length() == 6)
 			{
-				picker->SetRGB((tempcolor & 0xFF0000) >> 16, (tempcolor & 0x00FF00) >> 8, tempcolor & 0x0000FF);
+				m_picker->SetRGB((tempcolor & 0xFF0000) >> 16, (tempcolor & 0x00FF00) >> 8, tempcolor & 0x0000FF);
 			}
 			else if (text.length() == 3)
 			{
-				picker->SetRGB(ExpandOneLetterByte((tempcolor & 0xF00) >> 8), ExpandOneLetterByte((tempcolor & 0x0F0) >> 4), ExpandOneLetterByte(tempcolor & 0x00F));
+				m_picker->SetRGB(ExpandOneLetterByte((tempcolor & 0xF00) >> 8), ExpandOneLetterByte((tempcolor & 0x0F0) >> 4), ExpandOneLetterByte(tempcolor & 0x00F));
 			}
 			else
 			{
@@ -698,21 +694,9 @@ HRESULT GUI::CreateGUI(CColourPicker *picker, uint32_t &value, HWND hParent)
 			return hr;
 		}
 
-		MainPickerContext c1(factory);
-		ColorSliderContext c2(factory);
-		AlphaSliderContext a(factory);
-		ColorPreviewContext c(factory);
-		PickerData data = {
-			picker,
-			{
-				{ &c1, IDC_COLOR },
-				{ &c2, IDC_COLOR2 },
-				{ &a,  IDC_ALPHASLIDE },
-				{ &c,  IDC_COLORS }
-			},
-			&value
-		};
-		INT_PTR result = DialogBoxParam(DllData::GetInstanceHandle(), MAKEINTRESOURCE(IDD_COLORPICKER), hParent, ColourPickerDlgProc, reinterpret_cast<LPARAM>(&data));
+		GUI gui_inst(picker, factory);
+		initdialog_pair_t init_pair(&gui_inst, &value);
+		INT_PTR result = DialogBoxParam(DllData::GetInstanceHandle(), MAKEINTRESOURCE(IDD_COLORPICKER), hParent, ColourPickerDlgProc, reinterpret_cast<LPARAM>(&init_pair));
 		m_pickerMap.erase(&value);
 		factory->Release();
 		if (result == 0)
