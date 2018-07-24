@@ -389,7 +389,7 @@ void win32::HardenProcess()
 	}
 }
 
-std::wstring win32::CharToWchar(const char *str)
+std::wstring win32::CharToWchar(const char *const str)
 {
 	const size_t strLength = std::char_traits<char>::length(str);
 	std::wstring strW;

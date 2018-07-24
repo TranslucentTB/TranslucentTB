@@ -132,11 +132,11 @@ void Log::OutputMessage(const std::wstring &message)
 {
 	if (!m_FileHandle)
 	{
-		auto [hr, message] = InitStream();
+		auto [hr, err_message] = InitStream();
 		if (FAILED(hr))
 		{
 			m_FileHandle.reset(new File);
-			std::wstring boxbuffer = message +
+			std::wstring boxbuffer = err_message +
 				L" Logs will not be available during this session.\n\n" + Error::ExceptionFromHRESULT(hr);
 
 			MessageBox(NULL, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);

@@ -150,7 +150,7 @@ public:
 
 	// Changes a value. Use with std::bind and context menu callbacks (BindEnum preferred).
 	template<typename T>
-	inline static void UpdateValue(T &toupdate, T newvalue)
+	inline static void UpdateValue(T &toupdate, const T &newvalue)
 	{
 		toupdate = newvalue;
 	}

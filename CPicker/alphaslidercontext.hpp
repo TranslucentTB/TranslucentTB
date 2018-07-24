@@ -4,5 +4,5 @@
 class AlphaSliderContext : public SliderContext {
 public:
 	inline AlphaSliderContext(ID2D1Factory3 *const factory) : SliderContext(factory) { }
-	HRESULT Draw(const HWND, const SColourF &col, const SColourF &);
+	HRESULT Draw(const HWND, const SColourF &col, const SColourF &) override;
 };

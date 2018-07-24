@@ -1,7 +1,5 @@
 #pragma once
-#include <WinBase.h>
-#include <windef.h>
-#include <winerror.h>
+#include "arch.h"
 #include <WinUser.h>
 
 #include "window.hpp"
@@ -13,7 +11,7 @@ private:
 	bool m_Result;
 
 public:
-	inline ClipboardContext(const Window &owner = nullptr) : m_Result(OpenClipboard(owner)) { }
+	inline ClipboardContext(const Window &owner = Window::NullWindow) : m_Result(OpenClipboard(owner)) { }
 	inline operator bool() { return m_Result; }
 	inline ~ClipboardContext()
 	{

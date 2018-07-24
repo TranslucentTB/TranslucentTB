@@ -14,7 +14,7 @@
 #include "util.hpp"
 #include "win32.hpp"
 
-bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *const message, const wchar_t *const file, const int &line, const char *const function)
+bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *const message, const wchar_t *const file, const int &line, func_t function)
 {
 	if (FAILED(error))
 	{
@@ -33,11 +33,15 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 			boxbuffer << error_message;
 		}
 
+#ifdef __clang__
 		std::wstring functionW = win32::CharToWchar(function);
 		if (functionW.empty())
 		{
 			functionW = L"[failed to convert function name to UTF-16]";
 		}
+#else
+		const wchar_t *const functionW = function;
+#endif
 
 		std::wostringstream err;
 		err << message_str << L' ' << error_message <<

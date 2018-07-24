@@ -53,12 +53,12 @@ public:
 		static_assert(std::is_enum_v<T>, "T is not an enum.");
 		for (const auto& [item_value, item] : map)
 		{
-			RegisterContextMenuCallback(item, std::bind(&Util::UpdateValue<T>, std::ref(value), item_value));
+			RegisterContextMenuCallback(item, std::bind(&Util::UpdateValue<T>, std::ref(value), std::ref(item_value)));
 		}
 
-		auto minmax = std::minmax_element(map.begin(), map.end(), Util::map_value_compare<T, unsigned int>());
-		unsigned int min = minmax.first->second;
-		unsigned int max = minmax.second->second;
+		auto [min_p, max_p] = std::minmax_element(map.begin(), map.end(), Util::map_value_compare<T, unsigned int>());
+		unsigned int min = min_p->second;
+		unsigned int max = max_p->second;
 
 		m_RefreshFunctions.push_back([this, min, max, &value, &map] {
 			RefreshEnum(m_Menu, min, max, map.at(value));

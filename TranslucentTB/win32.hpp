@@ -65,6 +65,6 @@ public:
 	static void HardenProcess();
 
 	// Converts a ASCII string to a wide character string
-	static std::wstring CharToWchar(const char *str);
+	static std::wstring CharToWchar(const char *const str);
 
 };
