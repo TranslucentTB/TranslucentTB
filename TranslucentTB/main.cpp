@@ -68,7 +68,7 @@ enum TASKBARSTATE { Normal, WindowMaximised, StartMenuOpen }; // Create a state 
 			// WindowMaximised  | There is a window which is maximised on the monitor this HWND is in. Display as blurred.
 			// StartMenuOpen    | The Start Menu is open on the monitor this HWND is in. Display as it would be without TranslucentTB active.
 
-enum SAVECONFIGSTATES { DoNotSave, SaveTransparency, SaveAll } shouldsaveconfig;  // Create an enum to store all config states
+enum SAVECONFIGSTATES { SaveAll, DoNotSave, SaveTransparency} shouldsaveconfig;  // Create an enum to store all config states
 			// DoNotSave        | Fairly self-explanatory
 			// SaveTransparency | Save opt.taskbar_appearance
 			// SaveAll          | Save all options
@@ -558,6 +558,10 @@ void ParseCmdOptions(bool configonly=false)
 		opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
 		opt.color = 0x00000000;
 	}
+	else
+	{
+		shouldsaveconfig = SaveAll;
+	}
 
 	// Loop through command line arguments
 	LPWSTR *szArglist;
@@ -840,6 +844,8 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 					shouldsaveconfig != SaveAll)
 					shouldsaveconfig = SaveTransparency;
 				RefreshMenu();
+				if (shouldsaveconfig != DoNotSave)
+					SaveConfigFile();
 				break;
 			case IDM_CLEAR:
 				opt.dynamicws = false;
@@ -848,24 +854,29 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 					shouldsaveconfig != SaveAll)
 					shouldsaveconfig = SaveTransparency;
 				RefreshMenu();
+				if (shouldsaveconfig != DoNotSave)
+					SaveConfigFile();
 				break;
 			case IDM_NORMAL:
 				opt.dynamicws = false;
 				opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
 				RefreshMenu();
-				// TODO: shouldsaveconfig implementation
+				if (shouldsaveconfig != DoNotSave)
+					SaveConfigFile();
 				break;
 			case IDM_DYNAMICWS:
 				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 				opt.dynamicws = true;
 				EnumWindows(&EnumWindowsProcess, NULL);
-				// TODO: shouldsaveconfig implementation
 				RefreshMenu();
+				if (shouldsaveconfig != DoNotSave)
+					SaveConfigFile();
 				break;
 			case IDM_DYNAMICSTART:
 				opt.dynamicstart = !opt.dynamicstart;
-				// TODO: shouldsaveconfig implementation
 				RefreshMenu();
+				if (shouldsaveconfig != DoNotSave)
+					SaveConfigFile();
 				break;
 			case IDM_AUTOSTART:
 				if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
@@ -877,9 +888,13 @@ LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 					add_to_startup();
 				}
 				RefreshMenu();
+				if (shouldsaveconfig != DoNotSave)
+					SaveConfigFile();
 				break;
 			case IDM_EXIT:
 				run = false;
+				if (shouldsaveconfig != DoNotSave)
+					SaveConfigFile();
 				break;
 			}
 		}
