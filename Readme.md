@@ -119,7 +119,7 @@ if (condition)
 }
 ```
 
-The only exception to this rule is the opening brace of a class or structure, in which K&R braces apply:
+The only exception to this rule is the opening brace of a class, namespace or structure, in which K&R braces apply:
 
 ```cpp
 class Foo {
@@ -129,6 +129,10 @@ class Foo {
 struct Bar {
     // content
 };
+
+namespace Baz {
+    // content
+}
 ```
 
 Indentation style is 4 spaces large tabs, and your editor should enforce it with this repo's `.editorconfig` automatically.
