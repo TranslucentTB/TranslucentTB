@@ -100,7 +100,7 @@ public:
 	virtual HRESULT Refresh(HWND hwnd);
 	virtual HRESULT Draw(const HWND hDlg, const SColourF &col, const SColourF &old) = 0;
 
-	inline RenderContext(ID2D1Factory3 *const factory) : m_factory(factory) { }
+	explicit inline RenderContext(ID2D1Factory3 *const factory) : m_factory(factory) { }
 
 	inline RenderContext(const RenderContext &) = delete;
 	inline RenderContext &operator =(const RenderContext &) = delete;

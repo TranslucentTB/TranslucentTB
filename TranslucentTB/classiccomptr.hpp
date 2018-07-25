@@ -10,7 +10,7 @@
 template<typename T>
 class ClassicComPtr : public Microsoft::WRL::ComPtr<T> {
 public:
-	inline void CreateInstance(REFCLSID rclsid, IUnknown *pUnkOuter = nullptr, DWORD dwClsContext = CLSCTX_INPROC_SERVER) throw()
+	inline void CreateInstance(REFCLSID rclsid, IUnknown *pUnkOuter = nullptr, DWORD dwClsContext = CLSCTX_INPROC_SERVER) noexcept
 	{
 		const HRESULT hr = CoCreateInstance(rclsid, pUnkOuter, dwClsContext, IID_PPV_ARGS(this->ReleaseAndGetAddressOf()));
 		if (FAILED(hr))
@@ -29,7 +29,9 @@ public:
 		}
 	}
 
-	inline ClassicComPtr(REFCLSID rclsid, IUnknown *pUnkOuter = nullptr, DWORD dwClsContext = CLSCTX_INPROC_SERVER) throw() : Microsoft::WRL::ComPtr<T>()
+	using Microsoft::WRL::ComPtr<T>::ComPtr;
+
+	inline ClassicComPtr(REFCLSID rclsid, IUnknown *pUnkOuter = nullptr, DWORD dwClsContext = CLSCTX_INPROC_SERVER) noexcept
 	{
 		CreateInstance(rclsid, pUnkOuter, dwClsContext);
 	}

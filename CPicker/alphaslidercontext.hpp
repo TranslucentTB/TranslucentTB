@@ -3,6 +3,6 @@
 
 class AlphaSliderContext : public SliderContext {
 public:
-	inline AlphaSliderContext(ID2D1Factory3 *const factory) : SliderContext(factory) { }
+	using SliderContext::SliderContext;
 	HRESULT Draw(const HWND, const SColourF &col, const SColourF &) override;
 };
