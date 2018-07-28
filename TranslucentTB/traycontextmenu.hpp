@@ -51,7 +51,7 @@ public:
 	inline void BindEnum(T &value, const std::unordered_map<T, unsigned int> &map)
 	{
 		static_assert(std::is_enum_v<T>, "T is not an enum.");
-		for (const auto& [item_value, item] : map)
+		for (const auto &[item_value, item] : map)
 		{
 			RegisterContextMenuCallback(item, std::bind(&Util::UpdateValue<T>, std::ref(value), std::ref(item_value)));
 		}

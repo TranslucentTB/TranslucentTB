@@ -187,7 +187,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 		m_pickerMap[init_pair->second] = hDlg;
 
-		for (const auto& [buddy_id, slider_id, slider_max] : SLIDERS)
+		for (const auto &[buddy_id, slider_id, slider_max] : SLIDERS)
 		{
 			SendDlgItemMessage(hDlg, slider_id, UDM_SETBUDDY, (WPARAM)GetDlgItem(hDlg, buddy_id), 0);
 			SendDlgItemMessage(hDlg, slider_id, UDM_SETRANGE32, 0, slider_max);
@@ -223,7 +223,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	case WM_DPICHANGED:
 	{
 		HRESULT hr;
-		for (auto& [context, item_id] : gui_data->m_contextPairs)
+		for (auto &[context, item_id] : gui_data->m_contextPairs)
 		{
 			hr = context.Refresh(GetDlgItem(hDlg, item_id));
 			if (FAILED(hr))
@@ -244,7 +244,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 		HRESULT hr;
 
-		for (auto& [context, item_id] : gui_data->m_contextPairs)
+		for (auto &[context, item_id] : gui_data->m_contextPairs)
 		{
 			const HWND item_handle = GetDlgItem(hDlg, item_id);
 			const PaintContext pc(item_handle);
@@ -415,7 +415,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			}
 
 			gui_data->m_changingText = true;
-			for (const auto& [buddy_id, slider_id, _] : SLIDERS)
+			for (const auto &[buddy_id, slider_id, _] : SLIDERS)
 			{
 				if (buddy_id == IDC_HEXCOL)
 				{

@@ -10,7 +10,7 @@ LRESULT MessageWindow::WindowProcedure(const Window &window, unsigned int uMsg, 
 	if (callbackVector.size() > 0)
 	{
 		long result = 0;
-		for (const auto& [_, callback] : callbackVector)
+		for (const auto &[_, callback] : callbackVector)
 		{
 			result = (std::max)(callback(wParam, lParam), result);
 		}

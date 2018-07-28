@@ -34,7 +34,7 @@ long TrayContextMenu::TrayCallback(WPARAM, LPARAM lParam)
 		const auto &callbackVector = m_MenuCallbackMap[item];
 		if (callbackVector.size() > 0)
 		{
-			for (const auto& [_, callback] : callbackVector)
+			for (const auto &[_, callback] : callbackVector)
 			{
 				callback();
 			}

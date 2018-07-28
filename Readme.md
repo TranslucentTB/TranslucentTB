@@ -97,45 +97,55 @@ To build the Microsoft Store app package, build the solution with the Store conf
 If you would like to contribute, everyone is welcome to! If you are considering a major feature, need guidance, or want to talk an idea out, don't hesitate to jump on [Discord], [Gitter], or file an issue here. The main contributors are often on [Discord], [Gitter] and GitHub, so we should reply fairly quickly.
 At this time we have no plans of expanding this beyond the taskbar.
 
-When contributing, please respect the style used by the codebase. This means Allman braces everywhere, even on one line blocks:
+When contributing, please respect the style used by the codebase. Quick rundown:
 
-```cpp
-// Bad!
-if (condition) {
-    statement;
-}
+- Allman braces everywhere, even on one line blocks:
 
-// Bad!
-if (condition) statement;
+  ```cpp
+  // Bad!
+  if (condition) {
+      statement;
+  }
+  
+  // Bad!
+  if (condition) statement;
+  
+  // Bad!
+  if (condition)
+      statement;
+  
+  // Good!
+  if (condition)
+  {
+      statement;
+  }
+  ```
 
-// Bad!
-if (condition)
-    statement;
+- The only exception to this rule is the opening brace of a class, namespace or structure, in which K&R braces apply:
 
-// Good!
-if (condition)
-{
-    statement;
-}
-```
+  ```cpp
+  class Foo {
+      // content
+  };
+  
+  struct Bar {
+      // content
+  };
+  
+  namespace Baz {
+      // content
+  }
+  ```
 
-The only exception to this rule is the opening brace of a class, namespace or structure, in which K&R braces apply:
+- lvalue, rvalue and pointer qualifiers are next to the variable name:
 
-```cpp
-class Foo {
-    // content
-};
+  ```cpp
+  std::wstring &foo;
+  std::wstring &&bar;
+  std::wstring *baz;
+  ```
 
-struct Bar {
-    // content
-};
-
-namespace Baz {
-    // content
-}
-```
-
-Indentation style is 4 spaces large tabs, and your editor should enforce it with this repo's `.editorconfig` automatically.
+- Indentation style is 4 spaces large tabs, and your editor should enforce it with this repo's `.editorconfig` automatically.
 
 ## Thanks
 

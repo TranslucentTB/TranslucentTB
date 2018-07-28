@@ -43,7 +43,7 @@ DWORD win32::PickerThreadProc(LPVOID data)
 BOOL win32::EnumThreadWindowsProc(HWND hwnd, LPARAM lParam)
 {
 	Window wnd(hwnd);
-	auto& [needs_wait, failed] = *reinterpret_cast<std::pair<bool &, bool> *>(lParam);
+	auto &[needs_wait, failed] = *reinterpret_cast<std::pair<bool &, bool> *>(lParam);
 
 	if (!failed)
 	{
@@ -302,7 +302,7 @@ void win32::ClosePickers()
 {
 	while (m_PickerThreads.size() != 0)
 	{
-		const auto& [tid, failed] = *m_PickerThreads.begin();
+		const auto &[tid, failed] = *m_PickerThreads.begin();
 		bool needs_wait = false;
 		std::pair<bool &, bool> epair(needs_wait, failed);
 		EnumThreadWindows(tid, EnumThreadWindowsProc, reinterpret_cast<LPARAM>(&epair));
