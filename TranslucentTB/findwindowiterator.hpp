@@ -22,9 +22,16 @@ public:
 
 	FindWindowIterator(const std::wstring &className, const std::wstring &windowName, const HWND parent);
 
-	FindWindowIterator &operator ++();
+	inline FindWindowIterator &operator ++()
+	{
+		MoveNext();
+		return *this;
+	}
 
-	bool operator ==(const FindWindowIterator &right) const;
+	inline bool operator ==(const FindWindowIterator &right) const
+	{
+		return m_currentWindow == right.m_currentWindow;
+	}
 	inline bool operator !=(const FindWindowIterator &right) const
 	{
 		return !operator==(right);

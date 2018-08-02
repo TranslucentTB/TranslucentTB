@@ -2,13 +2,6 @@
 
 #include "ttblog.hpp"
 
-// As function because static initialization order.
-std::unordered_map<HWINEVENTHOOK, EventHook::callback_t> &EventHook::GetMap()
-{
-	static std::unordered_map<HWINEVENTHOOK, callback_t> map;
-	return map;
-}
-
 void CALLBACK EventHook::RawHookCallback(HWINEVENTHOOK hook, DWORD event, HWND window, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
 {
 	GetMap()[hook](event, window, idObject, idChild, dwEventThread, dwmsEventTime);

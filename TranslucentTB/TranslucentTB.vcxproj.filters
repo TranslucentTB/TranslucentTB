@@ -132,9 +132,6 @@
     <ClInclude Include="registrykey.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="file.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="appvisibilitysink.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

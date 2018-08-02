@@ -10,7 +10,6 @@
 #include <vector>
 #endif
 #include <WinBase.h>
-#include <windef.h>
 #include <winerror.h>
 #include <winnt.h>
 #include <WinUser.h>
@@ -22,10 +21,11 @@
 #include "uwp.hpp"
 #endif
 
-std::unique_ptr<File> Log::m_FileHandle;
+bool Log::m_didInit = false;
+Log::handle_t Log::m_FileHandle;
 std::wstring Log::m_File;
 
-inline std::pair<HRESULT, std::wstring> Log::InitStream()
+std::pair<HRESULT, std::wstring> Log::InitStream()
 {
 	HRESULT hr;
 #ifndef STORE
@@ -98,20 +98,19 @@ inline std::pair<HRESULT, std::wstring> Log::InitStream()
 		return { hr, L"Failed to combine log folder location and log file name!" };
 	}
 
-	HANDLE file = CreateFile(log_file, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
-	if (file == INVALID_HANDLE_VALUE)
+	m_FileHandle = handle_t(CreateFile(log_file, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL));
+	if (!m_FileHandle.IsValid())
 	{
 		return { HRESULT_FROM_WIN32(GetLastError()), L"Failed to create and open log file!" };
 	}
 
 	DWORD bytesWritten;
-	if (!WriteFile(file, L"\uFEFF", sizeof(wchar_t), &bytesWritten, NULL))
+	if (!WriteFile(m_FileHandle.Get(), L"\uFEFF", sizeof(wchar_t), &bytesWritten, NULL))
 	{
 		LastErrorHandle(Error::Level::Debug, L"Failed to write byte-order marker.");
 	}
 
 	m_File = log_file;
-	m_FileHandle.reset(new File(file));
 	return { S_OK, L"" };
 
 #ifdef STORE
@@ -130,12 +129,12 @@ const std::wstring &Log::file()
 
 void Log::OutputMessage(const std::wstring &message)
 {
-	if (!m_FileHandle)
+	if (!m_didInit)
 	{
 		auto [hr, err_message] = InitStream();
+		m_didInit = true;
 		if (FAILED(hr))
 		{
-			m_FileHandle.reset(new File);
 			std::wstring boxbuffer = err_message +
 				L" Logs will not be available during this session.\n\n" + Error::ExceptionFromHRESULT(hr);
 
@@ -145,7 +144,7 @@ void Log::OutputMessage(const std::wstring &message)
 
 	OutputDebugString((message + L'\n').c_str());
 
-	if (*m_FileHandle)
+	if (m_FileHandle.IsValid())
 	{
 		std::time_t current_time = std::time(0);
 
@@ -157,7 +156,7 @@ void Log::OutputMessage(const std::wstring &message)
 		const std::wstring error = buffer.str();
 
 		DWORD bytesWritten;
-		if (!WriteFile(*m_FileHandle, error.c_str(), error.length() * sizeof(wchar_t), &bytesWritten, NULL))
+		if (!WriteFile(m_FileHandle.Get(), error.c_str(), error.length() * sizeof(wchar_t), &bytesWritten, NULL))
 		{
 			LastErrorHandle(Error::Level::Debug, L"Writing to log file failed.");
 		}
@@ -166,7 +165,7 @@ void Log::OutputMessage(const std::wstring &message)
 
 void Log::Flush()
 {
-	if (!FlushFileBuffers(*m_FileHandle))
+	if (!FlushFileBuffers(m_FileHandle.Get()))
 	{
 		LastErrorHandle(Error::Level::Debug, L"Flusing log file buffer failed.");
 	}

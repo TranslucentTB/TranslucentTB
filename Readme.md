@@ -121,7 +121,7 @@ When contributing, please respect the style used by the codebase. Quick rundown:
   }
   ```
 
-- The only exception to this rule is the opening brace of a class, namespace or structure, in which K&R braces apply:
+- The only exception to this rule is the opening brace of a class, enumeration, namespace or structure, in which K&R braces apply:
 
   ```cpp
   class Foo {
@@ -135,6 +135,10 @@ When contributing, please respect the style used by the codebase. Quick rundown:
   namespace Baz {
       // content
   }
+
+  enum Foobar {
+      // content
+  };
   ```
 
 - lvalue, rvalue and pointer qualifiers are next to the variable name:

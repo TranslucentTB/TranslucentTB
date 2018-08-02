@@ -114,7 +114,6 @@
     <ClInclude Include="clipboardcontext.hpp" />
     <ClInclude Include="common.hpp" />
     <ClInclude Include="eventhook.hpp" />
-    <ClInclude Include="file.hpp" />
     <ClInclude Include="findwindowiterator.hpp" />
     <ClInclude Include="messagewindow.hpp" />
     <ClInclude Include="registrykey.hpp" />

@@ -1,20 +1,19 @@
 #pragma once
 #include "arch.h"
-#include <memory>
-#include <ostream>
 #include <string>
 #include <utility>
 #include <windef.h>
-#include <WinBase.h>
-
-#include "file.hpp"
+#include <wrl/wrappers/corewrappers.h>
 
 class Log {
 
 private:
-	static std::unique_ptr<File> m_FileHandle;
-	static std::pair<HRESULT, std::wstring> InitStream();
+	using handle_t = Microsoft::WRL::Wrappers::FileHandle;
+	static bool m_didInit;
+	static handle_t m_FileHandle;
 	static std::wstring m_File;
+
+	static std::pair<HRESULT, std::wstring> InitStream();
 
 public:
 	static const std::wstring &file();

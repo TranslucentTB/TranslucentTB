@@ -25,17 +25,6 @@ FindWindowIterator::FindWindowIterator(const std::wstring &className, const std:
 	MoveNext();
 }
 
-FindWindowIterator &FindWindowIterator::operator ++()
-{
-	MoveNext();
-	return *this;
-}
-
-bool FindWindowIterator::operator ==(const FindWindowIterator &right) const
-{
-	return m_currentWindow == right.m_currentWindow;
-}
-
 Window FindWindowIterator::operator *()
 {
 	return m_currentWindow;
