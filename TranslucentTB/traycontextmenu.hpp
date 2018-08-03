@@ -26,16 +26,63 @@ public:
 	TrayContextMenu(MessageWindow &window, wchar_t *iconResource, wchar_t *menuResource, const HINSTANCE &hInstance = GetModuleHandle(NULL));
 
 	using MENUCALLBACKCOOKIE = unsigned long long;
-	MENUCALLBACKCOOKIE RegisterContextMenuCallback(unsigned int item, const callback_t &callback);
-	bool UnregisterContextMenuCallback(MENUCALLBACKCOOKIE cookie);
+
+	inline MENUCALLBACKCOOKIE RegisterContextMenuCallback(unsigned int item, const callback_t &callback)
+	{
+		unsigned short secret = Util::GetRandomNumber<unsigned short>();
+		m_MenuCallbackMap[item].push_back({ secret, callback });
+
+		return (static_cast<MENUCALLBACKCOOKIE>(secret) << 32) + item;
+	}
+
+	inline bool UnregisterContextMenuCallback(MENUCALLBACKCOOKIE cookie)
+	{
+		unsigned int item = cookie & 0xFFFFFFFF;
+		unsigned short secret = (cookie >> 32) & 0xFFFF;
+
+		auto &callbackVector = m_MenuCallbackMap[item];
+		for (auto &callbackPair : callbackVector)
+		{
+			if (callbackPair.first == secret)
+			{
+				std::swap(callbackPair, callbackVector.back());
+				callbackVector.pop_back();
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	enum BoolBindingEffect {
 		Toggle,
 		ControlsEnabled
 	};
 
-	static void RefreshBool(unsigned int item, HMENU menu, const bool &value, BoolBindingEffect effect);
-	static void RefreshEnum(HMENU menu, unsigned int first, unsigned int last, unsigned int position);
+	inline static void RefreshBool(unsigned int item, HMENU menu, const bool &value, BoolBindingEffect effect)
+	{
+		if (effect == Toggle)
+		{
+			CheckMenuItem(menu, item, MF_BYCOMMAND | (value ? MF_CHECKED : MF_UNCHECKED));
+		}
+		else if (effect == ControlsEnabled)
+		{
+			EnableMenuItem(menu, item, MF_BYCOMMAND | (value ? MF_ENABLED : MF_GRAYED));
+		}
+	}
+
+	inline static void RefreshEnum(HMENU menu, unsigned int first, unsigned int last, unsigned int position)
+	{
+		CheckMenuRadioItem(menu, first, last, position, MF_BYCOMMAND);
+	}
+
+	inline static void ChangeItemText(HMENU menu, const uint32_t &item, std::wstring &&new_text)
+	{
+		MENUITEMINFO item_info = { sizeof(item_info), MIIM_STRING };
+
+		item_info.dwTypeData = new_text.data();
+		SetMenuItemInfo(menu, item, false, &item_info);
+	}
 
 	inline void BindBool(unsigned int item, bool &value, BoolBindingEffect effect)
 	{
@@ -60,7 +107,8 @@ public:
 		unsigned int min = min_p->second;
 		unsigned int max = max_p->second;
 
-		m_RefreshFunctions.push_back([this, min, max, &value, &map] {
+		m_RefreshFunctions.push_back([this, min, max, &value, &map]
+		{
 			RefreshEnum(m_Menu, min, max, map.at(value));
 		});
 	}

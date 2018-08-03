@@ -297,64 +297,20 @@ void TogglePeek(const bool &status)
 
 #pragma region Tray
 
-inline void ChangePopupItemText(HMENU menu, const uint32_t &item, std::wstring &&new_text)
+void RefreshAutostartMenu(HMENU menu, Autostart::StartupState state)
 {
-	MENUITEMINFO item_info = { sizeof(item_info), MIIM_STRING };
-
-	item_info.dwTypeData = new_text.data();
-	SetMenuItemInfo(menu, item, false, &item_info);
-}
-
-void RefreshMenu(HMENU menu)
-{
-	static bool initial_check_done = false;
-	if (!initial_check_done)
-	{
-		if (!win32::IsAtLeastBuild(MIN_FLUENT_BUILD))
-		{
-			RemoveMenu(menu, IDM_REGULAR_FLUENT,   MF_BYCOMMAND);
-			RemoveMenu(menu, IDM_MAXIMISED_FLUENT, MF_BYCOMMAND);
-			RemoveMenu(menu, IDM_START_FLUENT,     MF_BYCOMMAND);
-			RemoveMenu(menu, IDM_CORTANA_FLUENT,   MF_BYCOMMAND);
-			RemoveMenu(menu, IDM_TIMELINE_FLUENT,  MF_BYCOMMAND);
-
-			// Same build for Timeline and fluent
-			ChangePopupItemText(menu, IDM_TIMELINE_POPUP, L"Task View opened");
-		}
-
-		initial_check_done = true;
-	}
-
-	const bool has_log = !Log::file().empty();
-	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, has_log, TrayContextMenu::ControlsEnabled);
-	ChangePopupItemText(menu, IDM_OPENLOG, has_log ? L"Open log file" : L"Nothing has been logged yet");
-
-	TrayContextMenu::RefreshBool(IDM_REGULAR_COLOR,   menu,
-		Config::REGULAR_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
-		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(IDM_MAXIMISED_COLOR, menu,
-		Config::MAXIMISED_ENABLED && Config::MAXIMISED_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
-		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(IDM_START_COLOR,     menu,
-		Config::START_ENABLED     && Config::START_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
-		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(IDM_CORTANA_COLOR,     menu,
-		Config::CORTANA_ENABLED   && Config::CORTANA_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
-		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(IDM_TIMELINE_COLOR,  menu,
-		Config::TIMELINE_ENABLED  && Config::TIMELINE_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
-		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(IDM_PEEK_ONLY_MAIN,  menu,
-		Config::PEEK == Config::PEEK::Dynamic,
-		TrayContextMenu::ControlsEnabled);
-
-	const Autostart::StartupState state = Autostart::GetStartupState();
 	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, !(state == Autostart::StartupState::DisabledByUser
 #ifdef STORE
 		|| state == Autostart::StartupState::DisabledByPolicy
 		|| state == Autostart::StartupState::EnabledByPolicy
 #endif
 		), TrayContextMenu::ControlsEnabled);
+
+	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, state == Autostart::StartupState::Enabled
+#ifdef STORE
+		|| state == Autostart::StartupState::EnabledByPolicy
+#endif
+		, TrayContextMenu::Toggle);
 
 	std::wstring autostart_text;
 	switch (state)
@@ -374,13 +330,57 @@ void RefreshMenu(HMENU menu)
 	case Autostart::StartupState::Disabled:
 		autostart_text = L"Open at boot";
 	}
-	ChangePopupItemText(menu, IDM_AUTOSTART, std::move(autostart_text));
+	TrayContextMenu::ChangeItemText(menu, IDM_AUTOSTART, std::move(autostart_text));
+}
 
-	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, state == Autostart::StartupState::Enabled
-#ifdef STORE
-		|| state == Autostart::StartupState::EnabledByPolicy
-#endif
-		, TrayContextMenu::Toggle);
+void RefreshMenu(HMENU menu)
+{
+	Autostart::GetStartupState().as_then(
+	{
+		RefreshAutostartMenu(menu, result);
+	});
+
+
+	static bool initial_check_done = false;
+	if (!initial_check_done)
+	{
+		if (!win32::IsAtLeastBuild(MIN_FLUENT_BUILD))
+		{
+			RemoveMenu(menu, IDM_REGULAR_FLUENT,   MF_BYCOMMAND);
+			RemoveMenu(menu, IDM_MAXIMISED_FLUENT, MF_BYCOMMAND);
+			RemoveMenu(menu, IDM_START_FLUENT,     MF_BYCOMMAND);
+			RemoveMenu(menu, IDM_CORTANA_FLUENT,   MF_BYCOMMAND);
+			RemoveMenu(menu, IDM_TIMELINE_FLUENT,  MF_BYCOMMAND);
+
+			// Same build for Timeline and fluent
+			TrayContextMenu::ChangeItemText(menu, IDM_TIMELINE_POPUP, L"Task View opened");
+		}
+
+		initial_check_done = true;
+	}
+
+	const bool has_log = !Log::file().empty();
+	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, has_log, TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::ChangeItemText(menu, IDM_OPENLOG, has_log ? L"Open log file" : L"Nothing has been logged yet");
+
+	TrayContextMenu::RefreshBool(IDM_REGULAR_COLOR,   menu,
+		Config::REGULAR_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
+		TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(IDM_MAXIMISED_COLOR, menu,
+		Config::MAXIMISED_ENABLED && Config::MAXIMISED_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
+		TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(IDM_START_COLOR,     menu,
+		Config::START_ENABLED     && Config::START_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
+		TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(IDM_CORTANA_COLOR,     menu,
+		Config::CORTANA_ENABLED   && Config::CORTANA_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
+		TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(IDM_TIMELINE_COLOR,  menu,
+		Config::TIMELINE_ENABLED  && Config::TIMELINE_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
+		TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(IDM_PEEK_ONLY_MAIN,  menu,
+		Config::PEEK == Config::PEEK::Dynamic,
+		TrayContextMenu::ControlsEnabled);
 }
 
 #pragma endregion
@@ -508,30 +508,35 @@ void InitializeTray(const HINSTANCE &hInstance)
 {
 	static MessageWindow window(L"TrayWindow", NAME, hInstance);
 
-	window.RegisterCallback(NEW_TTB_INSTANCE, [](...) {
+	window.RegisterCallback(NEW_TTB_INSTANCE, [](...)
+	{
 		run.exit_reason = EXITREASON::NewInstance;
 		run.is_running = false;
 		return 0;
 	});
 
-	window.RegisterCallback(WM_DISPLAYCHANGE, [](...) {
+	window.RegisterCallback(WM_DISPLAYCHANGE, [](...)
+	{
 		RefreshHandles();
 		return 0;
 	});
 
-	window.RegisterCallback(WM_TASKBARCREATED, [](...) {
+	window.RegisterCallback(WM_TASKBARCREATED, [](...)
+	{
 		RefreshHandles();
 		return 0;
 	});
 
-	window.RegisterCallback(WM_CLOSE, [](...) {
+	window.RegisterCallback(WM_CLOSE, [](...)
+	{
 		run.exit_reason = EXITREASON::UserAction;
 		run.is_running = false;
 		return 0;
 	});
 
 #ifdef STORE
-	window.RegisterCallback(WM_QUERYENDSESSION, [](...) {
+	window.RegisterCallback(WM_QUERYENDSESSION, [](...)
+	{
 		// https://docs.microsoft.com/en-us/windows/uwp/porting/desktop-to-uwp-extensions#updates
 		RegisterApplicationRestart(NULL, NULL);
 		return TRUE;
@@ -588,49 +593,63 @@ void InitializeTray(const HINSTANCE &hInstance)
 		tray.BindBool(IDM_PEEK_ONLY_MAIN, Config::PEEK_ONLY_MAIN, TrayContextMenu::Toggle);
 
 
-		tray.RegisterContextMenuCallback(IDM_OPENLOG, [] {
-			std::thread([] {
+		tray.RegisterContextMenuCallback(IDM_OPENLOG, []
+		{
+			std::thread([]
+			{
 				Log::Flush();
 				win32::EditFile(Log::file());
 			}).detach();
 		});
 		tray.BindBool(IDM_VERBOSE, Config::VERBOSE, TrayContextMenu::Toggle);
 		tray.RegisterContextMenuCallback(IDM_RELOADSETTINGS, std::bind(&Config::Parse, std::ref(run.config_file)));
-		tray.RegisterContextMenuCallback(IDM_EDITSETTINGS, [] {
+		tray.RegisterContextMenuCallback(IDM_EDITSETTINGS, []
+		{
 			Config::Save(run.config_file);
-			std::thread([] {
+			std::thread([]
+			{
 				win32::EditFile(run.config_file);
 				Config::Parse(run.config_file);
 			}).detach();
 		});
-		tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTSETTINGS, [] {
+		tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTSETTINGS, []
+		{
 			ApplyStock(CONFIG_FILE);
 			Config::Parse(run.config_file);
 		});
 		tray.RegisterContextMenuCallback(IDM_RELOADDYNAMICBLACKLIST, std::bind(&Blacklist::Parse, std::ref(run.exclude_file)));
-		tray.RegisterContextMenuCallback(IDM_EDITDYNAMICBLACKLIST, [] {
-			std::thread([] {
+		tray.RegisterContextMenuCallback(IDM_EDITDYNAMICBLACKLIST, []
+		{
+			std::thread([]
+			{
 				win32::EditFile(run.exclude_file);
 				Blacklist::Parse(run.exclude_file);
 			}).detach();
 		});
-		tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTBLACKLIST, [] {
+		tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTBLACKLIST, []
+		{
 			ApplyStock(EXCLUDE_FILE);
 			Blacklist::Parse(run.exclude_file);
 		});
 		tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, Blacklist::ClearCache);
-		tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, [] {
+		tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, []
+		{
 			run.exit_reason = EXITREASON::UserActionNoSave;
 			run.is_running = false;
 		});
 
 
-		tray.RegisterContextMenuCallback(IDM_AUTOSTART, [] {
-			Autostart::SetStartupState(Autostart::GetStartupState() == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
+		tray.RegisterContextMenuCallback(IDM_AUTOSTART, []
+		{
+			Autostart::GetStartupState().as_then(
+			{
+				Autostart::SetStartupState(result == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
+			});
 		});
 		tray.RegisterContextMenuCallback(IDM_TIPS, std::bind(&win32::OpenLink,
 			L"https://github.com/TranslucentTB/TranslucentTB/wiki/Tips-and-tricks-for-a-better-looking-taskbar"));
-		tray.RegisterContextMenuCallback(IDM_EXIT, [] {
+		tray.RegisterContextMenuCallback(IDM_EXIT, []
+		{
 			run.exit_reason = EXITREASON::UserAction;
 			run.is_running = false;
 		});

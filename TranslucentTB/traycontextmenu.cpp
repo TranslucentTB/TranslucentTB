@@ -55,50 +55,6 @@ TrayContextMenu::TrayContextMenu(MessageWindow &window, wchar_t *iconResource, w
 	m_Cookie = RegisterTrayCallback(std::bind(&TrayContextMenu::TrayCallback, this, std::placeholders::_1, std::placeholders::_2));
 }
 
-TrayContextMenu::MENUCALLBACKCOOKIE TrayContextMenu::RegisterContextMenuCallback(unsigned int item, const callback_t &callback)
-{
-	unsigned short secret = Util::GetRandomNumber<unsigned short>();
-	m_MenuCallbackMap[item].push_back({ secret, callback });
-
-	return (static_cast<MENUCALLBACKCOOKIE>(secret) << 32) + item;
-}
-
-bool TrayContextMenu::UnregisterContextMenuCallback(MENUCALLBACKCOOKIE cookie)
-{
-	unsigned int item = cookie & 0xFFFFFFFF;
-	unsigned short secret = (cookie >> 32) & 0xFFFF;
-
-	auto &callbackVector = m_MenuCallbackMap[item];
-	for (auto &callbackPair : callbackVector)
-	{
-		if (callbackPair.first == secret)
-		{
-			std::swap(callbackPair, callbackVector.back());
-			callbackVector.pop_back();
-			return true;
-		}
-	}
-
-	return false;
-}
-
-void TrayContextMenu::RefreshBool(unsigned int item, HMENU menu, const bool &value, BoolBindingEffect effect)
-{
-	if (effect == Toggle)
-	{
-		CheckMenuItem(menu, item, MF_BYCOMMAND | (value ? MF_CHECKED : MF_UNCHECKED));
-	}
-	else if (effect == ControlsEnabled)
-	{
-		EnableMenuItem(menu, item, MF_BYCOMMAND | (value ? MF_ENABLED : MF_GRAYED));
-	}
-}
-
-void TrayContextMenu::RefreshEnum(HMENU menu, unsigned int first, unsigned int last, unsigned int position)
-{
-	CheckMenuRadioItem(menu, first, last, position, MF_BYCOMMAND);
-}
-
 TrayContextMenu::~TrayContextMenu()
 {
 	m_Window.UnregisterCallback(m_Cookie);

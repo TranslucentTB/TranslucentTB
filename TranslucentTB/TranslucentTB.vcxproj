@@ -71,19 +71,24 @@
       <MinimalRebuild>
       </MinimalRebuild>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>-Wno-missing-field-initializers -Wrange-loop-analysis -Wnonportable-system-include-path -Wimplicit-fallthrough -Wunreachable-code-return -Wswitch-enum %(AdditionalOptions) /std:c++17</AdditionalOptions>
+      <AdditionalOptions>-Wno-missing-field-initializers -Wrange-loop-analysis -Wnonportable-system-include-path -Wimplicit-fallthrough -Wunreachable-code-return -Wswitch-enum %(AdditionalOptions) /std:c++17 -Xclang -fcoroutines-ts</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>advapi32.lib;comctl32.lib;dwmapi.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;user32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  <!-- TODO: Move this to globals when clang bug fixed -->
+  <ItemDefinitionGroup Condition="'$(Configuration)'!='Store'">
+    <ClCompile>
+      <PreprocessorDefinitions>_RESUMABLE_FUNCTIONS_SUPPORTED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Store'">
     <ClCompile>
       <PreprocessorDefinitions>STORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <!-- TODO: Remove this when the clang bug is fixed -->
-      <AdditionalOptions>
-      </AdditionalOptions>
+      <AdditionalOptions>/await</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

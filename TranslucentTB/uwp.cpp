@@ -2,9 +2,9 @@
 #include "uwp.hpp"
 #include <winrt/Windows.Storage.h>
 
-const winrt::Windows::ApplicationModel::StartupTask &UWP::GetApplicationStartupTask()
+winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::ApplicationModel::StartupTask> UWP::GetApplicationStartupTask()
 {
-	static const auto task = winrt::Windows::ApplicationModel::StartupTask::GetForCurrentPackageAsync().get().GetAt(0);
+	static auto task = (co_await winrt::Windows::ApplicationModel::StartupTask::GetForCurrentPackageAsync()).GetAt(0);
 	return task;
 }
 

@@ -65,8 +65,8 @@ public:
 	}
 
 	// Some easy functions to retrieve the colour components
-	constexpr const SColour &GetCurrentColour() { return CurrCol; }
-	constexpr const SColour &GetOldColour() { return OldCol; }
+	constexpr const SColour &GetCurrentColour() const { return CurrCol; }
+	constexpr const SColour &GetOldColour() const { return OldCol; }
 
 	constexpr void UpdateOldColour()
 	{

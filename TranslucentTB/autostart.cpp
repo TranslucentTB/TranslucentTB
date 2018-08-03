@@ -15,64 +15,70 @@
 #include "registrykey.hpp"
 #include "win32.hpp"
 
-Autostart::StartupState Autostart::GetStartupState()
+Autostart::operation_t<Autostart::StartupState> Autostart::GetStartupState()
 {
-	LRESULT error = RegGetValue(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Run)", NAME, RRF_RT_REG_SZ, NULL, NULL, NULL);
-	if (error == ERROR_FILE_NOT_FOUND)
+	return concurrency::create_task([]() -> StartupState
 	{
-		return StartupState::Disabled;
-	}
-	else if (error == ERROR_SUCCESS)
-	{
-		uint8_t status[12];
-		DWORD size = sizeof(status);
-		error = RegGetValue(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run)", NAME, RRF_RT_REG_BINARY, NULL, &status, &size);
-		if (error != ERROR_FILE_NOT_FOUND && ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup disable state failed.") && status[0] == 3)
+		LRESULT error = RegGetValue(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Run)", NAME, RRF_RT_REG_SZ, NULL, NULL, NULL);
+		if (error == ERROR_FILE_NOT_FOUND)
 		{
-			return StartupState::DisabledByUser;
+			return StartupState::Disabled;
+		}
+		else if (error == ERROR_SUCCESS)
+		{
+			uint8_t status[12];
+			DWORD size = sizeof(status);
+			error = RegGetValue(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run)", NAME, RRF_RT_REG_BINARY, NULL, &status, &size);
+			if (error != ERROR_FILE_NOT_FOUND && ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup disable state failed.") && status[0] == 3)
+			{
+				return StartupState::DisabledByUser;
+			}
+			else
+			{
+				return StartupState::Enabled;
+			}
 		}
 		else
 		{
-			return StartupState::Enabled;
+			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup state failed.");
+			return StartupState::Disabled;
 		}
-	}
-	else
-	{
-		ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup state failed.");
-		return StartupState::Disabled;
-	}
+	});
 }
 
-void Autostart::SetStartupState(const StartupState &state)
+Autostart::action_t Autostart::SetStartupState(const StartupState &state)
 {
-	RegistryKey key(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Run)");
-	if (key)
+	return concurrency::create_task([=]
 	{
-		if (state == StartupState::Enabled)
+		RegistryKey key(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Run)");
+		if (key)
 		{
-			const std::wstring exeLocation = L'"' + win32::GetExeLocation() + L'"';
+			if (state == StartupState::Enabled)
+			{
+				const std::wstring exeLocation = L'"' + win32::GetExeLocation() + L'"';
 
-			const LRESULT error = RegSetValueEx(key, NAME, 0, REG_SZ, reinterpret_cast<const BYTE *>(exeLocation.c_str()), exeLocation.length() * sizeof(wchar_t));
-			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while setting startup registry value!");
+				const LRESULT error = RegSetValueEx(key, NAME, 0, REG_SZ, reinterpret_cast<const BYTE *>(exeLocation.c_str()), exeLocation.length() * sizeof(wchar_t));
+				ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while setting startup registry value!");
+			}
+			else if (state == StartupState::Disabled)
+			{
+				ErrorHandle(HRESULT_FROM_WIN32(RegDeleteValue(key, NAME)), Error::Level::Error, L"Error while deleting startup registry value!");
+			}
+			else
+			{
+				throw std::invalid_argument("Can only set state to enabled or disabled");
+			}
 		}
-		else if (state == StartupState::Disabled)
-		{
-			ErrorHandle(HRESULT_FROM_WIN32(RegDeleteValue(key, NAME)), Error::Level::Error, L"Error while deleting startup registry value!");
-		}
-		else
-		{
-			throw std::invalid_argument("Can only set state to enabled or disabled");
-		}
-	}
+	});
 }
 #else
 #include "uwp.hpp"
 
-Autostart::StartupState Autostart::GetStartupState()
+Autostart::operation_t<Autostart::StartupState> Autostart::GetStartupState()
 {
 	try
 	{
-		return UWP::GetApplicationStartupTask().State();
+		return (co_await UWP::GetApplicationStartupTask()).State();
 	}
 	catch (const winrt::hresult_error &error)
 	{
@@ -81,15 +87,15 @@ Autostart::StartupState Autostart::GetStartupState()
 	}
 }
 
-void Autostart::SetStartupState(const StartupState &state)
+Autostart::action_t Autostart::SetStartupState(const StartupState &state)
 {
 	try
 	{
-		const auto &task = UWP::GetApplicationStartupTask();
+		const auto task = co_await UWP::GetApplicationStartupTask();
 		switch (state)
 		{
 		case StartupState::Enabled:
-			task.RequestEnableAsync();
+			co_await task.RequestEnableAsync();
 			break;
 
 		case StartupState::Disabled:
@@ -103,7 +109,6 @@ void Autostart::SetStartupState(const StartupState &state)
 	catch (const winrt::hresult_error &error)
 	{
 		ErrorHandle(error.code(), Error::Level::Error, L"Changing startup task state failed!");
-		return;
 	}
 }
 #endif
