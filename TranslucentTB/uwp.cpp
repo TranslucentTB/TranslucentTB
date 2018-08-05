@@ -5,7 +5,7 @@
 winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::ApplicationModel::StartupTask> UWP::GetApplicationStartupTask()
 {
 	static auto task = (co_await winrt::Windows::ApplicationModel::StartupTask::GetForCurrentPackageAsync()).GetAt(0);
-	return task;
+	co_return task;
 }
 
 std::wstring UWP::GetApplicationFolderPath(const FolderType &type)

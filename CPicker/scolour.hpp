@@ -72,9 +72,8 @@ struct SColour {
 	// Updates HSV from RGB
 	constexpr void UpdateHSV()
 	{
-		// Due to Clang headers on MSBuild, can't use constexpr std::max(std::initializer_list)
-		const uint8_t &max = (std::max)((std::max)(r, g), b);
-		const uint8_t &min = (std::min)((std::min)(r, g), b);
+		const uint8_t &max = (std::max)({ r, g, b });
+		const uint8_t &min = (std::min)({ r, g, b });
 		const float delta = max - min;
 
 		if (max == 0)
@@ -84,7 +83,7 @@ struct SColour {
 		}
 
 		v = max / 255.0f * 100.0f;
-		s = delta / (float)max * 100.0f;
+		s = delta / static_cast<float>(max) * 100.0f;
 
 		short temp = 0;
 		if (r == max)

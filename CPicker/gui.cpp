@@ -189,7 +189,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 		for (const auto &[buddy_id, slider_id, slider_max] : SLIDERS)
 		{
-			SendDlgItemMessage(hDlg, slider_id, UDM_SETBUDDY, (WPARAM)GetDlgItem(hDlg, buddy_id), 0);
+			SendDlgItemMessage(hDlg, slider_id, UDM_SETBUDDY, reinterpret_cast<WPARAM>(GetDlgItem(hDlg, buddy_id)), 0);
 			SendDlgItemMessage(hDlg, slider_id, UDM_SETRANGE32, 0, slider_max);
 		}
 		SendDlgItemMessage(hDlg, IDC_HEXSLIDER, UDM_SETBASE, 16, 0);
@@ -211,10 +211,10 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			sizeof(ti),
 			TTF_IDISHWND | TTF_SUBCLASS,
 			hDlg,
-			(UINT_PTR)GetDlgItem(hDlg, IDC_OLDCOLOR),
+			reinterpret_cast<UINT_PTR>(GetDlgItem(hDlg, IDC_OLDCOLOR)),
 		};
 		ti.lpszText = LPSTR_TEXTCALLBACK;
-		SendMessage(init_pair->first->m_oldColorTip, TTM_ADDTOOL, 0, (LPARAM)&ti);
+		SendMessage(init_pair->first->m_oldColorTip, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&ti));
 		SendMessage(init_pair->first->m_oldColorTip, TTM_ACTIVATE, TRUE, 0);
 
 		return SendMessage(hDlg, WM_DPICHANGED, NULL, NULL);
@@ -293,13 +293,13 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		GetWindowRect(GetDlgItem(hDlg, IDC_ALPHASLIDE), &rectA);
 
 		BOOL result;
-		const uint8_t red   = SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
-		const uint8_t green = SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
-		const uint8_t blue  = SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+		const uint8_t red   = SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
+		const uint8_t green = SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
+		const uint8_t blue  = SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
 
-		const uint16_t hue       = SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
-		const uint8_t saturation = SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
-		const uint8_t value      = SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, (LPARAM)&result);
+		const uint16_t hue       = SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
+		const uint8_t saturation = SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
+		const uint8_t value      = SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
 
 		POINT p;
 		GetCursorPos(&p);
@@ -307,8 +307,8 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		// IDC_COLOR1 picked
 		if (PtInRect(&rectC1, p))
 		{
-			const float fx = ((p.x - rectC1.left) / (float)(rectC1.right - rectC1.left)) * 255.0f;
-			const float fy = ((p.y - rectC1.top) / (float)(rectC1.bottom - rectC1.top)) * 255.0f;
+			const float fx = ((p.x - rectC1.left) / static_cast<float>(rectC1.right - rectC1.left)) * 255.0f;
+			const float fy = ((p.y - rectC1.top) / static_cast<float>(rectC1.bottom - rectC1.top)) * 255.0f;
 
 			if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 			{
@@ -343,7 +343,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		// IDC_COLOR2 picked
 		else if (PtInRect(&rectC2, p))
 		{
-			const float fy = ((p.y - rectC2.top) / (float)(rectC2.bottom - rectC2.top)) * 255.0f;
+			const float fy = ((p.y - rectC2.top) / static_cast<float>(rectC2.bottom - rectC2.top)) * 255.0f;
 
 			if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 			{
@@ -378,7 +378,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		// IDC_ALPHASLIDE picked
 		else if (PtInRect(&rectA, p))
 		{
-			const float fy = ((p.y - rectA.top) / (float)(rectA.bottom - rectA.top)) * 255.0f;
+			const float fy = ((p.y - rectA.top) / static_cast<float>(rectA.bottom - rectA.top)) * 255.0f;
 
 			gui_data->m_picker->SetAlpha(255 - fy);
 		}
@@ -429,7 +429,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				else
 				{
 					BOOL result;
-					SetDlgItemInt(hDlg, buddy_id, SendDlgItemMessage(hDlg, slider_id, UDM_GETPOS, 0, (LPARAM)&result), false);
+					SetDlgItemInt(hDlg, buddy_id, SendDlgItemMessage(hDlg, slider_id, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)), false);
 				}
 			}
 			gui_data->m_changingText = false;
@@ -450,7 +450,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			case IDC_GREEN:
 			case IDC_BLUE:
 			{
-				gui_data->m_picker->SetRGB(SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, (LPARAM)&result), SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, (LPARAM)&result), SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, (LPARAM)&result));
+				gui_data->m_picker->SetRGB(SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)), SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)), SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)));
 				break;
 			}
 
@@ -458,13 +458,13 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			case IDC_SATURATION:
 			case IDC_VALUE:
 			{
-				gui_data->m_picker->SetHSV(SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, (LPARAM)&result), SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, (LPARAM)&result), SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, (LPARAM)&result));
+				gui_data->m_picker->SetHSV(SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)), SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)), SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)));
 				break;
 			}
 
 			case IDC_ALPHA:
 			{
-				gui_data->m_picker->SetAlpha(SendDlgItemMessage(hDlg, IDC_ASLIDER, UDM_GETPOS, 0, (LPARAM)&result));
+				gui_data->m_picker->SetAlpha(SendDlgItemMessage(hDlg, IDC_ASLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)));
 				break;
 			}
 

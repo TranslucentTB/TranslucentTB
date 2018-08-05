@@ -15,15 +15,12 @@ constexpr const std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> CalculateHu
 	tempcol.v = 100;
 	tempcol.UpdateRGB();
 
-	const float step = 359 / (float)HueGradientPrecision;
+	const float step = 359 / static_cast<float>(HueGradientPrecision);
 
 	for (uint8_t i = 0; i < HueGradientPrecision; i++)
 	{
-		// Due to some weird MSBuild thing, C++17 is half implemented in Clang-CL.
-		// Because of that, we don't have constexpr operator[] on std::array.
-		// Access the raw underlying array directly instead.
-		gradientStops._Elems[i] = {
-			i / (float)(HueGradientPrecision - 1),
+		gradientStops[i] = {
+			i / static_cast<float>(HueGradientPrecision - 1),
 			{
 				tempcol.r / 255.0f,
 				tempcol.g / 255.0f,

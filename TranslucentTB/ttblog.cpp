@@ -21,8 +21,7 @@
 #include "uwp.hpp"
 #endif
 
-bool Log::m_didInit = false;
-Log::handle_t Log::m_FileHandle;
+std::optional<Log::handle_t> Log::m_FileHandle;
 std::wstring Log::m_File;
 
 std::pair<HRESULT, std::wstring> Log::InitStream()
@@ -98,14 +97,15 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 		return { hr, L"Failed to combine log folder location and log file name!" };
 	}
 
-	m_FileHandle = handle_t(CreateFile(log_file, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL));
-	if (!m_FileHandle.IsValid())
+	HANDLE unsafe_handle = CreateFile(log_file, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+	m_FileHandle.emplace(unsafe_handle);
+	if (!m_FileHandle->IsValid())
 	{
 		return { HRESULT_FROM_WIN32(GetLastError()), L"Failed to create and open log file!" };
 	}
 
 	DWORD bytesWritten;
-	if (!WriteFile(m_FileHandle.Get(), L"\uFEFF", sizeof(wchar_t), &bytesWritten, NULL))
+	if (!WriteFile(m_FileHandle->Get(), L"\uFEFF", sizeof(wchar_t), &bytesWritten, NULL))
 	{
 		LastErrorHandle(Error::Level::Debug, L"Failed to write byte-order marker.");
 	}
@@ -129,10 +129,9 @@ const std::wstring &Log::file()
 
 void Log::OutputMessage(const std::wstring &message)
 {
-	if (!m_didInit)
+	if (!m_FileHandle.has_value())
 	{
 		auto [hr, err_message] = InitStream();
-		m_didInit = true;
 		if (FAILED(hr))
 		{
 			std::wstring boxbuffer = err_message +
@@ -144,7 +143,7 @@ void Log::OutputMessage(const std::wstring &message)
 
 	OutputDebugString((message + L'\n').c_str());
 
-	if (m_FileHandle.IsValid())
+	if (m_FileHandle->IsValid())
 	{
 		std::time_t current_time = std::time(0);
 
@@ -156,7 +155,7 @@ void Log::OutputMessage(const std::wstring &message)
 		const std::wstring error = buffer.str();
 
 		DWORD bytesWritten;
-		if (!WriteFile(m_FileHandle.Get(), error.c_str(), error.length() * sizeof(wchar_t), &bytesWritten, NULL))
+		if (!WriteFile(m_FileHandle->Get(), error.c_str(), error.length() * sizeof(wchar_t), &bytesWritten, NULL))
 		{
 			LastErrorHandle(Error::Level::Debug, L"Writing to log file failed.");
 		}
@@ -165,7 +164,7 @@ void Log::OutputMessage(const std::wstring &message)
 
 void Log::Flush()
 {
-	if (!FlushFileBuffers(m_FileHandle.Get()))
+	if (!FlushFileBuffers(m_FileHandle->Get()))
 	{
 		LastErrorHandle(Error::Level::Debug, L"Flusing log file buffer failed.");
 	}

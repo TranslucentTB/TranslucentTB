@@ -73,14 +73,14 @@ Check the following workloads:
 - Desktop development with C++
 - .NET desktop development
 
-Make sure you also install the following components:
+You also need to install the following individual components:
 
-- VC++ 2015.3 v14.00 (v140) toolset for desktop
+- Any of the VC++ 2017 toolsets (latest prefered)
 - Windows 10 SDK (10.0.17134.0)
 - .NET Framework 4.6.2 SDK
 - .NET Framework 4.6.2 targeting pack
 
-You also need the [Clang compiler for Windows](http://releases.llvm.org/download.html) and [Inno Setup](http://jrsoftware.org/isdl.php).
+You also need the [Clang compiler for Windows](http://releases.llvm.org/download.html) and [Inno Setup](http://jrsoftware.org/isdl.php). **Make sure Clang is in your PATH!** (there's an option in the installer to do that automatically)
 
 <!-- markdownlint-disable MD033 -->
 Once you have that installed, open `TranslucentTB.sln`, and press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to build the solution.

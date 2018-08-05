@@ -62,6 +62,11 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 
 	ComPtr<ID3D11Device> d3device;
 	hr = CreateDevice(D3D_DRIVER_TYPE_HARDWARE, &d3device, &m_d3dc);
+	if (hr == DXGI_ERROR_UNSUPPORTED)
+	{
+		hr = CreateDevice(D3D_DRIVER_TYPE_WARP, &d3device, &m_d3dc);
+	}
+
 	if (FAILED(hr))
 	{
 		return hr;

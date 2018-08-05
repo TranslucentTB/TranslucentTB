@@ -46,7 +46,7 @@ Autostart::operation_t<Autostart::StartupState> Autostart::GetStartupState()
 	});
 }
 
-Autostart::action_t Autostart::SetStartupState(const StartupState &state)
+Autostart::action_t Autostart::SetStartupState(StartupState state)
 {
 	return concurrency::create_task([=]
 	{
@@ -72,22 +72,23 @@ Autostart::action_t Autostart::SetStartupState(const StartupState &state)
 	});
 }
 #else
+#include "ttblog.hpp"
 #include "uwp.hpp"
 
 Autostart::operation_t<Autostart::StartupState> Autostart::GetStartupState()
 {
 	try
 	{
-		return (co_await UWP::GetApplicationStartupTask()).State();
+		co_return (co_await UWP::GetApplicationStartupTask()).State();
 	}
 	catch (const winrt::hresult_error &error)
 	{
 		ErrorHandle(error.code(), Error::Level::Log, L"Getting startup task state failed.");
-		return StartupState::Disabled;
+		co_return StartupState::Disabled;
 	}
 }
 
-Autostart::action_t Autostart::SetStartupState(const StartupState &state)
+Autostart::action_t Autostart::SetStartupState(StartupState state)
 {
 	try
 	{
@@ -95,8 +96,14 @@ Autostart::action_t Autostart::SetStartupState(const StartupState &state)
 		switch (state)
 		{
 		case StartupState::Enabled:
-			co_await task.RequestEnableAsync();
+		{
+			const Autostart::StartupState new_state = co_await task.RequestEnableAsync();
+			if (new_state != state)
+			{
+				Log::OutputMessage(L"Failed to change startup state.");
+			}
 			break;
+		}
 
 		case StartupState::Disabled:
 			task.Disable();
