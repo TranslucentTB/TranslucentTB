@@ -72,8 +72,8 @@ struct SColour {
 	// Updates HSV from RGB
 	constexpr void UpdateHSV()
 	{
-		const uint8_t &max = (std::max)({ r, g, b });
-		const uint8_t &min = (std::min)({ r, g, b });
+		const uint8_t max = (std::max)({ r, g, b });
+		const uint8_t min = (std::min)({ r, g, b });
 		const float delta = max - min;
 
 		if (max == 0)
