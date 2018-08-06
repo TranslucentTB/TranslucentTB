@@ -8,17 +8,17 @@ winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::ApplicationModel::St
 	co_return task;
 }
 
-std::wstring UWP::GetApplicationFolderPath(const FolderType &type)
+winrt::hstring UWP::GetApplicationFolderPath(const FolderType &type)
 {
 	static const auto application_data = winrt::Windows::Storage::ApplicationData::Current();
 
 	switch (type)
 	{
 	case FolderType::Temporary:
-		return application_data.TemporaryFolder().Path().c_str();
+		return application_data.TemporaryFolder().Path();
 
 	case FolderType::Roaming:
-		return application_data.RoamingFolder().Path().c_str();
+		return application_data.RoamingFolder().Path();
 
 	// Apparently we can cast any integer to an enum class, so yeah...
 	default:

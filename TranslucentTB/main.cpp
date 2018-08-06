@@ -160,7 +160,7 @@ void GetPaths()
 #else
 	try
 	{
-		std::wstring appData_str = UWP::GetApplicationFolderPath(UWP::FolderType::Roaming);
+		winrt::hstring appData_str = UWP::GetApplicationFolderPath(UWP::FolderType::Roaming);
 		const wchar_t *appData = appData_str.c_str();
 #endif
 
@@ -300,17 +300,13 @@ void TogglePeek(const bool &status)
 void RefreshAutostartMenu(HMENU menu, Autostart::StartupState state)
 {
 	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, !(state == Autostart::StartupState::DisabledByUser
-#ifdef STORE
 		|| state == Autostart::StartupState::DisabledByPolicy
-		|| state == Autostart::StartupState::EnabledByPolicy
-#endif
-		), TrayContextMenu::ControlsEnabled);
+		|| state == Autostart::StartupState::EnabledByPolicy),
+		TrayContextMenu::ControlsEnabled);
 
 	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, state == Autostart::StartupState::Enabled
-#ifdef STORE
-		|| state == Autostart::StartupState::EnabledByPolicy
-#endif
-		, TrayContextMenu::Toggle);
+		|| state == Autostart::StartupState::EnabledByPolicy,
+		TrayContextMenu::Toggle);
 
 	std::wstring autostart_text;
 	switch (state)
@@ -318,14 +314,12 @@ void RefreshAutostartMenu(HMENU menu, Autostart::StartupState state)
 	case Autostart::StartupState::DisabledByUser:
 		autostart_text = L"Startup has been disabled in Task Manager";
 		break;
-#ifdef STORE
 	case Autostart::StartupState::DisabledByPolicy:
 		autostart_text = L"Startup has been disabled in Group Policy";
 		break;
 	case Autostart::StartupState::EnabledByPolicy:
 		autostart_text = L"Startup has been enabled in Group Policy";
 		break;
-#endif
 	case Autostart::StartupState::Enabled:
 	case Autostart::StartupState::Disabled:
 		autostart_text = L"Open at boot";

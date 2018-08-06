@@ -46,7 +46,7 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 #else
 	try
 	{
-		std::wstring tempFolder_str = UWP::GetApplicationFolderPath(UWP::FolderType::Temporary);
+		winrt::hstring tempFolder_str = UWP::GetApplicationFolderPath(UWP::FolderType::Temporary);
 		const wchar_t *log_folder = tempFolder_str.c_str();
 #endif
 

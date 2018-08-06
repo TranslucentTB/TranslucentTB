@@ -14,7 +14,7 @@ public:
 		Roaming
 	};
 
-	static std::wstring GetApplicationFolderPath(const FolderType &type);
+	static winrt::hstring GetApplicationFolderPath(const FolderType &type);
 
 };
 
