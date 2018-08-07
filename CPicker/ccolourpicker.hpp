@@ -7,7 +7,7 @@
 #include "scolour.hpp"
 
 class __declspec(
-#if defined(_CPICKER_DLL)
+#ifdef _CPICKER_DLL
 dllexport
 #else
 dllimport
