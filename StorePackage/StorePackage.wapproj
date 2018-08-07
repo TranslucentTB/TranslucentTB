@@ -35,7 +35,7 @@
       <Link>TranslucentTB\config.cfg</Link>
     </Content>
     <!-- TODO: Remove this when bug fixed https://developercommunity.visualstudio.com/comments/269597/view.html -->
-    <Content Include="..\Release\CPicker.dll">
+    <Content Include="..\Store\CPicker.dll">
       <Link>TranslucentTB\CPicker.dll</Link>
     </Content>
     <Content Include="..\TranslucentTB\dynamic-ws-exclude.csv">
