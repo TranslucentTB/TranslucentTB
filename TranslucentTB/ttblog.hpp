@@ -16,7 +16,14 @@ private:
 	static std::pair<HRESULT, std::wstring> InitStream();
 
 public:
-	static const std::wstring &file();
+	inline static bool init_done()
+	{
+		return m_FileHandle.has_value();
+	}
+	inline static const std::wstring &file()
+	{
+		return m_File;
+	}
 	static void OutputMessage(const std::wstring &message);
 	static void Flush();
 };

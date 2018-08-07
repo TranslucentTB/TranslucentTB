@@ -297,7 +297,7 @@ void TogglePeek(const bool &status)
 
 #pragma region Tray
 
-void RefreshAutostartMenu(HMENU menu, Autostart::StartupState state)
+void RefreshAutostartMenu(HMENU menu, const Autostart::StartupState &state)
 {
 	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, !(state == Autostart::StartupState::DisabledByUser
 		|| state == Autostart::StartupState::DisabledByPolicy
@@ -329,10 +329,10 @@ void RefreshAutostartMenu(HMENU menu, Autostart::StartupState state)
 
 void RefreshMenu(HMENU menu)
 {
-	Autostart::GetStartupState().as_then(
-	{
-		RefreshAutostartMenu(menu, result);
-	});
+	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, false, TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, false, TrayContextMenu::Toggle);
+	TrayContextMenu::ChangeItemText(menu, IDM_AUTOSTART, L"Querying startup state...");
+	Autostart::GetStartupState().then(std::bind(&RefreshAutostartMenu, menu, std::placeholders::_1));
 
 
 	static bool initial_check_done = false;
@@ -355,7 +355,12 @@ void RefreshMenu(HMENU menu)
 
 	const bool has_log = !Log::file().empty();
 	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, has_log, TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::ChangeItemText(menu, IDM_OPENLOG, has_log ? L"Open log file" : L"Nothing has been logged yet");
+	TrayContextMenu::ChangeItemText(menu, IDM_OPENLOG, has_log
+		? L"Open log file"
+		: Log::init_done()
+			? L"Error when initializing log file"
+			: L"Nothing has been logged yet"
+	);
 
 	TrayContextMenu::RefreshBool(IDM_REGULAR_COLOR,   menu,
 		Config::REGULAR_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
@@ -635,7 +640,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 		tray.RegisterContextMenuCallback(IDM_AUTOSTART, []
 		{
-			Autostart::GetStartupState().as_then(
+			Autostart::GetStartupState().then([](const Autostart::StartupState &result)
 			{
 				Autostart::SetStartupState(result == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
 			});

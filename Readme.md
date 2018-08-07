@@ -80,7 +80,7 @@ You also need to install the following individual components:
 - .NET Framework 4.6.2 SDK
 - .NET Framework 4.6.2 targeting pack
 
-You also need the [Clang compiler for Windows](http://releases.llvm.org/download.html) and [Inno Setup](http://jrsoftware.org/isdl.php). **Make sure Clang is in your PATH!** (there's an option in the installer to do that automatically)
+You also need the [Clang compiler for Windows](http://releases.llvm.org/download.html) and [Inno Setup](http://jrsoftware.org/isdl.php).
 
 <!-- markdownlint-disable MD033 -->
 Once you have that installed, open `TranslucentTB.sln`, and press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to build the solution.

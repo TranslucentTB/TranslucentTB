@@ -122,14 +122,9 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 #endif
 }
 
-const std::wstring &Log::file()
-{
-	return m_File;
-}
-
 void Log::OutputMessage(const std::wstring &message)
 {
-	if (!m_FileHandle.has_value())
+	if (!init_done())
 	{
 		auto [hr, err_message] = InitStream();
 		if (FAILED(hr))

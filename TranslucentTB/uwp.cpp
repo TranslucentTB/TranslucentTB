@@ -1,11 +1,13 @@
-#ifdef STORE
 #include "uwp.hpp"
 #include <winrt/Windows.Storage.h>
 
-winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::ApplicationModel::StartupTask> UWP::GetApplicationStartupTask()
+concurrency::task<const winrt::Windows::ApplicationModel::StartupTask *> UWP::GetApplicationStartupTask()
 {
-	static auto task = (co_await winrt::Windows::ApplicationModel::StartupTask::GetForCurrentPackageAsync()).GetAt(0);
-	co_return task;
+	return concurrency::create_task([]() -> const winrt::Windows::ApplicationModel::StartupTask *
+	{
+		static const auto task = winrt::Windows::ApplicationModel::StartupTask::GetForCurrentPackageAsync().get().GetAt(0);
+		return &task;
+	});
 }
 
 winrt::hstring UWP::GetApplicationFolderPath(const FolderType &type)
@@ -25,5 +27,3 @@ winrt::hstring UWP::GetApplicationFolderPath(const FolderType &type)
 		throw std::invalid_argument("type was not one of the known values");
 	}
 }
-
-#endif // STORE

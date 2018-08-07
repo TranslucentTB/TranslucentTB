@@ -1,13 +1,13 @@
 #pragma once
-#ifdef STORE
-
 #include <string>
+#include <ppltasks.h>
 #include <winrt/Windows.ApplicationModel.h>
 
 class UWP {
 
 public:
-	static winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::ApplicationModel::StartupTask> GetApplicationStartupTask();
+	// task requires a default constructible value. StartupTask isn't, but a pointer to it is.
+	static concurrency::task<const winrt::Windows::ApplicationModel::StartupTask *> GetApplicationStartupTask();
 
 	enum class FolderType {
 		Temporary,
@@ -17,5 +17,3 @@ public:
 	static winrt::hstring GetApplicationFolderPath(const FolderType &type);
 
 };
-
-#endif // STORE
