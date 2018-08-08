@@ -30,7 +30,7 @@ public:
 	inline MENUCALLBACKCOOKIE RegisterContextMenuCallback(unsigned int item, const callback_t &callback)
 	{
 		unsigned short secret = Util::GetRandomNumber<unsigned short>();
-		m_MenuCallbackMap[item].push_back({ secret, callback });
+		m_MenuCallbackMap[item].emplace_back(secret, callback);
 
 		return (static_cast<MENUCALLBACKCOOKIE>(secret) << 32) + item;
 	}
@@ -107,7 +107,7 @@ public:
 		unsigned int min = min_p->second;
 		unsigned int max = max_p->second;
 
-		m_RefreshFunctions.push_back([this, min, max, &value, &map]
+		m_RefreshFunctions.emplace_back([this, min, max, &value, &map]
 		{
 			RefreshEnum(m_Menu, min, max, map.at(value));
 		});

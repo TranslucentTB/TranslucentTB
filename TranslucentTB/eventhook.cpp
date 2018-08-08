@@ -12,7 +12,7 @@ EventHook::EventHook(const DWORD &min, const DWORD &max, const callback_t &callb
 	m_Handle = SetWinEventHook(min, max, hMod, RawHookCallback, idProcess, idThread, flags);
 	if (m_Handle)
 	{
-		GetMap()[m_Handle] = callback;
+		GetMap().emplace(m_Handle, callback);
 	}
 	else
 	{

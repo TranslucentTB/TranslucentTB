@@ -4,25 +4,22 @@
 #include <d3d11.h>
 #include <type_traits>
 #include <utility>
-#include <wrl/client.h>
+#include <winrt/base.h>
 
 #include "scolour.hpp"
 
 class RenderContext {
-protected:
-	template<typename T>
-	using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 private:
 	static HRESULT CreateDevice(const D3D_DRIVER_TYPE &type, ID3D11Device **device, ID3D11DeviceContext **context);
 
 	ID2D1Factory3 *const m_factory;
-	ComPtr<IDXGISwapChain1> m_swapChain;
-	ComPtr<ID3D11DeviceContext> m_d3dc;
+	winrt::com_ptr<IDXGISwapChain1> m_swapChain;
+	winrt::com_ptr<ID3D11DeviceContext> m_d3dc;
 
 protected:
-	ComPtr<ID2D1DeviceContext2> m_dc;
-	ComPtr<ID2D1SolidColorBrush> m_brush;
+	winrt::com_ptr<ID2D1DeviceContext2> m_dc;
+	winrt::com_ptr<ID2D1SolidColorBrush> m_brush;
 	D2D1_SIZE_F m_size;
 
 	HRESULT CreateGradient(ID2D1LinearGradientBrush **const brush, const D2D1_COLOR_F &top, const D2D1_COLOR_F &bottom);
@@ -93,7 +90,7 @@ protected:
 
 	inline DrawContext BeginDraw()
 	{
-		return DrawContext(m_dc.Get(), m_swapChain.Get());
+		return DrawContext(m_dc.get(), m_swapChain.get());
 	}
 
 public:

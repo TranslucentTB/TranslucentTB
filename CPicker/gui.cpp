@@ -185,7 +185,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		initdialog_pair_t *const init_pair = reinterpret_cast<initdialog_pair_t *>(lParam);
 		SetWindowLongPtr(hDlg, DWLP_USER, reinterpret_cast<LONG_PTR>(init_pair->first));
 
-		m_pickerMap[init_pair->second] = hDlg;
+		m_pickerMap.emplace(init_pair->second, hDlg);
 
 		for (const auto &[buddy_id, slider_id, slider_max] : SLIDERS)
 		{
@@ -681,24 +681,23 @@ HRESULT GUI::CreateGUI(CColourPicker *picker, uint32_t &value, HWND hParent)
 {
 	if (m_pickerMap.count(&value) == 0)
 	{
-		ID2D1Factory3 *factory;
 		const D2D1_FACTORY_OPTIONS fo = {
 #ifdef _DEBUG
 			D2D1_DEBUG_LEVEL_INFORMATION
 #endif
 		};
 
-		const HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, fo, &factory);
+		winrt::com_ptr<ID2D1Factory3> factory;
+		const HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, fo, factory.put());
 		if (FAILED(hr))
 		{
 			return hr;
 		}
 
-		GUI gui_inst(picker, factory);
+		GUI gui_inst(picker, factory.get());
 		initdialog_pair_t init_pair(&gui_inst, &value);
 		INT_PTR result = DialogBoxParam(DllData::GetInstanceHandle(), MAKEINTRESOURCE(IDD_COLORPICKER), hParent, ColourPickerDlgProc, reinterpret_cast<LPARAM>(&init_pair));
 		m_pickerMap.erase(&value);
-		factory->Release();
 		if (result == 0)
 		{
 			return HRESULT_FROM_WIN32(ERROR_INVALID_WINDOW_HANDLE);

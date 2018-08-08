@@ -138,10 +138,10 @@
     <ClInclude Include="appvisibilitysink.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="classiccomptr.hpp">
+    <ClInclude Include="findwindowiterator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="findwindowiterator.hpp">
+    <ClInclude Include="createinstance.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

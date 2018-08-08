@@ -33,9 +33,9 @@
     <ClInclude Include="autofree.hpp" />
     <ClInclude Include="autostart.hpp" />
     <ClInclude Include="blacklist.hpp" />
-    <ClInclude Include="classiccomptr.hpp" />
     <ClInclude Include="clipboardcontext.hpp" />
     <ClInclude Include="common.hpp" />
+    <ClInclude Include="createinstance.hpp" />
     <ClInclude Include="eventhook.hpp" />
     <ClInclude Include="findwindowiterator.hpp" />
     <ClInclude Include="messagewindow.hpp" />

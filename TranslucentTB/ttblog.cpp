@@ -21,7 +21,7 @@
 #include "uwp.hpp"
 #endif
 
-std::optional<Log::handle_t> Log::m_FileHandle;
+std::optional<winrt::file_handle> Log::m_FileHandle;
 std::wstring Log::m_File;
 
 std::pair<HRESULT, std::wstring> Log::InitStream()
@@ -97,15 +97,14 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 		return { hr, L"Failed to combine log folder location and log file name!" };
 	}
 
-	HANDLE unsafe_handle = CreateFile(log_file, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
-	m_FileHandle.emplace(unsafe_handle);
-	if (!m_FileHandle->IsValid())
+	m_FileHandle = CreateFile(log_file, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+	if (!*m_FileHandle)
 	{
 		return { HRESULT_FROM_WIN32(GetLastError()), L"Failed to create and open log file!" };
 	}
 
 	DWORD bytesWritten;
-	if (!WriteFile(m_FileHandle->Get(), L"\uFEFF", sizeof(wchar_t), &bytesWritten, NULL))
+	if (!WriteFile(m_FileHandle->get(), L"\uFEFF", sizeof(wchar_t), &bytesWritten, NULL))
 	{
 		LastErrorHandle(Error::Level::Debug, L"Failed to write byte-order marker.");
 	}
@@ -138,7 +137,7 @@ void Log::OutputMessage(const std::wstring &message)
 
 	OutputDebugString((message + L'\n').c_str());
 
-	if (m_FileHandle->IsValid())
+	if (*m_FileHandle)
 	{
 		std::time_t current_time = std::time(0);
 
@@ -150,7 +149,7 @@ void Log::OutputMessage(const std::wstring &message)
 		const std::wstring error = buffer.str();
 
 		DWORD bytesWritten;
-		if (!WriteFile(m_FileHandle->Get(), error.c_str(), error.length() * sizeof(wchar_t), &bytesWritten, NULL))
+		if (!WriteFile(m_FileHandle->get(), error.c_str(), error.length() * sizeof(wchar_t), &bytesWritten, NULL))
 		{
 			LastErrorHandle(Error::Level::Debug, L"Writing to log file failed.");
 		}
@@ -159,7 +158,7 @@ void Log::OutputMessage(const std::wstring &message)
 
 void Log::Flush()
 {
-	if (!FlushFileBuffers(m_FileHandle->Get()))
+	if (!FlushFileBuffers(m_FileHandle->get()))
 	{
 		LastErrorHandle(Error::Level::Debug, L"Flusing log file buffer failed.");
 	}

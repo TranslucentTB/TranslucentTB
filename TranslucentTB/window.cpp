@@ -1,9 +1,10 @@
 #include "window.hpp"
+#include <optional>
 #include <ShObjIdl.h>
-#include <wrl/wrappers/corewrappers.h>
+#include <winrt/base.h>
 #include <vector>
 
-#include "classiccomptr.hpp"
+#include "createinstance.hpp"
 #include "common.hpp"
 #include "eventhook.hpp"
 #include "ttberror.hpp"
@@ -88,9 +89,8 @@ const std::wstring &Window::filename() const
 		DWORD ProcessId;
 		GetWindowThreadProcessId(m_WindowHandle, &ProcessId);
 
-		namespace wrap = Microsoft::WRL::Wrappers;
-		wrap::HandleT<wrap::HandleTraits::HANDLENullTraits> processHandle(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, ProcessId));
-		if (!processHandle.IsValid())
+		winrt::handle processHandle(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, ProcessId));
+		if (!processHandle)
 		{
 			LastErrorHandle(Error::Level::Log, L"Getting process handle of a window failed.");
 			return m_Filenames[m_WindowHandle] = L"";
@@ -100,7 +100,7 @@ const std::wstring &Window::filename() const
 		std::wstring exeName;
 		exeName.resize(path_Size);
 
-		if (!QueryFullProcessImageName(processHandle.Get(), 0, exeName.data(), &path_Size))
+		if (!QueryFullProcessImageName(processHandle.get(), 0, exeName.data(), &path_Size))
 		{
 			LastErrorHandle(Error::Level::Log, L"Getting file name of a window failed.");
 			return m_Filenames[m_WindowHandle] = L"";
@@ -118,10 +118,10 @@ const std::wstring &Window::filename() const
 
 bool Window::on_current_desktop() const
 {
-	static ClassicComPtr<IVirtualDesktopManager> desktop_manager(CLSID_VirtualDesktopManager);
+	static auto desktop_manager = create_instance<IVirtualDesktopManager>(CLSID_VirtualDesktopManager);
 
 	BOOL on_current_desktop;
-	if (desktop_manager.Get() != nullptr && ErrorHandle(desktop_manager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop), Error::Level::Log, L"Verifying if a window is on the current virtual desktop failed."))
+	if (desktop_manager && ErrorHandle(desktop_manager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop), Error::Level::Log, L"Verifying if a window is on the current virtual desktop failed."))
 	{
 		return on_current_desktop;
 	}

@@ -24,13 +24,13 @@ HRESULT RenderContext::CreateGradient(ID2D1LinearGradientBrush **const brush, co
 	};
 
 	HRESULT hr;
-	ComPtr<ID2D1GradientStopCollection> pGradientStops;
+	winrt::com_ptr<ID2D1GradientStopCollection> pGradientStops;
 	hr = m_dc->CreateGradientStopCollection(
 		gradientStops,
 		2,
 		D2D1_GAMMA_1_0,
 		D2D1_EXTEND_MODE_CLAMP,
-		&pGradientStops
+		pGradientStops.put()
 	);
 	if (FAILED(hr))
 	{
@@ -42,7 +42,7 @@ HRESULT RenderContext::CreateGradient(ID2D1LinearGradientBrush **const brush, co
 			D2D1::Point2F(0.0f, 0.0f),
 			D2D1::Point2F(0.0f, m_size.height)
 		),
-		pGradientStops.Get(),
+		pGradientStops.get(),
 		brush
 	);
 
@@ -58,13 +58,18 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 {
 	HRESULT hr;
 
-	ComPtr<ID3D11DeviceContext> oldd3dc = m_d3dc;
+	winrt::com_ptr<ID3D11DeviceContext> oldd3dc = m_d3dc;
 
-	ComPtr<ID3D11Device> d3device;
-	hr = CreateDevice(D3D_DRIVER_TYPE_HARDWARE, &d3device, &m_d3dc);
+	m_swapChain = nullptr;
+	m_d3dc = nullptr;
+	m_dc = nullptr;
+	m_brush = nullptr;
+
+	winrt::com_ptr<ID3D11Device> d3device;
+	hr = CreateDevice(D3D_DRIVER_TYPE_HARDWARE, d3device.put(), m_d3dc.put());
 	if (hr == DXGI_ERROR_UNSUPPORTED)
 	{
-		hr = CreateDevice(D3D_DRIVER_TYPE_WARP, &d3device, &m_d3dc);
+		hr = CreateDevice(D3D_DRIVER_TYPE_WARP, d3device.put(), m_d3dc.put());
 	}
 
 	if (FAILED(hr))
@@ -72,8 +77,8 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 		return hr;
 	}
 
-	ComPtr<IDXGIDevice1> dxdevice;
-	hr = d3device.As(&dxdevice);
+	winrt::com_ptr<IDXGIDevice1> dxdevice;
+	hr = d3device->QueryInterface(dxdevice.put());
 	if (FAILED(hr))
 	{
 		return hr;
@@ -85,35 +90,35 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 		return hr;
 	}
 
-	ComPtr<IDXGIAdapter> adapter;
-	hr = dxdevice->GetAdapter(&adapter);
+	winrt::com_ptr<IDXGIAdapter> adapter;
+	hr = dxdevice->GetAdapter(adapter.put());
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	ComPtr<IDXGIFactory2> factory;
-	hr = adapter->GetParent(IID_PPV_ARGS(&factory));
+	winrt::com_ptr<IDXGIFactory2> factory;
+	hr = adapter->GetParent(IID_PPV_ARGS(factory.put()));
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	ComPtr<ID2D1Device2> device;
-	hr = m_factory->CreateDevice(dxdevice.Get(), &device);
+	winrt::com_ptr<ID2D1Device2> device;
+	hr = m_factory->CreateDevice(dxdevice.get(), device.put());
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	hr = device->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, &m_dc);
+	hr = device->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, m_dc.put());
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
 	// https://docs.microsoft.com/en-us/windows/desktop/api/d3d11/nf-d3d11-id3d11devicecontext-flush#Defer_Issues_with_Flip
-	if (oldd3dc.Get() != nullptr)
+	if (oldd3dc)
 	{
 		oldd3dc->ClearState();
 		oldd3dc->Flush();
@@ -126,14 +131,14 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 	swapdesc.BufferCount = 2;
 	swapdesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
 
-	hr = factory->CreateSwapChainForHwnd(d3device.Get(), hwnd, &swapdesc, nullptr, nullptr, &m_swapChain);
+	hr = factory->CreateSwapChainForHwnd(d3device.get(), hwnd, &swapdesc, nullptr, nullptr, m_swapChain.put());
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	ComPtr<IDXGISurface> surface;
-	hr = m_swapChain->GetBuffer(0, IID_PPV_ARGS(&surface));
+	winrt::com_ptr<IDXGISurface> surface;
+	hr = m_swapChain->GetBuffer(0, IID_PPV_ARGS(surface.put()));
 	if (FAILED(hr))
 	{
 		return hr;
@@ -148,18 +153,18 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 		dpi
 	);
 
-	ComPtr<ID2D1Bitmap1> bitmap;
-	hr = m_dc->CreateBitmapFromDxgiSurface(surface.Get(), props, &bitmap);
+	winrt::com_ptr<ID2D1Bitmap1> bitmap;
+	hr = m_dc->CreateBitmapFromDxgiSurface(surface.get(), props, bitmap.put());
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	m_dc->SetTarget(bitmap.Get());
+	m_dc->SetTarget(bitmap.get());
 
 	m_size = m_dc->GetSize();
 
-	hr = m_dc->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &m_brush);
+	hr = m_dc->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), m_brush.put());
 	if (FAILED(hr))
 	{
 		return hr;

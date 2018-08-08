@@ -9,7 +9,7 @@
 #include <WinBase.h>
 #include <winerror.h>
 #include <winnt.h>
-#include <wrl/wrappers/corewrappers.h>
+#include <winrt/base.h>
 
 #include "autofree.hpp"
 #include "../CPicker/ccolourpicker.hpp"
@@ -118,26 +118,32 @@ bool win32::IsAtLeastBuild(const uint32_t &buildNumber)
 
 bool win32::IsSingleInstance()
 {
-	HANDLE mutex = CreateMutex(NULL, FALSE, ID);
-	LRESULT error = GetLastError();
-	bool return_value;
-	switch (error)
+	static bool opened_mutex = false;
+
+	if (!opened_mutex)
 	{
-	case ERROR_ALREADY_EXISTS:
-		return_value = false;
-		break;
+		static winrt::handle mutex = CreateMutex(NULL, FALSE, ID);
+		opened_mutex = true;
+		LRESULT error = GetLastError();
+		switch (error)
+		{
+		case ERROR_ALREADY_EXISTS:
+			return false;
+			break;
 
-	case ERROR_SUCCESS:
-		return_value = true;
-		break;
+		case ERROR_SUCCESS:
+			return true;
+			break;
 
-	default:
-		ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Failed to open app mutex!");
-		return_value = true;
+		default:
+			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Failed to open app mutex!");
+			return true;
+		}
 	}
-
-	static Microsoft::WRL::Wrappers::Mutex mutex_safe(mutex); // RAII, the mutex automatically closes when we exit.
-	return return_value;
+	else
+	{
+		return true;
+	}
 }
 
 bool win32::IsDirectory(const std::wstring &directory)
@@ -227,12 +233,12 @@ void win32::EditFile(const std::wstring &file)
 
 	if (ShellExecuteEx(&info))
 	{
-		if (WaitForSingleObject(info.hProcess, INFINITE) == WAIT_FAILED)
+		const winrt::handle hprocess = info.hProcess;
+
+		if (WaitForSingleObject(hprocess.get(), INFINITE) == WAIT_FAILED)
 		{
 			LastErrorHandle(Error::Level::Log, L"Failed to wait for text editor close.");
 		}
-
-		CloseHandle(info.hProcess);
 	}
 	else
 	{
@@ -281,14 +287,13 @@ void win32::OpenLink(const std::wstring &link)
 DWORD win32::PickColor(uint32_t &color)
 {
 	DWORD threadId;
-	const HANDLE hThread = CreateThread(nullptr, 0, PickerThreadProc, &color, CREATE_SUSPENDED, &threadId);
+	const winrt::handle hThread = CreateThread(nullptr, 0, PickerThreadProc, &color, CREATE_SUSPENDED, &threadId);
 
 	if (hThread)
 	{
-		m_PickerThreads[threadId] = false;
+		m_PickerThreads.emplace(threadId, false);
 
-		ResumeThread(hThread);
-		CloseHandle(hThread);
+		ResumeThread(hThread.get());
 		return threadId;
 	}
 	else
@@ -309,11 +314,10 @@ void win32::ClosePickers()
 
 		if (needs_wait)
 		{
-			const HANDLE thread = OpenThread(SYNCHRONIZE, FALSE, tid);
+			const winrt::handle thread = OpenThread(SYNCHRONIZE, FALSE, tid);
 			if (thread)
 			{
-				WaitForSingleObject(thread, INFINITE);
-				CloseHandle(thread);
+				WaitForSingleObject(thread.get(), INFINITE);
 			}
 		}
 	}

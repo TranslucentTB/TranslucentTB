@@ -5,6 +5,7 @@
 HRESULT ColorSliderContext::Refresh(HWND hwnd)
 {
 	HRESULT hr;
+	m_hueGradient = nullptr;
 
 	hr = SliderContext::Refresh(hwnd);
 	if (FAILED(hr))
@@ -12,7 +13,7 @@ HRESULT ColorSliderContext::Refresh(HWND hwnd)
 		return hr;
 	}
 
-	hr = CreateHueGradient(m_dc.Get(), &m_hueGradient, true);
+	hr = CreateHueGradient(m_dc.get(), m_hueGradient.put(), true);
 	if (FAILED(hr))
 	{
 		return hr;
@@ -23,7 +24,7 @@ HRESULT ColorSliderContext::Refresh(HWND hwnd)
 
 HRESULT ColorSliderContext::Draw(const HWND hDlg, const SColourF &col, const SColourF &)
 {
-	ComPtr<ID2D1LinearGradientBrush> brush;
+	winrt::com_ptr<ID2D1LinearGradientBrush> brush;
 	const DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);
 	DrawContext dc = BeginDraw();
 	m_dc->Clear(D2D1::ColorF(GetRValue(backgroundColor) / 255.0f, GetGValue(backgroundColor) / 255.0f, GetBValue(backgroundColor) / 255.0f));
@@ -36,7 +37,7 @@ HRESULT ColorSliderContext::Draw(const HWND hDlg, const SColourF &col, const SCo
 	// RED
 	if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 	{
-		hr = CreateGradient(&brush, D2D1::ColorF(1.0f, col.g, col.b), D2D1::ColorF(0.0f, col.g, col.b));
+		hr = CreateGradient(brush.put(), D2D1::ColorF(1.0f, col.g, col.b), D2D1::ColorF(0.0f, col.g, col.b));
 		if (FAILED(hr))
 		{
 			return hr;
@@ -47,7 +48,7 @@ HRESULT ColorSliderContext::Draw(const HWND hDlg, const SColourF &col, const SCo
 	// GREEN
 	else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
 	{
-		hr = CreateGradient(&brush, D2D1::ColorF(col.r, 1.0f, col.b), D2D1::ColorF(col.r, 0.0f, col.b));
+		hr = CreateGradient(brush.put(), D2D1::ColorF(col.r, 1.0f, col.b), D2D1::ColorF(col.r, 0.0f, col.b));
 		if (FAILED(hr))
 		{
 			return hr;
@@ -58,7 +59,7 @@ HRESULT ColorSliderContext::Draw(const HWND hDlg, const SColourF &col, const SCo
 	// BLUE
 	else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
 	{
-		hr = CreateGradient(&brush, D2D1::ColorF(col.r, col.g, 1.0f), D2D1::ColorF(col.r, col.g, 0.0f));
+		hr = CreateGradient(brush.put(), D2D1::ColorF(col.r, col.g, 1.0f), D2D1::ColorF(col.r, col.g, 0.0f));
 		if (FAILED(hr))
 		{
 			return hr;
@@ -95,7 +96,7 @@ HRESULT ColorSliderContext::Draw(const HWND hDlg, const SColourF &col, const SCo
 		tempcol.UpdateRGB();
 		const D2D1_COLOR_F bottom_color = D2D1::ColorF(tempcol.r / 255.0f, tempcol.g / 255.0f, tempcol.b / 255.0f);
 
-		hr = CreateGradient(&brush, top_color, bottom_color);
+		hr = CreateGradient(brush.put(), top_color, bottom_color);
 		if (FAILED(hr))
 		{
 			return hr;
@@ -119,7 +120,7 @@ HRESULT ColorSliderContext::Draw(const HWND hDlg, const SColourF &col, const SCo
 		tempcol.UpdateRGB();
 		const D2D1_COLOR_F bottom_color = D2D1::ColorF(tempcol.r / 255.0f, tempcol.g / 255.0f, tempcol.b / 255.0f);
 
-		hr = CreateGradient(&brush, top_color, bottom_color);
+		hr = CreateGradient(brush.put(), top_color, bottom_color);
 		if (FAILED(hr))
 		{
 			return hr;
@@ -128,7 +129,7 @@ HRESULT ColorSliderContext::Draw(const HWND hDlg, const SColourF &col, const SCo
 		arrow_position = 1.0f - col.v;
 	}
 
-	hr = DrawSlider(arrow_position, arrow_color, brush.Get());
+	hr = DrawSlider(arrow_position, arrow_color, brush.get());
 	if (FAILED(hr))
 	{
 		return hr;

@@ -41,7 +41,7 @@ WindowClass::WindowClass(const callback_t &callback, const std::wstring &classNa
 	m_Atom = RegisterClassEx(&m_ClassStruct);
 	if (m_Atom)
 	{
-		m_CallbackMap[m_Atom] = callback;
+		m_CallbackMap.emplace(m_Atom, callback);
 	}
 	else
 	{

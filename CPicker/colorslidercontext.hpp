@@ -3,7 +3,7 @@
 
 class ColorSliderContext : public SliderContext {
 private:
-	ComPtr<ID2D1LinearGradientBrush> m_hueGradient;
+	winrt::com_ptr<ID2D1LinearGradientBrush> m_hueGradient;
 
 public:
 	using SliderContext::SliderContext;

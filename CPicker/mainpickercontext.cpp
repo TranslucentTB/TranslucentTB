@@ -31,13 +31,13 @@ HRESULT MainPickerContext::DrawTwoDimensionalGradient(const D2D1_COLOR_F &top_le
 		D2D1_PATCH_EDGE_MODE_ANTIALIASED
 	);
 
-	ComPtr<ID2D1GradientMesh> mesh;
-	const HRESULT hr = m_dc->CreateGradientMesh(&meshPatch, 1, &mesh);
+	winrt::com_ptr<ID2D1GradientMesh> mesh;
+	const HRESULT hr = m_dc->CreateGradientMesh(&meshPatch, 1, mesh.put());
 	if (FAILED(hr))
 	{
 		return hr;
 	}
-	m_dc->DrawGradientMesh(mesh.Get());
+	m_dc->DrawGradientMesh(mesh.get());
 
 	return S_OK;
 }
@@ -45,6 +45,9 @@ HRESULT MainPickerContext::DrawTwoDimensionalGradient(const D2D1_COLOR_F &top_le
 HRESULT MainPickerContext::Refresh(HWND hwnd)
 {
 	HRESULT hr;
+	m_transparentToBlack = nullptr;
+	m_transparentToWhite = nullptr;
+	m_hueGradient = nullptr;
 
 	hr = RenderContext::Refresh(hwnd);
 	if (FAILED(hr))
@@ -52,19 +55,19 @@ HRESULT MainPickerContext::Refresh(HWND hwnd)
 		return hr;
 	}
 
-	hr = CreateGradient(&m_transparentToBlack, D2D1::ColorF(0, 0.0f), D2D1::ColorF(D2D1::ColorF::Black));
+	hr = CreateGradient(m_transparentToBlack.put(), D2D1::ColorF(0, 0.0f), D2D1::ColorF(D2D1::ColorF::Black));
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	hr = CreateGradient(&m_transparentToWhite, D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f), D2D1::ColorF(D2D1::ColorF::White));
+	hr = CreateGradient(m_transparentToWhite.put(), D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.0f), D2D1::ColorF(D2D1::ColorF::White));
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	hr = CreateHueGradient(m_dc.Get(), &m_hueGradient);
+	hr = CreateHueGradient(m_dc.get(), m_hueGradient.put());
 	if (FAILED(hr))
 	{
 		return hr;
@@ -136,12 +139,12 @@ HRESULT MainPickerContext::Draw(const HWND hDlg, const SColourF &col, const SCol
 	// SATURATION
 	else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
 	{
-		m_dc->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_size.width, m_size.height), m_hueGradient.Get());
+		m_dc->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_size.width, m_size.height), m_hueGradient.get());
 
 		m_brush->SetColor(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f - col.s));
-		m_dc->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_size.width, m_size.height), m_brush.Get());
+		m_dc->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_size.width, m_size.height), m_brush.get());
 
-		m_dc->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_size.width, m_size.height), m_transparentToBlack.Get());
+		m_dc->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_size.width, m_size.height), m_transparentToBlack.get());
 
 		indicator_point = D2D1::Point2F(col.h * m_size.width, (1.0f - col.v) * m_size.height);
 	}
@@ -149,18 +152,18 @@ HRESULT MainPickerContext::Draw(const HWND hDlg, const SColourF &col, const SCol
 	// VALUE
 	else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
 	{
-		m_dc->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_size.width, m_size.height), m_hueGradient.Get());
-		m_dc->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_size.width, m_size.height), m_transparentToWhite.Get());
+		m_dc->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_size.width, m_size.height), m_hueGradient.get());
+		m_dc->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_size.width, m_size.height), m_transparentToWhite.get());
 
 		m_brush->SetColor(D2D1::ColorF(0, 1.0f - col.v));
-		m_dc->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_size.width, m_size.height), m_brush.Get());
+		m_dc->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_size.width, m_size.height), m_brush.get());
 
 		indicator_point = D2D1::Point2F(col.h * m_size.width, (1.0f - col.s) * m_size.height);
 	}
 
 	m_brush->SetColor(D2D1::ColorF(1.0f - col.r, 1.0f - col.g, 1.0f - col.b));
 	const float circle_radius = m_size.width / 50.0f;
-	m_dc->DrawEllipse(D2D1::Ellipse(indicator_point, circle_radius, circle_radius), m_brush.Get());
+	m_dc->DrawEllipse(D2D1::Ellipse(indicator_point, circle_radius, circle_radius), m_brush.get());
 
 	return dc.EndDraw();
 }

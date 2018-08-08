@@ -19,15 +19,15 @@ HRESULT SliderContext::DrawSlider(const float &arrow_position, const D2D1_COLOR_
 		}
 	};
 
-	ComPtr<ID2D1Mesh> mesh;
-	HRESULT hr = m_dc->CreateMesh(&mesh);
+	winrt::com_ptr<ID2D1Mesh> mesh;
+	HRESULT hr = m_dc->CreateMesh(mesh.put());
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	ComPtr<ID2D1TessellationSink> sink;
-	hr = mesh->Open(&sink);
+	winrt::com_ptr<ID2D1TessellationSink> sink;
+	hr = mesh->Open(sink.put());
 	if (FAILED(hr))
 	{
 		return hr;
@@ -43,7 +43,7 @@ HRESULT SliderContext::DrawSlider(const float &arrow_position, const D2D1_COLOR_
 	const D2D1_ANTIALIAS_MODE mode_backup = m_dc->GetAntialiasMode();
 	m_dc->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
 	m_brush->SetColor(arrow_color);
-	m_dc->FillMesh(mesh.Get(), m_brush.Get());
+	m_dc->FillMesh(mesh.get(), m_brush.get());
 	m_dc->SetAntialiasMode(mode_backup);
 
 	return S_OK;

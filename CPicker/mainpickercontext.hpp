@@ -3,9 +3,9 @@
 
 class MainPickerContext : public RenderContext {
 private:
-	ComPtr<ID2D1LinearGradientBrush> m_hueGradient;
-	ComPtr<ID2D1LinearGradientBrush> m_transparentToBlack;
-	ComPtr<ID2D1LinearGradientBrush> m_transparentToWhite;
+	winrt::com_ptr<ID2D1LinearGradientBrush> m_hueGradient;
+	winrt::com_ptr<ID2D1LinearGradientBrush> m_transparentToBlack;
+	winrt::com_ptr<ID2D1LinearGradientBrush> m_transparentToWhite;
 
 	HRESULT DrawTwoDimensionalGradient(const D2D1_COLOR_F &top_left, const D2D1_COLOR_F &top_right, const D2D1_COLOR_F &bottom_left, const D2D1_COLOR_F &bottom_right);
 

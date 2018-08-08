@@ -9,18 +9,15 @@
 #include "arch.h"
 #include <PathCch.h>
 #include <ShlObj.h>
-#include <wrl/client.h>
-#include <wrl/implements.h>
-#include <wrl/wrappers/corewrappers.h>
 
 // Local stuff
 #include "appvisibilitysink.hpp"
 #include "autofree.hpp"
 #include "autostart.hpp"
 #include "blacklist.hpp"
-#include "classiccomptr.hpp"
 #include "common.hpp"
 #include "config.hpp"
+#include "createinstance.hpp"
 #include "eventhook.hpp"
 #include "messagewindow.hpp"
 #include "resource.h"
@@ -497,12 +494,6 @@ void SetTaskbarBlur()
 
 #pragma region Startup
 
-void InitializeWindowsRuntime()
-{
-	static Microsoft::WRL::Wrappers::RoInitializeWrapper init(RO_INIT_SINGLETHREADED);
-	ErrorHandle(init, Error::Level::Log, L"Initialization of Windows Runtime failed.");
-}
-
 void InitializeTray(const HINSTANCE &hInstance)
 {
 	static MessageWindow window(L"TrayWindow", NAME, hInstance);
@@ -661,14 +652,20 @@ void InitializeTray(const HINSTANCE &hInstance)
 int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 {
 	win32::HardenProcess();
+	try
+	{
+		winrt::init_apartment(winrt::apartment_type::single_threaded);
+	}
+	catch (const winrt::hresult_error &error)
+	{
+		ErrorHandle(error.code(), Error::Level::Fatal, L"Initialization of Windows Runtime failed.");
+	}
 
 	// If there already is another instance running, tell it to exit
 	if (!win32::IsSingleInstance())
 	{
 		Window::Find(L"TrayWindow", NAME).send_message(NEW_TTB_INSTANCE);
 	}
-
-	InitializeWindowsRuntime();
 
 	// Get configuration file paths
 	GetPaths();
@@ -715,12 +712,12 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	);
 
 	// Register our start menu detection sink
-	ClassicComPtr<IAppVisibility> app_visibility(CLSID_AppVisibility);
-	Microsoft::WRL::ComPtr<IAppVisibilityEvents> av_sink;
+	auto app_visibility = create_instance<IAppVisibility>(CLSID_AppVisibility);
 	DWORD av_cookie = 0;
-	if (app_visibility.Get() != nullptr)
+	if (app_visibility)
 	{
-		av_sink = Microsoft::WRL::Make<AppVisibilitySink>(run.start_opened);
+		// See comment on AppVisibilitySink for reason why WRL is used here
+		Microsoft::WRL::ComPtr<IAppVisibilityEvents> av_sink = Microsoft::WRL::Make<AppVisibilitySink>(run.start_opened);
 		ErrorHandle(app_visibility->Advise(av_sink.Get(), &av_cookie), Error::Level::Log, L"Failed to register app visibility sink.");
 	}
 

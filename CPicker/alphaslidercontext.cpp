@@ -26,13 +26,13 @@ HRESULT AlphaSliderContext::Draw(const HWND, const SColourF &col, const SColourF
 					x + square_size,
 					y + square_size
 				),
-				m_brush.Get());
+				m_brush.get());
 		}
 		flag = !flag;
 	}
 
-	ComPtr<ID2D1LinearGradientBrush> brush;
-	HRESULT hr = CreateGradient(&brush, D2D1::ColorF(col.r, col.g, col.b, 1.0f), D2D1::ColorF(col.r, col.g, col.b, 0.0f));
+	winrt::com_ptr<ID2D1LinearGradientBrush> brush;
+	HRESULT hr = CreateGradient(brush.put(), D2D1::ColorF(col.r, col.g, col.b, 1.0f), D2D1::ColorF(col.r, col.g, col.b, 0.0f));
 	if (FAILED(hr))
 	{
 		return hr;
@@ -44,7 +44,7 @@ HRESULT AlphaSliderContext::Draw(const HWND, const SColourF &col, const SColourF
 	const float g = (col.a * col.g) / a;
 	const float b = (col.a * col.b) / a;
 
-	hr = DrawSlider(1.0f - col.a, D2D1::ColorF(r, g, b, a), brush.Get());
+	hr = DrawSlider(1.0f - col.a, D2D1::ColorF(r, g, b, a), brush.get());
 	if (FAILED(hr))
 	{
 		return hr;
