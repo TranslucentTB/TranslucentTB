@@ -62,7 +62,7 @@ void Blacklist::Parse(const std::wstring &file)
 		}
 		else
 		{
-			Log::OutputMessage(L"Invalid line in dynamic window blacklist file");
+			Log::OutputMessage(L"Invalid line in dynamic window blacklist file.");
 		}
 	}
 

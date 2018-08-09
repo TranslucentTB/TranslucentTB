@@ -16,7 +16,7 @@ public:
 		m_Result = ErrorHandle(HRESULT_FROM_WIN32(RegCreateKey(key, subKey.c_str(), &m_Key)), Error::Level::Error, L"Opening registry key failed!");
 	}
 	inline operator HKEY() { return m_Key; }
-	inline operator bool() { return m_Result; }
+	inline explicit operator bool() { return m_Result; }
 	inline ~RegistryKey()
 	{
 		if (m_Result)

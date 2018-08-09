@@ -15,7 +15,8 @@ constexpr const std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> CalculateHu
 	tempcol.v = 100;
 	tempcol.UpdateRGB();
 
-	const float step = 359 / static_cast<float>(HueGradientPrecision);
+	tempcol.h = 360; // Set it to 360 so we can avoid floating points. (360 / 20 == 18)
+	const uint8_t step = tempcol.h / HueGradientPrecision;
 
 	for (uint8_t i = 0; i < HueGradientPrecision; i++)
 	{
@@ -29,8 +30,7 @@ constexpr const std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> CalculateHu
 			}
 		};
 
-		// Clang errors out on the use of -= here
-		tempcol.h = tempcol.h - step;
+		tempcol.h -= step;
 		tempcol.UpdateRGB();
 	}
 

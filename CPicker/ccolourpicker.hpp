@@ -15,8 +15,6 @@ dllimport
 ) CColourPicker {
 
 public:
-#pragma warning(push)
-#pragma warning(disable: 4244)
 	constexpr CColourPicker(uint32_t &value, HWND hParentWindow = NULL) : Value(value), CurrCol(), OldCol(), hParent(hParentWindow)
 	{
 		CurrCol.r = (Value & 0x00FF0000) >> 16;
@@ -27,7 +25,6 @@ public:
 
 		OldCol = CurrCol;
 	}
-#pragma warning(pop)
 
 	// Creates the colour picker dialog
 	HRESULT CreateColourPicker();

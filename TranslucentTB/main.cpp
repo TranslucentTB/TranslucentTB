@@ -250,7 +250,7 @@ void RefreshHandles()
 {
 	if (Config::VERBOSE)
 	{
-		Log::OutputMessage(L"Refreshing taskbar handles");
+		Log::OutputMessage(L"Refreshing taskbar handles.");
 	}
 
 	// Older handles are invalid, so clear the map to be ready for new ones
