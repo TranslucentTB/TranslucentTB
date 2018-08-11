@@ -86,10 +86,10 @@ const std::wstring &Window::filename() const
 {
 	if (m_Filenames.count(m_WindowHandle) == 0)
 	{
-		DWORD ProcessId;
-		GetWindowThreadProcessId(m_WindowHandle, &ProcessId);
+		DWORD pid;
+		GetWindowThreadProcessId(m_WindowHandle, &pid);
 
-		winrt::handle processHandle(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, ProcessId));
+		const winrt::handle processHandle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid);
 		if (!processHandle)
 		{
 			LastErrorHandle(Error::Level::Log, L"Getting process handle of a window failed.");
