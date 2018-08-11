@@ -42,13 +42,10 @@ public:
 
 private:
 	struct string_hash {
-	private:
-		inline static const std::hash<std::wstring> m_Hasher;
-
-	public:
 		inline std::size_t operator()(const std::wstring &k) const
 		{
-			return m_Hasher(ToLower(k));
+			static const std::hash<std::wstring> hasher;
+			return hasher(ToLower(k));
 		}
 	};
 
