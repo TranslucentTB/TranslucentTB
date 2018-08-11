@@ -36,10 +36,13 @@ protected:
 
 		inline void MoveToSelf(DrawContext &&other) noexcept
 		{
-			m_needsEnd = std::exchange(other.m_needsEnd, false);
+			if (this != &other)
+			{
+				m_needsEnd = std::exchange(other.m_needsEnd, false);
 
-			m_target = std::exchange(other.m_target, nullptr);
-			m_swapChain = std::exchange(other.m_swapChain, nullptr);
+				m_target = std::exchange(other.m_target, nullptr);
+				m_swapChain = std::exchange(other.m_swapChain, nullptr);
+			}
 		}
 
 		friend RenderContext;

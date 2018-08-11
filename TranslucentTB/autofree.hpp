@@ -1,6 +1,7 @@
 #pragma once
 #include "arch.h"
 #include <objbase.h>
+#include <utility>
 #include <WinBase.h>
 #include <winerror.h>
 
@@ -13,21 +14,37 @@ private:
 	class Base {
 
 	private:
-		T * m_DataPtr;
+		T *m_DataPtr;
 		Deleter m_Deleter;
 
-	public:
-		explicit inline Base(T *data = nullptr)
+		inline void MoveToSelf(Base &&other)
 		{
-			m_DataPtr = data;
+			m_DataPtr = std::exchange(other.m_DataPtr, nullptr);
+			std::swap(m_Deleter, other.m_Deleter);
+		}
+
+	public:
+		inline Base(void *&&data = nullptr) : m_DataPtr(static_cast<T *>(data)) { }
+
+		inline Base(Base &&other)
+		{
+			if (this != &other)
+			{
+				MoveToSelf(std::forward<Base>(other));
+			}
 		}
 
 		inline Base(const Base &) = delete;
 
-		inline T *operator =(T *data)
+		inline Base &operator =(Base &&other)
 		{
-			m_Deleter(m_DataPtr);
-			return m_DataPtr = data;
+			if (this != &other)
+			{
+				m_Deleter(m_DataPtr);
+				MoveToSelf(std::forward<Base>(other));
+			}
+
+			return *this;
 		}
 
 		inline Base &operator =(const Base &) = delete;
@@ -39,6 +56,11 @@ private:
 		}
 
 		inline operator T *()
+		{
+			return m_DataPtr;
+		}
+
+		inline operator const T *() const
 		{
 			return m_DataPtr;
 		}
