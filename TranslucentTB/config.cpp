@@ -83,44 +83,43 @@ void Config::Parse(const std::wstring &file)
 
 void Config::Save(const std::wstring &file)
 {
-	using namespace std;
-	wofstream configstream(file);
+	std::wofstream configstream(file);
 
-	configstream << L"accent=" << left << setw(6) << setfill(L' ') << GetAccentText(REGULAR_APPEARANCE.ACCENT) << L"; accent values are: clear (default), fluent (only on build " << MIN_FLUENT_BUILD << L" and up), opaque, normal, or blur." << endl;
-	configstream << L"color=" << GetColorText(REGULAR_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << endl;
-	configstream << L"opacity=" << GetOpacityText(REGULAR_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << endl;
+	configstream << L"accent=" << std::left << std::setw(6) << std::setfill(L' ') << GetAccentText(REGULAR_APPEARANCE.ACCENT) << L"; accent values are: clear (default), fluent (only on build " << MIN_FLUENT_BUILD << L" and up), opaque, normal, or blur." << std::endl;
+	configstream << L"color=" << GetColorText(REGULAR_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << std::endl;
+	configstream << L"opacity=" << GetOpacityText(REGULAR_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << std::endl;
 
-	configstream << endl;
-	configstream << L"; Dynamic Modes" << endl;
-	configstream << L"; they all have their own accent, color and opacity configs." << endl;
-	configstream << endl;
-	configstream << L"; Dynamic Windows. State to use when a window is maximised." << endl;
-	configstream << L"dynamic-ws=" << GetBoolText(MAXIMISED_ENABLED) << endl;
-	configstream << L"dynamic-ws-accent=" << GetAccentText(MAXIMISED_APPEARANCE.ACCENT) << endl;
-	configstream << L"dynamic-ws-color=" << GetColorText(MAXIMISED_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << endl;
-	configstream << L"dynamic-ws-opacity=" << GetOpacityText(MAXIMISED_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << endl;
-	configstream << L"dynamic-ws-regular-on-peek=" << GetBoolText(MAXIMISED_REGULAR_ON_PEEK) << L" ; when using aero peek, behave as if no window was maximised." << endl;
-	configstream << endl;
-	configstream << L"; Dynamic Start. State to use when the start menu is opened." << endl;
-	configstream << L"dynamic-start=" << GetBoolText(START_ENABLED) << endl;
-	configstream << L"dynamic-start-accent=" << GetAccentText(START_APPEARANCE.ACCENT) << endl;
-	configstream << L"dynamic-start-color=" << GetColorText(START_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << endl;
-	configstream << L"dynamic-start-opacity=" << GetOpacityText(START_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << endl;
-	configstream << endl;
-	configstream << L"; Dynamic Cortana. State to use when Cortana or the search menu is opened." << endl;
-	configstream << L"dynamic-cortana=" << GetBoolText(CORTANA_ENABLED) << endl;
-	configstream << L"dynamic-cortana-accent=" << GetAccentText(CORTANA_APPEARANCE.ACCENT) << endl;
-	configstream << L"dynamic-cortana-color=" << GetColorText(CORTANA_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << endl;
-	configstream << L"dynamic-cortana-opacity=" << GetOpacityText(CORTANA_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << endl;
-	configstream << endl;
-	configstream << L"; Dynamic Timeline. State to use when the timeline (or task view on older builds) is opened." << endl;
-	configstream << L"dynamic-timeline=" << GetBoolText(TIMELINE_ENABLED) << endl;
-	configstream << L"dynamic-timeline-accent=" << GetAccentText(TIMELINE_APPEARANCE.ACCENT) << endl;
-	configstream << L"dynamic-timeline-color=" << GetColorText(TIMELINE_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << endl;
-	configstream << L"dynamic-timeline-opacity=" << GetOpacityText(TIMELINE_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << endl;
+	configstream << std::endl;
+	configstream << L"; Dynamic Modes" << std::endl;
+	configstream << L"; they all have their own accent, color and opacity configs." << std::endl;
+	configstream << std::endl;
+	configstream << L"; Dynamic Windows. State to use when a window is maximised." << std::endl;
+	configstream << L"dynamic-ws=" << GetBoolText(MAXIMISED_ENABLED) << std::endl;
+	configstream << L"dynamic-ws-accent=" << GetAccentText(MAXIMISED_APPEARANCE.ACCENT) << std::endl;
+	configstream << L"dynamic-ws-color=" << GetColorText(MAXIMISED_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << std::endl;
+	configstream << L"dynamic-ws-opacity=" << GetOpacityText(MAXIMISED_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << std::endl;
+	configstream << L"dynamic-ws-regular-on-peek=" << GetBoolText(MAXIMISED_REGULAR_ON_PEEK) << L" ; when using aero peek, behave as if no window was maximised." << std::endl;
+	configstream << std::endl;
+	configstream << L"; Dynamic Start. State to use when the start menu is opened." << std::endl;
+	configstream << L"dynamic-start=" << GetBoolText(START_ENABLED) << std::endl;
+	configstream << L"dynamic-start-accent=" << GetAccentText(START_APPEARANCE.ACCENT) << std::endl;
+	configstream << L"dynamic-start-color=" << GetColorText(START_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << std::endl;
+	configstream << L"dynamic-start-opacity=" << GetOpacityText(START_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << std::endl;
+	configstream << std::endl;
+	configstream << L"; Dynamic Cortana. State to use when Cortana or the search menu is opened." << std::endl;
+	configstream << L"dynamic-cortana=" << GetBoolText(CORTANA_ENABLED) << std::endl;
+	configstream << L"dynamic-cortana-accent=" << GetAccentText(CORTANA_APPEARANCE.ACCENT) << std::endl;
+	configstream << L"dynamic-cortana-color=" << GetColorText(CORTANA_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << std::endl;
+	configstream << L"dynamic-cortana-opacity=" << GetOpacityText(CORTANA_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << std::endl;
+	configstream << std::endl;
+	configstream << L"; Dynamic Timeline. State to use when the timeline (or task view on older builds) is opened." << std::endl;
+	configstream << L"dynamic-timeline=" << GetBoolText(TIMELINE_ENABLED) << std::endl;
+	configstream << L"dynamic-timeline-accent=" << GetAccentText(TIMELINE_APPEARANCE.ACCENT) << std::endl;
+	configstream << L"dynamic-timeline-color=" << GetColorText(TIMELINE_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << std::endl;
+	configstream << L"dynamic-timeline-opacity=" << GetOpacityText(TIMELINE_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << std::endl;
 
-	configstream << endl;
-	configstream << L"; Controls how the Aero Peek button behaves (dynamic, show or hide)" << endl;
+	configstream << std::endl;
+	configstream << L"; Controls how the Aero Peek button behaves (dynamic, show or hide)" << std::endl;
 	configstream << L"peek=";
 	switch (PEEK)
 	{
@@ -134,17 +133,17 @@ void Config::Save(const std::wstring &file)
 		configstream << L"show";
 		break;
 	}
-	configstream << endl;
-	configstream << L"peek-only-main=" << GetBoolText(PEEK_ONLY_MAIN) << L" ; Decides wether only the main monitor is considered when dynamic peek is enabled." << endl;
+	configstream << std::endl;
+	configstream << L"peek-only-main=" << GetBoolText(PEEK_ONLY_MAIN) << L" ; Decides wether only the main monitor is considered when dynamic peek is enabled." << std::endl;
 
-	configstream << endl;
-	configstream << L"; Advanced settings" << endl;
-	configstream << L"; sleep time in milliseconds, a shorter time reduces flicker when opening start, but results in higher CPU usage." << endl;
-	configstream << L"sleep-time=" << dec << SLEEP_TIME << endl;
-	configstream << L"; hide icon in system tray. Changes to this requires a restart of the application." << endl;
-	configstream << L"no-tray=" << GetBoolText(NO_TRAY) << endl;
-	configstream << L"; more informative logging. Can make huge log files." << endl;
-	configstream << L"verbose=" << GetBoolText(VERBOSE) << endl;
+	configstream << std::endl;
+	configstream << L"; Advanced settings" << std::endl;
+	configstream << L"; sleep time in milliseconds, a shorter time reduces flicker when opening start, but results in higher CPU usage." << std::endl;
+	configstream << L"sleep-time=" << std::dec << SLEEP_TIME << std::endl;
+	configstream << L"; hide icon in system tray. Changes to this requires a restart of the application." << std::endl;
+	configstream << L"no-tray=" << GetBoolText(NO_TRAY) << std::endl;
+	configstream << L"; more informative logging. Can make huge log files." << std::endl;
+	configstream << L"verbose=" << GetBoolText(VERBOSE) << std::endl;
 }
 
 void Config::UnknownValue(const std::wstring &key, const std::wstring &value)

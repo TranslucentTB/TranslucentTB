@@ -6,6 +6,7 @@
 #include <PathCch.h>
 #include <processthreadsapi.h>
 #include <sstream>
+#include <thread>
 #ifndef STORE
 #include <vector>
 #endif
@@ -21,12 +22,14 @@
 #include "uwp.hpp"
 #endif
 
+std::mutex Log::m_LogLock;
 std::optional<winrt::file_handle> Log::m_FileHandle;
 std::wstring Log::m_File;
 
 std::pair<HRESULT, std::wstring> Log::InitStream()
 {
 	HRESULT hr;
+	m_FileHandle.emplace(); // put this here so that if we fail before creating the file, we won't try constantly doing init.
 #ifndef STORE
 	std::wstring temp;
 	temp.resize(LONG_PATH);
@@ -123,15 +126,24 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 
 void Log::OutputMessage(const std::wstring &message)
 {
+	std::lock_guard guard(m_LogLock);
+
 	if (!init_done())
 	{
 		auto [hr, err_message] = InitStream();
 		if (FAILED(hr))
 		{
-			std::wstring boxbuffer = err_message +
+			// https://stackoverflow.com/questions/50799719/reference-to-local-binding-declared-in-enclosing-function
+			std::thread([hr = hr, err_message = err_message]() mutable
+			{
+				std::wstring boxbuffer = err_message +
 				L" Logs will not be available during this session.\n\n" + Error::ExceptionFromHRESULT(hr);
 
-			MessageBox(NULL, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+				err_message += L'\n';
+				OutputDebugString(err_message.c_str()); // OutputDebugString is thread-safe, no issues using it here.
+
+				MessageBox(NULL, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+			}).detach();
 		}
 	}
 

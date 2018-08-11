@@ -1,22 +1,21 @@
 #include "findwindowiterator.hpp"
 #include "window.hpp"
 
-const std::wstring FindWindowIterator::uselessEmptyString;
 const FindWindowIterator FindWindowIterator::EndIterator;
 
 FindWindowIterator::FindWindowIterator() :
-	m_class(uselessEmptyString),
-	m_name(uselessEmptyString),
+	m_class(nullptr),
+	m_name(nullptr),
 	m_parent(Window::NullWindow),
 	m_currentWindow(Window::NullWindow)
 { }
 
 void FindWindowIterator::MoveNext()
 {
-	m_currentWindow = Window::Find(m_class, m_name, m_parent, m_currentWindow);
+	m_currentWindow = Window::Find(*m_class, *m_name, m_parent, m_currentWindow);
 }
 
-FindWindowIterator::FindWindowIterator(const std::wstring &className, const std::wstring &windowName, const HWND parent) :
+FindWindowIterator::FindWindowIterator(const std::wstring *const className, const std::wstring *const windowName, const HWND parent) :
 	m_class(className),
 	m_name(windowName),
 	m_parent(parent),
@@ -25,7 +24,7 @@ FindWindowIterator::FindWindowIterator(const std::wstring &className, const std:
 	MoveNext();
 }
 
-Window FindWindowIterator::operator *()
+Window FindWindowIterator::operator *() const
 {
 	return m_currentWindow;
 }

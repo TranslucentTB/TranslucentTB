@@ -5,7 +5,7 @@
 #include <shellapi.h>
 #include <ShlObj.h>
 #include <synchapi.h>
-#include <vector>
+#include <utility>
 #include <WinBase.h>
 #include <winerror.h>
 #include <winnt.h>
@@ -24,47 +24,45 @@ const user32::pSetWindowCompositionAttribute user32::SetWindowCompositionAttribu
 	);
 
 std::wstring win32::m_ExeLocation;
-std::unordered_map<DWORD, bool> win32::m_PickerThreads;
+std::mutex win32::m_PickerThreadsLock;
+std::vector<DWORD> win32::m_PickerThreads;
 
 DWORD win32::PickerThreadProc(LPVOID data)
 {
 	const HRESULT hr = CColourPicker(*reinterpret_cast<uint32_t *>(data)).CreateColourPicker();
 	const DWORD tid = GetCurrentThreadId();
+	{
+		std::lock_guard guard(m_PickerThreadsLock);
+		for (DWORD &i_tid : m_PickerThreads)
+		{
+			if (i_tid == tid)
+			{
+				std::swap(i_tid, m_PickerThreads.back());
+				m_PickerThreads.pop_back();
+				break;
+			}
+		}
+	}
 	if (FAILED(hr))
 	{
-		m_PickerThreads[tid] = true;
 		ErrorHandle(hr, Error::Level::Error, L"An error occured in the color picker!");
 	}
 
-	m_PickerThreads.erase(tid);
 	return 0;
 }
 
 BOOL win32::EnumThreadWindowsProc(HWND hwnd, LPARAM lParam)
 {
 	Window wnd(hwnd);
-	auto &[needs_wait, failed] = *reinterpret_cast<std::pair<bool &, bool> *>(lParam);
+	bool &needs_wait = *reinterpret_cast<bool *>(lParam);
 
-	if (!failed)
+	if (wnd.title() == L"Color Picker")
 	{
-		if (wnd.title() == L"Color Picker")
-		{
-			// 1068 == IDB_CANCEL
-			wnd.send_message(WM_COMMAND, MAKEWPARAM(1068, BN_CLICKED));
+		// 1068 == IDB_CANCEL
+		wnd.send_message(WM_COMMAND, MAKEWPARAM(1068, BN_CLICKED));
 
-			needs_wait = true;
-			return false;
-		}
-	}
-	else
-	{
-		if (wnd.title() == NAME L" - Error")
-		{
-			wnd.send_message(WM_CLOSE);
-
-			needs_wait = true;
-			return false;
-		}
+		needs_wait = true;
+		return false;
 	}
 
 	return true;
@@ -291,7 +289,10 @@ DWORD win32::PickColor(uint32_t &color)
 
 	if (hThread)
 	{
-		m_PickerThreads.emplace(threadId, false);
+		{
+			std::lock_guard guard(m_PickerThreadsLock);
+			m_PickerThreads.emplace_back(threadId);
+		}
 
 		ResumeThread(hThread.get());
 		return threadId;
@@ -305,12 +306,13 @@ DWORD win32::PickColor(uint32_t &color)
 
 void win32::ClosePickers()
 {
+	std::unique_lock guard(m_PickerThreadsLock);
 	while (m_PickerThreads.size() != 0)
 	{
-		const auto &[tid, failed] = *m_PickerThreads.begin();
+		const DWORD tid = *m_PickerThreads.begin();
 		bool needs_wait = false;
-		std::pair<bool &, bool> epair(needs_wait, failed);
-		EnumThreadWindows(tid, EnumThreadWindowsProc, reinterpret_cast<LPARAM>(&epair));
+		guard.unlock();
+		EnumThreadWindows(tid, EnumThreadWindowsProc, reinterpret_cast<LPARAM>(&needs_wait));
 
 		if (needs_wait)
 		{
@@ -320,6 +322,8 @@ void win32::ClosePickers()
 				WaitForSingleObject(thread.get(), INFINITE);
 			}
 		}
+
+		guard.lock();
 	}
 }
 

@@ -41,10 +41,9 @@ public:
 	}
 
 private:
-	class string_hash {
-
+	struct string_hash {
 	private:
-		std::hash<std::wstring> m_Hasher;
+		inline static const std::hash<std::wstring> m_Hasher;
 
 	public:
 		inline std::size_t operator()(const std::wstring &k) const
@@ -66,7 +65,7 @@ public:
 	using string_map = std::unordered_map<std::wstring, T, string_hash, string_compare>;
 
 	template<typename K, typename V, class Compare = std::less<V>>
-	class map_value_compare {
+	struct map_value_compare {
 	private:
 		Compare m_Compare;
 

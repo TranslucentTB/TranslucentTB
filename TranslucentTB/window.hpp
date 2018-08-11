@@ -39,7 +39,7 @@ public:
 
 		inline FindWindowIterator begin()
 		{
-			return FindWindowIterator(m_class, m_name, m_parent);
+			return FindWindowIterator(&m_class, &m_name, m_parent);
 		}
 
 		inline const FindWindowIterator &end()
@@ -128,22 +128,19 @@ public:
 	template<typename T>
 	T get_attribute(const DWMWINDOWATTRIBUTE &attrib) const;
 
-	friend std::hash<Window>;
+	friend struct std::hash<Window>;
 };
 
 // Specialize std::hash to allow the use of Window as unordered_map key
 namespace std {
-
-	template<> class hash<Window> {
-
+	template<> struct hash<Window> {
 	private:
-		std::hash<HWND> m_Hasher;
+		inline static const std::hash<HWND> m_Hasher;
 
 	public:
-		inline size_t operator()(const Window &k) const
+		inline std::size_t operator()(const Window &k) const noexcept
 		{
 			return m_Hasher(k.m_WindowHandle);
 		}
 	};
-
 }

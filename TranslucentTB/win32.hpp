@@ -1,9 +1,10 @@
 #pragma once
 #include "arch.h"
 #include <cstdint>
+#include <mutex>
 #include <string>
 #include <type_traits>
-#include <unordered_map>
+#include <vector>
 #include <windef.h>
 
 #include "swcadata.hpp"
@@ -22,7 +23,8 @@ class win32 {
 
 private:
 	static std::wstring m_ExeLocation;
-	static std::unordered_map<DWORD, bool> m_PickerThreads;
+	static std::mutex m_PickerThreadsLock;
+	static std::vector<DWORD> m_PickerThreads;
 
 	static DWORD WINAPI PickerThreadProc(LPVOID data);
 	static BOOL CALLBACK EnumThreadWindowsProc(HWND hwnd, LPARAM lParam);

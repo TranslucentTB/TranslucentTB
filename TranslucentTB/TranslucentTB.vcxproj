@@ -13,6 +13,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="appvisibilitysink.cpp" />
+    <ClCompile Include="autostart_desktop.cpp" Condition="'$(Configuration)'!='Store'" />
+    <ClCompile Include="autostart_store.cpp" Condition="'$(Configuration)'=='Store'" />
     <ClCompile Include="blacklist.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="eventhook.cpp" />
@@ -23,6 +25,7 @@
     <ClCompile Include="trayicon.cpp" />
     <ClCompile Include="ttberror.cpp" />
     <ClCompile Include="ttblog.cpp" />
+    <ClCompile Include="uwp.cpp" Condition="'$(Configuration)'=='Store'" />
     <ClCompile Include="win32.cpp" />
     <ClCompile Include="window.cpp" />
     <ClCompile Include="windowclass.cpp" />
@@ -48,25 +51,10 @@
     <ClInclude Include="ttberror.hpp" />
     <ClInclude Include="ttblog.hpp" />
     <ClInclude Include="util.hpp" />
+    <ClInclude Include="uwp.hpp" Condition="'$(Configuration)'=='Store'" />
     <ClInclude Include="win32.hpp" />
     <ClInclude Include="window.hpp" />
     <ClInclude Include="windowclass.hpp" />
-  </ItemGroup>
-  <Choose>
-    <When Condition="'$(Configuration)'=='Store'">
-      <ItemGroup>
-        <ClCompile Include="autostart_store.cpp" />
-      </ItemGroup>
-    </When>
-    <Otherwise>
-      <ItemGroup>
-        <ClCompile Include="autostart_desktop.cpp" />
-      </ItemGroup>
-    </Otherwise>
-  </Choose>
-  <ItemGroup Condition="'$(Configuration)'=='Store'">
-    <ClCompile Include="uwp.cpp" />
-    <ClInclude Include="uwp.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TranslucentTB.rc2" />
