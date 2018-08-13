@@ -1,5 +1,6 @@
 #include "win32.hpp"
 #include "arch.h"
+#include <optional>
 #include <PathCch.h>
 #include <processthreadsapi.h>
 #include <shellapi.h>
@@ -116,12 +117,11 @@ bool win32::IsAtLeastBuild(const uint32_t &buildNumber)
 
 bool win32::IsSingleInstance()
 {
-	static bool opened_mutex = false;
+	static winrt::handle mutex;
 
-	if (!opened_mutex)
+	if (!mutex)
 	{
-		static winrt::handle mutex = CreateMutex(NULL, FALSE, ID);
-		opened_mutex = true;
+		mutex = CreateMutex(NULL, FALSE, ID);
 		LRESULT error = GetLastError();
 		switch (error)
 		{
@@ -196,17 +196,17 @@ void win32::CopyToClipboard(const std::wstring &text)
 		return;
 	}
 
-	const size_t url_size = text.length() + 1;
-	AutoFree::Global<wchar_t> data = GlobalAlloc(GMEM_FIXED, url_size * sizeof(wchar_t));
+	const size_t text_size = text.length() + 1;
+	auto data = AutoFree::Global<wchar_t>::Alloc(text_size);
 	if (!data)
 	{
 		LastErrorHandle(Error::Level::Error, L"Failed to allocate memory for the clipboard.");
 		return;
 	}
 
-	wcscpy_s(data, url_size, text.c_str());
+	wcscpy_s(data.get(), text_size, text.c_str());
 
-	if (!SetClipboardData(CF_UNICODETEXT, data))
+	if (!SetClipboardData(CF_UNICODETEXT, data.get()))
 	{
 		LastErrorHandle(Error::Level::Error, L"Failed to copy data to clipboard.");
 		return;

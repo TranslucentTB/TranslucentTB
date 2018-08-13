@@ -152,8 +152,9 @@ void SetWindowBlur(const Window &window, const swca::ACCENT &appearance, const u
 void GetPaths()
 {
 #ifndef STORE
-	AutoFree::CoTaskMem<wchar_t> appData;
-	ErrorHandle(SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &appData), Error::Level::Fatal, L"Failed to determine configuration files locations!");
+	AutoFree::CoTaskMem<wchar_t> appDataSafe;
+	ErrorHandle(SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, appDataSafe.put()), Error::Level::Fatal, L"Failed to determine configuration files locations!");
+	const wchar_t *appData = appDataSafe.get();
 #else
 	try
 	{
@@ -165,13 +166,13 @@ void GetPaths()
 	AutoFree::Local<wchar_t> configFile;
 	AutoFree::Local<wchar_t> excludeFile;
 
-	ErrorHandle(PathAllocCombine(appData, NAME, PATHCCH_ALLOW_LONG_PATHS, &configFolder), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
-	ErrorHandle(PathAllocCombine(configFolder, CONFIG_FILE, PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Fatal, L"Failed to combine config folder and config file!");
-	ErrorHandle(PathAllocCombine(configFolder, EXCLUDE_FILE, PATHCCH_ALLOW_LONG_PATHS, &excludeFile), Error::Level::Fatal, L"Failed to combine config folder and exclude file!");
+	ErrorHandle(PathAllocCombine(appData, NAME, PATHCCH_ALLOW_LONG_PATHS, configFolder.put()), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
+	ErrorHandle(PathAllocCombine(configFolder.get(), CONFIG_FILE, PATHCCH_ALLOW_LONG_PATHS, configFile.put()), Error::Level::Fatal, L"Failed to combine config folder and config file!");
+	ErrorHandle(PathAllocCombine(configFolder.get(), EXCLUDE_FILE, PATHCCH_ALLOW_LONG_PATHS, excludeFile.put()), Error::Level::Fatal, L"Failed to combine config folder and exclude file!");
 
-	run.config_folder = configFolder;
-	run.config_file = configFile;
-	run.exclude_file = excludeFile;
+	run.config_folder = configFolder.get();
+	run.config_file = configFile.get();
+	run.exclude_file = excludeFile.get();
 
 #ifdef STORE
 	}
@@ -188,13 +189,13 @@ void ApplyStock(const std::wstring &filename)
 	exeFolder_str.erase(exeFolder_str.find_last_of(LR"(/\)") + 1);
 
 	AutoFree::Local<wchar_t> stockFile;
-	if (!ErrorHandle(PathAllocCombine(exeFolder_str.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &stockFile), Error::Level::Error, L"Failed to combine executable folder and config file!"))
+	if (!ErrorHandle(PathAllocCombine(exeFolder_str.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, stockFile.put()), Error::Level::Error, L"Failed to combine executable folder and config file!"))
 	{
 		return;
 	}
 
 	AutoFree::Local<wchar_t> configFile;
-	if (!ErrorHandle(PathAllocCombine(run.config_folder.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &configFile), Error::Level::Error, L"Failed to combine config folder and config file!"))
+	if (!ErrorHandle(PathAllocCombine(run.config_folder.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, configFile.put()), Error::Level::Error, L"Failed to combine config folder and config file!"))
 	{
 		return;
 	}
@@ -208,7 +209,7 @@ void ApplyStock(const std::wstring &filename)
 		}
 	}
 
-	if (!CopyFile(stockFile, configFile, FALSE))
+	if (!CopyFile(stockFile.get(), configFile.get(), FALSE))
 	{
 		LastErrorHandle(Error::Level::Error, L"Copying stock configuration file failed!");
 	}

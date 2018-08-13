@@ -10,27 +10,27 @@
 class AutoFree {
 
 private:
-	template<typename T, typename Deleter>
+	template<typename T, class traits>
 	class Base {
 
 	private:
 		T *m_DataPtr;
-		Deleter m_Deleter;
 
-		inline void MoveToSelf(Base &&other)
-		{
-			m_DataPtr = std::exchange(other.m_DataPtr, nullptr);
-			std::swap(m_Deleter, other.m_Deleter);
-		}
+		inline Base(void *data) : m_DataPtr(static_cast<T *>(data)) { }
 
 	public:
-		inline Base(void *&&data = nullptr) : m_DataPtr(static_cast<T *>(data)) { }
+		inline static Base Alloc(size_t count = 1)
+		{
+			return traits::alloc(count * sizeof(T));
+		}
+
+		inline Base() : m_DataPtr(nullptr) { }
 
 		inline Base(Base &&other)
 		{
 			if (this != &other)
 			{
-				MoveToSelf(std::forward<Base>(other));
+				m_DataPtr = std::exchange(other.m_DataPtr, nullptr);
 			}
 		}
 
@@ -40,8 +40,8 @@ private:
 		{
 			if (this != &other)
 			{
-				m_Deleter(m_DataPtr);
-				MoveToSelf(std::forward<Base>(other));
+				traits::close(m_DataPtr);
+				m_DataPtr = std::exchange(other.m_DataPtr, nullptr);
 			}
 
 			return *this;
@@ -49,65 +49,105 @@ private:
 
 		inline Base &operator =(const Base &) = delete;
 
-		inline T **operator &()
+		inline T *operator ->()
 		{
-			m_Deleter(m_DataPtr);
+			return m_DataPtr;
+		}
+
+		inline const T *operator ->() const
+		{
+			return m_DataPtr;
+		}
+
+		inline T &operator *()
+		{
+			return *m_DataPtr;
+		}
+
+		inline const T &operator *() const
+		{
+			return *m_DataPtr;
+		}
+
+		inline T &operator [](std::size_t i)
+		{
+			return m_DataPtr[i];
+		}
+
+		inline const T &operator [](std::size_t i) const
+		{
+			return m_DataPtr[i];
+		}
+
+		inline explicit operator bool() const
+		{
+			return m_DataPtr != nullptr;
+		}
+
+		inline T **put()
+		{
+			traits::close(m_DataPtr);
 			return &m_DataPtr;
 		}
 
-		inline operator T *()
+		inline T *get()
 		{
 			return m_DataPtr;
 		}
 
-		inline operator const T *() const
-		{
-			return m_DataPtr;
-		}
-
-		inline T *data()
-		{
-			return m_DataPtr;
-		}
-
-		inline const T *data() const
+		inline const T *get() const
 		{
 			return m_DataPtr;
 		}
 
 		inline ~Base()
 		{
-			m_Deleter(m_DataPtr);
+			traits::close(m_DataPtr);
 		}
 
 	};
 
-	template<bool silent>
-	struct LocalFreeDeleter {
+	template<bool silent, Error::Level level = Error::Level::Log>
+	struct LocalTraits {
 
-		inline void operator() (void *data)
+		inline static void *alloc(size_t size)
+		{
+			return LocalAlloc(LPTR, size);
+		}
+
+		inline static void close(void *data)
 		{
 			void *result = LocalFree(data);
 			if (result && !silent)
 			{
-				LastErrorHandle(Error::Level::Log, L"Failed to free memory.");
+				LastErrorHandle(level, L"Failed to free memory.");
 			}
 		}
 
 	};
 
-	struct CoTaskMemFreeDeleter {
+	struct CoTaskMemTraits {
 
-		inline void operator() (void *data)
+		inline static void *alloc(size_t size)
+		{
+			return CoTaskMemAlloc(size);
+		}
+
+		inline static void close(void *data)
 		{
 			CoTaskMemFree(data);
 		}
 
 	};
 
-	struct GlobalFreeDeleter {
+	struct GlobalTraits {
 
-		inline void operator() (void *data)
+		inline static void *alloc(size_t size)
+		{
+			return GlobalAlloc(GPTR, size);
+		}
+
+		inline static void close(void *data)
 		{
 			void *result = GlobalFree(data);
 			if (result)
@@ -120,16 +160,19 @@ private:
 
 public:
 	template<typename T = void>
-	using CoTaskMem = Base<T, CoTaskMemFreeDeleter>;
+	using CoTaskMem = Base<T, CoTaskMemTraits>;
 
 	template<typename T = void>
-	using Local = Base<T, LocalFreeDeleter<false>>;
+	using Local = Base<T, LocalTraits<false>>;
 
 	template<typename T = void>
-	using Global = Base<T, GlobalFreeDeleter>;
+	using DebugLocal = Base<T, LocalTraits<false, Error::Level::Debug>>;
 
 	// Only use this if you don't want to log it for a very valid reason.
 	template<typename T = void>
-	using SilentLocal = Base<T, LocalFreeDeleter<true>>;
+	using SilentLocal = Base<T, LocalTraits<true>>;
+
+	template<typename T = void>
+	using Global = Base<T, GlobalTraits>;
 
 };

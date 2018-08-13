@@ -47,24 +47,28 @@ concurrency::task<void> Autostart::SetStartupState(const StartupState &state)
 {
 	return concurrency::create_task([=]
 	{
-		RegistryKey key(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Run)");
+		registry_key key = open_key(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Run)");
 		if (key)
 		{
 			if (state == StartupState::Enabled)
 			{
 				const std::wstring exeLocation = L'"' + win32::GetExeLocation() + L'"';
 
-				const LRESULT error = RegSetValueEx(key, NAME, 0, REG_SZ, reinterpret_cast<const BYTE *>(exeLocation.c_str()), exeLocation.length() * sizeof(wchar_t));
+				const LRESULT error = RegSetValueEx(key.get(), NAME, 0, REG_SZ, reinterpret_cast<const BYTE *>(exeLocation.c_str()), exeLocation.length() * sizeof(wchar_t));
 				ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Error while setting startup registry value!");
 			}
 			else if (state == StartupState::Disabled)
 			{
-				ErrorHandle(HRESULT_FROM_WIN32(RegDeleteValue(key, NAME)), Error::Level::Error, L"Error while deleting startup registry value!");
+				ErrorHandle(HRESULT_FROM_WIN32(RegDeleteValue(key.get(), NAME)), Error::Level::Error, L"Error while deleting startup registry value!");
 			}
 			else
 			{
 				throw std::invalid_argument("Can only set state to enabled or disabled");
 			}
+		}
+		else
+		{
+			LastErrorHandle(Error::Level::Error, L"Opening registry key failed!");
 		}
 	});
 }

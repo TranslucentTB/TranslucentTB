@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <d2d1.h>
+#include <winrt/base.h>
 
 #include "scolour.hpp"
 
@@ -41,13 +42,13 @@ inline HRESULT CreateHueGradient(ID2D1RenderTarget *target, ID2D1LinearGradientB
 {
 	static constexpr auto value = CalculateHueGradient();
 
-	ID2D1GradientStopCollection *gradientStops;
+	winrt::com_ptr<ID2D1GradientStopCollection> gradientStops;
 	HRESULT hr = target->CreateGradientStopCollection(
 		value.data(),
 		HueGradientPrecision,
 		D2D1_GAMMA_1_0,
 		D2D1_EXTEND_MODE_CLAMP,
-		&gradientStops
+		gradientStops.put()
 	);
 
 	if (FAILED(hr))
@@ -61,11 +62,9 @@ inline HRESULT CreateHueGradient(ID2D1RenderTarget *target, ID2D1LinearGradientB
 			D2D1::Point2F(vertical ? 0.0f : size.width, 0.0f),
 			D2D1::Point2F(0.0f, vertical ? size.height : 0.0f)
 		),
-		gradientStops,
+		gradientStops.get(),
 		gradient
 	);
-
-	gradientStops->Release();
 
 	if (FAILED(hr))
 	{

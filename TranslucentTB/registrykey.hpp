@@ -1,30 +1,42 @@
 #pragma once
+#include <string>
+#include <utility>
 #include <winerror.h>
 #include <winreg.h>
+#include <winrt/base.h>
 
-#include "ttberror.hpp"
+struct registry_key_traits
+{
+	using type = HKEY;
 
-class RegistryKey {
-
-private:
-	HKEY m_Key;
-	bool m_Result;
-
-public:
-	inline RegistryKey(const HKEY &key, const std::wstring &subKey)
+	static void close(type value) noexcept
 	{
-		m_Result = ErrorHandle(HRESULT_FROM_WIN32(RegCreateKey(key, subKey.c_str(), &m_Key)), Error::Level::Error, L"Opening registry key failed!");
-	}
-	inline operator HKEY() { return m_Key; }
-	inline explicit operator bool() { return m_Result; }
-	inline ~RegistryKey()
-	{
-		if (m_Result)
+		if (value != HKEY_CLASSES_ROOT &&
+			value != HKEY_CURRENT_CONFIG &&
+			value != HKEY_CURRENT_USER &&
+			value != HKEY_CURRENT_USER_LOCAL_SETTINGS &&
+			value != HKEY_LOCAL_MACHINE &&
+			value != HKEY_PERFORMANCE_DATA &&
+			value != HKEY_PERFORMANCE_NLSTEXT &&
+			value != HKEY_PERFORMANCE_TEXT &&
+			value != HKEY_USERS)
 		{
-			ErrorHandle(HRESULT_FROM_WIN32(RegCloseKey(m_Key)), Error::Level::Log, L"Error closing registry key.");
+			WINRT_VERIFY_(ERROR_SUCCESS, RegCloseKey(value));
 		}
 	}
 
-	inline RegistryKey(const RegistryKey &) = delete;
-	inline RegistryKey &operator =(const RegistryKey &) = delete;
+	static constexpr type invalid() noexcept
+	{
+		return nullptr;
+	}
 };
+
+using registry_key = winrt::handle_type<registry_key_traits>;
+
+registry_key open_key(const registry_key &key, const std::wstring &subkey)
+{
+	registry_key created_key;
+	SetLastError(RegCreateKey(key.get(), subkey.c_str(), created_key.put()));
+
+	return created_key;
+}

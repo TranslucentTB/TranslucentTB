@@ -40,12 +40,13 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 	}
 	temp.resize(size);
 
-	AutoFree::SilentLocal<wchar_t> log_folder;
-	hr = PathAllocCombine(temp.c_str(), NAME, PATHCCH_ALLOW_LONG_PATHS, &log_folder);
+	AutoFree::DebugLocal<wchar_t> log_folder_safe;
+	hr = PathAllocCombine(temp.c_str(), NAME, PATHCCH_ALLOW_LONG_PATHS, log_folder_safe.put());
 	if (FAILED(hr))
 	{
 		return { hr, L"Failed to combine temporary folder location and app name!" };
 	}
+	const wchar_t *log_folder = log_folder_safe.get();
 #else
 	try
 	{
@@ -53,7 +54,7 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 		const wchar_t *log_folder = tempFolder_str.c_str();
 #endif
 
-	if (!win32::IsDirectory(static_cast<const wchar_t *>(log_folder)))
+	if (!win32::IsDirectory(log_folder))
 	{
 		if (!CreateDirectory(log_folder, NULL))
 		{
@@ -93,14 +94,14 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 		log_filename = std::to_wstring(unix_epoch) + L".log";
 	}
 
-	AutoFree::SilentLocal<wchar_t> log_file;
-	hr = PathAllocCombine(log_folder, log_filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, &log_file);
+	AutoFree::DebugLocal<wchar_t> log_file;
+	hr = PathAllocCombine(log_folder, log_filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, log_file.put());
 	if (FAILED(hr))
 	{
 		return { hr, L"Failed to combine log folder location and log file name!" };
 	}
 
-	m_FileHandle = CreateFile(log_file, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+	m_FileHandle = CreateFile(log_file.get(), GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 	if (!*m_FileHandle)
 	{
 		return { HRESULT_FROM_WIN32(GetLastError()), L"Failed to create and open log file!" };
@@ -112,7 +113,7 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 		LastErrorHandle(Error::Level::Debug, L"Failed to write byte-order marker.");
 	}
 
-	m_File = log_file;
+	m_File = log_file.get();
 	return { S_OK, L"" };
 
 #ifdef STORE
