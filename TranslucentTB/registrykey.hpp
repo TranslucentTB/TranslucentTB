@@ -5,11 +5,11 @@
 #include <winreg.h>
 #include <winrt/base.h>
 
-struct registry_key_traits
-{
+struct registry_key_traits {
+
 	using type = HKEY;
 
-	static void close(type value) noexcept
+	inline static void close(type value) noexcept
 	{
 		if (value != HKEY_CLASSES_ROOT &&
 			value != HKEY_CURRENT_CONFIG &&
@@ -33,7 +33,7 @@ struct registry_key_traits
 
 using registry_key = winrt::handle_type<registry_key_traits>;
 
-registry_key open_key(const registry_key &key, const std::wstring &subkey)
+inline registry_key open_key(const registry_key &key, const std::wstring &subkey)
 {
 	registry_key created_key;
 	SetLastError(RegCreateKey(key.get(), subkey.c_str(), created_key.put()));
