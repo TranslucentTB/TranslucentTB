@@ -599,7 +599,10 @@ GUI::GUI(CColourPicker *picker, ID2D1Factory3 *factory) :
 		{ m_colorSliderContext, IDC_COLOR2 },
 		{ m_alphaSliderContext, IDC_ALPHASLIDE },
 		{ m_colorPreviewContext, IDC_COLORS },
-	}
+	},
+	m_changingText(false),
+	m_changingHexViaSpin(false),
+	m_oldColorTip(nullptr)
 { }
 
 void GUI::UpdateValues(HWND hDlg)
