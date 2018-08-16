@@ -32,7 +32,10 @@ You can see it in action [here](https://gfycat.com/TidyFelineCrownofthornsstarfi
 
 ## Download
 
-You can download the program (prebuilt executables and source snapshots) [via the releases tab](https://github.com/TranslucentTB/TranslucentTB/releases).
+You can download the program freely from the [Microsoft Store](https://www.microsoft.com/store/apps/9PF4KZ2VN4W9) and take advantage of its features like background auto-updates and settings sync.
+
+If you prefer a classical download, you can do so [via the releases tab](https://github.com/TranslucentTB/TranslucentTB/releases).
+
 If you want to get the latest bleeding edge build, you can grab it over at the [AppVeyor artifacts](https://ci.appveyor.com/project/sylveon/translucenttb/build/artifacts). Note that these build may not work, or include features that are partially complete. Use at your own risk.
 
 ## Add to Startup
@@ -150,6 +153,8 @@ When contributing, please respect the style used by the codebase. Quick rundown:
   ```
 
 - Indentation style is 4 spaces large tabs, and your editor should enforce it with this repo's `.editorconfig` automatically.
+
+When trying to debug the main program, it might seem confusing at first because the two projects listed for launch in the header are StorePackage and DesktopInstallerBuilder. Just right-click the TranslucentTB project and select "Set as startup project".
 
 ## Thanks
 
