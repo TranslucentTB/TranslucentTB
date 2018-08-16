@@ -73,9 +73,10 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 		// FILETIME is also in hundreds of nanoseconds, but Unix timestamps are in seconds.
 
 		// Useful union to convert from a high-word and low-word big integer to a long long.
-		LARGE_INTEGER creationTimestamp;
-		creationTimestamp.HighPart = creationTime.dwHighDateTime;
-		creationTimestamp.LowPart = creationTime.dwLowDateTime;
+		LARGE_INTEGER creationTimestamp = {{
+			creationTime.dwLowDateTime,
+			creationTime.dwHighDateTime
+		}};
 
 		// There are 10000000 hundreds of nanoseconds in a second.
 		// Convert to seconds.

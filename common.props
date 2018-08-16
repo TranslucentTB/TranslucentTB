@@ -82,6 +82,7 @@
       <SDLCheck>true</SDLCheck>
       <MinimalRebuild>
       </MinimalRebuild>
+      <SupportJustMyCode>false</SupportJustMyCode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>-Wno-missing-field-initializers -Wrange-loop-analysis -Wold-style-cast -Wnonportable-system-include-path -Wimplicit-fallthrough -Wunreachable-code-return -Wswitch-enum -m32 -fmsc-version=1900</AdditionalOptions>
     </ClCompile>
