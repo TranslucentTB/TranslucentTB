@@ -1,1043 +1,769 @@
-#include <windows.h>
-#include <iostream>
-#include <fstream>
+// Standard API
+#include <chrono>
+#include <sstream>
 #include <string>
-#include <vector>
-#include <tchar.h>
-#include <map>
-#include <psapi.h>
+#include <thread>
+#include <unordered_map>
+
+// Windows API
+#include "arch.h"
+#include <PathCch.h>
 #include <ShlObj.h>
-#include <Shlwapi.h>
 
-#include <algorithm>
-
-// for making the menu show up better
-#include <ShellScalingAPI.h>
-
-//used for the tray things
-#include <shellapi.h>
+// Local stuff
+#include "appvisibilitysink.hpp"
+#include "autofree.hpp"
+#include "autostart.hpp"
+#include "blacklist.hpp"
+#include "common.hpp"
+#include "config.hpp"
+#include "createinstance.hpp"
+#include "eventhook.hpp"
+#include "messagewindow.hpp"
 #include "resource.h"
+#include "swcadata.hpp"
+#include "traycontextmenu.hpp"
+#include "ttberror.hpp"
+#include "ttblog.hpp"
+#include "util.hpp"
+#ifdef STORE
+#include "uwp.hpp"
+#endif
+#include "win32.hpp"
+#include "window.hpp"
+#include "windowclass.hpp"
 
-//we use a GUID for uniqueness
-const static LPCWSTR singleProcName = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
+#pragma region Data
 
-//needed for tray exit
-bool run = true;
-bool hastray = true;
-
-// config file path (defaults to ./config.cfg)
-std::wstring configfile;
-// holds whether the user passed a --config parameter on the command line
-bool explicitconfig;
-
-// holds the alpha channel value between 0 or 255,
-// defaults to -1 (not set).
-int forcedtransparency;
-
-HWND taskbar;
-HWND secondtaskbar;
-HMENU popup;
-
-#pragma region composition
-
-struct ACCENTPOLICY
-{
-	int nAccentState;
-	int nFlags;
-	int nColor;
-	int nAnimationId;
-};
-struct WINCOMPATTRDATA
-{
-	int nAttribute;
-	PVOID pData;
-	ULONG ulDataSize;
+enum class EXITREASON {
+	NewInstance,		// New instance told us to exit
+	UserAction,			// Triggered by the user
+	UserActionNoSave	// Triggered by the user, but doesn't saves config
 };
 
-struct OPTIONS
-{
-	int taskbar_appearance;
-	int color;
-	bool dynamicws;
-	bool dynamicstart;
-} opt;
+static struct {
+	EXITREASON exit_reason = EXITREASON::UserAction;
+	Window main_taskbar;
+	std::unordered_map<HMONITOR, std::pair<Window, const Config::TASKBAR_APPEARANCE *>> taskbars;
+	bool should_show_peek = true;
+	bool is_running = true;
+	std::wstring config_folder;
+	std::wstring config_file;
+	std::wstring exclude_file;
+	bool peek_active = false;
+	bool start_opened = false;
+} run;
 
-enum TASKBARSTATE { Normal, WindowMaximised, StartMenuOpen }; // Create a state to store all 
-															  // states of the Taskbar
-			// Normal           | Proceed as normal. If no dynamic options are set, act as it says in opt.taskbar_appearance
-			// WindowMaximised  | There is a window which is maximised on the monitor this HWND is in. Display as blurred.
-			// StartMenuOpen    | The Start Menu is open on the monitor this HWND is in. Display as it would be without TranslucentTB active.
-
-enum SAVECONFIGSTATES { DoNotSave, SaveTransparency, SaveAll } shouldsaveconfig;  // Create an enum to store all config states
-			// DoNotSave        | Fairly self-explanatory
-			// SaveTransparency | Save opt.taskbar_appearance
-			// SaveAll          | Save all options
-
-
-struct READFROMCONFIG
-{
-	bool dynamicws;
-	bool dynamicstart;
-	bool tint;
-} configfileoptions; // Keep a struct, as we will need to save them later
-
-struct TASKBARPROPERTIES
-{
-	HMONITOR hmon;
-	TASKBARSTATE state;
+static const std::unordered_map<swca::ACCENT, uint32_t> REGULAR_BUTTOM_MAP = {
+	{ swca::ACCENT::ACCENT_NORMAL,						IDM_REGULAR_NORMAL },
+	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_REGULAR_CLEAR  },
+	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_REGULAR_OPAQUE },
+	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_REGULAR_BLUR   },
+	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_REGULAR_FLUENT }
 };
 
-std::vector<std::wstring> IgnoredClassNames;
-std::vector<std::wstring> IgnoredExeNames;
-std::vector<std::wstring> IgnoredWindowTitles;
+static const std::unordered_map<swca::ACCENT, uint32_t> MAXIMISED_BUTTON_MAP = {
+	{ swca::ACCENT::ACCENT_NORMAL,						IDM_MAXIMISED_NORMAL },
+	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_MAXIMISED_CLEAR  },
+	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_MAXIMISED_OPAQUE },
+	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_MAXIMISED_BLUR   },
+	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_MAXIMISED_FLUENT }
+};
 
-int counter = 0;
-const int ACCENT_DISABLED = 4; // Disables TTB for that taskbar
-const int ACCENT_ENABLE_GRADIENT = 1; // Makes the taskbar a solid color specified by nColor. This mode doesn't care about the alpha channel.
-const int ACCENT_ENABLE_TRANSPARENTGRADIENT = 2; // Makes the taskbar a tinted transparent overlay. nColor is the tint color, sending nothing results in it interpreted as 0x00000000 (totally transparent, blends in with desktop)
-const int ACCENT_ENABLE_BLURBEHIND = 3; // Makes the taskbar a tinted blurry overlay. nColor is same as above.
-const int ACCENT_ENABLE_TINTED = 5; // This is not a real state. We will handle it later.
-const int ACCENT_NORMAL_GRADIENT = 6; // Another fake value, handles the 
-unsigned int WM_TASKBARCREATED;
-unsigned int NEW_TTB_INSTANCE;
-int DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND; // State to activate when d-ws is enabled
-std::map<HWND, TASKBARPROPERTIES> taskbars; // Create a map for all taskbars
+static const std::unordered_map<swca::ACCENT, uint32_t> START_BUTTON_MAP = {
+	{ swca::ACCENT::ACCENT_NORMAL,						IDM_START_NORMAL },
+	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_START_CLEAR  },
+	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_START_OPAQUE },
+	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_START_BLUR   },
+	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_START_FLUENT }
+};
 
-std::wstring ExcludeFile = L"dynamic-ws-exclude.csv";
+static const std::unordered_map<swca::ACCENT, uint32_t> CORTANA_BUTTON_MAP = {
+	{ swca::ACCENT::ACCENT_NORMAL,						IDM_CORTANA_NORMAL },
+	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_CORTANA_CLEAR  },
+	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_CORTANA_OPAQUE },
+	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_CORTANA_BLUR   },
+	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_CORTANA_FLUENT }
+};
 
-IVirtualDesktopManager *desktop_manager;
+static const std::unordered_map<swca::ACCENT, uint32_t> TIMELINE_BUTTON_MAP = {
+	{ swca::ACCENT::ACCENT_NORMAL,						IDM_TIMELINE_NORMAL },
+	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_TIMELINE_CLEAR  },
+	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_TIMELINE_OPAQUE },
+	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_TIMELINE_BLUR   },
+	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_TIMELINE_FLUENT }
+};
 
-typedef BOOL(WINAPI*pSetWindowCompositionAttribute)(HWND, WINCOMPATTRDATA*);
-static pSetWindowCompositionAttribute SetWindowCompositionAttribute = (pSetWindowCompositionAttribute)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowCompositionAttribute");
-
-void SetWindowBlur(HWND hWnd, int appearance = 0) // `appearance` can be 0, which means 'follow opt.taskbar_appearance'
-{
-	if (SetWindowCompositionAttribute)
-	{
-		ACCENTPOLICY policy;
-
-		if (appearance) // Custom taskbar appearance is set
-		{
-			if (DYNAMIC_WS_STATE == ACCENT_ENABLE_TINTED)
-			{ // dynamic-ws is set to tint
-				if (appearance == ACCENT_ENABLE_TINTED) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, opt.color, 0 }; } // Window is maximised
-				else { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0 }; } // Desktop is shown (this shouldn't ever be called tho, just in case)
-			}
-			else {  policy = { appearance, 2, opt.color, 0 };  }
-		} else { // Use the defaults
-			if (DYNAMIC_WS_STATE == ACCENT_ENABLE_TINTED) { policy = {ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, 0x00000000, 0}; } // dynamic-ws is tint and desktop is shown
-			else if (opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT) { policy = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 2, (int)0xd9000000, 0 }; } // normal gradient color
-			else { policy = { opt.taskbar_appearance, 2, opt.color, 0 }; }
-		}
-		
-		WINCOMPATTRDATA data = { 19, &policy, sizeof(ACCENTPOLICY) }; // WCA_ACCENT_POLICY=19
-		SetWindowCompositionAttribute(hWnd, &data);
-	}
-
-}
-
-#pragma endregion 
-
-#pragma region IO help
-
-bool file_exists(std::wstring path)
-{
-	std::ifstream infile(path);
-	return infile.good();
-}
+static const std::unordered_map<enum Config::PEEK, uint32_t> PEEK_BUTTON_MAP = {
+	{ Config::PEEK::Enabled,		IDM_PEEK_SHOW    },
+	{ Config::PEEK::Dynamic,		IDM_PEEK_DYNAMIC },
+	{ Config::PEEK::Disabled,		IDM_PEEK_HIDE    }
+};
 
 #pragma endregion
 
-#pragma region command line
-void PrintHelp()
+#pragma region That one function that does all the magic
+
+void SetWindowBlur(const Window &window, const swca::ACCENT &appearance, const uint32_t &color)
 {
-	// BUG - 
-	// For some reason, when launching this program in cmd.exe, it won't properly "notice"
-	// when the program has exited, and will not automatically write a new prompt to the console.
-	// Instead of printing the current directory as usual before it waits for a new command,
-	// it doesn't print anything, leading to a cluttered console.
-	// It's even worse in Powershell, where it actually WILL print the PS prompt before waiting for 
-	// a new command, but it does so on the line after "./TranslucentTB.exe --help", overwriting the 
-	// first line of output from this function, and gradually overwriting the following lines as you
-	// press enter. The PS shell just doesn't notice that anything gets printed to the console, and
-	// therefore it prints the PS prompt over this output instead of after. I don't know of any 
-	// solution to this, but I expect that setting the project type to SUBSYSTEM:CONSOLE would solve
-	// those issues. Again - I think a help file would be the best solution, so I'll do that in my 
-	// next commit.
-
-	BOOL hasconsole = true;
-	BOOL createdconsole = false;
-	// Try to attach to the parent console,
-	// allocate a new one if that isn't successful
-	if (!AttachConsole(ATTACH_PARENT_PROCESS))
+	if (user32::SetWindowCompositionAttribute)
 	{
-		if (!AllocConsole())
+		static std::unordered_map<Window, bool> is_normal;
+
+		swca::ACCENTPOLICY policy = {
+			appearance,
+			2,
+			(color & 0xFF00FF00) + ((color & 0x00FF0000) >> 16) + ((color & 0x000000FF) << 16),
+			0
+		};
+
+		if (policy.nAccentState == swca::ACCENT::ACCENT_NORMAL)
 		{
-			hasconsole = false;
-		}
-		else
-		{
-			createdconsole = true;
-		}
-	}
-
-	if (hasconsole)
-	{
-		FILE* outstream;
-		FILE* instream;
-		freopen_s(&outstream, "CONOUT$", "w", stdout);
-		freopen_s(&instream, "CONIN$", "w", stdin);
-
-		if (outstream)
-		{
-			using namespace std;
-			cout << endl;
-			cout << "TranslucentTB by ethanhs & friends" << endl;
-			cout << "Source: https://github.com/TranslucentTB/TranslucentTB" << endl;
-			cout << "    TranslucentTB is freeware and is distributed under thte open-source GPL3 license." << endl;
-			cout << "This program modifies the appearance of the windows taskbar" << endl;
-			cout << "You can modify its behaviour by using the following parameters when launching the program:" << endl;
-			cout << "  --blur                | will make the taskbar a blurry overlay of the background (default)." << endl;
-			cout << "  --opaque              | will make the taskbar a solid color specified by the tint parameter." << endl;
-			cout << "  --transparent         | will make the taskbar a transparent color specified by the tint parameter." << endl;
-			cout << "                          The value of the alpha channel determines the opacity of the taskbar." << endl;
-			cout << "  --tint COLOR          | specifies the color applied to the taskbar. COLOR is 32 bit number in hex format," << endl;
-			cout << "                          see explanation below." << endl;
-			cout << "  --dynamic-ws STATE    | will make the taskbar transparent when no windows are maximised in the current" << endl;
-			cout << "                          monitor, otherwise blurry. State can be from: (blur, opaque, tint). Blur is default." << endl;
-			cout << "  --dynamic-start       | will make the taskbar return to it's normal state when the start menu is opened," << endl;
-			cout << "                          current setting otherwise." << endl;
-			cout << "  --exclude-file FILE   | CSV-format file to specify applications to exclude from dynamic-ws (By default" << endl;
-            cout << "						   it will attempt to load from dynamic-ws-exclude.csv)" << endl;
-			cout << "  --save-all            | will save all of the above settings into config.cfg on program exit." << endl;
-			cout << "  --config FILE         | will load settings from a specified configuration file. (if this parameter is" << endl;
-			cout << "                          ignored, it will attempt to load from config.cfg)" << endl;
-			cout << "  --help                | Displays this help message." << endl;
-			cout << "  --startup             | Adds TranslucentTB to startup, via changing the registry." << endl;
-			cout << "  --no-tray             | will hide the taskbar tray icon." << endl;
-			cout << endl;
-
-			cout << "Color format:" << endl;
-			cout << "  The parameter is interpreted as a three or four byte long number in hexadecimal format that" << endl;
-			cout << "  describes the four color channels 0xAARRGGBB ([alpha,] red, green and blue). These look like this:" << endl;
-			cout << "  0x80fe10a4 (the '0x' is optional). You often find colors in this format in the context of HTML and" << endl;
-			cout << "  web design, and there are many online tools to convert from familiar names to this format. These" << endl;
-			cout << "  tools might give you numbers starting with '#', in that case you can just remove the leading '#'." << endl;
-			cout << "  You should be able to find online tools by searching for \"color to hex\" or something similar." << endl;
-			cout << "  If the converter doesn't include alpha values (opacity), you can append them yourself at the start" << endl;
-			cout << "  of the number. Just convert a value between 0 and 255 to its hexadecimal value before you append it." << endl;
-			cout << endl;
-			cout << "Examples:" << endl;
-			cout << "# start with Windows, start transparent" << endl;
-			cout << "TranslucentTB.exe --startup --transparent --save-all" << endl;
-			cout << "# run dynamic windows mode, with the supplied color" << endl;
-			cout << "TranslucentTB.exe --tint 80fe10a4 --dynamic-ws tint" << endl;
-			cout << "# Will be normal when start is open, transparent otherwise." << endl;
-			cout << "TranslucentTB.exe --dynamic-start" << endl;
-			cout << endl;
-
-			if (createdconsole && instream)
+			if (is_normal.count(window) == 0 || !is_normal[window])
 			{
-				string wait;
-
-				cout << "Press enter to exit the program." << endl;
-				if (!getline(cin, wait))
-				{
-					// Couldn't wait for user input, make the user close
-					// the program themselves so they can see the output.
-					cout << "Press Ctrl + C, Alt + F4, or click the close button to exit the program." << endl;
-					Sleep(INFINITE);
-				}
-
-				FreeConsole();
+				// WM_THEMECHANGED makes the taskbar reload the theme and reapply the normal effect.
+				// Gotta memoize it because constantly sending it makes explorer's CPU usage jump.
+				window.send_message(WM_THEMECHANGED);
+				is_normal[window] = true;
 			}
-
-			fclose(outstream);
+			return;
 		}
-	}
-}
-
-void add_to_startup()
-{
-	HMODULE hModule = GetModuleHandle(NULL);
-	TCHAR path[MAX_PATH];
-	GetModuleFileName(hModule, path, MAX_PATH);
-	std::wstring unsafePath = path;
-	std::wstring progPath = L"\"" + unsafePath + L"\"";
-	HKEY hkey = NULL;
-	LONG createStatus = RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey); //Creates a key       
-	LONG status = RegSetValueEx(hkey, L"TranslucentTB", 0, REG_SZ, (BYTE *)progPath.c_str(), (DWORD)((progPath.size() + 1) * sizeof(wchar_t)));
-}
-
-void ParseSingleConfigOption(std::wstring arg, std::wstring value)
-{
-	if (arg == L"accent")
-	{
-		if (value == L"blur")
-			opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-		else if (value == L"opaque")
-			opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
-		else if (value == L"transparent" ||
-				 value == L"translucent")
-			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-	}
-	else if (arg == L"dynamic-ws")
-	{
-		if (value == L"true" ||
-			value == L"enable")
-			{
-				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-				opt.dynamicws = true;
-			}
-		else if (value == L"tint")
+		else if (policy.nAccentState == swca::ACCENT::ACCENT_ENABLE_FLUENT && policy.nColor >> 24 == 0x00)
 		{
-			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-			opt.dynamicws = true;
-			DYNAMIC_WS_STATE = ACCENT_ENABLE_TINTED;
+			// Fluent mode doesn't likes a completely 0 opacity
+			policy.nColor = (0x01 << 24) + (policy.nColor & 0x00FFFFFF);
 		}
-		else if (value == L"blur")
-		{
-			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-			opt.dynamicws = true;
-			DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND;
-		}
-		else if (value == L"opaque")
-		{
-			opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-			opt.dynamicws = true;
-			DYNAMIC_WS_STATE = ACCENT_ENABLE_GRADIENT;
-		}
-	}
-	else if (arg == L"dynamic-start")
-	{
-		if (value == L"true" ||
-			value == L"enable")
-			{
-				opt.dynamicstart = true;
-			}
-	}
-	else if (arg == L"color" ||
-			 arg == L"tint")
-	{
-		if (value.find(L'#') == 0)
-			value = value.substr(1, value.length() - 1);
 
-		size_t numchars = 0;
-		// heh make sure we don't run into overflow errors 
-		// TODO use proper range here and check for overflows. Write to logfile and warn user of error.
-		unsigned long long parsed = std::stoull(value, &numchars, 16);
+		swca::WINCOMPATTRDATA data = {
+			swca::WindowCompositionAttribute::WCA_ACCENT_POLICY,
+			&policy,
+			sizeof(policy)
+		};
 
-		opt.color =
-			(parsed & 0xFF000000) +
-			((parsed & 0x00FF0000) >> 16) +
-			(parsed & 0x0000FF00) +
-			((parsed & 0x000000FF) << 16);
-	}
-	else if (arg == L"opacity")
-	{
-		// TODO Same here. Should check range and warn user if the value doesn't fit.
-		size_t numchars = 0;
-		int parsed = std::stoi(value, &numchars, 10);
-
-		if (parsed < 0)
-			parsed = 0;
-		else if (parsed > 255)
-			parsed = 255;
-
-		forcedtransparency = parsed;
-	}
-}
-
-void ParseConfigFile(std::wstring path)
-{
-	std::wifstream configstream(path);
-
-	for (std::wstring line; std::getline(configstream, line); )
-	{
-		// Skip comments
-		size_t comment_index = line.find(L';');
-		if (comment_index == 0)
-			continue;
-		else
-			line = line.substr(0, comment_index);
-
-		size_t split_index = line.find(L'=');
-		std::wstring key = line.substr(0, split_index);
-		std::wstring val = line.substr(split_index + 1, line.length() - split_index - 1);
-
-		ParseSingleConfigOption(key, val);
-	}
-
-	if (forcedtransparency >= 0)
-	{
-		opt.color = (forcedtransparency << 24) +
-					(opt.color & 0x00FFFFFF);
-	}
-}
-
-void SaveConfigFile()
-{
-	if (!configfile.empty())
-	{
-		using namespace std;
-		wofstream configstream(configfile);
-
-		configstream << L"; Taskbar appearance: opaque, transparent, or blur (default)." << endl;
-
-		if (opt.taskbar_appearance == ACCENT_ENABLE_GRADIENT)
-			configstream << L"accent=opaque" << endl;
-		else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
-			configstream << L"accent=transparent" << endl;
-		else if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
-			configstream << L"accent=blur" << endl;
-
-		if (configfileoptions.dynamicws == true || 
-			shouldsaveconfig == SaveAll)
-		{
-			configstream << L"; Dynamic states: Window States and (WIP) Start Menu" << endl;
-			configstream << L"dynamic-ws=enable" << endl;
-		}
-		if (configfileoptions.dynamicstart == true ||
-			shouldsaveconfig == SaveAll)
-		{
-			configstream << L"dynamic-start=enable" << endl;
-		}
-		if (configfileoptions.tint == true ||
-			shouldsaveconfig == SaveAll)
-		{
-			configstream << endl;
-			configstream << L"; Color and opacity of the taskbar." << endl;
-
-			// TODO include the alpha channel here or not?
-			unsigned int bitreversed =
-				(opt.color & 0xFF000000) +
-				((opt.color & 0x00FF0000) >> 16) +
-				(opt.color & 0x0000FF00) +
-				((opt.color & 0x000000FF) << 16);
-			configstream << L"color=" << hex << bitreversed << L"    ; A color in hexadecimal notation. Described in usage.md." << endl;
-			configstream << L"opacity=" << to_wstring((opt.color & 0xFF000000) >> 24) << L"    ; A value in the range 0 to 255." << endl;
-		}
-	}
-}
-
-void ParseSingleOption(std::wstring arg, std::wstring value)
-{
-	if (arg == L"--help")
-	{
-		PrintHelp();
-		exit(0);
-	}
-	else if (arg == L"--save-all")
-	{
-		shouldsaveconfig = SaveAll;
-	}
-	else if (arg == L"--blur")
-	{
-		opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-	}
-	else if (arg == L"--opaque")
-	{
-		opt.taskbar_appearance = ACCENT_ENABLE_GRADIENT;
-	}
-	else if (arg == L"--transparent" || arg == L"--clear")
-	{
-		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-	}
-	else if (arg == L"--dynamic-ws")
-	{
-		configfileoptions.dynamicws = true;
-		opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-		opt.dynamicws = true;
-		if (value == L"tint") { DYNAMIC_WS_STATE = ACCENT_ENABLE_TINTED; }
-		else if (value == L"blur") { DYNAMIC_WS_STATE = ACCENT_ENABLE_BLURBEHIND; }
-		else if (value == L"opaque") { DYNAMIC_WS_STATE = ACCENT_ENABLE_GRADIENT; }
-	}
-	else if (arg == L"--dynamic-start")
-	{
-		configfileoptions.dynamicstart = true;
-		opt.dynamicstart = true;
-	}
-	else if (arg == L"--startup")
-	{
-		add_to_startup();
-	}
-	else if (arg == L"--exclude-file")
-	{
-		OutputDebugString(value.c_str());
-		std::ifstream infile(value);
-		if (!infile.good())
-		{
-			BOOL hasconsole = true;
-			BOOL createdconsole = false;
-			// Try to attach to the parent console,
-			// allocate a new one if that isn't successful
-			if (!AttachConsole(ATTACH_PARENT_PROCESS))
-			{
-				if (!AllocConsole())
-				{
-					hasconsole = false;
-				}
-				else
-				{
-					createdconsole = true;
-				}
-			}
-			if (hasconsole)
-			{
-				FILE* outstream;
-				FILE* instream;
-				freopen_s(&outstream, "CONOUT$", "w", stdout);
-				freopen_s(&instream, "CONIN$", "w", stdin);
-				if (outstream)
-				{
-					std::cout << "Invalid File." << std::endl;
-					exit(0);
-				}
-				if (createdconsole && instream)
-				{
-					std::string wait;
-
-					std::cout << "Press enter to exit the program." << std::endl;
-					if (!getline(std::cin, wait))
-					{
-						// Couldn't wait for user input, make the user close
-						// the program themselves so they can see the output.
-						std::cout << "Press Ctrl + C, Alt + F4, or click the close button to exit the program." << std::endl;
-						Sleep(INFINITE);
-					}
-
-					FreeConsole();
-				}
-				fclose(outstream);
-			} // Temporary until we fix shell stdout
-		}
-		ExcludeFile = value;
-	}
-	else if (arg == L"--tint" || arg == L"--color")
-	{
-		configfileoptions.tint = true;
-		// The next argument should be a color in hex format
-		if (value.length() > 0)
-		{
-			unsigned long colval = 0;
-			size_t numchars;
-
-			colval = stoul(value, &numchars, 16);
-			
-			// ACCENTPOLICY.nColor expects the byte order to be ABGR,
-			// fiddle some bits to make it intuitive for the user.
-			opt.color =
-				(colval & 0xFF000000) +
-				((colval & 0x00FF0000) >> 16) +
-				(colval & 0x0000FF00) +
-				((colval & 0x000000FF) << 16);
-		}
-		else
-		{
-			// TODO error handling for missing value
-			// Really not much to do as we don't have functional
-			// output streams, and opening a window seems overkill.
-		}
-	}
-	else if (arg == L"--no-tray")
-	{
-		hastray = false;
-	}
-}
-
-void ParseCmdOptions(bool configonly=false)
-{
-	// Set default values
-	if (configonly)
-	{
-		shouldsaveconfig = DoNotSave;
-		explicitconfig = false;
-		configfile = L"config.cfg";
-		forcedtransparency = -1;
-
-		opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-		opt.color = 0x00000000;
-	}
-
-	// Loop through command line arguments
-	LPWSTR *szArglist;
-	int nArgs;
-
-	szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
-
-
-	// Find the --config option if provided
-	for (int i = 0; i < nArgs; i++)
-	{
-		LPWSTR lparg = szArglist[i];
-		LPWSTR lpvalue = (i + 1 < nArgs) ? szArglist[i + 1] : L"";
-
-		std::wstring arg = std::wstring(lparg);
-		std::wstring value = std::wstring(lpvalue);
-
-		if (arg == L"--config")
-		{
-			// We allow multiple --config options. The later ones will override the previous ones.
-			// The lates will be assigned to configfile, and that's where changes are saved.
-			if (value.length() > 0 &&
-				file_exists(value))
-			{
-				configfile = value;
-				ParseConfigFile(value);
-			}
-			// TODO else? Missing or invalid parameter, should log
-		}
-	}
-
-	// Iterate over the rest of the arguments 
-	// Those options override the config files.
-	if (configonly == false) // If configonly is false
-	{
-		for (int i = 0; i < nArgs; i++)
-		{
-			LPWSTR lparg = szArglist[i];
-			LPWSTR lpvalue = (i + 1 < nArgs) ? szArglist[i + 1] : L"";
-
-			std::wstring arg = std::wstring(lparg);
-			std::wstring value = std::wstring(lpvalue);
-
-			ParseSingleOption(arg, value);
-		}
-	}
-
-	LocalFree(szArglist);
-}
-
-void RefreshHandles()
-{
-	HWND _taskbar;
-	TASKBARPROPERTIES _properties;
-
-	taskbars.clear();
-	_taskbar = FindWindowW(L"Shell_TrayWnd", NULL);
-
-	_properties.hmon = MonitorFromWindow(_taskbar, MONITOR_DEFAULTTOPRIMARY);
-	_properties.state = Normal;
-	taskbars.insert(std::make_pair(_taskbar, _properties));
-	while (secondtaskbar = FindWindowEx(0, secondtaskbar, L"Shell_SecondaryTrayWnd", NULL))
-	{
-		_properties.hmon = MonitorFromWindow(secondtaskbar, MONITOR_DEFAULTTOPRIMARY);
-		_properties.state = Normal;
-		taskbars.insert(std::make_pair(secondtaskbar, _properties));
-	}
-}
-
-std::wstring trim(std::wstring& str)
-{
-    size_t first = str.find_first_not_of(' ');
-    size_t last = str.find_last_not_of(' ');
-
-	if (first == std::wstring::npos)
-	{ return std::wstring(L""); }
-    return str.substr(first, (last-first+1));
-}
-
-std::vector<std::wstring> ParseByDelimiter(std::wstring row, std::wstring delimiter=L",")
-{
-	std::vector<std::wstring> result;
-	std::wstring token;
-	size_t pos = 0;
-	while ((pos = row.find(delimiter)) != std::string::npos)
-	{
-		token = trim(row.substr(0, pos));
-		result.push_back(token);
-		row.erase(0, pos + delimiter.length());
-	}
-	return result;
-}
-
-void ParseDWSExcludesFile(std::wstring filename)
-{
-	std::wifstream excludesfilestream(filename);
-
-	std::wstring delimiter = L","; // Change to change the char(s) used to split,
-
-	for (std::wstring line; std::getline(excludesfilestream, line); )
-	{
-		size_t comment_index = line.find(L';');
-		if (comment_index == 0)
-			continue;
-		else
-			line = line.substr(0, comment_index);
-
-		if (line.length() > delimiter.length())
-		{
-			if (line.compare(line.length() - delimiter.length(), delimiter.length(), delimiter))
-			{
-				line.append(delimiter);
-			}
-		}
-		std::wstring line_lowercase = line;
-		std::transform(line_lowercase.begin(), line_lowercase.end(), line_lowercase.begin(), tolower);
-		if (line_lowercase.substr(0, 5) == L"class")
-		{
-			IgnoredClassNames = ParseByDelimiter(line, delimiter);
-			IgnoredClassNames.erase(IgnoredClassNames.begin());
-		}
-		else if (line_lowercase.substr(0, 5) == L"title" ||
-				 line.substr(0, 13) == L"windowtitle")
-		{
-			IgnoredWindowTitles = ParseByDelimiter(line, delimiter);
-			IgnoredWindowTitles.erase(IgnoredWindowTitles.begin());
-		}
-		else if (line_lowercase.substr(0, 7) == L"exename")
-		{
-			IgnoredExeNames = ParseByDelimiter(line, delimiter);
-			IgnoredExeNames.erase(IgnoredExeNames.begin());
-		}
+		user32::SetWindowCompositionAttribute(window, &data);
+		is_normal[window] = false;
 	}
 }
 
 #pragma endregion
 
-#pragma region tray
+#pragma region Configuration
 
-#define WM_NOTIFY_TB 3141
-
-HMENU menu;
-NOTIFYICONDATA Tray;
-HWND tray_hwnd;
-
-void RefreshMenu()
+void GetPaths()
 {
-	if (opt.dynamicws)
+#ifndef STORE
+	AutoFree::CoTaskMem<wchar_t> appDataSafe;
+	ErrorHandle(SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, appDataSafe.put()), Error::Level::Fatal, L"Failed to determine configuration files locations!");
+	const wchar_t *appData = appDataSafe.get();
+#else
+	try
 	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_DYNAMICWS, MF_BYCOMMAND);
-	}
-	else if (opt.taskbar_appearance == ACCENT_ENABLE_BLURBEHIND)
-	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_BLUR, MF_BYCOMMAND);
-	}
-	else if (opt.taskbar_appearance == ACCENT_ENABLE_TRANSPARENTGRADIENT)
-	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_CLEAR, MF_BYCOMMAND);
-	} 
-	else if (opt.taskbar_appearance == ACCENT_NORMAL_GRADIENT)
-	{
-		CheckMenuRadioItem(popup, IDM_BLUR, IDM_DYNAMICWS, IDM_NORMAL, MF_BYCOMMAND);
-	}
+		winrt::hstring appData_str = UWP::GetApplicationFolderPath(UWP::FolderType::Roaming);
+		const wchar_t *appData = appData_str.c_str();
+#endif
 
-	if (opt.dynamicstart)
-	{
-		CheckMenuItem(popup, IDM_DYNAMICSTART, MF_BYCOMMAND | MF_CHECKED);
-	} else
-	{
-		CheckMenuItem(popup, IDM_DYNAMICSTART, MF_BYCOMMAND | MF_UNCHECKED);
-	}
+	AutoFree::Local<wchar_t> configFolder;
+	AutoFree::Local<wchar_t> configFile;
+	AutoFree::Local<wchar_t> excludeFile;
 
-	if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
-	{
-		CheckMenuItem(popup, IDM_AUTOSTART, MF_BYCOMMAND | MF_CHECKED);
+	ErrorHandle(PathAllocCombine(appData, NAME, PATHCCH_ALLOW_LONG_PATHS, configFolder.put()), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
+	ErrorHandle(PathAllocCombine(configFolder.get(), CONFIG_FILE, PATHCCH_ALLOW_LONG_PATHS, configFile.put()), Error::Level::Fatal, L"Failed to combine config folder and config file!");
+	ErrorHandle(PathAllocCombine(configFolder.get(), EXCLUDE_FILE, PATHCCH_ALLOW_LONG_PATHS, excludeFile.put()), Error::Level::Fatal, L"Failed to combine config folder and exclude file!");
+
+	run.config_folder = configFolder.get();
+	run.config_file = configFile.get();
+	run.exclude_file = excludeFile.get();
+
+#ifdef STORE
 	}
+	catch (const winrt::hresult_error &error)
+	{
+		ErrorHandle(error.code(), Error::Level::Fatal, L"Getting application folder paths failed!");
+	}
+#endif
 }
 
-void initTray(HWND parent)
+void ApplyStock(const std::wstring &filename)
 {
-	if(hastray)
+	std::wstring exeFolder_str = win32::GetExeLocation();
+	exeFolder_str.erase(exeFolder_str.find_last_of(LR"(/\)") + 1);
+
+	AutoFree::Local<wchar_t> stockFile;
+	if (!ErrorHandle(PathAllocCombine(exeFolder_str.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, stockFile.put()), Error::Level::Error, L"Failed to combine executable folder and config file!"))
 	{
-		Tray.cbSize = sizeof(Tray);
-		Tray.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(MAINICON));
-		Tray.hWnd = parent;
-		wcscpy_s(Tray.szTip, L"TranslucentTB");
-		Tray.uCallbackMessage = WM_NOTIFY_TB;
-		Tray.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
-		Tray.uID = 101;
-		Shell_NotifyIcon(NIM_ADD, &Tray);
-		Shell_NotifyIcon(NIM_SETVERSION, &Tray);
-		RefreshMenu();
+		return;
 	}
-}
 
-BOOL isBlacklisted(HWND hWnd)
-{
-	// Get respective attributes
-	TCHAR className[MAX_PATH];
-	TCHAR exeName_path[MAX_PATH];
-	TCHAR windowTitle[MAX_PATH];
-	GetClassName(hWnd, className, _countof(className));
-	GetWindowText(hWnd, windowTitle, _countof(windowTitle));
-
-	DWORD ProcessId;
-	GetWindowThreadProcessId(hWnd, &ProcessId);
-	HANDLE processhandle = OpenProcess(PROCESS_QUERY_INFORMATION, false, ProcessId);
-	GetModuleFileNameEx(processhandle, NULL, exeName_path, _countof(exeName_path));
-
-	std::wstring exeName = PathFindFileNameW(exeName_path);
-	std::wstring w_WindowTitle = windowTitle;
-
-	// Check if the different vars are in their respective vectors
-	for (auto & value: IgnoredClassNames)
-	{ if (className == value.c_str()) { return true; } }
-	for (auto & value: IgnoredExeNames)
-	{ if (exeName == value) { return true; } }
-	for (auto & value: IgnoredWindowTitles)
+	AutoFree::Local<wchar_t> configFile;
+	if (!ErrorHandle(PathAllocCombine(run.config_folder.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, configFile.put()), Error::Level::Error, L"Failed to combine config folder and config file!"))
 	{
-		if (w_WindowTitle.find(value) != std::wstring::npos)
+		return;
+	}
+
+	if (!win32::IsDirectory(run.config_folder))
+	{
+		if (!CreateDirectory(run.config_folder.c_str(), NULL))
 		{
-			return true;
+			LastErrorHandle(Error::Level::Error, L"Creating configuration files directory failed!");
+			return;
 		}
 	}
-	return false;
+
+	if (!CopyFile(stockFile.get(), configFile.get(), FALSE))
+	{
+		LastErrorHandle(Error::Level::Error, L"Copying stock configuration file failed!");
+	}
 }
 
-BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam) 
+bool CheckAndRunWelcome()
 {
-	HMONITOR _monitor;
-
-	if (opt.dynamicws)
+	if (!win32::IsDirectory(run.config_folder))
 	{
-		WINDOWPLACEMENT result = {};
-		::GetWindowPlacement(hWnd, &result);
-		if (result.showCmd == SW_MAXIMIZE) {
-			BOOL on_current_desktop;
-			desktop_manager->IsWindowOnCurrentVirtualDesktop(hWnd, &on_current_desktop);
-			if (IsWindowVisible(hWnd) && on_current_desktop)
-			{
-				if (!isBlacklisted(hWnd))
-				{
-					_monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
-					for (auto &taskbar: taskbars)
-					{
-						if (taskbar.second.hmon == _monitor &&
-							taskbar.second.state != StartMenuOpen)
-						{
-							taskbar.second.state = WindowMaximised;
-						}
-					}
-				}
-			}
+		// String concatenation is hard OK
+		std::wostringstream message;
+		message <<
+			L"Welcome to " NAME L"!\n\n"
+			L"You can tweak the taskbar's appearance with the tray icon. If it's your cup of tea, you can also edit the configuration files, located at \"" <<
+			run.config_folder <<
+			L"\"\n\nDo you agree to the GPLv3 license?";
+
+		if (MessageBox(NULL, message.str().c_str(), NAME, MB_ICONINFORMATION | MB_YESNO | MB_SETFOREGROUND) != IDYES)
+		{
+			return false;
 		}
+	}
+	if (!win32::FileExists(run.config_file))
+	{
+		ApplyStock(CONFIG_FILE);
+	}
+	if (!win32::FileExists(run.exclude_file))
+	{
+		ApplyStock(EXCLUDE_FILE);
 	}
 	return true;
 }
 
-LRESULT CALLBACK TBPROCWND(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
+#pragma endregion
 
-	switch (message)
+#pragma region Utilities
+
+void RefreshHandles()
+{
+	if (Config::VERBOSE)
 	{
-	case WM_CLOSE:
-		PostQuitMessage(0);
-		break;
-	case WM_NOTIFY_TB:
-		if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
+		Log::OutputMessage(L"Refreshing taskbar handles.");
+	}
+
+	// Older handles are invalid, so clear the map to be ready for new ones
+	run.taskbars.clear();
+
+	run.main_taskbar = Window::Find(L"Shell_TrayWnd");
+	run.taskbars[run.main_taskbar.monitor()] = { run.main_taskbar, &Config::REGULAR_APPEARANCE };
+
+	for (const Window secondtaskbar : Window::FindEnum(L"Shell_SecondaryTrayWnd"))
+	{
+		run.taskbars[secondtaskbar.monitor()] = { secondtaskbar, &Config::REGULAR_APPEARANCE };
+	}
+}
+
+void TogglePeek(const bool &status)
+{
+	static bool cached_peek = true;
+	static Window cached_taskbar = Window(run.main_taskbar);
+
+	if (status != cached_peek || cached_taskbar != run.main_taskbar)
+	{
+		Window _peek = Window::Find(L"TrayShowDesktopButtonWClass", L"", Window::Find(L"TrayNotifyWnd", L"", run.main_taskbar));
+
+		if (!status)
 		{
-			POINT pt;
-			GetCursorPos(&pt);
-			SetForegroundWindow(hWnd);
-			UINT tray = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
-			switch (tray)
+			SetWindowLong(_peek, GWL_EXSTYLE, GetWindowLong(_peek, GWL_EXSTYLE) | WS_EX_LAYERED);
+
+			SetLayeredWindowAttributes(_peek, 0, 0, LWA_ALPHA);
+		}
+		else
+		{
+			SetWindowLong(_peek, GWL_EXSTYLE, GetWindowLong(_peek, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+		}
+
+		cached_peek = status;
+		cached_taskbar = Window(run.main_taskbar);
+	}
+}
+
+#pragma endregion
+
+#pragma region Tray
+
+void RefreshAutostartMenu(HMENU menu, const Autostart::StartupState &state)
+{
+	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, !(state == Autostart::StartupState::DisabledByUser
+		|| state == Autostart::StartupState::DisabledByPolicy
+		|| state == Autostart::StartupState::EnabledByPolicy),
+		TrayContextMenu::ControlsEnabled);
+
+	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, state == Autostart::StartupState::Enabled
+		|| state == Autostart::StartupState::EnabledByPolicy,
+		TrayContextMenu::Toggle);
+
+	std::wstring autostart_text;
+	switch (state)
+	{
+	case Autostart::StartupState::DisabledByUser:
+		autostart_text = L"Startup has been disabled in Task Manager";
+		break;
+	case Autostart::StartupState::DisabledByPolicy:
+		autostart_text = L"Startup has been disabled in Group Policy";
+		break;
+	case Autostart::StartupState::EnabledByPolicy:
+		autostart_text = L"Startup has been enabled in Group Policy";
+		break;
+	case Autostart::StartupState::Enabled:
+	case Autostart::StartupState::Disabled:
+		autostart_text = L"Open at boot";
+	}
+	TrayContextMenu::ChangeItemText(menu, IDM_AUTOSTART, std::move(autostart_text));
+}
+
+void RefreshMenu(HMENU menu)
+{
+	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, false, TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, false, TrayContextMenu::Toggle);
+	TrayContextMenu::ChangeItemText(menu, IDM_AUTOSTART, L"Querying startup state...");
+	Autostart::GetStartupState().then(std::bind(&RefreshAutostartMenu, menu, std::placeholders::_1));
+
+
+	static bool initial_check_done = false;
+	if (!initial_check_done)
+	{
+		if (!win32::IsAtLeastBuild(MIN_FLUENT_BUILD))
+		{
+			RemoveMenu(menu, IDM_REGULAR_FLUENT,   MF_BYCOMMAND);
+			RemoveMenu(menu, IDM_MAXIMISED_FLUENT, MF_BYCOMMAND);
+			RemoveMenu(menu, IDM_START_FLUENT,     MF_BYCOMMAND);
+			RemoveMenu(menu, IDM_CORTANA_FLUENT,   MF_BYCOMMAND);
+			RemoveMenu(menu, IDM_TIMELINE_FLUENT,  MF_BYCOMMAND);
+
+			// Same build for Timeline and fluent
+			TrayContextMenu::ChangeItemText(menu, IDM_TIMELINE_POPUP, L"Task View opened");
+		}
+
+		initial_check_done = true;
+	}
+
+	const bool has_log = !Log::file().empty();
+	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, has_log, TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::ChangeItemText(menu, IDM_OPENLOG, has_log
+		? L"Open log file"
+		: Log::init_done()
+			? L"Error when initializing log file"
+			: L"Nothing has been logged yet"
+	);
+
+	TrayContextMenu::RefreshBool(IDM_REGULAR_COLOR,   menu,
+		Config::REGULAR_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
+		TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(IDM_MAXIMISED_COLOR, menu,
+		Config::MAXIMISED_ENABLED && Config::MAXIMISED_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
+		TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(IDM_START_COLOR,     menu,
+		Config::START_ENABLED     && Config::START_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
+		TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(IDM_CORTANA_COLOR,     menu,
+		Config::CORTANA_ENABLED   && Config::CORTANA_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
+		TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(IDM_TIMELINE_COLOR,  menu,
+		Config::TIMELINE_ENABLED  && Config::TIMELINE_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
+		TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(IDM_PEEK_ONLY_MAIN,  menu,
+		Config::PEEK == Config::PEEK::Dynamic,
+		TrayContextMenu::ControlsEnabled);
+}
+
+#pragma endregion
+
+#pragma region Main logic
+
+BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
+{
+	const Window window(hWnd);
+	// DWMWA_CLOAKED should take care of checking if it's on the current desktop.
+	// But that's undocumented behavior.
+	// Do both but with on_current_desktop last.
+	if (window.visible() && window.state() == SW_MAXIMIZE && !window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
+		!Blacklist::IsBlacklisted(window) && window.on_current_desktop() && run.taskbars.count(window.monitor()) != 0)
+	{
+		auto &taskbar = run.taskbars.at(window.monitor());
+		if (Config::MAXIMISED_ENABLED)
+		{
+			taskbar.second = &Config::MAXIMISED_APPEARANCE;
+		}
+
+		if (Config::PEEK == Config::PEEK::Dynamic)
+		{
+			if (Config::PEEK_ONLY_MAIN)
 			{
-			case IDM_BLUR:
-				opt.dynamicws = false;
-				opt.taskbar_appearance = ACCENT_ENABLE_BLURBEHIND;
-				if (shouldsaveconfig == DoNotSave &&
-					shouldsaveconfig != SaveAll)
-					shouldsaveconfig = SaveTransparency;
-				RefreshMenu();
-				break;
-			case IDM_CLEAR:
-				opt.dynamicws = false;
-				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-				if (shouldsaveconfig == DoNotSave &&
-					shouldsaveconfig != SaveAll)
-					shouldsaveconfig = SaveTransparency;
-				RefreshMenu();
-				break;
-			case IDM_NORMAL:
-				opt.dynamicws = false;
-				opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
-				RefreshMenu();
-				// TODO: shouldsaveconfig implementation
-				break;
-			case IDM_DYNAMICWS:
-				opt.taskbar_appearance = ACCENT_ENABLE_TRANSPARENTGRADIENT;
-				opt.dynamicws = true;
-				EnumWindows(&EnumWindowsProcess, NULL);
-				// TODO: shouldsaveconfig implementation
-				RefreshMenu();
-				break;
-			case IDM_DYNAMICSTART:
-				opt.dynamicstart = !opt.dynamicstart;
-				// TODO: shouldsaveconfig implementation
-				RefreshMenu();
-				break;
-			case IDM_AUTOSTART:
-				if(RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"TranslucentTB", RRF_RT_REG_SZ, NULL, NULL, NULL) == ERROR_SUCCESS)
+				if (taskbar.first == run.main_taskbar)
 				{
-					HKEY hkey = NULL;
-					RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
-					RegDeleteValue(hkey, L"TranslucentTB");
-				} else {
-					add_to_startup();
+					run.should_show_peek = true;
 				}
-				RefreshMenu();
-				break;
-			case IDM_EXIT:
-				run = false;
-				break;
+			}
+			else
+			{
+				run.should_show_peek = true;
 			}
 		}
 	}
-	if (message == WM_TASKBARCREATED) // Unfortunately, WM_TASKBARCREATED is not a constant, so I can't include it in the switch.
-	{
-		RefreshHandles();
-		initTray(tray_hwnd);
-	} else if (message == NEW_TTB_INSTANCE){
-		shouldsaveconfig = DoNotSave;
-		run = false;
-	}
-	return DefWindowProc(hWnd, message, wParam, lParam);
+	return true;
 }
 
 void SetTaskbarBlur()
 {
-	// std::cout << opt.dynamicws << std::endl;	
+	static uint8_t counter = 10;
 
-	
-	if (counter >= 10)   // Change this if you want to change the time it takes for the program to update
-	{                   // 100 = 1 second; we use 10, because the difference is less noticeable and it has
-						// no large impact on CPU. We can change this if we feel that CPU is more important
-						// than response time.
-		for (auto &taskbar: taskbars)
+	if (counter >= 10)	// Change this if you want to change the time it takes for the program to update.
+	{					// 1 = Config::SLEEP_TIME; we use 10 (assuming the default configuration value of 10),
+						// because the difference is less noticeable and it has no large impact on CPU.
+						// We can change this if we feel that CPU is more important than response time.
+		run.should_show_peek = (Config::PEEK == Config::PEEK::Enabled);
+
+		for (auto &[_, pair] : run.taskbars)
 		{
-			taskbar.second.state = Normal; // Reset taskbar state
+			pair.second = &Config::REGULAR_APPEARANCE; // Reset taskbar state
 		}
-		if (opt.dynamicws) {
-			counter = 0;
+		if (Config::MAXIMISED_ENABLED || Config::PEEK == Config::PEEK::Dynamic)
+		{
 			EnumWindows(&EnumWindowsProcess, NULL);
 		}
-	
-		if (opt.dynamicstart)
+
+		TogglePeek(run.should_show_peek);
+
+		const Window fg_window = Window::ForegroundWindow();
+		if (fg_window != Window::NullWindow && run.taskbars.count(fg_window.monitor()) != 0)
 		{
-			HWND foreground;
-			TCHAR ForehWndClass[MAX_PATH];
-			TCHAR ForehWndName[MAX_PATH];
-
-			foreground = GetForegroundWindow();
-			GetWindowText(foreground, ForehWndName, _countof(ForehWndName));
-			GetClassName(foreground, ForehWndClass, _countof(ForehWndClass));
-
-			if (!_tcscmp(ForehWndClass, _T("Windows.UI.Core.CoreWindow")) &&
-			(!_tcscmp(ForehWndName, _T("Search")) || !_tcscmp(ForehWndName, _T("Cortana"))))
+			if (Config::CORTANA_ENABLED && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
+				Util::IgnoreCaseStringEquals(fg_window.filename(), L"SearchUI.exe"))
 			{
-				// Detect monitor Start Menu is open on
-				HMONITOR _monitor;
-				_monitor = MonitorFromWindow(foreground, MONITOR_DEFAULTTOPRIMARY);
-				for (auto &taskbar: taskbars)
+				run.taskbars.at(fg_window.monitor()).second = &Config::CORTANA_APPEARANCE;
+			}
+
+			if (Config::START_ENABLED && run.start_opened)
+			{
+				run.taskbars.at(fg_window.monitor()).second = &Config::START_APPEARANCE;
+			}
+		}
+
+		// Put this between Start/Cortana and Task view/Timeline
+		// Task view and Timeline show over Aero Peek, but not Start or Cortana
+		if (Config::MAXIMISED_ENABLED && Config::MAXIMISED_REGULAR_ON_PEEK && run.peek_active)
+		{
+			for (auto &[_, pair] : run.taskbars)
+			{
+				pair.second = &Config::REGULAR_APPEARANCE;
+			}
+		}
+
+		if (fg_window != Window::NullWindow)
+		{
+			const static bool timeline_av = win32::IsAtLeastBuild(MIN_FLUENT_BUILD);
+			if (Config::TIMELINE_ENABLED && (timeline_av
+				? (fg_window.classname() == CORE_WINDOW && Util::IgnoreCaseStringEquals(fg_window.filename(), L"Explorer.exe"))
+				: (fg_window.classname() == L"MultitaskingViewFrame")))
+			{
+				for (auto &[_, pair] : run.taskbars)
 				{
-					if (taskbar.second.hmon == _monitor)
-					{
-						taskbar.second.state = StartMenuOpen;
-					} else {
-						taskbar.second.state = Normal;
-					}
+					pair.second = &Config::TIMELINE_APPEARANCE;
 				}
 			}
 		}
-	}
 
-	for (auto const &taskbar: taskbars)
+		counter = 0;
+	}
+	else
 	{
-		if (taskbar.second.state == WindowMaximised) {
-			SetWindowBlur(taskbar.first, DYNAMIC_WS_STATE);
-											// A window is maximised; let's make sure that we blur the window.
-		} else if (taskbar.second.state == Normal) {
-			SetWindowBlur(taskbar.first);  // Taskbar should be normal, call using normal transparency settings
-		}
-
+		counter++;
 	}
-	counter++;
+
+	for (const auto &[_, pair] : run.taskbars)
+	{
+		const Config::TASKBAR_APPEARANCE &appearance = *pair.second;
+		SetWindowBlur(pair.first, appearance.ACCENT, appearance.COLOR);
+	}
 }
 
 #pragma endregion
 
-HANDLE ev;
+#pragma region Startup
 
-bool singleProc()
+void InitializeTray(const HINSTANCE &hInstance)
 {
-	ev = CreateEvent(NULL, TRUE, FALSE, singleProcName);
-	if (GetLastError() == ERROR_ALREADY_EXISTS)
-	{
+	static MessageWindow window(L"TrayWindow", NAME, hInstance);
 
-		return false;
+	window.RegisterCallback(NEW_TTB_INSTANCE, [](...)
+	{
+		run.exit_reason = EXITREASON::NewInstance;
+		run.is_running = false;
+		return 0;
+	});
+
+	window.RegisterCallback(WM_DISPLAYCHANGE, [](...)
+	{
+		RefreshHandles();
+		return 0;
+	});
+
+	window.RegisterCallback(WM_TASKBARCREATED, [](...)
+	{
+		RefreshHandles();
+		return 0;
+	});
+
+	window.RegisterCallback(WM_CLOSE, [](...)
+	{
+		run.exit_reason = EXITREASON::UserAction;
+		run.is_running = false;
+		return 0;
+	});
+
+#ifdef STORE
+	window.RegisterCallback(WM_QUERYENDSESSION, [](...)
+	{
+		// https://docs.microsoft.com/en-us/windows/uwp/porting/desktop-to-uwp-extensions#updates
+		RegisterApplicationRestart(NULL, NULL);
+		return TRUE;
+	});
+#endif
+
+
+	if (!Config::NO_TRAY)
+	{
+		static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYICON), MAKEINTRESOURCE(IDR_POPUP_MENU), hInstance);
+
+		tray.BindColor(IDM_REGULAR_COLOR, Config::REGULAR_APPEARANCE.COLOR);
+		tray.BindEnum(Config::REGULAR_APPEARANCE.ACCENT, REGULAR_BUTTOM_MAP);
+
+
+		tray.BindBool(IDM_MAXIMISED,      Config::MAXIMISED_ENABLED,         TrayContextMenu::Toggle);
+		tray.BindBool(IDM_MAXIMISED_PEEK, Config::MAXIMISED_ENABLED,         TrayContextMenu::ControlsEnabled);
+		tray.BindBool(IDM_MAXIMISED_PEEK, Config::MAXIMISED_REGULAR_ON_PEEK, TrayContextMenu::Toggle);
+		tray.BindColor(IDM_MAXIMISED_COLOR, Config::MAXIMISED_APPEARANCE.COLOR);
+		tray.BindEnum(Config::MAXIMISED_APPEARANCE.ACCENT, MAXIMISED_BUTTON_MAP);
+		for (const auto &[_, id] : MAXIMISED_BUTTON_MAP)
+		{
+			tray.BindBool(id, Config::MAXIMISED_ENABLED, TrayContextMenu::ControlsEnabled);
+		}
+
+
+		tray.BindBool(IDM_START, Config::START_ENABLED, TrayContextMenu::Toggle);
+		tray.BindColor(IDM_START_COLOR, Config::START_APPEARANCE.COLOR);
+		tray.BindEnum(Config::START_APPEARANCE.ACCENT, START_BUTTON_MAP);
+		for (const auto &[_, id] : START_BUTTON_MAP)
+		{
+			tray.BindBool(id, Config::START_ENABLED, TrayContextMenu::ControlsEnabled);
+		}
+
+		tray.BindBool(IDM_CORTANA, Config::CORTANA_ENABLED, TrayContextMenu::Toggle);
+		tray.BindColor(IDM_CORTANA_COLOR, Config::CORTANA_APPEARANCE.COLOR);
+		tray.BindEnum(Config::CORTANA_APPEARANCE.ACCENT, CORTANA_BUTTON_MAP);
+		for (const auto &[_, id] : CORTANA_BUTTON_MAP)
+		{
+			tray.BindBool(id, Config::CORTANA_ENABLED, TrayContextMenu::ControlsEnabled);
+		}
+
+
+		tray.BindBool(IDM_TIMELINE, Config::TIMELINE_ENABLED, TrayContextMenu::Toggle);
+		tray.BindColor(IDM_TIMELINE_COLOR, Config::TIMELINE_APPEARANCE.COLOR);
+		tray.BindEnum(Config::TIMELINE_APPEARANCE.ACCENT, TIMELINE_BUTTON_MAP);
+		for (const auto &[_, id] : TIMELINE_BUTTON_MAP)
+		{
+			tray.BindBool(id, Config::TIMELINE_ENABLED, TrayContextMenu::ControlsEnabled);
+		}
+
+
+		tray.BindEnum(Config::PEEK, PEEK_BUTTON_MAP);
+		tray.BindBool(IDM_PEEK_ONLY_MAIN, Config::PEEK_ONLY_MAIN, TrayContextMenu::Toggle);
+
+
+		tray.RegisterContextMenuCallback(IDM_OPENLOG, []
+		{
+			std::thread([]
+			{
+				Log::Flush();
+				win32::EditFile(Log::file());
+			}).detach();
+		});
+		tray.BindBool(IDM_VERBOSE, Config::VERBOSE, TrayContextMenu::Toggle);
+		tray.RegisterContextMenuCallback(IDM_RELOADSETTINGS, std::bind(&Config::Parse, std::ref(run.config_file)));
+		tray.RegisterContextMenuCallback(IDM_EDITSETTINGS, []
+		{
+			Config::Save(run.config_file);
+			std::thread([]
+			{
+				win32::EditFile(run.config_file);
+				Config::Parse(run.config_file);
+			}).detach();
+		});
+		tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTSETTINGS, []
+		{
+			ApplyStock(CONFIG_FILE);
+			Config::Parse(run.config_file);
+		});
+		tray.RegisterContextMenuCallback(IDM_RELOADDYNAMICBLACKLIST, std::bind(&Blacklist::Parse, std::ref(run.exclude_file)));
+		tray.RegisterContextMenuCallback(IDM_EDITDYNAMICBLACKLIST, []
+		{
+			std::thread([]
+			{
+				win32::EditFile(run.exclude_file);
+				Blacklist::Parse(run.exclude_file);
+			}).detach();
+		});
+		tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTBLACKLIST, []
+		{
+			ApplyStock(EXCLUDE_FILE);
+			Blacklist::Parse(run.exclude_file);
+		});
+		tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, Blacklist::ClearCache);
+		tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, []
+		{
+			run.exit_reason = EXITREASON::UserActionNoSave;
+			run.is_running = false;
+		});
+
+
+		tray.RegisterContextMenuCallback(IDM_AUTOSTART, []
+		{
+			Autostart::GetStartupState().then([](const Autostart::StartupState &result)
+			{
+				Autostart::SetStartupState(result == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
+			});
+		});
+		tray.RegisterContextMenuCallback(IDM_TIPS, std::bind(&win32::OpenLink,
+			L"https://github.com/TranslucentTB/TranslucentTB/wiki/Tips-and-tricks-for-a-better-looking-taskbar"));
+		tray.RegisterContextMenuCallback(IDM_EXIT, []
+		{
+			run.exit_reason = EXITREASON::UserAction;
+			run.is_running = false;
+		});
+
+
+		tray.RegisterCustomRefresh(RefreshMenu);
 	}
-	return true;
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInst, LPSTR pCmdLine, int nCmdShow)
+int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 {
-	HRESULT dpi_success = SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
-	if (!dpi_success) { OutputDebugStringW(L"Per-monitor DPI scaling failed"); }
-
-	ParseCmdOptions(true); // Command line argument settings, config file only
-	ParseConfigFile(L"config.cfg"); // Config file settings
-	ParseCmdOptions(false); // Command line argument settings, all lines
-	ParseDWSExcludesFile(ExcludeFile);
-
-	NEW_TTB_INSTANCE = RegisterWindowMessage(L"NewTTBInstance");
-	if (!singleProc()) {
-		HWND oldInstance = FindWindow(L"TranslucentTB", L"TrayWindow");
-		SendMessage(oldInstance, NEW_TTB_INSTANCE, NULL, NULL);
-	}
-
-	MSG msg; // for message translation and dispatch
-	popup = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_POPUP_MENU));
-	menu = GetSubMenu(popup, 0);
-	WNDCLASSEX wnd = { 0 };
-
-	wnd.hInstance = hInstance;
-	wnd.lpszClassName = L"TranslucentTB";
-	wnd.lpfnWndProc = TBPROCWND;
-	wnd.style = CS_HREDRAW | CS_VREDRAW;
-	wnd.cbSize = sizeof(WNDCLASSEX);
-
-	wnd.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wnd.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wnd.hbrBackground = (HBRUSH)BLACK_BRUSH;
-	RegisterClassEx(&wnd);
-
-	tray_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"TranslucentTB", L"TrayWindow", WS_OVERLAPPEDWINDOW, 0, 0,
-		400, 400, NULL, NULL, hInstance, NULL);
-
-	initTray(tray_hwnd);
-
-	ShowWindow(tray_hwnd, WM_SHOWWINDOW);
-	
-	//Virtual Desktop stuff
-	::CoInitialize(NULL);
-	HRESULT desktop_success = ::CoCreateInstance(__uuidof(VirtualDesktopManager), NULL, CLSCTX_INPROC_SERVER, IID_IVirtualDesktopManager, (void **)&desktop_manager);
-	if (!desktop_success) { OutputDebugStringW(L"Initialization of VirtualDesktopManager failed"); }
-
-	RefreshHandles();
-	if (opt.dynamicws)
+	win32::HardenProcess();
+	try
 	{
-		EnumWindows(&EnumWindowsProcess, NULL); // Putting this here so there isn't a
-												// delay between when you start the
-												// program and when the taskbar goes blurry
+		winrt::init_apartment(winrt::apartment_type::single_threaded);
 	}
-	WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
+	catch (const winrt::hresult_error &error)
+	{
+		ErrorHandle(error.code(), Error::Level::Fatal, L"Initialization of Windows Runtime failed.");
+	}
 
-	while (run) {
-		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+	// If there already is another instance running, tell it to exit
+	if (!win32::IsSingleInstance())
+	{
+		Window::Find(L"TrayWindow", NAME).send_message(NEW_TTB_INSTANCE);
+	}
+
+	// Get configuration file paths
+	GetPaths();
+
+	// If the configuration files don't exist, restore the files and show welcome to the users
+	if (!CheckAndRunWelcome())
+	{
+		return EXIT_FAILURE;
+	}
+
+	// Parse our configuration
+	Config::Parse(run.config_file);
+	Blacklist::Parse(run.exclude_file);
+
+	// Initialize GUI
+	InitializeTray(hInstance);
+
+	// Populate our map
+	RefreshHandles();
+
+	// Undoc'd, allows to detect when Aero Peek starts and stops
+	EventHook peek_hook(
+		0x21,
+		0x22,
+		[](const DWORD event, ...)
+		{
+			run.peek_active = event == 0x21;
+		},
+		WINEVENT_OUTOFCONTEXT
+	);
+
+	// Detect additional monitor connection
+	EventHook creation_hook(
+		EVENT_OBJECT_CREATE,
+		EVENT_OBJECT_CREATE,
+		[](DWORD, const Window &window, ...)
+		{
+			if (window.valid() && window.classname() == L"Shell_SecondaryTrayWnd")
+			{
+				run.taskbars[window.monitor()] = { window, &Config::REGULAR_APPEARANCE };
+			}
+		},
+		WINEVENT_OUTOFCONTEXT
+	);
+
+	// Register our start menu detection sink
+	auto app_visibility = create_instance<IAppVisibility>(CLSID_AppVisibility);
+	DWORD av_cookie = 0;
+	if (app_visibility)
+	{
+		// See comment on AppVisibilitySink for reason why WRL is used here
+		Microsoft::WRL::ComPtr<IAppVisibilityEvents> av_sink = Microsoft::WRL::Make<AppVisibilitySink>(run.start_opened);
+		ErrorHandle(app_visibility->Advise(av_sink.Get(), &av_cookie), Error::Level::Log, L"Failed to register app visibility sink.");
+	}
+
+	// Message loop
+	while (run.is_running)
+	{
+		MSG msg;
+		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
+		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
 		SetTaskbarBlur();
-		Sleep(10);
+		std::this_thread::sleep_for(std::chrono::milliseconds(Config::SLEEP_TIME));
 	}
-	Shell_NotifyIcon(NIM_DELETE, &Tray);
 
-	if (shouldsaveconfig != DoNotSave)
-		SaveConfigFile();
+	if (av_cookie)
+	{
+		ErrorHandle(app_visibility->Unadvise(av_cookie), Error::Level::Log, L"Failed to unregister app visibility sink.");
+	}
 
-	opt.taskbar_appearance = ACCENT_NORMAL_GRADIENT;
-	SetTaskbarBlur();
-	CloseHandle(ev);
-	return 0;
+	// Close all open CPicker windows to avoid:
+	// 1. Saving the colors currently previewed.
+	// 2. Direct2D and Direct3D bothering us about leaks in debug mode (because CPicker gets unloaded after Direct2D so Direct2D
+	//    does a leak check before CPicker even has a chance to cleanup anything). We don't care about them because we are closing,
+	//    and if we have actual leaks, they won't be drowned in the noise since closing the window will make CPicker cleanup.
+	win32::ClosePickers();
+
+	// If it's a new instance, don't save or restore taskbar to default
+	if (run.exit_reason != EXITREASON::NewInstance)
+	{
+		if (run.exit_reason != EXITREASON::UserActionNoSave)
+		{
+			Config::Save(run.config_file);
+		}
+
+		// Restore default taskbar appearance
+		TogglePeek(true);
+		for (const auto &taskbar : run.taskbars)
+		{
+			SetWindowBlur(taskbar.second.first, swca::ACCENT::ACCENT_NORMAL, NULL);
+		}
+	}
+
+	return EXIT_SUCCESS;
 }
+
+#pragma endregion

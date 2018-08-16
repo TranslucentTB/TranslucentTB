@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}</ProjectGuid>
+    <RootNamespace>CPicker</RootNamespace>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="..\common.props" />
+  <ItemDefinitionGroup Label="Globals">
+    <ClCompile>
+      <PreprocessorDefinitions>_CPICKER_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>comctl32.lib;d2d1.lib;d3d11.lib;ole32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalManifestDependencies>"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'"</AdditionalManifestDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="alphaslidercontext.cpp" />
+    <ClCompile Include="ccolourpicker.cpp" />
+    <ClCompile Include="colorpreviewcontext.cpp" />
+    <ClCompile Include="colorslidercontext.cpp" />
+    <ClCompile Include="dlldata.cpp" />
+    <ClCompile Include="gui.cpp" />
+    <ClCompile Include="mainpickercontext.cpp" />
+    <ClCompile Include="rendercontext.cpp" />
+    <ClCompile Include="slidercontext.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="alphaslidercontext.hpp" />
+    <ClInclude Include="colorpreviewcontext.hpp" />
+    <ClInclude Include="colorslidercontext.hpp" />
+    <ClInclude Include="dlldata.hpp" />
+    <ClInclude Include="gui.hpp" />
+    <ClInclude Include="huegradient.hpp" />
+    <ClInclude Include="ccolourpicker.hpp" />
+    <ClInclude Include="mainpickercontext.hpp" />
+    <ClInclude Include="paintcontext.hpp" />
+    <ClInclude Include="rendercontext.hpp" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="scolour.hpp" />
+    <ClInclude Include="slidercontext.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="CPicker.rc" />
+  </ItemGroup>
+</Project>

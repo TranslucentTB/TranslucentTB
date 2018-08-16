@@ -1,28 +1,54 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TranslucentTB", "TranslucentTB\TranslucentTB.vcxproj", "{59F844AA-8D3C-431C-B8CC-57682915F551}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CPicker", "CPicker\CPicker.vcxproj", "{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}"
+EndProject
+Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "StorePackage", "StorePackage\StorePackage.wapproj", "{0E91E5C8-0EE0-49C9-A0DA-D25AB61A90C4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{643CCC44-6675-4C3B-AF5B-B44DF4D7EBFF}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopInstallerBuilder", "DesktopInstallerBuilder\DesktopInstallerBuilder.csproj", "{C88EE074-FAFD-4872-8BAF-2BC6198337E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
-		Release|x64 = Release|x64
 		Release|x86 = Release|x86
+		Store|x86 = Store|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{59F844AA-8D3C-431C-B8CC-57682915F551}.Debug|x64.ActiveCfg = Debug|x64
-		{59F844AA-8D3C-431C-B8CC-57682915F551}.Debug|x64.Build.0 = Debug|x64
 		{59F844AA-8D3C-431C-B8CC-57682915F551}.Debug|x86.ActiveCfg = Debug|Win32
 		{59F844AA-8D3C-431C-B8CC-57682915F551}.Debug|x86.Build.0 = Debug|Win32
-		{59F844AA-8D3C-431C-B8CC-57682915F551}.Release|x64.ActiveCfg = Release|x64
-		{59F844AA-8D3C-431C-B8CC-57682915F551}.Release|x64.Build.0 = Release|x64
 		{59F844AA-8D3C-431C-B8CC-57682915F551}.Release|x86.ActiveCfg = Release|Win32
 		{59F844AA-8D3C-431C-B8CC-57682915F551}.Release|x86.Build.0 = Release|Win32
+		{59F844AA-8D3C-431C-B8CC-57682915F551}.Store|x86.ActiveCfg = Store|Win32
+		{59F844AA-8D3C-431C-B8CC-57682915F551}.Store|x86.Build.0 = Store|Win32
+		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Debug|x86.ActiveCfg = Debug|Win32
+		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Debug|x86.Build.0 = Debug|Win32
+		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Release|x86.ActiveCfg = Release|Win32
+		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Release|x86.Build.0 = Release|Win32
+		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Store|x86.ActiveCfg = Store|Win32
+		{AB4D3015-2AD4-4152-BDD2-FC1343B22B6C}.Store|x86.Build.0 = Store|Win32
+		{0E91E5C8-0EE0-49C9-A0DA-D25AB61A90C4}.Debug|x86.ActiveCfg = Release|x86
+		{0E91E5C8-0EE0-49C9-A0DA-D25AB61A90C4}.Release|x86.ActiveCfg = Release|x86
+		{0E91E5C8-0EE0-49C9-A0DA-D25AB61A90C4}.Store|x86.ActiveCfg = Release|x86
+		{0E91E5C8-0EE0-49C9-A0DA-D25AB61A90C4}.Store|x86.Build.0 = Release|x86
+		{0E91E5C8-0EE0-49C9-A0DA-D25AB61A90C4}.Store|x86.Deploy.0 = Release|x86
+		{C88EE074-FAFD-4872-8BAF-2BC6198337E5}.Debug|x86.ActiveCfg = Release|Any CPU
+		{C88EE074-FAFD-4872-8BAF-2BC6198337E5}.Release|x86.ActiveCfg = Release|Any CPU
+		{C88EE074-FAFD-4872-8BAF-2BC6198337E5}.Release|x86.Build.0 = Release|Any CPU
+		{C88EE074-FAFD-4872-8BAF-2BC6198337E5}.Store|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {69F96DC4-E133-4A1B-8AB1-83EF70F8CE12}
 	EndGlobalSection
 EndGlobal

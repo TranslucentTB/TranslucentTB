@@ -1,9 +1,41 @@
 version: 'Build #{build}'
-image: Visual Studio 2015
-configuration: Release
+image: Visual Studio 2017
+configuration:
+- Store
+- Release
+- Debug
 platform: x86
+
+before_build:
+- ps: .\update-version.ps1
+- nuget restore
+
+build:
+  parallel: true
+  project: TranslucentTB.sln
+
+after_build:
+- ps: .\create-installer.ps1
+
 test: off
+
 artifacts:
-- path: Release
-  name: Build artifacts
-deploy: off
+- path: $(CONFIGURATION)
+  name: Raw build artifacts
+- path: $(CONFIGURATION)\*.pdb
+  name: Debug symbols
+- path: TranslucentTB-setup.exe
+  name: Desktop installer
+- path: StorePackage\AppPackages
+  name: Store app package
+
+deploy:
+  provider: GitHub
+  description: 'To be filled'
+  draft: true
+  artifact: Desktop installer,Debug symbols
+  auth_token:
+    secure: KofMs1LM/RjB79NyxThnuOxkUUZxaN98cJdRJepe9ZIwf4/5nxMi+cNiZVe83QxD
+  on:
+    configuration: Release
+    appveyor_repo_tag: true
