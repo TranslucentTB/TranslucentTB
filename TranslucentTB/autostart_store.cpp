@@ -25,7 +25,7 @@ concurrency::task<void> Autostart::SetStartupState(const StartupState &state)
 	{
 		try
 		{
-			const auto task = *UWP::GetApplicationStartupTask().get();
+			const auto &task = *UWP::GetApplicationStartupTask().get();
 			if (state == StartupState::Enabled)
 			{
 				const Autostart::StartupState new_state = task.RequestEnableAsync().get();
