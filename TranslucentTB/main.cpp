@@ -722,18 +722,33 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		ErrorHandle(app_visibility->Advise(av_sink.Get(), &av_cookie), Error::Level::Log, L"Failed to register app visibility sink.");
 	}
 
-	// Message loop
-	while (run.is_running)
+	std::thread swca_thread([]
 	{
-		MSG msg;
-		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
+		winrt::init_apartment(winrt::apartment_type::single_threaded);
+		while (run.is_running)
+		{
+			SetTaskbarBlur();
+			std::this_thread::sleep_for(std::chrono::milliseconds(Config::SLEEP_TIME));
+		}
+	});
+
+	MSG msg;
+	BOOL ret;
+	while (run.is_running && (ret = GetMessage(&msg, NULL, 0, 0)) != 0)
+	{
+		if (ret != -1)
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		SetTaskbarBlur();
-		std::this_thread::sleep_for(std::chrono::milliseconds(Config::SLEEP_TIME));
+		else
+		{
+			LastErrorHandle(Error::Level::Fatal, L"GetMessage failed!");
+		}
 	}
+
+	run.is_running = false; // We need to set it here because if GetMessage returns 0, run.is_running will not be set.
+	swca_thread.join(); // Wait for our thread to exit.
 
 	if (av_cookie)
 	{

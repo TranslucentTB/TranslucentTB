@@ -14,8 +14,8 @@ private:
 	static std::unordered_map<Window, std::wstring> m_ClassNames;
 	static std::unordered_map<Window, std::wstring> m_Filenames;
 	static std::unordered_map<Window, std::wstring> m_Titles;
-	static EventHook m_Hook;
-	static void HandleWinEvent(const DWORD event, const Window &window, ...);
+
+	friend class Hooks;
 
 protected:
 	HWND m_WindowHandle;

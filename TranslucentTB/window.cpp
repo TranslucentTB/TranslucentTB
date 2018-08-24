@@ -12,21 +12,6 @@
 std::unordered_map<Window, std::wstring> Window::m_ClassNames;
 std::unordered_map<Window, std::wstring> Window::m_Filenames;
 std::unordered_map<Window, std::wstring> Window::m_Titles;
-EventHook Window::m_Hook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_NAMECHANGE, Window::HandleWinEvent, WINEVENT_OUTOFCONTEXT);
-
-void Window::HandleWinEvent(const DWORD event, const Window &window, ...)
-{
-	switch (event)
-	{
-	case EVENT_OBJECT_DESTROY:
-		m_ClassNames.erase(window);
-		m_Filenames.erase(window);
-		[[fallthrough]];
-	case EVENT_OBJECT_NAMECHANGE:
-		m_Titles.erase(window);
-		break;
-	}
-}
 
 const Window Window::NullWindow = nullptr;
 const Window Window::BroadcastWindow = HWND_BROADCAST;

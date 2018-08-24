@@ -217,7 +217,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		SendMessage(init_pair->first->m_oldColorTip, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&ti));
 		SendMessage(init_pair->first->m_oldColorTip, TTM_ACTIVATE, TRUE, 0);
 
-		return SendMessage(hDlg, WM_DPICHANGED, NULL, NULL);
+		return ColourPickerDlgProc(hDlg, WM_DPICHANGED, NULL, NULL);
 	}
 
 	case WM_DPICHANGED:

@@ -10,7 +10,6 @@ std::vector<std::wstring> Blacklist::m_ClassBlacklist;
 std::vector<std::wstring> Blacklist::m_FileBlacklist;
 std::vector<std::wstring> Blacklist::m_TitleBlacklist;
 std::unordered_map<Window, bool> Blacklist::m_Cache;
-EventHook Blacklist::m_Hook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_NAMECHANGE, Blacklist::HandleWinEvent, WINEVENT_OUTOFCONTEXT);
 
 void Blacklist::Parse(const std::wstring &file)
 {
@@ -123,14 +122,6 @@ void Blacklist::ClearCache()
 	if (Config::VERBOSE)
 	{
 		Log::OutputMessage(L"Blacklist cache cleared.");
-	}
-}
-
-void Blacklist::HandleWinEvent(const DWORD event, const Window &window, ...)
-{
-	if (event == EVENT_OBJECT_DESTROY || event == EVENT_OBJECT_NAMECHANGE)
-	{
-		m_Cache.erase(window);
 	}
 }
 
