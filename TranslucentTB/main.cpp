@@ -525,14 +525,26 @@ void InitializeTray(const HINSTANCE &hInstance)
 		return 0;
 	});
 
-#ifdef STORE
-	window.RegisterCallback(WM_QUERYENDSESSION, [](...)
+	window.RegisterCallback(WM_QUERYENDSESSION, [](WPARAM, const LPARAM lParam)
 	{
-		// https://docs.microsoft.com/en-us/windows/uwp/porting/desktop-to-uwp-extensions#updates
-		RegisterApplicationRestart(NULL, NULL);
+		if (lParam & ENDSESSION_CLOSEAPP)
+		{
+			// The app is being queried if it can close for an update.
+			RegisterApplicationRestart(NULL, NULL);
+		}
 		return TRUE;
 	});
-#endif
+
+	window.RegisterCallback(WM_ENDSESSION, [](const WPARAM wParam, const LPARAM lParam)
+	{
+		if (!(lParam & ENDSESSION_CLOSEAPP && !wParam))
+		{
+			// The app is being closed for an update or shutdown.
+			Config::Save(run.config_file);
+		}
+
+		return 0;
+	});
 
 
 	if (!Config::NO_TRAY)
@@ -593,6 +605,11 @@ void InitializeTray(const HINSTANCE &hInstance)
 			}).detach();
 		});
 		tray.BindBool(IDM_VERBOSE, Config::VERBOSE, TrayContextMenu::Toggle);
+		tray.RegisterContextMenuCallback(IDM_SAVESETTINGS, []
+		{
+			Config::Save(run.config_file);
+			std::thread(std::bind(&MessageBox, Window::NullWindow, L"Settings have been saved.", NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND)).detach();
+		});
 		tray.RegisterContextMenuCallback(IDM_RELOADSETTINGS, std::bind(&Config::Parse, std::ref(run.config_file)));
 		tray.RegisterContextMenuCallback(IDM_EDITSETTINGS, []
 		{
