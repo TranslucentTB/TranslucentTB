@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <mutex>
 #include <string>
 
 #include "swcadata.hpp"
@@ -49,6 +50,8 @@ public:
 	static void Save(const std::wstring &file);
 
 private:
+	static std::mutex m_ConfigLock;
+
 	static void UnknownValue(const std::wstring &key, const std::wstring &value);
 	static bool ParseAccent(const std::wstring &value, swca::ACCENT &accent);
 	static bool ParseColor(std::wstring value, uint32_t &color);

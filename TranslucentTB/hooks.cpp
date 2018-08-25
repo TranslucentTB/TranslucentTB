@@ -6,16 +6,34 @@ EventHook Hooks::m_DestroyHook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_DESTROY, Hooks
 
 void Hooks::HandleChangeEvent(const DWORD, const Window &window, ...)
 {
-	Blacklist::m_Cache.erase(window);
+	{
+		std::lock_guard guard(Blacklist::m_CacheLock);
+		Blacklist::m_Cache.erase(window);
+	}
 
-	Window::m_Titles.erase(window);
+	{
+		std::lock_guard guard(Window::m_TitlesLock);
+		Window::m_Titles.erase(window);
+	}
 }
 
 void Hooks::HandleDestroyEvent(const DWORD, const Window &window, ...)
 {
-	Blacklist::m_Cache.erase(window);
+	{
+		std::lock_guard guard(Blacklist::m_CacheLock);
+		Blacklist::m_Cache.erase(window);
+	}
 
-	Window::m_Titles.erase(window);
-	Window::m_ClassNames.erase(window);
-	Window::m_Filenames.erase(window);
+	{
+		std::lock_guard guard(Window::m_TitlesLock);
+		Window::m_Titles.erase(window);
+	}
+	{
+		std::lock_guard guard(Window::m_ClassNamesLock);
+		Window::m_ClassNames.erase(window);
+	}
+	{
+		std::lock_guard guard(Window::m_FilenamesLock);
+		Window::m_Filenames.erase(window);
+	}
 }

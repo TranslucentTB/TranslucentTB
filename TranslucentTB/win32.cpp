@@ -57,7 +57,7 @@ BOOL win32::EnumThreadWindowsProc(HWND hwnd, LPARAM lParam)
 	Window wnd(hwnd);
 	bool &needs_wait = *reinterpret_cast<bool *>(lParam);
 
-	if (wnd.title() == L"Color Picker")
+	if (*wnd.title() == L"Color Picker")
 	{
 		// 1068 == IDB_CANCEL
 		wnd.send_message(WM_COMMAND, MAKEWPARAM(1068, BN_CLICKED));

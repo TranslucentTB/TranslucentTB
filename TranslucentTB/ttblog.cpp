@@ -172,6 +172,8 @@ void Log::OutputMessage(const std::wstring &message)
 
 void Log::Flush()
 {
+	std::lock_guard guard(m_LogLock);
+
 	if (!FlushFileBuffers(m_FileHandle->get()))
 	{
 		LastErrorHandle(Error::Level::Debug, L"Flusing log file buffer failed.");

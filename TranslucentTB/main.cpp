@@ -442,7 +442,7 @@ void SetTaskbarBlur()
 		if (fg_window != Window::NullWindow && run.taskbars.count(fg_window.monitor()) != 0)
 		{
 			if (Config::CORTANA_ENABLED && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
-				Util::IgnoreCaseStringEquals(fg_window.filename(), L"SearchUI.exe"))
+				Util::IgnoreCaseStringEquals(*fg_window.filename(), L"SearchUI.exe"))
 			{
 				run.taskbars.at(fg_window.monitor()).second = &Config::CORTANA_APPEARANCE;
 			}
@@ -467,8 +467,8 @@ void SetTaskbarBlur()
 		{
 			const static bool timeline_av = win32::IsAtLeastBuild(MIN_FLUENT_BUILD);
 			if (Config::TIMELINE_ENABLED && (timeline_av
-				? (fg_window.classname() == CORE_WINDOW && Util::IgnoreCaseStringEquals(fg_window.filename(), L"Explorer.exe"))
-				: (fg_window.classname() == L"MultitaskingViewFrame")))
+				? (*fg_window.classname() == CORE_WINDOW && Util::IgnoreCaseStringEquals(*fg_window.filename(), L"Explorer.exe"))
+				: (*fg_window.classname() == L"MultitaskingViewFrame")))
 			{
 				for (auto &[_, pair] : run.taskbars)
 				{
@@ -495,16 +495,18 @@ void SetTaskbarBlur()
 
 #pragma region Startup
 
+long ExitApp(const EXITREASON &reason, ...)
+{
+	run.exit_reason = reason;
+	PostQuitMessage(0);
+	return 0;
+}
+
 void InitializeTray(const HINSTANCE &hInstance)
 {
 	static MessageWindow window(L"TrayWindow", NAME, hInstance);
 
-	window.RegisterCallback(NEW_TTB_INSTANCE, [](...)
-	{
-		run.exit_reason = EXITREASON::NewInstance;
-		run.is_running = false;
-		return 0;
-	});
+	window.RegisterCallback(NEW_TTB_INSTANCE, std::bind(&ExitApp, EXITREASON::NewInstance));
 
 	window.RegisterCallback(WM_DISPLAYCHANGE, [](...)
 	{
@@ -518,12 +520,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 		return 0;
 	});
 
-	window.RegisterCallback(WM_CLOSE, [](...)
-	{
-		run.exit_reason = EXITREASON::UserAction;
-		run.is_running = false;
-		return 0;
-	});
+	window.RegisterCallback(WM_CLOSE, std::bind(&ExitApp, EXITREASON::UserAction));
 
 	window.RegisterCallback(WM_QUERYENDSESSION, [](WPARAM, const LPARAM lParam)
 	{
@@ -640,11 +637,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 			Blacklist::Parse(run.exclude_file);
 		});
 		tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, Blacklist::ClearCache);
-		tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, []
-		{
-			run.exit_reason = EXITREASON::UserActionNoSave;
-			run.is_running = false;
-		});
+		tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, std::bind(&ExitApp, EXITREASON::UserActionNoSave));
 
 
 		tray.RegisterContextMenuCallback(IDM_AUTOSTART, []
@@ -656,11 +649,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 		});
 		tray.RegisterContextMenuCallback(IDM_TIPS, std::bind(&win32::OpenLink,
 			L"https://github.com/TranslucentTB/TranslucentTB/wiki/Tips-and-tricks-for-a-better-looking-taskbar"));
-		tray.RegisterContextMenuCallback(IDM_EXIT, []
-		{
-			run.exit_reason = EXITREASON::UserAction;
-			run.is_running = false;
-		});
+		tray.RegisterContextMenuCallback(IDM_EXIT, std::bind(&ExitApp, EXITREASON::UserAction));
 
 
 		tray.RegisterCustomRefresh(RefreshMenu);
@@ -721,7 +710,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		EVENT_OBJECT_CREATE,
 		[](DWORD, const Window &window, ...)
 		{
-			if (window.valid() && window.classname() == L"Shell_SecondaryTrayWnd")
+			if (window.valid() && *window.classname() == L"Shell_SecondaryTrayWnd")
 			{
 				run.taskbars[window.monitor()] = { window, &Config::REGULAR_APPEARANCE };
 			}
@@ -741,7 +730,15 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 
 	std::thread swca_thread([]
 	{
-		winrt::init_apartment(winrt::apartment_type::single_threaded);
+		try
+		{
+			winrt::init_apartment(winrt::apartment_type::single_threaded);
+		}
+		catch (const winrt::hresult_error &error)
+		{
+			ErrorHandle(error.code(), Error::Level::Fatal, L"Initialization of Windows Runtime failed.");
+		}
+
 		while (run.is_running)
 		{
 			SetTaskbarBlur();
@@ -751,7 +748,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 
 	MSG msg;
 	BOOL ret;
-	while (run.is_running && (ret = GetMessage(&msg, NULL, 0, 0)) != 0)
+	while ((ret = GetMessage(&msg, NULL, 0, 0)) != 0)
 	{
 		if (ret != -1)
 		{
@@ -764,8 +761,8 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		}
 	}
 
-	run.is_running = false; // We need to set it here because if GetMessage returns 0, run.is_running will not be set.
-	swca_thread.join(); // Wait for our thread to exit.
+	run.is_running = false;
+	swca_thread.join(); // Wait for our worker thread to exit.
 
 	if (av_cookie)
 	{
