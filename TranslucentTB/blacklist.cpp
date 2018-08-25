@@ -72,7 +72,7 @@ void Blacklist::Parse(const std::wstring &file)
 	ClearCache();
 }
 
-const bool &Blacklist::IsBlacklisted(const Window &window)
+bool Blacklist::IsBlacklisted(const Window &window)
 {
 	std::lock_guard guard(m_CacheLock);
 
