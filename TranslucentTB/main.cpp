@@ -227,7 +227,7 @@ bool CheckAndRunWelcome()
 			run.config_folder <<
 			L"\"\n\nDo you agree to the GPLv3 license?";
 
-		if (MessageBox(NULL, message.str().c_str(), NAME, MB_ICONINFORMATION | MB_YESNO | MB_SETFOREGROUND) != IDYES)
+		if (MessageBox(Window::NullWindow, message.str().c_str(), NAME, MB_ICONINFORMATION | MB_YESNO | MB_SETFOREGROUND) != IDYES)
 		{
 			return false;
 		}

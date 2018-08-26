@@ -75,12 +75,12 @@ public:
 		return CreateWindowEx(dwExStyle, winClass.atom(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
 			parent, hMenu, hInstance, lpParam);
 	}
-	inline static Window ForegroundWindow()
+	inline static Window ForegroundWindow() noexcept
 	{
 		return GetForegroundWindow();
 	}
 
-	constexpr Window(const HWND &handle = Window::NullWindow) : m_WindowHandle(handle) { };
+	constexpr Window(const HWND &handle = Window::NullWindow) noexcept : m_WindowHandle(handle) { };
 	std::shared_ptr<const std::wstring> title() const;
 	std::shared_ptr<const std::wstring> classname() const;
 	std::shared_ptr<const std::wstring> filename() const;
@@ -115,19 +115,19 @@ public:
 	{
 		return send_message(RegisterWindowMessage(message.c_str()), wparam, lparam);
 	}
-	inline HWND handle() const
+	inline HWND handle() const noexcept
 	{
 		return m_WindowHandle;
 	}
-	inline operator HWND() const
+	inline operator HWND() const noexcept
 	{
 		return m_WindowHandle;
 	}
-	inline bool operator ==(const Window &right) const
+	inline bool operator ==(const Window &right) const noexcept
 	{
 		return m_WindowHandle == right.m_WindowHandle;
 	}
-	inline bool operator !=(const Window &right) const
+	inline bool operator !=(const Window &right) const noexcept
 	{
 		return !operator==(right);
 	}

@@ -13,6 +13,7 @@
 #include "ttblog.hpp"
 #include "util.hpp"
 #include "win32.hpp"
+#include "window.hpp"
 
 bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *const message, const wchar_t *const file, const int &line, const char *const function)
 {
@@ -55,11 +56,11 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 			break;
 		case Level::Error:
 			Log::OutputMessage(err.str());
-			MessageBox(NULL, boxbuffer.str().c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+			MessageBox(Window::NullWindow, boxbuffer.str().c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 			break;
 		case Level::Fatal:
 			Log::OutputMessage(err.str());
-			MessageBox(NULL, boxbuffer.str().c_str(), NAME L" - Fatal error", MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
+			MessageBox(Window::NullWindow, boxbuffer.str().c_str(), NAME L" - Fatal error", MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
 			RaiseFailFastException(NULL, NULL, FAIL_FAST_GENERATE_EXCEPTION_ADDRESS);	// Calling abort() will generate a dialog box,
 																						// but we already have our own. Raising a fail-fast
 																						// exception skips it but also allows WER to do its
