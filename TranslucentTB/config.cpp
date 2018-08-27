@@ -206,7 +206,7 @@ bool Config::ParseColor(std::wstring value, uint32_t &color)
 	{
 		color = (color & 0xFF000000) + (std::stoi(value, nullptr, 16) & 0x00FFFFFF);
 	}
-	catch (std::invalid_argument)
+	catch (...)
 	{
 		return false;
 	}
@@ -221,7 +221,7 @@ bool Config::ParseOpacity(const std::wstring &value, uint32_t &color)
 		color = ((std::stoi(value) & 0xFF) << 24) + (color & 0x00FFFFFF);
 		return true;
 	}
-	catch (std::invalid_argument)
+	catch (...)
 	{
 		Log::OutputMessage(L"Could not parse opacity found in configuration file: " + value);
 		return false;
@@ -420,7 +420,7 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 		{
 			SLEEP_TIME = std::stoi(value) & 0xFF;
 		}
-		catch (std::invalid_argument)
+		catch (...)
 		{
 			Log::OutputMessage(L"Could not parse sleep time found in configuration file: " + value);
 		}

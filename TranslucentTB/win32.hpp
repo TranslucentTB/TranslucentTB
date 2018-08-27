@@ -6,6 +6,7 @@
 #include <type_traits>
 #include <vector>
 #include <windef.h>
+#include <winrt/base.h>
 
 #include "swcadata.hpp"
 

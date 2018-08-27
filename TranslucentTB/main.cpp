@@ -19,6 +19,7 @@
 #include "config.hpp"
 #include "createinstance.hpp"
 #include "eventhook.hpp"
+#include "folderwatcher.hpp"
 #include "messagewindow.hpp"
 #include "resource.h"
 #include "swcadata.hpp"
@@ -243,6 +244,12 @@ bool CheckAndRunWelcome()
 	return true;
 }
 
+void LoadConfig()
+{
+	Config::Parse(run.config_file);
+	Blacklist::Parse(run.exclude_file);
+}
+
 #pragma endregion
 
 #pragma region Utilities
@@ -380,6 +387,13 @@ void RefreshMenu(HMENU menu)
 		TrayContextMenu::ControlsEnabled);
 }
 
+long ExitApp(const EXITREASON &reason, ...)
+{
+	run.exit_reason = reason;
+	PostQuitMessage(0);
+	return 0;
+}
+
 #pragma endregion
 
 #pragma region Main logic
@@ -495,13 +509,6 @@ void SetTaskbarBlur()
 
 #pragma region Startup
 
-long ExitApp(const EXITREASON &reason, ...)
-{
-	run.exit_reason = reason;
-	PostQuitMessage(0);
-	return 0;
-}
-
 void InitializeTray(const HINSTANCE &hInstance)
 {
 	static MessageWindow window(L"TrayWindow", NAME, hInstance);
@@ -595,11 +602,8 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 		tray.RegisterContextMenuCallback(IDM_OPENLOG, []
 		{
-			std::thread([]
-			{
-				Log::Flush();
-				win32::EditFile(Log::file());
-			}).detach();
+			Log::Flush();
+			win32::EditFile(Log::file());
 		});
 		tray.BindBool(IDM_VERBOSE, Config::VERBOSE, TrayContextMenu::Toggle);
 		tray.RegisterContextMenuCallback(IDM_SAVESETTINGS, []
@@ -611,30 +615,17 @@ void InitializeTray(const HINSTANCE &hInstance)
 		tray.RegisterContextMenuCallback(IDM_EDITSETTINGS, []
 		{
 			Config::Save(run.config_file);
-			std::thread([]
-			{
-				win32::EditFile(run.config_file);
-				Config::Parse(run.config_file);
-			}).detach();
+			win32::EditFile(run.config_file);
 		});
 		tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTSETTINGS, []
 		{
 			ApplyStock(CONFIG_FILE);
-			Config::Parse(run.config_file);
 		});
 		tray.RegisterContextMenuCallback(IDM_RELOADDYNAMICBLACKLIST, std::bind(&Blacklist::Parse, std::ref(run.exclude_file)));
-		tray.RegisterContextMenuCallback(IDM_EDITDYNAMICBLACKLIST, []
-		{
-			std::thread([]
-			{
-				win32::EditFile(run.exclude_file);
-				Blacklist::Parse(run.exclude_file);
-			}).detach();
-		});
+		tray.RegisterContextMenuCallback(IDM_EDITDYNAMICBLACKLIST, std::bind(&win32::EditFile, std::ref(run.exclude_file)));
 		tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTBLACKLIST, []
 		{
 			ApplyStock(EXCLUDE_FILE);
-			Blacklist::Parse(run.exclude_file);
 		});
 		tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, Blacklist::ClearCache);
 		tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, std::bind(&ExitApp, EXITREASON::UserActionNoSave));
@@ -684,8 +675,10 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	}
 
 	// Parse our configuration
-	Config::Parse(run.config_file);
-	Blacklist::Parse(run.exclude_file);
+	LoadConfig();
+
+	// Watch for changes
+	FolderWatcher config_watcher(run.config_folder, FILE_NOTIFY_CHANGE_LAST_WRITE, LoadConfig);
 
 	// Initialize GUI
 	InitializeTray(hInstance);

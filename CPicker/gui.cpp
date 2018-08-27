@@ -673,7 +673,7 @@ void GUI::ParseHex(HWND hDlg)
 				FailedParse(hDlg);
 			}
 		}
-		catch (std::invalid_argument)
+		catch (...)
 		{
 			FailedParse(hDlg);
 		}

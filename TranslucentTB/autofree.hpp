@@ -11,22 +11,17 @@ class AutoFree {
 
 private:
 	template<typename T, class traits>
-	class Base {
+	class BaseImpl {
 
-	private:
+	protected:
 		T *m_DataPtr;
 
-		inline Base(void *data) : m_DataPtr(static_cast<T *>(data)) { }
+		inline BaseImpl(void *data) : m_DataPtr(static_cast<T *>(data)) { }
 
 	public:
-		inline static Base Alloc(size_t count = 1)
-		{
-			return traits::alloc(count * sizeof(T));
-		}
+		inline BaseImpl() : m_DataPtr(nullptr) { }
 
-		inline Base() : m_DataPtr(nullptr) { }
-
-		inline Base(Base &&other)
+		inline BaseImpl(BaseImpl &&other)
 		{
 			if (this != &other)
 			{
@@ -34,9 +29,9 @@ private:
 			}
 		}
 
-		inline Base(const Base &) = delete;
+		inline BaseImpl(const BaseImpl &) = delete;
 
-		inline Base &operator =(Base &&other)
+		inline BaseImpl &operator =(BaseImpl &&other)
 		{
 			if (this != &other)
 			{
@@ -47,7 +42,43 @@ private:
 			return *this;
 		}
 
-		inline Base &operator =(const Base &) = delete;
+		inline BaseImpl &operator =(const BaseImpl &) = delete;
+
+		inline explicit operator bool() const
+		{
+			return m_DataPtr != nullptr;
+		}
+
+		inline T **put()
+		{
+			traits::close(m_DataPtr);
+			return &m_DataPtr;
+		}
+
+		inline T *get()
+		{
+			return m_DataPtr;
+		}
+
+		inline const T *get() const
+		{
+			return m_DataPtr;
+		}
+
+		inline ~BaseImpl()
+		{
+			traits::close(m_DataPtr);
+		}
+
+	};
+
+	template<typename T, class traits>
+	class Base : public BaseImpl<T, traits> {
+	public:
+		inline static Base Alloc(size_t count = 1)
+		{
+			return traits::alloc(count * sizeof(T));
+		}
 
 		inline T *operator ->()
 		{
@@ -78,34 +109,10 @@ private:
 		{
 			return m_DataPtr[i];
 		}
-
-		inline explicit operator bool() const
-		{
-			return m_DataPtr != nullptr;
-		}
-
-		inline T **put()
-		{
-			traits::close(m_DataPtr);
-			return &m_DataPtr;
-		}
-
-		inline T *get()
-		{
-			return m_DataPtr;
-		}
-
-		inline const T *get() const
-		{
-			return m_DataPtr;
-		}
-
-		inline ~Base()
-		{
-			traits::close(m_DataPtr);
-		}
-
 	};
+
+	template<class traits>
+	class Base<void, traits> : public BaseImpl<void, traits> { };
 
 	template<bool silent, Error::Level level = Error::Level::Log>
 	struct LocalTraits {

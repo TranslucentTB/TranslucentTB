@@ -216,39 +216,33 @@ void win32::CopyToClipboard(const std::wstring &text)
 void win32::EditFile(const std::wstring &file)
 {
 	SHELLEXECUTEINFO info = {
-		sizeof(info),									// cbSize
-		SEE_MASK_CLASSNAME | SEE_MASK_NOCLOSEPROCESS,	// fMask
-		NULL,											// hwnd
-		L"open",										// lpVerb
-		file.c_str(),									// lpFile
-		NULL,											// lpParameters
-		NULL,											// lpDirectory
-		SW_SHOW,										// nShow
-		nullptr,										// hInstApp
-		nullptr,										// lpIDList
-		L"txtfile"										// lpClass
+		sizeof(info),		// cbSize
+		SEE_MASK_CLASSNAME,	// fMask
+		NULL,				// hwnd
+		L"open",			// lpVerb
+		file.c_str(),		// lpFile
+		NULL,				// lpParameters
+		NULL,				// lpDirectory
+		SW_SHOW,			// nShow
+		nullptr,			// hInstApp
+		nullptr,			// lpIDList
+		L"txtfile"			// lpClass
 	};
 
-	if (ShellExecuteEx(&info))
+	if (!ShellExecuteEx(&info))
 	{
-		const winrt::handle hprocess = info.hProcess;
-
-		if (WaitForSingleObject(hprocess.get(), INFINITE) == WAIT_FAILED)
+		std::thread([file]
 		{
-			LastErrorHandle(Error::Level::Log, L"Failed to wait for text editor close.");
-		}
-	}
-	else
-	{
-		std::wstring boxbuffer =
-			L"Failed to open file \"" + file + L"\"." +
-			L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(GetLastError())) +
-			L"\n\nCopy the file location to the clipboard?";
+			std::wstring boxbuffer =
+				L"Failed to open file \"" + file + L"\"." +
+				L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(GetLastError())) +
+				L"\n\nCopy the file location to the clipboard?";
 
-		if (MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
-		{
-			CopyToClipboard(file);
-		}
+			if (MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+			{
+				CopyToClipboard(file);
+			}
+		}).detach();
 	}
 }
 
@@ -270,15 +264,18 @@ void win32::OpenLink(const std::wstring &link)
 
 	if (!ShellExecuteEx(&info))
 	{
-		std::wstring boxbuffer =
-			L"Failed to open URL \"" + link + L"\"." +
-			L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(GetLastError())) +
-			L"\n\nCopy the URL to the clipboard?";
-
-		if (MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+		std::thread([link]
 		{
-			CopyToClipboard(link);
-		}
+			std::wstring boxbuffer =
+				L"Failed to open URL \"" + link + L"\"." +
+				L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(GetLastError())) +
+				L"\n\nCopy the URL to the clipboard?";
+
+			if (MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+			{
+				CopyToClipboard(link);
+			}
+		}).detach();
 	}
 }
 

@@ -1,9 +1,11 @@
 #include "ttberror.hpp"
 #include <comdef.h>
 #include <exception>
+#include <functional>
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <vector>
 #include <winerror.h>
 #include <WinUser.h>
@@ -56,7 +58,7 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 			break;
 		case Level::Error:
 			Log::OutputMessage(err.str());
-			MessageBox(Window::NullWindow, boxbuffer.str().c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+			std::thread(std::bind(&MessageBox, Window::NullWindow, boxbuffer.str().c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND)).detach();
 			break;
 		case Level::Fatal:
 			Log::OutputMessage(err.str());
