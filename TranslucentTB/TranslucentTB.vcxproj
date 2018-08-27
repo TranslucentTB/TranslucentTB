@@ -19,6 +19,7 @@
     <ClCompile Include="config.cpp" />
     <ClCompile Include="eventhook.cpp" />
     <ClCompile Include="findwindowiterator.cpp" />
+    <ClCompile Include="hooks.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="messagewindow.cpp" />
     <ClCompile Include="traycontextmenu.cpp" />
@@ -41,6 +42,7 @@
     <ClInclude Include="createinstance.hpp" />
     <ClInclude Include="eventhook.hpp" />
     <ClInclude Include="findwindowiterator.hpp" />
+    <ClInclude Include="hooks.hpp" />
     <ClInclude Include="messagewindow.hpp" />
     <ClInclude Include="registrykey.hpp" />
     <ClInclude Include="swcadata.hpp" />

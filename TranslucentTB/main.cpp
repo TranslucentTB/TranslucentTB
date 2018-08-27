@@ -227,7 +227,7 @@ bool CheckAndRunWelcome()
 			run.config_folder <<
 			L"\"\n\nDo you agree to the GPLv3 license?";
 
-		if (MessageBox(NULL, message.str().c_str(), NAME, MB_ICONINFORMATION | MB_YESNO | MB_SETFOREGROUND) != IDYES)
+		if (MessageBox(Window::NullWindow, message.str().c_str(), NAME, MB_ICONINFORMATION | MB_YESNO | MB_SETFOREGROUND) != IDYES)
 		{
 			return false;
 		}
@@ -442,7 +442,7 @@ void SetTaskbarBlur()
 		if (fg_window != Window::NullWindow && run.taskbars.count(fg_window.monitor()) != 0)
 		{
 			if (Config::CORTANA_ENABLED && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
-				Util::IgnoreCaseStringEquals(fg_window.filename(), L"SearchUI.exe"))
+				Util::IgnoreCaseStringEquals(*fg_window.filename(), L"SearchUI.exe"))
 			{
 				run.taskbars.at(fg_window.monitor()).second = &Config::CORTANA_APPEARANCE;
 			}
@@ -467,8 +467,8 @@ void SetTaskbarBlur()
 		{
 			const static bool timeline_av = win32::IsAtLeastBuild(MIN_FLUENT_BUILD);
 			if (Config::TIMELINE_ENABLED && (timeline_av
-				? (fg_window.classname() == CORE_WINDOW && Util::IgnoreCaseStringEquals(fg_window.filename(), L"Explorer.exe"))
-				: (fg_window.classname() == L"MultitaskingViewFrame")))
+				? (*fg_window.classname() == CORE_WINDOW && Util::IgnoreCaseStringEquals(*fg_window.filename(), L"Explorer.exe"))
+				: (*fg_window.classname() == L"MultitaskingViewFrame")))
 			{
 				for (auto &[_, pair] : run.taskbars)
 				{
@@ -495,16 +495,18 @@ void SetTaskbarBlur()
 
 #pragma region Startup
 
+long ExitApp(const EXITREASON &reason, ...)
+{
+	run.exit_reason = reason;
+	PostQuitMessage(0);
+	return 0;
+}
+
 void InitializeTray(const HINSTANCE &hInstance)
 {
 	static MessageWindow window(L"TrayWindow", NAME, hInstance);
 
-	window.RegisterCallback(NEW_TTB_INSTANCE, [](...)
-	{
-		run.exit_reason = EXITREASON::NewInstance;
-		run.is_running = false;
-		return 0;
-	});
+	window.RegisterCallback(NEW_TTB_INSTANCE, std::bind(&ExitApp, EXITREASON::NewInstance));
 
 	window.RegisterCallback(WM_DISPLAYCHANGE, [](...)
 	{
@@ -518,21 +520,28 @@ void InitializeTray(const HINSTANCE &hInstance)
 		return 0;
 	});
 
-	window.RegisterCallback(WM_CLOSE, [](...)
-	{
-		run.exit_reason = EXITREASON::UserAction;
-		run.is_running = false;
-		return 0;
-	});
+	window.RegisterCallback(WM_CLOSE, std::bind(&ExitApp, EXITREASON::UserAction));
 
-#ifdef STORE
-	window.RegisterCallback(WM_QUERYENDSESSION, [](...)
+	window.RegisterCallback(WM_QUERYENDSESSION, [](WPARAM, const LPARAM lParam)
 	{
-		// https://docs.microsoft.com/en-us/windows/uwp/porting/desktop-to-uwp-extensions#updates
-		RegisterApplicationRestart(NULL, NULL);
+		if (lParam & ENDSESSION_CLOSEAPP)
+		{
+			// The app is being queried if it can close for an update.
+			RegisterApplicationRestart(NULL, NULL);
+		}
 		return TRUE;
 	});
-#endif
+
+	window.RegisterCallback(WM_ENDSESSION, [](const WPARAM wParam, const LPARAM lParam)
+	{
+		if (!(lParam & ENDSESSION_CLOSEAPP && !wParam))
+		{
+			// The app is being closed for an update or shutdown.
+			Config::Save(run.config_file);
+		}
+
+		return 0;
+	});
 
 
 	if (!Config::NO_TRAY)
@@ -593,6 +602,11 @@ void InitializeTray(const HINSTANCE &hInstance)
 			}).detach();
 		});
 		tray.BindBool(IDM_VERBOSE, Config::VERBOSE, TrayContextMenu::Toggle);
+		tray.RegisterContextMenuCallback(IDM_SAVESETTINGS, []
+		{
+			Config::Save(run.config_file);
+			std::thread(std::bind(&MessageBox, Window::NullWindow, L"Settings have been saved.", NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND)).detach();
+		});
 		tray.RegisterContextMenuCallback(IDM_RELOADSETTINGS, std::bind(&Config::Parse, std::ref(run.config_file)));
 		tray.RegisterContextMenuCallback(IDM_EDITSETTINGS, []
 		{
@@ -623,11 +637,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 			Blacklist::Parse(run.exclude_file);
 		});
 		tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, Blacklist::ClearCache);
-		tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, []
-		{
-			run.exit_reason = EXITREASON::UserActionNoSave;
-			run.is_running = false;
-		});
+		tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, std::bind(&ExitApp, EXITREASON::UserActionNoSave));
 
 
 		tray.RegisterContextMenuCallback(IDM_AUTOSTART, []
@@ -639,11 +649,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 		});
 		tray.RegisterContextMenuCallback(IDM_TIPS, std::bind(&win32::OpenLink,
 			L"https://github.com/TranslucentTB/TranslucentTB/wiki/Tips-and-tricks-for-a-better-looking-taskbar"));
-		tray.RegisterContextMenuCallback(IDM_EXIT, []
-		{
-			run.exit_reason = EXITREASON::UserAction;
-			run.is_running = false;
-		});
+		tray.RegisterContextMenuCallback(IDM_EXIT, std::bind(&ExitApp, EXITREASON::UserAction));
 
 
 		tray.RegisterCustomRefresh(RefreshMenu);
@@ -704,7 +710,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		EVENT_OBJECT_CREATE,
 		[](DWORD, const Window &window, ...)
 		{
-			if (window.valid() && window.classname() == L"Shell_SecondaryTrayWnd")
+			if (window.valid() && *window.classname() == L"Shell_SecondaryTrayWnd")
 			{
 				run.taskbars[window.monitor()] = { window, &Config::REGULAR_APPEARANCE };
 			}
@@ -722,18 +728,41 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		ErrorHandle(app_visibility->Advise(av_sink.Get(), &av_cookie), Error::Level::Log, L"Failed to register app visibility sink.");
 	}
 
-	// Message loop
-	while (run.is_running)
+	std::thread swca_thread([]
 	{
-		MSG msg;
-		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
+		try
+		{
+			winrt::init_apartment(winrt::apartment_type::single_threaded);
+		}
+		catch (const winrt::hresult_error &error)
+		{
+			ErrorHandle(error.code(), Error::Level::Fatal, L"Initialization of Windows Runtime failed.");
+		}
+
+		while (run.is_running)
+		{
+			SetTaskbarBlur();
+			std::this_thread::sleep_for(std::chrono::milliseconds(Config::SLEEP_TIME));
+		}
+	});
+
+	MSG msg;
+	BOOL ret;
+	while ((ret = GetMessage(&msg, NULL, 0, 0)) != 0)
+	{
+		if (ret != -1)
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		SetTaskbarBlur();
-		std::this_thread::sleep_for(std::chrono::milliseconds(Config::SLEEP_TIME));
+		else
+		{
+			LastErrorHandle(Error::Level::Fatal, L"GetMessage failed!");
+		}
 	}
+
+	run.is_running = false;
+	swca_thread.join(); // Wait for our worker thread to exit.
 
 	if (av_cookie)
 	{

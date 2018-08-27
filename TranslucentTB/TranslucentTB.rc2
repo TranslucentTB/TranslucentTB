@@ -98,6 +98,7 @@ BEGIN
             MENUITEM "Open log file",               IDM_OPENLOG
             MENUITEM "Verbose logging",             IDM_VERBOSE
             MENUITEM "",                            0, MFT_SEPARATOR
+            MENUITEM "Save settings",               IDM_SAVESETTINGS
             MENUITEM "Reload settings",             IDM_RELOADSETTINGS
             MENUITEM "Edit settings",               IDM_EDITSETTINGS
             MENUITEM "Return to default settings",  IDM_RETURNTODEFAULTSETTINGS

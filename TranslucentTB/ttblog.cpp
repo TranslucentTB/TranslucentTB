@@ -18,6 +18,7 @@
 #include "autofree.hpp"
 #include "common.hpp"
 #include "win32.hpp"
+#include "window.hpp"
 #ifdef STORE
 #include "uwp.hpp"
 #endif
@@ -144,7 +145,7 @@ void Log::OutputMessage(const std::wstring &message)
 				err_message += L'\n';
 				OutputDebugString(err_message.c_str()); // OutputDebugString is thread-safe, no issues using it here.
 
-				MessageBox(NULL, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+				MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 			}).detach();
 		}
 	}
@@ -172,6 +173,8 @@ void Log::OutputMessage(const std::wstring &message)
 
 void Log::Flush()
 {
+	std::lock_guard guard(m_LogLock);
+
 	if (!FlushFileBuffers(m_FileHandle->get()))
 	{
 		LastErrorHandle(Error::Level::Debug, L"Flusing log file buffer failed.");

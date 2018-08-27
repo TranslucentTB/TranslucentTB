@@ -94,7 +94,7 @@ public:
 
 		if (first == std::wstring::npos)
 		{
-			str = L"";
+			str.erase();
 			return;
 		}
 

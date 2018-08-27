@@ -44,8 +44,12 @@ bool Config::VERBOSE =
 	true;
 #endif
 
+std::mutex Config::m_ConfigLock;
+
 void Config::Parse(const std::wstring &file)
 {
+	std::lock_guard guard(m_ConfigLock);
+
 	std::wifstream configstream(file);
 	for (std::wstring line; std::getline(configstream, line);)
 	{
@@ -83,6 +87,8 @@ void Config::Parse(const std::wstring &file)
 
 void Config::Save(const std::wstring &file)
 {
+	std::lock_guard guard(m_ConfigLock);
+
 	std::wofstream configstream(file);
 
 	configstream << L"accent=" << std::left << std::setw(6) << std::setfill(L' ') << GetAccentText(REGULAR_APPEARANCE.ACCENT) << L"; accent values are: clear (default), fluent (only on build " << MIN_FLUENT_BUILD << L" and up), opaque, normal, or blur." << std::endl;

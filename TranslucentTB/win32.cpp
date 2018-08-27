@@ -57,7 +57,7 @@ BOOL win32::EnumThreadWindowsProc(HWND hwnd, LPARAM lParam)
 	Window wnd(hwnd);
 	bool &needs_wait = *reinterpret_cast<bool *>(lParam);
 
-	if (wnd.title() == L"Color Picker")
+	if (*wnd.title() == L"Color Picker")
 	{
 		// 1068 == IDB_CANCEL
 		wnd.send_message(WM_COMMAND, MAKEWPARAM(1068, BN_CLICKED));
@@ -150,7 +150,7 @@ bool win32::IsDirectory(const std::wstring &directory)
 	if (attributes == INVALID_FILE_ATTRIBUTES)
 	{
 		DWORD error = GetLastError();
-		if (error != ERROR_FILE_NOT_FOUND)
+		if (error != ERROR_FILE_NOT_FOUND || error != ERROR_PATH_NOT_FOUND)
 		{
 			// This function gets called during log initialization, so avoid potential recursivity
 			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Debug, L"Failed to check if directory exists.");
@@ -169,7 +169,7 @@ bool win32::FileExists(const std::wstring &file)
 	if (attributes == INVALID_FILE_ATTRIBUTES)
 	{
 		DWORD error = GetLastError();
-		if (error != ERROR_FILE_NOT_FOUND)
+		if (error != ERROR_FILE_NOT_FOUND || error != ERROR_PATH_NOT_FOUND)
 		{
 			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Failed to check if file exists.");
 		}
@@ -245,7 +245,7 @@ void win32::EditFile(const std::wstring &file)
 			L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(GetLastError())) +
 			L"\n\nCopy the file location to the clipboard?";
 
-		if (MessageBox(NULL, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+		if (MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 		{
 			CopyToClipboard(file);
 		}
@@ -275,7 +275,7 @@ void win32::OpenLink(const std::wstring &link)
 			L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(GetLastError())) +
 			L"\n\nCopy the URL to the clipboard?";
 
-		if (MessageBox(NULL, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+		if (MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 		{
 			CopyToClipboard(link);
 		}

@@ -9,45 +9,38 @@
 #include "eventhook.hpp"
 #include "ttberror.hpp"
 
-std::unordered_map<Window, std::wstring> Window::m_ClassNames;
-std::unordered_map<Window, std::wstring> Window::m_Filenames;
-std::unordered_map<Window, std::wstring> Window::m_Titles;
-EventHook Window::m_Hook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_NAMECHANGE, Window::HandleWinEvent, WINEVENT_OUTOFCONTEXT);
+std::mutex Window::m_ClassNamesLock;
+std::unordered_map<Window, std::shared_ptr<std::wstring>> Window::m_ClassNames;
 
-void Window::HandleWinEvent(const DWORD event, const Window &window, ...)
-{
-	switch (event)
-	{
-	case EVENT_OBJECT_DESTROY:
-		m_ClassNames.erase(window);
-		m_Filenames.erase(window);
-		[[fallthrough]];
-	case EVENT_OBJECT_NAMECHANGE:
-		m_Titles.erase(window);
-		break;
-	}
-}
+std::mutex Window::m_FilenamesLock;
+std::unordered_map<Window, std::shared_ptr<std::wstring>> Window::m_Filenames;
+
+std::mutex Window::m_TitlesLock;
+std::unordered_map<Window, std::shared_ptr<std::wstring>> Window::m_Titles;
 
 const Window Window::NullWindow = nullptr;
 const Window Window::BroadcastWindow = HWND_BROADCAST;
 const Window Window::MessageOnlyWindow = HWND_MESSAGE;
 
-const std::wstring &Window::title() const
+std::shared_ptr<const std::wstring> Window::title() const
 {
+	std::lock_guard guard(m_TitlesLock);
+
 	if (m_Titles.count(m_WindowHandle) == 0)
 	{
-		std::wstring windowTitle;
+		std::shared_ptr<std::wstring> windowTitle = std::make_shared<std::wstring>();
 		int titleSize = GetWindowTextLength(m_WindowHandle) + 1; // For the null terminator
-		windowTitle.resize(titleSize);
+		windowTitle->resize(titleSize);
 
-		int copiedChars = GetWindowText(m_WindowHandle, windowTitle.data(), titleSize);
+		int copiedChars = GetWindowText(m_WindowHandle, windowTitle->data(), titleSize);
 		if (!copiedChars)
 		{
 			LastErrorHandle(Error::Level::Log, L"Getting title of a window failed.");
-			return m_Titles[m_WindowHandle] = L"";
+			windowTitle->erase();
+			return m_Titles[m_WindowHandle] = std::move(windowTitle);
 		}
 
-		windowTitle.resize(copiedChars);
+		windowTitle->resize(copiedChars);
 		return m_Titles[m_WindowHandle] = std::move(windowTitle);
 	}
 	else
@@ -56,24 +49,27 @@ const std::wstring &Window::title() const
 	}
 }
 
-const std::wstring &Window::classname() const
+std::shared_ptr<const std::wstring> Window::classname() const
 {
+	std::lock_guard guard(m_ClassNamesLock);
+
 	if (m_ClassNames.count(m_WindowHandle) == 0)
 	{
-		std::wstring className;
-		className.resize(257);	// According to docs, maximum length of a class name is 256, but it's ambiguous
+		std::shared_ptr<std::wstring> className = std::make_shared<std::wstring>();
+		className->resize(257);	// According to docs, maximum length of a class name is 256, but it's ambiguous
 								// wether this includes the null terminator or not.
 
-		int count = GetClassName(m_WindowHandle, className.data(), 257);
+		int count = GetClassName(m_WindowHandle, className->data(), 257);
 		if (count)
 		{
-			className.resize(count);
+			className->resize(count);
 			return m_ClassNames[m_WindowHandle] = std::move(className);
 		}
 		else
 		{
 			LastErrorHandle(Error::Level::Log, L"Getting class name of a window failed.");
-			return m_ClassNames[m_WindowHandle] = L"";
+			className->erase();
+			return m_ClassNames[m_WindowHandle] = std::move(className);
 		}
 	}
 	else
@@ -82,32 +78,35 @@ const std::wstring &Window::classname() const
 	}
 }
 
-const std::wstring &Window::filename() const
+std::shared_ptr<const std::wstring> Window::filename() const
 {
+	std::lock_guard guard(m_FilenamesLock);
+
 	if (m_Filenames.count(m_WindowHandle) == 0)
 	{
 		DWORD pid;
 		GetWindowThreadProcessId(m_WindowHandle, &pid);
+		std::shared_ptr<std::wstring> exeName = std::make_shared<std::wstring>();
 
 		const winrt::handle processHandle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid);
 		if (!processHandle)
 		{
 			LastErrorHandle(Error::Level::Log, L"Getting process handle of a window failed.");
-			return m_Filenames[m_WindowHandle] = L"";
+			return m_Filenames[m_WindowHandle] = std::move(exeName);
 		}
 
 		DWORD path_Size = LONG_PATH;
-		std::wstring exeName;
-		exeName.resize(path_Size);
+		exeName->resize(path_Size);
 
-		if (!QueryFullProcessImageName(processHandle.get(), 0, exeName.data(), &path_Size))
+		if (!QueryFullProcessImageName(processHandle.get(), 0, exeName->data(), &path_Size))
 		{
 			LastErrorHandle(Error::Level::Log, L"Getting file name of a window failed.");
-			return m_Filenames[m_WindowHandle] = L"";
+			exeName->erase();
+			return m_Filenames[m_WindowHandle] = std::move(exeName);
 		}
 
-		exeName.resize(path_Size);
-		exeName.erase(0, exeName.find_last_of(LR"(/\)") + 1);
+		exeName->resize(path_Size);
+		exeName->erase(0, exeName->find_last_of(LR"(/\)") + 1);
 		return m_Filenames[m_WindowHandle] = std::move(exeName);
 	}
 	else

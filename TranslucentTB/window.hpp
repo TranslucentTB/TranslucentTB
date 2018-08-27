@@ -1,5 +1,7 @@
 #pragma once
 #include <dwmapi.h>
+#include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 
@@ -11,11 +13,16 @@ class EventHook; // Forward declare to avoid circular deps
 class Window {
 
 private:
-	static std::unordered_map<Window, std::wstring> m_ClassNames;
-	static std::unordered_map<Window, std::wstring> m_Filenames;
-	static std::unordered_map<Window, std::wstring> m_Titles;
-	static EventHook m_Hook;
-	static void HandleWinEvent(const DWORD event, const Window &window, ...);
+	static std::mutex m_ClassNamesLock;
+	static std::unordered_map<Window, std::shared_ptr<std::wstring>> m_ClassNames;
+
+	static std::mutex m_FilenamesLock;
+	static std::unordered_map<Window, std::shared_ptr<std::wstring>> m_Filenames;
+
+	static std::mutex m_TitlesLock;
+	static std::unordered_map<Window, std::shared_ptr<std::wstring>> m_Titles;
+
+	friend class Hooks;
 
 protected:
 	HWND m_WindowHandle;
@@ -68,15 +75,15 @@ public:
 		return CreateWindowEx(dwExStyle, winClass.atom(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
 			parent, hMenu, hInstance, lpParam);
 	}
-	inline static Window ForegroundWindow()
+	inline static Window ForegroundWindow() noexcept
 	{
 		return GetForegroundWindow();
 	}
 
-	constexpr Window(const HWND &handle = Window::NullWindow) : m_WindowHandle(handle) { };
-	const std::wstring &title() const;
-	const std::wstring &classname() const;
-	const std::wstring &filename() const;
+	constexpr Window(const HWND &handle = Window::NullWindow) noexcept : m_WindowHandle(handle) { };
+	std::shared_ptr<const std::wstring> title() const;
+	std::shared_ptr<const std::wstring> classname() const;
+	std::shared_ptr<const std::wstring> filename() const;
 	bool on_current_desktop() const;
 	inline unsigned int state() const
 	{
@@ -108,19 +115,19 @@ public:
 	{
 		return send_message(RegisterWindowMessage(message.c_str()), wparam, lparam);
 	}
-	inline HWND handle() const
+	inline HWND handle() const noexcept
 	{
 		return m_WindowHandle;
 	}
-	inline operator HWND() const
+	inline operator HWND() const noexcept
 	{
 		return m_WindowHandle;
 	}
-	inline bool operator ==(const Window &right) const
+	inline bool operator ==(const Window &right) const noexcept
 	{
 		return m_WindowHandle == right.m_WindowHandle;
 	}
-	inline bool operator !=(const Window &right) const
+	inline bool operator !=(const Window &right) const noexcept
 	{
 		return !operator==(right);
 	}
