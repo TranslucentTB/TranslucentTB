@@ -27,37 +27,54 @@ std::mutex Log::m_LogLock;
 std::optional<winrt::file_handle> Log::m_FileHandle;
 std::wstring Log::m_File;
 
-std::pair<HRESULT, std::wstring> Log::InitStream()
-{
-	HRESULT hr;
-	m_FileHandle.emplace(); // put this here so that if we fail before creating the file, we won't try constantly doing init.
 #ifndef STORE
+std::tuple<std::wstring, HRESULT, std::wstring> Log::GetPath()
+{
 	std::wstring temp;
 	temp.resize(LONG_PATH);
 	int size = GetTempPath(LONG_PATH, temp.data());
 	if (!size)
 	{
-		return { HRESULT_FROM_WIN32(GetLastError()), L"Failed to determine temporary folder location!" };
+		return { L"", HRESULT_FROM_WIN32(GetLastError()), L"Failed to determine temporary folder location!" };
 	}
 	temp.resize(size);
 
-	AutoFree::DebugLocal<wchar_t> log_folder_safe;
-	hr = PathAllocCombine(temp.c_str(), NAME, PATHCCH_ALLOW_LONG_PATHS, log_folder_safe.put());
+	AutoFree::DebugLocal<wchar_t[]> log_folder_safe;
+	const HRESULT hr = PathAllocCombine(temp.c_str(), NAME, PATHCCH_ALLOW_LONG_PATHS, log_folder_safe.put());
 	if (FAILED(hr))
 	{
-		return { hr, L"Failed to combine temporary folder location and app name!" };
+		return { L"", hr, L"Failed to combine temporary folder location and app name!" };
 	}
-	const wchar_t *log_folder = log_folder_safe.get();
+
+	return { log_folder_safe.get(), S_OK, L"" };
+}
 #else
+std::tuple<std::wstring, HRESULT, std::wstring> Log::GetPath()
+{
 	try
 	{
-		winrt::hstring tempFolder_str = UWP::GetApplicationFolderPath(UWP::FolderType::Temporary);
-		const wchar_t *log_folder = tempFolder_str.c_str();
+		return { UWP::GetApplicationFolderPath(UWP::FolderType::Temporary).c_str(), S_OK, L"" };
+	}
+	catch (const winrt::hresult_error &error)
+	{
+		return { L"", error.code(), L"Failed to determine temporary folder location!" };
+	}
+}
 #endif
+
+std::pair<HRESULT, std::wstring> Log::InitStream()
+{
+	m_FileHandle.emplace(); // put this here so that if we fail before creating the file, we won't try constantly doing init.
+
+	auto [log_folder, hr, err] = GetPath();
+	if (FAILED(hr))
+	{
+		return { hr, std::move(err) };
+	}
 
 	if (!win32::IsDirectory(log_folder))
 	{
-		if (!CreateDirectory(log_folder, NULL))
+		if (!CreateDirectory(log_folder.c_str(), NULL))
 		{
 			return { HRESULT_FROM_WIN32(GetLastError()), L"Creating log files directory failed!" };
 		}
@@ -96,8 +113,8 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 		log_filename = std::to_wstring(unix_epoch) + L".log";
 	}
 
-	AutoFree::DebugLocal<wchar_t> log_file;
-	hr = PathAllocCombine(log_folder, log_filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, log_file.put());
+	AutoFree::DebugLocal<wchar_t[]> log_file;
+	hr = PathAllocCombine(log_folder.c_str(), log_filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, log_file.put());
 	if (FAILED(hr))
 	{
 		return { hr, L"Failed to combine log folder location and log file name!" };
@@ -117,14 +134,6 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 
 	m_File = log_file.get();
 	return { S_OK, L"" };
-
-#ifdef STORE
-	}
-	catch (const winrt::hresult_error &error)
-	{
-		return { error.code(), L"Failed to determine temporary folder location!" };
-	}
-#endif
 }
 
 void Log::OutputMessage(const std::wstring &message)

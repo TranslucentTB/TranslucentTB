@@ -197,7 +197,7 @@ void win32::CopyToClipboard(const std::wstring &text)
 	}
 
 	const size_t text_size = text.length() + 1;
-	auto data = AutoFree::Global<wchar_t>::Alloc(text_size);
+	auto data = AutoFree::Global<wchar_t[]>::Alloc(text_size);
 	if (!data)
 	{
 		LastErrorHandle(Error::Level::Error, L"Failed to allocate memory for the clipboard.");

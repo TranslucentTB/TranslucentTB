@@ -83,7 +83,7 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 
 std::wstring Error::ExceptionFromHRESULT(const HRESULT &result)
 {
-	AutoFree::SilentLocal<wchar_t> error;
+	AutoFree::SilentLocal<wchar_t[]> error;
 	const DWORD count = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK, nullptr, result, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), reinterpret_cast<wchar_t *>(error.put()), 0, nullptr);
 	std::wostringstream stream;
 	stream << L"Exception from HRESULT: " << (count ? Util::Trim(error.get()) : L"[failed to get error message for HRESULT]") <<

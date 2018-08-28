@@ -150,52 +150,73 @@ void SetWindowBlur(const Window &window, const swca::ACCENT &appearance, const u
 
 #pragma region Configuration
 
-void GetPaths()
+void GetPaths_common(const wchar_t *appData, const std::wstring &cfgFolder)
 {
-#ifndef STORE
-	AutoFree::CoTaskMem<wchar_t> appDataSafe;
-	ErrorHandle(SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, appDataSafe.put()), Error::Level::Fatal, L"Failed to determine configuration files locations!");
-	const wchar_t *appData = appDataSafe.get();
-#else
-	try
-	{
-		winrt::hstring appData_str = UWP::GetApplicationFolderPath(UWP::FolderType::Roaming);
-		const wchar_t *appData = appData_str.c_str();
-#endif
+	AutoFree::Local<wchar_t[]> configFolder;
+	AutoFree::Local<wchar_t[]> configFile;
+	AutoFree::Local<wchar_t[]> excludeFile;
 
-	AutoFree::Local<wchar_t> configFolder;
-	AutoFree::Local<wchar_t> configFile;
-	AutoFree::Local<wchar_t> excludeFile;
-
-	ErrorHandle(PathAllocCombine(appData, NAME, PATHCCH_ALLOW_LONG_PATHS, configFolder.put()), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
+	ErrorHandle(PathAllocCombine(appData, cfgFolder.c_str(), PATHCCH_ALLOW_LONG_PATHS, configFolder.put()), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
 	ErrorHandle(PathAllocCombine(configFolder.get(), CONFIG_FILE, PATHCCH_ALLOW_LONG_PATHS, configFile.put()), Error::Level::Fatal, L"Failed to combine config folder and config file!");
 	ErrorHandle(PathAllocCombine(configFolder.get(), EXCLUDE_FILE, PATHCCH_ALLOW_LONG_PATHS, excludeFile.put()), Error::Level::Fatal, L"Failed to combine config folder and exclude file!");
 
 	run.config_folder = configFolder.get();
 	run.config_file = configFile.get();
 	run.exclude_file = excludeFile.get();
+}
 
-#ifdef STORE
+#ifndef STORE
+void GetPaths()
+{
+	const wchar_t *appData;
+	AutoFree::Local<wchar_t[]> appDataSafe;
+	std::wstring configFolderName;
+
+	std::wstring exeFolder_str = win32::GetExeLocation();
+	exeFolder_str.erase(exeFolder_str.find_last_of(LR"(/\)") + 1);
+
+	AutoFree::Local<wchar_t[]> portableModeFile;
+	if (ErrorHandle(PathAllocCombine(exeFolder_str.c_str(), L"portable", PATHCCH_ALLOW_LONG_PATHS, portableModeFile.put()), Error::Level::Error, L"Failed to combine executable folder and portable file!")
+		&& win32::FileExists(portableModeFile.get()))
+	{
+		appData = exeFolder_str.c_str();
+		configFolderName = L"config";
+	}
+	else
+	{
+		ErrorHandle(SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, appDataSafe.put()), Error::Level::Fatal, L"Failed to determine configuration files locations!");
+		appData = appDataSafe.get();
+		configFolderName = NAME;
+	}
+
+	GetPaths_common(appData, configFolderName);
+}
+#else
+void GetPaths()
+{
+	try
+	{
+		GetPaths_common(UWP::GetApplicationFolderPath(UWP::FolderType::Roaming).c_str(), NAME);
 	}
 	catch (const winrt::hresult_error &error)
 	{
 		ErrorHandle(error.code(), Error::Level::Fatal, L"Getting application folder paths failed!");
 	}
-#endif
 }
+#endif
 
 void ApplyStock(const std::wstring &filename)
 {
 	std::wstring exeFolder_str = win32::GetExeLocation();
 	exeFolder_str.erase(exeFolder_str.find_last_of(LR"(/\)") + 1);
 
-	AutoFree::Local<wchar_t> stockFile;
+	AutoFree::Local<wchar_t[]> stockFile;
 	if (!ErrorHandle(PathAllocCombine(exeFolder_str.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, stockFile.put()), Error::Level::Error, L"Failed to combine executable folder and config file!"))
 	{
 		return;
 	}
 
-	AutoFree::Local<wchar_t> configFile;
+	AutoFree::Local<wchar_t[]> configFile;
 	if (!ErrorHandle(PathAllocCombine(run.config_folder.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, configFile.put()), Error::Level::Error, L"Failed to combine config folder and config file!"))
 	{
 		return;

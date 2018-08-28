@@ -158,10 +158,18 @@ bool Config::ParseCommandLine()
 
 			while (args.size() >= 2)
 			{
-				Util::RemovePrefixInplace(args[0], L"--");
+				if (!Util::StringBeginsWith(args[1], L"--"))
+				{
+					Util::RemovePrefixInplace(args[0], L"--");
 
-				ParseSingleConfigOption(args[0], args[1], logger);
-				args.erase(args.begin(), args.begin() + 2);
+					ParseSingleConfigOption(args[0], args[1], logger);
+					args.erase(args.begin(), args.begin() + 2);
+				}
+				else
+				{
+					output << L"Missing value for CLI option " << args[0] << std::endl;
+					args.erase(args.begin());
+				}
 			}
 
 			if (args.size() != 0)
@@ -250,7 +258,7 @@ void Config::Save(const std::wstring &file)
 std::vector<std::wstring> Config::GetArgs()
 {
 	int argc;
-	const AutoFree::Local<wchar_t *> argv = CommandLineToArgvW(GetCommandLine(), &argc);
+	const AutoFree::Local<wchar_t *[]> argv = CommandLineToArgvW(GetCommandLine(), &argc);
 	if (!argv)
 	{
 		LastErrorHandle(Error::Level::Error, L"Failed to convert command line to argument vector. CLI arguments won't be parsed.");
@@ -333,18 +341,17 @@ bool Config::ParseOpacity(const std::wstring &value, uint32_t &color)
 	}
 	catch (...)
 	{
-		Log::OutputMessage(L"Could not parse opacity found in configuration file: " + value);
 		return false;
 	}
 }
 
 bool Config::ParseBool(const std::wstring &value, bool &setting)
 {
-	if (value == L"true" || value == L"enable")
+	if (value == L"true" || value == L"enable" || value == L"enabled" )
 	{
 		setting = true;
 	}
-	else if (value == L"false" || value == L"disable")
+	else if (value == L"false" || value == L"disable" || value == L"disabled")
 	{
 		setting = false;
 	}

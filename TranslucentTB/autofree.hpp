@@ -77,9 +77,9 @@ private:
 	public:
 		using BaseImpl<T, traits>::BaseImpl;
 
-		inline static Base Alloc(size_t count = 1)
+		inline static Base Alloc()
 		{
-			return traits::alloc(count * sizeof(T));
+			return traits::alloc(sizeof(T));
 		}
 
 		inline T *operator ->()
@@ -100,6 +100,17 @@ private:
 		inline const T &operator *() const
 		{
 			return *m_DataPtr;
+		}
+	};
+
+	template<typename T, class traits>
+	class Base<T[], traits> : public BaseImpl<T, traits> {
+	public:
+		using BaseImpl<T, traits>::BaseImpl;
+
+		inline static Base Alloc(std::size_t count)
+		{
+			return traits::alloc(count * sizeof(T));
 		}
 
 		inline T &operator [](std::size_t i)
@@ -122,7 +133,7 @@ private:
 	template<bool silent, Error::Level level = Error::Level::Log>
 	struct LocalTraits {
 
-		inline static void *alloc(size_t size)
+		inline static void *alloc(std::size_t size)
 		{
 			return LocalAlloc(LPTR, size);
 		}
@@ -140,7 +151,7 @@ private:
 
 	struct CoTaskMemTraits {
 
-		inline static void *alloc(size_t size)
+		inline static void *alloc(std::size_t size)
 		{
 			return CoTaskMemAlloc(size);
 		}
@@ -154,7 +165,7 @@ private:
 
 	struct GlobalTraits {
 
-		inline static void *alloc(size_t size)
+		inline static void *alloc(std::size_t size)
 		{
 			return GlobalAlloc(GPTR, size);
 		}

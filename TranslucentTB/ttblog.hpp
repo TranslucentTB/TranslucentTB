@@ -1,9 +1,10 @@
 #pragma once
 #include "arch.h"
 #include <mutex>
-#include <string>
-#include <utility>
 #include <optional>
+#include <string>
+#include <tuple>
+#include <utility>
 #include <windef.h>
 #include <winrt/base.h>
 
@@ -14,6 +15,7 @@ private:
 	static std::optional<winrt::file_handle> m_FileHandle;
 	static std::wstring m_File;
 
+	static std::tuple<std::wstring, HRESULT, std::wstring> GetPath();
 	static std::pair<HRESULT, std::wstring> InitStream();
 
 public:
