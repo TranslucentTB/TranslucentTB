@@ -479,7 +479,7 @@ void SetTaskbarBlur()
 
 		if (fg_window != Window::NullWindow)
 		{
-			const static bool timeline_av = win32::IsAtLeastBuild(MIN_FLUENT_BUILD);
+			static const bool timeline_av = win32::IsAtLeastBuild(MIN_FLUENT_BUILD);
 			if (Config::TIMELINE_ENABLED && (timeline_av
 				? (*fg_window.classname() == CORE_WINDOW && Util::IgnoreCaseStringEquals(*fg_window.filename(), L"Explorer.exe"))
 				: (*fg_window.classname() == L"MultitaskingViewFrame")))
@@ -676,6 +676,10 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 
 	// Parse our configuration
 	LoadConfig();
+	if (!Config::ParseCommandLine())
+	{
+		return EXIT_SUCCESS;
+	}
 
 	// Watch for changes
 	FolderWatcher config_watcher(run.config_folder, FILE_NOTIFY_CHANGE_LAST_WRITE, LoadConfig);

@@ -1,7 +1,10 @@
 #pragma once
 #include <cstdint>
+#include <functional>
 #include <mutex>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "swcadata.hpp"
 
@@ -47,17 +50,22 @@ public:
 	static bool VERBOSE;
 
 	static void Parse(const std::wstring &file);
+	static bool ParseCommandLine();
 	static void Save(const std::wstring &file);
 
 private:
 	static std::mutex m_ConfigLock;
+	static const std::wstring CLI_HELP_MSG;
+	static const std::pair<const std::wstring, bool &> CLI_FLAGS[8];
 
-	static void UnknownValue(const std::wstring &key, const std::wstring &value);
+	static std::vector<std::wstring> GetArgs();
+
+	static void UnknownValue(const std::wstring &key, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
 	static bool ParseAccent(const std::wstring &value, swca::ACCENT &accent);
 	static bool ParseColor(std::wstring value, uint32_t &color);
 	static bool ParseOpacity(const std::wstring &value, uint32_t &color);
 	static bool ParseBool(const std::wstring &value, bool &setting);
-	static void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value);
+	static void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
 
 	static std::wstring GetAccentText(const swca::ACCENT &accent);
 	static std::wstring GetColorText(const uint32_t &color);

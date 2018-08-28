@@ -19,7 +19,7 @@ private:
 		inline BaseImpl(void *data) : m_DataPtr(static_cast<T *>(data)) { }
 
 	public:
-		inline BaseImpl() : m_DataPtr(nullptr) { }
+		inline BaseImpl(T *&&data = nullptr) : m_DataPtr(data) { }
 
 		inline BaseImpl(BaseImpl &&other)
 		{
@@ -75,6 +75,8 @@ private:
 	template<typename T, class traits>
 	class Base : public BaseImpl<T, traits> {
 	public:
+		using BaseImpl<T, traits>::BaseImpl;
+
 		inline static Base Alloc(size_t count = 1)
 		{
 			return traits::alloc(count * sizeof(T));
@@ -112,7 +114,10 @@ private:
 	};
 
 	template<class traits>
-	class Base<void, traits> : public BaseImpl<void, traits> { };
+	class Base<void, traits> : public BaseImpl<void, traits> {
+	public:
+		using BaseImpl<void, traits>::BaseImpl;
+	};
 
 	template<bool silent, Error::Level level = Error::Level::Log>
 	struct LocalTraits {
