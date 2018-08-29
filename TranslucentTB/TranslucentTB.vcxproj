@@ -64,10 +64,20 @@
     <ResourceCompile Include="TranslucentTB.rc2" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\LICENSE.md" />
-    <None Include="..\Readme.md" />
-    <None Include="config.cfg" />
-    <None Include="dynamic-ws-exclude.csv" />
+    <Content Include="..\LICENSE.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+    <Content Include="..\Readme.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+    <Content Include="config.cfg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dynamic-ws-exclude.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CPicker\CPicker.vcxproj">
@@ -81,7 +91,4 @@
     <Image Include="TTB_color.ico" />
     <Image Include="TTB_white.ico" />
   </ItemGroup>
-  <Target Name="PostBuildEvent">
-    <Copy SourceFiles="@(None)" DestinationFolder="$(TargetDir)" />
-  </Target>
 </Project>

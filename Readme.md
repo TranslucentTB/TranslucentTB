@@ -38,9 +38,27 @@ If you prefer a classical download, you can do so [via the releases tab](https:/
 
 If you want to get the latest bleeding edge build, you can grab it over at the [AppVeyor page](https://ci.appveyor.com/project/sylveon/translucenttb) (`Configuration: Release` > `Artifacts` > `TranslucentTB-setup.exe`). Note that these build may not work, or include features that are partially complete. Use at your own risk.
 
+## Configuration
+
+Most of the program settings can be changed by right-clicking the tray icon and navigating the context menu.
+
+Configuration files are located in `%AppData%\TranslucentTB` and consists of two files: `config.cfg` and `dynamic-ws-exclude.csv`. The main configuration file uses a simple key-value format similar to `.ini` files using semicolon-based comments. The blacklist uses a modification of the `.csv` format supporting comments using semicolons. See the files themselves for more details.
+
+The tray icon's context menu has an advanced section that includes multiple configuration-related actions: save, reload, edit, return to defaults. Note that editing the file saves the current configuration beforehand and configuration is automatically reloaded when the file is edited on disk.
+
+### Portable mode
+
+Creating an empty file named `portable` (without a file extension) in the same folder than the program will make it run in portable mode. Configuration files will be located in a subfolder of the program installation folder named `config`.
+
+### Command line arguments
+
+TranslucentTB accepts command line arguments that change the configuration of the program. Run `TranslucentTB.exe --help` to get the list of supported arguments. They initially override any setting specified in the configuration file.
+
+Settings changed via command-line arguments are later persisted on disk when the configuration is saved, or lost when the configuration is reloaded from disk.
+
 ## Add to Startup
 
-To add TranslucentTB to startup, check the "Open at boot" entry in the TranslucentTB tray icon's context menu. If it is grayed out, TranslucentTB startup has been disabled from within the Task Manager or by your organization.
+To add TranslucentTB to startup, check the "Open at boot" entry in the TranslucentTB tray icon's context menu. If it is grayed out, TranslucentTB startup has been disabled from within the Task Manager, Settings app or by your organization.
 
 ## Donations
 
@@ -68,7 +86,7 @@ Receiving objects: 100% (909/909), 383.94 KiB | 2.78 MiB/s, done.
 Resolving deltas: 100% (624/624), done.
 ```
 
-You can also download a zip archive of each branch by clicking on the `Clone or download` button while browsing the branch's files.
+You can also download a zip archive of each branch by clicking `Clone or download` > `Download ZIP` while browsing the branch's files.
 
 Now that you have the source, you will need Visual Studio 2017. [You can get the free community edition here](https://www.visualstudio.com/vs/community/).
 Check the following workloads:
@@ -83,7 +101,7 @@ You also need to install the following individual components:
 - .NET Framework 4.6.2 SDK
 - .NET Framework 4.6.2 targeting pack
 
-You also need the [Clang compiler for Windows](http://releases.llvm.org/download.html) and [Inno Setup](http://jrsoftware.org/isdl.php).
+You also need the [Clang compiler for Windows](http://releases.llvm.org/download.html) **in your PATH** and [Inno Setup](http://jrsoftware.org/isdl.php).
 
 <!-- markdownlint-disable MD033 -->
 Once you have that installed, open `TranslucentTB.sln`, and press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to build the solution.

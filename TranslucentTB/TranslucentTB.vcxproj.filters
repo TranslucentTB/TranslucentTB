@@ -163,14 +163,12 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="config.cfg">
+    <Content Include="config.cfg">
       <Filter>Stock Configuration Files</Filter>
-    </None>
-    <None Include="dynamic-ws-exclude.csv">
+    </Content>
+    <Content Include="dynamic-ws-exclude.csv">
       <Filter>Stock Configuration Files</Filter>
-    </None>
-    <None Include="..\LICENSE.md" />
-    <None Include="..\Readme.md" />
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="app.manifest">

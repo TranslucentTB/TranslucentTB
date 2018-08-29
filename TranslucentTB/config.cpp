@@ -50,8 +50,48 @@ bool Config::VERBOSE =
 
 std::mutex Config::m_ConfigLock;
 
-const std::wstring Config::CLI_HELP_MSG = LR"(
-	Hello world!
+const std::wstring Config::CLI_HELP_MSG =
+LR"(Flags (can be alone or take one of true or false):
+	--dynamic-ws
+	--dynamic-ws-regular-on-peek
+	--dynamic-start
+	--dynamic-cortana
+	--dynamic-timeline
+	--peek-only-main
+	--no-tray
+	--verbose
+
+Accents (takes one of opaque, clear, blur, normal or fluent):
+	--accent
+	--dynamic-ws-accent
+	--dynamic-start-accent
+	--dynamic-cortana-accent
+	--dynamic-timeline-accent
+
+Colors (takes a color in the format RRGGBB):
+	--color
+	--dynamic-ws-color
+	--dynamic-start-color
+	--dynamic-cortana-color
+	--dynamic-timeline-color
+
+Opacity (takes an integral number between 0 and 255):
+	--opacity
+	--dynamic-ws-opacity
+	--dynamic-start-opacity
+	--dynamic-cortana-opacity
+	--dynamic-timeline-opacity
+
+Others:
+	--help (shows this menu and exits)
+	--peek
+	--sleep-time
+
+TranslucentTB accepts parameters in the following format:
+	--argument value
+	--flag
+
+See configuration file for details.
 )";
 
 const std::pair<const std::wstring, bool &> Config::CLI_FLAGS[] = {

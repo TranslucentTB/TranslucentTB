@@ -1,3 +1,5 @@
+#pragma once
+
 #define IDR_VERSION                     1
 #define MAINICON                        101
 #define TRAYICON                        102
