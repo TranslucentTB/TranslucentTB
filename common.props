@@ -41,9 +41,6 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Clang.targets" />
 
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
-    <ClCompile>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
     <Link>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
     </Link>
