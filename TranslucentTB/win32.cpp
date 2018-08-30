@@ -150,7 +150,7 @@ bool win32::IsDirectory(const std::wstring &directory)
 	if (attributes == INVALID_FILE_ATTRIBUTES)
 	{
 		DWORD error = GetLastError();
-		if (error != ERROR_FILE_NOT_FOUND || error != ERROR_PATH_NOT_FOUND)
+		if (error != ERROR_FILE_NOT_FOUND && error != ERROR_PATH_NOT_FOUND)
 		{
 			// This function gets called during log initialization, so avoid potential recursivity
 			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Debug, L"Failed to check if directory exists.");
@@ -169,7 +169,7 @@ bool win32::FileExists(const std::wstring &file)
 	if (attributes == INVALID_FILE_ATTRIBUTES)
 	{
 		DWORD error = GetLastError();
-		if (error != ERROR_FILE_NOT_FOUND || error != ERROR_PATH_NOT_FOUND)
+		if (error != ERROR_FILE_NOT_FOUND && error != ERROR_PATH_NOT_FOUND)
 		{
 			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Failed to check if file exists.");
 		}
