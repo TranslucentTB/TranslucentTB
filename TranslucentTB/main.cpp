@@ -169,7 +169,7 @@ void GetPaths_common(const wchar_t *appData, const std::wstring &cfgFolder)
 void GetPaths()
 {
 	const wchar_t *appData;
-	AutoFree::Local<wchar_t[]> appDataSafe;
+	AutoFree::CoTaskMem<wchar_t[]> appDataSafe;
 	std::wstring configFolderName;
 
 	std::wstring exeFolder_str = win32::GetExeLocation();
@@ -327,8 +327,8 @@ std::wstring BuildVersionInfo()
 {
 	std::wostringstream str;
 
-	const std::wstring version = win32::GetFileVersion();
-	str << L"File version: " << (version.empty() ? Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(GetLastError())) : version) << std::endl;
+	const auto [version, hr] = win32::GetFileVersion(win32::GetExeLocation());
+	str << L"File version: " << (!version.empty() ? version : Error::ExceptionFromHRESULT(hr)) << std::endl;
 #ifdef STORE
 	str << L"Store package version: ";
 	try
@@ -341,8 +341,8 @@ std::wstring BuildVersionInfo()
 	}
 	str << std::endl;
 #endif
-	const std::wstring build = win32::GetWindowsBuild();
-	str << L"Windows build: " << (build.empty() ? Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(GetLastError())) : build);
+	const auto [build, hr2] = win32::GetWindowsBuild();
+	str << L"Windows build: " << (!build.empty() ? build : Error::ExceptionFromHRESULT(hr2));
 
 	return str.str();
 }

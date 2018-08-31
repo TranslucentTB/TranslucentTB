@@ -416,53 +416,48 @@ std::wstring win32::CharToWchar(const char *const str)
 	return strW;
 }
 
-std::wstring win32::GetWindowsBuild()
+std::pair<std::wstring, HRESULT> win32::GetWindowsBuild()
 {
-	OSVERSIONINFOEX info = { sizeof(info) };
-	// Microsoft marked GetVersionEx() as deprecated with no viable replacement.
-	// Probably to force users to use VerifyVersionInfo to check for version.
-	// But we don't want to check it, we want to get it for display.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-	if (GetVersionEx(reinterpret_cast<OSVERSIONINFO *>(&info)))
-#pragma clang diagnostic pop
+	// Microsoft recommends this themselves
+	// https://docs.microsoft.com/en-us/windows/desktop/SysInfo/getting-the-system-version
+	AutoFree::CoTaskMem<wchar_t[]> system32;
+	HRESULT hr = SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, NULL, system32.put());
+	if (FAILED(hr))
 	{
-		std::wostringstream str;
-		str <<
-			info.dwMajorVersion << L'.' <<
-			info.dwMinorVersion << L'.' <<
-			info.dwBuildNumber << L'.' <<
-			((info.wServicePackMajor << 16) | info.wServicePackMinor);
+		return { L"", hr };
+	}
 
-		return str.str();
-	}
-	else
+	AutoFree::Local<wchar_t[]> kernel32;
+	hr = PathAllocCombine(system32.get(), L"kernel32.dll", PATHCCH_ALLOW_LONG_PATHS, kernel32.put());
+	if (FAILED(hr))
 	{
-		return L"";
+		return { L"", hr };
 	}
+
+	return GetFileVersion(kernel32.get());
 }
 
-std::wstring win32::GetFileVersion()
+std::pair<std::wstring, HRESULT> win32::GetFileVersion(const std::wstring &file)
 {
 	DWORD thisisuseless;
-	DWORD size = GetFileVersionInfoSize(GetExeLocation().c_str(), &thisisuseless);
+	DWORD size = GetFileVersionInfoSize(file.c_str(), &thisisuseless);
 	if (!size)
 	{
-		return L"";
+		return { L"", HRESULT_FROM_WIN32(GetLastError()) };
 	}
 
 	auto data = std::make_unique<std::byte[]>(size);
-	if (!GetFileVersionInfo(GetExeLocation().c_str(), thisisuseless, size, data.get()))
+	if (!GetFileVersionInfo(file.c_str(), thisisuseless, size, data.get()))
 	{
-		return L"";
+		return { L"", HRESULT_FROM_WIN32(GetLastError()) };
 	}
 
 	wchar_t *fileVersion;
 	unsigned int length;
 	if (!VerQueryValue(data.get(), LR"(\StringFileInfo\040904b0\FileVersion)", reinterpret_cast<void **>(&fileVersion), &length))
 	{
-		return L"";
+		return { L"", HRESULT_FROM_WIN32(GetLastError()) };
 	}
 
-	return fileVersion;
+	return { fileVersion, S_OK };
 }

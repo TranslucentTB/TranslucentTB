@@ -4,6 +4,7 @@
 #include <mutex>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 #include <windef.h>
 #include <winrt/base.h>
@@ -70,8 +71,8 @@ public:
 	// Converts a ASCII string to a wide character string
 	static std::wstring CharToWchar(const char *const str);
 
-	static std::wstring GetWindowsBuild();
+	static std::pair<std::wstring, HRESULT> GetWindowsBuild();
 
-	static std::wstring GetFileVersion();
+	static std::pair<std::wstring, HRESULT> GetFileVersion(const std::wstring &file);
 
 };
