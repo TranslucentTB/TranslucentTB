@@ -115,11 +115,11 @@ public:
 	{
 		return send_message(RegisterWindowMessage(message.c_str()), wparam, lparam);
 	}
-	inline HWND handle() const noexcept
+	constexpr HWND handle() const noexcept
 	{
 		return m_WindowHandle;
 	}
-	inline operator HWND() const noexcept
+	constexpr operator HWND() const noexcept
 	{
 		return m_WindowHandle;
 	}
@@ -137,6 +137,8 @@ public:
 
 	friend struct std::hash<Window>;
 };
+
+constexpr Window Window::NullWindow = nullptr;
 
 // Specialize std::hash to allow the use of Window as unordered_map key
 namespace std {

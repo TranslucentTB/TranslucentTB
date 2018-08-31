@@ -18,7 +18,6 @@ std::unordered_map<Window, std::shared_ptr<std::wstring>> Window::m_Filenames;
 std::mutex Window::m_TitlesLock;
 std::unordered_map<Window, std::shared_ptr<std::wstring>> Window::m_Titles;
 
-const Window Window::NullWindow = nullptr;
 const Window Window::BroadcastWindow = HWND_BROADCAST;
 const Window Window::MessageOnlyWindow = HWND_MESSAGE;
 
