@@ -323,6 +323,33 @@ void TogglePeek(const bool &status)
 
 #pragma region Tray
 
+std::wstring BuildVersionInfo()
+{
+	std::wostringstream str;
+
+	str <<
+		NAME << std::endl <<
+		std::endl <<
+		L"File version: " << win32::GetFileVersion() << std::endl <<
+#ifdef STORE
+		L"Store package version: ";
+	try
+	{
+		str << UWP::GetApplicationVersion();
+	}
+	catch (const winrt::hresult_error &error)
+	{
+		str << error.message();
+	}
+	str <<
+		std::endl <<
+#endif
+		std::endl <<
+		L"Windows 10 build number: " << win32::GetBuildNumber();
+
+	return str.str();
+}
+
 void RefreshAutostartMenu(HMENU menu, const Autostart::StartupState &state)
 {
 	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, !(state == Autostart::StartupState::DisabledByUser

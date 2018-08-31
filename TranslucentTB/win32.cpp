@@ -1,5 +1,7 @@
 #include "win32.hpp"
 #include "arch.h"
+#include <cstddef>
+#include <memory>
 #include <optional>
 #include <PathCch.h>
 #include <processthreadsapi.h>
@@ -17,6 +19,7 @@
 #include "clipboardcontext.hpp"
 #include "common.hpp"
 #include "ttberror.hpp"
+#include "ttblog.hpp"
 #include "window.hpp"
 
 const user32::pSetWindowCompositionAttribute user32::SetWindowCompositionAttribute =
@@ -410,4 +413,52 @@ std::wstring win32::CharToWchar(const char *const str)
 	}
 
 	return strW;
+}
+
+uint16_t win32::GetBuildNumber()
+{
+	OSVERSIONINFO info = { sizeof(info) };
+	// Microsoft marked GetVersionEx() as deprecated with no viable replacement.
+	// Probably to force users to use VerifyVersionInfo to check for version.
+	// But we don't want to check it, we want to get it for display.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+	if (GetVersionEx(&info))
+#pragma clang diagnostic pop
+	{
+		return info.dwBuildNumber;
+	}
+	else
+	{
+		LastErrorHandle(Error::Level::Error, L"Failed to get Windows version number!");
+		return 0;
+	}
+}
+
+std::wstring win32::GetFileVersion()
+{
+	DWORD thisisuseless;
+	DWORD size = GetFileVersionInfoSize(GetExeLocation().c_str(), &thisisuseless);
+	if (!size)
+	{
+		LastErrorHandle(Error::Level::Error, L"Failed to get version info size");
+		return L"";
+	}
+
+	auto data = std::make_unique<std::byte[]>(size);
+	if (!GetFileVersionInfo(GetExeLocation().c_str(), thisisuseless, size, data.get()))
+	{
+		LastErrorHandle(Error::Level::Error, L"Failed to get version info");
+		return L"";
+	}
+
+	wchar_t *fileVersion;
+	unsigned int length;
+	if (!VerQueryValue(data.get(), LR"(\StringFileInfo\040904b0\FileVersion)", reinterpret_cast<void **>(&fileVersion), &length))
+	{
+		Log::OutputMessage(L"Failed to query version value");
+		return L"";
+	}
+
+	return fileVersion;
 }

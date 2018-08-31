@@ -1,4 +1,5 @@
 #include "uwp.hpp"
+#include <sstream>
 #include <winrt/Windows.Storage.h>
 
 concurrency::task<const winrt::Windows::ApplicationModel::StartupTask *> UWP::GetApplicationStartupTask()
@@ -26,4 +27,13 @@ winrt::hstring UWP::GetApplicationFolderPath(const FolderType &type)
 	default:
 		throw std::invalid_argument("type was not one of the known values");
 	}
+}
+
+std::wstring UWP::GetApplicationVersion()
+{
+	static const auto version = winrt::Windows::ApplicationModel::Package::Current().Id().Version();
+
+	std::wostringstream str;
+	str << version.Major << L'.' << version.Minor << L'.' << version.Revision << L'.' << version.Build;
+	return str.str();
 }

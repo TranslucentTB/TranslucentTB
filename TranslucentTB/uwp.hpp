@@ -1,6 +1,7 @@
 #pragma once
-#include <string>
+#include <ostream>
 #include <ppltasks.h>
+#include <string>
 #include <winrt/Windows.ApplicationModel.h>
 
 class UWP {
@@ -16,4 +17,11 @@ public:
 
 	static winrt::hstring GetApplicationFolderPath(const FolderType &type);
 
+	static std::wstring GetApplicationVersion();
+
 };
+
+inline std::wostream &operator <<(std::wostream &stream, const winrt::hstring &str)
+{
+	return stream << str.c_str();
+}
