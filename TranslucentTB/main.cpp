@@ -327,12 +327,10 @@ std::wstring BuildVersionInfo()
 {
 	std::wostringstream str;
 
-	str <<
-		NAME << std::endl <<
-		std::endl <<
-		L"File version: " << win32::GetFileVersion() << std::endl <<
+	const std::wstring version = win32::GetFileVersion();
+	str << L"File version: " << (version.empty() ? Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(GetLastError())) : version) << std::endl;
 #ifdef STORE
-		L"Store package version: ";
+	str << L"Store package version: ";
 	try
 	{
 		str << UWP::GetApplicationVersion();
@@ -341,11 +339,10 @@ std::wstring BuildVersionInfo()
 	{
 		str << error.message();
 	}
-	str <<
-		std::endl <<
+	str << std::endl;
 #endif
-		std::endl <<
-		L"Windows 10 build number: " << win32::GetBuildNumber();
+	const std::wstring build = win32::GetWindowsBuild();
+	str << L"Windows build: " << (build.empty() ? Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(GetLastError())) : build);
 
 	return str.str();
 }
@@ -676,6 +673,18 @@ void InitializeTray(const HINSTANCE &hInstance)
 			ApplyStock(EXCLUDE_FILE);
 		});
 		tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, Blacklist::ClearCache);
+		tray.RegisterContextMenuCallback(IDM_ABOUT, []
+		{
+			std::thread([]
+			{
+				const std::wstring ver = BuildVersionInfo();
+				std::wstring ver_copy = NAME L"\n\n" + ver + L"\n\nCopy version info to clipboard?";
+				if (MessageBox(Window::NullWindow, ver_copy.c_str(), NAME, MB_YESNO | MB_ICONINFORMATION | MB_SETFOREGROUND) == IDYES)
+				{
+					win32::CopyToClipboard(ver);
+				}
+			}).detach();
+		});
 		tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, std::bind(&ExitApp, EXITREASON::UserActionNoSave));
 
 

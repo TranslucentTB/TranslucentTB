@@ -70,7 +70,7 @@ public:
 	// Converts a ASCII string to a wide character string
 	static std::wstring CharToWchar(const char *const str);
 
-	static uint16_t GetBuildNumber();
+	static std::wstring GetWindowsBuild();
 
 	static std::wstring GetFileVersion();
 

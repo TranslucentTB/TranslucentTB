@@ -54,7 +54,8 @@
 #define IDM_EDITDYNAMICBLACKLIST        40048
 #define IDM_RETURNTODEFAULTBLACKLIST    40049
 #define IDM_CLEARBLACKLISTCACHE         40050
-#define IDM_EXITWITHOUTSAVING           40051
-#define IDM_AUTOSTART                   40052
-#define IDM_TIPS                        40053
-#define IDM_EXIT                        40054
+#define IDM_ABOUT                       40051
+#define IDM_EXITWITHOUTSAVING           40052
+#define IDM_AUTOSTART                   40053
+#define IDM_TIPS                        40054
+#define IDM_EXIT                        40055

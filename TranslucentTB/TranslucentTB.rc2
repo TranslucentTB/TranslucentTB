@@ -108,6 +108,7 @@ BEGIN
             MENUITEM "Return to default blacklist", IDM_RETURNTODEFAULTBLACKLIST
             MENUITEM "",                            0, MFT_SEPARATOR
             MENUITEM "Clear blacklist cache",       IDM_CLEARBLACKLISTCACHE
+            MENUITEM "About",                       IDM_ABOUT
             MENUITEM "Exit without saving",         IDM_EXITWITHOUTSAVING
         END
         MENUITEM "Open at boot",                IDM_AUTOSTART
