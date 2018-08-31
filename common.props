@@ -71,6 +71,7 @@
       <UseShortEnums>true</UseShortEnums>
       <MSVCErrorReport>true</MSVCErrorReport>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>-Wno-missing-field-initializers -Wrange-loop-analysis -Wold-style-cast -Wnonportable-system-include-path -Wimplicit-fallthrough -Wunreachable-code-return -Wswitch-enum -m32 -std=c++17 -gcodeview</AdditionalOptions>
     </ClCompile>
     <Link>
