@@ -23,6 +23,7 @@
 #include "messagewindow.hpp"
 #include "resource.h"
 #include "swcadata.hpp"
+#include "welcomedialog.hpp"
 #include "traycontextmenu.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
@@ -241,15 +242,7 @@ bool CheckAndRunWelcome()
 {
 	if (!win32::IsDirectory(run.config_folder))
 	{
-		// String concatenation is hard OK
-		std::wostringstream message;
-		message <<
-			L"Welcome to " NAME L"!\n\n"
-			L"You can tweak the taskbar's appearance with the tray icon. If it's your cup of tea, you can also edit the configuration files, located at \"" <<
-			run.config_folder <<
-			L"\"\n\nDo you agree to the GPLv3 license?";
-
-		if (MessageBox(Window::NullWindow, message.str().c_str(), NAME, MB_ICONINFORMATION | MB_YESNO | MB_SETFOREGROUND) != IDYES)
+		if (!WelcomeDialog(run.config_folder).Run())
 		{
 			return false;
 		}

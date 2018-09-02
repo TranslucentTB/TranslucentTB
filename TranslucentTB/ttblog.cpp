@@ -87,24 +87,7 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 	FILETIME useless3;
 	if (GetProcessTimes(GetCurrentProcess(), &creationTime, &useless1, &useless2, &useless3))
 	{
-		// Unix timestamps are since 1970, but FILETIME is since 1601 (seriously why MS)
-		// FILETIME is also in hundreds of nanoseconds, but Unix timestamps are in seconds.
-
-		// Useful union to convert from a high-word and low-word big integer to a long long.
-		LARGE_INTEGER creationTimestamp = {{
-			creationTime.dwLowDateTime,
-			creationTime.dwHighDateTime
-		}};
-
-		// There are 10000000 hundreds of nanoseconds in a second.
-		// Convert to seconds.
-		creationTimestamp.QuadPart /= 10000000;
-
-		// There are 11644473600 seconds between the two years.
-		// Remove the difference.
-		creationTimestamp.QuadPart -= 11644473600;
-
-		log_filename = std::to_wstring(creationTimestamp.QuadPart) + L".log";
+		log_filename = std::to_wstring(win32::FiletimeToUnixEpoch(creationTime)) + L".log";
 	}
 	else
 	{

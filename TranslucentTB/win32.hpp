@@ -68,11 +68,16 @@ public:
 	// Applies various settings that make code execution more secure.
 	static void HardenProcess();
 
-	// Converts a ASCII string to a wide character string
+	// Converts a ASCII string to a wide character string.
 	static std::wstring CharToWchar(const char *const str);
 
+	// Gets the current Windows build identifier.
 	static std::pair<std::wstring, HRESULT> GetWindowsBuild();
 
+	// Gets the FileVersion of a PE binary.
 	static std::pair<std::wstring, HRESULT> GetFileVersion(const std::wstring &file);
+
+	// Converts a Windows-style filetime to a unix epoch,
+	static unsigned long long FiletimeToUnixEpoch(const FILETIME &time);
 
 };

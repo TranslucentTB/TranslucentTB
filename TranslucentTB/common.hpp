@@ -9,8 +9,8 @@ static constexpr uint16_t LONG_PATH = 33000;
 // Minimum build number that supports Fluent
 static constexpr uint16_t MIN_FLUENT_BUILD = 17063;
 
-// Event id for app uniqueness
-static constexpr wchar_t ID[] = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
+// Mutex name for app uniqueness
+static constexpr wchar_t MUTEX_GUID[] = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
 
 // App name
 // Using a define so when can concatenate it in strings just by putting another one near it

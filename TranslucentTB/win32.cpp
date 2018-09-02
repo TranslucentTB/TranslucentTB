@@ -125,7 +125,7 @@ bool win32::IsSingleInstance()
 
 	if (!mutex)
 	{
-		mutex = CreateMutex(NULL, FALSE, ID);
+		mutex = CreateMutex(NULL, FALSE, MUTEX_GUID);
 		LRESULT error = GetLastError();
 		switch (error)
 		{
@@ -460,4 +460,22 @@ std::pair<std::wstring, HRESULT> win32::GetFileVersion(const std::wstring &file)
 	}
 
 	return { fileVersion, S_OK };
+}
+
+unsigned long long win32::FiletimeToUnixEpoch(const FILETIME &time)
+{
+	// Unix timestamps are since 1970, but FILETIME is since 1601 (seriously why MS)
+	// FILETIME is also in hundreds of nanoseconds, but Unix timestamps are in seconds.
+
+	unsigned long long timeStamp = ULARGE_INTEGER({ time.dwLowDateTime, time.dwHighDateTime }).QuadPart;
+
+	// There are 10000000 hundreds of nanoseconds in a second.
+	// Convert to seconds.
+	timeStamp /= 10000000;
+
+	// There are 11644473600 seconds between the two years.
+	// Remove the difference.
+	timeStamp -= 11644473600;
+
+	return timeStamp;
 }

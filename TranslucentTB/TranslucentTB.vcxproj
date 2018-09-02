@@ -22,6 +22,7 @@
     <ClCompile Include="hooks.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="messagewindow.cpp" />
+    <ClCompile Include="taskdialog.cpp" />
     <ClCompile Include="traycontextmenu.cpp" />
     <ClCompile Include="trayicon.cpp" />
     <ClCompile Include="ttberror.cpp" />
@@ -50,12 +51,14 @@
     <ClInclude Include="swcadata.hpp" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="taskdialog.hpp" />
     <ClInclude Include="traycontextmenu.hpp" />
     <ClInclude Include="trayicon.hpp" />
     <ClInclude Include="ttberror.hpp" />
     <ClInclude Include="ttblog.hpp" />
     <ClInclude Include="util.hpp" />
     <ClInclude Include="uwp.hpp" Condition="'$(Configuration)'=='Store'" />
+    <ClInclude Include="welcomedialog.hpp" />
     <ClInclude Include="win32.hpp" />
     <ClInclude Include="window.hpp" />
     <ClInclude Include="windowclass.hpp" />
