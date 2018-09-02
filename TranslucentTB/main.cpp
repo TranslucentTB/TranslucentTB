@@ -405,6 +405,8 @@ void RefreshMenu(HMENU menu)
 			: L"Nothing has been logged yet"
 	);
 
+	TrayContextMenu::RefreshBool(IDM_SAVESETTINGS, menu, !Config::NO_SAVE, TrayContextMenu::ControlsEnabled);
+
 	TrayContextMenu::RefreshBool(IDM_REGULAR_COLOR,   menu,
 		Config::REGULAR_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
@@ -646,23 +648,8 @@ void InitializeTray(const HINSTANCE &hInstance)
 		tray.BindBool(IDM_VERBOSE, Config::VERBOSE, TrayContextMenu::Toggle);
 		tray.RegisterContextMenuCallback(IDM_SAVESETTINGS, []
 		{
-			std::thread([]
-			{
-				std::wstring_view str;
-				unsigned int icon;
-				if (!Config::NO_SAVE)
-				{
-					Config::Save(run.config_file);
-					str = L"Settings have been saved.";
-					icon = MB_ICONINFORMATION;
-				}
-				else
-				{
-					str = L"no-save has been specified, nothing has been saved.";
-					icon = MB_ICONWARNING;
-				}
-				MessageBox(Window::NullWindow, str.data(), NAME, MB_OK | icon | MB_SETFOREGROUND);
-			}).detach();
+			Config::Save(run.config_file);
+			std::thread(std::bind(&MessageBox, Window::NullWindow, L"Settings have been saved.", NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND)).detach();
 		});
 		tray.RegisterContextMenuCallback(IDM_RELOADSETTINGS, std::bind(&Config::Parse, std::ref(run.config_file)));
 		tray.RegisterContextMenuCallback(IDM_EDITSETTINGS, []
