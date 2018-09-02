@@ -147,7 +147,7 @@ void Blacklist::AddToVector(std::wstring line, std::vector<std::wstring> &vector
 	// Now iterate and add the values
 	while ((pos = line.find(delimiter)) != std::wstring::npos)
 	{
-		vector.push_back(Util::Trim(line.substr(0, pos)));
+		vector.emplace_back(Util::Trim(line.substr(0, pos)));
 		line.erase(0, pos + 1);
 	}
 }

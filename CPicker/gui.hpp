@@ -19,7 +19,7 @@
 
 class GUI {
 private:
-	static const Util::string_map<const uint32_t> COLOR_MAP;
+	static const Util::string_view_map<const uint32_t> COLOR_MAP;
 	static const std::tuple<const unsigned int, const unsigned int, const unsigned int> SLIDERS[8];
 	static std::unordered_map<const uint32_t *, HWND> m_pickerMap;
 
@@ -40,7 +40,7 @@ private:
 		Edit_ShowBalloonTip(GetDlgItem(hDlg, IDC_HEXCOL), &ebt);
 	}
 
-	inline static uint8_t ExpandOneLetterByte(const uint8_t &byte)
+	static constexpr uint8_t ExpandOneLetterByte(const uint8_t &byte)
 	{
 		const uint8_t firstDigit = byte & 0xF;
 		return (firstDigit << 4) + firstDigit;

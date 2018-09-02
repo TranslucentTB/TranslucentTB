@@ -28,6 +28,7 @@ const user32::pSetWindowCompositionAttribute user32::SetWindowCompositionAttribu
 		GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute")
 	);
 
+std::mutex win32::m_LocationLock;
 std::wstring win32::m_ExeLocation;
 std::mutex win32::m_PickerThreadsLock;
 std::vector<DWORD> win32::m_PickerThreads;
@@ -75,6 +76,7 @@ BOOL win32::EnumThreadWindowsProc(HWND hwnd, LPARAM lParam)
 
 const std::wstring &win32::GetExeLocation()
 {
+	std::lock_guard guard(m_LocationLock);
 	if (m_ExeLocation.empty())
 	{
 		DWORD exeLocation_size = LONG_PATH;
@@ -464,17 +466,13 @@ std::pair<std::wstring, HRESULT> win32::GetFileVersion(const std::wstring &file)
 
 unsigned long long win32::FiletimeToUnixEpoch(const FILETIME &time)
 {
-	// Unix timestamps are since 1970, but FILETIME is since 1601 (seriously why MS)
-	// FILETIME is also in hundreds of nanoseconds, but Unix timestamps are in seconds.
+	unsigned long long timeStamp = ULARGE_INTEGER{{ time.dwLowDateTime, time.dwHighDateTime }}.QuadPart;
 
-	unsigned long long timeStamp = ULARGE_INTEGER({ time.dwLowDateTime, time.dwHighDateTime }).QuadPart;
-
-	// There are 10000000 hundreds of nanoseconds in a second.
-	// Convert to seconds.
+	// FILETIME is in hundreds of nanoseconds, but Unix timestamps are in seconds.
 	timeStamp /= 10000000;
 
-	// There are 11644473600 seconds between the two years.
-	// Remove the difference.
+	// Unix timestamps are since 1970, but FILETIME is since 1601.
+	// Black magic told me there are 11644473600 seconds between the two years.
 	timeStamp -= 11644473600;
 
 	return timeStamp;

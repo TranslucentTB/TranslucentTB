@@ -5,6 +5,7 @@
 #include <limits>
 #include <random>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
 class Util {
@@ -23,16 +24,7 @@ public:
 		return data;
 	}
 
-	template<size_t s>
-	inline static bool IgnoreCaseStringEquals(const std::wstring &l, const wchar_t (&r)[s])
-	{
-		return std::equal(l.begin(), l.end(), r, r + s - 1, [](const wchar_t &a, const wchar_t &b) -> bool
-		{
-			return b != L'\0' && std::towlower(a) == std::towlower(b);
-		});
-	}
-
-	inline static bool IgnoreCaseStringEquals(const std::wstring &l, const std::wstring &r)
+	inline static bool IgnoreCaseStringEquals(std::wstring_view l, std::wstring_view r)
 	{
 		return std::equal(l.begin(), l.end(), r.begin(), r.end(), [](const wchar_t &a, const wchar_t &b) -> bool
 		{
@@ -42,15 +34,15 @@ public:
 
 private:
 	struct string_hash {
-		inline std::size_t operator()(const std::wstring &k) const
+		inline std::size_t operator()(std::wstring_view k) const
 		{
 			static const std::hash<std::wstring> hasher;
-			return hasher(ToLower(k));
+			return hasher(ToLower(std::wstring(k)));
 		}
 	};
 
 	struct string_compare {
-		inline bool operator()(const std::wstring &l, const std::wstring &r) const
+		inline bool operator()(std::wstring_view l, std::wstring_view r) const
 		{
 			return IgnoreCaseStringEquals(l, r);
 		}
@@ -59,7 +51,7 @@ private:
 public:
 	// Case-insensitive std::unordered_map with string keys.
 	template<typename T>
-	using string_map = std::unordered_map<std::wstring, T, string_hash, string_compare>;
+	using string_view_map = std::unordered_map<std::wstring_view, T, string_hash, string_compare>;
 
 	template<typename K, typename V, class Compare = std::less<V>>
 	struct map_value_compare {
@@ -74,11 +66,11 @@ public:
 	};
 
 	// Removes instances of a character at the beginning and end of the string.
-	inline static std::wstring Trim(const std::wstring &str, const wchar_t &character = L' ')
+	static constexpr std::wstring_view Trim(std::wstring_view str, const wchar_t &character = L' ')
 	{
 		size_t first = str.find_first_not_of(character);
 
-		if (first == std::wstring::npos)
+		if (first == std::wstring_view::npos)
 		{
 			return L"";
 		}
@@ -104,7 +96,7 @@ public:
 	}
 
 	// Checks if a string begins with another string. More efficient than str.find(text) == 0.
-	inline static bool StringBeginsWith(const std::wstring &string, const std::wstring &text_to_test)
+	static constexpr bool StringBeginsWith(std::wstring_view string, std::wstring_view text_to_test)
 	{
 		const size_t length = text_to_test.length();
 		if (string.length() < length)
@@ -123,7 +115,7 @@ public:
 	}
 
 	// Removes a string at the beginning of another string.
-	inline static std::wstring RemovePrefix(const std::wstring &str, const std::wstring &prefix)
+	static constexpr std::wstring_view RemovePrefix(std::wstring_view str, std::wstring_view prefix)
 	{
 		if (StringBeginsWith(str, prefix))
 		{
@@ -136,7 +128,7 @@ public:
 	}
 
 	// Removes a string at the beginning of another string.
-	inline static void RemovePrefixInplace(std::wstring &str, const std::wstring &prefix)
+	inline static void RemovePrefixInplace(std::wstring &str, std::wstring_view prefix)
 	{
 		if (StringBeginsWith(str, prefix))
 		{
@@ -173,5 +165,11 @@ public:
 	{
 		std::uniform_int_distribution<T> distribution(begin, end);
 		return distribution(GetRandomEngine());
+	}
+
+	template<typename T, typename U>
+	static constexpr T ClampTo(const U &value)
+	{
+		return static_cast<T>(std::clamp<U>(value, (std::numeric_limits<T>::min)(), (std::numeric_limits<T>::max)()));
 	}
 };

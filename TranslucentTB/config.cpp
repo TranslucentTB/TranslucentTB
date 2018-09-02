@@ -132,10 +132,11 @@ void Config::Parse(const std::wstring &file)
 		if (split_index != std::wstring::npos)
 		{
 			Util::ToLowerInplace(line);
-			const std::wstring key = Util::Trim(line.substr(0, split_index));
-			const std::wstring val = Util::Trim(line.substr(split_index + 1, line.length() - split_index - 1));
+			std::wstring_view line_view = line;
+			std::wstring_view key = Util::Trim(line_view.substr(0, split_index));
+			std::wstring_view val = Util::Trim(line_view.substr(split_index + 1, line_view.length() - split_index - 1));
 
-			ParseSingleConfigOption(key, val, Log::OutputMessage);
+			ParseSingleConfigOption(std::wstring(key), std::wstring(val), Log::OutputMessage);
 		}
 		else
 		{
@@ -183,7 +184,7 @@ bool Config::ParseCommandLine()
 					{
 						if (!ParseBool(*(iter + 1), pair.second))
 						{
-							UnknownValue(Util::RemovePrefix(*iter, L"--"), *(iter + 1), logger);
+							UnknownValue(std::wstring(Util::RemovePrefix(*iter, L"--")), *(iter + 1), logger);
 						}
 
 						args.erase(iter, iter + 2);

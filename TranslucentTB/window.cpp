@@ -143,7 +143,7 @@ WINDOWPLACEMENT Window::placement() const
 template<typename T>
 T Window::get_attribute(const DWMWINDOWATTRIBUTE &attrib) const
 {
-	T attribute;
+	T attribute{};
 	HRESULT status = DwmGetWindowAttribute(m_WindowHandle, attrib, &attribute, sizeof(attribute));
 	ErrorHandle(status, Error::Level::Log, L"Getting attribute of a window failed.");
 	return attribute;

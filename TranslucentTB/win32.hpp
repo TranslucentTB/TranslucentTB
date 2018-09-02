@@ -24,6 +24,7 @@ public:
 class win32 {
 
 private:
+	static std::mutex m_LocationLock;
 	static std::wstring m_ExeLocation;
 	static std::mutex m_PickerThreadsLock;
 	static std::vector<DWORD> m_PickerThreads;

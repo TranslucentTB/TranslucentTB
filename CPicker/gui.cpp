@@ -6,7 +6,7 @@
 #include "dlldata.hpp"
 #include "paintcontext.hpp"
 
-const Util::string_map<const uint32_t> GUI::COLOR_MAP = {
+const Util::string_view_map<const uint32_t> GUI::COLOR_MAP = {
 	{ L"aliceblue",				0xf0f8ff },
 	{ L"antiquewhite",			0xfaebd7 },
 	{ L"aqua",					0x00ffff },
@@ -648,7 +648,9 @@ void GUI::ParseHex(HWND hDlg)
 
 		try
 		{
-			const unsigned int tempcolor = std::stoll(text, nullptr, 16) & 0xFFFFFFFF;
+			// Not using Util::ClampTo here, because if the user enters something too big, instead
+			// of being pitch black, it'll act as if it truncated the value they entered.
+			const unsigned int tempcolor = std::stoull(text, nullptr, 16) & 0xFFFFFFFF;
 
 			if (text.length() == 8)
 			{
