@@ -47,6 +47,7 @@ public:
 	// Advanced
 	static uint8_t SLEEP_TIME;
 	static bool NO_TRAY;
+	static bool NO_SAVE;
 	static bool VERBOSE;
 
 	static void Parse(const std::wstring &file);
@@ -56,7 +57,7 @@ public:
 private:
 	static std::mutex m_ConfigLock;
 	static const std::wstring CLI_HELP_MSG;
-	static const std::pair<const std::wstring, bool &> CLI_FLAGS[8];
+	static const std::pair<const std::wstring_view, bool &> CLI_FLAGS[9];
 
 	static std::vector<std::wstring> GetArgs();
 

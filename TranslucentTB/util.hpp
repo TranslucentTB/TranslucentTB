@@ -51,7 +51,7 @@ private:
 public:
 	// Case-insensitive std::unordered_map with string keys.
 	template<typename T>
-	using string_view_map = std::unordered_map<std::wstring_view, T, string_hash, string_compare>;
+	using string_view_map = std::unordered_map<const std::wstring_view, T, string_hash, string_compare>;
 
 	template<typename K, typename V, class Compare = std::less<V>>
 	struct map_value_compare {

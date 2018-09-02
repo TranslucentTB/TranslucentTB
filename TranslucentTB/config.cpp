@@ -41,6 +41,7 @@ bool Config::PEEK_ONLY_MAIN = true;
 // Advanced
 uint8_t Config::SLEEP_TIME = 10;
 bool Config::NO_TRAY = false;
+bool Config::NO_SAVE = false;
 bool Config::VERBOSE =
 #ifndef _DEBUG
 	false;
@@ -59,6 +60,7 @@ LR"(Flags (can be alone or take one of true or false):
 	--dynamic-timeline
 	--peek-only-main
 	--no-tray
+	--no-save
 	--verbose
 
 Accents (takes one of opaque, clear, blur, normal or fluent):
@@ -94,7 +96,7 @@ TranslucentTB accepts parameters in the following format:
 See configuration file for details.
 )";
 
-const std::pair<const std::wstring, bool &> Config::CLI_FLAGS[] = {
+const std::pair<const std::wstring_view, bool &> Config::CLI_FLAGS[] = {
 	{ L"--dynamic-ws", MAXIMISED_ENABLED },
 	{ L"--dynamic-ws-regular-on-peek", MAXIMISED_REGULAR_ON_PEEK },
 	{ L"--dynamic-start", START_ENABLED },
@@ -102,6 +104,7 @@ const std::pair<const std::wstring, bool &> Config::CLI_FLAGS[] = {
 	{ L"--dynamic-timeline", TIMELINE_ENABLED },
 	{ L"--peek-only-main", PEEK_ONLY_MAIN },
 	{ L"--no-tray", NO_TRAY },
+	{ L"--no-save", NO_SAVE },
 	{ L"--verbose", VERBOSE }
 };
 
@@ -233,6 +236,11 @@ void Config::Save(const std::wstring &file)
 {
 	std::lock_guard guard(m_ConfigLock);
 
+	if (NO_SAVE)
+	{
+		return;
+	}
+
 	std::wofstream configstream(file);
 
 	configstream << L"accent=" << std::left << std::setw(6) << std::setfill(L' ') << GetAccentText(REGULAR_APPEARANCE.ACCENT) << L"; accent values are: clear (default), fluent (only on build " << MIN_FLUENT_BUILD << L" and up), opaque, normal, or blur." << std::endl;
@@ -292,6 +300,8 @@ void Config::Save(const std::wstring &file)
 	configstream << L"sleep-time=" << std::dec << SLEEP_TIME << std::endl;
 	configstream << L"; hide icon in system tray. Changes to this requires a restart of the application." << std::endl;
 	configstream << L"no-tray=" << GetBoolText(NO_TRAY) << std::endl;
+	configstream << L"; don't save the configuration file. Prevents the program from writing to the config file at all." << std::endl;
+	configstream << L"no-save=" << GetBoolText(NO_SAVE) << std::endl;
 	configstream << L"; more informative logging. Can make huge log files." << std::endl;
 	configstream << L"verbose=" << GetBoolText(VERBOSE) << std::endl;
 }
@@ -586,6 +596,13 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 	else if (arg == L"no-tray")
 	{
 		if (!ParseBool(value, NO_TRAY))
+		{
+			UnknownValue(arg, value, logger);
+		}
+	}
+	else if (arg == L"no-save")
+	{
+		if (!ParseBool(value, NO_SAVE))
 		{
 			UnknownValue(arg, value, logger);
 		}
