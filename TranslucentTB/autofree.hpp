@@ -1,6 +1,7 @@
 #pragma once
 #include "arch.h"
 #include <objbase.h>
+#include <type_traits>
 #include <utility>
 #include <WinBase.h>
 #include <winerror.h>
@@ -25,7 +26,7 @@ private:
 		{
 			if (this != &other)
 			{
-				m_DataPtr = std::exchange(other.m_DataPtr, nullptr);
+				m_DataPtr = other.detach();
 			}
 		}
 
@@ -36,7 +37,7 @@ private:
 			if (this != &other)
 			{
 				traits::close(m_DataPtr);
-				m_DataPtr = std::exchange(other.m_DataPtr, nullptr);
+				m_DataPtr = other.detach();
 			}
 
 			return *this;
@@ -63,6 +64,11 @@ private:
 		inline const T *get() const
 		{
 			return m_DataPtr;
+		}
+
+		[[nodiscard]] inline T *detach()
+		{
+			return std::exchange(m_DataPtr, nullptr);
 		}
 
 		inline ~BaseImpl()
@@ -163,11 +169,12 @@ private:
 
 	};
 
+	template<unsigned int flags>
 	struct GlobalTraits {
 
 		inline static void *alloc(std::size_t size)
 		{
-			return GlobalAlloc(GPTR, size);
+			return GlobalAlloc(flags, size);
 		}
 
 		inline static void close(void *data)
@@ -196,6 +203,46 @@ public:
 	using SilentLocal = Base<T, LocalTraits<true>>;
 
 	template<typename T = void>
-	using Global = Base<T, GlobalTraits>;
+	using Global = Base<T, GlobalTraits<GPTR>>;
 
+	template<typename T = void>
+	using GlobalHandle = Base<T, GlobalTraits<GHND>>;
+
+	template<typename T>
+	class GlobalLock {
+	private:
+		GlobalHandle<T> &m_Handle;
+		using ptr_t = std::remove_extent_t<T> *;
+		ptr_t m_Ptr;
+	public:
+		inline explicit GlobalLock(GlobalHandle<T> &handle) : m_Handle(handle)
+		{
+			m_Ptr = static_cast<ptr_t>(::GlobalLock(m_Handle.get()));
+		}
+
+		inline GlobalLock(const GlobalLock &other) = delete;
+		inline GlobalLock &operator =(const GlobalLock &other) = delete;
+
+		inline ptr_t get()
+		{
+			return m_Ptr;
+		}
+
+		inline explicit operator bool() const
+		{
+			return m_Ptr != nullptr;
+		}
+
+		inline ~GlobalLock()
+		{
+			if (!GlobalUnlock(m_Handle.get()))
+			{
+				DWORD err = GetLastError();
+				if (err != NO_ERROR)
+				{
+					ErrorHandle(HRESULT_FROM_WIN32(err), Error::Level::Error, L"Failed to unlock memory.");
+				}
+			}
+		}
+	};
 };

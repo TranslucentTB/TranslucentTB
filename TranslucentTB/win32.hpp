@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <mutex>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -49,7 +50,7 @@ public:
 	static bool FileExists(const std::wstring &file);
 
 	// Copies text to the clipboard.
-	static void CopyToClipboard(const std::wstring &text);
+	static void CopyToClipboard(std::wstring_view text);
 
 	// Opens a file in the default text editor.
 	static void EditFile(const std::wstring &file);

@@ -12,7 +12,7 @@ private:
 
 public:
 	inline ClipboardContext(const Window &owner = Window::NullWindow) : m_Result(OpenClipboard(owner)) { }
-	inline operator bool() { return m_Result; }
+	inline operator bool() const { return m_Result; }
 	inline ~ClipboardContext()
 	{
 		if (m_Result && !CloseClipboard())
