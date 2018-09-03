@@ -17,6 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		appveyor.yml = appveyor.yml
 		common.props = common.props
 		create-installer.ps1 = create-installer.ps1
+		.github\ISSUE_TEMPLATE.md = .github\ISSUE_TEMPLATE.md
 		LICENSE.md = LICENSE.md
 		Readme.md = Readme.md
 		update-version.ps1 = update-version.ps1

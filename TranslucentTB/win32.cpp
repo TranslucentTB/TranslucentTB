@@ -187,26 +187,26 @@ bool win32::FileExists(const std::wstring &file)
 	}
 }
 
-void win32::CopyToClipboard(std::wstring_view text)
+bool win32::CopyToClipboard(std::wstring_view text)
 {
 	ClipboardContext context;
 	if (!context)
 	{
 		LastErrorHandle(Error::Level::Error, L"Failed to open clipboard.");
-		return;
+		return false;
 	}
 
 	if (!EmptyClipboard())
 	{
 		LastErrorHandle(Error::Level::Error, L"Failed to empty clipboard.");
-		return;
+		return false;
 	}
 
 	auto data = AutoFree::GlobalHandle<wchar_t[]>::Alloc(text.length() + 1);
 	if (!data)
 	{
 		LastErrorHandle(Error::Level::Error, L"Failed to allocate memory for the clipboard.");
-		return;
+		return false;
 	}
 
 	{
@@ -214,7 +214,7 @@ void win32::CopyToClipboard(std::wstring_view text)
 		if (!lock)
 		{
 			LastErrorHandle(Error::Level::Error, L"Failed to lock memory for the clipboard.");
-			return;
+			return false;
 		}
 		text.copy(lock.get(), text.length());
 	}
@@ -222,8 +222,10 @@ void win32::CopyToClipboard(std::wstring_view text)
 	if (!SetClipboardData(CF_UNICODETEXT, data.detach()))
 	{
 		LastErrorHandle(Error::Level::Error, L"Failed to copy data to clipboard.");
-		return;
+		return false;
 	}
+
+	return true;
 }
 
 void win32::EditFile(const std::wstring &file)

@@ -165,6 +165,9 @@
     <ClInclude Include="welcomedialog.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="aboutdialog.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TranslucentTB.rc2">

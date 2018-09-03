@@ -11,6 +11,7 @@
 #include <ShlObj.h>
 
 // Local stuff
+#include "aboutdialog.hpp"
 #include "appvisibilitysink.hpp"
 #include "autofree.hpp"
 #include "autostart.hpp"
@@ -315,30 +316,6 @@ void TogglePeek(const bool &status)
 #pragma endregion
 
 #pragma region Tray
-
-std::wstring BuildVersionInfo()
-{
-	std::wostringstream str;
-
-	const auto [version, hr] = win32::GetFileVersion(win32::GetExeLocation());
-	str << L"File version: " << (!version.empty() ? version : Error::ExceptionFromHRESULT(hr)) << std::endl;
-#ifdef STORE
-	str << L"Store package version: ";
-	try
-	{
-		str << UWP::GetApplicationVersion();
-	}
-	catch (const winrt::hresult_error &error)
-	{
-		str << error.message();
-	}
-	str << std::endl;
-#endif
-	const auto [build, hr2] = win32::GetWindowsBuild();
-	str << L"Windows build: " << (!build.empty() ? build : Error::ExceptionFromHRESULT(hr2));
-
-	return str.str();
-}
 
 void RefreshAutostartMenu(HMENU menu, const Autostart::StartupState &state)
 {
@@ -672,12 +649,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 		{
 			std::thread([]
 			{
-				const std::wstring ver = BuildVersionInfo();
-				std::wstring ver_copy = NAME L"\n\n" + ver + L"\n\nCopy version info to clipboard?";
-				if (MessageBox(Window::NullWindow, ver_copy.c_str(), NAME, MB_YESNO | MB_ICONINFORMATION | MB_SETFOREGROUND) == IDYES)
-				{
-					win32::CopyToClipboard(ver);
-				}
+				AboutDialog().Run();
 			}).detach();
 		});
 		tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, std::bind(&ExitApp, EXITREASON::UserActionNoSave));
