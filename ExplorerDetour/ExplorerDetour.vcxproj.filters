@@ -23,7 +23,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\contrib\detours.lib" />
+    <Library Include="..\detours\detours.$(Platform).lib" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hook.hpp">
