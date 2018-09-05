@@ -1,5 +1,8 @@
-#include "dlldata.hpp"
+#include "../TranslucentTB/arch.h"
+#include <windef.h>
 #include <WinBase.h>
+
+#include "dlldata.hpp"
 
 HINSTANCE DllData::m_hInst;
 

@@ -18,16 +18,14 @@ namespace swca {
 													// ...
 	};
 
-	struct ACCENTPOLICY				// Determines how a window's transparent region will be painted
-	{
+	struct ACCENTPOLICY {			// Determines how a window's transparent region will be painted
 		ACCENT   nAccentState;			// Appearance
 		int32_t  nFlags;				// Nobody knows how this value works
 		uint32_t nColor;				// A color in the hex format AABBGGRR
 		int32_t  nAnimationId;			// Nobody knows how this value works
 	};
 
-	struct WINCOMPATTRDATA						// Composition Attributes
-	{
+	struct WINCOMPATTRDATA {					// Composition Attributes
 		WindowCompositionAttribute nAttribute;		// Type of the data struct passed
 		void *pData;								// Opaque pointer to the data struct (ACCENTPOLICY in our case)
 		uint32_t ulDataSize;						// Size of data struct

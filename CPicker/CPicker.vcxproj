@@ -20,7 +20,7 @@
     <ClCompile Include="ccolourpicker.cpp" />
     <ClCompile Include="colorpreviewcontext.cpp" />
     <ClCompile Include="colorslidercontext.cpp" />
-    <ClCompile Include="dlldata.cpp" />
+    <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="gui.cpp" />
     <ClCompile Include="mainpickercontext.cpp" />
     <ClCompile Include="rendercontext.cpp" />

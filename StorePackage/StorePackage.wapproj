@@ -8,6 +8,10 @@
       <Configuration>Release</Configuration>
       <Platform>x86</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup>
     <WapProjPath Condition="'$(WapProjPath)'==''">$(MSBuildExtensionsPath)\Microsoft\DesktopBridge\</WapProjPath>
@@ -34,8 +38,11 @@
     <Content Include="..\TranslucentTB\config.cfg">
       <Link>TranslucentTB\config.cfg</Link>
     </Content>
-    <!-- TODO: Remove this when bug fixed https://developercommunity.visualstudio.com/comments/269597/view.html -->
-    <Content Include="..\Store\CPicker.dll">
+    <!-- TODO: Remove those when bug fixed https://developercommunity.visualstudio.com/comments/269597/view.html -->
+    <Content Include="..\Store\CPicker.dll" Condition="'$(Platform)'=='x86'">
+      <Link>TranslucentTB\CPicker.dll</Link>
+    </Content>
+    <Content Include="..\x64\Store\CPicker.dll" Condition="'$(Platform)'=='x64'">
       <Link>TranslucentTB\CPicker.dll</Link>
     </Content>
     <Content Include="..\TranslucentTB\dynamic-ws-exclude.csv">

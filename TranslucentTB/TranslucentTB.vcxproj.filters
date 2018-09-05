@@ -31,9 +31,6 @@
     <ClCompile Include="ttblog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="uwp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -67,9 +64,6 @@
     <ClCompile Include="autostart_desktop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="autostart_store.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="hooks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -100,9 +94,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="autostart.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="uwp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="arch.h">
@@ -166,6 +157,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aboutdialog.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hook.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

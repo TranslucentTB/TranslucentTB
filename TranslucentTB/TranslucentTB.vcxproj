@@ -46,6 +46,7 @@
     <ClInclude Include="findwindowiterator.hpp" />
     <ClInclude Include="folderwatcher.hpp" />
     <ClInclude Include="aboutdialog.hpp" />
+    <ClInclude Include="hook.hpp" />
     <ClInclude Include="hooks.hpp" />
     <ClInclude Include="messagewindow.hpp" />
     <ClInclude Include="registrykey.hpp" />
@@ -78,6 +79,9 @@
   <ItemGroup>
     <ProjectReference Include="..\CPicker\CPicker.vcxproj">
       <Project>{ab4d3015-2ad4-4152-bdd2-fc1343b22b6c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\ExplorerDetour\ExplorerDetour.vcxproj">
+      <Project>{d0004e78-f00b-4943-b77e-9a278f8ba399}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

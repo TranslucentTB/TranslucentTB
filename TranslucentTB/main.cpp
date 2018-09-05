@@ -21,6 +21,8 @@
 #include "createinstance.hpp"
 #include "eventhook.hpp"
 #include "folderwatcher.hpp"
+#include "hook.hpp"
+#include "../ExplorerDetour/hook.hpp"
 #include "messagewindow.hpp"
 #include "resource.h"
 #include "swcadata.hpp"
@@ -48,6 +50,7 @@ static struct {
 	EXITREASON exit_reason = EXITREASON::UserAction;
 	Window main_taskbar;
 	std::unordered_map<HMONITOR, std::pair<Window, const Config::TASKBAR_APPEARANCE *>> taskbars;
+	std::vector<TTBHook> hooks;
 	bool should_show_peek = true;
 	bool is_running = true;
 	std::wstring config_folder;
@@ -122,10 +125,11 @@ void SetWindowBlur(const Window &window, const swca::ACCENT &appearance, const u
 
 		if (policy.nAccentState == swca::ACCENT::ACCENT_NORMAL)
 		{
-			if (is_normal.count(window) == 0 || !is_normal[window])
+			if (!is_normal[window])
 			{
 				// WM_THEMECHANGED makes the taskbar reload the theme and reapply the normal effect.
 				// Gotta memoize it because constantly sending it makes explorer's CPU usage jump.
+				Hook::ExcludeTaskbar(window);
 				window.send_message(WM_THEMECHANGED);
 				is_normal[window] = true;
 			}
@@ -144,7 +148,11 @@ void SetWindowBlur(const Window &window, const swca::ACCENT &appearance, const u
 		};
 
 		user32::SetWindowCompositionAttribute(window, &data);
-		is_normal[window] = false;
+		if (is_normal[window])
+		{
+			Hook::IncludeTaskbar(window);
+			is_normal[window] = false;
+		}
 	}
 }
 
@@ -269,6 +277,19 @@ void LoadConfig()
 
 #pragma region Utilities
 
+void HookTaskbar(const Window &taskbar)
+{
+	auto [hook, hr] = Hook::HookExplorer(run.main_taskbar);
+	if (SUCCEEDED(hr))
+	{
+		run.hooks.emplace_back(hook);
+	}
+	else
+	{
+		ErrorHandle(hr, Error::Level::Log, L"Failed to set hook.");
+	}
+}
+
 void RefreshHandles()
 {
 	if (Config::VERBOSE)
@@ -278,13 +299,17 @@ void RefreshHandles()
 
 	// Older handles are invalid, so clear the map to be ready for new ones
 	run.taskbars.clear();
+	auto hooks = std::move(run.hooks); // Keep old hooks active while we rehook to keep the DLL loaded in explorer. (They will unhook at the end of the scope)
+	run.hooks.clear(); // Bring back run.hooks to a known state.
 
 	run.main_taskbar = Window::Find(L"Shell_TrayWnd");
 	run.taskbars[run.main_taskbar.monitor()] = { run.main_taskbar, &Config::REGULAR_APPEARANCE };
+	HookTaskbar(run.main_taskbar);
 
 	for (const Window secondtaskbar : Window::FindEnum(L"Shell_SecondaryTrayWnd"))
 	{
 		run.taskbars[secondtaskbar.monitor()] = { secondtaskbar, &Config::REGULAR_APPEARANCE };
+		HookTaskbar(secondtaskbar);
 	}
 }
 
@@ -711,7 +736,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	// Initialize GUI
 	InitializeTray(hInstance);
 
-	// Populate our map
+	// Populate our map and hooks
 	RefreshHandles();
 
 	// Undoc'd, allows to detect when Aero Peek starts and stops
@@ -734,6 +759,8 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 			if (window.valid() && *window.classname() == L"Shell_SecondaryTrayWnd")
 			{
 				run.taskbars[window.monitor()] = { window, &Config::REGULAR_APPEARANCE };
+
+				HookTaskbar(window);
 			}
 		},
 		WINEVENT_OUTOFCONTEXT
