@@ -3,7 +3,7 @@
 #include <winerror.h>
 #include <WinUser.h>
 
-#include "../contrib/detours.h"
+#include "../detours/detours.h"
 #include "dlldata.hpp"
 
 Hook::pSWCA Hook::SetWindowCompositionAttribute = reinterpret_cast<pSWCA>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));

@@ -4,7 +4,9 @@ configuration:
 - Store
 - Release
 - Debug
-platform: x86
+platform:
+- x86
+- x64
 
 before_build:
 - ps: .\update-version.ps1
@@ -20,9 +22,9 @@ after_build:
 test: off
 
 artifacts:
-- path: $(CONFIGURATION)
+- path: $(PLATFORM)\$(CONFIGURATION)
   name: Raw build artifacts
-- path: $(CONFIGURATION)\*.pdb
+- path: $(PLATFORM)\$(CONFIGURATION)\*.pdb
   name: Debug symbols
 - path: TranslucentTB-setup.exe
   name: Desktop installer

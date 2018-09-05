@@ -25,8 +25,8 @@
     <PackageCertificateKeyFile>StorePackage_TemporaryKey.pfx</PackageCertificateKeyFile>
     <EntryPointProjectUniqueName>..\TranslucentTB\TranslucentTB.vcxproj</EntryPointProjectUniqueName>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
-    <AppxBundlePlatforms>x86</AppxBundlePlatforms>
-    <AppxBundle>Never</AppxBundle>
+    <AppxBundlePlatforms>x86|x64</AppxBundlePlatforms>
+    <AppxBundle>Auto</AppxBundle>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -39,7 +39,7 @@
       <Link>TranslucentTB\config.cfg</Link>
     </Content>
     <!-- TODO: Remove those when bug fixed https://developercommunity.visualstudio.com/comments/269597/view.html -->
-    <Content Include="..\Store\CPicker.dll" Condition="'$(Platform)'=='x86'">
+    <Content Include="..\Win32\Store\CPicker.dll" Condition="'$(Platform)'=='x86'">
       <Link>TranslucentTB\CPicker.dll</Link>
     </Content>
     <Content Include="..\x64\Store\CPicker.dll" Condition="'$(Platform)'=='x64'">

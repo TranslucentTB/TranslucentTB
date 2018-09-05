@@ -2,7 +2,7 @@
 #include <windef.h>
 #include <WinBase.h>
 
-#include "../contrib/detours.h"
+#include "../detours/detours.h"
 #include "dlldata.hpp"
 #include "hook.hpp"
 

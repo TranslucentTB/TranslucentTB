@@ -45,6 +45,8 @@
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <UseMultiToolTask>true</UseMultiToolTask>
+    <OutputDirectory>$(SolutionDir)$(Platform)\$(Configuration)\</OutputDirectory>
+    <IntermediateDirectory>$(Platform)\$(Configuration)\</IntermediateDirectory>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
