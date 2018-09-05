@@ -40,4 +40,5 @@ deploy:
     secure: KofMs1LM/RjB79NyxThnuOxkUUZxaN98cJdRJepe9ZIwf4/5nxMi+cNiZVe83QxD
   on:
     configuration: Release
+    platform: x64
     appveyor_repo_tag: true
