@@ -26,7 +26,7 @@
     <EntryPointProjectUniqueName>..\TranslucentTB\TranslucentTB.vcxproj</EntryPointProjectUniqueName>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundlePlatforms>x86|x64</AppxBundlePlatforms>
-    <AppxBundle>Auto</AppxBundle>
+    <AppxBundle>Never</AppxBundle>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -35,16 +35,6 @@
     <None Include="StorePackage_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\TranslucentTB\config.cfg">
-      <Link>TranslucentTB\config.cfg</Link>
-    </Content>
-    <!-- TODO: Remove this when bug fixed https://developercommunity.visualstudio.com/comments/269597/view.html -->
-    <Content Include="..\$(Platform)\Store\CPicker.dll">
-      <Link>TranslucentTB\CPicker.dll</Link>
-    </Content>
-    <Content Include="..\TranslucentTB\dynamic-ws-exclude.csv">
-      <Link>TranslucentTB\dynamic-ws-exclude.csv</Link>
-    </Content>
     <Content Include="Assets\LargeTile.scale-100.png" />
     <Content Include="Assets\LargeTile.scale-125.png" />
     <Content Include="Assets\LargeTile.scale-150.png" />

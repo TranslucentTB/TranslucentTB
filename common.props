@@ -38,14 +38,6 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Platform)'=='Win32'">
-    <RealPlatform>x86</RealPlatform>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Platform)'=='x64'">
-    <RealPlatform>x64</RealPlatform>
-  </PropertyGroup>
-
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -53,8 +45,6 @@
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <UseMultiToolTask>true</UseMultiToolTask>
-    <OutDir>$(SolutionDir)$(RealPlatform)\$(Configuration)\</OutDir>
-    <IntDir>$(RealPlatform)\$(Configuration)\</IntDir>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

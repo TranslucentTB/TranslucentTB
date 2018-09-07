@@ -71,17 +71,21 @@
   <ItemGroup>
     <Content Include="config.cfg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <DeploymentContent>true</DeploymentContent>
     </Content>
     <Content Include="dynamic-ws-exclude.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <DeploymentContent>true</DeploymentContent>
     </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CPicker\CPicker.vcxproj">
       <Project>{ab4d3015-2ad4-4152-bdd2-fc1343b22b6c}</Project>
+      <DeploymentContent>true</DeploymentContent>
     </ProjectReference>
     <ProjectReference Include="..\ExplorerDetour\ExplorerDetour.vcxproj">
       <Project>{d0004e78-f00b-4943-b77e-9a278f8ba399}</Project>
+      <DeploymentContent>true</DeploymentContent>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

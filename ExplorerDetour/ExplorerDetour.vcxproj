@@ -19,7 +19,7 @@
     <ClCompile Include="hook.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\detours\$(RealPlatform)\detours.lib" />
+    <Library Include="..\detours\$(Platform)\detours.lib" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dlldata.hpp" />
