@@ -6,8 +6,8 @@
 #include "ttblog.hpp"
 #include "util.hpp"
 
-std::vector<std::wstring> Blacklist::m_ClassBlacklist;
-std::vector<std::wstring> Blacklist::m_FileBlacklist;
+std::unordered_set<std::wstring> Blacklist::m_ClassBlacklist;
+std::unordered_set<std::wstring> Blacklist::m_FileBlacklist;
 std::vector<std::wstring> Blacklist::m_TitleBlacklist;
 
 std::recursive_mutex Blacklist::m_CacheLock;
@@ -53,7 +53,7 @@ void Blacklist::Parse(const std::wstring &file)
 
 		if (Util::StringBeginsWith(line_lowercase, L"class"))
 		{
-			AddToVector(std::move(line), m_ClassBlacklist, delimiter);
+			AddToSet(std::move(line), m_ClassBlacklist, delimiter);
 		}
 		else if (Util::StringBeginsWith(line_lowercase, L"title") || Util::StringBeginsWith(line_lowercase, L"windowtitle"))
 		{
@@ -61,7 +61,7 @@ void Blacklist::Parse(const std::wstring &file)
 		}
 		else if (Util::StringBeginsWith(line_lowercase, L"exename"))
 		{
-			AddToVector(std::move(line_lowercase), m_FileBlacklist, delimiter);
+			AddToSet(std::move(line_lowercase), m_FileBlacklist, delimiter);
 		}
 		else
 		{
@@ -83,30 +83,24 @@ bool Blacklist::IsBlacklisted(const Window &window)
 	else
 	{
 		// This is the fastest because we do the less string manipulation, so always try it first
-		if (m_ClassBlacklist.size() > 0)
+		if (!m_ClassBlacklist.empty())
 		{
-			for (const std::wstring &value : m_ClassBlacklist)
+			if (m_ClassBlacklist.count(*window.classname()) != 0)
 			{
-				if (*window.classname() == value)
-				{
-					return OutputMatchToLog(window, m_Cache[window] = true);
-				}
+				return OutputMatchToLog(window, m_Cache[window] = true);
 			}
 		}
 
-		if (m_FileBlacklist.size() > 0)
+		if (!m_FileBlacklist.empty())
 		{
-			for (const std::wstring &value : m_FileBlacklist)
+			if (m_FileBlacklist.count(Util::ToLower(*window.filename())) != 0)
 			{
-				if (Util::IgnoreCaseStringEquals(*window.filename(), value))
-				{
-					return OutputMatchToLog(window, m_Cache[window] = true);
-				}
+				return OutputMatchToLog(window, m_Cache[window] = true);
 			}
 		}
 
 		// Do it last because titles can change, so it's less reliable.
-		if (m_TitleBlacklist.size() > 0)
+		if (!m_TitleBlacklist.empty())
 		{
 			for (const std::wstring &value : m_TitleBlacklist)
 			{
@@ -148,6 +142,24 @@ void Blacklist::AddToVector(std::wstring line, std::vector<std::wstring> &vector
 	while ((pos = line.find(delimiter)) != std::wstring::npos)
 	{
 		vector.emplace_back(Util::Trim(line.substr(0, pos)));
+		line.erase(0, pos + 1);
+	}
+}
+
+void Blacklist::AddToSet(std::wstring line, std::unordered_set<std::wstring> &set, const wchar_t &delimiter)
+{
+	size_t pos;
+
+	// First lets remove the key
+	if ((pos = line.find(delimiter)) != std::wstring::npos)
+	{
+		line.erase(0, pos + 1);
+	}
+
+	// Now iterate and add the values
+	while ((pos = line.find(delimiter)) != std::wstring::npos)
+	{
+		set.emplace(Util::Trim(line.substr(0, pos)));
 		line.erase(0, pos + 1);
 	}
 }

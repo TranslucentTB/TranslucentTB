@@ -3,6 +3,7 @@
 #include <mutex>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "eventhook.hpp"
@@ -16,8 +17,8 @@ public:
 	static void ClearCache();
 
 private:
-	static std::vector<std::wstring> m_ClassBlacklist;
-	static std::vector<std::wstring> m_FileBlacklist;
+	static std::unordered_set<std::wstring> m_ClassBlacklist;
+	static std::unordered_set<std::wstring> m_FileBlacklist;
 	static std::vector<std::wstring> m_TitleBlacklist;
 
 	static std::recursive_mutex m_CacheLock;
@@ -26,6 +27,7 @@ private:
 	friend class Hooks;
 
 	static void AddToVector(std::wstring line, std::vector<std::wstring> &vector, const wchar_t &delimiter = L',');
+	static void AddToSet(std::wstring line, std::unordered_set<std::wstring> &set, const wchar_t &delimiter = L',');
 	static const bool &OutputMatchToLog(const Window &window, const bool &isMatch);
 
 };

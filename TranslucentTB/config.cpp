@@ -176,7 +176,7 @@ bool Config::ParseCommandLine()
 			output << text << std::endl;
 		};
 
-		if (args.size() > 0)
+		if (!args.empty())
 		{
 			// note: std::vector::erase's last item is non-inclusive, hence the use of + 2 over + 1
 
@@ -218,7 +218,7 @@ bool Config::ParseCommandLine()
 				}
 			}
 
-			if (args.size() != 0)
+			if (!args.empty())
 			{
 				output << L"Orphaned CLI option detected: " << args[0] << std::endl;
 			}

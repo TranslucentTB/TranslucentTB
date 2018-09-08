@@ -6,11 +6,11 @@
 
 LRESULT MessageWindow::WindowProcedure(const Window &window, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
 {
-	const auto &callbackVector = m_CallbackMap[uMsg];
-	if (callbackVector.size() > 0)
+	const auto &callbackList = m_CallbackMap[uMsg];
+	if (!callbackList.empty())
 	{
 		long result = 0;
-		for (const auto &[_, callback] : callbackVector)
+		for (const auto &[_, callback] : callbackList)
 		{
 			result = (std::max)(callback(wParam, lParam), result);
 		}
@@ -40,28 +40,20 @@ MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &
 MessageWindow::CALLBACKCOOKIE MessageWindow::RegisterCallback(unsigned int message, const callback_t &callback)
 {
 	unsigned short secret = Util::GetRandomNumber<unsigned short>();
-	m_CallbackMap[message].emplace_back(secret, callback);
+	m_CallbackMap[message].emplace_front(std::make_pair(secret, callback));
 
 	return (static_cast<CALLBACKCOOKIE>(secret) << 32) + message;
 }
 
-bool MessageWindow::UnregisterCallback(CALLBACKCOOKIE cookie)
+void MessageWindow::UnregisterCallback(CALLBACKCOOKIE cookie)
 {
 	unsigned int message = cookie & 0xFFFFFFFF;
 	unsigned short secret = (cookie >> 32) & 0xFFFF;
 
-	auto &callbackVector = m_CallbackMap[message];
-	for (auto &callbackPair : callbackVector)
+	m_CallbackMap[message].remove_if([&secret](const std::pair<unsigned short, callback_t> &pair) -> bool
 	{
-		if (callbackPair.first == secret)
-		{
-			std::swap(callbackPair, callbackVector.back());
-			callbackVector.pop_back();
-			return true;
-		}
-	}
-
-	return false;
+		return pair.first == secret;
+	});
 }
 
 MessageWindow::~MessageWindow()

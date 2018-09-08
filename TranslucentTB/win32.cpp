@@ -31,7 +31,7 @@ const user32::pSetWindowCompositionAttribute user32::SetWindowCompositionAttribu
 std::mutex win32::m_LocationLock;
 std::wstring win32::m_ExeLocation;
 std::mutex win32::m_PickerThreadsLock;
-std::vector<DWORD> win32::m_PickerThreads;
+std::unordered_set<DWORD> win32::m_PickerThreads;
 
 DWORD win32::PickerThreadProc(LPVOID data)
 {
@@ -39,15 +39,7 @@ DWORD win32::PickerThreadProc(LPVOID data)
 	const DWORD tid = GetCurrentThreadId();
 	{
 		std::lock_guard guard(m_PickerThreadsLock);
-		for (DWORD &i_tid : m_PickerThreads)
-		{
-			if (i_tid == tid)
-			{
-				std::swap(i_tid, m_PickerThreads.back());
-				m_PickerThreads.pop_back();
-				break;
-			}
-		}
+		m_PickerThreads.erase(tid);
 	}
 	if (FAILED(hr))
 	{
@@ -303,7 +295,7 @@ DWORD win32::PickColor(uint32_t &color)
 	{
 		{
 			std::lock_guard guard(m_PickerThreadsLock);
-			m_PickerThreads.emplace_back(threadId);
+			m_PickerThreads.emplace(threadId);
 		}
 
 		ResumeThread(hThread.get());
@@ -319,7 +311,7 @@ DWORD win32::PickColor(uint32_t &color)
 void win32::ClosePickers()
 {
 	std::unique_lock guard(m_PickerThreadsLock);
-	while (m_PickerThreads.size() != 0)
+	while (!m_PickerThreads.empty())
 	{
 		const DWORD tid = *m_PickerThreads.begin();
 		bool needs_wait = false;

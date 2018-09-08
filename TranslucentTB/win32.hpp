@@ -5,8 +5,8 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <unordered_set>
 #include <utility>
-#include <vector>
 #include <windef.h>
 #include <winrt/base.h>
 
@@ -28,7 +28,7 @@ private:
 	static std::mutex m_LocationLock;
 	static std::wstring m_ExeLocation;
 	static std::mutex m_PickerThreadsLock;
-	static std::vector<DWORD> m_PickerThreads;
+	static std::unordered_set<DWORD> m_PickerThreads;
 
 	static DWORD WINAPI PickerThreadProc(LPVOID data);
 	static BOOL CALLBACK EnumThreadWindowsProc(HWND hwnd, LPARAM lParam);

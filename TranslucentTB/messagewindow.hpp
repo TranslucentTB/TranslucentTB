@@ -1,7 +1,7 @@
 #pragma once
+#include <forward_list>
 #include <functional>
 #include <unordered_map>
-#include <vector>
 
 #include "window.hpp"
 #include "windowclass.hpp"
@@ -14,7 +14,7 @@ protected:
 	using callback_t = std::function<long(WPARAM, LPARAM)>;
 
 private:
-	std::unordered_map<unsigned int, std::vector<std::pair<unsigned short, callback_t>>> m_CallbackMap;
+	std::unordered_map<unsigned int, std::forward_list<std::pair<unsigned short, callback_t>>> m_CallbackMap;
 	WindowClass m_WindowClass;
 
 	LRESULT WindowProcedure(const Window &window, unsigned int uMsg, WPARAM wParam, LPARAM lParam);
@@ -27,7 +27,7 @@ public:
 	{
 		return RegisterCallback(RegisterWindowMessage(message.c_str()), callback);
 	}
-	bool UnregisterCallback(CALLBACKCOOKIE cookie);
+	void UnregisterCallback(CALLBACKCOOKIE cookie);
 	~MessageWindow();
 
 	inline MessageWindow(const MessageWindow &) = delete;

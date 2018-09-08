@@ -1,6 +1,7 @@
 #pragma once
 #include "arch.h"
 #include <algorithm>
+#include <forward_list>
 #include <string>
 #include <type_traits>
 #include <windef.h>
@@ -16,7 +17,7 @@ protected:
 
 private:
 	HMENU m_Menu;
-	std::unordered_map<unsigned int, std::vector<std::pair<unsigned short, callback_t>>> m_MenuCallbackMap;
+	std::unordered_map<unsigned int, std::forward_list<std::pair<unsigned short, callback_t>>> m_MenuCallbackMap;
 	long TrayCallback(WPARAM, LPARAM);
 	MessageWindow::CALLBACKCOOKIE m_Cookie;
 
@@ -30,28 +31,20 @@ public:
 	inline MENUCALLBACKCOOKIE RegisterContextMenuCallback(unsigned int item, const callback_t &callback)
 	{
 		unsigned short secret = Util::GetRandomNumber<unsigned short>();
-		m_MenuCallbackMap[item].emplace_back(secret, callback);
+		m_MenuCallbackMap[item].emplace_front(std::make_pair(secret, callback));
 
 		return (static_cast<MENUCALLBACKCOOKIE>(secret) << 32) + item;
 	}
 
-	inline bool UnregisterContextMenuCallback(MENUCALLBACKCOOKIE cookie)
+	inline void UnregisterContextMenuCallback(MENUCALLBACKCOOKIE cookie)
 	{
 		unsigned int item = cookie & 0xFFFFFFFF;
 		unsigned short secret = (cookie >> 32) & 0xFFFF;
 
-		auto &callbackVector = m_MenuCallbackMap[item];
-		for (auto &callbackPair : callbackVector)
+		m_MenuCallbackMap[item].remove_if([&secret](const std::pair<unsigned short, callback_t> &pair) -> bool
 		{
-			if (callbackPair.first == secret)
-			{
-				std::swap(callbackPair, callbackVector.back());
-				callbackVector.pop_back();
-				return true;
-			}
-		}
-
-		return false;
+			return pair.first == secret;
+		});
 	}
 
 	enum BoolBindingEffect {
