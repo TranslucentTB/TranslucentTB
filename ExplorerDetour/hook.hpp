@@ -1,6 +1,7 @@
 #pragma once
 #include"../TranslucentTB/arch.h"
 #include <mutex>
+#include <tuple>
 #include <type_traits>
 #include <unordered_set>
 #include <utility>
@@ -41,4 +42,8 @@ public:
 	__declspec(EXPLORERHOOK_EXPORT) static std::pair<HHOOK, HRESULT> HookExplorer(HWND taskbar);
 	__declspec(EXPLORERHOOK_EXPORT) static void ExcludeTaskbar(HWND taskbar);
 	__declspec(EXPLORERHOOK_EXPORT) static void IncludeTaskbar(HWND taskbar);
+
+	__declspec(EXPLORERHOOK_EXPORT) static std::tuple<uint8_t, uint8_t, uint8_t> GetDetoursVersion();
 };
+
+#undef EXPLORERHOOK_EXPORT

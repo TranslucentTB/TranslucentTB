@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "common.hpp"
+#include "../ExplorerDetour/hook.hpp"
 #include "ttberror.hpp"
 #ifdef STORE
 #include "uwp.hpp"
@@ -62,7 +63,10 @@ private:
 		str << std::endl;
 #endif
 		const auto [build, hr2] = win32::GetWindowsBuild();
-		str << L"Windows build: " << (!build.empty() ? build : Error::ExceptionFromHRESULT(hr2));
+		str << L"Windows build: " << (!build.empty() ? build : Error::ExceptionFromHRESULT(hr2)) << std::endl;
+
+		const auto [major, minor, revision] = Hook::GetDetoursVersion();
+		str << L"Microsoft Detours version: " << major << L'.' << minor << L'.' << revision;
 
 		return str.str();
 	}
@@ -73,7 +77,9 @@ private:
 
 		str << L"This program is free (as in freedom) software, redistributed under the GPLv3. ";
 		str << LR"(As such, the <A HREF="https://github.com/TranslucentTB/TranslucentTB/">source code</A> is available for anyone to modify, inspect, compile, etc...)" << std::endl;
-		str << LR"(Brought to you by <A HREF="https://github.com/TranslucentTB/TranslucentTB/graphs/contributors">all its contributors</A>.)" << std::endl << std::endl << BuildVersionInfo();
+		str << LR"(Brought to you by <A HREF="https://github.com/TranslucentTB/TranslucentTB/graphs/contributors">all its contributors</A>.)" << std::endl << std::endl;
+		str << BuildVersionInfo() << std::endl << std::endl;
+		str << L"All trademarks, product names, company names, logos, service marks, copyrights and/or trade dress mentioned, displayed, cited, or otherwise indicated are the property of their respective owners.";
 
 		return str.str();
 	}

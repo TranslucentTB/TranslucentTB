@@ -92,3 +92,9 @@ void Hook::IncludeTaskbar(HWND taskbar)
 {
 	SendMessage(taskbar, m_IncludeWindowMsg, 0, 0);
 }
+
+std::tuple<uint8_t, uint8_t, uint8_t> Hook::GetDetoursVersion()
+{
+	const uint32_t version = DETOURS_VERSION;
+	return { (version & 0xF0000) >> 16, (version & 0xF00) >> 8, version & 0xF };
+}
