@@ -110,6 +110,14 @@ const std::pair<const std::wstring_view, bool &> Config::FLAGS[] = {
 	{ L"verbose", VERBOSE }
 };
 
+const std::pair<const std::wstring_view, Config::TASKBAR_APPEARANCE &> Config::APPEARANCES[] = {
+	{ L"", REGULAR_APPEARANCE },
+	{ L"dynamic-ws-", MAXIMISED_APPEARANCE },
+	{ L"dynamic-start-", START_APPEARANCE },
+	{ L"dynamic-cortana-", CORTANA_APPEARANCE },
+	{ L"dynamic-timeline-", TIMELINE_APPEARANCE }
+};
+
 void Config::Parse(const std::wstring &file)
 {
 	std::lock_guard guard(m_ConfigLock);
@@ -433,112 +441,39 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 		}
 	}
 
-	if (arg == L"accent")
+	for (const auto &pair : APPEARANCES)
 	{
-		if (!ParseAccent(value, REGULAR_APPEARANCE.ACCENT))
+		std::wstring prefix(pair.first);
+		if (arg == prefix + L"accent")
 		{
-			UnknownValue(arg, value, logger);
+			if (!ParseAccent(value, pair.second.ACCENT))
+			{
+				UnknownValue(arg, value, logger);
+			}
+
+			return;
+		}
+		else if (arg == prefix + L"color" || arg == prefix + L"tint")
+		{
+			if (!ParseColor(value, pair.second.COLOR))
+			{
+				UnknownValue(arg, value, logger);
+			}
+
+			return;
+		}
+		else if (arg == prefix + L"opacity")
+		{
+			if (!ParseOpacity(value, pair.second.COLOR))
+			{
+				UnknownValue(arg, value, logger);
+			}
+
+			return;
 		}
 	}
-	else if (arg == L"color" || arg == L"tint")
-	{
-		if (!ParseColor(value, REGULAR_APPEARANCE.COLOR))
-		{
-			logger(L"Could not parse color: " + value);
-		}
-	}
-	else if (arg == L"opacity")
-	{
-		if (!ParseOpacity(value, REGULAR_APPEARANCE.COLOR))
-		{
-			logger(L"Could not parse opacity: " + value);
-		}
-	}
-	else if (arg == L"dynamic-ws-accent")
-	{
-		if (!ParseAccent(value, MAXIMISED_APPEARANCE.ACCENT))
-		{
-			UnknownValue(arg, value, logger);
-		}
-	}
-	else if (arg == L"dynamic-ws-color" || arg == L"dynamic-ws-tint")
-	{
-		if (!ParseColor(value, MAXIMISED_APPEARANCE.COLOR))
-		{
-			logger(L"Could not parse dynamic windows color: " + value);
-		}
-	}
-	else if (arg == L"dynamic-ws-opacity")
-	{
-		if (!ParseOpacity(value, MAXIMISED_APPEARANCE.COLOR))
-		{
-			logger(L"Could not parse dynamic windows opacity: " + value);
-		}
-	}
-	else if (arg == L"dynamic-start-accent")
-	{
-		if (!ParseAccent(value, START_APPEARANCE.ACCENT))
-		{
-			UnknownValue(arg, value, logger);
-		}
-	}
-	else if (arg == L"dynamic-start-color" || arg == L"dynamic-start-tint")
-	{
-		if (!ParseColor(value, START_APPEARANCE.COLOR))
-		{
-			logger(L"Could not parse dynamic start color: " + value);
-		}
-	}
-	else if (arg == L"dynamic-start-opacity")
-	{
-		if (!ParseOpacity(value, START_APPEARANCE.COLOR))
-		{
-			logger(L"Could not parse dynamic start opacity: " + value);
-		}
-	}
-	else if (arg == L"dynamic-cortana-accent")
-	{
-		if (!ParseAccent(value, CORTANA_APPEARANCE.ACCENT))
-		{
-			UnknownValue(arg, value, logger);
-		}
-	}
-	else if (arg == L"dynamic-cortana-color" || arg == L"dynamic-cortana-tint")
-	{
-		if (!ParseColor(value, CORTANA_APPEARANCE.COLOR))
-		{
-			logger(L"Could not parse dynamic Cortana color: " + value);
-		}
-	}
-	else if (arg == L"dynamic-cortana-opacity")
-	{
-		if (!ParseOpacity(value, CORTANA_APPEARANCE.COLOR))
-		{
-			logger(L"Could not parse dynamic Cortana opacity: " + value);
-		}
-	}
-	else if (arg == L"dynamic-timeline-accent")
-	{
-		if (!ParseAccent(value, TIMELINE_APPEARANCE.ACCENT))
-		{
-			UnknownValue(arg, value, logger);
-		}
-	}
-	else if (arg == L"dynamic-timeline-color" || arg == L"dynamic-timeline-tint")
-	{
-		if (!ParseColor(value, TIMELINE_APPEARANCE.COLOR))
-		{
-			logger(L"Could not parse dynamic timeline color: " + value);
-		}
-	}
-	else if (arg == L"dynamic-timeline-opacity")
-	{
-		if (!ParseOpacity(value, TIMELINE_APPEARANCE.COLOR))
-		{
-			logger(L"Could not parse dynamic timeline opacity: " + value);
-		}
-	}
-	else if (arg == L"peek")
+
+	if (arg == L"peek")
 	{
 		if (value == L"hide")
 		{
