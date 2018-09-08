@@ -51,6 +51,7 @@ static struct {
 	Window main_taskbar;
 	std::unordered_map<HMONITOR, std::pair<Window, const Config::TASKBAR_APPEARANCE *>> taskbars;
 	std::vector<TTBHook> hooks;
+	bool hooks_disabled = false;
 	bool should_show_peek = true;
 	bool is_running = true;
 	std::wstring config_folder;
@@ -279,14 +280,17 @@ void LoadConfig()
 
 void HookTaskbar(const Window &taskbar)
 {
-	auto [hook, hr] = Hook::HookExplorer(run.main_taskbar);
-	if (SUCCEEDED(hr))
+	if (!run.hooks_disabled)
 	{
-		run.hooks.emplace_back(hook);
-	}
-	else
-	{
-		ErrorHandle(hr, Error::Level::Log, L"Failed to set hook.");
+		auto[hook, hr] = Hook::HookExplorer(run.main_taskbar);
+		if (SUCCEEDED(hr))
+		{
+			run.hooks.emplace_back(hook);
+		}
+		else
+		{
+			ErrorHandle(hr, Error::Level::Log, L"Failed to set hook.");
+		}
 	}
 }
 
@@ -565,6 +569,21 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 	window.RegisterCallback(WM_TASKBARCREATED, [](...)
 	{
+		using namespace std::chrono;
+		static steady_clock::time_point last_explorer_restart;
+
+		const auto current_time = steady_clock::now();
+		if (last_explorer_restart + 30s > current_time && !run.hooks_disabled)
+		{
+			run.hooks_disabled = true;
+			Log::OutputMessage(L"Explorer restarted twice in less than 30 seconds, disabling hooks for this session");
+			std::thread(std::bind(&MessageBox, Window::NullWindow, L"Explorer restarted twice in less than 30 seconds, disabling hooks for this session", NAME, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND)).detach();
+		}
+		else
+		{
+			last_explorer_restart = steady_clock::now();
+		}
+
 		RefreshHandles();
 		return 0;
 	});
