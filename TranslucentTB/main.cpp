@@ -576,8 +576,8 @@ void InitializeTray(const HINSTANCE &hInstance)
 		if (last_explorer_restart + 30s > current_time && !run.hooks_disabled)
 		{
 			run.hooks_disabled = true;
-			Log::OutputMessage(L"Explorer restarted twice in less than 30 seconds, disabling hooks for this session");
-			std::thread(std::bind(&MessageBox, Window::NullWindow, L"Explorer restarted twice in less than 30 seconds, disabling hooks for this session", NAME, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND)).detach();
+			Log::OutputMessage(L"Explorer restarted twice in less than 30 seconds, disabling hooks for this session.");
+			std::thread(std::bind(&MessageBox, Window::NullWindow, L"Explorer restarted twice in less than 30 seconds, disabling hooks for this session.", NAME, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND)).detach();
 		}
 		else
 		{

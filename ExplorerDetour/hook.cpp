@@ -21,7 +21,7 @@ BOOL Hook::SetWindowCompositionAttributeDetour(HWND hWnd, swca::WINCOMPATTRDATA 
 {
 	if (data->nAttribute == swca::WindowCompositionAttribute::WCA_ACCENT_POLICY)
 	{
-		std::lock_guard guard(m_taskbarsLock);
+		std::scoped_lock guard(m_taskbarsLock, m_excludedTaskbarsLock);
 		if (m_taskbars.count(hWnd) != 0 && m_excludedTaskbars.count(hWnd) == 0)
 		{
 			return TRUE;
