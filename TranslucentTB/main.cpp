@@ -280,7 +280,7 @@ void LoadConfig()
 
 void HookTaskbar(const Window &taskbar)
 {
-	if (!run.hooks_disabled)
+	if (!Config::NO_HOOK && !run.hooks_disabled)
 	{
 		auto[hook, hr] = Hook::HookExplorer(run.main_taskbar);
 		if (SUCCEEDED(hr))
@@ -573,7 +573,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 		static steady_clock::time_point last_explorer_restart;
 
 		const auto current_time = steady_clock::now();
-		if (last_explorer_restart + 30s > current_time && !run.hooks_disabled)
+		if (!Config::NO_HOOK && !run.hooks_disabled && last_explorer_restart + 30s > current_time)
 		{
 			run.hooks_disabled = true;
 			Log::OutputMessage(L"Explorer restarted twice in less than 30 seconds, disabling hooks for this session.");

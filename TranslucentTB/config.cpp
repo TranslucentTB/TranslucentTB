@@ -42,6 +42,7 @@ bool Config::PEEK_ONLY_MAIN = true;
 uint8_t Config::SLEEP_TIME = 10;
 bool Config::NO_TRAY = false;
 bool Config::NO_SAVE = false;
+bool Config::NO_HOOK = false;
 bool Config::VERBOSE =
 #ifndef _DEBUG
 	false;
@@ -61,6 +62,7 @@ LR"(Flags (can be alone or take one of true or false):
 	--peek-only-main
 	--no-tray
 	--no-save
+	--no-hook
 	--verbose
 
 Accents (takes one of opaque, clear, blur, normal or fluent):
@@ -93,19 +95,19 @@ TranslucentTB accepts parameters in the following format:
 	--argument value
 	--flag
 
-See configuration file for details.
-)";
+See configuration file for details.)";
 
-const std::pair<const std::wstring_view, bool &> Config::CLI_FLAGS[] = {
-	{ L"--dynamic-ws", MAXIMISED_ENABLED },
-	{ L"--dynamic-ws-regular-on-peek", MAXIMISED_REGULAR_ON_PEEK },
-	{ L"--dynamic-start", START_ENABLED },
-	{ L"--dynamic-cortana", CORTANA_ENABLED },
-	{ L"--dynamic-timeline", TIMELINE_ENABLED },
-	{ L"--peek-only-main", PEEK_ONLY_MAIN },
-	{ L"--no-tray", NO_TRAY },
-	{ L"--no-save", NO_SAVE },
-	{ L"--verbose", VERBOSE }
+const std::pair<const std::wstring_view, bool &> Config::FLAGS[] = {
+	{ L"dynamic-ws", MAXIMISED_ENABLED },
+	{ L"dynamic-ws-regular-on-peek", MAXIMISED_REGULAR_ON_PEEK },
+	{ L"dynamic-start", START_ENABLED },
+	{ L"dynamic-cortana", CORTANA_ENABLED },
+	{ L"dynamic-timeline", TIMELINE_ENABLED },
+	{ L"peek-only-main", PEEK_ONLY_MAIN },
+	{ L"no-tray", NO_TRAY },
+	{ L"no-save", NO_SAVE },
+	{ L"no-hook", NO_HOOK },
+	{ L"verbose", VERBOSE }
 };
 
 void Config::Parse(const std::wstring &file)
@@ -178,9 +180,9 @@ bool Config::ParseCommandLine()
 		{
 			// note: std::vector::erase's last item is non-inclusive, hence the use of + 2 over + 1
 
-			for (const auto &pair : CLI_FLAGS)
+			for (const auto &pair : FLAGS)
 			{
-				auto iter = std::find(args.begin(), args.end(), pair.first);
+				auto iter = std::find(args.begin(), args.end(), L"--" + std::wstring(pair.first));
 				if (iter != args.end())
 				{
 					if (iter + 1 != args.end() && !Util::StringBeginsWith(*(iter + 1), L"--"))
@@ -302,6 +304,8 @@ void Config::Save(const std::wstring &file)
 	configstream << L"no-tray=" << GetBoolText(NO_TRAY) << std::endl;
 	configstream << L"; don't save the configuration file. Prevents the program from writing to the config file at all." << std::endl;
 	configstream << L"no-save=" << GetBoolText(NO_SAVE) << std::endl;
+	configstream << L"; disable Windows Explorer hooking. Use if you are having issues with it (eg frequent explorer crashes). Needs a restart of the program to apply." << std::endl;
+	configstream << L"no-hook=" << GetBoolText(NO_HOOK) << std::endl;
 	configstream << L"; more informative logging. Can make huge log files." << std::endl;
 	configstream << L"verbose=" << GetBoolText(VERBOSE) << std::endl;
 }
@@ -416,6 +420,19 @@ bool Config::ParseBool(const std::wstring &value, bool &setting)
 
 void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger)
 {
+	for (const auto &pair : FLAGS)
+	{
+		if (arg == pair.first)
+		{
+			if (!ParseBool(value, pair.second))
+			{
+				UnknownValue(arg, value, logger);
+			}
+
+			return;
+		}
+	}
+
 	if (arg == L"accent")
 	{
 		if (!ParseAccent(value, REGULAR_APPEARANCE.ACCENT))
@@ -435,13 +452,6 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 		if (!ParseOpacity(value, REGULAR_APPEARANCE.COLOR))
 		{
 			logger(L"Could not parse opacity: " + value);
-		}
-	}
-	else if (arg == L"dynamic-ws")
-	{
-		if (!ParseBool(value, MAXIMISED_ENABLED))
-		{
-			UnknownValue(arg, value, logger);
 		}
 	}
 	else if (arg == L"dynamic-ws-accent")
@@ -465,20 +475,6 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 			logger(L"Could not parse dynamic windows opacity: " + value);
 		}
 	}
-	else if (arg == L"dynamic-ws-regular-on-peek")
-	{
-		if (!ParseBool(value, MAXIMISED_REGULAR_ON_PEEK))
-		{
-			UnknownValue(arg, value, logger);
-		}
-	}
-	else if (arg == L"dynamic-start")
-	{
-		if (!ParseBool(value, START_ENABLED))
-		{
-			UnknownValue(arg, value, logger);
-		}
-	}
 	else if (arg == L"dynamic-start-accent")
 	{
 		if (!ParseAccent(value, START_APPEARANCE.ACCENT))
@@ -500,13 +496,6 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 			logger(L"Could not parse dynamic start opacity: " + value);
 		}
 	}
-	else if (arg == L"dynamic-cortana")
-	{
-		if (!ParseBool(value, CORTANA_ENABLED))
-		{
-			UnknownValue(arg, value, logger);
-		}
-	}
 	else if (arg == L"dynamic-cortana-accent")
 	{
 		if (!ParseAccent(value, CORTANA_APPEARANCE.ACCENT))
@@ -526,13 +515,6 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 		if (!ParseOpacity(value, CORTANA_APPEARANCE.COLOR))
 		{
 			logger(L"Could not parse dynamic Cortana opacity: " + value);
-		}
-	}
-	else if (arg == L"dynamic-timeline")
-	{
-		if (!ParseBool(value, TIMELINE_ENABLED))
-		{
-			UnknownValue(arg, value, logger);
 		}
 	}
 	else if (arg == L"dynamic-timeline-accent")
@@ -575,13 +557,6 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 			UnknownValue(arg, value, logger);
 		}
 	}
-	else if (arg == L"peek-only-main")
-	{
-		if (!ParseBool(value, PEEK_ONLY_MAIN))
-		{
-			UnknownValue(arg, value, logger);
-		}
-	}
 	else if (arg == L"sleep-time")
 	{
 		try
@@ -591,27 +566,6 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 		catch (...)
 		{
 			logger(L"Could not parse sleep time: " + value);
-		}
-	}
-	else if (arg == L"no-tray")
-	{
-		if (!ParseBool(value, NO_TRAY))
-		{
-			UnknownValue(arg, value, logger);
-		}
-	}
-	else if (arg == L"no-save")
-	{
-		if (!ParseBool(value, NO_SAVE))
-		{
-			UnknownValue(arg, value, logger);
-		}
-	}
-	else if (arg == L"verbose")
-	{
-		if (!ParseBool(value, VERBOSE))
-		{
-			UnknownValue(arg, value, logger);
 		}
 	}
 	else
