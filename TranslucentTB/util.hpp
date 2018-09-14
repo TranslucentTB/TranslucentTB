@@ -1,8 +1,10 @@
 #pragma once
 #include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <cwctype>
 #include <limits>
+#include <memory>
 #include <random>
 #include <string>
 #include <string_view>
@@ -150,11 +152,27 @@ public:
 	}
 
 private:
+	// Generates a seed valid for a given Mersenne Twister engine.
+	// It returns a std::unique_ptr because std::seed_seq is not copyable or movable.
+	template<class T>
+	inline static std::unique_ptr<std::seed_seq> GenerateSeed()
+	{
+		static constexpr size_t size = T::state_size;
+
+		int seed_data[size];
+		std::random_device r;
+
+		std::generate_n(seed_data, size, std::ref(r));
+		return std::make_unique<std::seed_seq>(seed_data, seed_data + size);
+	}
+
 	// Gets a static instance of a Mersenne Twister engine. Can't be put directly in
 	// GetRandomNumber because every different template instantion will get a different static variable.
-	inline static std::mt19937 &GetRandomEngine()
+	template<class T>
+	inline static T &GetRandomEngine()
 	{
-		static std::mt19937 rng(std::random_device{}());
+		static T rng(*GenerateSeed<T>());
+
 		return rng;
 	}
 
@@ -164,12 +182,18 @@ public:
 	inline static T GetRandomNumber(const T &begin = (std::numeric_limits<T>::min)(), const T &end = (std::numeric_limits<T>::max)())
 	{
 		std::uniform_int_distribution<T> distribution(begin, end);
-		return distribution(GetRandomEngine());
+		return distribution(GetRandomEngine<std::mt19937>());
 	}
 
 	template<typename T, typename U>
 	static constexpr T ClampTo(const U &value)
 	{
 		return static_cast<T>(std::clamp<U>(value, (std::numeric_limits<T>::min)(), (std::numeric_limits<T>::max)()));
+	}
+
+	template<typename T = std::chrono::seconds>
+	inline static T GetCurrentTime()
+	{
+		return std::chrono::duration_cast<T>(std::chrono::steady_clock::now().time_since_epoch());
 	}
 };

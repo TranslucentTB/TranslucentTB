@@ -19,6 +19,7 @@
 #include "common.hpp"
 #include "win32.hpp"
 #include "window.hpp"
+#include "util.hpp"
 #ifdef STORE
 #include "uwp.hpp"
 #endif
@@ -92,8 +93,7 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 	else
 	{
 		// Fallback to current time
-		std::time_t unix_epoch = std::time(0);
-		log_filename = std::to_wstring(unix_epoch) + L".log";
+		log_filename = std::to_wstring(Util::GetCurrentTime<>().count()) + L".log";
 	}
 
 	AutoFree::DebugLocal<wchar_t[]> log_file;
@@ -146,10 +146,10 @@ void Log::OutputMessage(const std::wstring &message)
 
 	if (*m_FileHandle)
 	{
-		std::time_t current_time = std::time(0);
+		const long long time = Util::GetCurrentTime<>().count();
 
 		std::wostringstream buffer;
-		buffer << L'(' << _wctime(&current_time);
+		buffer << L'(' << _wctime(&time);
 		buffer.seekp(-1, std::ios_base::end); // Seek behind the newline created by _wctime
 		buffer << L") " << message << L"\r\n";
 
