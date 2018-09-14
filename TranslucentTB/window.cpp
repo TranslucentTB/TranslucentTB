@@ -9,13 +9,13 @@
 #include "eventhook.hpp"
 #include "ttberror.hpp"
 
-std::mutex Window::m_ClassNamesLock;
+std::recursive_mutex Window::m_ClassNamesLock;
 std::unordered_map<Window, std::shared_ptr<std::wstring>> Window::m_ClassNames;
 
-std::mutex Window::m_FilenamesLock;
+std::recursive_mutex Window::m_FilenamesLock;
 std::unordered_map<Window, std::shared_ptr<std::wstring>> Window::m_Filenames;
 
-std::mutex Window::m_TitlesLock;
+std::recursive_mutex Window::m_TitlesLock;
 std::unordered_map<Window, std::shared_ptr<std::wstring>> Window::m_Titles;
 
 const Window Window::BroadcastWindow = HWND_BROADCAST;

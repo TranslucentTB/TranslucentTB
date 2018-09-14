@@ -125,7 +125,7 @@ void Log::OutputMessage(const std::wstring &message)
 
 	if (!init_done())
 	{
-		auto [hr, err_message] = InitStream();
+		const auto [hr, err_message] = InitStream();
 		if (FAILED(hr))
 		{
 			// https://stackoverflow.com/questions/50799719/reference-to-local-binding-declared-in-enclosing-function
