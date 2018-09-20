@@ -102,9 +102,9 @@
     <ClInclude Include="autostart.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClCompile Include="uwp.hpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClInclude Include="uwp.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="arch.h">
       <Filter>Header Files</Filter>
     </ClInclude>

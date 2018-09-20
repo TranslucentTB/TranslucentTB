@@ -68,7 +68,10 @@
     <ClInclude Include="ttberror.hpp" />
     <ClInclude Include="ttblog.hpp" />
     <ClInclude Include="util.hpp" />
-    <ClInclude Include="uwp.hpp" />
+    <ClInclude Include="uwp.hpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Store'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="welcomedialog.hpp" />
     <ClInclude Include="win32.hpp" />
     <ClInclude Include="window.hpp" />
