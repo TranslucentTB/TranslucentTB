@@ -19,7 +19,7 @@ private:
 
 	std::array<TASKDIALOG_BUTTON, 3> m_Buttons;
 
-	inline HRESULT CallbackProc(const Window &window, unsigned int uNotification, WPARAM wParam, LPARAM lParam)
+	inline HRESULT CallbackProc(const Window &window, unsigned int uNotification, WPARAM wParam, LPARAM)
 	{
 		if (uNotification == TDN_BUTTON_CLICKED)
 		{

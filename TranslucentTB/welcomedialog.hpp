@@ -5,7 +5,7 @@
 
 class WelcomeDialog : public TTBTaskDialog {
 private:
-	inline HRESULT CallbackProc(const Window &window, unsigned int uNotification, WPARAM wParam, LPARAM lParam)
+	inline HRESULT CallbackProc(const Window &window, unsigned int uNotification, WPARAM wParam, LPARAM)
 	{
 		switch (uNotification)
 		{
