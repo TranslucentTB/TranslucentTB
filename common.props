@@ -62,6 +62,7 @@
     <Link>
       <AdditionalOptions>/DEBUG:GHASH %(AdditionalOptions)</AdditionalOptions>
       <GenerateDebugInformation>false</GenerateDebugInformation>
+      <OptimizeReferences>false</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
 

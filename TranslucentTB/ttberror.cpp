@@ -17,7 +17,7 @@
 #include "win32.hpp"
 #include "window.hpp"
 
-bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *const message, const wchar_t *const file, const int &line, const char *const function)
+bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *const message, const wchar_t *const file, const int &line, const wchar_t *const function)
 {
 	if (FAILED(error))
 	{
@@ -36,16 +36,9 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 			boxbuffer << error_message;
 		}
 
-		// https://bugs.llvm.org/show_bug.cgi?id=38295
-		std::wstring functionW = win32::CharToWchar(function);
-		if (functionW.empty())
-		{
-			functionW = L"[failed to convert function name to UTF-16]";
-		}
-
 		std::wostringstream err;
 		err << message_str << L' ' << error_message <<
-			L" (" << file << L':' << line << L" at function " << functionW << L')';
+			L" (" << file << L':' << line << L" at function " << function << L')';
 
 		switch (level)
 		{
