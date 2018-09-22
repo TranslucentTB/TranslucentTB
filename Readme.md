@@ -109,7 +109,7 @@ Once you have that installed, open `TranslucentTB.sln`, and press <kbd>Ctrl</kbd
 
 The output will be in either the Debug or Release folder (depending on which solution configuration is currently active).
 
-To build the desktop installer, run the DesktopInstallerBuilder project.
+To build the desktop installer, run the DesktopInstallerBuilder project (you need to have built the solution in both x86 and x64 with the Release configuration before).
 
 To build the Microsoft Store app package, build the solution with the Store configuration.
 

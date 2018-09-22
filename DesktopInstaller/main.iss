@@ -14,6 +14,8 @@ AppPublisherURL=https://github.com/{#AppName}
 AppReadmeFile=https://github.com/{#AppName}/{#AppName}/blob/master/Readme.md
 AppSupportURL=https://github.com/{#AppName}/{#AppName}/issues/new
 AppVersion={#AppVersion}
+ArchitecturesAllowed=x86 x64
+ArchitecturesInstallIn64BitMode=x64
 DefaultDirName={code:GetDefaultDirName}
 DisableWelcomePage=no
 DisableProgramGroupPage=yes
@@ -30,7 +32,8 @@ WizardImageFile=DesktopInstaller\sidebar.bmp
 WizardSmallImageFile=DesktopInstaller\header.bmp
 
 [Files]
-Source: "Release\*"; Excludes: "*.pdb, *.lib, *.exp"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Release\*"; Excludes: "*.pdb, *.lib, *.exp"; DestDir: "{app}"; Flags: ignoreversion; Check: IsX86
+Source: "x64\Release\*"; Excludes: "*.pdb, *.lib, *.exp"; DestDir: "{app}"; Flags: ignoreversion; Check: IsX64
 
 [Registry]
 Root: HKCU; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueName: {#AppName}; Flags: dontcreatekey uninsdeletevalue

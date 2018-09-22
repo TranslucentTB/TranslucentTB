@@ -243,3 +243,53 @@ begin
 		end;
 	end;
 end;
+
+{
+	-----------------------------
+	ARCHITECTURE HELPER FUNCTIONS
+	-----------------------------
+}
+
+function IsX86: boolean;
+{
+	Gets whether the computer is x86 (32 bits).
+}
+begin
+	Result := (ProcessorArchitecture = paX86);
+end;
+
+function IsX64: boolean;
+{
+	Gets whether the computer is x64 (64 bits).
+}
+begin
+	Result := Is64BitInstallMode and (ProcessorArchitecture = paX64);
+end;
+
+function GetString(x86, x64: String): String;
+{
+	Gets a string depending on the computer architecture.
+	Parameters:
+		x86: the string if the computer is x86
+		x64: the string if the computer is x64
+}
+begin
+	if IsX64() then begin
+		Result := x64;
+	end else begin
+		Result := x86;
+	end;
+end;
+
+function GetArchitectureString(): String;
+{
+	Gets the "standard" architecture suffix string.
+	Returns either _x64 or nothing.
+}
+begin
+	if IsX64() then begin
+		Result := '_x64';
+	end else begin
+		Result := '';
+	end;
+end;
