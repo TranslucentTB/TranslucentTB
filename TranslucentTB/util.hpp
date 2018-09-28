@@ -194,6 +194,7 @@ public:
 	template<typename T = std::chrono::seconds>
 	inline static T GetCurrentTime()
 	{
-		return std::chrono::duration_cast<T>(std::chrono::steady_clock::now().time_since_epoch());
+		using namespace std::chrono;
+		return duration_cast<T>(steady_clock::now().time_since_epoch());
 	}
 };

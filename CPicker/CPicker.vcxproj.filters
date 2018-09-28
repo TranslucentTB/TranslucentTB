@@ -89,4 +89,7 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="LICENSE.md" />
+  </ItemGroup>
 </Project>

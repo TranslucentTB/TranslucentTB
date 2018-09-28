@@ -125,17 +125,17 @@ void Log::OutputMessage(const std::wstring &message)
 
 	if (!init_done())
 	{
-		const auto [hr, err_message] = InitStream();
+		auto [hr, err_message] = InitStream();
 		if (FAILED(hr))
 		{
 			// https://stackoverflow.com/questions/50799719/reference-to-local-binding-declared-in-enclosing-function
-			std::thread([hr = hr, err_message = err_message]() mutable
+			std::thread([hr = hr, err = std::move(err_message)]() mutable
 			{
-				std::wstring boxbuffer = err_message +
+				std::wstring boxbuffer = err +
 				L" Logs will not be available during this session.\n\n" + Error::ExceptionFromHRESULT(hr);
 
-				err_message += L'\n';
-				OutputDebugString(err_message.c_str()); // OutputDebugString is thread-safe, no issues using it here.
+				err += L'\n';
+				OutputDebugString(err.c_str()); // OutputDebugString is thread-safe, no issues using it here.
 
 				MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 			}).detach();

@@ -23,7 +23,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID)
 
 		if (Hook::m_initDone)
 		{
-			// Can't handle errors, we're just about to detach. Worse case explorer will crash and restart automatically.
+			// TODO: error handling using OutputDebugString
 			DetourTransactionBegin();
 			DetourUpdateThread(GetCurrentThread());
 			DetourDetach(reinterpret_cast<void **>(&Hook::SetWindowCompositionAttribute), reinterpret_cast<void *>(Hook::SetWindowCompositionAttributeDetour));

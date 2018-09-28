@@ -39,7 +39,7 @@ LRESULT Hook::CallWndProc(int nCode, WPARAM wParam, LPARAM lParam)
 			std::lock_guard guard(m_initDoneLock);
 			if (!m_initDone)
 			{
-				// TODO: error handling
+				// TODO: error handling using OutputDebugString
 				DetourTransactionBegin();
 				DetourUpdateThread(GetCurrentThread());
 				DetourAttach(reinterpret_cast<void **>(&SetWindowCompositionAttribute), reinterpret_cast<void *>(SetWindowCompositionAttributeDetour));
