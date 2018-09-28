@@ -16,12 +16,15 @@ build:
   parallel: true
   project: TranslucentTB.sln
 
+after_build:
+- ps: .\move-artifacts.ps1
+
 test: off
 
 artifacts:
-- path: $(PLATFORM)\$(CONFIGURATION)
+- path: Out
   name: Raw build artifacts
-- path: $(PLATFORM)\$(CONFIGURATION)\*.pdb
+- path: Out\*.pdb
   name: Debug symbols
 - path: TranslucentTB-setup.exe
   name: Desktop installer

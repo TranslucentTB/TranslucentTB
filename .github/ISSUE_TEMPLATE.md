@@ -1,4 +1,4 @@
-<!-- Type "x" between the brackets to check this box -->
+<!-- Type "x" between the brackets to check the box -->
 [ ] I have checked the issue tracker if my question or bug has already been fixed or answered in another (possibly closed) issue.
 
  - System version information: <!-- You can get this by right-clicking the tray icon and pressing "About" in the "Advanced" sub menu -->

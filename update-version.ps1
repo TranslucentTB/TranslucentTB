@@ -10,6 +10,5 @@ $rc_content = $rc_content.Replace("1,0,0,1", "$tags,$commits,0,0")
 $rc_content = $rc_content.Replace("1.0.0.1", "$tag.$commits.$env:APPVEYOR_REPO_COMMIT.$env:APPVEYOR_REPO_BRANCH-$env:CONFIGURATION")
 Set-Content TranslucentTB\TranslucentTB.rc2 -Value $rc_content
 
-$appx_content = (Get-Content StorePackage\Package.appxmanifest)
-$appx_content = $appx_content.Replace("1.0.0.0", "$tags.$commits.0.0")
+$appx_content = (Get-Content StorePackage\Package.appxmanifest).Replace("1.0.0.0", "$tags.$commits.0.0")
 Set-Content StorePackage\Package.appxmanifest -Value $appx_content
