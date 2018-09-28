@@ -195,6 +195,6 @@ public:
 	inline static T GetCurrentTime()
 	{
 		using namespace std::chrono;
-		return duration_cast<T>(steady_clock::now().time_since_epoch());
+		return duration_cast<T>(system_clock::now().time_since_epoch());
 	}
 };
