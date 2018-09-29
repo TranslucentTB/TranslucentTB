@@ -96,7 +96,7 @@ public:
 			RegisterContextMenuCallback(item, std::bind(&Util::UpdateValue<T>, std::ref(value), std::ref(item_value)));
 		}
 
-		auto [min_p, max_p] = std::minmax_element(map.begin(), map.end(), Util::map_value_compare<T, unsigned int>());
+		const auto [min_p, max_p] = std::minmax_element(map.begin(), map.end(), Util::map_value_compare<T, unsigned int>());
 		unsigned int min = min_p->second;
 		unsigned int max = max_p->second;
 

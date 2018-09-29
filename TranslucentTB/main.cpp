@@ -546,8 +546,8 @@ void SetTaskbarBlur()
 
 	for (const auto &[_, pair] : run.taskbars)
 	{
-		const Config::TASKBAR_APPEARANCE &appearance = *pair.second;
-		SetWindowBlur(pair.first, appearance.ACCENT, appearance.COLOR);
+		const auto &[window, appearance] = pair;
+		SetWindowBlur(window, appearance->ACCENT, appearance->COLOR);
 	}
 }
 
