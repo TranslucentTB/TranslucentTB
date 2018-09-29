@@ -282,7 +282,7 @@ void HookTaskbar(const Window &taskbar)
 {
 	if (!Config::NO_HOOK && !run.hooks_disabled)
 	{
-		auto[hook, hr] = Hook::HookExplorer(taskbar);
+		const auto [hook, hr] = Hook::HookExplorer(taskbar);
 		if (SUCCEEDED(hr))
 		{
 			run.hooks.emplace_back(hook);
