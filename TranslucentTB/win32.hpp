@@ -82,4 +82,7 @@ public:
 	// Converts a Windows-style filetime to a unix epoch,
 	static unsigned long long FiletimeToUnixEpoch(const FILETIME &time);
 
+	// Gets the current processor architecture as a string.
+	static std::wstring GetProcessorArchitecture();
+
 };

@@ -19,7 +19,8 @@ private:
 	HMENU m_Menu;
 	std::unordered_map<unsigned int, std::forward_list<std::pair<unsigned short, callback_t>>> m_MenuCallbackMap;
 	long TrayCallback(WPARAM, LPARAM);
-	MessageWindow::CALLBACKCOOKIE m_Cookie;
+	MessageWindow::CALLBACKCOOKIE m_TrayCallbackCookie;
+	MessageWindow::CALLBACKCOOKIE m_MenuInitCookie;
 
 	std::vector<std::function<void()>> m_RefreshFunctions;
 

@@ -7,11 +7,6 @@ long TrayContextMenu::TrayCallback(WPARAM, LPARAM lParam)
 {
 	if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
 	{
-		for (const auto &refreshFunction : m_RefreshFunctions)
-		{
-			refreshFunction();
-		}
-
 		POINT pt;
 		if (!GetCursorPos(&pt))
 		{
@@ -24,7 +19,7 @@ long TrayContextMenu::TrayCallback(WPARAM, LPARAM lParam)
 		}
 
 		SetLastError(0);
-		unsigned int item = TrackPopupMenu(GetSubMenu(m_Menu, 0), TPM_RETURNCMD | TPM_LEFTALIGN | TPM_NONOTIFY, pt.x, pt.y, 0, m_Window, NULL);
+		unsigned int item = TrackPopupMenu(GetSubMenu(m_Menu, 0), TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, 0, m_Window, NULL);
 		if (!item && GetLastError() != 0)
 		{
 			LastErrorHandle(Error::Level::Log, L"Failed to open context menu.");
@@ -52,12 +47,21 @@ TrayContextMenu::TrayContextMenu(MessageWindow &window, wchar_t *iconResource, w
 		LastErrorHandle(Error::Level::Fatal, L"Failed to load context menu.");
 	}
 
-	m_Cookie = RegisterTrayCallback(std::bind(&TrayContextMenu::TrayCallback, this, std::placeholders::_1, std::placeholders::_2));
+	m_TrayCallbackCookie = RegisterTrayCallback(std::bind(&TrayContextMenu::TrayCallback, this, std::placeholders::_1, std::placeholders::_2));
+	m_MenuInitCookie = m_Window.RegisterCallback(WM_INITMENU, [this](...)
+	{
+		for (const auto &refreshFunction : m_RefreshFunctions)
+		{
+			refreshFunction();
+		}
+		return 0;
+	});
 }
 
 TrayContextMenu::~TrayContextMenu()
 {
-	m_Window.UnregisterCallback(m_Cookie);
+	m_Window.UnregisterCallback(m_MenuInitCookie);
+	m_Window.UnregisterCallback(m_TrayCallbackCookie);
 	if (!DestroyMenu(m_Menu))
 	{
 		LastErrorHandle(Error::Level::Log, L"Failed to destroy menu");

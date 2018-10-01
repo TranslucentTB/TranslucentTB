@@ -48,10 +48,30 @@ private:
 	{
 		std::wostringstream str;
 
-		const auto [version, hr] = win32::GetFileVersion(win32::GetExeLocation());
-		str << L"Version: " << (!version.empty() ? version : Error::ExceptionFromHRESULT(hr)) << std::endl;
+		str << L"Build configuration: "
+#if defined(STORE)
+			L"Store"
+#elif defined(NDEBUG)
+			L"Release"
+#elif defined(_DEBUG)
+			L"Debug"
+#else
+			L"Unknown"
+#endif
+			L" ("
+#if defined(_AMD64_)
+			L"x64"
+#elif defined (_X86_)
+			L"x86"
+#else
+			L"Unknown"
+#endif
+			<< L')' << std::endl;
+
+		str << L"System architecture: " << win32::GetProcessorArchitecture() << std::endl;
+
 #ifdef STORE
-		str << L"Store package version: ";
+		str << L"Package version: ";
 		try
 		{
 			str << UWP::GetApplicationVersion();
@@ -62,8 +82,11 @@ private:
 		}
 		str << std::endl;
 #endif
+		const auto [version, hr] = win32::GetFileVersion(win32::GetExeLocation());
+		str << L"TranslucentTB version: " << (!version.empty() ? version : Error::ExceptionFromHRESULT(hr)) << std::endl;
+
 		const auto [build, hr2] = win32::GetWindowsBuild();
-		str << L"Windows build: " << (!build.empty() ? build : Error::ExceptionFromHRESULT(hr2)) << std::endl;
+		str << L"Windows version: " << (!build.empty() ? build : Error::ExceptionFromHRESULT(hr2)) << std::endl;
 
 		const auto [major, minor, revision] = Hook::GetDetoursVersion();
 		str << L"Microsoft Detours version: " << major << L'.' << minor << L'.' << revision;

@@ -478,3 +478,33 @@ unsigned long long win32::FiletimeToUnixEpoch(const FILETIME &time)
 
 	return timeStamp;
 }
+
+std::wstring win32::GetProcessorArchitecture()
+{
+	SYSTEM_INFO info;
+	GetNativeSystemInfo(&info);
+
+	switch (info.wProcessorArchitecture)
+	{
+	case PROCESSOR_ARCHITECTURE_AMD64:
+		return L"x64";
+
+	case PROCESSOR_ARCHITECTURE_INTEL:
+		return L"x86";
+
+	case PROCESSOR_ARCHITECTURE_ARM64:
+		return L"ARM64";
+
+	case PROCESSOR_ARCHITECTURE_ARM:
+		return L"ARM";
+
+	case PROCESSOR_ARCHITECTURE_IA64:
+		return L"Itanium";
+
+	case PROCESSOR_ARCHITECTURE_UNKNOWN:
+		return L"Unknown";
+
+	default:
+		return L"Invalid";
+	}
+}
