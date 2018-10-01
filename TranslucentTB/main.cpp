@@ -282,7 +282,7 @@ void HookTaskbar(const Window &taskbar)
 {
 	if (!Config::NO_HOOK && !run.hooks_disabled)
 	{
-		auto[hook, hr] = Hook::HookExplorer(taskbar);
+		const auto [hook, hr] = Hook::HookExplorer(taskbar);
 		if (SUCCEEDED(hr))
 		{
 			run.hooks.emplace_back(hook);
@@ -546,8 +546,8 @@ void SetTaskbarBlur()
 
 	for (const auto &[_, pair] : run.taskbars)
 	{
-		const Config::TASKBAR_APPEARANCE &appearance = *pair.second;
-		SetWindowBlur(pair.first, appearance.ACCENT, appearance.COLOR);
+		const auto &[window, appearance] = pair;
+		SetWindowBlur(window, appearance->ACCENT, appearance->COLOR);
 	}
 }
 
