@@ -11,7 +11,6 @@
 class EventHook; // Forward declare to avoid circular deps
 
 class Window {
-
 private:
 	static std::recursive_mutex m_ClassNamesLock;
 	static std::unordered_map<Window, std::shared_ptr<std::wstring>> m_ClassNames;

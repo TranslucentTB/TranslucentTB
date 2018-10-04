@@ -11,7 +11,6 @@
 #include <unordered_map>
 
 class Util {
-
 public:
 	// Converts a string to its lowercase variant
 	inline static void ToLowerInplace(std::wstring &data)

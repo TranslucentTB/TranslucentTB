@@ -13,17 +13,14 @@
 #include "swcadata.hpp"
 
 class user32 {
-
 private:
 	using pSetWindowCompositionAttribute = std::add_pointer_t<BOOL WINAPI(HWND, swca::WINCOMPATTRDATA *)>;
 
 public:
 	static const pSetWindowCompositionAttribute SetWindowCompositionAttribute;
-
 };
 
 class win32 {
-
 private:
 	static std::mutex m_LocationLock;
 	static std::wstring m_ExeLocation;
@@ -84,5 +81,4 @@ public:
 
 	// Gets the current processor architecture as a string.
 	static std::wstring GetProcessorArchitecture();
-
 };

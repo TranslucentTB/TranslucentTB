@@ -9,11 +9,9 @@
 #include "ttberror.hpp"
 
 class AutoFree {
-
 private:
 	template<typename T, class traits>
 	class BaseImpl {
-
 	protected:
 		T *m_DataPtr;
 
@@ -75,7 +73,6 @@ private:
 		{
 			traits::close(m_DataPtr);
 		}
-
 	};
 
 	template<typename T, class traits>
@@ -138,7 +135,6 @@ private:
 
 	template<bool silent, Error::Level level = Error::Level::Log>
 	struct LocalTraits {
-
 		inline static void *alloc(std::size_t size)
 		{
 			return LocalAlloc(LPTR, size);
@@ -152,11 +148,9 @@ private:
 				LastErrorHandle(level, L"Failed to free memory.");
 			}
 		}
-
 	};
 
 	struct CoTaskMemTraits {
-
 		inline static void *alloc(std::size_t size)
 		{
 			return CoTaskMemAlloc(size);
@@ -166,12 +160,10 @@ private:
 		{
 			CoTaskMemFree(data);
 		}
-
 	};
 
 	template<unsigned int flags>
 	struct GlobalTraits {
-
 		inline static void *alloc(std::size_t size)
 		{
 			return GlobalAlloc(flags, size);
@@ -185,7 +177,6 @@ private:
 				LastErrorHandle(Error::Level::Log, L"Failed to free memory.");
 			}
 		}
-
 	};
 
 public:
@@ -214,6 +205,7 @@ public:
 		GlobalHandle<T> &m_Handle;
 		using ptr_t = std::remove_extent_t<T> *;
 		ptr_t m_Ptr;
+
 	public:
 		inline explicit GlobalLock(GlobalHandle<T> &handle) : m_Handle(handle)
 		{
