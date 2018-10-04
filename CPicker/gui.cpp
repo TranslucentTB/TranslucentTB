@@ -170,7 +170,7 @@ const std::tuple<const unsigned int, const unsigned int, const unsigned int> GUI
 
 std::unordered_map<const uint32_t *, HWND> GUI::m_pickerMap;
 
-INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR GUI::ColourPickerDlgProc(const HWND hDlg, const UINT uMsg, const WPARAM wParam, const LPARAM lParam)
 {
 	GUI *const gui_data = reinterpret_cast<GUI *>(GetWindowLongPtr(hDlg, DWLP_USER));
 	if (!gui_data && uMsg != WM_INITDIALOG)
@@ -571,7 +571,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	return 0;
 }
 
-LRESULT CALLBACK GUI::NoOutlineButtonSubclass(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR)
+LRESULT CALLBACK GUI::NoOutlineButtonSubclass(const HWND hWnd, const UINT uMsg, const WPARAM wParam, const LPARAM lParam, const UINT_PTR uIdSubclass, DWORD_PTR)
 {
 	switch (uMsg)
 	{
@@ -587,7 +587,7 @@ LRESULT CALLBACK GUI::NoOutlineButtonSubclass(HWND hWnd, UINT uMsg, WPARAM wPara
 
 
 
-GUI::GUI(CColourPicker *picker, ID2D1Factory3 *factory) :
+GUI::GUI(CColourPicker *const picker, ID2D1Factory3 *const factory) :
 	m_picker(picker),
 	m_pickerContext(factory),
 	m_colorSliderContext(factory),
@@ -605,7 +605,7 @@ GUI::GUI(CColourPicker *picker, ID2D1Factory3 *factory) :
 	m_oldColorTip(nullptr)
 { }
 
-void GUI::UpdateValues(HWND hDlg)
+void GUI::UpdateValues(const HWND hDlg)
 {
 	const SColour &col = m_picker->GetCurrentColour();
 	m_changingText = true;
@@ -622,7 +622,7 @@ void GUI::UpdateValues(HWND hDlg)
 	m_changingText = false;
 }
 
-void GUI::ParseHex(HWND hDlg)
+void GUI::ParseHex(const HWND hDlg)
 {
 	std::wstring text;
 	text.resize(21);
@@ -682,7 +682,7 @@ void GUI::ParseHex(HWND hDlg)
 	}
 }
 
-HRESULT GUI::CreateGUI(CColourPicker *picker, uint32_t &value, HWND hParent)
+HRESULT GUI::CreateGUI(CColourPicker *const picker, uint32_t &value, const HWND hParent)
 {
 	if (m_pickerMap.count(&value) == 0)
 	{

@@ -23,10 +23,10 @@ private:
 	static const std::tuple<const unsigned int, const unsigned int, const unsigned int> SLIDERS[8];
 	static std::unordered_map<const uint32_t *, HWND> m_pickerMap;
 
-	static INT_PTR CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static LRESULT CALLBACK NoOutlineButtonSubclass(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR);
+	static INT_PTR CALLBACK ColourPickerDlgProc(const HWND hDlg, const UINT uMsg, const WPARAM wParam, const LPARAM lParam);
+	static LRESULT CALLBACK NoOutlineButtonSubclass(const HWND hWnd, const UINT uMsg, const WPARAM wParam, const LPARAM lParam, const UINT_PTR uIdSubclass, DWORD_PTR);
 
-	inline static void FailedParse(HWND hDlg)
+	inline static void FailedParse(const HWND hDlg)
 	{
 		EDITBALLOONTIP ebt = {
 			sizeof(ebt),
@@ -62,12 +62,12 @@ private:
 
 	GUI(CColourPicker *const picker, ID2D1Factory3 *const factory);
 
-	void UpdateValues(HWND hDlg);
-	void ParseHex(HWND hDlg);
+	void UpdateValues(const HWND hDlg);
+	void ParseHex(const HWND hDlg);
 
 	inline GUI(const GUI &) = delete;
 	inline GUI &operator =(const GUI &) = delete;
 
 public:
-	static HRESULT CreateGUI(CColourPicker *picker, uint32_t &value, HWND hParent);
+	static HRESULT CreateGUI(CColourPicker *const picker, uint32_t &value, const HWND hParent);
 };
