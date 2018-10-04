@@ -3,7 +3,6 @@
 #include <cstdint>
 
 struct SColour {
-
 	// Red, green and blue
 	uint8_t r, g, b;
 

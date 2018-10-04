@@ -9,7 +9,6 @@
 #include "scolour.hpp"
 
 class RenderContext {
-
 private:
 	static HRESULT CreateDevice(const D3D_DRIVER_TYPE &type, ID3D11Device **device, ID3D11DeviceContext **context);
 

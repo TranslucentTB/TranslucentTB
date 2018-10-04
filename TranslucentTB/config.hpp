@@ -9,7 +9,6 @@
 #include "swcadata.hpp"
 
 class Config {
-
 public:
 	struct TASKBAR_APPEARANCE {
 		swca::ACCENT ACCENT;

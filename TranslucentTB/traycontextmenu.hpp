@@ -11,7 +11,6 @@
 #include "win32.hpp"
 
 class TrayContextMenu : public TrayIcon {
-
 protected:
 	using callback_t = std::function<void()>;
 

@@ -10,7 +10,6 @@
 #include "window.hpp"
 
 class Blacklist {
-
 public:
 	static void Parse(const std::wstring &file);
 	static bool IsBlacklisted(const Window &window);
@@ -29,5 +28,4 @@ private:
 	static void AddToVector(std::wstring line, std::vector<std::wstring> &vector, const wchar_t &delimiter = L',');
 	static void AddToSet(std::wstring line, std::unordered_set<std::wstring> &set, const wchar_t &delimiter = L',');
 	static const bool &OutputMatchToLog(const Window &window, const bool &isMatch);
-
 };
