@@ -6,7 +6,6 @@
 #include "ttberror.hpp"
 
 class ClipboardContext {
-
 private:
 	bool m_Result;
 

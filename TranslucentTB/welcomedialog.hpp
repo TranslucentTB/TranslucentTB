@@ -32,6 +32,7 @@ private:
 		return L"All the settings for the application can be edited from the tray icon. If you prefer editing files, take a look at " + configLocation + L". If you prefer a command line, run " NAME L" with the --help command line argument to get more info.\n\n"
 			L"You must agree to our license, the GPLv3, before using " NAME L". We will only ask this once. Check the box and press OK to continue.";
 	}
+
 public:
 	inline WelcomeDialog(const std::wstring &configLocation) :
 		TTBTaskDialog(

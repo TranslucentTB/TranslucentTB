@@ -13,7 +13,6 @@ dllexport
 dllimport
 #endif
 ) CColourPicker {
-
 public:
 	constexpr CColourPicker(uint32_t &value, HWND hParentWindow = NULL) : Value(value), CurrCol(), OldCol(), hParent(hParentWindow)
 	{

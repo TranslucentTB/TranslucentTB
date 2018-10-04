@@ -3,7 +3,6 @@
 #include <windef.h>
 
 class TrayIcon {
-
 protected:
 	MessageWindow &m_Window;
 	inline MessageWindow::CALLBACKCOOKIE RegisterTrayCallback(const std::function<long(WPARAM, LPARAM)> &callback)

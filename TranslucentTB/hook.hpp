@@ -10,6 +10,7 @@
 class TTBHook {
 private:
 	HHOOK m_hook;
+
 public:
 	inline TTBHook(HHOOK hook) : m_hook(hook) { }
 

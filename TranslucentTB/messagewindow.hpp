@@ -3,13 +3,11 @@
 #include <functional>
 #include <unordered_map>
 
+#include "resource.h"
 #include "window.hpp"
 #include "windowclass.hpp"
 
-#include "resource.h"
-
 class MessageWindow : public Window {
-
 protected:
 	using callback_t = std::function<long(WPARAM, LPARAM)>;
 

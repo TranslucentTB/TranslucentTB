@@ -9,7 +9,6 @@
 #include <winrt/base.h>
 
 class Log {
-
 private:
 	static std::mutex m_LogLock;
 	static std::optional<winrt::file_handle> m_FileHandle;

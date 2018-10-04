@@ -4,7 +4,6 @@
 #include <winrt/base.h>
 
 struct change_notification_handle_traits {
-
 	using type = HANDLE;
 
 	inline static void close(type value) noexcept

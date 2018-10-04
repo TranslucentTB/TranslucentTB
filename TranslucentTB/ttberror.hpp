@@ -6,7 +6,6 @@
 #include <winerror.h>
 
 class Error {
-
 public:
 	enum class Level {
 		Fatal,	// Show an error message to the user and immediatly exit

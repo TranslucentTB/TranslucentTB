@@ -8,7 +8,6 @@
 #include "window.hpp"
 
 class EventHook {
-
 private:
 	using callback_t = std::function<void(DWORD, const Window &, LONG, LONG, DWORD, DWORD)>;
 	HWINEVENTHOOK m_Handle;

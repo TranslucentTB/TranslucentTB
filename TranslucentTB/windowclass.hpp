@@ -9,7 +9,6 @@
 class Window; // Forward declare to avoid circular deps
 
 class WindowClass {
-
 private:
 	using callback_t = std::function<LRESULT(const Window &, UINT, WPARAM, LPARAM)>;
 	ATOM m_Atom;

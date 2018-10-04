@@ -3,7 +3,6 @@
 #include <winrt/Windows.ApplicationModel.h>
 
 class Autostart {
-
 public:
 	using StartupState = winrt::Windows::ApplicationModel::StartupTaskState;
 

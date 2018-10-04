@@ -6,7 +6,6 @@
 #include <winrt/base.h>
 
 struct registry_key_traits {
-
 	using type = HKEY;
 
 	inline static void close(type value) noexcept
