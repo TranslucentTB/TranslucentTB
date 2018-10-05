@@ -588,7 +588,7 @@ INT_PTR GUI::OnButtonClick(const HWND hDlg, const WPARAM wParam)
 
 INT_PTR GUI::OnNotify(const HWND hDlg, const LPARAM lParam)
 {
-	NMHDR &notify = *reinterpret_cast<const NMHDR *>(lParam);
+	NMHDR &notify = *reinterpret_cast<NMHDR *>(lParam);
 	switch (notify.code)
 	{
 	case UDN_DELTAPOS:
@@ -604,7 +604,7 @@ INT_PTR GUI::OnNotify(const HWND hDlg, const LPARAM lParam)
 
 INT_PTR GUI::OnUpDownControlChange(const NMHDR &notify)
 {
-	if (notify->idFrom == IDC_HEXSLIDER)
+	if (notify.idFrom == IDC_HEXSLIDER)
 	{
 		m_changingHexViaSpin = true;
 	}
@@ -621,7 +621,7 @@ INT_PTR GUI::OnEditControlRequestWatermarkInfo(NMHDR &notify)
 
 INT_PTR GUI::OnWindowDestroy()
 {
-	DestroyWindow(>m_oldColorTip);
+	DestroyWindow(m_oldColorTip);
 	return 0;
 }
 
