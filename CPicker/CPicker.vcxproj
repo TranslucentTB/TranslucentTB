@@ -28,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="alphaslidercontext.hpp" />
+    <ClInclude Include="boolguard.hpp" />
     <ClInclude Include="colorpreviewcontext.hpp" />
     <ClInclude Include="colorslidercontext.hpp" />
     <ClInclude Include="dlldata.hpp" />

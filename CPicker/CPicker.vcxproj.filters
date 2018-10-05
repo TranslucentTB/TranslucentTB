@@ -83,6 +83,9 @@
     <ClInclude Include="paintcontext.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="boolguard.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CPicker.rc">

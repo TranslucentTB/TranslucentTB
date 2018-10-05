@@ -93,7 +93,7 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 	else
 	{
 		// Fallback to current time
-		log_filename = std::to_wstring(Util::GetCurrentTime<>().count()) + L".log";
+		log_filename = std::to_wstring(Util::GetCurrentTime().count()) + L".log";
 	}
 
 	AutoFree::DebugLocal<wchar_t[]> log_file;
@@ -146,7 +146,7 @@ void Log::OutputMessage(const std::wstring &message)
 
 	if (*m_FileHandle)
 	{
-		const long long time = Util::GetCurrentTime<>().count();
+		const long long time = Util::GetCurrentTime().count();
 
 		std::wostringstream buffer;
 		buffer << L'(' << _wctime(&time);

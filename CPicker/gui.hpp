@@ -62,11 +62,20 @@ private:
 
 	GUI(CColourPicker *const picker, ID2D1Factory3 *const factory);
 
-	INT_PTR GUI::OnInitDialog(const HWND hDlg);
-	INT_PTR GUI::OnDpiChanged(const HWND hDlg);
-	INT_PTR GUI::OnPaint(const HWND hDlg);
-	INT_PTR GUI::OnClick(const HWND hDlg);
-	INT_PTR GUI::OnMouseMove(const HWND hDlg, const WPARAM wParam);
+	INT_PTR OnDialogInit(const HWND hDlg);
+	INT_PTR OnDpiChange(const HWND hDlg);
+	INT_PTR OnPaint(const HWND hDlg);
+	INT_PTR OnClick(const HWND hDlg);
+	INT_PTR OnMouseMove(const HWND hDlg, const WPARAM wParam);
+	INT_PTR OnCommand(const HWND hDlg, const WPARAM wParam);
+	INT_PTR OnEditControlFocusAcquire(const HWND hDlg, const WPARAM wParam);
+	INT_PTR OnEditControlFocusLoss(const HWND hDlg, const WPARAM wParam);
+	INT_PTR OnEditControlTextChange(const HWND hDlg, const WPARAM wParam);
+	INT_PTR OnButtonClick(const HWND hDlg, const WPARAM wParam);
+	INT_PTR OnNotify(const HWND hDlg, const LPARAM lParam);
+	INT_PTR OnUpDownControlChange(const NMHDR &notify);
+	INT_PTR OnEditControlRequestWatermarkInfo(NMHDR &notify);
+	INT_PTR OnWindowDestroy();
 
 	void UpdateValues(const HWND hDlg);
 	void ParseHex(const HWND hDlg);

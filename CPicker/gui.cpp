@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string>
 
+#include "boolguard.hpp"
 #include "dlldata.hpp"
 #include "paintcontext.hpp"
 
@@ -187,11 +188,11 @@ INT_PTR GUI::ColourPickerDlgProc(const HWND hDlg, const UINT uMsg, const WPARAM 
 
 		m_pickerMap.emplace(init_pair->second, hDlg);
 
-		return init_pair->first->OnInitDialog(hDlg);
+		return init_pair->first->OnDialogInit(hDlg);
 	}
 
 	case WM_DPICHANGED:
-		return gui_data->OnDpiChanged(hDlg);
+		return gui_data->OnDpiChange(hDlg);
 
 	case WM_PAINT:
 		return gui_data->OnPaint(hDlg);
@@ -203,186 +204,17 @@ INT_PTR GUI::ColourPickerDlgProc(const HWND hDlg, const UINT uMsg, const WPARAM 
 		return gui_data->OnMouseMove(hDlg, wParam);
 
 	case WM_COMMAND:
-		switch (HIWORD(wParam))
-		{
-		case EN_SETFOCUS:
-		{
-			if (LOWORD(wParam) != IDC_HEXCOL)
-			{
-				if (GetDlgItemInt(hDlg, LOWORD(wParam), NULL, FALSE) == 0)
-				{
-					SetDlgItemText(hDlg, LOWORD(wParam), L"");
-				}
-			}
-			SendDlgItemMessage(hDlg, LOWORD(wParam), EM_SETSEL, 0, -1);
-			break;
-		}
-
-		case EN_KILLFOCUS:
-		{
-			if (LOWORD(wParam) == IDC_HEXCOL)
-			{
-				gui_data->ParseHex(hDlg);
-
-				gui_data->UpdateValues(hDlg);
-				RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
-			}
-
-			gui_data->m_changingText = true;
-			for (const auto &[buddy_id, slider_id, _] : SLIDERS)
-			{
-				if (buddy_id == IDC_HEXCOL)
-				{
-					const SColour &col = gui_data->m_picker->GetCurrentColour();
-
-					wchar_t buff[11];
-					_snwprintf_s(buff, 10, L"0x%02X%02X%02X%02X", col.r, col.g, col.b, col.a);
-
-					SetDlgItemText(hDlg, buddy_id, buff);
-				}
-				else
-				{
-					BOOL result;
-					SetDlgItemInt(hDlg, buddy_id, SendDlgItemMessage(hDlg, slider_id, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)), false);
-				}
-			}
-			gui_data->m_changingText = false;
-			break;
-		}
-
-		case EN_CHANGE:
-		{
-			if (gui_data->m_changingText)
-			{
-				break;
-			}
-
-			switch (LOWORD(wParam))
-			{
-				BOOL result;
-			case IDC_RED:
-			case IDC_GREEN:
-			case IDC_BLUE:
-			{
-				gui_data->m_picker->SetRGB(SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)), SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)), SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)));
-				break;
-			}
-
-			case IDC_HUE:
-			case IDC_SATURATION:
-			case IDC_VALUE:
-			{
-				gui_data->m_picker->SetHSV(SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)), SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)), SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)));
-				break;
-			}
-
-			case IDC_ALPHA:
-			{
-				gui_data->m_picker->SetAlpha(SendDlgItemMessage(hDlg, IDC_ASLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)));
-				break;
-			}
-
-			case IDC_HEXCOL:
-			{
-				if (!gui_data->m_changingHexViaSpin)
-				{
-					return 0;
-				}
-				else
-				{
-					gui_data->ParseHex(hDlg);
-					gui_data->m_changingHexViaSpin = false;
-				}
-			}
-			}
-
-			// Update color
-			gui_data->UpdateValues(hDlg);
-			RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
-
-			break;
-		}
-
-		case BN_CLICKED: // Equivalent to STN_CLICKED
-		{
-			switch (LOWORD(wParam))
-			{
-			case IDC_R:
-			case IDC_B:
-			case IDC_G:
-			case IDC_H:
-			case IDC_S:
-			case IDC_V:
-			{
-				RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
-				break;
-			}
-
-			case IDC_OLDCOLOR:
-			{
-				const SColour &old = gui_data->m_picker->GetOldColour();
-
-				gui_data->m_picker->SetRGB(old.r, old.g, old.b);
-				gui_data->m_picker->SetAlpha(old.a);
-				gui_data->UpdateValues(hDlg);
-				RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
-				break;
-			}
-
-			case IDB_OK:
-			{
-				gui_data->m_picker->UpdateOldColour();
-				EndDialog(hDlg, 0xfff);
-				break;
-			}
-
-			case IDB_CANCEL:
-			{
-				const SColour &old = gui_data->m_picker->GetOldColour();
-
-				gui_data->m_picker->SetRGB(old.r, old.g, old.b);
-				gui_data->m_picker->SetAlpha(old.a);
-				EndDialog(hDlg, 0xfff);
-				break;
-			}
-			}
-
-			break;
-		}
-		}
-		break;
+		return gui_data->OnCommand(hDlg, wParam);
 
 	case WM_NOTIFY:
-	{
-		const NMHDR *const notify = reinterpret_cast<const NMHDR *>(lParam);
-		switch (notify->code)
-		{
-		case UDN_DELTAPOS:
-		{
-			if (notify->idFrom == IDC_HEXSLIDER)
-			{
-				gui_data->m_changingHexViaSpin = true;
-			}
-			break;
-		}
-
-		case TTN_GETDISPINFO:
-		{
-			NMTTDISPINFO *const dispinfo = reinterpret_cast<NMTTDISPINFO *>(lParam);
-			wcscpy_s(dispinfo->szText, L"Click to restore old color");
-			break;
-		}
-		}
-		break;
-	}
+		return gui_data->OnNotify(hDlg, lParam);
 
 	case WM_DESTROY:
-	{
-		DestroyWindow(gui_data->m_oldColorTip);
-		break;
+		return gui_data->OnWindowDestroy();
+
+	default:
+		return 0;
 	}
-	}
-	return 0;
 }
 
 LRESULT CALLBACK GUI::NoOutlineButtonSubclass(const HWND hWnd, const UINT uMsg, const WPARAM wParam, const LPARAM lParam, const UINT_PTR uIdSubclass, DWORD_PTR)
@@ -399,7 +231,7 @@ LRESULT CALLBACK GUI::NoOutlineButtonSubclass(const HWND hWnd, const UINT uMsg, 
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
-INT_PTR GUI::OnInitDialog(const HWND hDlg)
+INT_PTR GUI::OnDialogInit(const HWND hDlg)
 {
 	for (const auto &[buddy_id, slider_id, slider_max] : SLIDERS)
 	{
@@ -431,10 +263,10 @@ INT_PTR GUI::OnInitDialog(const HWND hDlg)
 	SendMessage(m_oldColorTip, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&ti));
 	SendMessage(m_oldColorTip, TTM_ACTIVATE, TRUE, 0);
 
-	return OnDpiChanged(hDlg);
+	return OnDpiChange(hDlg);
 }
 
-INT_PTR GUI::OnDpiChanged(const HWND hDlg)
+INT_PTR GUI::OnDpiChange(const HWND hDlg)
 {
 	HRESULT hr;
 	for (auto &[context, item_id] : m_contextPairs)
@@ -597,6 +429,202 @@ INT_PTR GUI::OnMouseMove(const HWND hDlg, const WPARAM wParam)
 	}
 }
 
+INT_PTR GUI::OnCommand(const HWND hDlg, const WPARAM wParam)
+{
+	switch (HIWORD(wParam))
+	{
+	case EN_SETFOCUS:
+		return OnEditControlFocusAcquire(hDlg, wParam);
+
+	case EN_KILLFOCUS:
+		return OnEditControlFocusLoss(hDlg, wParam);
+
+	case EN_CHANGE:
+		return OnEditControlTextChange(hDlg, wParam);
+
+	case BN_CLICKED:
+		return OnButtonClick(hDlg, wParam);
+
+	default:
+		return 0;
+	}
+}
+
+INT_PTR GUI::OnEditControlFocusAcquire(const HWND hDlg, const WPARAM wParam)
+{
+	if (LOWORD(wParam) != IDC_HEXCOL)
+	{
+		if (GetDlgItemInt(hDlg, LOWORD(wParam), NULL, FALSE) == 0)
+		{
+			SetDlgItemText(hDlg, LOWORD(wParam), L"");
+		}
+	}
+	SendDlgItemMessage(hDlg, LOWORD(wParam), EM_SETSEL, 0, -1);
+	return 0;
+}
+
+INT_PTR GUI::OnEditControlFocusLoss(const HWND hDlg, const WPARAM wParam)
+{
+	if (LOWORD(wParam) == IDC_HEXCOL)
+	{
+		ParseHex(hDlg);
+
+		UpdateValues(hDlg);
+		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+
+		return 0;
+	}
+
+	bool_guard guard(m_changingText);
+	for (const auto &[buddy_id, slider_id, _] : SLIDERS)
+	{
+		if (buddy_id == IDC_HEXCOL)
+		{
+			const SColour &col = m_picker->GetCurrentColour();
+
+			wchar_t buff[11];
+			_snwprintf_s(buff, 10, L"0x%02X%02X%02X%02X", col.r, col.g, col.b, col.a);
+
+			SetDlgItemText(hDlg, buddy_id, buff);
+		}
+		else
+		{
+			BOOL result;
+			SetDlgItemInt(hDlg, buddy_id, SendDlgItemMessage(hDlg, slider_id, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)), false);
+		}
+	}
+
+	return 0;
+}
+
+INT_PTR GUI::OnEditControlTextChange(const HWND hDlg, const WPARAM wParam)
+{
+	if (m_changingText)
+	{
+		return 0;
+	}
+
+	BOOL result;
+	switch (LOWORD(wParam))
+	{
+	case IDC_RED:
+	case IDC_GREEN:
+	case IDC_BLUE:
+		m_picker->SetRGB(SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)), SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)), SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)));
+		break;
+
+	case IDC_HUE:
+	case IDC_SATURATION:
+	case IDC_VALUE:
+		m_picker->SetHSV(SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)), SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)), SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)));
+		break;
+
+	case IDC_ALPHA:
+		m_picker->SetAlpha(SendDlgItemMessage(hDlg, IDC_ASLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)));
+		break;
+
+	case IDC_HEXCOL:
+		if (!m_changingHexViaSpin)
+		{
+			return 0;
+		}
+		else
+		{
+			ParseHex(hDlg);
+			m_changingHexViaSpin = false;
+		}
+	}
+
+	// Update color
+	UpdateValues(hDlg);
+	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+
+	return 0;
+}
+
+INT_PTR GUI::OnButtonClick(const HWND hDlg, const WPARAM wParam)
+{
+	switch (LOWORD(wParam))
+	{
+	case IDC_R:
+	case IDC_B:
+	case IDC_G:
+	case IDC_H:
+	case IDC_S:
+	case IDC_V:
+		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+		return 0;
+
+	case IDC_OLDCOLOR:
+	{
+		const SColour &old = m_picker->GetOldColour();
+
+		m_picker->SetRGB(old.r, old.g, old.b);
+		m_picker->SetAlpha(old.a);
+		UpdateValues(hDlg);
+		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+		return 0;
+	}
+
+	case IDB_OK:
+		m_picker->UpdateOldColour();
+		EndDialog(hDlg, 0xfff);
+		return 0;
+
+	case IDB_CANCEL:
+	{
+		const SColour &old = m_picker->GetOldColour();
+
+		m_picker->SetRGB(old.r, old.g, old.b);
+		m_picker->SetAlpha(old.a);
+		EndDialog(hDlg, 0xfff);
+		return 0;
+	}
+
+	default:
+		return 0;
+	}
+}
+
+INT_PTR GUI::OnNotify(const HWND hDlg, const LPARAM lParam)
+{
+	NMHDR &notify = *reinterpret_cast<const NMHDR *>(lParam);
+	switch (notify.code)
+	{
+	case UDN_DELTAPOS:
+		return OnUpDownControlChange(notify);
+
+	case TTN_GETDISPINFO:
+		return OnEditControlRequestWatermarkInfo(notify);
+
+	default:
+		return 0;
+	}
+}
+
+INT_PTR GUI::OnUpDownControlChange(const NMHDR &notify)
+{
+	if (notify->idFrom == IDC_HEXSLIDER)
+	{
+		m_changingHexViaSpin = true;
+	}
+
+	return 0;
+}
+
+INT_PTR GUI::OnEditControlRequestWatermarkInfo(NMHDR &notify)
+{
+	NMTTDISPINFO &dispinfo = reinterpret_cast<NMTTDISPINFO &>(notify);
+	wcscpy_s(dispinfo.szText, L"Click to restore old color");
+	return 0;
+}
+
+INT_PTR GUI::OnWindowDestroy()
+{
+	DestroyWindow(>m_oldColorTip);
+	return 0;
+}
+
 GUI::GUI(CColourPicker *const picker, ID2D1Factory3 *const factory) :
 	m_picker(picker),
 	m_pickerContext(factory),
@@ -618,7 +646,7 @@ GUI::GUI(CColourPicker *const picker, ID2D1Factory3 *const factory) :
 void GUI::UpdateValues(const HWND hDlg)
 {
 	const SColour &col = m_picker->GetCurrentColour();
-	m_changingText = true;
+	bool_guard guard(m_changingText);
 
 	SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_SETPOS, 0, col.r);
 	SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_SETPOS, 0, col.g);
@@ -628,8 +656,6 @@ void GUI::UpdateValues(const HWND hDlg)
 	SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_SETPOS, 0, col.s);
 	SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_SETPOS, 0, col.v);
 	SendDlgItemMessage(hDlg, IDC_HEXSLIDER, UDM_SETPOS32, 0, (col.r << 24) + (col.g << 16) + (col.b << 8) + col.a);
-
-	m_changingText = false;
 }
 
 void GUI::ParseHex(const HWND hDlg)
