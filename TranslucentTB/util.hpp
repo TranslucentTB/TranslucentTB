@@ -67,11 +67,12 @@ public:
 	};
 
 	// Removes instances of a character at the beginning and end of the string.
-	static constexpr std::wstring_view Trim(std::wstring_view str, const wchar_t &character = L' ')
+	template<class T = std::wstring_view>
+	static constexpr T Trim(T str, const wchar_t &character = L' ')
 	{
 		size_t first = str.find_first_not_of(character);
 
-		if (first == std::wstring_view::npos)
+		if (first == T::npos)
 		{
 			return L"";
 		}
