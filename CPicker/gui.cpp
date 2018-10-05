@@ -187,206 +187,20 @@ INT_PTR GUI::ColourPickerDlgProc(const HWND hDlg, const UINT uMsg, const WPARAM 
 
 		m_pickerMap.emplace(init_pair->second, hDlg);
 
-		for (const auto &[buddy_id, slider_id, slider_max] : SLIDERS)
-		{
-			SendDlgItemMessage(hDlg, slider_id, UDM_SETBUDDY, reinterpret_cast<WPARAM>(GetDlgItem(hDlg, buddy_id)), 0);
-			SendDlgItemMessage(hDlg, slider_id, UDM_SETRANGE32, 0, slider_max);
-		}
-		SendDlgItemMessage(hDlg, IDC_HEXSLIDER, UDM_SETBASE, 16, 0);
-		SendDlgItemMessage(hDlg, IDC_HEXCOL, EM_SETLIMITTEXT, 20, 0);
-		Edit_SetCueBannerTextFocused(GetDlgItem(hDlg, IDC_HEXCOL), L"HTML color", TRUE);
-
-		for (const int &button : { IDC_R, IDC_G, IDC_B, IDC_H, IDC_S, IDC_V })
-		{
-			SetWindowSubclass(GetDlgItem(hDlg, button), NoOutlineButtonSubclass, button, NULL);
-		}
-
-		init_pair->first->UpdateValues(hDlg);
-
-		SendDlgItemMessage(hDlg, IDC_R, BM_SETCHECK, BST_CHECKED, 0);
-
-		init_pair->first->m_oldColorTip = CreateWindow(TOOLTIPS_CLASS, NULL, TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, DllData::GetInstanceHandle(), NULL);
-
-		TOOLINFO ti = {
-			sizeof(ti),
-			TTF_IDISHWND | TTF_SUBCLASS,
-			hDlg,
-			reinterpret_cast<UINT_PTR>(GetDlgItem(hDlg, IDC_OLDCOLOR)),
-		};
-		ti.lpszText = LPSTR_TEXTCALLBACK;
-		SendMessage(init_pair->first->m_oldColorTip, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&ti));
-		SendMessage(init_pair->first->m_oldColorTip, TTM_ACTIVATE, TRUE, 0);
-
-		return ColourPickerDlgProc(hDlg, WM_DPICHANGED, NULL, NULL);
+		return init_pair->first->OnInitDialog(hDlg);
 	}
 
 	case WM_DPICHANGED:
-	{
-		HRESULT hr;
-		for (auto &[context, item_id] : gui_data->m_contextPairs)
-		{
-			hr = context.Refresh(GetDlgItem(hDlg, item_id));
-			if (FAILED(hr))
-			{
-				EndDialog(hDlg, hr);
-				return 0;
-			}
-		}
+		return gui_data->OnDpiChanged(hDlg);
 
-		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
-
-		break;
-	}
 	case WM_PAINT:
-	{
-		const SColourF color = gui_data->m_picker->GetCurrentColour();
-		const SColourF old = gui_data->m_picker->GetOldColour();
-
-		HRESULT hr;
-
-		for (auto &[context, item_id] : gui_data->m_contextPairs)
-		{
-			const HWND item_handle = GetDlgItem(hDlg, item_id);
-			const PaintContext pc(item_handle);
-
-			hr = context.Draw(hDlg, color, old);
-			if (hr == D2DERR_RECREATE_TARGET)
-			{
-				hr = context.Refresh(item_handle);
-				if (FAILED(hr))
-				{
-					EndDialog(hDlg, hr);
-					return 0;
-				}
-
-				hr = context.Draw(hDlg, color, old);
-				if (FAILED(hr))
-				{
-					EndDialog(hDlg, hr);
-					return 0;
-				}
-			}
-			else if (FAILED(hr))
-			{
-				EndDialog(hDlg, hr);
-				return 0;
-			}
-		}
-
-		break;
-	}
+		return gui_data->OnPaint(hDlg);
 
 	case WM_LBUTTONDOWN:
+		return gui_data->OnClick(hDlg);
+
 	case WM_MOUSEMOVE:
-	{
-		if (uMsg == WM_MOUSEMOVE && wParam != MK_LBUTTON)
-		{
-			break;
-		}
-
-		RECT rectC1;
-		RECT rectC2;
-		RECT rectA;
-
-		GetWindowRect(GetDlgItem(hDlg, IDC_COLOR), &rectC1);
-		GetWindowRect(GetDlgItem(hDlg, IDC_COLOR2), &rectC2);
-		GetWindowRect(GetDlgItem(hDlg, IDC_ALPHASLIDE), &rectA);
-
-		BOOL result;
-		const uint8_t red   = SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
-		const uint8_t green = SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
-		const uint8_t blue  = SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
-
-		const uint16_t hue       = SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
-		const uint8_t saturation = SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
-		const uint8_t value      = SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
-
-		POINT p;
-		GetCursorPos(&p);
-
-		// IDC_COLOR1 picked
-		if (PtInRect(&rectC1, p))
-		{
-			const float fx = ((p.x - rectC1.left) / static_cast<float>(rectC1.right - rectC1.left)) * 255.0f;
-			const float fy = ((p.y - rectC1.top) / static_cast<float>(rectC1.bottom - rectC1.top)) * 255.0f;
-
-			if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
-			{
-				gui_data->m_picker->SetRGB(red, fx, fy);
-			}
-
-			else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
-			{
-				gui_data->m_picker->SetRGB(fx, green, fy);
-			}
-
-			else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
-			{
-				gui_data->m_picker->SetRGB(fy, fx, blue);
-			}
-
-			else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
-			{
-				gui_data->m_picker->SetHSV(hue, fx / 255.0f * 100.0f, (255 - fy) / 255.0f * 100.0f);
-			}
-
-			else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
-			{
-				gui_data->m_picker->SetHSV(fx / 255.0f * 359.0f, saturation, (255 - fy) / 255.0f * 100.0f);
-			}
-
-			else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
-			{
-				gui_data->m_picker->SetHSV(fx / 255.0f * 359.0f, (255 - fy) / 255.0f * 100.0f, value);
-			}
-		}
-		// IDC_COLOR2 picked
-		else if (PtInRect(&rectC2, p))
-		{
-			const float fy = ((p.y - rectC2.top) / static_cast<float>(rectC2.bottom - rectC2.top)) * 255.0f;
-
-			if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
-			{
-				gui_data->m_picker->SetRGB(255 - fy, green, blue);
-			}
-
-			else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
-			{
-				gui_data->m_picker->SetRGB(red, 255 - fy, blue);
-			}
-
-			else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
-			{
-				gui_data->m_picker->SetRGB(red, green, 255 - fy);
-			}
-
-			else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
-			{
-				gui_data->m_picker->SetHSV((255 - fy) / 255.0f * 359.0f, saturation, value);
-			}
-
-			else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
-			{
-				gui_data->m_picker->SetHSV(hue, (255 - fy) / 255.0f * 100.0f, value);
-			}
-
-			else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
-			{
-				gui_data->m_picker->SetHSV(hue, saturation, (255 - fy) / 255.0f * 100.0f);
-			}
-		}
-		// IDC_ALPHASLIDE picked
-		else if (PtInRect(&rectA, p))
-		{
-			const float fy = ((p.y - rectA.top) / static_cast<float>(rectA.bottom - rectA.top)) * 255.0f;
-
-			gui_data->m_picker->SetAlpha(255 - fy);
-		}
-
-		gui_data->UpdateValues(hDlg);
-		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
-		break;
-	}
+		return gui_data->OnMouseMove(hDlg, wParam);
 
 	case WM_COMMAND:
 		switch (HIWORD(wParam))
@@ -585,7 +399,203 @@ LRESULT CALLBACK GUI::NoOutlineButtonSubclass(const HWND hWnd, const UINT uMsg, 
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
+INT_PTR GUI::OnInitDialog(const HWND hDlg)
+{
+	for (const auto &[buddy_id, slider_id, slider_max] : SLIDERS)
+	{
+		SendDlgItemMessage(hDlg, slider_id, UDM_SETBUDDY, reinterpret_cast<WPARAM>(GetDlgItem(hDlg, buddy_id)), 0);
+		SendDlgItemMessage(hDlg, slider_id, UDM_SETRANGE32, 0, slider_max);
+	}
+	SendDlgItemMessage(hDlg, IDC_HEXSLIDER, UDM_SETBASE, 16, 0);
+	SendDlgItemMessage(hDlg, IDC_HEXCOL, EM_SETLIMITTEXT, 20, 0);
+	Edit_SetCueBannerTextFocused(GetDlgItem(hDlg, IDC_HEXCOL), L"HTML color", TRUE);
 
+	for (const int &button : { IDC_R, IDC_G, IDC_B, IDC_H, IDC_S, IDC_V })
+	{
+		SetWindowSubclass(GetDlgItem(hDlg, button), NoOutlineButtonSubclass, button, NULL);
+	}
+
+	UpdateValues(hDlg);
+
+	SendDlgItemMessage(hDlg, IDC_R, BM_SETCHECK, BST_CHECKED, 0);
+
+	m_oldColorTip = CreateWindow(TOOLTIPS_CLASS, NULL, TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, DllData::GetInstanceHandle(), NULL);
+
+	TOOLINFO ti = {
+		sizeof(ti),
+		TTF_IDISHWND | TTF_SUBCLASS,
+		hDlg,
+		reinterpret_cast<UINT_PTR>(GetDlgItem(hDlg, IDC_OLDCOLOR)),
+	};
+	ti.lpszText = LPSTR_TEXTCALLBACK;
+	SendMessage(m_oldColorTip, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&ti));
+	SendMessage(m_oldColorTip, TTM_ACTIVATE, TRUE, 0);
+
+	return OnDpiChanged(hDlg);
+}
+
+INT_PTR GUI::OnDpiChanged(const HWND hDlg)
+{
+	HRESULT hr;
+	for (auto &[context, item_id] : m_contextPairs)
+	{
+		hr = context.Refresh(GetDlgItem(hDlg, item_id));
+		if (FAILED(hr))
+		{
+			EndDialog(hDlg, hr);
+			return 0;
+		}
+	}
+
+	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+	return 0;
+}
+
+INT_PTR GUI::OnPaint(const HWND hDlg)
+{
+	const SColourF color = m_picker->GetCurrentColour();
+	const SColourF old = m_picker->GetOldColour();
+
+	for (auto &[context, item_id] : m_contextPairs)
+	{
+		const HWND item_handle = GetDlgItem(hDlg, item_id);
+		const PaintContext pc(item_handle);
+
+		HRESULT hr = context.Draw(hDlg, color, old);
+		if (hr == D2DERR_RECREATE_TARGET)
+		{
+			hr = context.Refresh(item_handle);
+			if (FAILED(hr))
+			{
+				EndDialog(hDlg, hr);
+				return 0;
+			}
+
+			hr = context.Draw(hDlg, color, old);
+			if (FAILED(hr))
+			{
+				EndDialog(hDlg, hr);
+				return 0;
+			}
+		}
+		else if (FAILED(hr))
+		{
+			EndDialog(hDlg, hr);
+			return 0;
+		}
+	}
+
+	return 0;
+}
+
+INT_PTR GUI::OnClick(const HWND hDlg)
+{
+	RECT rectC1;
+	RECT rectC2;
+	RECT rectA;
+
+	GetWindowRect(GetDlgItem(hDlg, IDC_COLOR), &rectC1);
+	GetWindowRect(GetDlgItem(hDlg, IDC_COLOR2), &rectC2);
+	GetWindowRect(GetDlgItem(hDlg, IDC_ALPHASLIDE), &rectA);
+
+	BOOL result;
+	const uint8_t red   = SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
+	const uint8_t green = SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
+	const uint8_t blue  = SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
+
+	const uint16_t hue       = SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
+	const uint8_t saturation = SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
+	const uint8_t value      = SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
+
+	POINT p;
+	GetCursorPos(&p);
+
+	// IDC_COLOR1 picked
+	if (PtInRect(&rectC1, p))
+	{
+		const float fx = ((p.x - rectC1.left) / static_cast<float>(rectC1.right - rectC1.left)) * 255.0f;
+		const float fy = ((p.y - rectC1.top) / static_cast<float>(rectC1.bottom - rectC1.top)) * 255.0f;
+
+		if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
+		{
+			m_picker->SetRGB(red, fx, fy);
+		}
+		else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
+		{
+			m_picker->SetRGB(fx, green, fy);
+		}
+		else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
+		{
+			m_picker->SetRGB(fy, fx, blue);
+		}
+		else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
+		{
+			m_picker->SetHSV(hue, fx / 255.0f * 100.0f, (255 - fy) / 255.0f * 100.0f);
+		}
+		else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
+		{
+			m_picker->SetHSV(fx / 255.0f * 359.0f, saturation, (255 - fy) / 255.0f * 100.0f);
+		}
+		else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
+		{
+			m_picker->SetHSV(fx / 255.0f * 359.0f, (255 - fy) / 255.0f * 100.0f, value);
+		}
+	}
+	// IDC_COLOR2 picked
+	else if (PtInRect(&rectC2, p))
+	{
+		const float fy = ((p.y - rectC2.top) / static_cast<float>(rectC2.bottom - rectC2.top)) * 255.0f;
+
+		if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
+		{
+			m_picker->SetRGB(255 - fy, green, blue);
+		}
+		else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
+		{
+			m_picker->SetRGB(red, 255 - fy, blue);
+		}
+		else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
+		{
+			m_picker->SetRGB(red, green, 255 - fy);
+		}
+		else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
+		{
+			m_picker->SetHSV((255 - fy) / 255.0f * 359.0f, saturation, value);
+		}
+		else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
+		{
+			m_picker->SetHSV(hue, (255 - fy) / 255.0f * 100.0f, value);
+		}
+		else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
+		{
+			m_picker->SetHSV(hue, saturation, (255 - fy) / 255.0f * 100.0f);
+		}
+	}
+	// IDC_ALPHASLIDE picked
+	else if (PtInRect(&rectA, p))
+	{
+		const float fy = ((p.y - rectA.top) / static_cast<float>(rectA.bottom - rectA.top)) * 255.0f;
+
+		m_picker->SetAlpha(255 - fy);
+	}
+
+	UpdateValues(hDlg);
+	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+
+	return 0;
+}
+
+INT_PTR GUI::OnMouseMove(const HWND hDlg, const WPARAM wParam)
+{
+	if (wParam == MK_LBUTTON)
+	{
+		return OnClick(hDlg);
+	}
+	else
+	{
+		return 0;
+	}
+}
 
 GUI::GUI(CColourPicker *const picker, ID2D1Factory3 *const factory) :
 	m_picker(picker),

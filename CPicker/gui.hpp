@@ -62,6 +62,12 @@ private:
 
 	GUI(CColourPicker *const picker, ID2D1Factory3 *const factory);
 
+	INT_PTR GUI::OnInitDialog(const HWND hDlg);
+	INT_PTR GUI::OnDpiChanged(const HWND hDlg);
+	INT_PTR GUI::OnPaint(const HWND hDlg);
+	INT_PTR GUI::OnClick(const HWND hDlg);
+	INT_PTR GUI::OnMouseMove(const HWND hDlg, const WPARAM wParam);
+
 	void UpdateValues(const HWND hDlg);
 	void ParseHex(const HWND hDlg);
 
