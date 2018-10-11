@@ -53,15 +53,15 @@ void Blacklist::Parse(const std::wstring &file)
 
 		if (Util::StringBeginsWith(line_lowercase, L"class"))
 		{
-			AddToSet(std::move(line), m_ClassBlacklist, delimiter);
+			AddToSet(line, m_ClassBlacklist, delimiter);
 		}
 		else if (Util::StringBeginsWith(line_lowercase, L"title") || Util::StringBeginsWith(line_lowercase, L"windowtitle"))
 		{
-			AddToVector(std::move(line), m_TitleBlacklist, delimiter);
+			AddToVector(line, m_TitleBlacklist, delimiter);
 		}
 		else if (Util::StringBeginsWith(line_lowercase, L"exename"))
 		{
-			AddToSet(std::move(line_lowercase), m_FileBlacklist, delimiter);
+			AddToSet(line_lowercase, m_FileBlacklist, delimiter);
 		}
 		else
 		{
@@ -128,40 +128,38 @@ void Blacklist::ClearCache()
 	}
 }
 
-void Blacklist::AddToVector(std::wstring line, std::vector<std::wstring> &vector, const wchar_t &delimiter)
+void Blacklist::AddToContainer(std::wstring_view line, const wchar_t &delimiter, const std::function<void(std::wstring_view)> &inserter)
 {
 	size_t pos;
 
 	// First lets remove the key
 	if ((pos = line.find(delimiter)) != std::wstring::npos)
 	{
-		line.erase(0, pos + 1);
+		line.remove_prefix(pos + 1);
 	}
 
 	// Now iterate and add the values
 	while ((pos = line.find(delimiter)) != std::wstring::npos)
 	{
-		vector.emplace_back(Util::Trim(line.substr(0, pos)));
-		line.erase(0, pos + 1);
+		inserter(Util::Trim(line.substr(0, pos)));
+		line.remove_prefix(pos + 1);
 	}
 }
 
-void Blacklist::AddToSet(std::wstring line, std::unordered_set<std::wstring> &set, const wchar_t &delimiter)
+void Blacklist::AddToVector(std::wstring_view line, std::vector<std::wstring> &vector, const wchar_t &delimiter)
 {
-	size_t pos;
-
-	// First lets remove the key
-	if ((pos = line.find(delimiter)) != std::wstring::npos)
+	AddToContainer(line, delimiter, [&vector](std::wstring_view line)
 	{
-		line.erase(0, pos + 1);
-	}
+		vector.emplace_back(line);
+	});
+}
 
-	// Now iterate and add the values
-	while ((pos = line.find(delimiter)) != std::wstring::npos)
+void Blacklist::AddToSet(std::wstring_view line, std::unordered_set<std::wstring> &set, const wchar_t &delimiter)
+{
+	AddToContainer(line, delimiter, [&set](std::wstring_view line)
 	{
-		set.emplace(Util::Trim(line.substr(0, pos)));
-		line.erase(0, pos + 1);
-	}
+		set.emplace(line);
+	});
 }
 
 const bool &Blacklist::OutputMatchToLog(const Window &window, const bool &isMatch)

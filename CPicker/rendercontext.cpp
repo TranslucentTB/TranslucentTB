@@ -58,16 +58,21 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 {
 	HRESULT hr;
 
-	winrt::com_ptr<ID3D11DeviceContext> oldd3dc = m_d3dc;
-
 	m_swapChain = nullptr;
-	m_d3dc = nullptr;
 	m_dc = nullptr;
 	m_brush = nullptr;
 
+	// https://docs.microsoft.com/en-us/windows/desktop/api/d3d11/nf-d3d11-id3d11devicecontext-flush#Defer_Issues_with_Flip
+	if (m_d3dc)
+	{
+		m_d3dc->ClearState();
+		m_d3dc->Flush();
+		m_d3dc = nullptr;
+	}
+
 	winrt::com_ptr<ID3D11Device> d3device;
 	hr = CreateDevice(D3D_DRIVER_TYPE_HARDWARE, d3device.put(), m_d3dc.put());
-	if (hr == DXGI_ERROR_UNSUPPORTED)
+	if (hr == DXGI_ERROR_UNSUPPORTED || hr == DXGI_ERROR_DYNAMIC_CODE_POLICY_VIOLATION)
 	{
 		hr = CreateDevice(D3D_DRIVER_TYPE_WARP, d3device.put(), m_d3dc.put());
 	}
@@ -115,13 +120,6 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 	if (FAILED(hr))
 	{
 		return hr;
-	}
-
-	// https://docs.microsoft.com/en-us/windows/desktop/api/d3d11/nf-d3d11-id3d11devicecontext-flush#Defer_Issues_with_Flip
-	if (oldd3dc)
-	{
-		oldd3dc->ClearState();
-		oldd3dc->Flush();
 	}
 
 	DXGI_SWAP_CHAIN_DESC1 swapdesc{};

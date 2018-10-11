@@ -1,7 +1,9 @@
 #pragma once
 #include <cstdint>
+#include <functional>
 #include <mutex>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -25,7 +27,8 @@ private:
 
 	friend class Hooks;
 
-	static void AddToVector(std::wstring line, std::vector<std::wstring> &vector, const wchar_t &delimiter = L',');
-	static void AddToSet(std::wstring line, std::unordered_set<std::wstring> &set, const wchar_t &delimiter = L',');
+	static void AddToContainer(std::wstring_view line, const wchar_t &delimiter, const std::function<void(std::wstring_view)> &inserter);
+	static void AddToVector(std::wstring_view line, std::vector<std::wstring> &vector, const wchar_t &delimiter = L',');
+	static void AddToSet(std::wstring_view line, std::unordered_set<std::wstring> &set, const wchar_t &delimiter = L',');
 	static const bool &OutputMatchToLog(const Window &window, const bool &isMatch);
 };
