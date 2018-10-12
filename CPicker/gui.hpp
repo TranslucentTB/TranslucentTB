@@ -72,7 +72,7 @@ private:
 	INT_PTR OnEditControlFocusLoss(const HWND hDlg, const WPARAM wParam);
 	INT_PTR OnEditControlTextChange(const HWND hDlg, const WPARAM wParam);
 	INT_PTR OnButtonClick(const HWND hDlg, const WPARAM wParam);
-	INT_PTR OnNotify(const HWND hDlg, const LPARAM lParam);
+	INT_PTR OnNotify(const LPARAM lParam);
 	INT_PTR OnUpDownControlChange(const NMHDR &notify);
 	INT_PTR OnEditControlRequestWatermarkInfo(NMHDR &notify);
 	INT_PTR OnWindowDestroy();

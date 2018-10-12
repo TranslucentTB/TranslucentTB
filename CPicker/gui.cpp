@@ -207,7 +207,7 @@ INT_PTR GUI::ColourPickerDlgProc(const HWND hDlg, const UINT uMsg, const WPARAM 
 		return gui_data->OnCommand(hDlg, wParam);
 
 	case WM_NOTIFY:
-		return gui_data->OnNotify(hDlg, lParam);
+		return gui_data->OnNotify(lParam);
 
 	case WM_DESTROY:
 		return gui_data->OnWindowDestroy();
@@ -586,7 +586,7 @@ INT_PTR GUI::OnButtonClick(const HWND hDlg, const WPARAM wParam)
 	}
 }
 
-INT_PTR GUI::OnNotify(const HWND hDlg, const LPARAM lParam)
+INT_PTR GUI::OnNotify(const LPARAM lParam)
 {
 	NMHDR &notify = *reinterpret_cast<NMHDR *>(lParam);
 	switch (notify.code)
