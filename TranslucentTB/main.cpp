@@ -501,7 +501,7 @@ void SetTaskbarBlur()
 		const Window fg_window = Window::ForegroundWindow();
 		if (fg_window != Window::NullWindow && run.taskbars.count(fg_window.monitor()) != 0)
 		{
-			if (Config::CORTANA_ENABLED  && !run.start_opened && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
+			if (Config::CORTANA_ENABLED && !run.start_opened && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
 				Util::IgnoreCaseStringEquals(*fg_window.filename(), L"SearchUI.exe"))
 			{
 				run.taskbars.at(fg_window.monitor()).second = &Config::CORTANA_APPEARANCE;
