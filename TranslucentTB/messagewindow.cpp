@@ -20,7 +20,7 @@ LRESULT MessageWindow::WindowProcedure(const Window &window, unsigned int uMsg, 
 	return DefWindowProc(window, uMsg, wParam, lParam);
 }
 
-MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &windowName, const HINSTANCE &hInstance, const wchar_t *iconResource) :
+MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &windowName, const HINSTANCE &hInstance, const Window &parent, const wchar_t *iconResource) :
 	m_WindowClass(
 		std::bind(&MessageWindow::WindowProcedure, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
 		className,
@@ -29,7 +29,7 @@ MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &
 		hInstance
 	)
 {
-	m_WindowHandle = Window::Create(0, m_WindowClass, windowName, 0, 0, 0, 0, 0, Window::NullWindow, 0, hInstance, this);
+	m_WindowHandle = Window::Create(0, m_WindowClass, windowName, 0, 0, 0, 0, 0, parent, 0, hInstance, this);
 
 	if (!m_WindowHandle)
 	{

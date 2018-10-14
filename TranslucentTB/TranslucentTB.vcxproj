@@ -23,6 +23,7 @@
     </ClCompile>
     <ClCompile Include="blacklist.cpp" />
     <ClCompile Include="config.cpp" />
+    <ClCompile Include="taskbarattributeworker.cpp" />
     <ClCompile Include="eventhook.cpp" />
     <ClCompile Include="findwindowiterator.cpp" />
     <ClCompile Include="hooks.cpp" />
@@ -51,6 +52,7 @@
     <ClInclude Include="clipboardcontext.hpp" />
     <ClInclude Include="common.hpp" />
     <ClInclude Include="createinstance.hpp" />
+    <ClInclude Include="taskbarattributeworker.hpp" />
     <ClInclude Include="eventhook.hpp" />
     <ClInclude Include="findwindowiterator.hpp" />
     <ClInclude Include="folderwatcher.hpp" />

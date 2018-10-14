@@ -1,10 +1,10 @@
 #include "appvisibilitysink.hpp"
 
-AppVisibilitySink::AppVisibilitySink(bool &startOpened) : m_startOpenedRef(startOpened) { }
+AppVisibilitySink::AppVisibilitySink(const std::function<void(bool)> &startOpenedCallback) : m_startOpenedCallback(startOpenedCallback) { }
 
 IFACEMETHODIMP AppVisibilitySink::LauncherVisibilityChange(BOOL currentVisibleState)
 {
-	m_startOpenedRef = currentVisibleState;
+	m_startOpenedCallback(currentVisibleState);
 	return S_OK;
 }
 

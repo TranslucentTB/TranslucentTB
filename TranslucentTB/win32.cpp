@@ -23,8 +23,8 @@
 #include "ttblog.hpp"
 #include "window.hpp"
 
-const user32::pSetWindowCompositionAttribute user32::SetWindowCompositionAttribute =
-	reinterpret_cast<pSetWindowCompositionAttribute>(
+const swca::pSetWindowCompositionAttribute user32::SetWindowCompositionAttribute =
+	reinterpret_cast<swca::pSetWindowCompositionAttribute>(
 		GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute")
 	);
 

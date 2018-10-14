@@ -1,5 +1,8 @@
 #pragma once
+#include "arch.h"
 #include <cstdint>
+#include <type_traits>
+#include <windef.h>
 
 namespace swca {
 
@@ -30,5 +33,7 @@ namespace swca {
 		void *pData;								// Opaque pointer to the data struct (ACCENTPOLICY in our case)
 		uint32_t ulDataSize;						// Size of data struct
 	};
+
+	using pSetWindowCompositionAttribute = std::add_pointer_t<BOOL WINAPI(HWND, WINCOMPATTRDATA *)>;
 
 }

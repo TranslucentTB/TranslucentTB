@@ -27,6 +27,7 @@
 #include "resource.h"
 #include "swcadata.hpp"
 #include "welcomedialog.hpp"
+#include "taskbarattributeworker.hpp"
 #include "traycontextmenu.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
@@ -106,56 +107,6 @@ static const std::unordered_map<enum Config::PEEK, uint32_t> PEEK_BUTTON_MAP = {
 	{ Config::PEEK::Dynamic,		IDM_PEEK_DYNAMIC },
 	{ Config::PEEK::Disabled,		IDM_PEEK_HIDE    }
 };
-
-#pragma endregion
-
-#pragma region That one function that does all the magic
-
-void SetWindowBlur(const Window &window, const swca::ACCENT &appearance, const uint32_t &color)
-{
-	if (user32::SetWindowCompositionAttribute)
-	{
-		static std::unordered_map<Window, bool> is_normal;
-
-		swca::ACCENTPOLICY policy = {
-			appearance,
-			2,
-			(color & 0xFF00FF00) + ((color & 0x00FF0000) >> 16) + ((color & 0x000000FF) << 16),
-			0
-		};
-
-		if (policy.nAccentState == swca::ACCENT::ACCENT_NORMAL)
-		{
-			if (!is_normal[window])
-			{
-				// WM_THEMECHANGED makes the taskbar reload the theme and reapply the normal effect.
-				// Gotta memoize it because constantly sending it makes explorer's CPU usage jump.
-				Hook::ExcludeTaskbar(window);
-				window.send_message(WM_THEMECHANGED);
-				is_normal[window] = true;
-			}
-			return;
-		}
-		else if (policy.nAccentState == swca::ACCENT::ACCENT_ENABLE_FLUENT && policy.nColor >> 24 == 0x00)
-		{
-			// Fluent mode doesn't likes a completely 0 opacity
-			policy.nColor = (0x01 << 24) + (policy.nColor & 0x00FFFFFF);
-		}
-
-		swca::WINCOMPATTRDATA data = {
-			swca::WindowCompositionAttribute::WCA_ACCENT_POLICY,
-			&policy,
-			sizeof(policy)
-		};
-
-		user32::SetWindowCompositionAttribute(window, &data);
-		if (is_normal[window])
-		{
-			Hook::IncludeTaskbar(window);
-			is_normal[window] = false;
-		}
-	}
-}
 
 #pragma endregion
 
@@ -278,45 +229,7 @@ void LoadConfig()
 
 #pragma region Utilities
 
-void HookTaskbar(const Window &taskbar)
-{
-	if (!Config::NO_HOOK && !run.hooks_disabled)
-	{
-		const auto [hook, hr] = Hook::HookExplorer(taskbar);
-		if (SUCCEEDED(hr))
-		{
-			run.hooks.emplace_back(hook);
-		}
-		else
-		{
-			ErrorHandle(hr, Error::Level::Log, L"Failed to set hook.");
-		}
-	}
-}
-
-void RefreshHandles()
-{
-	if (Config::VERBOSE)
-	{
-		Log::OutputMessage(L"Refreshing taskbar handles.");
-	}
-
-	// Older handles are invalid, so clear the map to be ready for new ones
-	run.taskbars.clear();
-	auto hooks = std::move(run.hooks); // Keep old hooks active while we rehook to keep the DLL loaded in explorer. (They will unhook at the end of the scope)
-	run.hooks.clear(); // Bring back run.hooks to a known state.
-
-	run.main_taskbar = Window::Find(L"Shell_TrayWnd");
-	run.taskbars[run.main_taskbar.monitor()] = { run.main_taskbar, &Config::REGULAR_APPEARANCE };
-	HookTaskbar(run.main_taskbar);
-
-	for (const Window secondtaskbar : Window::FindEnum(L"Shell_SecondaryTrayWnd"))
-	{
-		run.taskbars[secondtaskbar.monitor()] = { secondtaskbar, &Config::REGULAR_APPEARANCE };
-		HookTaskbar(secondtaskbar);
-	}
-}
-
+// todo: move to worker?
 void TogglePeek(const bool &status)
 {
 	static bool cached_peek = true;
@@ -444,6 +357,7 @@ long ExitApp(const EXITREASON &reason, ...)
 
 #pragma region Main logic
 
+// todo: get rid?
 BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
 {
 	const Window window(hWnd);
@@ -477,79 +391,80 @@ BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
 	return true;
 }
 
-void SetTaskbarBlur()
-{
-	static uint8_t counter = 10;
-
-	if (counter >= 10)	// Change this if you want to change the time it takes for the program to update.
-	{					// 1 = Config::SLEEP_TIME; we use 10 (assuming the default configuration value of 10),
-						// because the difference is less noticeable and it has no large impact on CPU.
-						// We can change this if we feel that CPU is more important than response time.
-		run.should_show_peek = (Config::PEEK == Config::PEEK::Enabled);
-
-		for (auto &[_, pair] : run.taskbars)
-		{
-			pair.second = &Config::REGULAR_APPEARANCE; // Reset taskbar state
-		}
-		if (Config::MAXIMISED_ENABLED || Config::PEEK == Config::PEEK::Dynamic)
-		{
-			EnumWindows(&EnumWindowsProcess, NULL);
-		}
-
-		TogglePeek(run.should_show_peek);
-
-		const Window fg_window = Window::ForegroundWindow();
-		if (fg_window != Window::NullWindow && run.taskbars.count(fg_window.monitor()) != 0)
-		{
-			if (Config::CORTANA_ENABLED && !run.start_opened && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
-				Util::IgnoreCaseStringEquals(*fg_window.filename(), L"SearchUI.exe"))
-			{
-				run.taskbars.at(fg_window.monitor()).second = &Config::CORTANA_APPEARANCE;
-			}
-
-			if (Config::START_ENABLED && run.start_opened)
-			{
-				run.taskbars.at(fg_window.monitor()).second = &Config::START_APPEARANCE;
-			}
-		}
-
-		// Put this between Start/Cortana and Task view/Timeline
-		// Task view and Timeline show over Aero Peek, but not Start or Cortana
-		if (Config::MAXIMISED_ENABLED && Config::MAXIMISED_REGULAR_ON_PEEK && run.peek_active)
-		{
-			for (auto &[_, pair] : run.taskbars)
-			{
-				pair.second = &Config::REGULAR_APPEARANCE;
-			}
-		}
-
-		if (fg_window != Window::NullWindow)
-		{
-			static const bool timeline_av = win32::IsAtLeastBuild(MIN_FLUENT_BUILD);
-			if (Config::TIMELINE_ENABLED && (timeline_av
-				? (*fg_window.classname() == CORE_WINDOW && Util::IgnoreCaseStringEquals(*fg_window.filename(), L"Explorer.exe"))
-				: (*fg_window.classname() == L"MultitaskingViewFrame")))
-			{
-				for (auto &[_, pair] : run.taskbars)
-				{
-					pair.second = &Config::TIMELINE_APPEARANCE;
-				}
-			}
-		}
-
-		counter = 0;
-	}
-	else
-	{
-		counter++;
-	}
-
-	for (const auto &[_, pair] : run.taskbars)
-	{
-		const auto &[window, appearance] = pair;
-		SetWindowBlur(window, appearance->ACCENT, appearance->COLOR);
-	}
-}
+// todo: move to worker
+//void SetTaskbarBlur()
+//{
+//	static uint8_t counter = 10;
+//
+//	if (counter >= 10)	// Change this if you want to change the time it takes for the program to update.
+//	{					// 1 = Config::SLEEP_TIME; we use 10 (assuming the default configuration value of 10),
+//						// because the difference is less noticeable and it has no large impact on CPU.
+//						// We can change this if we feel that CPU is more important than response time.
+//		run.should_show_peek = (Config::PEEK == Config::PEEK::Enabled);
+//
+//		for (auto &[_, pair] : run.taskbars)
+//		{
+//			pair.second = &Config::REGULAR_APPEARANCE; // Reset taskbar state
+//		}
+//		if (Config::MAXIMISED_ENABLED || Config::PEEK == Config::PEEK::Dynamic)
+//		{
+//			EnumWindows(&EnumWindowsProcess, NULL);
+//		}
+//
+//		TogglePeek(run.should_show_peek);
+//
+//		const Window fg_window = Window::ForegroundWindow();
+//		if (fg_window != Window::NullWindow && run.taskbars.count(fg_window.monitor()) != 0)
+//		{
+//			if (Config::CORTANA_ENABLED && !run.start_opened && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
+//				Util::IgnoreCaseStringEquals(*fg_window.filename(), L"SearchUI.exe"))
+//			{
+//				run.taskbars.at(fg_window.monitor()).second = &Config::CORTANA_APPEARANCE;
+//			}
+//
+//			if (Config::START_ENABLED && run.start_opened)
+//			{
+//				run.taskbars.at(fg_window.monitor()).second = &Config::START_APPEARANCE;
+//			}
+//		}
+//
+//		// Put this between Start/Cortana and Task view/Timeline
+//		// Task view and Timeline show over Aero Peek, but not Start or Cortana
+//		if (Config::MAXIMISED_ENABLED && Config::MAXIMISED_REGULAR_ON_PEEK && run.peek_active)
+//		{
+//			for (auto &[_, pair] : run.taskbars)
+//			{
+//				pair.second = &Config::REGULAR_APPEARANCE;
+//			}
+//		}
+//
+//		if (fg_window != Window::NullWindow)
+//		{
+//			static const bool timeline_av = win32::IsAtLeastBuild(MIN_FLUENT_BUILD);
+//			if (Config::TIMELINE_ENABLED && (timeline_av
+//				? (*fg_window.classname() == CORE_WINDOW && Util::IgnoreCaseStringEquals(*fg_window.filename(), L"Explorer.exe"))
+//				: (*fg_window.classname() == L"MultitaskingViewFrame")))
+//			{
+//				for (auto &[_, pair] : run.taskbars)
+//				{
+//					pair.second = &Config::TIMELINE_APPEARANCE;
+//				}
+//			}
+//		}
+//
+//		counter = 0;
+//	}
+//	else
+//	{
+//		counter++;
+//	}
+//
+//	for (const auto &[_, pair] : run.taskbars)
+//	{
+//		const auto &[window, appearance] = pair;
+//		SetWindowBlur(window, appearance->ACCENT, appearance->COLOR);
+//	}
+//}
 
 #pragma endregion
 
@@ -557,36 +472,9 @@ void SetTaskbarBlur()
 
 void InitializeTray(const HINSTANCE &hInstance)
 {
-	static MessageWindow window(L"TrayWindow", NAME, hInstance);
+	static MessageWindow window(TRAY_WINDOW, NAME, hInstance);
 
 	window.RegisterCallback(NEW_TTB_INSTANCE, std::bind(&ExitApp, EXITREASON::NewInstance));
-
-	window.RegisterCallback(WM_DISPLAYCHANGE, [](...)
-	{
-		RefreshHandles();
-		return 0;
-	});
-
-	window.RegisterCallback(WM_TASKBARCREATED, [](...)
-	{
-		using namespace std::chrono;
-		static steady_clock::time_point last_explorer_restart;
-
-		const auto current_time = steady_clock::now();
-		if (!Config::NO_HOOK && !run.hooks_disabled && last_explorer_restart + 30s > current_time)
-		{
-			run.hooks_disabled = true;
-			Log::OutputMessage(L"Explorer restarted twice in less than 30 seconds, disabling hooks for this session.");
-			std::thread(std::bind(&MessageBox, Window::NullWindow, L"Explorer restarted twice in less than 30 seconds, disabling hooks for this session.", NAME, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND)).detach();
-		}
-		else
-		{
-			last_explorer_restart = steady_clock::now();
-		}
-
-		RefreshHandles();
-		return 0;
-	});
 
 	window.RegisterCallback(WM_CLOSE, std::bind(&ExitApp, EXITREASON::UserAction));
 
@@ -600,11 +488,11 @@ void InitializeTray(const HINSTANCE &hInstance)
 		return TRUE;
 	});
 
-	window.RegisterCallback(WM_ENDSESSION, [](const WPARAM wParam, const LPARAM lParam)
+	window.RegisterCallback(WM_ENDSESSION, [](const WPARAM wParam, ...)
 	{
-		if (!(lParam & ENDSESSION_CLOSEAPP && !wParam))
+		if (wParam)
 		{
-			// The app is being closed for an update or shutdown.
+			// The app can be closed anytime after processing this message. Save the settings.
 			Config::Save(run.config_file);
 		}
 
@@ -730,7 +618,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	// If there already is another instance running, tell it to exit
 	if (!win32::IsSingleInstance())
 	{
-		Window::Find(L"TrayWindow", NAME).send_message(NEW_TTB_INSTANCE);
+		Window::Find(TRAY_WINDOW, NAME).send_message(NEW_TTB_INSTANCE);
 	}
 
 	// Get configuration file paths
@@ -755,10 +643,10 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	// Initialize GUI
 	InitializeTray(hInstance);
 
-	// Populate our map and hooks
-	RefreshHandles();
+	TaskbarAttributeWorker worker(hInstance);
 
 	// Undoc'd, allows to detect when Aero Peek starts and stops
+	// todo: move to worker
 	EventHook peek_hook(
 		0x21,
 		0x22,
@@ -770,12 +658,13 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	);
 
 	// Detect additional monitor connection
-	EventHook creation_hook(
+	// todo: move to worker
+	/*EventHook creation_hook(
 		EVENT_OBJECT_CREATE,
 		EVENT_OBJECT_CREATE,
 		[](DWORD, const Window &window, ...)
 		{
-			if (window.valid() && *window.classname() == L"Shell_SecondaryTrayWnd")
+			if (window.valid() && *window.classname() == SECONDARY_TASKBAR)
 			{
 				run.taskbars[window.monitor()] = { window, &Config::REGULAR_APPEARANCE };
 
@@ -783,35 +672,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 			}
 		},
 		WINEVENT_OUTOFCONTEXT
-	);
-
-	// Register our start menu detection sink
-	auto app_visibility = create_instance<IAppVisibility>(CLSID_AppVisibility);
-	DWORD av_cookie = 0;
-	if (app_visibility)
-	{
-		// See comment on AppVisibilitySink for reason why WRL is used here
-		Microsoft::WRL::ComPtr<IAppVisibilityEvents> av_sink = Microsoft::WRL::Make<AppVisibilitySink>(run.start_opened);
-		ErrorHandle(app_visibility->Advise(av_sink.Get(), &av_cookie), Error::Level::Log, L"Failed to register app visibility sink.");
-	}
-
-	std::thread swca_thread([]
-	{
-		try
-		{
-			winrt::init_apartment(winrt::apartment_type::single_threaded);
-		}
-		catch (const winrt::hresult_error &error)
-		{
-			ErrorHandle(error.code(), Error::Level::Fatal, L"Initialization of Windows Runtime failed.");
-		}
-
-		while (run.is_running)
-		{
-			SetTaskbarBlur();
-			std::this_thread::sleep_for(std::chrono::milliseconds(Config::SLEEP_TIME));
-		}
-	});
+	);*/
 
 	MSG msg;
 	BOOL ret;
@@ -826,14 +687,6 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		{
 			LastErrorHandle(Error::Level::Fatal, L"GetMessage failed!");
 		}
-	}
-
-	run.is_running = false;
-	swca_thread.join(); // Wait for our worker thread to exit.
-
-	if (av_cookie)
-	{
-		ErrorHandle(app_visibility->Unadvise(av_cookie), Error::Level::Log, L"Failed to unregister app visibility sink.");
 	}
 
 	// Close all open CPicker windows to avoid:
@@ -853,10 +706,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 
 		// Restore default taskbar appearance
 		TogglePeek(true);
-		for (const auto &taskbar : run.taskbars)
-		{
-			SetWindowBlur(taskbar.second.first, swca::ACCENT::ACCENT_NORMAL, NULL);
-		}
+		worker.ReturnToStock();
 	}
 
 	return EXIT_SUCCESS;

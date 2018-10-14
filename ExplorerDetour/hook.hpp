@@ -17,31 +17,21 @@
 
 class Hook {
 private:
-	using pSWCA = std::add_pointer_t<BOOL WINAPI(HWND, swca::WINCOMPATTRDATA *)>;
-	static pSWCA SetWindowCompositionAttribute;
-
-	static std::mutex m_taskbarsLock;
-	static std::unordered_set<HWND> m_taskbars;
-
-	static std::mutex m_excludedTaskbarsLock;
-	static std::unordered_set<HWND> m_excludedTaskbars;
+	static swca::pSetWindowCompositionAttribute SetWindowCompositionAttribute;
 
 	static std::mutex m_initDoneLock;
 	static bool m_initDone;
 
-	static unsigned int m_PushWindowMsg;
-	static unsigned int m_ExcludeWindowMsg;
-	static unsigned int m_IncludeWindowMsg;
-
+	static const HWND m_TTBMsgWnd;
 	static BOOL WINAPI SetWindowCompositionAttributeDetour(HWND hWnd, swca::WINCOMPATTRDATA *data);
 	static LRESULT CALLBACK CallWndProc(int nCode, WPARAM wParam, LPARAM lParam);
 
 	friend BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID);
 
 public:
+	__declspec(EXPLORERHOOK_EXPORT) static const unsigned int RequestAttributeRefresh;
+
 	__declspec(EXPLORERHOOK_EXPORT) static std::pair<HHOOK, HRESULT> HookExplorer(HWND taskbar);
-	__declspec(EXPLORERHOOK_EXPORT) static void ExcludeTaskbar(HWND taskbar);
-	__declspec(EXPLORERHOOK_EXPORT) static void IncludeTaskbar(HWND taskbar);
 
 	__declspec(EXPLORERHOOK_EXPORT) static std::tuple<uint8_t, uint8_t, uint8_t> GetDetoursVersion();
 };

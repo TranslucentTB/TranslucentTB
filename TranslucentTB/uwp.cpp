@@ -23,7 +23,6 @@ winrt::hstring UWP::GetApplicationFolderPath(const FolderType &type)
 	case FolderType::Roaming:
 		return application_data.RoamingFolder().Path();
 
-	// Apparently we can cast any integer to an enum class, so yeah...
 	default:
 		throw std::invalid_argument("type was not one of the known values");
 	}

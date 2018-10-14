@@ -12,12 +12,8 @@
 
 #include "swcadata.hpp"
 
-class user32 {
-private:
-	using pSetWindowCompositionAttribute = std::add_pointer_t<BOOL WINAPI(HWND, swca::WINCOMPATTRDATA *)>;
-
-public:
-	static const pSetWindowCompositionAttribute SetWindowCompositionAttribute;
+namespace user32 {
+	extern const swca::pSetWindowCompositionAttribute SetWindowCompositionAttribute;
 };
 
 class win32 {
