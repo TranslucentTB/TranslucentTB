@@ -15,26 +15,30 @@ private:
 		Regular,
 		MaximisedWindow
 	};
-	HMONITOR m_CurrentStartMonitor;
+
 	// bool m_IsPeeking;
 	// bool m_IsTaskViewOrTimelineOpen;
 	// bool m_IsFluentAndTimelineSupported
 	// todo: a few event hooks probs.
+
+	// Start menu
+	HMONITOR m_CurrentStartMonitor;
 	winrt::com_ptr<IAppVisibility> m_IAV;
 	DWORD m_IAVECookie;
-	std::unordered_map<HMONITOR, std::pair<Window, TaskbarState>> m_Taskbars;
-	std::vector<TTBHook> m_Hooks;
-
-	bool SetAttribute(const Window &window, const Config::TASKBAR_APPEARANCE &config);
-	long RefreshAttribute(HMONITOR monitor);
-
 	void OnStartVisibilityChange(bool state);
-
 	HMONITOR GetStartMenuMonitor();
 
-	void Poll();
+	// Taskbar find & hook
+	std::unordered_map<HMONITOR, std::pair<Window, TaskbarState>> m_Taskbars;
+	std::vector<TTBHook> m_Hooks;
 	void RefreshTaskbars();
 	void HookTaskbar(const Window &window);
+
+	// Taskbar appearance refresh
+	void Poll();
+	void ResetState();
+	bool SetAttribute(const Window &window, const Config::TASKBAR_APPEARANCE &config);
+	long RefreshAttribute(HMONITOR monitor);
 
 public:
 	TaskbarAttributeWorker(const HINSTANCE &hInstance);
