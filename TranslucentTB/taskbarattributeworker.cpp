@@ -171,15 +171,30 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const HINSTANCE &hInstance) :
 
 	RegisterCallback(Hook::RequestAttributeRefresh, [this](WPARAM, const LPARAM lParam) -> long
 	{
-		const Window taskbar = reinterpret_cast<HWND>(lParam);
-		const auto &config = GetConfigForMonitor(taskbar.monitor());
-		if (config.ACCENT == swca::ACCENT::ACCENT_NORMAL)
+		const Window window = reinterpret_cast<HWND>(lParam);
+		if (m_Taskbars.count(window.monitor()) != 0)
 		{
-			return 0;
+			const auto &[taskbar, _] = m_Taskbars.at(window.monitor());
+			if (taskbar == window)
+			{
+				const auto &config = GetConfigForMonitor(taskbar.monitor());
+				if (config.ACCENT == swca::ACCENT::ACCENT_NORMAL)
+				{
+					return 0;
+				}
+				else
+				{
+					return RefreshAttribute(taskbar.monitor());
+				}
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		else
 		{
-			return RefreshAttribute(taskbar.monitor());
+			return 0;
 		}
 	});
 
