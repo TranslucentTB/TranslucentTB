@@ -38,7 +38,8 @@ private:
 	void Poll();
 	void ResetState();
 	bool SetAttribute(const Window &window, const Config::TASKBAR_APPEARANCE &config);
-	long RefreshAttribute(HMONITOR monitor);
+	const Config::TASKBAR_APPEARANCE &GetConfigForMonitor(HMONITOR monitor);
+	bool RefreshAttribute(HMONITOR monitor);
 
 public:
 	TaskbarAttributeWorker(const HINSTANCE &hInstance);

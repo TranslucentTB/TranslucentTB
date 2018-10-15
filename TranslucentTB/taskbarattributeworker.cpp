@@ -89,7 +89,8 @@ bool TaskbarAttributeWorker::SetAttribute(const Window &window, const Config::TA
 	{
 		if (config.ACCENT == swca::ACCENT::ACCENT_NORMAL)
 		{
-			return false; // todo: not reliable (not working when called from outside hook - can't do send message trickery inside hook due to recursion)
+			window.send_message(WM_THEMECHANGED);
+			return false;
 		}
 
 		swca::ACCENTPOLICY policy = {
@@ -120,26 +121,39 @@ bool TaskbarAttributeWorker::SetAttribute(const Window &window, const Config::TA
 	}
 }
 
-long TaskbarAttributeWorker::RefreshAttribute(HMONITOR monitor)
+const Config::TASKBAR_APPEARANCE &TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR monitor)
 {
 	if (m_Taskbars.count(monitor) != 0)
 	{
-		const auto &[taskbar, state] = m_Taskbars.at(monitor);
+		const auto &[_, state] = m_Taskbars.at(monitor);
 		if (m_CurrentStartMonitor == monitor)
 		{
-			return SetAttribute(taskbar, Config::START_APPEARANCE);
+			return Config::START_APPEARANCE;
 		}
 		else if (state == TaskbarState::MaximisedWindow)
 		{
-			return SetAttribute(taskbar, Config::MAXIMISED_APPEARANCE);
+			return Config::MAXIMISED_APPEARANCE;
 		}
 		else if (state == TaskbarState::Regular)
 		{
-			return SetAttribute(taskbar, Config::REGULAR_APPEARANCE);
+			return Config::REGULAR_APPEARANCE;
 		}
 	}
 
-	return 0;
+	return Config::REGULAR_APPEARANCE;
+}
+
+bool TaskbarAttributeWorker::RefreshAttribute(HMONITOR monitor)
+{
+	if (m_Taskbars.count(monitor) != 0)
+	{
+		const auto &[taskbar, _] = m_Taskbars.at(monitor);
+		return SetAttribute(taskbar, GetConfigForMonitor(monitor));
+	}
+	else
+	{
+		return false;
+	}
 }
 
 TaskbarAttributeWorker::TaskbarAttributeWorker(const HINSTANCE &hInstance) :
@@ -155,10 +169,18 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const HINSTANCE &hInstance) :
 		ErrorHandle(m_IAV->Advise(av_sink.Get(), &m_IAVECookie), Error::Level::Log, L"Failed to register app visibility sink.");
 	}
 
-	RegisterCallback(Hook::RequestAttributeRefresh, [this](WPARAM, const LPARAM lParam)
+	RegisterCallback(Hook::RequestAttributeRefresh, [this](WPARAM, const LPARAM lParam) -> long
 	{
 		const Window taskbar = reinterpret_cast<HWND>(lParam);
-		return RefreshAttribute(taskbar.monitor());
+		const auto &config = GetConfigForMonitor(taskbar.monitor());
+		if (config.ACCENT == swca::ACCENT::ACCENT_NORMAL)
+		{
+			return 0;
+		}
+		else
+		{
+			return RefreshAttribute(taskbar.monitor());
+		}
 	});
 
 	const auto refresh_taskbars = [this](...)
