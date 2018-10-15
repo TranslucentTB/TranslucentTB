@@ -42,6 +42,8 @@ private:
 	bool RefreshAttribute(HMONITOR monitor);
 	long OnRequestAttributeRefresh(WPARAM, const LPARAM lParam);
 
+	bool m_returningToStock;
+
 public:
 	TaskbarAttributeWorker(const HINSTANCE &hInstance);
 

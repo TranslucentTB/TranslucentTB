@@ -1,5 +1,6 @@
 #include "taskbarattributeworker.hpp"
 #include "appvisibilitysink.hpp"
+#include "../CPicker/boolguard.hpp"
 #include "common.hpp"
 #include "createinstance.hpp"
 #include "../ExplorerDetour/hook.hpp"
@@ -165,7 +166,7 @@ long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, const LPARAM lPar
 		if (taskbar == window)
 		{
 			const auto &config = GetConfigForMonitor(taskbar.monitor());
-			if (config.ACCENT == swca::ACCENT::ACCENT_NORMAL)
+			if (config.ACCENT == swca::ACCENT::ACCENT_NORMAL || m_returningToStock)
 			{
 				return 0;
 			}
@@ -189,7 +190,8 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const HINSTANCE &hInstance) :
 	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance),
 	m_CurrentStartMonitor(nullptr),
 	m_IAV(create_instance<IAppVisibility>(CLSID_AppVisibility)),
-	m_IAVECookie(0)
+	m_IAVECookie(0),
+	m_returningToStock(false)
 {
 	if (m_IAV)
 	{
@@ -214,6 +216,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const HINSTANCE &hInstance) :
 
 void TaskbarAttributeWorker::ReturnToStock()
 {
+	bool_guard guard(m_returningToStock);
 	for (const auto &[_, pair] : m_Taskbars)
 	{
 		SetAttribute(pair.first, { swca::ACCENT::ACCENT_NORMAL });
