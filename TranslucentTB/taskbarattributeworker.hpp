@@ -40,6 +40,7 @@ private:
 	bool SetAttribute(const Window &window, const Config::TASKBAR_APPEARANCE &config);
 	const Config::TASKBAR_APPEARANCE &GetConfigForMonitor(HMONITOR monitor);
 	bool RefreshAttribute(HMONITOR monitor);
+	long OnRequestAttributeRefresh(WPARAM, const LPARAM lParam);
 
 public:
 	TaskbarAttributeWorker(const HINSTANCE &hInstance);

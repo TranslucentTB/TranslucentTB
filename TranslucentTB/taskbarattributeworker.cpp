@@ -156,6 +156,35 @@ bool TaskbarAttributeWorker::RefreshAttribute(HMONITOR monitor)
 	}
 }
 
+long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, const LPARAM lParam)
+{
+	const Window window = reinterpret_cast<HWND>(lParam);
+	if (m_Taskbars.count(window.monitor()) != 0)
+	{
+		const auto &[taskbar, _] = m_Taskbars.at(window.monitor());
+		if (taskbar == window)
+		{
+			const auto &config = GetConfigForMonitor(taskbar.monitor());
+			if (config.ACCENT == swca::ACCENT::ACCENT_NORMAL)
+			{
+				return 0;
+			}
+			else
+			{
+				return RefreshAttribute(taskbar.monitor());
+			}
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 TaskbarAttributeWorker::TaskbarAttributeWorker(const HINSTANCE &hInstance) :
 	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance),
 	m_CurrentStartMonitor(nullptr),
@@ -169,34 +198,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const HINSTANCE &hInstance) :
 		ErrorHandle(m_IAV->Advise(av_sink.Get(), &m_IAVECookie), Error::Level::Log, L"Failed to register app visibility sink.");
 	}
 
-	RegisterCallback(Hook::RequestAttributeRefresh, [this](WPARAM, const LPARAM lParam) -> long
-	{
-		const Window window = reinterpret_cast<HWND>(lParam);
-		if (m_Taskbars.count(window.monitor()) != 0)
-		{
-			const auto &[taskbar, _] = m_Taskbars.at(window.monitor());
-			if (taskbar == window)
-			{
-				const auto &config = GetConfigForMonitor(taskbar.monitor());
-				if (config.ACCENT == swca::ACCENT::ACCENT_NORMAL)
-				{
-					return 0;
-				}
-				else
-				{
-					return RefreshAttribute(taskbar.monitor());
-				}
-			}
-			else
-			{
-				return 0;
-			}
-		}
-		else
-		{
-			return 0;
-		}
-	});
+	RegisterCallback(Hook::RequestAttributeRefresh, std::bind(&TaskbarAttributeWorker::OnRequestAttributeRefresh, this, std::placeholders::_1, std::placeholders::_2));
 
 	const auto refresh_taskbars = [this](...)
 	{
