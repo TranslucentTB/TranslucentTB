@@ -348,6 +348,21 @@ void win32::HardenProcess()
 		LastErrorHandle(Error::Level::Log, L"Couldn't get current ASLR policy.");
 	}
 
+	// https://bugs.llvm.org/show_bug.cgi?id=39517
+	//PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY cfg_policy;
+	//if (GetProcessMitigationPolicy(GetCurrentProcess(), ProcessControlFlowGuardPolicy, &cfg_policy, sizeof(cfg_policy)))
+	//{
+	//	cfg_policy.StrictMode = true;
+	//	if (!SetProcessMitigationPolicy(ProcessControlFlowGuardPolicy, &cfg_policy, sizeof(cfg_policy)))
+	//	{
+	//		LastErrorHandle(Error::Level::Log, L"Couldn't enable strict Control Flow Guard.");
+	//	}
+	//}
+	//else
+	//{
+	//	LastErrorHandle(Error::Level::Log, L"Couldn't get current Control Flow Guard policy.");
+	//}
+
 	PROCESS_MITIGATION_DYNAMIC_CODE_POLICY code_policy {};
 	code_policy.ProhibitDynamicCode = true;
 	code_policy.AllowThreadOptOut = false;
@@ -355,6 +370,13 @@ void win32::HardenProcess()
 	if (!SetProcessMitigationPolicy(ProcessDynamicCodePolicy, &code_policy, sizeof(code_policy)))
 	{
 		LastErrorHandle(Error::Level::Log, L"Couldn't disable dynamic code generation.");
+	}
+
+	PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY syscall_policy {};
+	syscall_policy.DisallowWin32kSystemCalls = true;
+	if (!SetProcessMitigationPolicy(ProcessSystemCallDisablePolicy, &syscall_policy, sizeof(syscall_policy)))
+	{
+		LastErrorHandle(Error::Level::Log, L"Couldn't disable low-level system calls.");
 	}
 
 	PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY handle_policy {};

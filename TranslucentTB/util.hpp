@@ -171,7 +171,7 @@ private:
 	template<class T>
 	inline static T &GetRandomEngine()
 	{
-		static T rng(*GenerateSeed<T>());
+		thread_local static T rng(*GenerateSeed<T>());
 
 		return rng;
 	}

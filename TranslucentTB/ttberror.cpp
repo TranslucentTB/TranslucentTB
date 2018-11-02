@@ -51,7 +51,10 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 			break;
 		case Level::Error:
 			Log::OutputMessage(err.str());
-			std::thread(std::bind(&MessageBox, Window::NullWindow, boxbuffer.str().c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND)).detach();
+			std::thread([str = boxbuffer.str()]
+			{
+				MessageBox(Window::NullWindow, str.c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+			}).detach();
 			break;
 		case Level::Fatal:
 			Log::OutputMessage(err.str());

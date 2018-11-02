@@ -92,6 +92,8 @@
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
       <AdditionalOptions>-Wno-missing-field-initializers -Wrange-loop-analysis -Wold-style-cast -Wnonportable-system-include-path -Wimplicit-fallthrough -Wunreachable-code-return -Wswitch-enum %(AdditionalOptions)</AdditionalOptions>
+      <!-- https://bugs.llvm.org/show_bug.cgi?id=39517
+      <ControlFlowGuard>Guard</ControlFlowGuard> -->
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SupportJustMyCode>false</SupportJustMyCode>
