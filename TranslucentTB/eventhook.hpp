@@ -8,8 +8,9 @@
 #include "window.hpp"
 
 class EventHook {
-private:
+public:
 	using callback_t = std::function<void(DWORD, const Window &, LONG, LONG, DWORD, DWORD)>;
+private:
 	HWINEVENTHOOK m_Handle;
 
 	// As function because static initialization order.

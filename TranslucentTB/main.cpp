@@ -357,40 +357,6 @@ long ExitApp(const EXITREASON &reason, ...)
 
 #pragma region Main logic
 
-// todo: get rid?
-BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, LPARAM)
-{
-	const Window window(hWnd);
-	// DWMWA_CLOAKED should take care of checking if it's on the current desktop.
-	// But that's undocumented behavior.
-	// Do both but with on_current_desktop last.
-	if (window.visible() && window.state() == SW_MAXIMIZE && !window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
-		!Blacklist::IsBlacklisted(window) && window.on_current_desktop() && run.taskbars.count(window.monitor()) != 0)
-	{
-		auto &taskbar = run.taskbars.at(window.monitor());
-		if (Config::MAXIMISED_ENABLED)
-		{
-			taskbar.second = &Config::MAXIMISED_APPEARANCE;
-		}
-
-		if (Config::PEEK == Config::PEEK::Dynamic)
-		{
-			if (Config::PEEK_ONLY_MAIN)
-			{
-				if (taskbar.first == run.main_taskbar)
-				{
-					run.should_show_peek = true;
-				}
-			}
-			else
-			{
-				run.should_show_peek = true;
-			}
-		}
-	}
-	return true;
-}
-
 // todo: move to worker
 //void SetTaskbarBlur()
 //{

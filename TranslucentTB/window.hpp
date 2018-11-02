@@ -101,6 +101,10 @@ public:
 	{
 		return IsWindow(m_WindowHandle);
 	}
+	inline explicit operator bool() const
+	{
+		return valid();
+	}
 	WINDOWPLACEMENT placement() const;
 	inline HMONITOR monitor() const
 	{

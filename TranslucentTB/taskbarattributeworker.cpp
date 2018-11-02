@@ -1,12 +1,69 @@
 #include "taskbarattributeworker.hpp"
 #include "appvisibilitysink.hpp"
 #include "../CPicker/boolguard.hpp"
+#include "blacklist.hpp"
 #include "common.hpp"
 #include "createinstance.hpp"
 #include "../ExplorerDetour/hook.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 #include "win32.hpp"
+
+void TaskbarAttributeWorker::OnWindowStateChange(DWORD, const Window &window, LONG idObject, ...)
+{
+	if (idObject == OBJID_WINDOW && window.valid())
+	{
+		HMONITOR monitor = window.monitor();
+		if (m_Taskbars.count(monitor) != 0)
+		{
+			auto &monInf = m_Taskbars.at(monitor);
+			if (IsWindowMaximised(window))
+			{
+				monInf.MaximisedWindows.insert(window);
+			}
+			else
+			{
+				monInf.MaximisedWindows.erase(window);
+			}
+		}
+
+		RefreshAttribute(monitor);
+	}
+}
+
+bool TaskbarAttributeWorker::IsWindowMaximised(const Window &window)
+{
+	return
+		window.visible() &&
+		window.state() == SW_MAXIMIZE &&
+		!window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
+		window.on_current_desktop() &&
+		!Blacklist::IsBlacklisted(window);
+}
+
+BOOL CALLBACK TaskbarAttributeWorker::EnumWindowsProcess(const HWND hWnd, const LPARAM lParam)
+{
+	auto pThis = reinterpret_cast<TaskbarAttributeWorker *>(lParam);
+	const Window window(hWnd);
+
+	HMONITOR monitor = window.monitor();
+	if (IsWindowMaximised(window))
+	{
+		if (pThis->m_Taskbars.count(monitor) != 0)
+		{
+			pThis->m_Taskbars.at(monitor).MaximisedWindows.insert(window);
+		}
+	}
+	else
+	{
+		if (pThis->m_Taskbars.count(monitor) != 0)
+		{
+			pThis->m_Taskbars.at(monitor).MaximisedWindows.erase(window);
+		}
+	}
+
+	return true;
+}
 
 void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 {
@@ -40,12 +97,12 @@ void TaskbarAttributeWorker::RefreshTaskbars()
 	m_Hooks.clear(); // Bring back m_Hooks to a known state after being moved from.
 
 	const Window main_taskbar = Window::Find(TASKBAR);
-	m_Taskbars[main_taskbar.monitor()] = { main_taskbar, TaskbarState::Regular };
+	m_Taskbars[main_taskbar.monitor()] = { main_taskbar };
 	HookTaskbar(main_taskbar);
 
 	for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))
 	{
-		m_Taskbars[secondtaskbar.monitor()] = { secondtaskbar, TaskbarState::Regular };
+		m_Taskbars[secondtaskbar.monitor()] = { secondtaskbar };
 		HookTaskbar(secondtaskbar);
 	}
 }
@@ -72,6 +129,8 @@ void TaskbarAttributeWorker::Poll()
 	{
 		m_CurrentStartMonitor = GetStartMenuMonitor();
 	}
+
+	EnumWindows(EnumWindowsProcess, reinterpret_cast<LPARAM>(this));
 }
 
 void TaskbarAttributeWorker::ResetState()
@@ -126,16 +185,16 @@ const Config::TASKBAR_APPEARANCE &TaskbarAttributeWorker::GetConfigForMonitor(HM
 {
 	if (m_Taskbars.count(monitor) != 0)
 	{
-		const auto &[_, state] = m_Taskbars.at(monitor);
+		const auto &monInf = m_Taskbars.at(monitor);
 		if (m_CurrentStartMonitor == monitor)
 		{
 			return Config::START_APPEARANCE;
 		}
-		else if (state == TaskbarState::MaximisedWindow)
+		else if (!monInf.MaximisedWindows.empty())
 		{
 			return Config::MAXIMISED_APPEARANCE;
 		}
-		else if (state == TaskbarState::Regular)
+		else
 		{
 			return Config::REGULAR_APPEARANCE;
 		}
@@ -148,8 +207,7 @@ bool TaskbarAttributeWorker::RefreshAttribute(HMONITOR monitor)
 {
 	if (m_Taskbars.count(monitor) != 0)
 	{
-		const auto &[taskbar, _] = m_Taskbars.at(monitor);
-		return SetAttribute(taskbar, GetConfigForMonitor(monitor));
+		return SetAttribute(m_Taskbars.at(monitor).TaskbarWindow, GetConfigForMonitor(monitor));
 	}
 	else
 	{
@@ -162,7 +220,7 @@ long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, const LPARAM lPar
 	const Window window = reinterpret_cast<HWND>(lParam);
 	if (m_Taskbars.count(window.monitor()) != 0)
 	{
-		const auto &[taskbar, _] = m_Taskbars.at(window.monitor());
+		const auto &taskbar = m_Taskbars.at(window.monitor()).TaskbarWindow;
 		if (taskbar == window)
 		{
 			const auto &config = GetConfigForMonitor(taskbar.monitor());
@@ -186,8 +244,20 @@ long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, const LPARAM lPar
 	}
 }
 
+EventHook::callback_t TaskbarAttributeWorker::BindHook()
+{
+	return std::bind(&TaskbarAttributeWorker::OnWindowStateChange, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+}
+
 TaskbarAttributeWorker::TaskbarAttributeWorker(const HINSTANCE &hInstance) :
 	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance),
+	m_CloackedHook(EVENT_OBJECT_CLOAKED, EVENT_OBJECT_CLOAKED, BindHook(), WINEVENT_OUTOFCONTEXT),
+	m_UncloackedHook(EVENT_OBJECT_UNCLOAKED, EVENT_OBJECT_UNCLOAKED, BindHook(), WINEVENT_OUTOFCONTEXT),
+	m_CreatedHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_CREATE, BindHook(), WINEVENT_OUTOFCONTEXT),
+	m_DestroyedHook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_DESTROY, BindHook(), WINEVENT_OUTOFCONTEXT),
+	m_MinimizedHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZESTART, BindHook(), WINEVENT_OUTOFCONTEXT),
+	m_UnminimizedHook(EVENT_SYSTEM_MINIMIZEEND, EVENT_SYSTEM_MINIMIZEEND, BindHook(), WINEVENT_OUTOFCONTEXT),
+	m_ResizeMoveHook(EVENT_OBJECT_LOCATIONCHANGE, EVENT_OBJECT_LOCATIONCHANGE, BindHook(), WINEVENT_OUTOFCONTEXT),
 	m_CurrentStartMonitor(nullptr),
 	m_IAV(create_instance<IAppVisibility>(CLSID_AppVisibility)),
 	m_IAVECookie(0),
@@ -217,9 +287,9 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const HINSTANCE &hInstance) :
 void TaskbarAttributeWorker::ReturnToStock()
 {
 	bool_guard guard(m_returningToStock);
-	for (const auto &[_, pair] : m_Taskbars)
+	for (const auto &[_, monInf] : m_Taskbars)
 	{
-		SetAttribute(pair.first, { swca::ACCENT::ACCENT_NORMAL });
+		SetAttribute(monInf.TaskbarWindow, { swca::ACCENT::ACCENT_NORMAL });
 	}
 }
 
