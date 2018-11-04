@@ -25,9 +25,9 @@ void TaskbarAttributeWorker::OnWindowStateChange(DWORD, const Window &window, LO
 			{
 				monInf.MaximisedWindows.erase(window);
 			}
-		}
 
-		RefreshAttribute(monitor);
+			RefreshAttribute(monitor, true);
+		}
 	}
 }
 
@@ -139,7 +139,7 @@ void TaskbarAttributeWorker::ResetState()
 	Poll();
 	for (const auto &[monitor, _] : m_Taskbars)
 	{
-		RefreshAttribute(monitor);
+		RefreshAttribute(monitor, true);
 	}
 }
 
@@ -181,9 +181,11 @@ bool TaskbarAttributeWorker::SetAttribute(const Window &window, const Config::TA
 	}
 }
 
-const Config::TASKBAR_APPEARANCE &TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR monitor)
+const Config::TASKBAR_APPEARANCE &TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR monitor, bool skipCheck)
 {
-	if (m_Taskbars.count(monitor) != 0)
+	// TODO: no need to query for a monitor until we reach maximised window
+	// TODO: consider enabled state of settings
+	if (skipCheck || m_Taskbars.count(monitor) != 0)
 	{
 		const auto &monInf = m_Taskbars.at(monitor);
 		if (m_CurrentStartMonitor == monitor)
@@ -203,11 +205,11 @@ const Config::TASKBAR_APPEARANCE &TaskbarAttributeWorker::GetConfigForMonitor(HM
 	return Config::REGULAR_APPEARANCE;
 }
 
-bool TaskbarAttributeWorker::RefreshAttribute(HMONITOR monitor)
+bool TaskbarAttributeWorker::RefreshAttribute(HMONITOR monitor, bool skipCheck)
 {
-	if (m_Taskbars.count(monitor) != 0)
+	if (skipCheck || m_Taskbars.count(monitor) != 0)
 	{
-		return SetAttribute(m_Taskbars.at(monitor).TaskbarWindow, GetConfigForMonitor(monitor));
+		return SetAttribute(m_Taskbars.at(monitor).TaskbarWindow, GetConfigForMonitor(monitor, true));
 	}
 	else
 	{
@@ -223,14 +225,14 @@ long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, const LPARAM lPar
 		const auto &taskbar = m_Taskbars.at(window.monitor()).TaskbarWindow;
 		if (taskbar == window)
 		{
-			const auto &config = GetConfigForMonitor(taskbar.monitor());
+			const auto &config = GetConfigForMonitor(taskbar.monitor(), true);
 			if (config.ACCENT == swca::ACCENT::ACCENT_NORMAL || m_returningToStock)
 			{
 				return 0;
 			}
 			else
 			{
-				return RefreshAttribute(taskbar.monitor());
+				return RefreshAttribute(taskbar.monitor(), true);
 			}
 		}
 		else

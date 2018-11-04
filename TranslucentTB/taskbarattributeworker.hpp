@@ -18,10 +18,12 @@ private:
 		std::set<Window> MaximisedWindows;
 	};
 
-	// bool m_IsPeeking;
-	// bool m_IsTaskViewOrTimelineOpen;
-	// bool m_IsFluentAndTimelineSupported
-	// todo: a few event hooks probs.
+	// todo:
+	// dynamic peek button, detect peek dynamic windows
+	// dynamic cortana and task view
+	// color preview cpicker (internal color override?)
+	// apply settings instantly.
+	// taskbar creation event hook
 
 	// Maximised window
 	EventHook m_CloackedHook;
@@ -52,8 +54,8 @@ private:
 	void Poll();
 	void ResetState();
 	bool SetAttribute(const Window &window, const Config::TASKBAR_APPEARANCE &config);
-	const Config::TASKBAR_APPEARANCE &GetConfigForMonitor(HMONITOR monitor);
-	bool RefreshAttribute(HMONITOR monitor);
+	const Config::TASKBAR_APPEARANCE &GetConfigForMonitor(HMONITOR monitor, bool skipCheck = false);
+	bool RefreshAttribute(HMONITOR monitor, bool skipCheck = false);
 	long OnRequestAttributeRefresh(WPARAM, const LPARAM lParam);
 
 	// Other
