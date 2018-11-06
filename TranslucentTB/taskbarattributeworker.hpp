@@ -23,17 +23,15 @@ private:
 	// dynamic cortana and task view
 	// color preview cpicker (internal color override?)
 	// apply settings instantly.
-	// taskbar creation event hook
 
 	// Maximised window
 	EventHook m_CloackedHook;
 	EventHook m_UncloackedHook;
-	EventHook m_CreatedHook;
 	EventHook m_DestroyedHook;
 	EventHook m_MinimizedHook;
 	EventHook m_UnminimizedHook;
 	EventHook m_ResizeMoveHook;
-	void OnWindowStateChange(DWORD, const Window &window, LONG idObject, ...);
+	void OnWindowStateChange(bool skipCheck, DWORD, const Window &window, LONG idObject, ...);
 	static bool IsWindowMaximised(const Window &window);
 	static BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, const LPARAM lParam);
 
@@ -47,6 +45,8 @@ private:
 	// Taskbar find & hook
 	std::unordered_map<HMONITOR, MonitorInfo> m_Taskbars;
 	std::vector<TTBHook> m_Hooks;
+	EventHook m_CreatedHook;
+	void OnWindowCreate(DWORD, const Window &window, LONG idObject, ...);
 	void RefreshTaskbars();
 	void HookTaskbar(const Window &window);
 

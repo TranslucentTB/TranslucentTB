@@ -9,9 +9,9 @@
 #include "ttblog.hpp"
 #include "win32.hpp"
 
-void TaskbarAttributeWorker::OnWindowStateChange(DWORD, const Window &window, LONG idObject, ...)
+void TaskbarAttributeWorker::OnWindowStateChange(bool skipCheck, DWORD, const Window &window, LONG idObject, ...)
 {
-	if (idObject == OBJID_WINDOW && window.valid())
+	if (skipCheck || (idObject == OBJID_WINDOW && window.valid()))
 	{
 		HMONITOR monitor = window.monitor();
 		if (m_Taskbars.count(monitor) != 0)
@@ -82,6 +82,20 @@ void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 HMONITOR TaskbarAttributeWorker::GetStartMenuMonitor()
 {
 	return Window::ForegroundWindow().monitor();
+}
+
+void TaskbarAttributeWorker::OnWindowCreate(DWORD, const Window &window, LONG idObject, ...)
+{
+	if (idObject == OBJID_WINDOW && window.valid())
+	{
+		OnWindowStateChange(true, 0, window, idObject);
+		if (*window.classname() == SECONDARY_TASKBAR)
+		{
+			m_Taskbars[window.monitor()] = { window };
+
+			HookTaskbar(window);
+		}
+	}
 }
 
 void TaskbarAttributeWorker::RefreshTaskbars()
@@ -248,14 +262,13 @@ long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, const LPARAM lPar
 
 EventHook::callback_t TaskbarAttributeWorker::BindHook()
 {
-	return std::bind(&TaskbarAttributeWorker::OnWindowStateChange, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+	return std::bind(&TaskbarAttributeWorker::OnWindowStateChange, this, false, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 }
 
 TaskbarAttributeWorker::TaskbarAttributeWorker(const HINSTANCE &hInstance) :
 	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance),
 	m_CloackedHook(EVENT_OBJECT_CLOAKED, EVENT_OBJECT_CLOAKED, BindHook(), WINEVENT_OUTOFCONTEXT),
 	m_UncloackedHook(EVENT_OBJECT_UNCLOAKED, EVENT_OBJECT_UNCLOAKED, BindHook(), WINEVENT_OUTOFCONTEXT),
-	m_CreatedHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_CREATE, BindHook(), WINEVENT_OUTOFCONTEXT),
 	m_DestroyedHook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_DESTROY, BindHook(), WINEVENT_OUTOFCONTEXT),
 	m_MinimizedHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZESTART, BindHook(), WINEVENT_OUTOFCONTEXT),
 	m_UnminimizedHook(EVENT_SYSTEM_MINIMIZEEND, EVENT_SYSTEM_MINIMIZEEND, BindHook(), WINEVENT_OUTOFCONTEXT),
@@ -263,6 +276,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const HINSTANCE &hInstance) :
 	m_CurrentStartMonitor(nullptr),
 	m_IAV(create_instance<IAppVisibility>(CLSID_AppVisibility)),
 	m_IAVECookie(0),
+	m_CreatedHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_CREATE, std::bind(&TaskbarAttributeWorker::OnWindowCreate, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), WINEVENT_OUTOFCONTEXT),
 	m_returningToStock(false)
 {
 	if (m_IAV)

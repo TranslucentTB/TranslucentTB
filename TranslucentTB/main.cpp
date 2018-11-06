@@ -623,23 +623,6 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		WINEVENT_OUTOFCONTEXT
 	);
 
-	// Detect additional monitor connection
-	// todo: move to worker
-	/*EventHook creation_hook(
-		EVENT_OBJECT_CREATE,
-		EVENT_OBJECT_CREATE,
-		[](DWORD, const Window &window, ...)
-		{
-			if (window.valid() && *window.classname() == SECONDARY_TASKBAR)
-			{
-				run.taskbars[window.monitor()] = { window, &Config::REGULAR_APPEARANCE };
-
-				HookTaskbar(window);
-			}
-		},
-		WINEVENT_OUTOFCONTEXT
-	);*/
-
 	MSG msg;
 	BOOL ret;
 	while ((ret = GetMessage(&msg, NULL, 0, 0)) != 0)
