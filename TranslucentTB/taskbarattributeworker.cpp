@@ -9,6 +9,15 @@
 #include "ttblog.hpp"
 #include "win32.hpp"
 
+void TaskbarAttributeWorker::OnAeroPeekEnterExit(DWORD event, ...)
+{
+	m_PeekActive = event == EVENT_SYSTEM_PEEKSTART;
+	for (const auto &[monitor, _] : m_Taskbars)
+	{
+		RefreshAttribute(monitor, true);
+	}
+}
+
 void TaskbarAttributeWorker::OnWindowStateChange(bool skipCheck, DWORD, const Window &window, LONG idObject, ...)
 {
 	if (skipCheck || (idObject == OBJID_WINDOW && window.valid()))
@@ -197,22 +206,21 @@ bool TaskbarAttributeWorker::SetAttribute(const Window &window, const Config::TA
 
 const Config::TASKBAR_APPEARANCE &TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR monitor, bool skipCheck)
 {
-	// TODO: no need to query for a monitor until we reach maximised window
-	// TODO: consider enabled state of settings
-	if (skipCheck || m_Taskbars.count(monitor) != 0)
+	if (Config::START_ENABLED && m_CurrentStartMonitor == monitor)
 	{
-		const auto &monInf = m_Taskbars.at(monitor);
-		if (m_CurrentStartMonitor == monitor)
-		{
-			return Config::START_APPEARANCE;
-		}
-		else if (!monInf.MaximisedWindows.empty())
-		{
-			return Config::MAXIMISED_APPEARANCE;
-		}
-		else
+		return Config::START_APPEARANCE;
+	}
+
+	if (Config::MAXIMISED_ENABLED)
+	{
+		if (Config::MAXIMISED_REGULAR_ON_PEEK && m_PeekActive)
 		{
 			return Config::REGULAR_APPEARANCE;
+		}
+		else if ((skipCheck || m_Taskbars.count(monitor) != 0) &&
+			!m_Taskbars.at(monitor).MaximisedWindows.empty())
+		{
+			return Config::MAXIMISED_APPEARANCE;
 		}
 	}
 
@@ -267,6 +275,8 @@ EventHook::callback_t TaskbarAttributeWorker::BindHook()
 
 TaskbarAttributeWorker::TaskbarAttributeWorker(const HINSTANCE &hInstance) :
 	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance),
+	m_PeekActive(false),
+	m_PeekHook(EVENT_SYSTEM_PEEKSTART, EVENT_SYSTEM_PEEKEND, std::bind(&TaskbarAttributeWorker::OnAeroPeekEnterExit, this, std::placeholders::_1), WINEVENT_OUTOFCONTEXT),
 	m_CloackedHook(EVENT_OBJECT_CLOAKED, EVENT_OBJECT_CLOAKED, BindHook(), WINEVENT_OUTOFCONTEXT),
 	m_UncloackedHook(EVENT_OBJECT_UNCLOAKED, EVENT_OBJECT_UNCLOAKED, BindHook(), WINEVENT_OUTOFCONTEXT),
 	m_DestroyedHook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_DESTROY, BindHook(), WINEVENT_OUTOFCONTEXT),

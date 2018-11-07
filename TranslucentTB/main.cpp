@@ -611,18 +611,6 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 
 	TaskbarAttributeWorker worker(hInstance);
 
-	// Undoc'd, allows to detect when Aero Peek starts and stops
-	// todo: move to worker
-	EventHook peek_hook(
-		0x21,
-		0x22,
-		[](const DWORD event, ...)
-		{
-			run.peek_active = event == 0x21;
-		},
-		WINEVENT_OUTOFCONTEXT
-	);
-
 	MSG msg;
 	BOOL ret;
 	while ((ret = GetMessage(&msg, NULL, 0, 0)) != 0)
