@@ -21,12 +21,11 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 {
 	if (FAILED(error))
 	{
-		const std::wstring message_str(message);
 		const std::wstring error_message = ExceptionFromHRESULT(error);
 		std::wostringstream boxbuffer;
 		if (level != Level::Log && level != Level::Debug)
 		{
-			boxbuffer << message_str << L"\n\n";
+			boxbuffer << message << L"\n\n";
 
 			if (level == Level::Fatal)
 			{
@@ -37,7 +36,7 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 		}
 
 		std::wostringstream err;
-		err << message_str << L' ' << error_message <<
+		err << message << L' ' << error_message <<
 			L" (" << file << L':' << line << L" at function " << function << L')';
 
 		switch (level)

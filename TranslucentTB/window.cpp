@@ -21,6 +21,24 @@ std::unordered_map<Window, std::shared_ptr<std::wstring>> Window::m_Titles;
 const Window Window::BroadcastWindow = HWND_BROADCAST;
 const Window Window::MessageOnlyWindow = HWND_MESSAGE;
 
+void Window::ClearCache()
+{
+	{
+		std::lock_guard guard(m_ClassNamesLock);
+		m_ClassNames.clear();
+	}
+
+	{
+		std::lock_guard guard(m_FilenamesLock);
+		m_Filenames.clear();
+	}
+
+	{
+		std::lock_guard guard(m_TitlesLock);
+		m_Titles.clear();
+	}
+}
+
 std::shared_ptr<const std::wstring> Window::title() const
 {
 	std::lock_guard guard(m_TitlesLock);

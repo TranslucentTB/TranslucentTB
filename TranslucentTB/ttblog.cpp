@@ -119,7 +119,7 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 	return { S_OK, L"" };
 }
 
-void Log::OutputMessage(const std::wstring &message)
+void Log::OutputMessage(std::wstring_view message)
 {
 	std::lock_guard guard(m_LogLock);
 
@@ -142,7 +142,8 @@ void Log::OutputMessage(const std::wstring &message)
 		}
 	}
 
-	OutputDebugString((message + L'\n').c_str());
+	OutputDebugString(message.data());
+	OutputDebugString(L"\n");
 
 	if (*m_FileHandle)
 	{

@@ -528,6 +528,7 @@ void InitializeTray(const HINSTANCE &hInstance, TaskbarAttributeWorker &worker)
 		{
 			ApplyStock(EXCLUDE_FILE);
 		});
+		tray.RegisterContextMenuCallback(IDM_CLEARWINDOWCACHE, Window::ClearCache);
 		tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, Blacklist::ClearCache);
 		tray.RegisterContextMenuCallback(IDM_RESETWORKER, [&worker]
 		{

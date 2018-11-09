@@ -3,6 +3,7 @@
 #include <mutex>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <utility>
 #include <windef.h>
@@ -26,6 +27,6 @@ public:
 	{
 		return m_File;
 	}
-	static void OutputMessage(const std::wstring &message);
+	static void OutputMessage(std::wstring_view message);
 	static void Flush();
 };

@@ -107,8 +107,10 @@ BEGIN
             MENUITEM "Edit blacklist",              IDM_EDITDYNAMICBLACKLIST
             MENUITEM "Return to default blacklist", IDM_RETURNTODEFAULTBLACKLIST
             MENUITEM "",                            0, MFT_SEPARATOR
+            MENUITEM "Clear window cache",          IDM_CLEARWINDOWCACHE
             MENUITEM "Clear blacklist cache",       IDM_CLEARBLACKLISTCACHE
             MENUITEM "Reset dynamic state",         IDM_RESETWORKER
+            MENUITEM "",                            0, MFT_SEPARATOR
             MENUITEM "About",                       IDM_ABOUT
             MENUITEM "Exit without saving",         IDM_EXITWITHOUTSAVING
         END

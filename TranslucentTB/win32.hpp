@@ -63,7 +63,7 @@ public:
 	static void HardenProcess();
 
 	// Converts a ASCII string to a wide character string.
-	static std::wstring CharToWchar(const char *const str);
+	static std::wstring CharToWchar(std::string_view str);
 
 	// Gets the current Windows build identifier.
 	static std::pair<std::wstring, HRESULT> GetWindowsBuild();

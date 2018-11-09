@@ -79,6 +79,8 @@ public:
 		return GetForegroundWindow();
 	}
 
+	static void ClearCache();
+
 	constexpr Window(const HWND &handle = Window::NullWindow) noexcept : m_WindowHandle(handle) { };
 	std::shared_ptr<const std::wstring> title() const;
 	std::shared_ptr<const std::wstring> classname() const;

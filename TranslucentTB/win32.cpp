@@ -433,12 +433,12 @@ void win32::HardenProcess()
 	}
 }
 
-std::wstring win32::CharToWchar(const char *const str)
+std::wstring win32::CharToWchar(std::string_view str)
 {
-	const size_t strLength = std::char_traits<char>::length(str);
+	const std::size_t length = str.length();
 	std::wstring strW;
-	strW.resize(strLength);
-	int count = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED | MB_ERR_INVALID_CHARS, str, strLength, strW.data(), strLength);
+	strW.resize(length);
+	int count = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED | MB_ERR_INVALID_CHARS, str.data(), length, strW.data(), length);
 	if (count)
 	{
 		strW.resize(count);
