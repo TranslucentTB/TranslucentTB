@@ -23,11 +23,6 @@
 #include "ttblog.hpp"
 #include "window.hpp"
 
-const swca::pSetWindowCompositionAttribute user32::SetWindowCompositionAttribute =
-	reinterpret_cast<swca::pSetWindowCompositionAttribute>(
-		GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute")
-	);
-
 std::mutex win32::m_LocationLock;
 std::wstring win32::m_ExeLocation;
 std::mutex win32::m_PickerThreadsLock;
@@ -36,10 +31,9 @@ std::unordered_set<DWORD> win32::m_PickerThreads;
 DWORD win32::PickerThreadProc(LPVOID data)
 {
 	const HRESULT hr = CColourPicker(*reinterpret_cast<uint32_t *>(data)).CreateColourPicker();
-	const DWORD tid = GetCurrentThreadId();
 	{
 		std::lock_guard guard(m_PickerThreadsLock);
-		m_PickerThreads.erase(tid);
+		m_PickerThreads.erase(GetCurrentThreadId());
 	}
 	if (FAILED(hr))
 	{
@@ -66,22 +60,37 @@ BOOL win32::EnumThreadWindowsProc(HWND hwnd, LPARAM lParam)
 	return true;
 }
 
+std::pair<std::wstring, HRESULT> win32::GetProcessFileName(HANDLE process)
+{
+	DWORD exeLocation_size = LONG_PATH;
+	std::wstring exeLocation;
+	exeLocation.resize(exeLocation_size);
+	if (QueryFullProcessImageName(process, 0, exeLocation.data(), &exeLocation_size))
+	{
+		exeLocation.resize(exeLocation_size);
+		return { exeLocation, S_OK };
+	}
+	else
+	{
+		exeLocation.erase();
+		return { exeLocation, HRESULT_FROM_WIN32(GetLastError()) };
+	}
+}
+
 const std::wstring &win32::GetExeLocation()
 {
 	std::lock_guard guard(m_LocationLock);
 	if (m_ExeLocation.empty())
 	{
-		DWORD exeLocation_size = LONG_PATH;
-		std::wstring exeLocation;
-		exeLocation.resize(exeLocation_size);
-		if (QueryFullProcessImageName(GetCurrentProcess(), 0, exeLocation.data(), &exeLocation_size))
+		const auto [loc, hr] = GetProcessFileName(GetCurrentProcess());
+
+		if (SUCCEEDED(hr))
 		{
-			exeLocation.resize(exeLocation_size);
-			m_ExeLocation = std::move(exeLocation);
+			m_ExeLocation = std::move(loc);
 		}
 		else
 		{
-			LastErrorHandle(Error::Level::Fatal, L"Failed to determine executable location!");
+			ErrorHandle(hr, Error::Level::Fatal, L"Failed to determine executable location!");
 		}
 	}
 
@@ -372,6 +381,7 @@ void win32::HardenProcess()
 		LastErrorHandle(Error::Level::Log, L"Couldn't disable dynamic code generation.");
 	}
 
+	// TODO: this errors
 	PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY syscall_policy {};
 	syscall_policy.DisallowWin32kSystemCalls = true;
 	if (!SetProcessMitigationPolicy(ProcessSystemCallDisablePolicy, &syscall_policy, sizeof(syscall_policy)))
@@ -464,15 +474,15 @@ std::pair<std::wstring, HRESULT> win32::GetWindowsBuild()
 
 std::pair<std::wstring, HRESULT> win32::GetFileVersion(const std::wstring &file)
 {
-	DWORD thisisuseless;
-	DWORD size = GetFileVersionInfoSize(file.c_str(), &thisisuseless);
+	DWORD handle;
+	DWORD size = GetFileVersionInfoSize(file.c_str(), &handle);
 	if (!size)
 	{
 		return { L"", HRESULT_FROM_WIN32(GetLastError()) };
 	}
 
 	auto data = std::make_unique<std::byte[]>(size);
-	if (!GetFileVersionInfo(file.c_str(), thisisuseless, size, data.get()))
+	if (!GetFileVersionInfo(file.c_str(), handle, size, data.get()))
 	{
 		return { L"", HRESULT_FROM_WIN32(GetLastError()) };
 	}
@@ -484,12 +494,12 @@ std::pair<std::wstring, HRESULT> win32::GetFileVersion(const std::wstring &file)
 		return { L"", HRESULT_FROM_WIN32(GetLastError()) };
 	}
 
-	return { fileVersion, S_OK };
+	return { { fileVersion, length - 1 }, S_OK };
 }
 
-unsigned long long win32::FiletimeToUnixEpoch(const FILETIME &time)
+uint64_t win32::FiletimeToUnixEpoch(const FILETIME &time)
 {
-	unsigned long long timeStamp = ULARGE_INTEGER{{ time.dwLowDateTime, time.dwHighDateTime }}.QuadPart;
+	uint64_t timeStamp = ULARGE_INTEGER{{ time.dwLowDateTime, time.dwHighDateTime }}.QuadPart;
 
 	// FILETIME is in hundreds of nanoseconds, but Unix timestamps are in seconds.
 	timeStamp /= 10000000;
@@ -501,7 +511,7 @@ unsigned long long win32::FiletimeToUnixEpoch(const FILETIME &time)
 	return timeStamp;
 }
 
-std::wstring win32::GetProcessorArchitecture()
+std::wstring_view win32::GetProcessorArchitecture()
 {
 	SYSTEM_INFO info;
 	GetNativeSystemInfo(&info);

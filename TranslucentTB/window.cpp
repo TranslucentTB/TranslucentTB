@@ -27,7 +27,7 @@ std::shared_ptr<const std::wstring> Window::title() const
 
 	if (m_Titles.count(m_WindowHandle) == 0)
 	{
-		std::shared_ptr<std::wstring> windowTitle = std::make_shared<std::wstring>();
+		auto windowTitle = std::make_shared<std::wstring>();
 		int titleSize = GetWindowTextLength(m_WindowHandle) + 1; // For the null terminator
 		windowTitle->resize(titleSize);
 
@@ -54,7 +54,7 @@ std::shared_ptr<const std::wstring> Window::classname() const
 
 	if (m_ClassNames.count(m_WindowHandle) == 0)
 	{
-		std::shared_ptr<std::wstring> className = std::make_shared<std::wstring>();
+		auto className = std::make_shared<std::wstring>();
 		className->resize(257);	// According to docs, maximum length of a class name is 256, but it's ambiguous
 								// wether this includes the null terminator or not.
 
@@ -85,7 +85,7 @@ std::shared_ptr<const std::wstring> Window::filename() const
 	{
 		DWORD pid;
 		GetWindowThreadProcessId(m_WindowHandle, &pid);
-		std::shared_ptr<std::wstring> exeName = std::make_shared<std::wstring>();
+		auto exeName = std::make_shared<std::wstring>();
 
 		const winrt::handle processHandle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid);
 		if (!processHandle)
@@ -94,19 +94,18 @@ std::shared_ptr<const std::wstring> Window::filename() const
 			return m_Filenames[m_WindowHandle] = std::move(exeName);
 		}
 
-		DWORD path_Size = LONG_PATH;
-		exeName->resize(path_Size);
-
-		if (!QueryFullProcessImageName(processHandle.get(), 0, exeName->data(), &path_Size))
+		const auto [loc, hr] = win32::GetProcessFileName(processHandle.get());
+		if (SUCCEEDED(hr))
 		{
-			LastErrorHandle(Error::Level::Log, L"Getting file name of a window failed.");
-			exeName->erase();
+			*exeName = std::move(loc);
+			exeName->erase(0, exeName->find_last_of(LR"(/\)") + 1);
 			return m_Filenames[m_WindowHandle] = std::move(exeName);
 		}
-
-		exeName->resize(path_Size);
-		exeName->erase(0, exeName->find_last_of(LR"(/\)") + 1);
-		return m_Filenames[m_WindowHandle] = std::move(exeName);
+		else
+		{
+			ErrorHandle(hr, Error::Level::Log, L"Getting file name of a window failed.");
+			return m_Filenames[m_WindowHandle] = std::move(exeName);
+		}
 	}
 	else
 	{

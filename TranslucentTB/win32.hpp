@@ -10,16 +10,12 @@
 #include <windef.h>
 #include <winrt/base.h>
 
-#include "swcadata.hpp"
-
-namespace user32 {
-	extern const swca::pSetWindowCompositionAttribute SetWindowCompositionAttribute;
-};
-
 class win32 {
 private:
 	static std::mutex m_LocationLock;
 	static std::wstring m_ExeLocation;
+
+	// TODO: move CPicker related stuff to CPicker project
 	static std::mutex m_PickerThreadsLock;
 	static std::unordered_set<DWORD> m_PickerThreads;
 
@@ -27,6 +23,9 @@ private:
 	static BOOL CALLBACK EnumThreadWindowsProc(HWND hwnd, LPARAM lParam);
 
 public:
+	// Gets location of the file of a process
+	static std::pair<std::wstring, HRESULT> GetProcessFileName(HANDLE process);
+
 	// Gets location of current module, fatally dies if failed.
 	static const std::wstring &GetExeLocation();
 
@@ -73,8 +72,8 @@ public:
 	static std::pair<std::wstring, HRESULT> GetFileVersion(const std::wstring &file);
 
 	// Converts a Windows-style filetime to a unix epoch,
-	static unsigned long long FiletimeToUnixEpoch(const FILETIME &time);
+	static uint64_t FiletimeToUnixEpoch(const FILETIME &time);
 
 	// Gets the current processor architecture as a string.
-	static std::wstring GetProcessorArchitecture();
+	static std::wstring_view GetProcessorArchitecture();
 };

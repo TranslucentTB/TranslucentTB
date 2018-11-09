@@ -7,7 +7,8 @@
 #include "../detours/detours.h"
 #include "dlldata.hpp"
 
-swca::pSetWindowCompositionAttribute Hook::SetWindowCompositionAttribute = reinterpret_cast<swca::pSetWindowCompositionAttribute>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
+swca::pSetWindowCompositionAttribute Hook::SetWindowCompositionAttribute =
+	reinterpret_cast<swca::pSetWindowCompositionAttribute>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
 std::mutex Hook::m_initDoneLock;
 bool Hook::m_initDone = false;
 const HWND Hook::m_TTBMsgWnd = FindWindow(WORKER_WINDOW, WORKER_WINDOW);

@@ -20,6 +20,24 @@ LRESULT MessageWindow::WindowProcedure(const Window &window, unsigned int uMsg, 
 	return DefWindowProc(window, uMsg, wParam, lParam);
 }
 
+void MessageWindow::RunMessageLoop()
+{
+	MSG msg;
+	BOOL ret;
+	while ((ret = GetMessage(&msg, NULL, 0, 0)) != 0)
+	{
+		if (ret != -1)
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		else
+		{
+			LastErrorHandle(Error::Level::Fatal, L"GetMessage failed!");
+		}
+	}
+}
+
 MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &windowName, const HINSTANCE &hInstance, const Window &parent, const wchar_t *iconResource) :
 	m_WindowClass(
 		std::bind(&MessageWindow::WindowProcedure, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),

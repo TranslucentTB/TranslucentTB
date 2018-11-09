@@ -1,6 +1,5 @@
 // Standard API
-#include <chrono>
-#include <sstream>
+#include <functional>
 #include <string>
 #include <thread>
 #include <unordered_map>
@@ -12,17 +11,12 @@
 
 // Local stuff
 #include "aboutdialog.hpp"
-#include "appvisibilitysink.hpp"
 #include "autofree.hpp"
 #include "autostart.hpp"
 #include "blacklist.hpp"
 #include "common.hpp"
 #include "config.hpp"
-#include "createinstance.hpp"
-#include "eventhook.hpp"
 #include "folderwatcher.hpp"
-#include "hook.hpp"
-#include "../ExplorerDetour/hook.hpp"
 #include "messagewindow.hpp"
 #include "resource.h"
 #include "swcadata.hpp"
@@ -49,17 +43,9 @@ enum class EXITREASON {
 
 static struct {
 	EXITREASON exit_reason = EXITREASON::UserAction;
-	Window main_taskbar;
-	std::unordered_map<HMONITOR, std::pair<Window, const Config::TASKBAR_APPEARANCE *>> taskbars;
-	std::vector<TTBHook> hooks;
-	bool hooks_disabled = false;
-	bool should_show_peek = true;
-	bool is_running = true;
 	std::wstring config_folder;
 	std::wstring config_file;
 	std::wstring exclude_file;
-	bool peek_active = false;
-	bool start_opened = false;
 } run;
 
 static const std::unordered_map<swca::ACCENT, uint32_t> REGULAR_BUTTOM_MAP = {
@@ -230,30 +216,30 @@ void LoadConfig()
 #pragma region Utilities
 
 // todo: move to worker?
-void TogglePeek(const bool &status)
-{
-	static bool cached_peek = true;
-	static Window cached_taskbar = Window(run.main_taskbar);
-
-	if (status != cached_peek || cached_taskbar != run.main_taskbar)
-	{
-		Window _peek = Window::Find(L"TrayShowDesktopButtonWClass", L"", Window::Find(L"TrayNotifyWnd", L"", run.main_taskbar));
-
-		if (!status)
-		{
-			SetWindowLong(_peek, GWL_EXSTYLE, GetWindowLong(_peek, GWL_EXSTYLE) | WS_EX_LAYERED);
-
-			SetLayeredWindowAttributes(_peek, 0, 0, LWA_ALPHA);
-		}
-		else
-		{
-			SetWindowLong(_peek, GWL_EXSTYLE, GetWindowLong(_peek, GWL_EXSTYLE) & ~WS_EX_LAYERED);
-		}
-
-		cached_peek = status;
-		cached_taskbar = Window(run.main_taskbar);
-	}
-}
+// void TogglePeek(const bool &status)
+// {
+// 	static bool cached_peek = true;
+// 	static Window cached_taskbar = Window(run.main_taskbar);
+//
+// 	if (status != cached_peek || cached_taskbar != run.main_taskbar)
+// 	{
+// 		Window _peek = Window::Find(L"TrayShowDesktopButtonWClass", L"", Window::Find(L"TrayNotifyWnd", L"", run.main_taskbar));
+//
+// 		if (!status)
+// 		{
+// 			SetWindowLong(_peek, GWL_EXSTYLE, GetWindowLong(_peek, GWL_EXSTYLE) | WS_EX_LAYERED);
+//
+// 			SetLayeredWindowAttributes(_peek, 0, 0, LWA_ALPHA);
+// 		}
+// 		else
+// 		{
+// 			SetWindowLong(_peek, GWL_EXSTYLE, GetWindowLong(_peek, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+// 		}
+//
+// 		cached_peek = status;
+// 		cached_taskbar = Window(run.main_taskbar);
+// 	}
+// }
 
 #pragma endregion
 
@@ -436,7 +422,7 @@ long ExitApp(const EXITREASON &reason, ...)
 
 #pragma region Startup
 
-void InitializeTray(const HINSTANCE &hInstance)
+void InitializeTray(const HINSTANCE &hInstance, TaskbarAttributeWorker &worker)
 {
 	static MessageWindow window(TRAY_WINDOW, NAME, hInstance);
 
@@ -543,6 +529,10 @@ void InitializeTray(const HINSTANCE &hInstance)
 			ApplyStock(EXCLUDE_FILE);
 		});
 		tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, Blacklist::ClearCache);
+		tray.RegisterContextMenuCallback(IDM_RESETWORKER, [&worker]
+		{
+			worker.ResetState();
+		});
 		tray.RegisterContextMenuCallback(IDM_ABOUT, []
 		{
 			std::thread([]
@@ -606,25 +596,13 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	// Watch for changes
 	FolderWatcher config_watcher(run.config_folder, FILE_NOTIFY_CHANGE_LAST_WRITE, LoadConfig);
 
-	// Initialize GUI
-	InitializeTray(hInstance);
-
 	TaskbarAttributeWorker worker(hInstance);
 
-	MSG msg;
-	BOOL ret;
-	while ((ret = GetMessage(&msg, NULL, 0, 0)) != 0)
-	{
-		if (ret != -1)
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-		else
-		{
-			LastErrorHandle(Error::Level::Fatal, L"GetMessage failed!");
-		}
-	}
+	// Initialize GUI
+	InitializeTray(hInstance, worker);
+
+	// Run the main program loop. When this method exits, TranslucentTB itself is about to exit.
+	MessageWindow::RunMessageLoop();
 
 	// Close all open CPicker windows to avoid:
 	// 1. Saving the colors currently previewed.
@@ -642,7 +620,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		}
 
 		// Restore default taskbar appearance
-		TogglePeek(true);
+		// TogglePeek(true);
 		worker.ReturnToStock();
 	}
 
