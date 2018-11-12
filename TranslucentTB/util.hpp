@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <ctime>
 #include <cwctype>
 #include <limits>
 #include <memory>
@@ -35,7 +36,7 @@ public:
 
 private:
 	struct string_hash {
-		inline std::size_t operator()(std::wstring_view k) const
+		inline std::size_t operator()(std::wstring_view k) const noexcept
 		{
 			static const std::hash<std::wstring> hasher;
 			return hasher(ToLower(std::wstring(k)));
@@ -43,7 +44,7 @@ private:
 	};
 
 	struct string_compare {
-		inline bool operator()(std::wstring_view l, std::wstring_view r) const
+		inline bool operator()(std::wstring_view l, std::wstring_view r) const noexcept
 		{
 			return IgnoreCaseStringEquals(l, r);
 		}
@@ -57,12 +58,12 @@ public:
 	template<typename K, typename V, class Compare = std::less<V>>
 	struct map_value_compare {
 	private:
-		Compare m_Compare;
+		static constexpr Compare s_Comparer{};
 
 	public:
-		inline bool operator()(const std::pair<K, V> &a, const std::pair<K, V> &b)
+		constexpr bool operator()(const std::pair<K, V> &a, const std::pair<K, V> &b) const noexcept
 		{
-			return m_Compare(a.second, b.second);
+			return s_Comparer(a.second, b.second);
 		}
 	};
 
@@ -152,26 +153,24 @@ public:
 	}
 
 private:
-	// Generates a seed valid for a given Mersenne Twister engine.
-	// It returns a std::unique_ptr because std::seed_seq is not copyable or movable.
+	// Correctly seeds and creates a Mersenne Twister engine.
 	template<class T>
-	inline static std::unique_ptr<std::seed_seq> GenerateSeed()
+	inline static T CreateRandomEngine()
 	{
-		static constexpr size_t size = T::state_size;
-
-		int seed_data[size];
+		int seed_data[T::state_size];
 		std::random_device r;
 
-		std::generate_n(seed_data, size, std::ref(r));
-		return std::make_unique<std::seed_seq>(seed_data, seed_data + size);
+		std::generate_n(seed_data, T::state_size, std::ref(r));
+		std::seed_seq seed(seed_data, seed_data + T::state_size);
+		return T(seed);
 	}
 
-	// Gets a static instance of a Mersenne Twister engine. Can't be put directly in
+	// Gets a thread local and static instance of a Mersenne Twister engine. Can't be put directly in
 	// GetRandomNumber because every different template instantion will get a different static variable.
 	template<class T>
 	inline static T &GetRandomEngine()
 	{
-		thread_local static T rng(*GenerateSeed<T>());
+		thread_local static T rng = CreateRandomEngine<T>();
 
 		return rng;
 	}
@@ -185,16 +184,26 @@ public:
 		return distribution(GetRandomEngine<std::mt19937>());
 	}
 
+	// Clamps a numeric type to a narrower numeric type.
 	template<typename T, typename U>
 	static constexpr T ClampTo(const U &value)
 	{
 		return static_cast<T>(std::clamp<U>(value, (std::numeric_limits<T>::min)(), (std::numeric_limits<T>::max)()));
 	}
 
+	// Gets the number of T elapsed since the Unix epoch
 	template<typename T = std::chrono::seconds>
-	inline static T GetCurrentTime()
+	inline static T GetTime()
 	{
 		using namespace std::chrono;
 		return duration_cast<T>(system_clock::now().time_since_epoch());
+	}
+
+	// Gets the time elapsed since the Unix epoch for use with C APIs
+	template<>
+	inline std::time_t GetTime<std::time_t>()
+	{
+		using namespace std::chrono;
+		return system_clock::to_time_t(system_clock::now());
 	}
 };

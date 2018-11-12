@@ -51,13 +51,6 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 
-  <!-- Parallel compilation. This usually ends up much faster than basic minimal rebuilds. -->
-  <Target Name="ClCompile" Condition="'@(ClCompile)' != ''" DependsOnTargets="SelectClCompile" >
-    <MultiToolTask Condition="'%(ClCompile.ExcludedFromBuild)' != 'true'" TaskName="Microsoft.Build.CPPTasks.CL" TaskAssemblyName="$(VCTargetsPath)Microsoft.Build.CppTasks.Common.dll"
-      Sources="@(ClCompile)" SemaphoreProcCount="$(CL_MPCount)" ToolExe="$(CLToolExe)" ToolPath="$(CLToolPath)" ToolArchitecture="$(VCToolArchitecture)"
-      TrackFileAccess="$(TrackFileAccess)" TrackerLogDirectory="$(TLogLocation)" TLogReadFiles="@(CLTLogReadFiles)" TLogWriteFiles="@(CLTLogWriteFiles)" TrackerFrameworkPath="$(CLTrackerFrameworkPath)" TrackerSdkPath="$(CLTrackerSdkPath)" />
-  </Target>
-
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <Link>
       <AdditionalOptions>/DEBUG:GHASH %(AdditionalOptions)</AdditionalOptions>
@@ -94,7 +87,9 @@
       <AdditionalOptions>-Wno-missing-field-initializers -Wrange-loop-analysis -Wold-style-cast -Wnonportable-system-include-path -Wimplicit-fallthrough -Wunreachable-code-return -Wswitch-enum %(AdditionalOptions)</AdditionalOptions>
       <!-- https://bugs.llvm.org/show_bug.cgi?id=39517
       <ControlFlowGuard>Guard</ControlFlowGuard> -->
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SupportJustMyCode>false</SupportJustMyCode>
       <WarningLevel>Level4</WarningLevel>

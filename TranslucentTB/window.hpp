@@ -147,7 +147,8 @@ constexpr Window Window::NullWindow = nullptr;
 
 // Specialize std::hash to allow the use of Window as unordered_map key
 namespace std {
-	template<> struct hash<Window> {
+	template<>
+	struct hash<Window> {
 		inline std::size_t operator()(const Window &k) const noexcept
 		{
 			static const std::hash<HWND> hasher;
