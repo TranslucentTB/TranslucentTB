@@ -24,7 +24,7 @@ private:
 	std::vector<std::function<void()>> m_RefreshFunctions;
 
 public:
-	TrayContextMenu(MessageWindow &window, wchar_t *iconResource, wchar_t *menuResource, const HINSTANCE &hInstance = GetModuleHandle(NULL));
+	TrayContextMenu(MessageWindow &window, wchar_t *brightIconResource, wchar_t *darkIconResource, wchar_t *menuResource, const HINSTANCE &hInstance = GetModuleHandle(NULL));
 
 	using MENUCALLBACKCOOKIE = unsigned long long;
 

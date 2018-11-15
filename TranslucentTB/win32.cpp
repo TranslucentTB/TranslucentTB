@@ -134,11 +134,9 @@ bool win32::IsSingleInstance()
 		{
 		case ERROR_ALREADY_EXISTS:
 			return false;
-			break;
 
 		case ERROR_SUCCESS:
 			return true;
-			break;
 
 		default:
 			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Failed to open app mutex!");

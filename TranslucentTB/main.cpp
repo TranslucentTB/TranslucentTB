@@ -454,7 +454,7 @@ void InitializeTray(const HINSTANCE &hInstance, TaskbarAttributeWorker &worker)
 
 	if (!Config::NO_TRAY)
 	{
-		static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYICON), MAKEINTRESOURCE(IDR_POPUP_MENU), hInstance);
+		static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYWHITEICON), MAKEINTRESOURCE(TRAYBLACKICON), MAKEINTRESOURCE(IDR_POPUP_MENU), hInstance);
 
 		tray.BindColor(IDM_REGULAR_COLOR, Config::REGULAR_APPEARANCE.COLOR);
 		tray.BindEnum(Config::REGULAR_APPEARANCE.ACCENT, REGULAR_BUTTOM_MAP);

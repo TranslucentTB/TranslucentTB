@@ -11,12 +11,20 @@ protected:
 	}
 
 private:
+	static bool IsSystemLightThemeEnabled();
+
 	NOTIFYICONDATA m_IconData;
+	MessageWindow::CALLBACKCOOKIE m_TaskbarCreatedCookie;
+	MessageWindow::CALLBACKCOOKIE m_SettingsChangedCookie;
+	HINSTANCE m_hInstance;
+	wchar_t *m_BrightIconResource;
+	wchar_t *m_DarkIconResource;
 	long RegisterIcon(...);
-	MessageWindow::CALLBACKCOOKIE m_Cookie;
+	long UpdateIcon(bool notify = false, ...);
+	void DestroyIconHandle();
 
 public:
-	TrayIcon(MessageWindow &window, wchar_t *iconResource, const unsigned int additionalFlags = 0, const HINSTANCE &hInstance = GetModuleHandle(NULL));
+	TrayIcon(MessageWindow &window, wchar_t *brightIconResource, wchar_t *darkIconResource, const unsigned int additionalFlags = 0, const HINSTANCE &hInstance = GetModuleHandle(NULL));
 	~TrayIcon();
 
 	inline TrayIcon(const TrayIcon &) = delete;

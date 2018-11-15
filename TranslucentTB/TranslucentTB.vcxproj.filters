@@ -203,5 +203,8 @@
     <Image Include="TTB_color.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="TTB_black.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

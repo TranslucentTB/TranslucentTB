@@ -17,7 +17,9 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // remains consistent on all systems.
 MAINICON                ICON                    "TTB_color.ico"
 
-TRAYICON                ICON                    "TTB_white.ico"
+TRAYWHITEICON           ICON                    "TTB_white.ico"
+
+TRAYBLACKICON           ICON                    "TTB_black.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

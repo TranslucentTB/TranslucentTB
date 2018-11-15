@@ -11,6 +11,9 @@ static constexpr uint16_t LONG_PATH = 33000;
 // Minimum build number that supports Fluent
 static constexpr uint16_t MIN_FLUENT_BUILD = 17063;
 
+// Minimum build number that supports white system theme
+static constexpr uint16_t MIN_LIGHT_BUILD = 18282;
+
 #pragma endregion
 
 #pragma region App

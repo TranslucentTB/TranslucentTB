@@ -2,7 +2,8 @@
 
 #define IDR_VERSION                     1
 #define MAINICON                        101
-#define TRAYICON                        102
+#define TRAYWHITEICON                   102
+#define TRAYBLACKICON                   103
 #define IDR_POPUP_MENU                  40000
 #define IDM_REGULAR_COLOR               40001
 #define IDM_REGULAR_NORMAL              40002

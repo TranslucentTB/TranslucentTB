@@ -35,6 +35,7 @@ private:
 	// support alt-tab? EVENT_SYSTEM_SWITCH{START,END}
 	// handle EVENT_OBJECT_SHOW (but what is the reverse that signals it for window objects, EVENT_OBJECT_HIDE doesn't works)
 	// on current desktop not working after explorer restart?
+	// explorer slows to a crawl when using normal mode. sounds like we have recursion problems
 
 	// Maximised window
 	bool m_PeekActive;

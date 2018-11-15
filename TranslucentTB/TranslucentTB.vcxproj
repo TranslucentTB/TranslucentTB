@@ -106,6 +106,7 @@
     <Manifest Include="app.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="TTB_black.ico" />
     <Image Include="TTB_color.ico" />
     <Image Include="TTB_white.ico" />
   </ItemGroup>
