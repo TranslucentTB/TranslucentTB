@@ -7,9 +7,6 @@
 #include <processthreadsapi.h>
 #include <sstream>
 #include <thread>
-#ifndef STORE
-#include <vector>
-#endif
 #include <WinBase.h>
 #include <winerror.h>
 #include <winnt.h>
@@ -20,15 +17,13 @@
 #include "win32.hpp"
 #include "window.hpp"
 #include "util.hpp"
-#ifdef STORE
 #include "uwp.hpp"
-#endif
 
 std::mutex Log::m_LogLock;
 std::optional<winrt::file_handle> Log::m_FileHandle;
 std::wstring Log::m_File;
 
-#ifndef STORE
+#if 0
 std::tuple<std::wstring, HRESULT, std::wstring> Log::GetPath()
 {
 	std::wstring temp;
@@ -49,28 +44,20 @@ std::tuple<std::wstring, HRESULT, std::wstring> Log::GetPath()
 
 	return { log_folder_safe.get(), S_OK, L"" };
 }
-#else
-std::tuple<std::wstring, HRESULT, std::wstring> Log::GetPath()
-{
-	try
-	{
-		return { UWP::GetApplicationFolderPath(UWP::FolderType::Temporary).c_str(), S_OK, L"" };
-	}
-	catch (const winrt::hresult_error &error)
-	{
-		return { L"", error.code(), L"Failed to determine temporary folder location!" };
-	}
-}
 #endif
 
 std::pair<HRESULT, std::wstring> Log::InitStream()
 {
 	m_FileHandle.emplace(); // put this here so that if we fail before creating the file, we won't try constantly doing init.
 
-	auto [log_folder, hr, err] = GetPath();
-	if (FAILED(hr))
+	std::wstring log_folder;
+	try
 	{
-		return { hr, std::move(err) };
+		log_folder = UWP::GetApplicationFolderPath(UWP::FolderType::Temporary).c_str();
+	}
+	catch (const winrt::hresult_error &error)
+	{
+		return { error.code(), L"Failed to determine temporary folder location!" };
 	}
 
 	if (!win32::IsDirectory(log_folder))
@@ -97,7 +84,7 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 	}
 
 	AutoFree::DebugLocal<wchar_t[]> log_file;
-	hr = PathAllocCombine(log_folder.c_str(), log_filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, log_file.put());
+	const HRESULT hr = PathAllocCombine(log_folder.c_str(), log_filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, log_file.put());
 	if (FAILED(hr))
 	{
 		return { hr, L"Failed to combine log folder location and log file name!" };

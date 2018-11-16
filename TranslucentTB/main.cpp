@@ -26,9 +26,7 @@
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 #include "util.hpp"
-#ifdef STORE
 #include "uwp.hpp"
-#endif
 #include "win32.hpp"
 #include "window.hpp"
 #include "windowclass.hpp"
@@ -98,22 +96,7 @@ static const std::unordered_map<enum Config::PEEK, uint32_t> PEEK_BUTTON_MAP = {
 
 #pragma region Configuration
 
-void GetPaths_common(const wchar_t *appData, const std::wstring &cfgFolder)
-{
-	AutoFree::Local<wchar_t[]> configFolder;
-	AutoFree::Local<wchar_t[]> configFile;
-	AutoFree::Local<wchar_t[]> excludeFile;
-
-	ErrorHandle(PathAllocCombine(appData, cfgFolder.c_str(), PATHCCH_ALLOW_LONG_PATHS, configFolder.put()), Error::Level::Fatal, L"Failed to combine AppData folder and application name!");
-	ErrorHandle(PathAllocCombine(configFolder.get(), CONFIG_FILE, PATHCCH_ALLOW_LONG_PATHS, configFile.put()), Error::Level::Fatal, L"Failed to combine config folder and config file!");
-	ErrorHandle(PathAllocCombine(configFolder.get(), EXCLUDE_FILE, PATHCCH_ALLOW_LONG_PATHS, excludeFile.put()), Error::Level::Fatal, L"Failed to combine config folder and exclude file!");
-
-	run.config_folder = configFolder.get();
-	run.config_file = configFile.get();
-	run.exclude_file = excludeFile.get();
-}
-
-#ifndef STORE
+#if 0
 void GetPaths()
 {
 	const wchar_t *appData;
@@ -139,19 +122,29 @@ void GetPaths()
 
 	GetPaths_common(appData, configFolderName);
 }
-#else
+#endif
+
 void GetPaths()
 {
 	try
 	{
-		GetPaths_common(UWP::GetApplicationFolderPath(UWP::FolderType::Roaming).c_str(), NAME);
+		AutoFree::Local<wchar_t[]> configFolder;
+		AutoFree::Local<wchar_t[]> configFile;
+		AutoFree::Local<wchar_t[]> excludeFile;
+
+		ErrorHandle(PathAllocCombine(UWP::GetApplicationFolderPath(UWP::FolderType::Roaming).c_str(), NAME, PATHCCH_ALLOW_LONG_PATHS, configFolder.put()), Error::Level::Fatal, L"Failed to combine roaming folder and application name!");
+		ErrorHandle(PathAllocCombine(configFolder.get(), CONFIG_FILE, PATHCCH_ALLOW_LONG_PATHS, configFile.put()), Error::Level::Fatal, L"Failed to combine config folder and config file!");
+		ErrorHandle(PathAllocCombine(configFolder.get(), EXCLUDE_FILE, PATHCCH_ALLOW_LONG_PATHS, excludeFile.put()), Error::Level::Fatal, L"Failed to combine config folder and exclude file!");
+
+		run.config_folder = configFolder.get();
+		run.config_file = configFile.get();
+		run.exclude_file = excludeFile.get();
 	}
 	catch (const winrt::hresult_error &error)
 	{
 		ErrorHandle(error.code(), Error::Level::Fatal, L"Getting application folder paths failed!");
 	}
 }
-#endif
 
 void ApplyStock(const std::wstring &filename)
 {

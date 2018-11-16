@@ -13,14 +13,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="appvisibilitysink.cpp" />
-    <ClCompile Include="autostart_desktop.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'!='Store'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="autostart_store.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Store'">false</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="autostart.cpp" />
     <ClCompile Include="blacklist.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="taskbarattributeworker.cpp" />
@@ -34,10 +27,7 @@
     <ClCompile Include="trayicon.cpp" />
     <ClCompile Include="ttberror.cpp" />
     <ClCompile Include="ttblog.cpp" />
-    <ClCompile Include="uwp.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Store'">false</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="uwp.cpp" />
     <ClCompile Include="win32.cpp" />
     <ClCompile Include="window.cpp" />
     <ClCompile Include="windowclass.cpp" />
@@ -70,10 +60,7 @@
     <ClInclude Include="ttberror.hpp" />
     <ClInclude Include="ttblog.hpp" />
     <ClInclude Include="util.hpp" />
-    <ClInclude Include="uwp.hpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Store'">false</ExcludedFromBuild>
-    </ClInclude>
+    <ClInclude Include="uwp.hpp" />
     <ClInclude Include="welcomedialog.hpp" />
     <ClInclude Include="win32.hpp" />
     <ClInclude Include="window.hpp" />

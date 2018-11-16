@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10" IgnorableNamespaces="rescap">
-  <Identity Name="28017CharlesMilette.TranslucentTB" ProcessorArchitecture="x86" Publisher="CN=TranslucentTB" Version="1.0.0.0" />
+  <Identity Name="TranslucentTB" ProcessorArchitecture="x86" Publisher="CN=TranslucentTB" Version="1.0.0.0" />
   <Properties>
     <DisplayName>TranslucentTB</DisplayName>
-    <PublisherDisplayName>Charles Milette</PublisherDisplayName>
+    <PublisherDisplayName>TranslucentTB Open Source Developer</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   <Dependencies>
-    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.15063.0" MaxVersionTested="10.0.17134.0" />
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.17763.0" />
   </Dependencies>
   <Resources>
     <Resource Language="x-generate" />

@@ -6,9 +6,7 @@
 #include "common.hpp"
 #include "../ExplorerDetour/hook.hpp"
 #include "ttberror.hpp"
-#ifdef STORE
 #include "uwp.hpp"
-#endif
 #include "win32.hpp"
 
 class AboutDialog : public TTBTaskDialog {
@@ -49,9 +47,7 @@ private:
 		std::wostringstream str;
 
 		str << L"Build configuration: "
-#if defined(STORE)
-			L"Store"
-#elif defined(NDEBUG)
+#ifdef NDEBUG
 			L"Release"
 #elif defined(_DEBUG)
 			L"Debug"
@@ -70,7 +66,6 @@ private:
 
 		str << L"System architecture: " << win32::GetProcessorArchitecture() << std::endl;
 
-#ifdef STORE
 		str << L"Package version: ";
 		try
 		{
@@ -81,7 +76,7 @@ private:
 			str << error.message();
 		}
 		str << std::endl;
-#endif
+
 		const auto [version, hr] = win32::GetFileVersion(win32::GetExeLocation());
 		str << L"TranslucentTB version: " << (!version.empty() ? version : Error::ExceptionFromHRESULT(hr)) << std::endl;
 

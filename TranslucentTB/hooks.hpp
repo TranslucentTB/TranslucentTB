@@ -2,6 +2,7 @@
 #include "eventhook.hpp"
 #include "window.hpp"
 
+// TODO: remove this
 class Hooks {
 private:
 	static EventHook m_ChangeHook;

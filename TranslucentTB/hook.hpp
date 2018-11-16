@@ -7,13 +7,15 @@
 
 #include "ttberror.hpp"
 
+// TODO: rename this
 class TTBHook {
 private:
 	HHOOK m_hook;
 
 public:
-	inline TTBHook(HHOOK hook) : m_hook(hook) { }
+	inline TTBHook(HHOOK hook = nullptr) : m_hook(hook) { }
 
+	// TODO: this != &other
 	inline TTBHook(TTBHook &&other)
 	{
 		m_hook = std::exchange(other.m_hook, nullptr);

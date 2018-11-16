@@ -16,26 +16,21 @@ build:
   parallel: true
   project: TranslucentTB.sln
 
-after_build:
-- ps: .\move-artifacts.ps1
-
 test: off
 
 artifacts:
-- path: Out
+- path: $(CONFIGURATION)
   name: Raw build artifacts
-- path: Out\*.pdb
+- path: $(CONFIGURATION)\*.pdb
   name: Debug symbols
-- path: TranslucentTB-setup.exe
-  name: Desktop installer
-- path: StorePackage\AppPackages
-  name: Store app package
+- path: AppPackage\AppPackages
+  name: App packages
 
 deploy:
   provider: GitHub
-  description: 'To be filled'
+  description: 'To be filled and uploaded'
   draft: true
-  artifact: Desktop installer,Debug symbols
+  artifact: Debug symbols
   auth_token:
     secure: KofMs1LM/RjB79NyxThnuOxkUUZxaN98cJdRJepe9ZIwf4/5nxMi+cNiZVe83QxD
   on:
