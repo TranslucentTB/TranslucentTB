@@ -13,7 +13,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="appvisibilitysink.cpp" />
-    <ClCompile Include="autostart.cpp" />
+    <ClCompile Include="autostart.cpp">
+      <CallingConvention>StdCall</CallingConvention>
+      <AdditionalOptions>%(AdditionalOptions) -Xclang -fcoroutines-ts</AdditionalOptions>
+    </ClCompile>
     <ClCompile Include="blacklist.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="taskbarattributeworker.cpp" />
@@ -41,6 +44,7 @@
     <ClInclude Include="changenotificationhandle.hpp" />
     <ClInclude Include="clipboardcontext.hpp" />
     <ClInclude Include="common.hpp" />
+    <ClInclude Include="coroutine.hpp" />
     <ClInclude Include="createinstance.hpp" />
     <ClInclude Include="taskbarattributeworker.hpp" />
     <ClInclude Include="eventhook.hpp" />

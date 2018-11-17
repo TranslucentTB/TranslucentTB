@@ -1,51 +1,55 @@
+#define _EXPERIMENTAL_RESUMABLE_
+#include "coroutine.hpp"
+#define _RESUMABLE_FUNCTIONS_SUPPORTED
 #include "autostart.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
-#include "uwp.hpp"
 
-concurrency::task<Autostart::StartupState> Autostart::GetStartupState()
+using namespace winrt::Windows::Foundation;
+
+IAsyncOperation<winrt::Windows::ApplicationModel::StartupTask> Autostart::GetApplicationStartupTask()
 {
-	return concurrency::create_task([]() -> StartupState
-	{
-		try
-		{
-			return UWP::GetApplicationStartupTask().get()->State();
-		}
-		catch (const winrt::hresult_error &error)
-		{
-			ErrorHandle(error.code(), Error::Level::Log, L"Getting startup task state failed.");
-			return StartupState::Disabled;
-		}
-	});
+	static const auto task = (co_await winrt::Windows::ApplicationModel::StartupTask::GetForCurrentPackageAsync()).GetAt(0);
+	co_return task;
 }
 
-concurrency::task<void> Autostart::SetStartupState(const StartupState &state)
+IAsyncOperation<Autostart::StartupState> Autostart::GetStartupState()
 {
-	return concurrency::create_task([=]
+	try
 	{
-		try
+		co_return (co_await GetApplicationStartupTask()).State();
+	}
+	catch (...)
+	{
+		ErrorHandle(winrt::to_hresult(), Error::Level::Log, L"Getting startup task state failed.");
+		co_return StartupState::Disabled;
+	}
+}
+
+IAsyncAction Autostart::SetStartupState(StartupState state)
+{
+	try
+	{
+		const auto task = co_await GetApplicationStartupTask();
+		if (state == StartupState::Enabled)
 		{
-			const auto &task = *UWP::GetApplicationStartupTask().get();
-			if (state == StartupState::Enabled)
+			const auto new_state = co_await task.RequestEnableAsync();
+			if (new_state != state)
 			{
-				const Autostart::StartupState new_state = task.RequestEnableAsync().get();
-				if (new_state != state)
-				{
-					Log::OutputMessage(L"Failed to change startup state.");
-				}
-			}
-			else if (state == StartupState::Disabled)
-			{
-				task.Disable();
-			}
-			else
-			{
-				throw std::invalid_argument("Can only set state to enabled or disabled");
+				Log::OutputMessage(L"Failed to change startup state.");
 			}
 		}
-		catch (const winrt::hresult_error &error)
+		else if (state == StartupState::Disabled)
 		{
-			ErrorHandle(error.code(), Error::Level::Error, L"Changing startup task state failed!");
+			task.Disable();
 		}
-	});
+		else
+		{
+			throw std::invalid_argument("Can only set state to enabled or disabled");
+		}
+	}
+	catch (...)
+	{
+		ErrorHandle(winrt::to_hresult(), Error::Level::Error, L"Changing startup task state failed!");
+	}
 }

@@ -33,10 +33,9 @@
   <PropertyGroup Label="Globals">
     <CharacterSet>Unicode</CharacterSet>
     <Keyword>Win32Proj</Keyword>
-    <MultiProcessorCompilation>true</MultiProcessorCompilation>
     <PlatformToolset>llvm</PlatformToolset>
     <VCProjectVersion>15.0</VCProjectVersion>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -75,7 +74,6 @@
       <ControlFlowGuard>Guard</ControlFlowGuard> -->
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SupportJustMyCode>false</SupportJustMyCode>
       <WarningLevel>Level4</WarningLevel>

@@ -84,6 +84,8 @@ Thanks to [@dAKirby309](https://github.com/dAKirby309) for making the icon! You 
 The color picker used comes from [this great CodeProject article](https://www.codeproject.com/Articles/9207/An-HSV-RGBA-colour-picker).
 We've modernized it a bit, with per-monitor high DPI awareness, faster (and hardware-accelerated) drawing as well as allowing to input any valid HTML color code or [name](https://www.w3schools.com/colors/colors_names.asp).
 
+We are using a small part of libc++ in our code. See [the coroutine.h header](TranslucentTB/coroutine.h) for the license.
+
 The picture we used for the installer screenshot is by [Michael D Beckwith](https://unsplash.com/photos/M-nHIqkO4-o) from [Unsplash](https://unsplash.com/).
 
 We use [Inno Setup Dependency Installer](https://github.com/stfx/innodependencyinstaller) to install the Visual C++ redistribuable.
