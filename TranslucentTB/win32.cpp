@@ -128,7 +128,7 @@ bool win32::IsSingleInstance()
 
 	if (!mutex)
 	{
-		mutex = CreateMutex(NULL, FALSE, MUTEX_GUID);
+		mutex.attach(CreateMutex(NULL, FALSE, MUTEX_GUID));
 		LRESULT error = GetLastError();
 		switch (error)
 		{
@@ -296,7 +296,7 @@ void win32::OpenLink(const std::wstring &link)
 DWORD win32::PickColor(uint32_t &color)
 {
 	DWORD threadId;
-	const winrt::handle hThread = CreateThread(nullptr, 0, PickerThreadProc, &color, CREATE_SUSPENDED, &threadId);
+	const winrt::handle hThread(CreateThread(nullptr, 0, PickerThreadProc, &color, CREATE_SUSPENDED, &threadId));
 
 	if (hThread)
 	{
@@ -327,7 +327,7 @@ void win32::ClosePickers()
 
 		if (needs_wait)
 		{
-			const winrt::handle thread = OpenThread(SYNCHRONIZE, FALSE, tid);
+			const winrt::handle thread(OpenThread(SYNCHRONIZE, FALSE, tid));
 			if (thread)
 			{
 				WaitForSingleObject(thread.get(), INFINITE);

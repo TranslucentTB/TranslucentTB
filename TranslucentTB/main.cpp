@@ -198,10 +198,11 @@ bool CheckAndRunWelcome()
 	return true;
 }
 
-void LoadConfig()
+long LoadConfig(...)
 {
 	Config::Parse(run.config_file);
 	Blacklist::Parse(run.exclude_file);
+	return 0;
 }
 
 #pragma endregion
@@ -417,9 +418,13 @@ long ExitApp(const EXITREASON &reason, ...)
 
 #pragma region Startup
 
-void InitializeTray(const HINSTANCE &hInstance, TaskbarAttributeWorker &worker)
+void InitializeTray(const HINSTANCE &hInstance)
 {
 	static MessageWindow window(TRAY_WINDOW, NAME, hInstance);
+	static TaskbarAttributeWorker worker(hInstance);
+	static FolderWatcher watcher(run.config_folder, FILE_NOTIFY_CHANGE_LAST_WRITE, window);
+
+	window.RegisterCallback(FILE_CHANGED, LoadConfig);
 
 	window.RegisterCallback(NEW_TTB_INSTANCE, std::bind(&ExitApp, EXITREASON::NewInstance));
 
@@ -474,6 +479,7 @@ void InitializeTray(const HINSTANCE &hInstance, TaskbarAttributeWorker &worker)
 			tray.BindBool(id, Config::START_ENABLED, TrayContextMenu::ControlsEnabled);
 		}
 
+
 		tray.BindBool(IDM_CORTANA, Config::CORTANA_ENABLED, TrayContextMenu::Toggle);
 		tray.BindColor(IDM_CORTANA_COLOR, Config::CORTANA_APPEARANCE.COLOR);
 		tray.BindEnum(Config::CORTANA_APPEARANCE.ACCENT, CORTANA_BUTTON_MAP);
@@ -525,10 +531,7 @@ void InitializeTray(const HINSTANCE &hInstance, TaskbarAttributeWorker &worker)
 		});
 		tray.RegisterContextMenuCallback(IDM_CLEARWINDOWCACHE, Window::ClearCache);
 		tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, Blacklist::ClearCache);
-		tray.RegisterContextMenuCallback(IDM_RESETWORKER, [&worker]
-		{
-			worker.ResetState();
-		});
+		tray.RegisterContextMenuCallback(IDM_RESETWORKER, std::bind(&TaskbarAttributeWorker::ResetState, &worker));
 		tray.RegisterContextMenuCallback(IDM_ABOUT, []
 		{
 			std::thread([]
@@ -589,13 +592,8 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		return EXIT_SUCCESS;
 	}
 
-	// Watch for changes
-	FolderWatcher config_watcher(run.config_folder, FILE_NOTIFY_CHANGE_LAST_WRITE, LoadConfig);
-
-	TaskbarAttributeWorker worker(hInstance);
-
 	// Initialize GUI
-	InitializeTray(hInstance, worker);
+	InitializeTray(hInstance);
 
 	// Run the main program loop. When this method exits, TranslucentTB itself is about to exit.
 	MessageWindow::RunMessageLoop();
@@ -614,10 +612,6 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		{
 			Config::Save(run.config_file);
 		}
-
-		// Restore default taskbar appearance
-		// TogglePeek(true);
-		worker.ReturnToStock();
 	}
 
 	return EXIT_SUCCESS;

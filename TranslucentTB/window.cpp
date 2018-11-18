@@ -130,7 +130,7 @@ std::shared_ptr<const std::wstring> Window::filename() const
 		GetWindowThreadProcessId(m_WindowHandle, &pid);
 		auto exeName = std::make_shared<std::wstring>();
 
-		const winrt::handle processHandle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid);
+		const winrt::handle processHandle(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid));
 		if (!processHandle)
 		{
 			LastErrorHandle(Error::Level::Log, L"Getting process handle of a window failed.");

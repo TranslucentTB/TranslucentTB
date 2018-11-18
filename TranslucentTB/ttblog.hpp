@@ -25,6 +25,6 @@ public:
 	{
 		return m_File;
 	}
-	static void __cdecl OutputMessage(std::wstring_view message);
+	static void OutputMessage(std::wstring_view message);
 	static void Flush();
 };

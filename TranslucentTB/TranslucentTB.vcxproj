@@ -14,8 +14,9 @@
   <ItemGroup>
     <ClCompile Include="appvisibilitysink.cpp" />
     <ClCompile Include="autostart.cpp">
-      <CallingConvention>StdCall</CallingConvention>
       <AdditionalOptions>%(AdditionalOptions) -Xclang -fcoroutines-ts</AdditionalOptions>
+      <ForcedIncludeFiles>coroutine.hpp</ForcedIncludeFiles>
+      <PreprocessorDefinitions>_EXPERIMENTAL_RESUMABLE_;_RESUMABLE_FUNCTIONS_SUPPORTED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="blacklist.cpp" />
     <ClCompile Include="config.cpp" />

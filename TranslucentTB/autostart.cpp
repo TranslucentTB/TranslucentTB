@@ -1,6 +1,3 @@
-#define _EXPERIMENTAL_RESUMABLE_
-#include "coroutine.hpp"
-#define _RESUMABLE_FUNCTIONS_SUPPORTED
 #include "autostart.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"

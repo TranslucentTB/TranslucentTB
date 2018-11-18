@@ -72,13 +72,13 @@ private:
 
 	// Other
 	bool m_returningToStock;
+	void ReturnToStock();
 	EventHook::callback_t BindHook();
 
 public:
 	TaskbarAttributeWorker(const HINSTANCE hInstance);
 
 	void ResetState();
-	void ReturnToStock();
 
 	~TaskbarAttributeWorker();
 };

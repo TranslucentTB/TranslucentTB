@@ -268,6 +268,15 @@ long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, const LPARAM lPar
 	}
 }
 
+void TaskbarAttributeWorker::ReturnToStock()
+{
+	bool_guard guard(m_returningToStock);
+	for (const auto &[_, monInf] : m_Taskbars)
+	{
+		SetAttribute(monInf.TaskbarWindow, { swca::ACCENT::ACCENT_NORMAL });
+	}
+}
+
 EventHook::callback_t TaskbarAttributeWorker::BindHook()
 {
 	return std::bind(&TaskbarAttributeWorker::OnWindowStateChange, this, false, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
@@ -317,19 +326,12 @@ void TaskbarAttributeWorker::ResetState()
 	}
 }
 
-void TaskbarAttributeWorker::ReturnToStock()
-{
-	bool_guard guard(m_returningToStock);
-	for (const auto &[_, monInf] : m_Taskbars)
-	{
-		SetAttribute(monInf.TaskbarWindow, { swca::ACCENT::ACCENT_NORMAL });
-	}
-}
-
 TaskbarAttributeWorker::~TaskbarAttributeWorker()
 {
 	if (m_IAVECookie)
 	{
 		ErrorHandle(m_IAV->Unadvise(m_IAVECookie), Error::Level::Log, L"Failed to unregister app visibility sink");
 	}
+
+	ReturnToStock();
 }

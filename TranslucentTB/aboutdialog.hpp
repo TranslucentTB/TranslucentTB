@@ -59,6 +59,10 @@ private:
 			L"x64"
 #elif defined (_X86_)
 			L"x86"
+#elif defined(_ARM64_)
+			L"ARM64"
+#elif defined(_ARM_)
+			L"ARM"
 #else
 			L"Unknown"
 #endif
