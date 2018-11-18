@@ -253,7 +253,7 @@ void Config::Save(const std::wstring &file)
 
 	std::wofstream configstream(file);
 
-	configstream << L"accent=" << std::left << std::setw(6) << std::setfill(L' ') << GetAccentText(REGULAR_APPEARANCE.ACCENT) << L"; accent values are: clear (default), fluent (only on build " << MIN_FLUENT_BUILD << L" and up), opaque, normal, or blur." << std::endl;
+	configstream << L"accent=" << std::left << std::setw(6) << std::setfill(L' ') << GetAccentText(REGULAR_APPEARANCE.ACCENT) << L"; accent values are: clear (default), fluent, opaque, normal, or blur." << std::endl;
 	configstream << L"color=" << GetColorText(REGULAR_APPEARANCE.COLOR) << L" ; A color in hexadecimal notation." << std::endl;
 	configstream << L"opacity=" << GetOpacityText(REGULAR_APPEARANCE.COLOR) << L"  ; A value in the range 0 to 255." << std::endl;
 
@@ -356,7 +356,7 @@ bool Config::ParseAccent(const std::wstring &value, swca::ACCENT &accent)
 	{
 		accent = swca::ACCENT::ACCENT_NORMAL;
 	}
-	else if (value == L"fluent" && win32::IsAtLeastBuild(MIN_FLUENT_BUILD))
+	else if (value == L"fluent")
 	{
 		accent = swca::ACCENT::ACCENT_ENABLE_FLUENT;
 	}

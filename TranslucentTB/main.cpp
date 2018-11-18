@@ -279,24 +279,6 @@ void RefreshMenu(HMENU menu)
 	Autostart::GetStartupState().Completed(std::bind(&RefreshAutostartMenu, menu, std::placeholders::_1));
 
 
-	static bool initial_check_done = false;
-	if (!initial_check_done)
-	{
-		if (!win32::IsAtLeastBuild(MIN_FLUENT_BUILD))
-		{
-			RemoveMenu(menu, IDM_REGULAR_FLUENT,   MF_BYCOMMAND);
-			RemoveMenu(menu, IDM_MAXIMISED_FLUENT, MF_BYCOMMAND);
-			RemoveMenu(menu, IDM_START_FLUENT,     MF_BYCOMMAND);
-			RemoveMenu(menu, IDM_CORTANA_FLUENT,   MF_BYCOMMAND);
-			RemoveMenu(menu, IDM_TIMELINE_FLUENT,  MF_BYCOMMAND);
-
-			// Same build for Timeline and fluent
-			TrayContextMenu::ChangeItemText(menu, IDM_TIMELINE_POPUP, L"Task View opened");
-		}
-
-		initial_check_done = true;
-	}
-
 	const bool has_log = !Log::file().empty();
 	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, has_log, TrayContextMenu::ControlsEnabled);
 	TrayContextMenu::ChangeItemText(menu, IDM_OPENLOG, has_log
