@@ -69,6 +69,7 @@ private:
 	static bool ParseBool(const std::wstring &value, bool &setting);
 	static void ParseKeyValuePair(std::wstring &kvp);
 	static bool ParseFlags(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
+	static void ParseCliFlags(std::vector<std::wstring> &args, const std::function<void(const std::wstring &)> &logger);
 	static bool ParseAppearances(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
 	static void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
 

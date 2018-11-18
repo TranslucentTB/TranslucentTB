@@ -165,58 +165,35 @@ bool Config::ParseCommandLine()
 	}
 	else
 	{
+		// note: std::vector::erase's last item is non-inclusive, hence the use of + 2 over + 1
+
 		std::wostringstream output;
 		auto logger = [&output](const std::wstring &text)
 		{
 			output << text << std::endl;
 		};
 
+		ParseCliFlags(args, logger);
+
+		while (args.size() >= 2)
+		{
+			if (!Util::StringBeginsWith(args[1], L"--"))
+			{
+				Util::RemovePrefixInplace(args[0], L"--");
+
+				ParseSingleConfigOption(args[0], args[1], logger);
+				args.erase(args.begin(), args.begin() + 2);
+			}
+			else
+			{
+				output << L"Missing value for CLI option " << args[0] << std::endl;
+				args.erase(args.begin());
+			}
+		}
+
 		if (!args.empty())
 		{
-			// note: std::vector::erase's last item is non-inclusive, hence the use of + 2 over + 1
-
-			for (const auto &pair : FLAGS)
-			{
-				auto iter = std::find(args.begin(), args.end(), L"--" + std::wstring(pair.first));
-				if (iter != args.end())
-				{
-					if (iter + 1 != args.end() && !Util::StringBeginsWith(*(iter + 1), L"--"))
-					{
-						if (!ParseBool(*(iter + 1), pair.second))
-						{
-							UnknownValue(std::wstring(Util::RemovePrefix(*iter, L"--")), *(iter + 1), logger);
-						}
-
-						args.erase(iter, iter + 2);
-					}
-					else
-					{
-						pair.second = true;
-						args.erase(iter);
-					}
-				}
-			}
-
-			while (args.size() >= 2)
-			{
-				if (!Util::StringBeginsWith(args[1], L"--"))
-				{
-					Util::RemovePrefixInplace(args[0], L"--");
-
-					ParseSingleConfigOption(args[0], args[1], logger);
-					args.erase(args.begin(), args.begin() + 2);
-				}
-				else
-				{
-					output << L"Missing value for CLI option " << args[0] << std::endl;
-					args.erase(args.begin());
-				}
-			}
-
-			if (!args.empty())
-			{
-				output << L"Orphaned CLI option detected: " << args[0] << std::endl;
-			}
+			output << L"Orphaned CLI option detected: " << args[0] << std::endl;
 		}
 
 		std::wstring out = output.str();
@@ -447,6 +424,31 @@ bool Config::ParseFlags(const std::wstring &arg, const std::wstring &value, cons
 	}
 
 	return false;
+}
+
+void Config::ParseCliFlags(std::vector<std::wstring> &args, const std::function<void(const std::wstring &)> &logger)
+{
+	for (const auto &pair : FLAGS)
+	{
+		auto iter = std::find(args.begin(), args.end(), L"--" + std::wstring(pair.first));
+		if (iter != args.end())
+		{
+			if (iter + 1 != args.end() && !Util::StringBeginsWith(*(iter + 1), L"--"))
+			{
+				if (!ParseBool(*(iter + 1), pair.second))
+				{
+					UnknownValue(std::wstring(Util::RemovePrefix(*iter, L"--")), *(iter + 1), logger);
+				}
+
+				args.erase(iter, iter + 2);
+			}
+			else
+			{
+				pair.second = true;
+				args.erase(iter);
+			}
+		}
+	}
 }
 
 bool Config::ParseAppearances(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger)
