@@ -67,9 +67,6 @@
     <ClCompile Include="autostart.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="hooks.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="taskdialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -138,9 +135,6 @@
     <ClInclude Include="clipboardcontext.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="registrykey.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="appvisibilitysink.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -148,9 +142,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="createinstance.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hooks.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="changenotificationhandle.hpp">
@@ -168,13 +159,13 @@
     <ClInclude Include="aboutdialog.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="hook.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="taskbarattributeworker.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="coroutine.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windowshook.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

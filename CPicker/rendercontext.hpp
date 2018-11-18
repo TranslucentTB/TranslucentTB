@@ -44,7 +44,7 @@ protected:
 			}
 		}
 
-		friend RenderContext;
+		friend class RenderContext;
 
 	public:
 		inline DrawContext(const DrawContext &) = delete;

@@ -25,7 +25,11 @@ private:
 	static std::recursive_mutex m_CacheLock;
 	static std::unordered_map<Window, bool> m_Cache;
 
-	friend class Hooks;
+	static const EventHook m_ChangeHook;
+	static const EventHook m_DestroyHook;
+
+	static void HandleChangeEvent(const DWORD, const Window &window, ...);
+	static void HandleDestroyEvent(const DWORD, const Window &window, ...);
 
 	static void AddToContainer(std::wstring_view line, const wchar_t &delimiter, const std::function<void(std::wstring_view)> &inserter);
 	static void AddToVector(std::wstring_view line, std::vector<std::wstring> &vector, const wchar_t &delimiter = L',');

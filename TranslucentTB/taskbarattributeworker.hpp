@@ -8,7 +8,7 @@
 
 #include "config.hpp"
 #include "eventhook.hpp"
-#include "hook.hpp"
+#include "windowshook.hpp"
 #include "messagewindow.hpp"
 #include "swcadata.hpp"
 
@@ -57,7 +57,7 @@ private:
 
 	// Taskbar find & hook
 	std::unordered_map<HMONITOR, MonitorInfo> m_Taskbars;
-	std::vector<TTBHook> m_Hooks;
+	std::vector<WindowsHook> m_Hooks;
 	EventHook m_CreateDestroyHook;
 	void OnWindowCreateDestroy(const DWORD event, const Window &window, const LONG idObject, ...);
 	void RefreshTaskbars();

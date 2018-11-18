@@ -22,7 +22,6 @@
     <ClCompile Include="taskbarattributeworker.cpp" />
     <ClCompile Include="eventhook.cpp" />
     <ClCompile Include="findwindowiterator.cpp" />
-    <ClCompile Include="hooks.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="messagewindow.cpp" />
     <ClCompile Include="taskdialog.cpp" />
@@ -51,10 +50,8 @@
     <ClInclude Include="findwindowiterator.hpp" />
     <ClInclude Include="folderwatcher.hpp" />
     <ClInclude Include="aboutdialog.hpp" />
-    <ClInclude Include="hook.hpp" />
-    <ClInclude Include="hooks.hpp" />
+    <ClInclude Include="windowshook.hpp" />
     <ClInclude Include="messagewindow.hpp" />
-    <ClInclude Include="registrykey.hpp" />
     <ClInclude Include="swcadata.hpp" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="resource.h" />

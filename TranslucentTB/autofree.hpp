@@ -20,12 +20,9 @@ private:
 	public:
 		inline BaseImpl(T *&&data = nullptr) : m_DataPtr(data) { }
 
-		inline BaseImpl(BaseImpl &&other)
+		inline BaseImpl(BaseImpl &&other) noexcept : m_DataPtr(other.detach())
 		{
-			if (this != &other)
-			{
-				m_DataPtr = other.detach();
-			}
+			return;
 		}
 
 		inline BaseImpl(const BaseImpl &) = delete;

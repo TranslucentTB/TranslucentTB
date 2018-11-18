@@ -13,6 +13,9 @@ std::vector<std::wstring> Blacklist::m_TitleBlacklist;
 std::recursive_mutex Blacklist::m_CacheLock;
 std::unordered_map<Window, bool> Blacklist::m_Cache;
 
+const EventHook Blacklist::m_ChangeHook(EVENT_OBJECT_NAMECHANGE, EVENT_OBJECT_NAMECHANGE, Blacklist::HandleChangeEvent, WINEVENT_OUTOFCONTEXT);
+const EventHook Blacklist::m_DestroyHook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_DESTROY, Blacklist::HandleDestroyEvent, WINEVENT_OUTOFCONTEXT);
+
 void Blacklist::Parse(const std::wstring &file)
 {
 	std::lock_guard guard(m_CacheLock);
@@ -126,6 +129,18 @@ void Blacklist::ClearCache()
 	{
 		Log::OutputMessage(L"Blacklist cache cleared.");
 	}
+}
+
+void Blacklist::HandleChangeEvent(const DWORD, const Window &window, ...)
+{
+	std::lock_guard guard(m_CacheLock);
+	m_Cache.erase(window);
+}
+
+void Blacklist::HandleDestroyEvent(const DWORD, const Window &window, ...)
+{
+	std::lock_guard guard(m_CacheLock);
+	m_Cache.erase(window);
 }
 
 void Blacklist::AddToContainer(std::wstring_view line, const wchar_t &delimiter, const std::function<void(std::wstring_view)> &inserter)

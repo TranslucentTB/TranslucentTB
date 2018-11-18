@@ -126,7 +126,7 @@ void TaskbarAttributeWorker::RefreshTaskbars()
 
 	// Older handles are invalid, so clear the map to be ready for new ones
 	m_Taskbars.clear();
-	std::vector<TTBHook> hooks = std::move(m_Hooks); // Keep old hooks alive while we rehook to keep the DLL loaded in Explorer. They will unhook automatically at the end of this function.
+	std::vector<WindowsHook> hooks = std::move(m_Hooks); // Keep old hooks alive while we rehook to keep the DLL loaded in Explorer. They will unhook automatically at the end of this function.
 	m_Hooks.clear(); // Bring back m_Hooks to a known state after being moved from.
 
 	const Window main_taskbar = Window::Find(TASKBAR);

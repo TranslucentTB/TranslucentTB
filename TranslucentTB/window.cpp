@@ -9,6 +9,9 @@
 #include "eventhook.hpp"
 #include "ttberror.hpp"
 
+const EventHook Window::m_ChangeHook(EVENT_OBJECT_NAMECHANGE, EVENT_OBJECT_NAMECHANGE, Window::HandleChangeEvent, WINEVENT_OUTOFCONTEXT);
+const EventHook Window::m_DestroyHook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_DESTROY, Window::HandleDestroyEvent, WINEVENT_OUTOFCONTEXT);
+
 std::recursive_mutex Window::m_ClassNamesLock;
 std::unordered_map<Window, std::shared_ptr<std::wstring>> Window::m_ClassNames;
 
@@ -20,6 +23,28 @@ std::unordered_map<Window, std::shared_ptr<std::wstring>> Window::m_Titles;
 
 const Window Window::BroadcastWindow = HWND_BROADCAST;
 const Window Window::MessageOnlyWindow = HWND_MESSAGE;
+
+void Window::HandleChangeEvent(const DWORD, const Window &window, ...)
+{
+	std::lock_guard guard(m_TitlesLock);
+	m_Titles.erase(window);
+}
+
+void Window::HandleDestroyEvent(const DWORD, const Window &window, ...)
+{
+	{
+		std::lock_guard guard(m_TitlesLock);
+		m_Titles.erase(window);
+	}
+	{
+		std::lock_guard guard(m_ClassNamesLock);
+		m_ClassNames.erase(window);
+	}
+	{
+		std::lock_guard guard(m_FilenamesLock);
+		m_Filenames.erase(window);
+	}
+}
 
 void Window::ClearCache()
 {

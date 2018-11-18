@@ -21,7 +21,11 @@ private:
 	static std::recursive_mutex m_TitlesLock;
 	static std::unordered_map<Window, std::shared_ptr<std::wstring>> m_Titles;
 
-	friend class Hooks;
+	static const EventHook m_ChangeHook;
+	static const EventHook m_DestroyHook;
+
+	static void HandleChangeEvent(const DWORD, const Window &window, ...);
+	static void HandleDestroyEvent(const DWORD, const Window &window, ...);
 
 protected:
 	HWND m_WindowHandle;

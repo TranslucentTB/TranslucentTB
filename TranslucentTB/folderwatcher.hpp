@@ -1,6 +1,5 @@
 #include "arch.h"
 #include <functional>
-#include <memory>
 #include <string>
 #include <synchapi.h>
 #include <thread>
@@ -9,14 +8,13 @@
 #include "changenotificationhandle.hpp"
 #include "common.hpp"
 #include "ttberror.hpp"
+#include "window.hpp"
 
 class FolderWatcher {
 private:
-	using callback_t = std::function<void()>;
-
 	winrt::handle m_event;
 	change_notification_handle m_changeHandle;
-	callback_t m_callback;
+	Window m_callbackWnd;
 	std::thread m_watcherThread;
 
 	inline void thread_proc()
@@ -33,10 +31,11 @@ private:
 			{
 				if (ret == WAIT_OBJECT_0)
 				{
-					m_callback();
+					m_callbackWnd.send_message(FILE_CHANGED);
 					if (!FindNextChangeNotification(m_changeHandle.get()))
 					{
-						LastErrorHandle(Error::Level::Log, L"Failed to resume folder watch.");
+						LastErrorHandle(Error::Level::Log, L"Failed to resume folder watch. Hot loading of config will not work.");
+						return;
 					}
 				}
 				else if (ret == WAIT_OBJECT_0 + 1)
@@ -46,25 +45,27 @@ private:
 			}
 			else
 			{
-				LastErrorHandle(Error::Level::Log, L"Failed to wait for folder or event change.");
+				LastErrorHandle(Error::Level::Error, L"Failed to wait for folder or event change. Hot loading of config will not work.");
+				return;
 			}
 		}
 	}
 
 public:
-	inline FolderWatcher(const std::wstring &folder, DWORD filter, const callback_t &callback) : m_callback(callback)
+	inline FolderWatcher(const std::wstring &folder, DWORD filter, const Window &callback) : m_callbackWnd(callback)
 	{
-		m_event = CreateEvent(NULL, TRUE, FALSE, NULL);
+		m_event.attach(CreateEvent(NULL, TRUE, FALSE, NULL));
 		if (!m_event)
 		{
-			LastErrorHandle(Error::Level::Log, L"Failed to create synchronization event.");
+			LastErrorHandle(Error::Level::Error, L"Failed to create synchronization event. Hot loading of config will not work.");
 			return;
 		}
 
-		m_changeHandle = FindFirstChangeNotification(folder.c_str(), false, filter);
+		m_changeHandle.attach(FindFirstChangeNotification(folder.c_str(), false, filter));
 		if (!m_changeHandle)
 		{
-			LastErrorHandle(Error::Level::Log, L"Failed to start watching for changes.");
+			LastErrorHandle(Error::Level::Error, L"Failed to start watching for configuration changes. Hot loading of config will not work.");
+			m_event.close();
 			return;
 		}
 

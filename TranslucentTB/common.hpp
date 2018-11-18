@@ -41,6 +41,9 @@ static constexpr wchar_t WM_TASKBARCREATED[] = L"TaskbarCreated";
 // Message used by a new instance to close the old instance
 static constexpr wchar_t NEW_TTB_INSTANCE[] = L"NewTTBInstance";
 
+// Message sent by FolderWatcher when a file is changed.
+static constexpr wchar_t FILE_CHANGED[] = L"TTBFileChanged";
+
 // Event hook event when Aero Peek begins
 static constexpr uint32_t EVENT_SYSTEM_PEEKSTART = 0x21;
 
