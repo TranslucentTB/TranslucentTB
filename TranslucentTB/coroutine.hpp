@@ -188,6 +188,7 @@ bool operator>=(coroutine_handle<> __x, coroutine_handle<> __y) _NOEXCEPT {
 template <typename _Promise>
 class _LIBCPP_TEMPLATE_VIS coroutine_handle : public coroutine_handle<> {
     using _Base = coroutine_handle<>;
+
 public:
 #ifndef _LIBCPP_CXX03_LANG
     // 18.11.2.1 construct/reset
@@ -259,7 +260,6 @@ class _LIBCPP_TEMPLATE_VIS coroutine_handle<noop_coroutine_promise>
   using _Base = coroutine_handle<>;
   using _Promise = noop_coroutine_promise;
 public:
-
   _LIBCPP_INLINE_VISIBILITY
   _Promise& promise() const {
     return *static_cast<_Promise*>(
