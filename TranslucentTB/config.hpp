@@ -67,6 +67,9 @@ private:
 	static bool ParseColor(std::wstring value, uint32_t &color);
 	static bool ParseOpacity(const std::wstring &value, uint32_t &color);
 	static bool ParseBool(const std::wstring &value, bool &setting);
+	static void ParseKeyValuePair(std::wstring &kvp);
+	static bool ParseFlags(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
+	static bool ParseAppearances(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
 	static void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
 
 	static std::wstring GetAccentText(const swca::ACCENT &accent);

@@ -141,20 +141,7 @@ void Config::Parse(const std::wstring &file)
 			line.erase(comment_index);
 		}
 
-		size_t split_index = line.find(L'=');
-		if (split_index != std::wstring::npos)
-		{
-			Util::ToLowerInplace(line);
-			std::wstring_view line_view = line;
-			std::wstring_view key = Util::Trim(line_view.substr(0, split_index));
-			std::wstring_view val = Util::Trim(line_view.substr(split_index + 1, line_view.length() - split_index - 1));
-
-			ParseSingleConfigOption(std::wstring(key), std::wstring(val), Log::OutputMessage);
-		}
-		else
-		{
-			Log::OutputMessage(L"Invalid line in configuration file: " + line);
-		}
+		ParseKeyValuePair(line);
 	}
 }
 
@@ -426,7 +413,25 @@ bool Config::ParseBool(const std::wstring &value, bool &setting)
 	return true;
 }
 
-void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger)
+void Config::ParseKeyValuePair(std::wstring &kvp)
+{
+	size_t split_index = kvp.find(L'=');
+	if (split_index != std::wstring::npos)
+	{
+		Util::ToLowerInplace(kvp);
+		std::wstring_view line_view = kvp;
+		std::wstring_view key = Util::Trim(line_view.substr(0, split_index));
+		std::wstring_view val = Util::Trim(line_view.substr(split_index + 1, line_view.length() - split_index - 1));
+
+		ParseSingleConfigOption(std::wstring(key), std::wstring(val), Log::OutputMessage);
+	}
+	else
+	{
+		Log::OutputMessage(L"Invalid line in configuration file: " + kvp);
+	}
+}
+
+bool Config::ParseFlags(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger)
 {
 	for (const auto &pair : FLAGS)
 	{
@@ -437,10 +442,15 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 				UnknownValue(arg, value, logger);
 			}
 
-			return;
+			return true;
 		}
 	}
 
+	return false;
+}
+
+bool Config::ParseAppearances(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger)
+{
 	for (const auto &pair : APPEARANCES)
 	{
 		std::wstring prefix(pair.first);
@@ -451,7 +461,7 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 				UnknownValue(arg, value, logger);
 			}
 
-			return;
+			return true;
 		}
 		else if (arg == prefix + L"color" || arg == prefix + L"tint")
 		{
@@ -460,7 +470,7 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 				UnknownValue(arg, value, logger);
 			}
 
-			return;
+			return true;
 		}
 		else if (arg == prefix + L"opacity")
 		{
@@ -469,8 +479,23 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 				UnknownValue(arg, value, logger);
 			}
 
-			return;
+			return true;
 		}
+	}
+
+	return false;
+}
+
+void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger)
+{
+	if (ParseFlags(arg, value, logger))
+	{
+		return;
+	}
+
+	if (ParseAppearances(arg, value, logger))
+	{
+		return;
 	}
 
 	if (arg == L"peek")
@@ -496,7 +521,7 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 	{
 		try
 		{
-			SLEEP_TIME = std::stoi(value) & 0xFF;
+			SLEEP_TIME = Util::ClampTo<uint8_t>(std::stoi(value));
 		}
 		catch (...)
 		{
