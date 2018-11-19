@@ -9,7 +9,7 @@
 #include "ttberror.hpp"
 
 class AutoFree {
-private:
+protected:
 	template<typename T, class traits>
 	class BaseImpl {
 	protected:
@@ -59,6 +59,12 @@ private:
 		inline const T *get() const
 		{
 			return m_DataPtr;
+		}
+
+		inline void attach(T *ptr)
+		{
+			traits::close(m_DataPtr);
+			m_DataPtr = ptr;
 		}
 
 		[[nodiscard]] inline T *detach()
@@ -132,6 +138,8 @@ private:
 
 	template<bool silent, Error::Level level = Error::Level::Log>
 	struct LocalTraits {
+		static constexpr bool needs_lock = false;
+
 		inline static void *alloc(std::size_t size)
 		{
 			return LocalAlloc(LPTR, size);
@@ -148,6 +156,8 @@ private:
 	};
 
 	struct CoTaskMemTraits {
+		static constexpr bool needs_lock = false;
+
 		inline static void *alloc(std::size_t size)
 		{
 			return CoTaskMemAlloc(size);
@@ -161,6 +171,8 @@ private:
 
 	template<unsigned int flags>
 	struct GlobalTraits {
+		static constexpr bool needs_lock = flags & GMEM_MOVEABLE;
+
 		inline static void *alloc(std::size_t size)
 		{
 			return GlobalAlloc(flags, size);
@@ -172,6 +184,23 @@ private:
 			if (result)
 			{
 				LastErrorHandle(Error::Level::Log, L"Failed to free memory.");
+			}
+		}
+
+		inline static void *lock(void *handle)
+		{
+			return GlobalLock(handle);
+		}
+
+		inline static void unlock(void *handle)
+		{
+			if (!GlobalUnlock(handle))
+			{
+				DWORD err = GetLastError();
+				if (err != NO_ERROR)
+				{
+					ErrorHandle(HRESULT_FROM_WIN32(err), Error::Level::Log, L"Failed to unlock memory.");
+				}
 			}
 		}
 	};
@@ -195,43 +224,4 @@ public:
 
 	template<typename T = void>
 	using GlobalHandle = Base<T, GlobalTraits<GHND>>;
-
-	template<typename T>
-	class GlobalLock {
-	private:
-		GlobalHandle<T> &m_Handle;
-		using ptr_t = std::remove_extent_t<T> *;
-		ptr_t m_Ptr;
-
-	public:
-		inline explicit GlobalLock(GlobalHandle<T> &handle) : m_Handle(handle)
-		{
-			m_Ptr = static_cast<ptr_t>(::GlobalLock(m_Handle.get()));
-		}
-
-		inline GlobalLock(const GlobalLock &other) = delete;
-		inline GlobalLock &operator =(const GlobalLock &other) = delete;
-
-		inline ptr_t get()
-		{
-			return m_Ptr;
-		}
-
-		inline explicit operator bool() const
-		{
-			return m_Ptr != nullptr;
-		}
-
-		inline ~GlobalLock()
-		{
-			if (!GlobalUnlock(m_Handle.get()))
-			{
-				DWORD err = GetLastError();
-				if (err != NO_ERROR)
-				{
-					ErrorHandle(HRESULT_FROM_WIN32(err), Error::Level::Error, L"Failed to unlock memory.");
-				}
-			}
-		}
-	};
 };

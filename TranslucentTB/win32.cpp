@@ -16,6 +16,7 @@
 #include <winrt/base.h>
 
 #include "autofree.hpp"
+#include "autounlock.hpp"
 #include "../CPicker/ccolourpicker.hpp"
 #include "clipboardcontext.hpp"
 #include "common.hpp"
@@ -209,13 +210,13 @@ bool win32::CopyToClipboard(std::wstring_view text)
 	}
 
 	{
-		AutoFree::GlobalLock lock(data);
-		if (!lock)
+		AutoUnlock lock(data);
+		if (!data)
 		{
 			LastErrorHandle(Error::Level::Error, L"Failed to lock memory for the clipboard.");
 			return false;
 		}
-		text.copy(lock.get(), text.length());
+		text.copy(data.get(), text.length());
 	}
 
 	if (!SetClipboardData(CF_UNICODETEXT, data.detach()))
