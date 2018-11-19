@@ -322,99 +322,105 @@ INT_PTR GUI::OnPaint(const HWND hDlg)
 
 INT_PTR GUI::OnClick(const HWND hDlg)
 {
-	RECT rectC1;
-	RECT rectC2;
-	RECT rectA;
-
-	GetWindowRect(GetDlgItem(hDlg, IDC_COLOR), &rectC1);
-	GetWindowRect(GetDlgItem(hDlg, IDC_COLOR2), &rectC2);
-	GetWindowRect(GetDlgItem(hDlg, IDC_ALPHASLIDE), &rectA);
-
 	BOOL result;
-	const uint8_t red   = SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
-	const uint8_t green = SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
-	const uint8_t blue  = SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
-
-	const uint16_t hue       = SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
-	const uint8_t saturation = SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
-	const uint8_t value      = SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result));
+	const SColour col = {
+		SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)),
+		SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)),
+		SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)),
+		SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)),
+		SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)),
+		SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result))
+	};
 
 	POINT p;
 	GetCursorPos(&p);
 
-	// IDC_COLOR1 picked
-	if (PtInRect(&rectC1, p))
+	RECT rect;
+	if (GetWindowRect(GetDlgItem(hDlg, IDC_COLOR), &rect); PtInRect(&rect, p))
 	{
-		const float fx = ((p.x - rectC1.left) / static_cast<float>(rectC1.right - rectC1.left)) * 255.0f;
-		const float fy = ((p.y - rectC1.top) / static_cast<float>(rectC1.bottom - rectC1.top)) * 255.0f;
-
-		if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
-		{
-			m_picker->SetRGB(red, fx, fy);
-		}
-		else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
-		{
-			m_picker->SetRGB(fx, green, fy);
-		}
-		else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
-		{
-			m_picker->SetRGB(fy, fx, blue);
-		}
-		else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
-		{
-			m_picker->SetHSV(hue, fx / 255.0f * 100.0f, (255 - fy) / 255.0f * 100.0f);
-		}
-		else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
-		{
-			m_picker->SetHSV(fx / 255.0f * 359.0f, saturation, (255 - fy) / 255.0f * 100.0f);
-		}
-		else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
-		{
-			m_picker->SetHSV(fx / 255.0f * 359.0f, (255 - fy) / 255.0f * 100.0f, value);
-		}
+		OnColorPickerClick(hDlg, rect, p, col);
 	}
-	// IDC_COLOR2 picked
-	else if (PtInRect(&rectC2, p))
+	else if (GetWindowRect(GetDlgItem(hDlg, IDC_COLOR2), &rect);  PtInRect(&rect, p))
 	{
-		const float fy = ((p.y - rectC2.top) / static_cast<float>(rectC2.bottom - rectC2.top)) * 255.0f;
-
-		if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
-		{
-			m_picker->SetRGB(255 - fy, green, blue);
-		}
-		else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
-		{
-			m_picker->SetRGB(red, 255 - fy, blue);
-		}
-		else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
-		{
-			m_picker->SetRGB(red, green, 255 - fy);
-		}
-		else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
-		{
-			m_picker->SetHSV((255 - fy) / 255.0f * 359.0f, saturation, value);
-		}
-		else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
-		{
-			m_picker->SetHSV(hue, (255 - fy) / 255.0f * 100.0f, value);
-		}
-		else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
-		{
-			m_picker->SetHSV(hue, saturation, (255 - fy) / 255.0f * 100.0f);
-		}
+		OnColorSliderClick(hDlg, rect, p, col);
 	}
-	// IDC_ALPHASLIDE picked
-	else if (PtInRect(&rectA, p))
+	else if (GetWindowRect(GetDlgItem(hDlg, IDC_ALPHASLIDE), &rect); PtInRect(&rect, p))
 	{
-		const float fy = ((p.y - rectA.top) / static_cast<float>(rectA.bottom - rectA.top)) * 255.0f;
-
-		m_picker->SetAlpha(255 - fy);
+		OnAlphaSliderClick(rect, p);
 	}
 
 	UpdateValues(hDlg);
 	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 
 	return 0;
+}
+
+void GUI::OnColorPickerClick(const HWND hDlg, const RECT &position, const POINT &cursor, const SColour &col)
+{
+	const float fx = ((cursor.x - position.left) / static_cast<float>(position.right - position.left)) * 255.0f;
+	const float fy = ((cursor.y - position.top) / static_cast<float>(position.bottom - position.top)) * 255.0f;
+
+	if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
+	{
+		m_picker->SetRGB(col.r, fx, fy);
+	}
+	else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
+	{
+		m_picker->SetRGB(fx, col.g, fy);
+	}
+	else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
+	{
+		m_picker->SetRGB(fy, fx, col.b);
+	}
+	else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
+	{
+		m_picker->SetHSV(col.h, fx / 255.0f * 100.0f, (255 - fy) / 255.0f * 100.0f);
+	}
+	else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
+	{
+		m_picker->SetHSV(fx / 255.0f * 359.0f, col.s, (255 - fy) / 255.0f * 100.0f);
+	}
+	else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
+	{
+		m_picker->SetHSV(fx / 255.0f * 359.0f, (255 - fy) / 255.0f * 100.0f, col.v);
+	}
+}
+
+void GUI::OnColorSliderClick(const HWND hDlg, const RECT &position, const POINT &cursor, const SColour &col)
+{
+	const float fy = ((cursor.y - position.top) / static_cast<float>(position.bottom - position.top)) * 255.0f;
+
+	if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
+	{
+		m_picker->SetRGB(255 - fy, col.g, col.b);
+	}
+	else if (IsDlgButtonChecked(hDlg, IDC_G) == BST_CHECKED)
+	{
+		m_picker->SetRGB(col.r, 255 - fy, col.b);
+	}
+	else if (IsDlgButtonChecked(hDlg, IDC_B) == BST_CHECKED)
+	{
+		m_picker->SetRGB(col.r, col.g, 255 - fy);
+	}
+	else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
+	{
+		m_picker->SetHSV((255 - fy) / 255.0f * 359.0f, col.s, col.v);
+	}
+	else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
+	{
+		m_picker->SetHSV(col.h, (255 - fy) / 255.0f * 100.0f, col.v);
+	}
+	else if (IsDlgButtonChecked(hDlg, IDC_V) == BST_CHECKED)
+	{
+		m_picker->SetHSV(col.h, col.s, (255 - fy) / 255.0f * 100.0f);
+	}
+}
+
+void GUI::OnAlphaSliderClick(const RECT &position, const POINT &cursor)
+{
+	const float fy = ((cursor.y - position.top) / static_cast<float>(position.bottom - position.top)) * 255.0f;
+
+	m_picker->SetAlpha(255 - fy);
 }
 
 INT_PTR GUI::OnMouseMove(const HWND hDlg, const WPARAM wParam)

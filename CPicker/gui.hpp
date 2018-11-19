@@ -66,6 +66,9 @@ private:
 	INT_PTR OnDpiChange(const HWND hDlg);
 	INT_PTR OnPaint(const HWND hDlg);
 	INT_PTR OnClick(const HWND hDlg);
+	void OnColorPickerClick(const HWND hDlg, const RECT &position, const POINT &cursor, const SColour &col);
+	void OnColorSliderClick(const HWND hDlg, const RECT &position, const POINT &cursor, const SColour &col);
+	void OnAlphaSliderClick(const RECT &position, const POINT &cursor);
 	INT_PTR OnMouseMove(const HWND hDlg, const WPARAM wParam);
 	INT_PTR OnCommand(const HWND hDlg, const WPARAM wParam);
 	INT_PTR OnEditControlFocusAcquire(const HWND hDlg, const WPARAM wParam);
