@@ -136,7 +136,7 @@ public:
 		m_Cfg.pButtons = m_Buttons.data();
 	}
 
-	void Run()
+	inline void Run()
 	{
 		bool useless;
 		TTBTaskDialog::Run(useless);
