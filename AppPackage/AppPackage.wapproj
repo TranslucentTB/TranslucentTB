@@ -27,14 +27,15 @@
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundlePlatforms>x64</AppxBundlePlatforms>
     <AppxBundle>Never</AppxBundle>
+    <PackageCertificateThumbprint>1BDB9301A782A3EF31454E5792A4931D39BB5E8C</PackageCertificateThumbprint>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <None Include="DevelopmentKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="DevelopmentKey.pfx" />
     <Content Include="Assets\LargeTile.scale-100.png" />
     <Content Include="Assets\LargeTile.scale-125.png" />
     <Content Include="Assets\LargeTile.scale-150.png" />
