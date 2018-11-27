@@ -14,7 +14,7 @@
 class Blacklist {
 public:
 	static void Parse(const std::wstring &file);
-	static bool IsBlacklisted(const Window window);
+	static bool IsBlacklisted(Window window);
 	static void ClearCache();
 
 private:
