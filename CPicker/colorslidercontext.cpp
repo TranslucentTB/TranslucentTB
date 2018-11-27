@@ -22,7 +22,7 @@ HRESULT ColorSliderContext::Refresh(HWND hwnd)
 	return S_OK;
 }
 
-HRESULT ColorSliderContext::Draw(const HWND hDlg, const SColourF &col, const SColourF &)
+HRESULT ColorSliderContext::Draw(HWND hDlg, const SColourF &col, const SColourF &)
 {
 	winrt::com_ptr<ID2D1LinearGradientBrush> brush;
 	const DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);

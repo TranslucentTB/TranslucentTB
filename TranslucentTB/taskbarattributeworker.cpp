@@ -12,7 +12,7 @@
 const swca::pSetWindowCompositionAttribute TaskbarAttributeWorker::SetWindowCompositionAttribute =
 	reinterpret_cast<swca::pSetWindowCompositionAttribute>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
 
-void TaskbarAttributeWorker::OnAeroPeekEnterExit(const DWORD event, ...)
+void TaskbarAttributeWorker::OnAeroPeekEnterExit(DWORD event, ...)
 {
 	m_PeekActive = event == EVENT_SYSTEM_PEEKSTART;
 	for (const auto &[monitor, _] : m_Taskbars)
@@ -21,14 +21,15 @@ void TaskbarAttributeWorker::OnAeroPeekEnterExit(const DWORD event, ...)
 	}
 }
 
-void TaskbarAttributeWorker::OnWindowStateChange(const bool skipCheck, DWORD, const Window &window, const LONG idObject, ...)
+void TaskbarAttributeWorker::OnWindowStateChange(bool skipCheck, DWORD, Window window, LONG idObject, ...)
 {
 	if (skipCheck || (idObject == OBJID_WINDOW && window.valid()))
 	{
-		HMONITOR monitor = window.monitor();
+		const HMONITOR monitor = window.monitor();
 		if (m_Taskbars.count(monitor) != 0)
 		{
 			auto &monInf = m_Taskbars.at(monitor);
+
 			if (IsWindowMaximised(window))
 			{
 				monInf.MaximisedWindows.insert(window);
@@ -43,7 +44,7 @@ void TaskbarAttributeWorker::OnWindowStateChange(const bool skipCheck, DWORD, co
 	}
 }
 
-bool TaskbarAttributeWorker::IsWindowMaximised(const Window &window)
+bool TaskbarAttributeWorker::IsWindowMaximised(Window window)
 {
 	return
 		window.visible() &&
@@ -53,12 +54,12 @@ bool TaskbarAttributeWorker::IsWindowMaximised(const Window &window)
 		!Blacklist::IsBlacklisted(window);
 }
 
-BOOL CALLBACK TaskbarAttributeWorker::EnumWindowsProcess(const HWND hWnd, const LPARAM lParam)
+BOOL CALLBACK TaskbarAttributeWorker::EnumWindowsProcess(HWND hWnd, LPARAM lParam)
 {
 	auto pThis = reinterpret_cast<TaskbarAttributeWorker *>(lParam);
 	const Window window(hWnd);
 
-	HMONITOR monitor = window.monitor();
+	const HMONITOR monitor = window.monitor();
 	if (IsWindowMaximised(window))
 	{
 		if (pThis->m_Taskbars.count(monitor) != 0)
@@ -77,7 +78,7 @@ BOOL CALLBACK TaskbarAttributeWorker::EnumWindowsProcess(const HWND hWnd, const 
 	return true;
 }
 
-void TaskbarAttributeWorker::OnStartVisibilityChange(const bool state)
+void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 {
 	if (state)
 	{
@@ -96,7 +97,7 @@ HMONITOR TaskbarAttributeWorker::GetStartMenuMonitor()
 	return Window::ForegroundWindow().monitor();
 }
 
-void TaskbarAttributeWorker::OnWindowCreateDestroy(const DWORD event, const Window &window, const LONG idObject, ...)
+void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, Window window, LONG idObject, ...)
 {
 	if (event == EVENT_OBJECT_CREATE)
 	{
@@ -140,12 +141,12 @@ void TaskbarAttributeWorker::RefreshTaskbars()
 	}
 }
 
-void TaskbarAttributeWorker::HookTaskbar(const Window &window)
+void TaskbarAttributeWorker::HookTaskbar(Window window)
 {
 	const auto [hook, hr] = Hook::HookExplorer(window);
 	if (SUCCEEDED(hr))
 	{
-		m_Hooks.emplace_back(hook);
+		m_Hooks.push_back(hook);
 	}
 	else
 	{
@@ -166,7 +167,7 @@ void TaskbarAttributeWorker::Poll()
 	EnumWindows(EnumWindowsProcess, reinterpret_cast<LPARAM>(this));
 }
 
-bool TaskbarAttributeWorker::SetAttribute(const Window &window, const Config::TASKBAR_APPEARANCE &config)
+bool TaskbarAttributeWorker::SetAttribute(Window window, Config::TASKBAR_APPEARANCE config)
 {
 	if (SetWindowCompositionAttribute)
 	{
@@ -204,7 +205,7 @@ bool TaskbarAttributeWorker::SetAttribute(const Window &window, const Config::TA
 	}
 }
 
-const Config::TASKBAR_APPEARANCE &TaskbarAttributeWorker::GetConfigForMonitor(const HMONITOR monitor, const bool skipCheck)
+Config::TASKBAR_APPEARANCE TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR monitor, bool skipCheck)
 {
 	if (Config::START_ENABLED && m_CurrentStartMonitor == monitor)
 	{
@@ -227,7 +228,7 @@ const Config::TASKBAR_APPEARANCE &TaskbarAttributeWorker::GetConfigForMonitor(co
 	return Config::REGULAR_APPEARANCE;
 }
 
-bool TaskbarAttributeWorker::RefreshAttribute(const HMONITOR monitor, const bool skipCheck)
+bool TaskbarAttributeWorker::RefreshAttribute(HMONITOR monitor, bool skipCheck)
 {
 	if (skipCheck || m_Taskbars.count(monitor) != 0)
 	{
@@ -239,15 +240,15 @@ bool TaskbarAttributeWorker::RefreshAttribute(const HMONITOR monitor, const bool
 	}
 }
 
-long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, const LPARAM lParam)
+long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, LPARAM lParam)
 {
 	const Window window = reinterpret_cast<HWND>(lParam);
 	if (m_Taskbars.count(window.monitor()) != 0)
 	{
-		const auto &taskbar = m_Taskbars.at(window.monitor()).TaskbarWindow;
+		const auto taskbar = m_Taskbars.at(window.monitor()).TaskbarWindow;
 		if (taskbar == window)
 		{
-			const auto &config = GetConfigForMonitor(taskbar.monitor(), true);
+			const auto config = GetConfigForMonitor(taskbar.monitor(), true);
 			if (config.ACCENT == swca::ACCENT::ACCENT_NORMAL || m_returningToStock)
 			{
 				return 0;
@@ -282,7 +283,7 @@ EventHook::callback_t TaskbarAttributeWorker::BindHook()
 	return std::bind(&TaskbarAttributeWorker::OnWindowStateChange, this, false, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 }
 
-TaskbarAttributeWorker::TaskbarAttributeWorker(const HINSTANCE hInstance) :
+TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance) :
 	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance),
 	m_PeekActive(false),
 	m_PeekUnpeekHook(EVENT_SYSTEM_PEEKSTART, EVENT_SYSTEM_PEEKEND, std::bind(&TaskbarAttributeWorker::OnAeroPeekEnterExit, this, std::placeholders::_1), WINEVENT_OUTOFCONTEXT),

@@ -9,7 +9,7 @@ private:
 	std::function<void(bool)> m_startOpenedCallback;
 
 public:
-	AppVisibilitySink(const std::function<void(bool)> &startOpenedCallback);
+	AppVisibilitySink(std::function<void(bool)> startOpenedCallback);
 	IFACEMETHODIMP LauncherVisibilityChange(BOOL currentVisibleState) override;
 	IFACEMETHODIMP AppVisibilityOnMonitorChanged(HMONITOR, MONITOR_APP_VISIBILITY, MONITOR_APP_VISIBILITY) override;
 };

@@ -98,7 +98,7 @@ const std::wstring &win32::GetExeLocation()
 	return m_ExeLocation;
 }
 
-bool win32::IsAtLeastBuild(const uint32_t &buildNumber)
+bool win32::IsAtLeastBuild(uint32_t buildNumber)
 {
 	OSVERSIONINFOEX versionInfo = { sizeof(versionInfo), 10, 0, buildNumber };
 
@@ -189,7 +189,7 @@ bool win32::FileExists(const std::wstring &file)
 
 bool win32::CopyToClipboard(std::wstring_view text)
 {
-	ClipboardContext context;
+	const ClipboardContext context;
 	if (!context)
 	{
 		LastErrorHandle(Error::Level::Error, L"Failed to open clipboard.");
@@ -246,11 +246,11 @@ void win32::EditFile(const std::wstring &file)
 
 	if (!ShellExecuteEx(&info))
 	{
-		std::thread([file]
+		std::thread([file, err = GetLastError()]
 		{
 			std::wstring boxbuffer =
 				L"Failed to open file \"" + file + L"\"." +
-				L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(GetLastError())) +
+				L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(err)) +
 				L"\n\nCopy the file location to the clipboard?";
 
 			if (MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
@@ -279,11 +279,11 @@ void win32::OpenLink(const std::wstring &link)
 
 	if (!ShellExecuteEx(&info))
 	{
-		std::thread([link]
+		std::thread([link, err = GetLastError()]
 		{
 			std::wstring boxbuffer =
 				L"Failed to open URL \"" + link + L"\"." +
-				L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(GetLastError())) +
+				L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(err)) +
 				L"\n\nCopy the URL to the clipboard?";
 
 			if (MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
@@ -303,7 +303,7 @@ DWORD win32::PickColor(uint32_t &color)
 	{
 		{
 			std::lock_guard guard(m_PickerThreadsLock);
-			m_PickerThreads.emplace(threadId);
+			m_PickerThreads.insert(threadId);
 		}
 
 		ResumeThread(hThread.get());
@@ -496,7 +496,7 @@ std::pair<std::wstring, HRESULT> win32::GetFileVersion(const std::wstring &file)
 	return { { fileVersion, length - 1 }, S_OK };
 }
 
-uint64_t win32::FiletimeToUnixEpoch(const FILETIME &time)
+uint64_t win32::FiletimeToUnixEpoch(FILETIME time)
 {
 	uint64_t timeStamp = ULARGE_INTEGER{{ time.dwLowDateTime, time.dwHighDateTime }}.QuadPart;
 
@@ -537,5 +537,38 @@ std::wstring_view win32::GetProcessorArchitecture()
 
 	default:
 		return L"Invalid";
+	}
+}
+
+void win32::OpenFolder(const std::wstring &folder)
+{
+	SHELLEXECUTEINFO info = {
+		sizeof(info),							// cbSize
+		SEE_MASK_CLASSNAME,						// fMask
+		NULL,									// hwnd
+		L"open",								// lpVerb
+		folder.c_str(),							// lpFile
+		NULL,									// lpParameters
+		NULL,									// lpDirectory
+		SW_SHOW,								// nShow
+		nullptr,								// hInstApp
+		nullptr,								// lpIDList
+		L"folder"								// lpClass
+	};
+
+	if (!ShellExecuteEx(&info))
+	{
+		std::thread([folder, err = GetLastError()]
+		{
+			std::wstring boxbuffer =
+				L"Failed to open folder \"" + folder + L"\"." +
+				L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(err)) +
+				L"\n\nCopy the path to the clipboard?";
+
+			if (MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+			{
+				CopyToClipboard(folder);
+			}
+		}).detach();
 	}
 }

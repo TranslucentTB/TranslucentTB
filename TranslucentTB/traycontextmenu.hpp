@@ -24,14 +24,14 @@ private:
 	std::vector<std::function<void()>> m_RefreshFunctions;
 
 public:
-	TrayContextMenu(MessageWindow &window, wchar_t *brightIconResource, wchar_t *darkIconResource, wchar_t *menuResource, const HINSTANCE &hInstance = GetModuleHandle(NULL));
+	TrayContextMenu(MessageWindow &window, const wchar_t *brightIconResource, const wchar_t *darkIconResource, const wchar_t *menuResource, HINSTANCE hInstance = GetModuleHandle(NULL));
 
 	using MENUCALLBACKCOOKIE = unsigned long long;
 
-	inline MENUCALLBACKCOOKIE RegisterContextMenuCallback(unsigned int item, const callback_t &callback)
+	inline MENUCALLBACKCOOKIE RegisterContextMenuCallback(unsigned int item, callback_t callback)
 	{
 		unsigned short secret = Util::GetRandomNumber<unsigned short>();
-		m_MenuCallbackMap[item].emplace_front(std::make_pair(secret, callback));
+		m_MenuCallbackMap[item].push_front({ secret, std::move(callback) });
 
 		return (static_cast<MENUCALLBACKCOOKIE>(secret) << 32) + item;
 	}
@@ -52,7 +52,7 @@ public:
 		ControlsEnabled
 	};
 
-	inline static void RefreshBool(unsigned int item, HMENU menu, const bool &value, BoolBindingEffect effect)
+	inline static void RefreshBool(unsigned int item, HMENU menu, bool value, BoolBindingEffect effect)
 	{
 		if (effect == Toggle)
 		{
@@ -69,7 +69,7 @@ public:
 		CheckMenuRadioItem(menu, first, last, position, MF_BYCOMMAND);
 	}
 
-	inline static void ChangeItemText(HMENU menu, const uint32_t &item, std::wstring &&new_text)
+	inline static void ChangeItemText(HMENU menu, uint32_t item, std::wstring &&new_text)
 	{
 		MENUITEMINFO item_info = { sizeof(item_info), MIIM_STRING };
 
@@ -100,7 +100,7 @@ public:
 		unsigned int min = min_p->second;
 		unsigned int max = max_p->second;
 
-		m_RefreshFunctions.emplace_back([this, min, max, &value, &map]
+		m_RefreshFunctions.push_back([this, min, max, &value, &map]
 		{
 			RefreshEnum(m_Menu, min, max, map.at(value));
 		});
@@ -111,9 +111,9 @@ public:
 		RegisterContextMenuCallback(item, std::bind(&win32::PickColor, std::ref(color)));
 	}
 
-	inline void RegisterCustomRefresh(const std::function<void(HMENU menu)> &function)
+	inline void RegisterCustomRefresh(std::function<void(HMENU menu)> function)
 	{
-		m_RefreshFunctions.push_back(std::bind(function, m_Menu));
+		m_RefreshFunctions.push_back(std::bind(std::move(function), m_Menu));
 	}
 
 	~TrayContextMenu();

@@ -310,7 +310,7 @@ void RefreshMenu(HMENU menu)
 		TrayContextMenu::ControlsEnabled);
 }
 
-long ExitApp(const EXITREASON &reason, ...)
+long ExitApp(EXITREASON reason, ...)
 {
 	run.exit_reason = reason;
 	PostQuitMessage(0);
@@ -400,7 +400,7 @@ long ExitApp(const EXITREASON &reason, ...)
 
 #pragma region Startup
 
-void InitializeTray(const HINSTANCE &hInstance)
+void InitializeTray(HINSTANCE hInstance)
 {
 	static MessageWindow window(TRAY_WINDOW, NAME, hInstance);
 	static TaskbarAttributeWorker worker(hInstance);
@@ -412,7 +412,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 	window.RegisterCallback(WM_CLOSE, std::bind(&ExitApp, EXITREASON::UserAction));
 
-	window.RegisterCallback(WM_QUERYENDSESSION, [](WPARAM, const LPARAM lParam)
+	window.RegisterCallback(WM_QUERYENDSESSION, [](WPARAM, LPARAM lParam)
 	{
 		if (lParam & ENDSESSION_CLOSEAPP)
 		{
@@ -422,7 +422,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 		return TRUE;
 	});
 
-	window.RegisterCallback(WM_ENDSESSION, [](const WPARAM wParam, ...)
+	window.RegisterCallback(WM_ENDSESSION, [](WPARAM wParam, ...)
 	{
 		if (wParam)
 		{
@@ -540,7 +540,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 	}
 }
 
-int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 {
 	win32::HardenProcess();
 	try

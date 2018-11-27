@@ -7,9 +7,9 @@ class Window; // Forward declare to prevent circular deps
 
 class FindWindowIterator {
 private:
-	const std::wstring *const m_class;
-	const std::wstring *const m_name;
-	const HWND m_parent;
+	const std::wstring *m_class;
+	const std::wstring *m_name;
+	HWND m_parent;
 
 	HWND m_currentWindow;
 
@@ -19,7 +19,7 @@ private:
 public:
 	static const FindWindowIterator EndIterator;
 
-	FindWindowIterator(const std::wstring *const className, const std::wstring *const windowName, const HWND parent);
+	FindWindowIterator(const std::wstring *className, const std::wstring *windowName, HWND parent);
 
 	inline FindWindowIterator &operator ++()
 	{

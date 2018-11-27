@@ -52,7 +52,7 @@ private:
 	}
 
 public:
-	inline FolderWatcher(const std::wstring &folder, DWORD filter, const Window &callback) : m_callbackWnd(callback)
+	inline FolderWatcher(const std::wstring &folder, DWORD filter, Window callback) : m_callbackWnd(callback)
 	{
 		m_event.attach(CreateEvent(NULL, TRUE, FALSE, NULL));
 		if (!m_event)

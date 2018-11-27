@@ -10,7 +10,7 @@ namespace UWP {
 		Roaming
 	};
 
-	winrt::hstring GetApplicationFolderPath(const FolderType &type);
+	winrt::hstring GetApplicationFolderPath(FolderType type);
 
 	std::wstring GetApplicationVersion();
 }

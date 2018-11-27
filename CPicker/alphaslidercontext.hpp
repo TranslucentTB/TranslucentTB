@@ -4,5 +4,5 @@
 class AlphaSliderContext : public SliderContext {
 public:
 	using SliderContext::SliderContext;
-	HRESULT Draw(const HWND, const SColourF &col, const SColourF &) override;
+	HRESULT Draw(HWND, const SColourF &col, const SColourF &) override;
 };

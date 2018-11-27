@@ -14,8 +14,8 @@ public:
 		Debug	// Log to debug output. For use in file log implementation.
 	};
 
-	static bool Handle(const HRESULT &error, const Level &level, const wchar_t *const message, const wchar_t *const file, const int &line, const wchar_t *const function);
-	static std::wstring ExceptionFromHRESULT(const HRESULT &result);
+	static bool Handle(HRESULT error, Level level, const wchar_t *message, const wchar_t *file, int line, const wchar_t *function);
+	static std::wstring ExceptionFromHRESULT(HRESULT result);
 };
 
 #define ErrorHandle(x, y, z) (Error::Handle((x), (y), (z), _T(__FILE__), __LINE__, _T(__FUNCSIG__)))

@@ -4,7 +4,7 @@
 #include "ttberror.hpp"
 #include "util.hpp"
 
-LRESULT MessageWindow::WindowProcedure(const Window &window, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT MessageWindow::WindowProcedure(Window window, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const auto &callbackList = m_CallbackMap[uMsg];
 	if (!callbackList.empty())
@@ -38,7 +38,7 @@ void MessageWindow::RunMessageLoop()
 	}
 }
 
-MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &windowName, const HINSTANCE &hInstance, const Window &parent, const wchar_t *iconResource) :
+MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &windowName, HINSTANCE hInstance, Window parent, const wchar_t *iconResource) :
 	m_WindowClass(
 		std::bind(&MessageWindow::WindowProcedure, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
 		className,
@@ -55,10 +55,10 @@ MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &
 	}
 }
 
-MessageWindow::CALLBACKCOOKIE MessageWindow::RegisterCallback(unsigned int message, const callback_t &callback)
+MessageWindow::CALLBACKCOOKIE MessageWindow::RegisterCallback(unsigned int message, callback_t callback)
 {
 	unsigned short secret = Util::GetRandomNumber<unsigned short>();
-	m_CallbackMap[message].emplace_front(std::make_pair(secret, callback));
+	m_CallbackMap[message].push_front({ secret, std::move(callback) });
 
 	return (static_cast<CALLBACKCOOKIE>(secret) << 32) + message;
 }

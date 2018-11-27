@@ -19,7 +19,7 @@ LRESULT WindowClass::RawWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	return m_CallbackMap[atom](hwnd, msg, wParam, lParam);
 }
 
-WindowClass::WindowClass(const callback_t &callback, const std::wstring &className, const wchar_t *iconResource, const unsigned int &style, const HINSTANCE &hInstance, const HBRUSH &brush, const HCURSOR &cursor) :
+WindowClass::WindowClass(callback_t callback, const std::wstring &className, const wchar_t *iconResource, unsigned int style, HINSTANCE hInstance, HBRUSH brush, HCURSOR cursor) :
 	m_ClassStruct {
 		sizeof(m_ClassStruct),
 		style,
@@ -41,7 +41,7 @@ WindowClass::WindowClass(const callback_t &callback, const std::wstring &classNa
 	m_Atom = RegisterClassEx(&m_ClassStruct);
 	if (m_Atom)
 	{
-		m_CallbackMap.emplace(m_Atom, callback);
+		m_CallbackMap[m_Atom] = std::move(callback);
 	}
 	else
 	{

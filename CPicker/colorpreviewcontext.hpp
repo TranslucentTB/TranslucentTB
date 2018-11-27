@@ -4,5 +4,5 @@
 class ColorPreviewContext : public RenderContext {
 public:
 	using RenderContext::RenderContext;
-	HRESULT Draw(const HWND, const SColourF &col, const SColourF &old) override;
+	HRESULT Draw(HWND, const SColourF &col, const SColourF &old) override;
 };

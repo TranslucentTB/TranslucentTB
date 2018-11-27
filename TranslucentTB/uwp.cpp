@@ -3,7 +3,7 @@
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Storage.h>
 
-winrt::hstring UWP::GetApplicationFolderPath(const FolderType &type)
+winrt::hstring UWP::GetApplicationFolderPath(FolderType type)
 {
 	static const auto application_data = winrt::Windows::Storage::ApplicationData::Current();
 

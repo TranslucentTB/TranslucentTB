@@ -15,7 +15,7 @@ void FindWindowIterator::MoveNext()
 	m_currentWindow = Window::Find(*m_class, *m_name, m_parent, m_currentWindow);
 }
 
-FindWindowIterator::FindWindowIterator(const std::wstring *const className, const std::wstring *const windowName, const HWND parent) :
+FindWindowIterator::FindWindowIterator(const std::wstring *className, const std::wstring *windowName, HWND parent) :
 	m_class(className),
 	m_name(windowName),
 	m_parent(parent),

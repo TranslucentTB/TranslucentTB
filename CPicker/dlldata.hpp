@@ -8,7 +8,7 @@ private:
 	friend BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID);
 
 public:
-	inline static const HINSTANCE &GetInstanceHandle()
+	inline static HINSTANCE GetInstanceHandle()
 	{
 		return m_hInst;
 	}

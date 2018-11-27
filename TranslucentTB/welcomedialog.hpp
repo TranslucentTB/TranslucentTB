@@ -5,7 +5,7 @@
 
 class WelcomeDialog : public TTBTaskDialog {
 private:
-	inline HRESULT CallbackProc(const Window &window, unsigned int uNotification, WPARAM wParam, LPARAM)
+	inline HRESULT CallbackProc(Window window, unsigned int uNotification, WPARAM wParam, LPARAM)
 	{
 		switch (uNotification)
 		{
@@ -29,8 +29,14 @@ private:
 
 	inline std::wstring BuildWelcomeContent(const std::wstring &configLocation)
 	{
-		return L"All the settings for the application can be edited from the tray icon. If you prefer editing files, take a look at " + configLocation + L". If you prefer a command line, run " NAME L" with the --help command line argument to get more info.\n\n"
-			L"You must agree to our license, the GPLv3, before using " NAME L". We will only ask this once. Check the box and press OK to continue.";
+		return L"All the settings for the application can be edited from the tray icon. "
+			L"If you want to edit the raw configuration files, take a look at <A HREF=\"" +
+			configLocation + L"\">" + configLocation + L"</A>. If you prefer a command line, run "
+			NAME L" with the --help command line argument to get more info.\n\n"
+			L"If you appreciate " NAME L" you are more than welcome to "
+			LR"(<A HREF="https://liberapay.com/TranslucentTB">donate</A>.)"
+			L"\n\nYou must agree to our license, the GPLv3, before using " NAME
+			L". We will only ask this once. Check the box and press OK to continue.";
 	}
 
 public:

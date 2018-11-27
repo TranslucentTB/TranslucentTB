@@ -7,12 +7,12 @@ void CALLBACK EventHook::RawHookCallback(HWINEVENTHOOK hook, DWORD event, HWND w
 	GetMap()[hook](event, window, idObject, idChild, dwEventThread, dwmsEventTime);
 }
 
-EventHook::EventHook(const DWORD &min, const DWORD &max, const callback_t &callback, const DWORD &flags, const HMODULE &hMod, const DWORD &idProcess, const DWORD &idThread)
+EventHook::EventHook(DWORD min, DWORD max, callback_t callback, DWORD flags, HMODULE hMod, DWORD idProcess, DWORD idThread)
 {
 	m_Handle = SetWinEventHook(min, max, hMod, RawHookCallback, idProcess, idThread, flags);
 	if (m_Handle)
 	{
-		GetMap().emplace(m_Handle, callback);
+		GetMap()[m_Handle] = std::move(callback);
 	}
 	else
 	{

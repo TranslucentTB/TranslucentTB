@@ -1,6 +1,6 @@
 #include "rendercontext.hpp"
 
-HRESULT RenderContext::CreateDevice(const D3D_DRIVER_TYPE &type, ID3D11Device **device, ID3D11DeviceContext **context)
+HRESULT RenderContext::CreateDevice(D3D_DRIVER_TYPE type, ID3D11Device **device, ID3D11DeviceContext **context)
 {
 	UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #ifdef _DEBUG
@@ -10,7 +10,7 @@ HRESULT RenderContext::CreateDevice(const D3D_DRIVER_TYPE &type, ID3D11Device **
 	return D3D11CreateDevice(nullptr, type, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, device, nullptr, context);
 }
 
-HRESULT RenderContext::CreateGradient(ID2D1LinearGradientBrush **const brush, const D2D1_COLOR_F &top, const D2D1_COLOR_F &bottom)
+HRESULT RenderContext::CreateGradient(ID2D1LinearGradientBrush **brush, const D2D1_COLOR_F &top, const D2D1_COLOR_F &bottom)
 {
 	const D2D1_GRADIENT_STOP gradientStops[] = {
 		{

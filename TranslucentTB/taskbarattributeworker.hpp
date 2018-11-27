@@ -43,32 +43,32 @@ private:
 	EventHook m_CloakUncloakHook;
 	EventHook m_MinimizeRestoreHook;
 	EventHook m_ResizeMoveHook;
-	void OnAeroPeekEnterExit(const DWORD event, ...);
-	void OnWindowStateChange(const bool skipCheck, DWORD, const Window &window, const LONG idObject, ...);
-	static bool IsWindowMaximised(const Window &window);
-	static BOOL CALLBACK EnumWindowsProcess(const HWND hWnd, const LPARAM lParam);
+	void OnAeroPeekEnterExit(DWORD event, ...);
+	void OnWindowStateChange(bool skipCheck, DWORD, Window window, LONG idObject, ...);
+	static bool IsWindowMaximised(Window window);
+	static BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam);
 
 	// Start menu
 	HMONITOR m_CurrentStartMonitor;
 	winrt::com_ptr<IAppVisibility> m_IAV;
 	DWORD m_IAVECookie;
-	void OnStartVisibilityChange(const bool state);
+	void OnStartVisibilityChange(bool state);
 	HMONITOR GetStartMenuMonitor();
 
 	// Taskbar find & hook
 	std::unordered_map<HMONITOR, MonitorInfo> m_Taskbars;
 	std::vector<WindowsHook> m_Hooks;
 	EventHook m_CreateDestroyHook;
-	void OnWindowCreateDestroy(const DWORD event, const Window &window, const LONG idObject, ...);
+	void OnWindowCreateDestroy(DWORD event, Window window, LONG idObject, ...);
 	void RefreshTaskbars();
-	void HookTaskbar(const Window &window);
+	void HookTaskbar(Window window);
 
 	// Taskbar appearance refresh
 	void Poll();
-	bool SetAttribute(const Window &window, const Config::TASKBAR_APPEARANCE &config);
-	const Config::TASKBAR_APPEARANCE &GetConfigForMonitor(const HMONITOR monitor, const bool skipCheck = false);
-	bool RefreshAttribute(const HMONITOR monitor, const bool skipCheck = false);
-	long OnRequestAttributeRefresh(WPARAM, const LPARAM lParam);
+	bool SetAttribute(Window window, Config::TASKBAR_APPEARANCE config);
+	Config::TASKBAR_APPEARANCE GetConfigForMonitor(HMONITOR monitor, bool skipCheck = false);
+	bool RefreshAttribute(HMONITOR monitor, bool skipCheck = false);
+	long OnRequestAttributeRefresh(WPARAM, LPARAM lParam);
 
 	// Other
 	bool m_returningToStock;
@@ -76,7 +76,7 @@ private:
 	EventHook::callback_t BindHook();
 
 public:
-	TaskbarAttributeWorker(const HINSTANCE hInstance);
+	TaskbarAttributeWorker(HINSTANCE hInstance);
 
 	void ResetState();
 

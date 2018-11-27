@@ -14,7 +14,7 @@
 class Blacklist {
 public:
 	static void Parse(const std::wstring &file);
-	static bool IsBlacklisted(const Window &window);
+	static bool IsBlacklisted(const Window window);
 	static void ClearCache();
 
 private:
@@ -28,11 +28,11 @@ private:
 	static const EventHook m_ChangeHook;
 	static const EventHook m_DestroyHook;
 
-	static void HandleChangeEvent(const DWORD, const Window &window, ...);
-	static void HandleDestroyEvent(const DWORD, const Window &window, ...);
+	static void HandleChangeEvent(DWORD, Window window, ...);
+	static void HandleDestroyEvent(DWORD, Window window, ...);
 
-	static void AddToContainer(std::wstring_view line, const wchar_t &delimiter, const std::function<void(std::wstring_view)> &inserter);
-	static void AddToVector(std::wstring_view line, std::vector<std::wstring> &vector, const wchar_t &delimiter = L',');
-	static void AddToSet(std::wstring_view line, std::unordered_set<std::wstring> &set, const wchar_t &delimiter = L',');
-	static const bool &OutputMatchToLog(const Window &window, const bool &isMatch);
+	static void AddToContainer(std::wstring_view line, wchar_t delimiter, const std::function<void(std::wstring_view)> &inserter);
+	static void AddToVector(std::wstring_view line, std::vector<std::wstring> &vector, wchar_t delimiter = L',');
+	static void AddToSet(std::wstring_view line, std::unordered_set<std::wstring> &set, wchar_t delimiter = L',');
+	static bool OutputMatchToLog(Window window, bool isMatch);
 };

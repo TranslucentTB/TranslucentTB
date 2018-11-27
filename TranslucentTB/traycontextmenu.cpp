@@ -38,7 +38,7 @@ long TrayContextMenu::TrayCallback(WPARAM, LPARAM lParam)
 	return 0;
 }
 
-TrayContextMenu::TrayContextMenu(MessageWindow &window, wchar_t *brightIconResource, wchar_t *darkIconResource, wchar_t *menuResource, const HINSTANCE &hInstance) :
+TrayContextMenu::TrayContextMenu(MessageWindow &window, const wchar_t *brightIconResource, const wchar_t *darkIconResource, const wchar_t *menuResource, HINSTANCE hInstance) :
 	TrayIcon(window, brightIconResource, darkIconResource, 0, hInstance)
 {
 	m_Menu = LoadMenu(hInstance, menuResource);

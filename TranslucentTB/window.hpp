@@ -24,8 +24,8 @@ private:
 	static const EventHook m_ChangeHook;
 	static const EventHook m_DestroyHook;
 
-	static void HandleChangeEvent(const DWORD, const Window &window, ...);
-	static void HandleDestroyEvent(const DWORD, const Window &window, ...);
+	static void HandleChangeEvent(const DWORD, Window window, ...);
+	static void HandleDestroyEvent(const DWORD, Window window, ...);
 
 protected:
 	HWND m_WindowHandle;
@@ -37,11 +37,11 @@ public:
 
 	class FindEnum {
 	private:
-		const std::wstring m_class;
-		const std::wstring m_name;
-		const HWND m_parent;
+		std::wstring m_class;
+		std::wstring m_name;
+		HWND m_parent;
 	public:
-		inline FindEnum(const std::wstring &className = L"", const std::wstring &windowName = L"", const Window &parent = Window::NullWindow) :
+		inline FindEnum(const std::wstring &className = L"", const std::wstring &windowName = L"", Window parent = Window::NullWindow) :
 			m_class(className),
 			m_name(windowName),
 			m_parent(parent)
@@ -58,22 +58,22 @@ public:
 		}
 	};
 
-	inline static Window Find(const std::wstring &className = L"", const std::wstring &windowName = L"", const Window &parent = Window::NullWindow, const Window &childAfter = Window::NullWindow)
+	inline static Window Find(const std::wstring &className = L"", const std::wstring &windowName = L"", Window parent = Window::NullWindow, Window childAfter = Window::NullWindow)
 	{
 		return FindWindowEx(parent, childAfter, className.empty() ? NULL : className.c_str(), windowName.empty() ? NULL : windowName.c_str());
 	}
-	inline static Window Create(const unsigned long &dwExStyle, const std::wstring &className,
-		const std::wstring &windowName, const unsigned long &dwStyle, const int &x = 0,
-		const int &y = 0, const int &nWidth = 0, const int &nHeight = 0, const Window &parent = Window::NullWindow,
-		const HMENU &hMenu = NULL, const HINSTANCE &hInstance = GetModuleHandle(NULL), void *lpParam = nullptr)
+	inline static Window Create(unsigned long dwExStyle, const std::wstring &className,
+		const std::wstring &windowName, unsigned long dwStyle, int x = 0, int y = 0,
+		int nWidth = 0, int nHeight = 0, Window parent = Window::NullWindow, HMENU hMenu = NULL,
+		HINSTANCE hInstance = GetModuleHandle(NULL), void *lpParam = nullptr)
 	{
 		return CreateWindowEx(dwExStyle, className.c_str(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
 			parent, hMenu, hInstance, lpParam);
 	}
-	inline static Window Create(const unsigned long &dwExStyle, const WindowClass &winClass,
-		const std::wstring &windowName, const unsigned long &dwStyle, const int &x = 0,
-		const int &y = 0, const int &nWidth = 0, const int &nHeight = 0, const Window &parent = Window::NullWindow,
-		const HMENU &hMenu = NULL, const HINSTANCE &hInstance = GetModuleHandle(NULL), void *lpParam = nullptr)
+	inline static Window Create(unsigned long dwExStyle, const WindowClass &winClass,
+		const std::wstring &windowName, unsigned long dwStyle, int x = 0, int y = 0,
+		int nWidth = 0, int nHeight = 0, Window parent = Window::NullWindow,
+		HMENU hMenu = NULL, HINSTANCE hInstance = GetModuleHandle(NULL), void *lpParam = nullptr)
 	{
 		return CreateWindowEx(dwExStyle, winClass.atom(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
 			parent, hMenu, hInstance, lpParam);
@@ -82,10 +82,14 @@ public:
 	{
 		return GetForegroundWindow();
 	}
+	inline static Window DesktopWindow() noexcept
+	{
+		return GetDesktopWindow();
+	}
 
 	static void ClearCache();
 
-	constexpr Window(const HWND &handle = Window::NullWindow) noexcept : m_WindowHandle(handle) { };
+	constexpr Window(HWND handle = Window::NullWindow) noexcept : m_WindowHandle(handle) { };
 	std::shared_ptr<const std::wstring> title() const;
 	std::shared_ptr<const std::wstring> classname() const;
 	std::shared_ptr<const std::wstring> filename() const;
@@ -132,17 +136,17 @@ public:
 	{
 		return m_WindowHandle;
 	}
-	inline bool operator ==(const Window &right) const noexcept
+	inline bool operator ==(Window right) const noexcept
 	{
 		return m_WindowHandle == right.m_WindowHandle;
 	}
-	inline bool operator !=(const Window &right) const noexcept
+	inline bool operator !=(Window right) const noexcept
 	{
 		return !operator==(right);
 	}
 
 	template<typename T>
-	T get_attribute(const DWMWINDOWATTRIBUTE &attrib) const;
+	T get_attribute(DWMWINDOWATTRIBUTE attrib) const;
 
 	friend struct std::hash<Window>;
 };
@@ -153,7 +157,7 @@ constexpr Window Window::NullWindow = nullptr;
 namespace std {
 	template<>
 	struct hash<Window> {
-		inline std::size_t operator()(const Window &k) const noexcept
+		inline std::size_t operator()(Window k) const noexcept
 		{
 			static const std::hash<HWND> hasher;
 			return hasher(k.m_WindowHandle);

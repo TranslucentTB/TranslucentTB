@@ -10,7 +10,7 @@
 
 class TTBTaskDialog {
 private:
-	using callback_t = std::function<HRESULT(const Window &, unsigned int, WPARAM, LPARAM)>;
+	using callback_t = std::function<HRESULT(Window, unsigned int, WPARAM, LPARAM)>;
 
 	std::wstring m_Title;
 	std::wstring m_Content;
@@ -19,7 +19,7 @@ private:
 	static HRESULT CALLBACK CallbackProc(HWND hwnd, UINT uNotification, WPARAM wParam, LPARAM lParam, LONG_PTR dwRefData);
 protected:
 	TASKDIALOGCONFIG m_Cfg;
-	TTBTaskDialog(const std::wstring &title, const std::wstring &content, const callback_t &callback, const Window &parent);
+	TTBTaskDialog(const std::wstring &title, const std::wstring &content, callback_t callback, Window parent);
 
 	bool Run(bool &checked);
 

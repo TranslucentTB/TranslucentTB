@@ -30,7 +30,7 @@ public:
 	static const std::wstring &GetExeLocation();
 
 	// Checks Windows build number.
-	static bool IsAtLeastBuild(const uint32_t &buildNumber);
+	static bool IsAtLeastBuild(uint32_t buildNumber);
 
 	// Checks for uniqueness.
 	static bool IsSingleInstance();
@@ -72,8 +72,11 @@ public:
 	static std::pair<std::wstring, HRESULT> GetFileVersion(const std::wstring &file);
 
 	// Converts a Windows-style filetime to a unix epoch,
-	static uint64_t FiletimeToUnixEpoch(const FILETIME &time);
+	static uint64_t FiletimeToUnixEpoch(FILETIME time);
 
 	// Gets the current processor architecture as a string.
 	static std::wstring_view GetProcessorArchitecture();
+
+	// Opens a folder in the File Explorer
+	static void OpenFolder(const std::wstring &folder);
 };

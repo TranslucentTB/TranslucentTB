@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <ctime>
 #include <cwctype>
+#include <initializer_list>
 #include <limits>
 #include <memory>
 #include <random>
@@ -28,7 +29,7 @@ public:
 
 	inline static bool IgnoreCaseStringEquals(std::wstring_view l, std::wstring_view r)
 	{
-		return std::equal(l.begin(), l.end(), r.begin(), r.end(), [](const wchar_t &a, const wchar_t &b) -> bool
+		return std::equal(l.begin(), l.end(), r.begin(), r.end(), [](wchar_t a, wchar_t b) -> bool
 		{
 			return std::towlower(a) == std::towlower(b);
 		});
@@ -69,7 +70,7 @@ public:
 
 	// Removes instances of a character at the beginning and end of the string.
 	template<class T = std::wstring_view>
-	static constexpr T Trim(const T &str, const wchar_t &character = L' ')
+	static constexpr T Trim(const T &str, wchar_t character = L' ')
 	{
 		size_t first = str.find_first_not_of(character);
 
@@ -83,7 +84,7 @@ public:
 	}
 
 	// Removes instances of a character at the beginning and end of the string.
-	inline static void TrimInplace(std::wstring &str, const wchar_t &character = L' ')
+	inline static void TrimInplace(std::wstring &str, wchar_t character = L' ')
 	{
 		size_t first = str.find_first_not_of(character);
 
@@ -99,9 +100,9 @@ public:
 	}
 
 	// Checks if a string begins with another string. More efficient than str.find(text) == 0.
-	static constexpr bool StringBeginsWith(std::wstring_view string, std::wstring_view text_to_test)
+	static constexpr bool StringBeginsWith(std::wstring_view string, std::wstring_view string_to_test)
 	{
-		const size_t length = text_to_test.length();
+		const size_t length = string_to_test.length();
 		if (string.length() < length)
 		{
 			return false;
@@ -109,12 +110,33 @@ public:
 
 		for (size_t i = 0; i < length; i++)
 		{
-			if (text_to_test[i] != string[i])
+			if (string_to_test[i] != string[i])
 			{
 				return false;
 			}
 		}
 		return true;
+	}
+
+	// Checks if a string begins with any of the strings in the second parameter.
+	// T must be iteratable using a range-for with a type convertible to std::wstring_view.
+	// For example std::vector<std::wstring> works, as well as IVectorView<winrt::hstring>.
+	template<class T = std::initializer_list<std::wstring_view>>
+	static constexpr bool StringBeginsWithOneOf(std::wstring_view string, const T &strings_to_test)
+	{
+		for (const auto &string_to_test : strings_to_test)
+		{
+			if (StringBeginsWith(string, string_to_test))
+			{
+				return true;
+			}
+			else
+			{
+				continue;
+			}
+		}
+
+		return false;
 	}
 
 	// Removes a string at the beginning of another string.
@@ -178,7 +200,7 @@ private:
 public:
 	// Gets a random number from an distribution of numbers.
 	template<typename T = int>
-	inline static T GetRandomNumber(const T &begin = (std::numeric_limits<T>::min)(), const T &end = (std::numeric_limits<T>::max)())
+	inline static T GetRandomNumber(T begin = (std::numeric_limits<T>::min)(), T end = (std::numeric_limits<T>::max)())
 	{
 		std::uniform_int_distribution<T> distribution(begin, end);
 		return distribution(GetRandomEngine<std::mt19937>());
@@ -186,7 +208,7 @@ public:
 
 	// Clamps a numeric type to a narrower numeric type.
 	template<typename T, typename U>
-	static constexpr T ClampTo(const U &value)
+	static constexpr T ClampTo(U value)
 	{
 		return static_cast<T>(std::clamp<U>(value, (std::numeric_limits<T>::min)(), (std::numeric_limits<T>::max)()));
 	}

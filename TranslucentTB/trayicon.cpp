@@ -75,7 +75,7 @@ void TrayIcon::DestroyIconHandle()
 	}
 }
 
-TrayIcon::TrayIcon(MessageWindow &window, wchar_t *brightIconResource, wchar_t *darkIconResource, const unsigned int additionalFlags, const HINSTANCE &hInstance) :
+TrayIcon::TrayIcon(MessageWindow &window, const wchar_t *brightIconResource, const wchar_t *darkIconResource, unsigned int additionalFlags, HINSTANCE hInstance) :
 	m_Window(window),
 	m_IconData {
 		sizeof(m_IconData),

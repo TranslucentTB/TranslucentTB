@@ -1,6 +1,6 @@
 #include "alphaslidercontext.hpp"
 
-HRESULT AlphaSliderContext::Draw(const HWND, const SColourF &col, const SColourF &)
+HRESULT AlphaSliderContext::Draw(HWND, const SColourF &col, const SColourF &)
 {
 	const DWORD c = GetSysColor(COLOR_BTNFACE);
 	const float br = GetRValue(c) / 255.0f;

@@ -1,6 +1,6 @@
 #include "colorpreviewcontext.hpp"
 
-HRESULT ColorPreviewContext::Draw(const HWND, const SColourF &col, const SColourF &old)
+HRESULT ColorPreviewContext::Draw(HWND, const SColourF &col, const SColourF &old)
 {
 	DrawContext dc = BeginDraw();
 

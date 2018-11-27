@@ -76,7 +76,7 @@ HRESULT MainPickerContext::Refresh(HWND hwnd)
 	return S_OK;
 }
 
-HRESULT MainPickerContext::Draw(const HWND hDlg, const SColourF &col, const SColourF &)
+HRESULT MainPickerContext::Draw(HWND hDlg, const SColourF &col, const SColourF &)
 {
 	DrawContext dc = BeginDraw();
 

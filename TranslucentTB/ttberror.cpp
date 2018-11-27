@@ -17,7 +17,7 @@
 #include "win32.hpp"
 #include "window.hpp"
 
-bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *const message, const wchar_t *const file, const int &line, const wchar_t *const function)
+bool Error::Handle(HRESULT error, Level level, const wchar_t *message, const wchar_t *file, int line, const wchar_t *function)
 {
 	if (FAILED(error))
 	{
@@ -76,7 +76,7 @@ bool Error::Handle(const HRESULT &error, const Level &level, const wchar_t *cons
 	}
 }
 
-std::wstring Error::ExceptionFromHRESULT(const HRESULT &result)
+std::wstring Error::ExceptionFromHRESULT(HRESULT result)
 {
 	AutoFree::SilentLocal<wchar_t[]> error;
 	const DWORD count = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK, nullptr, result, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), reinterpret_cast<wchar_t *>(error.put()), 0, nullptr);

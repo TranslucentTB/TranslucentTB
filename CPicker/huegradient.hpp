@@ -6,7 +6,7 @@
 #include "scolour.hpp"
 
 constexpr uint8_t HueGradientPrecision = 20; // Number of steps in the hue gradient
-constexpr const std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> CalculateHueGradient()
+constexpr std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> CalculateHueGradient()
 {
 	std::array<D2D1_GRADIENT_STOP, HueGradientPrecision> gradientStops{};
 

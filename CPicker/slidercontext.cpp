@@ -1,6 +1,6 @@
 #include "slidercontext.hpp"
 
-HRESULT SliderContext::DrawSlider(const float &arrow_position, const D2D1_COLOR_F &arrow_color, ID2D1LinearGradientBrush *gradient_brush)
+HRESULT SliderContext::DrawSlider(float arrow_position, const D2D1_COLOR_F &arrow_color, ID2D1LinearGradientBrush *gradient_brush)
 {
 	const float border_size = m_size.width / 4.0f;
 

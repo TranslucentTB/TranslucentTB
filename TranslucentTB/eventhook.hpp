@@ -9,7 +9,7 @@
 
 class EventHook {
 public:
-	using callback_t = std::function<void(DWORD, const Window &, LONG, LONG, DWORD, DWORD)>;
+	using callback_t = std::function<void(DWORD, Window, LONG, LONG, DWORD, DWORD)>;
 private:
 	HWINEVENTHOOK m_Handle;
 
@@ -23,8 +23,8 @@ private:
 	static void CALLBACK RawHookCallback(HWINEVENTHOOK hook, DWORD event, HWND window, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime);
 
 public:
-	inline EventHook(const HWINEVENTHOOK &handle) : m_Handle(handle) { }
-	EventHook(const DWORD &min, const DWORD &max, const callback_t &callback, const DWORD &flags, const HMODULE &hMod = NULL, const DWORD &idProcess = 0, const DWORD &idThread = 0);
+	inline EventHook(HWINEVENTHOOK handle) : m_Handle(handle) { }
+	EventHook(DWORD min, DWORD max, callback_t callback, DWORD flags, HMODULE hMod = NULL, DWORD idProcess = 0, DWORD idThread = 0);
 
 	inline EventHook(const EventHook &) = delete;
 	inline EventHook &operator =(const EventHook &) = delete;

@@ -67,14 +67,14 @@ private:
 	static bool ParseColor(std::wstring value, uint32_t &color);
 	static bool ParseOpacity(const std::wstring &value, uint32_t &color);
 	static bool ParseBool(const std::wstring &value, bool &setting);
-	static void ParseKeyValuePair(std::wstring &kvp);
+	static void ParseKeyValuePair(std::wstring kvp);
 	static bool ParseFlags(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
 	static void ParseCliFlags(std::vector<std::wstring> &args, const std::function<void(const std::wstring &)> &logger);
 	static bool ParseAppearances(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
 	static void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
 
-	static std::wstring GetAccentText(const swca::ACCENT &accent);
-	static std::wstring GetColorText(const uint32_t &color);
-	static std::wstring GetOpacityText(const uint32_t &color);
-	static std::wstring GetBoolText(const bool &value);
+	static std::wstring GetAccentText(swca::ACCENT accent);
+	static std::wstring GetColorText(uint32_t color);
+	static std::wstring GetOpacityText(uint32_t color);
+	static std::wstring GetBoolText(bool value);
 };

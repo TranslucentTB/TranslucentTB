@@ -24,13 +24,13 @@ std::unordered_map<Window, std::shared_ptr<std::wstring>> Window::m_Titles;
 const Window Window::BroadcastWindow = HWND_BROADCAST;
 const Window Window::MessageOnlyWindow = HWND_MESSAGE;
 
-void Window::HandleChangeEvent(const DWORD, const Window &window, ...)
+void Window::HandleChangeEvent(DWORD, Window window, ...)
 {
 	std::lock_guard guard(m_TitlesLock);
 	m_Titles.erase(window);
 }
 
-void Window::HandleDestroyEvent(const DWORD, const Window &window, ...)
+void Window::HandleDestroyEvent(DWORD, Window window, ...)
 {
 	{
 		std::lock_guard guard(m_TitlesLock);
@@ -183,7 +183,7 @@ WINDOWPLACEMENT Window::placement() const
 }
 
 template<typename T>
-T Window::get_attribute(const DWMWINDOWATTRIBUTE &attrib) const
+T Window::get_attribute(DWMWINDOWATTRIBUTE attrib) const
 {
 	T attribute{};
 	HRESULT status = DwmGetWindowAttribute(m_WindowHandle, attrib, &attribute, sizeof(attribute));
@@ -191,5 +191,5 @@ T Window::get_attribute(const DWMWINDOWATTRIBUTE &attrib) const
 	return attribute;
 }
 
-template BOOL Window::get_attribute<BOOL>(const DWMWINDOWATTRIBUTE &attrib) const;
-template RECT Window::get_attribute<RECT>(const DWMWINDOWATTRIBUTE &attrib) const;
+template BOOL Window::get_attribute<BOOL>(DWMWINDOWATTRIBUTE attrib) const;
+template RECT Window::get_attribute<RECT>(DWMWINDOWATTRIBUTE attrib) const;

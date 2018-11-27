@@ -58,7 +58,7 @@ void Blacklist::Parse(const std::wstring &file)
 		{
 			AddToSet(line, m_ClassBlacklist, delimiter);
 		}
-		else if (Util::StringBeginsWith(line_lowercase, L"title") || Util::StringBeginsWith(line_lowercase, L"windowtitle"))
+		else if (Util::StringBeginsWithOneOf(line_lowercase, { L"title", L"windowtitle" }))
 		{
 			AddToVector(line, m_TitleBlacklist, delimiter);
 		}
@@ -75,7 +75,7 @@ void Blacklist::Parse(const std::wstring &file)
 	ClearCache();
 }
 
-bool Blacklist::IsBlacklisted(const Window &window)
+bool Blacklist::IsBlacklisted(Window window)
 {
 	std::lock_guard guard(m_CacheLock);
 
@@ -131,19 +131,19 @@ void Blacklist::ClearCache()
 	}
 }
 
-void Blacklist::HandleChangeEvent(const DWORD, const Window &window, ...)
+void Blacklist::HandleChangeEvent(DWORD, Window window, ...)
 {
 	std::lock_guard guard(m_CacheLock);
 	m_Cache.erase(window);
 }
 
-void Blacklist::HandleDestroyEvent(const DWORD, const Window &window, ...)
+void Blacklist::HandleDestroyEvent(DWORD, Window window, ...)
 {
 	std::lock_guard guard(m_CacheLock);
 	m_Cache.erase(window);
 }
 
-void Blacklist::AddToContainer(std::wstring_view line, const wchar_t &delimiter, const std::function<void(std::wstring_view)> &inserter)
+void Blacklist::AddToContainer(std::wstring_view line, wchar_t delimiter, const std::function<void(std::wstring_view)> &inserter)
 {
 	size_t pos;
 
@@ -161,7 +161,7 @@ void Blacklist::AddToContainer(std::wstring_view line, const wchar_t &delimiter,
 	}
 }
 
-void Blacklist::AddToVector(std::wstring_view line, std::vector<std::wstring> &vector, const wchar_t &delimiter)
+void Blacklist::AddToVector(std::wstring_view line, std::vector<std::wstring> &vector, wchar_t delimiter)
 {
 	AddToContainer(line, delimiter, [&vector](std::wstring_view line)
 	{
@@ -169,7 +169,7 @@ void Blacklist::AddToVector(std::wstring_view line, std::vector<std::wstring> &v
 	});
 }
 
-void Blacklist::AddToSet(std::wstring_view line, std::unordered_set<std::wstring> &set, const wchar_t &delimiter)
+void Blacklist::AddToSet(std::wstring_view line, std::unordered_set<std::wstring> &set, wchar_t delimiter)
 {
 	AddToContainer(line, delimiter, [&set](std::wstring_view line)
 	{
@@ -177,7 +177,7 @@ void Blacklist::AddToSet(std::wstring_view line, std::unordered_set<std::wstring
 	});
 }
 
-const bool &Blacklist::OutputMatchToLog(const Window &window, const bool &isMatch)
+bool Blacklist::OutputMatchToLog(Window window, bool isMatch)
 {
 	if (Config::VERBOSE)
 	{

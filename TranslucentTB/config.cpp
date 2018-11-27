@@ -141,7 +141,7 @@ void Config::Parse(const std::wstring &file)
 			line.erase(comment_index);
 		}
 
-		ParseKeyValuePair(line);
+		ParseKeyValuePair(std::move(line));
 	}
 }
 
@@ -160,6 +160,7 @@ bool Config::ParseCommandLine()
 
 	if (std::find(args.begin(), args.end(), L"--help") != args.end())
 	{
+		// TODO: use a TaskDialog with links to open config files?
 		MessageBox(Window::NullWindow, CLI_HELP_MSG.c_str(), NAME, MB_ICONINFORMATION | MB_OK | MB_SETFOREGROUND);
 		return false;
 	}
@@ -390,7 +391,7 @@ bool Config::ParseBool(const std::wstring &value, bool &setting)
 	return true;
 }
 
-void Config::ParseKeyValuePair(std::wstring &kvp)
+void Config::ParseKeyValuePair(std::wstring kvp)
 {
 	size_t split_index = kvp.find(L'=');
 	if (split_index != std::wstring::npos)
@@ -536,7 +537,7 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 	}
 }
 
-std::wstring Config::GetAccentText(const swca::ACCENT &accent)
+std::wstring Config::GetAccentText(swca::ACCENT accent)
 {
 	switch (accent)
 	{
@@ -555,21 +556,21 @@ std::wstring Config::GetAccentText(const swca::ACCENT &accent)
 	}
 }
 
-std::wstring Config::GetColorText(const uint32_t &color)
+std::wstring Config::GetColorText(uint32_t color)
 {
 	std::wostringstream stream;
 	stream << std::right << std::setw(6) << std::setfill(L'0') << std::hex << (color & 0x00FFFFFF);
 	return stream.str();
 }
 
-std::wstring Config::GetOpacityText(const uint32_t &color)
+std::wstring Config::GetOpacityText(uint32_t color)
 {
 	std::wostringstream stream;
 	stream << std::left << std::setw(3) << std::setfill(L' ') << std::dec << ((color & 0xFF000000) >> 24);
 	return stream.str();
 }
 
-std::wstring Config::GetBoolText(const bool &value)
+std::wstring Config::GetBoolText(bool value)
 {
 	return value ? L"enable" : L"disable";
 }

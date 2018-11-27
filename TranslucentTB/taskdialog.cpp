@@ -2,13 +2,22 @@
 #include "common.hpp"
 #include "resource.h"
 #include "ttberror.hpp"
+#include "util.hpp"
 #include "win32.hpp"
 
 HRESULT TTBTaskDialog::CallbackProc(HWND hwnd, UINT uNotification, WPARAM wParam, LPARAM lParam, LONG_PTR dwRefData)
 {
 	if (uNotification == TDN_HYPERLINK_CLICKED)
 	{
-		win32::OpenLink(reinterpret_cast<const wchar_t *>(lParam));
+		std::wstring link = reinterpret_cast<const wchar_t *>(lParam);
+		if (Util::StringBeginsWithOneOf(link, { L"http://", L"https://" }))
+		{
+			win32::OpenLink(link);
+		}
+		else
+		{
+			win32::OpenFolder(link);
+		}
 		return S_OK;
 	}
 	else
@@ -18,10 +27,10 @@ HRESULT TTBTaskDialog::CallbackProc(HWND hwnd, UINT uNotification, WPARAM wParam
 	}
 }
 
-TTBTaskDialog::TTBTaskDialog(const std::wstring &title, const std::wstring &content, const callback_t &callback, const Window &parent) :
+TTBTaskDialog::TTBTaskDialog(const std::wstring &title, const std::wstring &content, callback_t callback, Window parent) :
 	m_Title(title),
 	m_Content(content),
-	m_Callback(callback),
+	m_Callback(std::move(callback)),
 	m_Cfg { sizeof(m_Cfg) }
 {
 	m_Cfg.hwndParent = parent;

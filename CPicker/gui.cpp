@@ -171,7 +171,7 @@ const std::tuple<const unsigned int, const unsigned int, const unsigned int> GUI
 
 std::unordered_map<const uint32_t *, HWND> GUI::m_pickerMap;
 
-INT_PTR GUI::ColourPickerDlgProc(const HWND hDlg, const UINT uMsg, const WPARAM wParam, const LPARAM lParam)
+INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	GUI *const gui_data = reinterpret_cast<GUI *>(GetWindowLongPtr(hDlg, DWLP_USER));
 	if (!gui_data && uMsg != WM_INITDIALOG)
@@ -186,7 +186,7 @@ INT_PTR GUI::ColourPickerDlgProc(const HWND hDlg, const UINT uMsg, const WPARAM 
 		initdialog_pair_t *const init_pair = reinterpret_cast<initdialog_pair_t *>(lParam);
 		SetWindowLongPtr(hDlg, DWLP_USER, reinterpret_cast<LONG_PTR>(init_pair->first));
 
-		m_pickerMap.emplace(init_pair->second, hDlg);
+		m_pickerMap[init_pair->second] = hDlg;
 
 		return init_pair->first->OnDialogInit(hDlg);
 	}
@@ -217,7 +217,7 @@ INT_PTR GUI::ColourPickerDlgProc(const HWND hDlg, const UINT uMsg, const WPARAM 
 	}
 }
 
-LRESULT CALLBACK GUI::NoOutlineButtonSubclass(const HWND hWnd, const UINT uMsg, const WPARAM wParam, const LPARAM lParam, const UINT_PTR uIdSubclass, DWORD_PTR)
+LRESULT CALLBACK GUI::NoOutlineButtonSubclass(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR)
 {
 	switch (uMsg)
 	{
@@ -231,7 +231,7 @@ LRESULT CALLBACK GUI::NoOutlineButtonSubclass(const HWND hWnd, const UINT uMsg, 
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
-INT_PTR GUI::OnDialogInit(const HWND hDlg)
+INT_PTR GUI::OnDialogInit(HWND hDlg)
 {
 	for (const auto &[buddy_id, slider_id, slider_max] : SLIDERS)
 	{
@@ -266,7 +266,7 @@ INT_PTR GUI::OnDialogInit(const HWND hDlg)
 	return OnDpiChange(hDlg);
 }
 
-INT_PTR GUI::OnDpiChange(const HWND hDlg)
+INT_PTR GUI::OnDpiChange(HWND hDlg)
 {
 	HRESULT hr;
 	for (auto &[context, item_id] : m_contextPairs)
@@ -283,7 +283,7 @@ INT_PTR GUI::OnDpiChange(const HWND hDlg)
 	return 0;
 }
 
-INT_PTR GUI::OnPaint(const HWND hDlg)
+INT_PTR GUI::OnPaint(HWND hDlg)
 {
 	const SColourF color = m_picker->GetCurrentColour();
 	const SColourF old = m_picker->GetOldColour();
@@ -320,7 +320,7 @@ INT_PTR GUI::OnPaint(const HWND hDlg)
 	return 0;
 }
 
-INT_PTR GUI::OnClick(const HWND hDlg)
+INT_PTR GUI::OnClick(HWND hDlg)
 {
 	BOOL result;
 	const SColour col = {
@@ -355,7 +355,7 @@ INT_PTR GUI::OnClick(const HWND hDlg)
 	return 0;
 }
 
-void GUI::OnColorPickerClick(const HWND hDlg, const RECT &position, const POINT &cursor, const SColour &col)
+void GUI::OnColorPickerClick(HWND hDlg, RECT position, POINT cursor, const SColour &col)
 {
 	const float fx = ((cursor.x - position.left) / static_cast<float>(position.right - position.left)) * 255.0f;
 	const float fy = ((cursor.y - position.top) / static_cast<float>(position.bottom - position.top)) * 255.0f;
@@ -386,7 +386,7 @@ void GUI::OnColorPickerClick(const HWND hDlg, const RECT &position, const POINT 
 	}
 }
 
-void GUI::OnColorSliderClick(const HWND hDlg, const RECT &position, const POINT &cursor, const SColour &col)
+void GUI::OnColorSliderClick(HWND hDlg, RECT position, POINT cursor, const SColour &col)
 {
 	const float fy = ((cursor.y - position.top) / static_cast<float>(position.bottom - position.top)) * 255.0f;
 
@@ -416,14 +416,14 @@ void GUI::OnColorSliderClick(const HWND hDlg, const RECT &position, const POINT 
 	}
 }
 
-void GUI::OnAlphaSliderClick(const RECT &position, const POINT &cursor)
+void GUI::OnAlphaSliderClick(RECT position, POINT cursor)
 {
 	const float fy = ((cursor.y - position.top) / static_cast<float>(position.bottom - position.top)) * 255.0f;
 
 	m_picker->SetAlpha(255 - fy);
 }
 
-INT_PTR GUI::OnMouseMove(const HWND hDlg, const WPARAM wParam)
+INT_PTR GUI::OnMouseMove(HWND hDlg, WPARAM wParam)
 {
 	if (wParam == MK_LBUTTON)
 	{
@@ -435,7 +435,7 @@ INT_PTR GUI::OnMouseMove(const HWND hDlg, const WPARAM wParam)
 	}
 }
 
-INT_PTR GUI::OnCommand(const HWND hDlg, const WPARAM wParam)
+INT_PTR GUI::OnCommand(HWND hDlg, WPARAM wParam)
 {
 	switch (HIWORD(wParam))
 	{
@@ -456,7 +456,7 @@ INT_PTR GUI::OnCommand(const HWND hDlg, const WPARAM wParam)
 	}
 }
 
-INT_PTR GUI::OnEditControlFocusAcquire(const HWND hDlg, const WPARAM wParam)
+INT_PTR GUI::OnEditControlFocusAcquire(HWND hDlg, WPARAM wParam)
 {
 	if (LOWORD(wParam) != IDC_HEXCOL)
 	{
@@ -469,7 +469,7 @@ INT_PTR GUI::OnEditControlFocusAcquire(const HWND hDlg, const WPARAM wParam)
 	return 0;
 }
 
-INT_PTR GUI::OnEditControlFocusLoss(const HWND hDlg, const WPARAM wParam)
+INT_PTR GUI::OnEditControlFocusLoss(HWND hDlg, WPARAM wParam)
 {
 	if (LOWORD(wParam) == IDC_HEXCOL)
 	{
@@ -503,7 +503,7 @@ INT_PTR GUI::OnEditControlFocusLoss(const HWND hDlg, const WPARAM wParam)
 	return 0;
 }
 
-INT_PTR GUI::OnEditControlTextChange(const HWND hDlg, const WPARAM wParam)
+INT_PTR GUI::OnEditControlTextChange(HWND hDlg, WPARAM wParam)
 {
 	if (m_changingText)
 	{
@@ -548,7 +548,7 @@ INT_PTR GUI::OnEditControlTextChange(const HWND hDlg, const WPARAM wParam)
 	return 0;
 }
 
-INT_PTR GUI::OnButtonClick(const HWND hDlg, const WPARAM wParam)
+INT_PTR GUI::OnButtonClick(HWND hDlg, WPARAM wParam)
 {
 	switch (LOWORD(wParam))
 	{
@@ -592,7 +592,7 @@ INT_PTR GUI::OnButtonClick(const HWND hDlg, const WPARAM wParam)
 	}
 }
 
-INT_PTR GUI::OnNotify(const LPARAM lParam)
+INT_PTR GUI::OnNotify(LPARAM lParam)
 {
 	NMHDR &notify = *reinterpret_cast<NMHDR *>(lParam);
 	switch (notify.code)
@@ -608,7 +608,7 @@ INT_PTR GUI::OnNotify(const LPARAM lParam)
 	}
 }
 
-INT_PTR GUI::OnUpDownControlChange(const NMHDR &notify)
+INT_PTR GUI::OnUpDownControlChange(NMHDR notify)
 {
 	if (notify.idFrom == IDC_HEXSLIDER)
 	{
@@ -631,7 +631,7 @@ INT_PTR GUI::OnWindowDestroy()
 	return 0;
 }
 
-GUI::GUI(CColourPicker *const picker, ID2D1Factory3 *const factory) :
+GUI::GUI(CColourPicker *picker, ID2D1Factory3 *factory) :
 	m_picker(picker),
 	m_pickerContext(factory),
 	m_colorSliderContext(factory),
@@ -649,7 +649,7 @@ GUI::GUI(CColourPicker *const picker, ID2D1Factory3 *const factory) :
 	m_oldColorTip(nullptr)
 { }
 
-void GUI::UpdateValues(const HWND hDlg)
+void GUI::UpdateValues(HWND hDlg)
 {
 	const SColour &col = m_picker->GetCurrentColour();
 	bool_guard guard(m_changingText);
@@ -664,7 +664,7 @@ void GUI::UpdateValues(const HWND hDlg)
 	SendDlgItemMessage(hDlg, IDC_HEXSLIDER, UDM_SETPOS32, 0, (col.r << 24) + (col.g << 16) + (col.b << 8) + col.a);
 }
 
-void GUI::ParseHex(const HWND hDlg)
+void GUI::ParseHex(HWND hDlg)
 {
 	std::wstring text;
 	text.resize(21);
@@ -724,7 +724,7 @@ void GUI::ParseHex(const HWND hDlg)
 	}
 }
 
-HRESULT GUI::CreateGUI(CColourPicker *const picker, uint32_t &value, const HWND hParent)
+HRESULT GUI::CreateGUI(CColourPicker *picker, uint32_t &value, HWND hParent)
 {
 	if (m_pickerMap.count(&value) == 0)
 	{
