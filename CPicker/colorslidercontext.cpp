@@ -30,7 +30,7 @@ HRESULT ColorSliderContext::Draw(HWND hDlg, const SColourF &col, const SColourF 
 	m_dc->Clear(D2D1::ColorF(GetRValue(backgroundColor) / 255.0f, GetGValue(backgroundColor) / 255.0f, GetBValue(backgroundColor) / 255.0f));
 
 	D2D1_COLOR_F arrow_color = D2D1::ColorF(col.r, col.g, col.b);
-	float arrow_position;
+	float arrow_position = 0.0;
 	HRESULT hr;
 
 	// Check who is selected.

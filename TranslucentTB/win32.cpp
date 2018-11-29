@@ -37,6 +37,7 @@ DWORD win32::PickerThreadProc(LPVOID data)
 	}
 	if (FAILED(hr))
 	{
+		// TODO: NOT THREAD-SAFE but should be fixed by future reorganization
 		ErrorHandle(hr, Error::Level::Error, L"An error occured in the color picker!");
 	}
 
@@ -378,13 +379,12 @@ void win32::HardenProcess()
 		LastErrorHandle(Error::Level::Log, L"Couldn't disable dynamic code generation.");
 	}
 
-	// TODO: this errors
-	PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY syscall_policy {};
-	syscall_policy.DisallowWin32kSystemCalls = true;
-	if (!SetProcessMitigationPolicy(ProcessSystemCallDisablePolicy, &syscall_policy, sizeof(syscall_policy)))
-	{
-		LastErrorHandle(Error::Level::Log, L"Couldn't disable low-level system calls.");
-	}
+	//PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY syscall_policy {};
+	//syscall_policy.DisallowWin32kSystemCalls = true;
+	//if (!SetProcessMitigationPolicy(ProcessSystemCallDisablePolicy, &syscall_policy, sizeof(syscall_policy)))
+	//{
+	//	LastErrorHandle(Error::Level::Log, L"Couldn't disable low-level system calls.");
+	//}
 
 	PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY handle_policy {};
 	handle_policy.RaiseExceptionOnInvalidHandleReference = true;

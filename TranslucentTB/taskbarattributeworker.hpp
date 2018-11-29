@@ -26,7 +26,8 @@ private:
 	// better aero peek support: detect current peeked to window and include in calculation
 	// support windows that are immune to peek (with some extended/dwm flag iirc)
 	// dynamic cortana and task view
-	// color preview cpicker (internal color override?)
+	// color preview cpicker - window callback in CPicker for color change and HRESULT at the end
+	//     CPickerAsync class? closes on destroy?
 	// apply settings & blacklist changes instantly. (PropertyChanged?)
 	// correct virtual desktop switch detection
 	//     (currently relying on the fact that cloacking status changes)
