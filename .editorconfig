@@ -1,12 +1,18 @@
 root = true
 
-[*.{cpp,h,hpp}]
+[*.{cpp,h,hpp,rc,rc2}]
 charset = utf-8
 end_of_line = crlf
 insert_final_newline = false
+trim_trailing_whitespace = true
+
+[*.{cpp,h,hpp}]
 indent_style = tab
 tab_width = 4
-trim_trailing_whitespace = true
 
 [resource.h]
 insert_final_newline = true
+
+[*.{rc,rc2}]
+indent_style = space
+indent_size = 4
