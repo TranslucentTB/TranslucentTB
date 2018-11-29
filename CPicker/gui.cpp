@@ -572,12 +572,12 @@ INT_PTR GUI::OnButtonClick(HWND hDlg, WPARAM wParam)
 		return 0;
 	}
 
-	case IDB_OK:
+	case IDOK:
 		m_picker->UpdateOldColour();
 		EndDialog(hDlg, 0xfff);
 		return 0;
 
-	case IDB_CANCEL:
+	case IDCANCEL:
 	{
 		const SColour &old = m_picker->GetOldColour();
 

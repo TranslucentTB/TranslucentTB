@@ -43,9 +43,6 @@
     <ClInclude Include="slidercontext.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="CPicker.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="LICENSE.md" />
+    <ResourceCompile Include="CPicker.rc2" />
   </ItemGroup>
 </Project>

@@ -47,49 +47,49 @@ static struct {
 } run;
 
 static const std::unordered_map<swca::ACCENT, uint32_t> REGULAR_BUTTOM_MAP = {
-	{ swca::ACCENT::ACCENT_NORMAL,						IDM_REGULAR_NORMAL },
-	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_REGULAR_CLEAR  },
-	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_REGULAR_OPAQUE },
-	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_REGULAR_BLUR   },
-	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_REGULAR_FLUENT }
+	{ swca::ACCENT::ACCENT_NORMAL,						ID_REGULAR_NORMAL },
+	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	ID_REGULAR_CLEAR  },
+	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				ID_REGULAR_OPAQUE },
+	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			ID_REGULAR_BLUR   },
+	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				ID_REGULAR_FLUENT }
 };
 
 static const std::unordered_map<swca::ACCENT, uint32_t> MAXIMISED_BUTTON_MAP = {
-	{ swca::ACCENT::ACCENT_NORMAL,						IDM_MAXIMISED_NORMAL },
-	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_MAXIMISED_CLEAR  },
-	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_MAXIMISED_OPAQUE },
-	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_MAXIMISED_BLUR   },
-	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_MAXIMISED_FLUENT }
+	{ swca::ACCENT::ACCENT_NORMAL,						ID_MAXIMISED_NORMAL },
+	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	ID_MAXIMISED_CLEAR  },
+	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				ID_MAXIMISED_OPAQUE },
+	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			ID_MAXIMISED_BLUR   },
+	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				ID_MAXIMISED_FLUENT }
 };
 
 static const std::unordered_map<swca::ACCENT, uint32_t> START_BUTTON_MAP = {
-	{ swca::ACCENT::ACCENT_NORMAL,						IDM_START_NORMAL },
-	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_START_CLEAR  },
-	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_START_OPAQUE },
-	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_START_BLUR   },
-	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_START_FLUENT }
+	{ swca::ACCENT::ACCENT_NORMAL,						ID_START_NORMAL },
+	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	ID_START_CLEAR  },
+	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				ID_START_OPAQUE },
+	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			ID_START_BLUR   },
+	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				ID_START_FLUENT }
 };
 
 static const std::unordered_map<swca::ACCENT, uint32_t> CORTANA_BUTTON_MAP = {
-	{ swca::ACCENT::ACCENT_NORMAL,						IDM_CORTANA_NORMAL },
-	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_CORTANA_CLEAR  },
-	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_CORTANA_OPAQUE },
-	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_CORTANA_BLUR   },
-	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_CORTANA_FLUENT }
+	{ swca::ACCENT::ACCENT_NORMAL,						ID_CORTANA_NORMAL },
+	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	ID_CORTANA_CLEAR  },
+	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				ID_CORTANA_OPAQUE },
+	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			ID_CORTANA_BLUR   },
+	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				ID_CORTANA_FLUENT }
 };
 
 static const std::unordered_map<swca::ACCENT, uint32_t> TIMELINE_BUTTON_MAP = {
-	{ swca::ACCENT::ACCENT_NORMAL,						IDM_TIMELINE_NORMAL },
-	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	IDM_TIMELINE_CLEAR  },
-	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				IDM_TIMELINE_OPAQUE },
-	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			IDM_TIMELINE_BLUR   },
-	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				IDM_TIMELINE_FLUENT }
+	{ swca::ACCENT::ACCENT_NORMAL,						ID_TIMELINE_NORMAL },
+	{ swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT,	ID_TIMELINE_CLEAR  },
+	{ swca::ACCENT::ACCENT_ENABLE_GRADIENT,				ID_TIMELINE_OPAQUE },
+	{ swca::ACCENT::ACCENT_ENABLE_BLURBEHIND,			ID_TIMELINE_BLUR   },
+	{ swca::ACCENT::ACCENT_ENABLE_FLUENT,				ID_TIMELINE_FLUENT }
 };
 
 static const std::unordered_map<enum Config::PEEK, uint32_t> PEEK_BUTTON_MAP = {
-	{ Config::PEEK::Enabled,		IDM_PEEK_SHOW    },
-	{ Config::PEEK::Dynamic,		IDM_PEEK_DYNAMIC },
-	{ Config::PEEK::Disabled,		IDM_PEEK_HIDE    }
+	{ Config::PEEK::Enabled,		ID_PEEK_SHOW    },
+	{ Config::PEEK::Dynamic,		ID_PEEK_DYNAMIC },
+	{ Config::PEEK::Disabled,		ID_PEEK_HIDE    }
 };
 
 #pragma endregion
@@ -243,12 +243,12 @@ void RefreshAutostartMenu(HMENU menu, const winrt::Windows::Foundation::IAsyncOp
 {
 	const auto state = sender.GetResults();
 
-	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, !(state == Autostart::StartupState::DisabledByUser
+	TrayContextMenu::RefreshBool(ID_AUTOSTART, menu, !(state == Autostart::StartupState::DisabledByUser
 		|| state == Autostart::StartupState::DisabledByPolicy
 		|| state == Autostart::StartupState::EnabledByPolicy),
 		TrayContextMenu::ControlsEnabled);
 
-	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, state == Autostart::StartupState::Enabled
+	TrayContextMenu::RefreshBool(ID_AUTOSTART, menu, state == Autostart::StartupState::Enabled
 		|| state == Autostart::StartupState::EnabledByPolicy,
 		TrayContextMenu::Toggle);
 
@@ -268,44 +268,44 @@ void RefreshAutostartMenu(HMENU menu, const winrt::Windows::Foundation::IAsyncOp
 	case Autostart::StartupState::Disabled:
 		autostart_text = L"Open at boot";
 	}
-	TrayContextMenu::ChangeItemText(menu, IDM_AUTOSTART, std::move(autostart_text));
+	TrayContextMenu::ChangeItemText(menu, ID_AUTOSTART, std::move(autostart_text));
 }
 
 void RefreshMenu(HMENU menu)
 {
-	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, false, TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, false, TrayContextMenu::Toggle);
-	TrayContextMenu::ChangeItemText(menu, IDM_AUTOSTART, L"Querying startup state...");
+	TrayContextMenu::RefreshBool(ID_AUTOSTART, menu, false, TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(ID_AUTOSTART, menu, false, TrayContextMenu::Toggle);
+	TrayContextMenu::ChangeItemText(menu, ID_AUTOSTART, L"Querying startup state...");
 	Autostart::GetStartupState().Completed(std::bind(&RefreshAutostartMenu, menu, std::placeholders::_1));
 
 
 	const bool has_log = !Log::file().empty();
-	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, has_log, TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::ChangeItemText(menu, IDM_OPENLOG, has_log
+	TrayContextMenu::RefreshBool(ID_OPENLOG, menu, has_log, TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::ChangeItemText(menu, ID_OPENLOG, has_log
 		? L"Open log file"
 		: Log::init_done()
 			? L"Error when initializing log file"
 			: L"Nothing has been logged yet"
 	);
 
-	TrayContextMenu::RefreshBool(IDM_SAVESETTINGS, menu, !Config::NO_SAVE, TrayContextMenu::ControlsEnabled);
+	TrayContextMenu::RefreshBool(ID_SAVESETTINGS, menu, !Config::NO_SAVE, TrayContextMenu::ControlsEnabled);
 
-	TrayContextMenu::RefreshBool(IDM_REGULAR_COLOR,   menu,
+	TrayContextMenu::RefreshBool(ID_REGULAR_COLOR,   menu,
 		Config::REGULAR_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(IDM_MAXIMISED_COLOR, menu,
+	TrayContextMenu::RefreshBool(ID_MAXIMISED_COLOR, menu,
 		Config::MAXIMISED_ENABLED && Config::MAXIMISED_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(IDM_START_COLOR,     menu,
+	TrayContextMenu::RefreshBool(ID_START_COLOR,     menu,
 		Config::START_ENABLED     && Config::START_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(IDM_CORTANA_COLOR,     menu,
+	TrayContextMenu::RefreshBool(ID_CORTANA_COLOR,     menu,
 		Config::CORTANA_ENABLED   && Config::CORTANA_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(IDM_TIMELINE_COLOR,  menu,
+	TrayContextMenu::RefreshBool(ID_TIMELINE_COLOR,  menu,
 		Config::TIMELINE_ENABLED  && Config::TIMELINE_APPEARANCE.ACCENT != swca::ACCENT::ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(IDM_PEEK_ONLY_MAIN,  menu,
+	TrayContextMenu::RefreshBool(ID_PEEK_ONLY_MAIN,  menu,
 		Config::PEEK == Config::PEEK::Dynamic,
 		TrayContextMenu::ControlsEnabled);
 }
@@ -436,16 +436,16 @@ void InitializeTray(HINSTANCE hInstance)
 
 	if (!Config::NO_TRAY)
 	{
-		static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYWHITEICON), MAKEINTRESOURCE(TRAYBLACKICON), MAKEINTRESOURCE(IDR_POPUP_MENU), hInstance);
+		static TrayContextMenu tray(window, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance);
 
-		tray.BindColor(IDM_REGULAR_COLOR, Config::REGULAR_APPEARANCE.COLOR);
+		tray.BindColor(ID_REGULAR_COLOR, Config::REGULAR_APPEARANCE.COLOR);
 		tray.BindEnum(Config::REGULAR_APPEARANCE.ACCENT, REGULAR_BUTTOM_MAP);
 
 
-		tray.BindBool(IDM_MAXIMISED,      Config::MAXIMISED_ENABLED,         TrayContextMenu::Toggle);
-		tray.BindBool(IDM_MAXIMISED_PEEK, Config::MAXIMISED_ENABLED,         TrayContextMenu::ControlsEnabled);
-		tray.BindBool(IDM_MAXIMISED_PEEK, Config::MAXIMISED_REGULAR_ON_PEEK, TrayContextMenu::Toggle);
-		tray.BindColor(IDM_MAXIMISED_COLOR, Config::MAXIMISED_APPEARANCE.COLOR);
+		tray.BindBool(ID_MAXIMISED,      Config::MAXIMISED_ENABLED,         TrayContextMenu::Toggle);
+		tray.BindBool(ID_MAXIMISED_PEEK, Config::MAXIMISED_ENABLED,         TrayContextMenu::ControlsEnabled);
+		tray.BindBool(ID_MAXIMISED_PEEK, Config::MAXIMISED_REGULAR_ON_PEEK, TrayContextMenu::Toggle);
+		tray.BindColor(ID_MAXIMISED_COLOR, Config::MAXIMISED_APPEARANCE.COLOR);
 		tray.BindEnum(Config::MAXIMISED_APPEARANCE.ACCENT, MAXIMISED_BUTTON_MAP);
 		for (const auto &[_, id] : MAXIMISED_BUTTON_MAP)
 		{
@@ -453,8 +453,8 @@ void InitializeTray(HINSTANCE hInstance)
 		}
 
 
-		tray.BindBool(IDM_START, Config::START_ENABLED, TrayContextMenu::Toggle);
-		tray.BindColor(IDM_START_COLOR, Config::START_APPEARANCE.COLOR);
+		tray.BindBool(ID_START, Config::START_ENABLED, TrayContextMenu::Toggle);
+		tray.BindColor(ID_START_COLOR, Config::START_APPEARANCE.COLOR);
 		tray.BindEnum(Config::START_APPEARANCE.ACCENT, START_BUTTON_MAP);
 		for (const auto &[_, id] : START_BUTTON_MAP)
 		{
@@ -462,8 +462,8 @@ void InitializeTray(HINSTANCE hInstance)
 		}
 
 
-		tray.BindBool(IDM_CORTANA, Config::CORTANA_ENABLED, TrayContextMenu::Toggle);
-		tray.BindColor(IDM_CORTANA_COLOR, Config::CORTANA_APPEARANCE.COLOR);
+		tray.BindBool(ID_CORTANA, Config::CORTANA_ENABLED, TrayContextMenu::Toggle);
+		tray.BindColor(ID_CORTANA_COLOR, Config::CORTANA_APPEARANCE.COLOR);
 		tray.BindEnum(Config::CORTANA_APPEARANCE.ACCENT, CORTANA_BUTTON_MAP);
 		for (const auto &[_, id] : CORTANA_BUTTON_MAP)
 		{
@@ -471,8 +471,8 @@ void InitializeTray(HINSTANCE hInstance)
 		}
 
 
-		tray.BindBool(IDM_TIMELINE, Config::TIMELINE_ENABLED, TrayContextMenu::Toggle);
-		tray.BindColor(IDM_TIMELINE_COLOR, Config::TIMELINE_APPEARANCE.COLOR);
+		tray.BindBool(ID_TIMELINE, Config::TIMELINE_ENABLED, TrayContextMenu::Toggle);
+		tray.BindColor(ID_TIMELINE_COLOR, Config::TIMELINE_APPEARANCE.COLOR);
 		tray.BindEnum(Config::TIMELINE_APPEARANCE.ACCENT, TIMELINE_BUTTON_MAP);
 		for (const auto &[_, id] : TIMELINE_BUTTON_MAP)
 		{
@@ -481,59 +481,59 @@ void InitializeTray(HINSTANCE hInstance)
 
 
 		tray.BindEnum(Config::PEEK, PEEK_BUTTON_MAP);
-		tray.BindBool(IDM_PEEK_ONLY_MAIN, Config::PEEK_ONLY_MAIN, TrayContextMenu::Toggle);
+		tray.BindBool(ID_PEEK_ONLY_MAIN, Config::PEEK_ONLY_MAIN, TrayContextMenu::Toggle);
 
 
-		tray.RegisterContextMenuCallback(IDM_OPENLOG, []
+		tray.RegisterContextMenuCallback(ID_OPENLOG, []
 		{
 			Log::Flush();
 			win32::EditFile(Log::file());
 		});
-		tray.BindBool(IDM_VERBOSE, Config::VERBOSE, TrayContextMenu::Toggle);
-		tray.RegisterContextMenuCallback(IDM_SAVESETTINGS, []
+		tray.BindBool(ID_VERBOSE, Config::VERBOSE, TrayContextMenu::Toggle);
+		tray.RegisterContextMenuCallback(ID_SAVESETTINGS, []
 		{
 			Config::Save(run.config_file);
 			std::thread(std::bind(&MessageBox, Window::NullWindow, L"Settings have been saved.", NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND)).detach();
 		});
-		tray.RegisterContextMenuCallback(IDM_RELOADSETTINGS, std::bind(&Config::Parse, std::ref(run.config_file)));
-		tray.RegisterContextMenuCallback(IDM_EDITSETTINGS, []
+		tray.RegisterContextMenuCallback(ID_RELOADSETTINGS, std::bind(&Config::Parse, std::ref(run.config_file)));
+		tray.RegisterContextMenuCallback(ID_EDITSETTINGS, []
 		{
 			Config::Save(run.config_file);
 			win32::EditFile(run.config_file);
 		});
-		tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTSETTINGS, []
+		tray.RegisterContextMenuCallback(ID_RETURNTODEFAULTSETTINGS, []
 		{
 			ApplyStock(CONFIG_FILE);
 		});
-		tray.RegisterContextMenuCallback(IDM_RELOADDYNAMICBLACKLIST, std::bind(&Blacklist::Parse, std::ref(run.exclude_file)));
-		tray.RegisterContextMenuCallback(IDM_EDITDYNAMICBLACKLIST, std::bind(&win32::EditFile, std::ref(run.exclude_file)));
-		tray.RegisterContextMenuCallback(IDM_RETURNTODEFAULTBLACKLIST, []
+		tray.RegisterContextMenuCallback(ID_RELOADDYNAMICBLACKLIST, std::bind(&Blacklist::Parse, std::ref(run.exclude_file)));
+		tray.RegisterContextMenuCallback(ID_EDITDYNAMICBLACKLIST, std::bind(&win32::EditFile, std::ref(run.exclude_file)));
+		tray.RegisterContextMenuCallback(ID_RETURNTODEFAULTBLACKLIST, []
 		{
 			ApplyStock(EXCLUDE_FILE);
 		});
-		tray.RegisterContextMenuCallback(IDM_CLEARWINDOWCACHE, Window::ClearCache);
-		tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, Blacklist::ClearCache);
-		tray.RegisterContextMenuCallback(IDM_RESETWORKER, std::bind(&TaskbarAttributeWorker::ResetState, &worker));
-		tray.RegisterContextMenuCallback(IDM_ABOUT, []
+		tray.RegisterContextMenuCallback(ID_CLEARWINDOWCACHE, Window::ClearCache);
+		tray.RegisterContextMenuCallback(ID_CLEARBLACKLISTCACHE, Blacklist::ClearCache);
+		tray.RegisterContextMenuCallback(ID_RESETWORKER, std::bind(&TaskbarAttributeWorker::ResetState, &worker));
+		tray.RegisterContextMenuCallback(ID_ABOUT, []
 		{
 			std::thread([]
 			{
 				AboutDialog().Run();
 			}).detach();
 		});
-		tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, std::bind(&ExitApp, EXITREASON::UserActionNoSave));
+		tray.RegisterContextMenuCallback(ID_EXITWITHOUTSAVING, std::bind(&ExitApp, EXITREASON::UserActionNoSave));
 
 
-		tray.RegisterContextMenuCallback(IDM_AUTOSTART, []
+		tray.RegisterContextMenuCallback(ID_AUTOSTART, []
 		{
 			Autostart::GetStartupState().Completed([](auto &&sender, ...)
 			{
 				Autostart::SetStartupState(sender.GetResults() == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
 			});
 		});
-		tray.RegisterContextMenuCallback(IDM_TIPS, std::bind(&win32::OpenLink,
+		tray.RegisterContextMenuCallback(ID_TIPS, std::bind(&win32::OpenLink,
 			L"https://github.com/TranslucentTB/TranslucentTB/wiki/Tips-and-tricks-for-a-better-looking-taskbar"));
-		tray.RegisterContextMenuCallback(IDM_EXIT, std::bind(&ExitApp, EXITREASON::UserAction));
+		tray.RegisterContextMenuCallback(ID_EXIT, std::bind(&ExitApp, EXITREASON::UserAction));
 
 
 		tray.RegisterCustomRefresh(RefreshMenu);

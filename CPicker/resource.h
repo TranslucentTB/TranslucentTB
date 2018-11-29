@@ -1,45 +1,30 @@
-//{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by DLL.rc
-//
-#define IDD_COLORPICKER                 156
-#define IDC_COLOR                       1034
-#define IDC_COLOR2                      1035
-#define IDC_R                           1036
-#define IDC_G                           1037
-#define IDC_B                           1038
-#define IDC_RED                         1039
-#define IDC_GREEN                       1040
-#define IDC_BLUE                        1041
-#define IDC_H                           1042
-#define IDC_S                           1043
-#define IDC_V                           1044
-#define IDC_HUE                         1045
-#define IDC_SATURATION                  1046
-#define IDC_VALUE                       1047
-#define IDC_COLORS                      1048
-#define IDC_ALPHA                       1049
-#define IDC_ALPHASLIDE                  1050
-#define IDC_OLDCOLOR                    1051
-#define IDB_OK                          1067
-#define IDB_CANCEL                      1068
-#define IDC_HEXCOL                      1072
-#define IDC_RSLIDER                     1076
-#define IDC_GSLIDER                     1077
-#define IDC_BSLIDER                     1078
-#define IDC_ASLIDER                     1079
-#define IDC_HSLIDER                     1080
-#define IDC_SSLIDER                     1081
-#define IDC_VSLIDER                     1082
-#define IDC_HEXSLIDER                   1083
+#pragma once
 
-// Next default values for new objects
-// 
-#ifdef APSTUDIO_INVOKED
-#ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        183
-#define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1084
-#define _APS_NEXT_SYMED_VALUE           101
-#endif
-#endif
+#define IDD_COLORPICKER                 101
+#define IDC_COLOR                       1001
+#define IDC_COLOR2                      1002
+#define IDC_R                           1003
+#define IDC_G                           1004
+#define IDC_B                           1005
+#define IDC_RED                         1006
+#define IDC_GREEN                       1007
+#define IDC_BLUE                        1008
+#define IDC_H                           1009
+#define IDC_S                           1010
+#define IDC_V                           1011
+#define IDC_HUE                         1012
+#define IDC_SATURATION                  1013
+#define IDC_VALUE                       1014
+#define IDC_COLORS                      1015
+#define IDC_ALPHA                       1016
+#define IDC_ALPHASLIDE                  1017
+#define IDC_OLDCOLOR                    1018
+#define IDC_HEXCOL                      1019
+#define IDC_RSLIDER                     1020
+#define IDC_GSLIDER                     1021
+#define IDC_BSLIDER                     1022
+#define IDC_ASLIDER                     1023
+#define IDC_HSLIDER                     1024
+#define IDC_SSLIDER                     1025
+#define IDC_VSLIDER                     1026
+#define IDC_HEXSLIDER                   1027

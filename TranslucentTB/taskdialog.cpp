@@ -37,7 +37,7 @@ TTBTaskDialog::TTBTaskDialog(const std::wstring &title, const std::wstring &cont
 	m_Cfg.hInstance = GetModuleHandle(NULL);
 	m_Cfg.dwFlags = TDF_ENABLE_HYPERLINKS;
 	m_Cfg.pszWindowTitle = NAME;
-	m_Cfg.pszMainIcon = MAKEINTRESOURCE(MAINICON);
+	m_Cfg.pszMainIcon = MAKEINTRESOURCE(IDI_MAINICON);
 	m_Cfg.pszMainInstruction = m_Title.c_str();
 	m_Cfg.pszContent = m_Content.c_str();
 	m_Cfg.pfCallback = CallbackProc;

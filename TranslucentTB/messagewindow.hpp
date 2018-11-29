@@ -20,7 +20,7 @@ private:
 public:
 	static void RunMessageLoop();
 
-	MessageWindow(const std::wstring &className, const std::wstring &windowName, HINSTANCE hInstance = GetModuleHandle(NULL), Window parent = Window::NullWindow, const wchar_t *iconResource = MAKEINTRESOURCE(MAINICON));
+	MessageWindow(const std::wstring &className, const std::wstring &windowName, HINSTANCE hInstance = GetModuleHandle(NULL), Window parent = Window::NullWindow, const wchar_t *iconResource = MAKEINTRESOURCE(IDI_MAINICON));
 	using CALLBACKCOOKIE = unsigned long long;
 	CALLBACKCOOKIE RegisterCallback(unsigned int message, callback_t callback);
 	inline CALLBACKCOOKIE RegisterCallback(const std::wstring &message, callback_t callback)
