@@ -10,7 +10,6 @@ std::unordered_set<std::wstring> Blacklist::m_ClassBlacklist;
 std::unordered_set<std::wstring> Blacklist::m_FileBlacklist;
 std::vector<std::wstring> Blacklist::m_TitleBlacklist;
 
-std::recursive_mutex Blacklist::m_CacheLock;
 std::unordered_map<Window, bool> Blacklist::m_Cache;
 
 const EventHook Blacklist::m_ChangeHook(EVENT_OBJECT_NAMECHANGE, EVENT_OBJECT_NAMECHANGE, Blacklist::HandleChangeEvent, WINEVENT_OUTOFCONTEXT);
@@ -18,8 +17,6 @@ const EventHook Blacklist::m_DestroyHook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_DEST
 
 void Blacklist::Parse(const std::wstring &file)
 {
-	std::lock_guard guard(m_CacheLock);
-
 	// Clear our vectors
 	m_ClassBlacklist.clear();
 	m_TitleBlacklist.clear();
@@ -77,8 +74,6 @@ void Blacklist::Parse(const std::wstring &file)
 
 bool Blacklist::IsBlacklisted(Window window)
 {
-	std::lock_guard guard(m_CacheLock);
-
 	if (m_Cache.count(window) != 0)
 	{
 		return m_Cache.at(window);
@@ -88,7 +83,7 @@ bool Blacklist::IsBlacklisted(Window window)
 		// This is the fastest because we do the less string manipulation, so always try it first
 		if (!m_ClassBlacklist.empty())
 		{
-			if (m_ClassBlacklist.count(*window.classname()) != 0)
+			if (m_ClassBlacklist.count(window.classname()) != 0)
 			{
 				return OutputMatchToLog(window, m_Cache[window] = true);
 			}
@@ -96,7 +91,7 @@ bool Blacklist::IsBlacklisted(Window window)
 
 		if (!m_FileBlacklist.empty())
 		{
-			if (m_FileBlacklist.count(Util::ToLower(*window.filename())) != 0)
+			if (m_FileBlacklist.count(Util::ToLower(window.filename())) != 0)
 			{
 				return OutputMatchToLog(window, m_Cache[window] = true);
 			}
@@ -107,7 +102,7 @@ bool Blacklist::IsBlacklisted(Window window)
 		{
 			for (const std::wstring &value : m_TitleBlacklist)
 			{
-				if (window.title()->find(value) != std::wstring::npos)
+				if (window.title().find(value) != std::wstring::npos)
 				{
 					return OutputMatchToLog(window, m_Cache[window] = true);
 				}
@@ -120,10 +115,7 @@ bool Blacklist::IsBlacklisted(Window window)
 
 void Blacklist::ClearCache()
 {
-	{
-		std::lock_guard guard(m_CacheLock);
-		m_Cache.clear();
-	}
+	m_Cache.clear();
 
 	if (Config::VERBOSE)
 	{
@@ -133,13 +125,11 @@ void Blacklist::ClearCache()
 
 void Blacklist::HandleChangeEvent(DWORD, Window window, ...)
 {
-	std::lock_guard guard(m_CacheLock);
 	m_Cache.erase(window);
 }
 
 void Blacklist::HandleDestroyEvent(DWORD, Window window, ...)
 {
-	std::lock_guard guard(m_CacheLock);
 	m_Cache.erase(window);
 }
 
@@ -183,7 +173,7 @@ bool Blacklist::OutputMatchToLog(Window window, bool isMatch)
 	{
 		std::wostringstream message;
 		message << (isMatch ? L"B" : L"No b") << L"lacklist match found for window: ";
-		message << window.handle() << L" [" << *window.classname() << L"] [" << *window.filename() << L"] [" << *window.title() << L']';
+		message << window.handle() << L" [" << window.classname() << L"] [" << window.filename() << L"] [" << window.title() << L']';
 
 		Log::OutputMessage(message.str());
 	}

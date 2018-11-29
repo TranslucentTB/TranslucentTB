@@ -50,8 +50,6 @@ bool Config::VERBOSE =
 	true;
 #endif
 
-std::mutex Config::m_ConfigLock;
-
 const std::wstring Config::CLI_HELP_MSG =
 LR"(Flags (can be alone or take one of true or false):
 	--dynamic-ws
@@ -120,8 +118,6 @@ const std::pair<const std::wstring_view, Config::TASKBAR_APPEARANCE &> Config::A
 
 void Config::Parse(const std::wstring &file)
 {
-	std::lock_guard guard(m_ConfigLock);
-
 	std::wifstream configstream(file);
 	for (std::wstring line; std::getline(configstream, line);)
 	{
@@ -147,8 +143,6 @@ void Config::Parse(const std::wstring &file)
 
 bool Config::ParseCommandLine()
 {
-	std::lock_guard guard(m_ConfigLock);
-
 	std::vector<std::wstring> args = GetArgs();
 	if (args.empty())
 	{
@@ -209,8 +203,6 @@ bool Config::ParseCommandLine()
 
 void Config::Save(const std::wstring &file)
 {
-	std::lock_guard guard(m_ConfigLock);
-
 	if (NO_SAVE)
 	{
 		return;

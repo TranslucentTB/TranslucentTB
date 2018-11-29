@@ -1,6 +1,5 @@
 #pragma once
 #include "arch.h"
-#include <mutex>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -10,7 +9,6 @@
 
 class Log {
 private:
-	static std::mutex m_LogLock;
 	static std::optional<winrt::file_handle> m_FileHandle;
 	static std::wstring m_File;
 

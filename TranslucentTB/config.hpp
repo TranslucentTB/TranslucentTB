@@ -1,7 +1,6 @@
 #pragma once
 #include <cstdint>
 #include <functional>
-#include <mutex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -55,7 +54,6 @@ public:
 	static void Save(const std::wstring &file);
 
 private:
-	static std::mutex m_ConfigLock;
 	static const std::wstring CLI_HELP_MSG;
 	static const std::pair<const std::wstring_view, bool &> FLAGS[10];
 	static const std::pair<const std::wstring_view, TASKBAR_APPEARANCE &> APPEARANCES[5];

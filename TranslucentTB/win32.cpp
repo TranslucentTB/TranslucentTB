@@ -24,7 +24,6 @@
 #include "ttblog.hpp"
 #include "window.hpp"
 
-std::mutex win32::m_LocationLock;
 std::wstring win32::m_ExeLocation;
 std::mutex win32::m_PickerThreadsLock;
 std::unordered_set<DWORD> win32::m_PickerThreads;
@@ -49,7 +48,7 @@ BOOL win32::EnumThreadWindowsProc(HWND hwnd, LPARAM lParam)
 	Window wnd(hwnd);
 	bool &needs_wait = *reinterpret_cast<bool *>(lParam);
 
-	if (*wnd.title() == L"Color Picker")
+	if (wnd.title() == L"Color Picker")
 	{
 		// 1068 == IDB_CANCEL
 		wnd.send_message(WM_COMMAND, MAKEWPARAM(1068, BN_CLICKED));
@@ -80,7 +79,6 @@ std::pair<std::wstring, HRESULT> win32::GetProcessFileName(HANDLE process)
 
 const std::wstring &win32::GetExeLocation()
 {
-	std::lock_guard guard(m_LocationLock);
 	if (m_ExeLocation.empty())
 	{
 		const auto [loc, hr] = GetProcessFileName(GetCurrentProcess());

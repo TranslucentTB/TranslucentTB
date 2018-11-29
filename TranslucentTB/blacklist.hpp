@@ -1,7 +1,6 @@
 #pragma once
 #include <cstdint>
 #include <functional>
-#include <mutex>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -22,7 +21,6 @@ private:
 	static std::unordered_set<std::wstring> m_FileBlacklist;
 	static std::vector<std::wstring> m_TitleBlacklist;
 
-	static std::recursive_mutex m_CacheLock;
 	static std::unordered_map<Window, bool> m_Cache;
 
 	static const EventHook m_ChangeHook;

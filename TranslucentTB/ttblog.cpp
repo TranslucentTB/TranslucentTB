@@ -19,7 +19,6 @@
 #include "util.hpp"
 #include "uwp.hpp"
 
-std::mutex Log::m_LogLock;
 std::optional<winrt::file_handle> Log::m_FileHandle;
 std::wstring Log::m_File;
 
@@ -108,8 +107,6 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 
 void Log::OutputMessage(std::wstring_view message)
 {
-	std::lock_guard guard(m_LogLock);
-
 	if (!init_done())
 	{
 		auto [hr, err_message] = InitStream();
@@ -153,8 +150,6 @@ void Log::OutputMessage(std::wstring_view message)
 
 void Log::Flush()
 {
-	std::lock_guard guard(m_LogLock);
-
 	if (!FlushFileBuffers(m_FileHandle->get()))
 	{
 		LastErrorHandle(Error::Level::Debug, L"Flusing log file buffer failed.");

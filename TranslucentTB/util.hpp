@@ -192,7 +192,7 @@ private:
 	template<class T>
 	inline static T &GetRandomEngine()
 	{
-		thread_local static T rng = CreateRandomEngine<T>();
+		static T rng = CreateRandomEngine<T>();
 
 		return rng;
 	}

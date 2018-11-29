@@ -1,7 +1,6 @@
 #pragma once
 #include "arch.h"
 #include <cstdint>
-#include <mutex>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -12,7 +11,6 @@
 
 class win32 {
 private:
-	static std::mutex m_LocationLock;
 	static std::wstring m_ExeLocation;
 
 	// TODO: move CPicker related stuff to CPicker project

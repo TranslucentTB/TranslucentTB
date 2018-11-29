@@ -1,7 +1,5 @@
 #pragma once
 #include <dwmapi.h>
-#include <memory>
-#include <mutex>
 #include <string>
 #include <unordered_map>
 
@@ -12,14 +10,9 @@ class EventHook; // Forward declare to avoid circular deps
 
 class Window {
 private:
-	static std::recursive_mutex m_ClassNamesLock;
-	static std::unordered_map<Window, std::shared_ptr<std::wstring>> m_ClassNames;
-
-	static std::recursive_mutex m_FilenamesLock;
-	static std::unordered_map<Window, std::shared_ptr<std::wstring>> m_Filenames;
-
-	static std::recursive_mutex m_TitlesLock;
-	static std::unordered_map<Window, std::shared_ptr<std::wstring>> m_Titles;
+	static std::unordered_map<Window, std::wstring> m_ClassNames;
+	static std::unordered_map<Window, std::wstring> m_Filenames;
+	static std::unordered_map<Window, std::wstring> m_Titles;
 
 	static const EventHook m_ChangeHook;
 	static const EventHook m_DestroyHook;
@@ -90,9 +83,9 @@ public:
 	static void ClearCache();
 
 	constexpr Window(HWND handle = Window::NullWindow) noexcept : m_WindowHandle(handle) { };
-	std::shared_ptr<const std::wstring> title() const;
-	std::shared_ptr<const std::wstring> classname() const;
-	std::shared_ptr<const std::wstring> filename() const;
+	const std::wstring &title() const;
+	const std::wstring &classname() const;
+	const std::wstring &filename() const;
 	bool on_current_desktop() const;
 	inline unsigned int state() const
 	{
