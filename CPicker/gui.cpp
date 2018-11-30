@@ -239,8 +239,14 @@ INT_PTR GUI::OnDialogInit(HWND hDlg)
 		SendDlgItemMessage(hDlg, slider_id, UDM_SETRANGE32, 0, slider_max);
 	}
 	SendDlgItemMessage(hDlg, IDC_HEXSLIDER, UDM_SETBASE, 16, 0);
-	SendDlgItemMessage(hDlg, IDC_HEXCOL, EM_SETLIMITTEXT, 20, 0);
-	Edit_SetCueBannerTextFocused(GetDlgItem(hDlg, IDC_HEXCOL), L"HTML color", TRUE);
+
+	static const auto longestName = std::max_element(COLOR_MAP.begin(), COLOR_MAP.end(), [](auto &&a, auto &&b)
+	{
+		return a.first.length() < b.first.length();
+	});
+	SendDlgItemMessage(hDlg, IDC_HEXCOL, EM_SETLIMITTEXT, longestName->first.length(), 0);
+
+	Edit_SetCueBannerTextFocused(GetDlgItem(hDlg, IDC_HEXCOL), L"CSS color name or hex", TRUE);
 
 	for (const int &button : { IDC_R, IDC_G, IDC_B, IDC_H, IDC_S, IDC_V })
 	{
@@ -672,7 +678,11 @@ void GUI::ParseHex(HWND hDlg)
 	text.resize(count);
 	Util::TrimInplace(text);
 
-	if (COLOR_MAP.count(text) != 0)
+	if (text.empty())
+	{
+		return;
+	}
+	else if (COLOR_MAP.count(text) != 0)
 	{
 		const uint32_t &color = COLOR_MAP.at(text);
 		m_picker->SetRGB((color & 0xFF0000) >> 16, (color & 0x00FF00) >> 8, color & 0x0000FF);
