@@ -10,9 +10,10 @@
 
 #include "alphaslidercontext.hpp"
 #include "colorslidercontext.hpp"
-#include "colorpreviewcontext.hpp"
 #include "ccolourpicker.hpp"
 #include "mainpickercontext.hpp"
+#include "newpreviewcontext.hpp"
+#include "oldpreviewcontext.hpp"
 #include "resource.h"
 #include "scolour.hpp"
 #include "../TranslucentTB/util.hpp"
@@ -53,14 +54,15 @@ private:
 	MainPickerContext m_pickerContext;
 	ColorSliderContext m_colorSliderContext;
 	AlphaSliderContext m_alphaSliderContext;
-	ColorPreviewContext m_colorPreviewContext;
-	const std::pair<RenderContext &, const unsigned int> m_contextPairs[4];
+	OldPreviewContext m_oldPreviewContext;
+	NewPreviewContext m_newPreviewContext;
+	const std::pair<RenderContext &, const unsigned int> m_contextPairs[5];
 
 	bool m_changingText;
 	bool m_changingHexViaSpin;
 	HWND m_oldColorTip;
 
-	GUI(CColourPicker *picker, ID2D1Factory3 *factory);
+	GUI(CColourPicker *picker, ID2D1Factory3 *factory, IDWriteFactory *dwFactory);
 
 	INT_PTR OnDialogInit(HWND hDlg);
 	INT_PTR OnDpiChange(HWND hDlg);

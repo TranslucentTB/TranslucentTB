@@ -243,8 +243,8 @@ INT_PTR GUI::OnDialogInit(HWND hDlg)
 	static const auto longestName = std::max_element(COLOR_MAP.begin(), COLOR_MAP.end(), [](auto &&a, auto &&b)
 	{
 		return a.first.length() < b.first.length();
-	});
-	SendDlgItemMessage(hDlg, IDC_HEXCOL, EM_SETLIMITTEXT, longestName->first.length(), 0);
+	})->first.length();
+	SendDlgItemMessage(hDlg, IDC_HEXCOL, EM_SETLIMITTEXT, longestName, 0);
 
 	Edit_SetCueBannerTextFocused(GetDlgItem(hDlg, IDC_HEXCOL), L"CSS color name or hex", TRUE);
 
@@ -637,18 +637,20 @@ INT_PTR GUI::OnWindowDestroy()
 	return 0;
 }
 
-GUI::GUI(CColourPicker *picker, ID2D1Factory3 *factory) :
+GUI::GUI(CColourPicker *picker, ID2D1Factory3 *factory, IDWriteFactory *dwFactory) :
 	m_picker(picker),
 	m_pickerContext(factory),
 	m_colorSliderContext(factory),
 	m_alphaSliderContext(factory),
-	m_colorPreviewContext(factory),
+	m_oldPreviewContext(factory, dwFactory),
+	m_newPreviewContext(factory, dwFactory),
 	m_contextPairs
 	{
 		{ m_pickerContext, IDC_COLOR },
 		{ m_colorSliderContext, IDC_COLOR2 },
 		{ m_alphaSliderContext, IDC_ALPHASLIDE },
-		{ m_colorPreviewContext, IDC_COLORS },
+		{ m_oldPreviewContext, IDC_OLDCOLOR },
+		{ m_newPreviewContext, IDC_NEWCOLOR }
 	},
 	m_changingText(false),
 	m_changingHexViaSpin(false),
@@ -745,13 +747,23 @@ HRESULT GUI::CreateGUI(CColourPicker *picker, uint32_t &value, HWND hParent)
 		};
 
 		winrt::com_ptr<ID2D1Factory3> factory;
-		const HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, fo, factory.put());
+		HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, fo, factory.put());
 		if (FAILED(hr))
 		{
 			return hr;
 		}
 
-		GUI gui_inst(picker, factory.get());
+		winrt::com_ptr<IDWriteFactory> dwFactory;
+		hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
+			__uuidof(IDWriteFactory),
+			reinterpret_cast<IUnknown **>(dwFactory.put())
+		);
+		if (FAILED(hr))
+		{
+			return hr;
+		}
+
+		GUI gui_inst(picker, factory.get(), dwFactory.get());
 		initdialog_pair_t init_pair(&gui_inst, &value);
 		INT_PTR result = DialogBoxParam(DllData::GetInstanceHandle(), MAKEINTRESOURCE(IDD_COLORPICKER), hParent, ColourPickerDlgProc, reinterpret_cast<LPARAM>(&init_pair));
 		m_pickerMap.erase(&value);

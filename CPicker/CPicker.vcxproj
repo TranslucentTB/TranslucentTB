@@ -11,14 +11,14 @@
       <PreprocessorDefinitions>_CPICKER_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;d2d1.lib;d3d11.lib;ole32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;d2d1.lib;d3d11.lib;dwrite.lib;dxguid.lib;ole32.lib;user32.lib</AdditionalDependencies>
       <AdditionalManifestDependencies>"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'"</AdditionalManifestDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="alphaslidercontext.cpp" />
     <ClCompile Include="ccolourpicker.cpp" />
-    <ClCompile Include="colorpreviewcontext.cpp" />
+    <ClCompile Include="previewcontext.cpp" />
     <ClCompile Include="colorslidercontext.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="gui.cpp" />
@@ -29,7 +29,9 @@
   <ItemGroup>
     <ClInclude Include="alphaslidercontext.hpp" />
     <ClInclude Include="boolguard.hpp" />
-    <ClInclude Include="colorpreviewcontext.hpp" />
+    <ClInclude Include="newpreviewcontext.hpp" />
+    <ClInclude Include="oldpreviewcontext.hpp" />
+    <ClInclude Include="previewcontext.hpp" />
     <ClInclude Include="colorslidercontext.hpp" />
     <ClInclude Include="dlldata.hpp" />
     <ClInclude Include="gui.hpp" />
