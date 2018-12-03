@@ -26,6 +26,8 @@ protected:
 	HRESULT DrawPreview(const SColourF &col, bool invert);
 	virtual std::wstring_view GetText() = 0;
 
+	void Destroy() override;
+
 public:
 	inline PreviewContext(ID2D1Factory3 *factory, IDWriteFactory *dwFactory) :
 		RenderContext(factory),

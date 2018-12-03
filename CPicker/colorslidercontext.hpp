@@ -5,6 +5,8 @@ class ColorSliderContext : public SliderContext {
 private:
 	winrt::com_ptr<ID2D1LinearGradientBrush> m_hueGradient;
 
+	void Destroy() override;
+
 public:
 	using SliderContext::SliderContext;
 

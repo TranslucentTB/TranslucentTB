@@ -2,10 +2,16 @@
 #include "huegradient.hpp"
 #include "resource.h"
 
+void ColorSliderContext::Destroy()
+{
+	m_hueGradient = nullptr;
+
+	SliderContext::Destroy();
+}
+
 HRESULT ColorSliderContext::Refresh(HWND hwnd)
 {
 	HRESULT hr;
-	m_hueGradient = nullptr;
 
 	hr = SliderContext::Refresh(hwnd);
 	if (FAILED(hr))

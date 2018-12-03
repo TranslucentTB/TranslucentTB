@@ -1,9 +1,15 @@
 #include "alphaslidercontext.hpp"
 
+void AlphaSliderContext::Destroy()
+{
+	m_checkerboard = nullptr;
+
+	SliderContext::Destroy();
+}
+
 HRESULT AlphaSliderContext::Refresh(HWND hwnd)
 {
 	HRESULT hr;
-	m_checkerboard = nullptr;
 
 	hr = SliderContext::Refresh(hwnd);
 	if (FAILED(hr))

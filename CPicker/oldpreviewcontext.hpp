@@ -29,6 +29,9 @@ public:
 			return hr;
 		}
 
-		return DrawPreview(m_old, true);
+		hr = DrawPreview(m_old, true);
+
+		Destroy();
+		return hr;
 	}
 };

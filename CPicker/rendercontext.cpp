@@ -54,10 +54,8 @@ HRESULT RenderContext::CreateGradient(ID2D1LinearGradientBrush **brush, const D2
 	return S_OK;
 }
 
-HRESULT RenderContext::Refresh(HWND hwnd)
+void RenderContext::Destroy()
 {
-	HRESULT hr;
-
 	m_swapChain = nullptr;
 	m_dc = nullptr;
 	m_brush = nullptr;
@@ -69,6 +67,12 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 		m_d3dc->Flush();
 		m_d3dc = nullptr;
 	}
+}
+
+HRESULT RenderContext::Refresh(HWND hwnd)
+{
+	Destroy();
+	HRESULT hr;
 
 	winrt::com_ptr<ID3D11Device> d3device;
 	hr = CreateDevice(D3D_DRIVER_TYPE_HARDWARE, d3device.put(), m_d3dc.put());

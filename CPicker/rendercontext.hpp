@@ -95,6 +95,8 @@ protected:
 		return DrawContext(m_dc.get(), m_swapChain.get());
 	}
 
+	virtual void Destroy();
+
 public:
 	virtual HRESULT Refresh(HWND hwnd);
 	virtual HRESULT Draw(HWND hDlg, const SColourF &col, const SColourF &old) = 0;

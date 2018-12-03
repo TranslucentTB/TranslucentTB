@@ -98,14 +98,20 @@ HRESULT PreviewContext::DrawPreview(const SColourF &col, bool invert)
 	return dc.EndDraw();
 }
 
-HRESULT PreviewContext::Refresh(HWND hwnd)
+void PreviewContext::Destroy()
 {
-	HRESULT hr;
 	m_bmp = nullptr;
 	m_color = nullptr;
 	m_checkerboard = nullptr;
 	m_effect = nullptr;
 	m_bmpTarget = nullptr;
+
+	RenderContext::Destroy();
+}
+
+HRESULT PreviewContext::Refresh(HWND hwnd)
+{
+	HRESULT hr;
 
 	if (!m_textFormat)
 	{

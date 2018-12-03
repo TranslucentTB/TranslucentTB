@@ -42,12 +42,18 @@ HRESULT MainPickerContext::DrawTwoDimensionalGradient(const D2D1_COLOR_F &top_le
 	return S_OK;
 }
 
-HRESULT MainPickerContext::Refresh(HWND hwnd)
+void MainPickerContext::Destroy()
 {
-	HRESULT hr;
 	m_transparentToBlack = nullptr;
 	m_transparentToWhite = nullptr;
 	m_hueGradient = nullptr;
+
+	RenderContext::Destroy();
+}
+
+HRESULT MainPickerContext::Refresh(HWND hwnd)
+{
+	HRESULT hr;
 
 	hr = RenderContext::Refresh(hwnd);
 	if (FAILED(hr))

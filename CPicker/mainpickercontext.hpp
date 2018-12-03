@@ -9,6 +9,8 @@ private:
 
 	HRESULT DrawTwoDimensionalGradient(const D2D1_COLOR_F &top_left, const D2D1_COLOR_F &top_right, const D2D1_COLOR_F &bottom_left, const D2D1_COLOR_F &bottom_right);
 
+	void Destroy() override;
+
 public:
 	using RenderContext::RenderContext;
 
