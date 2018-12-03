@@ -6,34 +6,31 @@
 class PreviewContext : public RenderContext {
 private:
 	IDWriteFactory *m_factory;
-
-	winrt::com_ptr<ID2D1BitmapRenderTarget> m_textBmp;
-	winrt::com_ptr<ID2D1SolidColorBrush> m_blackText;
 	winrt::com_ptr<IDWriteTextFormat> m_textFormat;
 
-	winrt::com_ptr<ID2D1BitmapRenderTarget> m_colorBmp;
+	winrt::com_ptr<ID2D1BitmapRenderTarget> m_bmpTarget;
 	winrt::com_ptr<ID2D1SolidColorBrush> m_color;
+	winrt::com_ptr<ID2D1SolidColorBrush> m_checkerboard;
+	winrt::com_ptr<ID2D1Bitmap> m_bmp;
 
-	D2D1_SIZE_F m_textBmpSize;
-	D2D1_SIZE_F m_colorBmpSize;
+	winrt::com_ptr<ID2D1Effect> m_effect;
 
-	winrt::com_ptr<ID2D1Effect> m_invertEffect;
-	winrt::com_ptr<ID2D1Effect> m_maskEffect;
+	D2D1_SIZE_F m_bmpSize;
 
 	HRESULT CreateBitmapTarget(winrt::com_ptr<ID2D1BitmapRenderTarget> &target, winrt::com_ptr<ID2D1SolidColorBrush> &brush, D2D1_SIZE_F &size);
+	HRESULT CreateTextBitmap(ID2D1Bitmap **out);
 
-	HRESULT DrawText(std::wstring_view text);
 	HRESULT DrawColor(const SColourF &col, bool flag);
 
 protected:
-	HRESULT DrawPreview(const SColourF &col, std::wstring_view text, bool invert);
+	HRESULT DrawPreview(const SColourF &col, bool invert);
+	virtual std::wstring_view GetText() = 0;
 
 public:
 	inline PreviewContext(ID2D1Factory3 *factory, IDWriteFactory *dwFactory) :
 		RenderContext(factory),
 		m_factory(dwFactory),
-		m_textBmpSize(),
-		m_colorBmpSize()
+		m_bmpSize()
 	{ }
 
 	HRESULT Refresh(HWND hwnd) override;

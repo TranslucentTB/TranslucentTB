@@ -21,14 +21,32 @@ HRESULT PreviewContext::CreateBitmapTarget(winrt::com_ptr<ID2D1BitmapRenderTarge
 	return S_OK;
 }
 
-HRESULT PreviewContext::DrawText(std::wstring_view text)
+HRESULT PreviewContext::CreateTextBitmap(ID2D1Bitmap **out)
 {
-	m_textBmp->BeginDraw();
-	m_textBmp->Clear();
+	winrt::com_ptr<ID2D1BitmapRenderTarget> target;
+	winrt::com_ptr<ID2D1SolidColorBrush> brush;
+	D2D1_SIZE_F size;
 
-	m_textBmp->DrawText(text.data(), text.length(), m_textFormat.get(), D2D1::RectF(0.0f, 0.0f, m_textBmpSize.width, m_textBmpSize.height), m_blackText.get());
+	HRESULT hr = CreateBitmapTarget(target, brush, size);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 
-	return m_textBmp->EndDraw();
+	auto text = GetText();
+
+	target->BeginDraw();
+	target->Clear();
+
+	target->DrawText(text.data(), text.length(), m_textFormat.get(), D2D1::RectF(0.0f, 0.0f, size.width, size.height), brush.get());
+
+	hr = target->EndDraw();
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	return target->GetBitmap(out);
 }
 
 HRESULT PreviewContext::DrawColor(const SColourF &col, bool flag)
@@ -38,70 +56,44 @@ HRESULT PreviewContext::DrawColor(const SColourF &col, bool flag)
 	const float bg = GetGValue(c) / 255.0f;
 	const float bb = GetBValue(c) / 255.0f;
 
-	m_colorBmp->BeginDraw();
-	m_colorBmp->Clear(D2D1::ColorF(br, bg, bb));
+	m_bmpTarget->BeginDraw();
+	m_bmpTarget->Clear(D2D1::ColorF(br, bg, bb));
 
-	m_color->SetColor(D2D1::ColorF(0, 0.3f));
-
-	const float square_size = m_colorBmpSize.height / 4.0f;
-	for (float y = 0.0f; y < m_colorBmpSize.height; y += square_size)
+	const float square_size = m_bmpSize.height / 4.0f;
+	for (float y = 0.0f; y < m_bmpSize.height; y += square_size)
 	{
-		for (float x = flag ? 0 : square_size; x < m_colorBmpSize.width; x += square_size * 2.0f)
+		for (float x = flag ? 0 : square_size; x < m_bmpSize.width; x += square_size * 2.0f)
 		{
-			m_colorBmp->FillRectangle(
+			m_bmpTarget->FillRectangle(
 				D2D1::RectF(
 					x,
 					y,
 					x + square_size,
 					y + square_size
 				),
-				m_color.get());
+				m_checkerboard.get());
 		}
 		flag = !flag;
 	}
 
 	m_color->SetColor(D2D1::ColorF(col.r, col.g, col.b, col.a));
-	m_colorBmp->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_colorBmpSize.width, m_colorBmpSize.height), m_color.get());
+	m_bmpTarget->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_bmpSize.width, m_bmpSize.height), m_color.get());
 
-	return m_colorBmp->EndDraw();
+	return m_bmpTarget->EndDraw();
 }
 
-HRESULT PreviewContext::DrawPreview(const SColourF &col, std::wstring_view text, bool invert)
+HRESULT PreviewContext::DrawPreview(const SColourF &col, bool invert)
 {
-	HRESULT hr = DrawText(text);
+	HRESULT hr = DrawColor(col, invert);
 	if (FAILED(hr))
 	{
 		return hr;
 	}
-
-	winrt::com_ptr<ID2D1Bitmap> textBmp;
-	hr = m_textBmp->GetBitmap(textBmp.put());
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
-	hr = DrawColor(col, invert);
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
-	winrt::com_ptr<ID2D1Bitmap> colorBmp;
-	hr = m_colorBmp->GetBitmap(colorBmp.put());
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
-	m_invertEffect->SetInput(0, colorBmp.get());
-	m_maskEffect->SetInputEffect(0, m_invertEffect.get());
-	m_maskEffect->SetInput(1, textBmp.get());
 
 	DrawContext dc = BeginDraw();
-	m_dc->DrawBitmap(colorBmp.get());
+	m_dc->DrawBitmap(m_bmp.get());
 
-	m_dc->DrawImage(m_maskEffect.get());
+	m_dc->DrawImage(m_effect.get());
 
 	return dc.EndDraw();
 }
@@ -109,12 +101,11 @@ HRESULT PreviewContext::DrawPreview(const SColourF &col, std::wstring_view text,
 HRESULT PreviewContext::Refresh(HWND hwnd)
 {
 	HRESULT hr;
-	m_textBmp = nullptr;
-	m_blackText = nullptr;
-	m_colorBmp = nullptr;
+	m_bmp = nullptr;
 	m_color = nullptr;
-	m_invertEffect = nullptr;
-	m_maskEffect = nullptr;
+	m_checkerboard = nullptr;
+	m_effect = nullptr;
+	m_bmpTarget = nullptr;
 
 	if (!m_textFormat)
 	{
@@ -152,29 +143,48 @@ HRESULT PreviewContext::Refresh(HWND hwnd)
 		return hr;
 	}
 
-	hr = m_dc->CreateEffect(CLSID_D2D1Invert, m_invertEffect.put());
+	hr = CreateBitmapTarget(m_bmpTarget, m_color, m_bmpSize);
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	hr = m_dc->CreateEffect(CLSID_D2D1AlphaMask, m_maskEffect.put());
+	hr = m_bmpTarget->CreateSolidColorBrush(D2D1::ColorF(0, 0.3f), m_checkerboard.put());
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	hr = CreateBitmapTarget(m_textBmp, m_blackText, m_textBmpSize);
+	hr = m_bmpTarget->GetBitmap(m_bmp.put());
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	hr = CreateBitmapTarget(m_colorBmp, m_color, m_colorBmpSize);
+	winrt::com_ptr<ID2D1Bitmap> textBitmap;
+	hr = CreateTextBitmap(textBitmap.put());
 	if (FAILED(hr))
 	{
 		return hr;
 	}
+
+	winrt::com_ptr<ID2D1Effect> invertEffect;
+	hr = m_dc->CreateEffect(CLSID_D2D1Invert, invertEffect.put());
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	invertEffect->SetInput(0, m_bmp.get());
+
+	hr = m_dc->CreateEffect(CLSID_D2D1AlphaMask, m_effect.put());
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	m_effect->SetInputEffect(0, invertEffect.get());
+	m_effect->SetInput(1, textBitmap.get());
 
 	return S_OK;
 }

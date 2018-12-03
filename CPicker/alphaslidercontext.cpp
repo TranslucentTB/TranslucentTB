@@ -1,5 +1,25 @@
 #include "alphaslidercontext.hpp"
 
+HRESULT AlphaSliderContext::Refresh(HWND hwnd)
+{
+	HRESULT hr;
+	m_checkerboard = nullptr;
+
+	hr = SliderContext::Refresh(hwnd);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	hr = m_dc->CreateSolidColorBrush(D2D1::ColorF(0, 0.3f), m_checkerboard.put());
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	return S_OK;
+}
+
 HRESULT AlphaSliderContext::Draw(HWND, const SColourF &col, const SColourF &)
 {
 	const DWORD c = GetSysColor(COLOR_BTNFACE);
@@ -9,8 +29,6 @@ HRESULT AlphaSliderContext::Draw(HWND, const SColourF &col, const SColourF &)
 
 	DrawContext dc = BeginDraw();
 	m_dc->Clear(D2D1::ColorF(br, bg, bb));
-
-	m_brush->SetColor(D2D1::ColorF(0, 0.3f));
 
 	const float square_size = m_size.width / 4.0f;
 
@@ -26,7 +44,7 @@ HRESULT AlphaSliderContext::Draw(HWND, const SColourF &col, const SColourF &)
 					x + square_size,
 					y + square_size
 				),
-				m_brush.get());
+				m_checkerboard.get());
 		}
 		flag = !flag;
 	}

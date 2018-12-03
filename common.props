@@ -61,7 +61,7 @@
 
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
-      <AdditionalOptions>-Wno-missing-field-initializers -Wrange-loop-analysis -Wold-style-cast -Wnonportable-system-include-path -Wimplicit-fallthrough -Wunreachable-code-return -Wswitch-enum -fmerge-all-constants -fstandalone-debug %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-Wno-missing-field-initializers -Wrange-loop-analysis -Wold-style-cast -Wnonportable-system-include-path -Wimplicit-fallthrough -Wunreachable-code-return -Wswitch-enum -Werror-return-type -fmerge-all-constants -fstandalone-debug %(AdditionalOptions)</AdditionalOptions>
       <!-- https://bugs.llvm.org/show_bug.cgi?id=39517
       <ControlFlowGuard>Guard</ControlFlowGuard> -->
       <DiagnosticsFormat>Caret</DiagnosticsFormat>

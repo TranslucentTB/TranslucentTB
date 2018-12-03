@@ -82,6 +82,8 @@ private:
 	INT_PTR OnEditControlRequestWatermarkInfo(NMHDR &notify);
 	INT_PTR OnWindowDestroy();
 
+	HRESULT DrawItem(HWND hDlg, RenderContext &context, unsigned int id, const SColourF &col, const SColourF &old);
+
 	void UpdateValues(HWND hDlg);
 	void ParseHex(HWND hDlg);
 

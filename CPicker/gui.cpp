@@ -294,29 +294,11 @@ INT_PTR GUI::OnPaint(HWND hDlg)
 	const SColourF color = m_picker->GetCurrentColour();
 	const SColourF old = m_picker->GetOldColour();
 
+	HRESULT hr;
 	for (auto &[context, item_id] : m_contextPairs)
 	{
-		const HWND item_handle = GetDlgItem(hDlg, item_id);
-		const PaintContext pc(item_handle);
-
-		HRESULT hr = context.Draw(hDlg, color, old);
-		if (hr == D2DERR_RECREATE_TARGET)
-		{
-			hr = context.Refresh(item_handle);
-			if (FAILED(hr))
-			{
-				EndDialog(hDlg, hr);
-				return 0;
-			}
-
-			hr = context.Draw(hDlg, color, old);
-			if (FAILED(hr))
-			{
-				EndDialog(hDlg, hr);
-				return 0;
-			}
-		}
-		else if (FAILED(hr))
+		hr = DrawItem(hDlg, context, item_id, color, old);
+		if (FAILED(hr))
 		{
 			EndDialog(hDlg, hr);
 			return 0;
@@ -346,13 +328,36 @@ INT_PTR GUI::OnClick(HWND hDlg)
 	{
 		OnColorPickerClick(hDlg, rect, p, col);
 	}
-	else if (GetWindowRect(GetDlgItem(hDlg, IDC_COLOR2), &rect);  PtInRect(&rect, p))
+	else if (GetWindowRect(GetDlgItem(hDlg, IDC_COLOR2), &rect); PtInRect(&rect, p))
 	{
 		OnColorSliderClick(hDlg, rect, p, col);
 	}
 	else if (GetWindowRect(GetDlgItem(hDlg, IDC_ALPHASLIDE), &rect); PtInRect(&rect, p))
 	{
 		OnAlphaSliderClick(rect, p);
+
+		// Small optimization: only redraw alpha slider and new color preview
+		UpdateValues(hDlg);
+		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW);
+
+		const SColourF &col = m_picker->GetCurrentColour();
+		const SColourF &old = m_picker->GetOldColour();
+
+		HRESULT hr = DrawItem(hDlg, m_alphaSliderContext, IDC_ALPHASLIDE, col, old);
+		if (FAILED(hr))
+		{
+			EndDialog(hDlg, hr);
+			return 0;
+		}
+
+		hr = DrawItem(hDlg, m_newPreviewContext, IDC_NEWCOLOR, col, old);
+		if (FAILED(hr))
+		{
+			EndDialog(hDlg, hr);
+			return 0;
+		}
+
+		return 0;
 	}
 
 	UpdateValues(hDlg);
@@ -637,12 +642,40 @@ INT_PTR GUI::OnWindowDestroy()
 	return 0;
 }
 
+HRESULT GUI::DrawItem(HWND hDlg, RenderContext &context, unsigned int id, const SColourF &col, const SColourF &old)
+{
+	const HWND item_handle = GetDlgItem(hDlg, id);
+	const PaintContext pc(item_handle);
+
+	HRESULT hr = context.Draw(hDlg, col, old);
+	if (hr == D2DERR_RECREATE_TARGET)
+	{
+		hr = context.Refresh(item_handle);
+		if (FAILED(hr))
+		{
+			return hr;
+		}
+
+		hr = context.Draw(hDlg, col, old);
+		if (FAILED(hr))
+		{
+			return hr;
+		}
+	}
+	else if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	return S_OK;
+}
+
 GUI::GUI(CColourPicker *picker, ID2D1Factory3 *factory, IDWriteFactory *dwFactory) :
 	m_picker(picker),
 	m_pickerContext(factory),
 	m_colorSliderContext(factory),
 	m_alphaSliderContext(factory),
-	m_oldPreviewContext(factory, dwFactory),
+	m_oldPreviewContext(picker->GetOldColour(), factory, dwFactory),
 	m_newPreviewContext(factory, dwFactory),
 	m_contextPairs
 	{

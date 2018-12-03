@@ -2,10 +2,16 @@
 #include "previewcontext.hpp"
 
 class NewPreviewContext : public PreviewContext {
+private:
+	std::wstring_view GetText() override
+	{
+		return L"New";
+	}
+
 public:
 	using PreviewContext::PreviewContext;
 	inline HRESULT Draw(HWND, const SColourF &col, const SColourF &) override
 	{
-		return DrawPreview(col, L"New", false);
+		return DrawPreview(col, false);
 	}
 };
