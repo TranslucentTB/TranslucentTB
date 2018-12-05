@@ -67,10 +67,10 @@ private:
 	INT_PTR OnDialogInit(HWND hDlg);
 	INT_PTR OnDpiChange(HWND hDlg);
 	INT_PTR OnPaint(HWND hDlg);
-	INT_PTR OnClick(HWND hDlg);
-	void OnColorPickerClick(HWND hDlg, RECT position, POINT cursor, const SColour &col);
-	void OnColorSliderClick(HWND hDlg, RECT position, POINT cursor, const SColour &col);
-	void OnAlphaSliderClick(RECT position, POINT cursor);
+	INT_PTR OnClick(HWND hDlg, LPARAM lParam);
+	void OnColorPickerClick(HWND hDlg, RECT position, POINT cursor);
+	void OnColorSliderClick(HWND hDlg, RECT position, POINT cursor);
+	void OnAlphaSliderClick(HWND hDlg, RECT position, POINT cursor);
 	INT_PTR OnMouseMove(HWND hDlg, WPARAM wParam);
 	INT_PTR OnCommand(HWND hDlg, WPARAM wParam);
 	INT_PTR OnEditControlFocusAcquire(HWND hDlg, WPARAM wParam);
@@ -80,6 +80,7 @@ private:
 	INT_PTR OnNotify(LPARAM lParam);
 	INT_PTR OnUpDownControlChange(NMHDR notify);
 	INT_PTR OnEditControlRequestWatermarkInfo(NMHDR &notify);
+	INT_PTR OnNonClientCalculateSize(HWND hDlg, WPARAM wParam);
 	INT_PTR OnWindowDestroy();
 
 	HRESULT DrawItem(HWND hDlg, RenderContext &context, unsigned int id, const SColourF &col, const SColourF &old);

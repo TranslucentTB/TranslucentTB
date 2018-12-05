@@ -1,5 +1,6 @@
 #include "gui.hpp"
 #include <algorithm>
+#include <dwmapi.h>
 #include <stdio.h>
 #include <string>
 
@@ -198,7 +199,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		return gui_data->OnPaint(hDlg);
 
 	case WM_LBUTTONDOWN:
-		return gui_data->OnClick(hDlg);
+		return gui_data->OnClick(hDlg, lParam);
 
 	case WM_MOUSEMOVE:
 		return gui_data->OnMouseMove(hDlg, wParam);
@@ -208,6 +209,9 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 	case WM_NOTIFY:
 		return gui_data->OnNotify(lParam);
+
+	case WM_NCCALCSIZE:
+		return gui_data->OnNonClientCalculateSize(hDlg, wParam);
 
 	case WM_DESTROY:
 		return gui_data->OnWindowDestroy();
@@ -269,6 +273,13 @@ INT_PTR GUI::OnDialogInit(HWND hDlg)
 	SendMessage(m_oldColorTip, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&ti));
 	SendMessage(m_oldColorTip, TTM_ACTIVATE, TRUE, 0);
 
+	RECT rect;
+	GetClientRect(hDlg, &rect);
+
+	const MARGINS mar = { -1 };
+	DwmExtendFrameIntoClientArea(hDlg, &mar);
+	SetWindowPos(hDlg, NULL, 0, 0, rect.right + 1, rect.bottom, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+
 	return OnDpiChange(hDlg);
 }
 
@@ -308,68 +319,38 @@ INT_PTR GUI::OnPaint(HWND hDlg)
 	return 0;
 }
 
-INT_PTR GUI::OnClick(HWND hDlg)
+INT_PTR GUI::OnClick(HWND hDlg, LPARAM lParam)
 {
-	BOOL result;
-	const SColour col = {
-		static_cast<uint8_t>(SendDlgItemMessage(hDlg, IDC_RSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result))),
-		static_cast<uint8_t>(SendDlgItemMessage(hDlg, IDC_GSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result))),
-		static_cast<uint8_t>(SendDlgItemMessage(hDlg, IDC_BSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result))),
-		static_cast<uint16_t>(SendDlgItemMessage(hDlg, IDC_HSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result))),
-		static_cast<uint8_t>(SendDlgItemMessage(hDlg, IDC_SSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result))),
-		static_cast<uint8_t>(SendDlgItemMessage(hDlg, IDC_VSLIDER, UDM_GETPOS, 0, reinterpret_cast<LPARAM>(&result)))
-	};
-
 	POINT p;
 	GetCursorPos(&p);
 
 	RECT rect;
 	if (GetWindowRect(GetDlgItem(hDlg, IDC_COLOR), &rect); PtInRect(&rect, p))
 	{
-		OnColorPickerClick(hDlg, rect, p, col);
+		OnColorPickerClick(hDlg, rect, p);
 	}
 	else if (GetWindowRect(GetDlgItem(hDlg, IDC_COLOR2), &rect); PtInRect(&rect, p))
 	{
-		OnColorSliderClick(hDlg, rect, p, col);
+		OnColorSliderClick(hDlg, rect, p);
 	}
 	else if (GetWindowRect(GetDlgItem(hDlg, IDC_ALPHASLIDE), &rect); PtInRect(&rect, p))
 	{
-		OnAlphaSliderClick(rect, p);
-
-		// Small optimization: only redraw alpha slider and new color preview
-		UpdateValues(hDlg);
-		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW);
-
-		const SColourF &col = m_picker->GetCurrentColour();
-		const SColourF &old = m_picker->GetOldColour();
-
-		HRESULT hr = DrawItem(hDlg, m_alphaSliderContext, IDC_ALPHASLIDE, col, old);
-		if (FAILED(hr))
-		{
-			EndDialog(hDlg, hr);
-			return 0;
-		}
-
-		hr = DrawItem(hDlg, m_newPreviewContext, IDC_NEWCOLOR, col, old);
-		if (FAILED(hr))
-		{
-			EndDialog(hDlg, hr);
-			return 0;
-		}
-
-		return 0;
+		OnAlphaSliderClick(hDlg, rect, p);
 	}
-
-	UpdateValues(hDlg);
-	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+	else if (lParam != NULL)
+	{
+		SetWindowLongPtr(hDlg, DWLP_MSGRESULT, DefWindowProc(hDlg, WM_NCLBUTTONDOWN, HTCAPTION, lParam));
+		return 1;
+	}
 
 	return 0;
 }
 
-void GUI::OnColorPickerClick(HWND hDlg, RECT position, POINT cursor, const SColour &col)
+void GUI::OnColorPickerClick(HWND hDlg, RECT position, POINT cursor)
 {
 	const float fx = ((cursor.x - position.left) / static_cast<float>(position.right - position.left)) * 255.0f;
 	const float fy = ((cursor.y - position.top) / static_cast<float>(position.bottom - position.top)) * 255.0f;
+	const SColour &col = m_picker->GetCurrentColour();
 
 	if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 	{
@@ -395,11 +376,15 @@ void GUI::OnColorPickerClick(HWND hDlg, RECT position, POINT cursor, const SColo
 	{
 		m_picker->SetHSV(fx / 255.0f * 359.0f, (255 - fy) / 255.0f * 100.0f, col.v);
 	}
+
+	UpdateValues(hDlg);
+	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 }
 
-void GUI::OnColorSliderClick(HWND hDlg, RECT position, POINT cursor, const SColour &col)
+void GUI::OnColorSliderClick(HWND hDlg, RECT position, POINT cursor)
 {
 	const float fy = ((cursor.y - position.top) / static_cast<float>(position.bottom - position.top)) * 255.0f;
+	const SColour &col = m_picker->GetCurrentColour();
 
 	if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 	{
@@ -425,20 +410,43 @@ void GUI::OnColorSliderClick(HWND hDlg, RECT position, POINT cursor, const SColo
 	{
 		m_picker->SetHSV(col.h, col.s, (255 - fy) / 255.0f * 100.0f);
 	}
+
+	UpdateValues(hDlg);
+	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 }
 
-void GUI::OnAlphaSliderClick(RECT position, POINT cursor)
+void GUI::OnAlphaSliderClick(HWND hDlg, RECT position, POINT cursor)
 {
 	const float fy = ((cursor.y - position.top) / static_cast<float>(position.bottom - position.top)) * 255.0f;
 
 	m_picker->SetAlpha(255 - fy);
+
+	// Small optimization: only redraw alpha slider and new color preview
+	UpdateValues(hDlg);
+	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW);
+
+	const SColourF col = m_picker->GetCurrentColour();
+	const SColourF old = m_picker->GetOldColour();
+
+	HRESULT hr = DrawItem(hDlg, m_alphaSliderContext, IDC_ALPHASLIDE, col, old);
+	if (FAILED(hr))
+	{
+		EndDialog(hDlg, hr);
+		return;
+	}
+
+	hr = DrawItem(hDlg, m_newPreviewContext, IDC_NEWCOLOR, col, old);
+	if (FAILED(hr))
+	{
+		EndDialog(hDlg, hr);
+	}
 }
 
 INT_PTR GUI::OnMouseMove(HWND hDlg, WPARAM wParam)
 {
 	if (wParam == MK_LBUTTON)
 	{
-		return OnClick(hDlg);
+		return OnClick(hDlg, NULL);
 	}
 	else
 	{
@@ -634,6 +642,19 @@ INT_PTR GUI::OnEditControlRequestWatermarkInfo(NMHDR &notify)
 	NMTTDISPINFO &dispinfo = reinterpret_cast<NMTTDISPINFO &>(notify);
 	wcscpy_s(dispinfo.szText, L"Click to restore old color");
 	return 0;
+}
+
+INT_PTR GUI::OnNonClientCalculateSize(HWND hDlg, WPARAM wParam)
+{
+	if (wParam)
+	{
+		SetWindowLongPtr(hDlg, DWLP_MSGRESULT, 0);
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 INT_PTR GUI::OnWindowDestroy()
