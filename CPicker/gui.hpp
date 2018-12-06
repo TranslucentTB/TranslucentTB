@@ -14,6 +14,7 @@
 #include "mainpickercontext.hpp"
 #include "newpreviewcontext.hpp"
 #include "oldpreviewcontext.hpp"
+#include "pickercirclecontext.hpp"
 #include "resource.h"
 #include "scolour.hpp"
 #include "../TranslucentTB/util.hpp"
@@ -52,11 +53,12 @@ private:
 	CColourPicker *m_picker;
 
 	MainPickerContext m_pickerContext;
+	PickerCircleContext m_circleContext;
 	ColorSliderContext m_colorSliderContext;
 	AlphaSliderContext m_alphaSliderContext;
 	OldPreviewContext m_oldPreviewContext;
 	NewPreviewContext m_newPreviewContext;
-	const std::pair<RenderContext &, const unsigned int> m_contextPairs[5];
+	const std::pair<RenderContext &, const unsigned int> m_contextPairs[6];
 
 	bool m_changingText;
 	bool m_changingHexViaSpin;
@@ -84,6 +86,8 @@ private:
 	INT_PTR OnNonClientCalculateSize(HWND hDlg, WPARAM wParam);
 	INT_PTR OnWindowDestroy();
 
+	HRESULT Redraw(HWND hDlg, bool skipMain = false, bool skipCircle = false,
+		bool skipSlide = false, bool skipAlpha = false, bool skipNew = false, bool updateValues = true);
 	HRESULT DrawItem(HWND hDlg, RenderContext &context, unsigned int id, const SColourF &col, const SColourF &old);
 
 	void UpdateValues(HWND hDlg);

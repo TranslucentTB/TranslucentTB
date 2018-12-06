@@ -18,6 +18,7 @@
   <ItemGroup>
     <ClCompile Include="alphaslidercontext.cpp" />
     <ClCompile Include="ccolourpicker.cpp" />
+    <ClCompile Include="pickercirclecontext.cpp" />
     <ClCompile Include="previewcontext.cpp" />
     <ClCompile Include="colorslidercontext.cpp" />
     <ClCompile Include="dllmain.cpp" />
@@ -31,6 +32,7 @@
     <ClInclude Include="boolguard.hpp" />
     <ClInclude Include="newpreviewcontext.hpp" />
     <ClInclude Include="oldpreviewcontext.hpp" />
+    <ClInclude Include="pickercirclecontext.hpp" />
     <ClInclude Include="previewcontext.hpp" />
     <ClInclude Include="colorslidercontext.hpp" />
     <ClInclude Include="dlldata.hpp" />

@@ -86,7 +86,6 @@ HRESULT MainPickerContext::Draw(HWND hDlg, const SColourF &col, const SColourF &
 {
 	DrawContext dc = BeginDraw();
 
-	D2D1_POINT_2F indicator_point;
 	HRESULT hr;
 
 	// RED
@@ -97,8 +96,6 @@ HRESULT MainPickerContext::Draw(HWND hDlg, const SColourF &col, const SColourF &
 		{
 			return hr;
 		}
-
-		indicator_point = D2D1::Point2F(col.g * m_size.width, col.b * m_size.height);
 	}
 
 	// GREEN
@@ -109,8 +106,6 @@ HRESULT MainPickerContext::Draw(HWND hDlg, const SColourF &col, const SColourF &
 		{
 			return hr;
 		}
-
-		indicator_point = D2D1::Point2F(col.r * m_size.width, col.b * m_size.height);
 	}
 
 	// BLUE
@@ -121,8 +116,6 @@ HRESULT MainPickerContext::Draw(HWND hDlg, const SColourF &col, const SColourF &
 		{
 			return hr;
 		}
-
-		indicator_point = D2D1::Point2F(col.g * m_size.width, col.r * m_size.height);
 	}
 
 	// HUE
@@ -138,8 +131,6 @@ HRESULT MainPickerContext::Draw(HWND hDlg, const SColourF &col, const SColourF &
 		{
 			return hr;
 		}
-
-		indicator_point = D2D1::Point2F(col.s * m_size.width, (1.0f - col.v) * m_size.height);
 	}
 
 	// SATURATION
@@ -151,8 +142,6 @@ HRESULT MainPickerContext::Draw(HWND hDlg, const SColourF &col, const SColourF &
 		m_dc->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_size.width, m_size.height), m_brush.get());
 
 		m_dc->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_size.width, m_size.height), m_transparentToBlack.get());
-
-		indicator_point = D2D1::Point2F(col.h * m_size.width, (1.0f - col.v) * m_size.height);
 	}
 
 	// VALUE
@@ -163,13 +152,7 @@ HRESULT MainPickerContext::Draw(HWND hDlg, const SColourF &col, const SColourF &
 
 		m_brush->SetColor(D2D1::ColorF(0, 1.0f - col.v));
 		m_dc->FillRectangle(D2D1::RectF(0.0f, 0.0f, m_size.width, m_size.height), m_brush.get());
-
-		indicator_point = D2D1::Point2F(col.h * m_size.width, (1.0f - col.s) * m_size.height);
 	}
-
-	m_brush->SetColor(D2D1::ColorF(1.0f - col.r, 1.0f - col.g, 1.0f - col.b));
-	const float circle_radius = m_size.width / 50.0f;
-	m_dc->DrawEllipse(D2D1::Ellipse(indicator_point, circle_radius, circle_radius), m_brush.get());
 
 	return dc.EndDraw();
 }

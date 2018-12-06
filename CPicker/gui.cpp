@@ -357,6 +357,7 @@ void GUI::OnColorPickerClick(HWND hDlg, RECT position, POINT cursor)
 	const float fy = ((cursor.y - position.top) / static_cast<float>(position.bottom - position.top)) * 255.0f;
 	const SColour &col = m_picker->GetCurrentColour();
 
+	bool sliderRefresh = true;
 	if (IsDlgButtonChecked(hDlg, IDC_R) == BST_CHECKED)
 	{
 		m_picker->SetRGB(col.r, fx, fy);
@@ -372,6 +373,7 @@ void GUI::OnColorPickerClick(HWND hDlg, RECT position, POINT cursor)
 	else if (IsDlgButtonChecked(hDlg, IDC_H) == BST_CHECKED)
 	{
 		m_picker->SetHSV(col.h, fx / 255.0f * 100.0f, (255 - fy) / 255.0f * 100.0f);
+		sliderRefresh = false;
 	}
 	else if (IsDlgButtonChecked(hDlg, IDC_S) == BST_CHECKED)
 	{
@@ -382,8 +384,11 @@ void GUI::OnColorPickerClick(HWND hDlg, RECT position, POINT cursor)
 		m_picker->SetHSV(fx / 255.0f * 359.0f, (255 - fy) / 255.0f * 100.0f, col.v);
 	}
 
-	UpdateValues(hDlg);
-	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+	const HRESULT hr = Redraw(hDlg, true, false, !sliderRefresh);
+	if (FAILED(hr))
+	{
+		EndDialog(hDlg, hr);
+	}
 }
 
 void GUI::OnColorSliderClick(HWND hDlg, RECT position, POINT cursor)
@@ -416,31 +421,19 @@ void GUI::OnColorSliderClick(HWND hDlg, RECT position, POINT cursor)
 		m_picker->SetHSV(col.h, col.s, (255 - fy) / 255.0f * 100.0f);
 	}
 
-	UpdateValues(hDlg);
-	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+	const HRESULT hr = Redraw(hDlg);
+	if (FAILED(hr))
+	{
+		EndDialog(hDlg, hr);
+	}
 }
 
 void GUI::OnAlphaSliderClick(HWND hDlg, RECT position, POINT cursor)
 {
 	const float fy = ((cursor.y - position.top) / static_cast<float>(position.bottom - position.top)) * 255.0f;
-
 	m_picker->SetAlpha(255 - fy);
 
-	// Small optimization: only redraw alpha slider and new color preview
-	UpdateValues(hDlg);
-	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW);
-
-	const SColourF col = m_picker->GetCurrentColour();
-	const SColourF old = m_picker->GetOldColour();
-
-	HRESULT hr = DrawItem(hDlg, m_alphaSliderContext, IDC_ALPHASLIDE, col, old);
-	if (FAILED(hr))
-	{
-		EndDialog(hDlg, hr);
-		return;
-	}
-
-	hr = DrawItem(hDlg, m_newPreviewContext, IDC_NEWCOLOR, col, old);
+	const HRESULT hr = Redraw(hDlg, true, true, true);
 	if (FAILED(hr))
 	{
 		EndDialog(hDlg, hr);
@@ -498,9 +491,11 @@ INT_PTR GUI::OnEditControlFocusLoss(HWND hDlg, WPARAM wParam)
 	if (LOWORD(wParam) == IDC_HEXCOL)
 	{
 		ParseHex(hDlg);
-
-		UpdateValues(hDlg);
-		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+		const HRESULT hr = Redraw(hDlg);
+		if (FAILED(hr))
+		{
+			EndDialog(hDlg, hr);
+		}
 
 		return 0;
 	}
@@ -565,9 +560,11 @@ INT_PTR GUI::OnEditControlTextChange(HWND hDlg, WPARAM wParam)
 		}
 	}
 
-	// Update color
-	UpdateValues(hDlg);
-	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+	const HRESULT hr = Redraw(hDlg);
+	if (FAILED(hr))
+	{
+		EndDialog(hDlg, hr);
+	}
 
 	return 0;
 }
@@ -582,16 +579,25 @@ INT_PTR GUI::OnButtonClick(HWND hDlg, WPARAM wParam)
 	case IDC_H:
 	case IDC_S:
 	case IDC_V:
-		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+	{
+		const HRESULT hr = Redraw(hDlg, false, false, false, true, true, false);
+		if (FAILED(hr))
+		{
+			EndDialog(hDlg, hr);
+		}
 		return 0;
+	}
 
 	case IDC_NEWCOLOR:
 	{
 		const SColour &col = m_picker->GetCurrentColour();
 
 		m_picker->SetRGB(255 - col.r, 255 - col.g, 255 - col.b);
-		UpdateValues(hDlg);
-		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+		const HRESULT hr = Redraw(hDlg);
+		if (FAILED(hr))
+		{
+			EndDialog(hDlg, hr);
+		}
 		return 0;
 	}
 
@@ -601,8 +607,11 @@ INT_PTR GUI::OnButtonClick(HWND hDlg, WPARAM wParam)
 
 		m_picker->SetRGB(old.r, old.g, old.b);
 		m_picker->SetAlpha(old.a);
-		UpdateValues(hDlg);
-		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+		const HRESULT hr = Redraw(hDlg);
+		if (FAILED(hr))
+		{
+			EndDialog(hDlg, hr);
+		}
 		return 0;
 	}
 
@@ -685,6 +694,66 @@ INT_PTR GUI::OnWindowDestroy()
 	return 0;
 }
 
+HRESULT GUI::Redraw(HWND hDlg, bool skipMain, bool skipCircle, bool skipSlide, bool skipAlpha, bool skipNew, bool updateValues)
+{
+	if (updateValues)
+	{
+		UpdateValues(hDlg);
+	}
+	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW);
+
+	const SColourF col = m_picker->GetCurrentColour();
+	const SColourF old = m_picker->GetOldColour();
+	HRESULT hr;
+
+	if (!skipMain)
+	{
+		hr = DrawItem(hDlg, m_pickerContext, IDC_COLOR, col, old);
+		if (FAILED(hr))
+		{
+			return hr;
+		}
+	}
+
+	if (!skipCircle)
+	{
+		hr = DrawItem(hDlg, m_circleContext, IDC_COLORCIRCLE, col, old);
+		if (FAILED(hr))
+		{
+			return hr;
+		}
+	}
+
+	if (!skipSlide)
+	{
+		hr = DrawItem(hDlg, m_colorSliderContext, IDC_COLOR2, col, old);
+		if (FAILED(hr))
+		{
+			return hr;
+		}
+	}
+
+	if (!skipAlpha)
+	{
+		hr = DrawItem(hDlg, m_alphaSliderContext, IDC_ALPHASLIDE, col, old);
+		if (FAILED(hr))
+		{
+			return hr;
+		}
+	}
+
+	if (!skipNew)
+	{
+		hr = DrawItem(hDlg, m_newPreviewContext, IDC_NEWCOLOR, col, old);
+		if (FAILED(hr))
+		{
+			return hr;
+		}
+	}
+
+	return S_OK;
+}
+
 HRESULT GUI::DrawItem(HWND hDlg, RenderContext &context, unsigned int id, const SColourF &col, const SColourF &old)
 {
 	const HWND item_handle = GetDlgItem(hDlg, id);
@@ -716,6 +785,7 @@ HRESULT GUI::DrawItem(HWND hDlg, RenderContext &context, unsigned int id, const 
 GUI::GUI(CColourPicker *picker, ID2D1Factory3 *factory, IDWriteFactory *dwFactory) :
 	m_picker(picker),
 	m_pickerContext(factory),
+	m_circleContext(factory),
 	m_colorSliderContext(factory),
 	m_alphaSliderContext(factory),
 	m_oldPreviewContext(factory, dwFactory),
@@ -723,6 +793,7 @@ GUI::GUI(CColourPicker *picker, ID2D1Factory3 *factory, IDWriteFactory *dwFactor
 	m_contextPairs
 	{
 		{ m_pickerContext, IDC_COLOR },
+		{ m_circleContext, IDC_COLORCIRCLE },
 		{ m_colorSliderContext, IDC_COLOR2 },
 		{ m_alphaSliderContext, IDC_ALPHASLIDE },
 		{ m_oldPreviewContext, IDC_OLDCOLOR },

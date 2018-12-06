@@ -28,3 +28,4 @@
 #define IDC_SSLIDER                     1025
 #define IDC_VSLIDER                     1026
 #define IDC_HEXSLIDER                   1027
+#define IDC_COLORCIRCLE                 1028
