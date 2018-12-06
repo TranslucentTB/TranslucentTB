@@ -61,6 +61,7 @@ private:
 	bool m_changingText;
 	bool m_changingHexViaSpin;
 	HWND m_oldColorTip;
+	HWND m_newColorTip;
 
 	GUI(CColourPicker *picker, ID2D1Factory3 *factory, IDWriteFactory *dwFactory);
 
@@ -77,9 +78,9 @@ private:
 	INT_PTR OnEditControlFocusLoss(HWND hDlg, WPARAM wParam);
 	INT_PTR OnEditControlTextChange(HWND hDlg, WPARAM wParam);
 	INT_PTR OnButtonClick(HWND hDlg, WPARAM wParam);
-	INT_PTR OnNotify(LPARAM lParam);
+	INT_PTR OnNotify(HWND hDlg, LPARAM lParam);
 	INT_PTR OnUpDownControlChange(NMHDR notify);
-	INT_PTR OnEditControlRequestWatermarkInfo(NMHDR &notify);
+	INT_PTR OnEditControlRequestWatermarkInfo(HWND hDlg, NMHDR &notify);
 	INT_PTR OnNonClientCalculateSize(HWND hDlg, WPARAM wParam);
 	INT_PTR OnWindowDestroy();
 

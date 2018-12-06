@@ -31,9 +31,8 @@ HRESULT ColorSliderContext::Refresh(HWND hwnd)
 HRESULT ColorSliderContext::Draw(HWND hDlg, const SColourF &col, const SColourF &)
 {
 	winrt::com_ptr<ID2D1LinearGradientBrush> brush;
-	const DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);
 	DrawContext dc = BeginDraw();
-	m_dc->Clear(D2D1::ColorF(GetRValue(backgroundColor) / 255.0f, GetGValue(backgroundColor) / 255.0f, GetBValue(backgroundColor) / 255.0f));
+	m_dc->Clear(D2D1::ColorF(0, 0.0f));
 
 	D2D1_COLOR_F arrow_color = D2D1::ColorF(col.r, col.g, col.b);
 	float arrow_position = 0.0;

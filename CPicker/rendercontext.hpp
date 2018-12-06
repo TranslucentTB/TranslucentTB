@@ -1,7 +1,8 @@
 #pragma once
 #include <d2d1_3.h>
-#include <dxgi1_2.h>
 #include <d3d11.h>
+#include <dcomp.h>
+#include <dxgi1_2.h>
 #include <type_traits>
 #include <utility>
 #include <winrt/base.h>
@@ -11,10 +12,16 @@
 class RenderContext {
 private:
 	static HRESULT CreateDevice(D3D_DRIVER_TYPE type, ID3D11Device **device, ID3D11DeviceContext **context);
+	static bool NeedsAlpha(HWND hwnd);
+
+	HRESULT CreateNonAlphaSwapChain(HWND hwnd, IDXGIFactory2 *factory, ID3D11Device *device);
+	HRESULT CreateAlphaSwapChain(HWND hwnd, IDXGIFactory2 *factory, ID3D11Device *device, IDXGIDevice1 *dxgidevice);
 
 	ID2D1Factory3 *m_factory;
 	winrt::com_ptr<IDXGISwapChain1> m_swapChain;
 	winrt::com_ptr<ID3D11DeviceContext> m_d3dc;
+	winrt::com_ptr<IDCompositionDevice> m_compDevice;
+	winrt::com_ptr<IDCompositionTarget> m_compTarget;
 
 protected:
 	winrt::com_ptr<ID2D1DeviceContext2> m_dc;
@@ -28,7 +35,12 @@ protected:
 		bool m_needsEnd;
 		ID2D1RenderTarget *m_target;
 		IDXGISwapChain *m_swapChain;
-		inline DrawContext(ID2D1RenderTarget *target, IDXGISwapChain *swapChain) : m_needsEnd(true), m_target(target), m_swapChain(swapChain)
+		IDCompositionDevice *m_compDevice;
+		inline DrawContext(ID2D1RenderTarget *target, IDXGISwapChain *swapChain, IDCompositionDevice *compDevice) :
+			m_needsEnd(true),
+			m_target(target),
+			m_swapChain(swapChain),
+			m_compDevice(compDevice)
 		{
 			m_target->BeginDraw();
 		}
@@ -41,6 +53,7 @@ protected:
 
 				m_target = std::exchange(other.m_target, nullptr);
 				m_swapChain = std::exchange(other.m_swapChain, nullptr);
+				m_compDevice = std::exchange(other.m_compDevice, nullptr);
 			}
 		}
 
@@ -79,6 +92,15 @@ protected:
 				{
 					return hr;
 				}
+
+				if (m_compDevice)
+				{
+					hr = m_compDevice->Commit();
+					if (FAILED(hr))
+					{
+						return hr;
+					}
+				}
 			}
 
 			return S_OK;
@@ -92,7 +114,7 @@ protected:
 
 	inline DrawContext BeginDraw()
 	{
-		return DrawContext(m_dc.get(), m_swapChain.get());
+		return DrawContext(m_dc.get(), m_swapChain.get(), m_compDevice.get());
 	}
 
 	virtual void Destroy();

@@ -10,6 +10,76 @@ HRESULT RenderContext::CreateDevice(D3D_DRIVER_TYPE type, ID3D11Device **device,
 	return D3D11CreateDevice(nullptr, type, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, device, nullptr, context);
 }
 
+bool RenderContext::NeedsAlpha(HWND hwnd)
+{
+	return GetWindowLongPtr(hwnd, GWL_EXSTYLE) & WS_EX_TRANSPARENT;
+}
+
+HRESULT RenderContext::CreateNonAlphaSwapChain(HWND hwnd, IDXGIFactory2 *factory, ID3D11Device *device)
+{
+	DXGI_SWAP_CHAIN_DESC1 swapdesc{};
+	swapdesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	swapdesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+	swapdesc.SampleDesc.Count = 1;
+	swapdesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapdesc.BufferCount = 2;
+	swapdesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+
+	return factory->CreateSwapChainForHwnd(device, hwnd, &swapdesc, nullptr, nullptr, m_swapChain.put());
+}
+
+HRESULT RenderContext::CreateAlphaSwapChain(HWND hwnd, IDXGIFactory2 *factory, ID3D11Device *device, IDXGIDevice1 *dxgidevice)
+{
+	HRESULT hr = DCompositionCreateDevice(dxgidevice, IID_PPV_ARGS(m_compDevice.put()));
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	hr = m_compDevice->CreateTargetForHwnd(hwnd, true, m_compTarget.put());
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	winrt::com_ptr<IDCompositionVisual> compVisual;
+	hr = m_compDevice->CreateVisual(compVisual.put());
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	RECT rect;
+	if (!GetWindowRect(hwnd, &rect))
+	{
+		return HRESULT_FROM_WIN32(GetLastError());
+	}
+
+	DXGI_SWAP_CHAIN_DESC1 swapdesc{};
+	swapdesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	swapdesc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
+	swapdesc.SampleDesc.Count = 1;
+	swapdesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapdesc.BufferCount = 2;
+	swapdesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+	swapdesc.Width = rect.right - rect.left;
+	swapdesc.Height = rect.bottom - rect.top;
+
+	hr = factory->CreateSwapChainForComposition(device, &swapdesc, nullptr, m_swapChain.put());
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	hr = compVisual->SetContent(m_swapChain.get());
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	return m_compTarget->SetRoot(compVisual.get());
+}
+
 HRESULT RenderContext::CreateGradient(ID2D1LinearGradientBrush **brush, const D2D1_COLOR_F &top, const D2D1_COLOR_F &bottom)
 {
 	const D2D1_GRADIENT_STOP gradientStops[] = {
@@ -56,6 +126,8 @@ HRESULT RenderContext::CreateGradient(ID2D1LinearGradientBrush **brush, const D2
 
 void RenderContext::Destroy()
 {
+	m_compDevice = nullptr;
+	m_compTarget = nullptr;
 	m_swapChain = nullptr;
 	m_dc = nullptr;
 	m_brush = nullptr;
@@ -126,14 +198,10 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 		return hr;
 	}
 
-	DXGI_SWAP_CHAIN_DESC1 swapdesc{};
-	swapdesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-	swapdesc.SampleDesc.Count = 1;
-	swapdesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapdesc.BufferCount = 2;
-	swapdesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-
-	hr = factory->CreateSwapChainForHwnd(d3device.get(), hwnd, &swapdesc, nullptr, nullptr, m_swapChain.put());
+	const bool needsAlpha = NeedsAlpha(hwnd);
+	hr = needsAlpha
+		? CreateAlphaSwapChain(hwnd, factory.get(), d3device.get(), dxdevice.get())
+		: CreateNonAlphaSwapChain(hwnd, factory.get(), d3device.get());
 	if (FAILED(hr))
 	{
 		return hr;
@@ -147,10 +215,17 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 	}
 
 	const UINT dpi = GetDpiForWindow(hwnd);
+	if (!dpi)
+	{
+		return HRESULT_FROM_WIN32(ERROR_INVALID_WINDOW_HANDLE);
+	}
 
 	const D2D1_BITMAP_PROPERTIES1 props = D2D1::BitmapProperties1(
 		D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
-		D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE),
+		D2D1::PixelFormat(
+			DXGI_FORMAT_B8G8R8A8_UNORM,
+			needsAlpha ? D2D1_ALPHA_MODE_PREMULTIPLIED : D2D1_ALPHA_MODE_IGNORE
+		),
 		dpi,
 		dpi
 	);

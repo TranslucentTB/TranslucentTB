@@ -28,13 +28,8 @@ HRESULT AlphaSliderContext::Refresh(HWND hwnd)
 
 HRESULT AlphaSliderContext::Draw(HWND, const SColourF &col, const SColourF &)
 {
-	const DWORD c = GetSysColor(COLOR_BTNFACE);
-	const float br = GetRValue(c) / 255.0f;
-	const float bg = GetGValue(c) / 255.0f;
-	const float bb = GetBValue(c) / 255.0f;
-
 	DrawContext dc = BeginDraw();
-	m_dc->Clear(D2D1::ColorF(br, bg, bb));
+	m_dc->Clear(D2D1::ColorF(0, 0.0f));
 
 	const float square_size = m_size.width / 4.0f;
 

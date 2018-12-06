@@ -208,7 +208,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		return gui_data->OnCommand(hDlg, wParam);
 
 	case WM_NOTIFY:
-		return gui_data->OnNotify(lParam);
+		return gui_data->OnNotify(hDlg, lParam);
 
 	case WM_NCCALCSIZE:
 		return gui_data->OnNonClientCalculateSize(hDlg, wParam);
@@ -267,11 +267,16 @@ INT_PTR GUI::OnDialogInit(HWND hDlg)
 		sizeof(ti),
 		TTF_IDISHWND | TTF_SUBCLASS,
 		hDlg,
-		reinterpret_cast<UINT_PTR>(GetDlgItem(hDlg, IDC_OLDCOLOR)),
+		reinterpret_cast<UINT_PTR>(GetDlgItem(hDlg, IDC_OLDCOLOR))
 	};
 	ti.lpszText = LPSTR_TEXTCALLBACK;
 	SendMessage(m_oldColorTip, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&ti));
 	SendMessage(m_oldColorTip, TTM_ACTIVATE, TRUE, 0);
+
+	m_newColorTip = CreateWindow(TOOLTIPS_CLASS, NULL, TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, DllData::GetInstanceHandle(), NULL);
+	ti.uId = reinterpret_cast<UINT_PTR>(GetDlgItem(hDlg, IDC_NEWCOLOR));
+	SendMessage(m_newColorTip, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&ti));
+	SendMessage(m_newColorTip, TTM_ACTIVATE, TRUE, 0);
 
 	RECT rect;
 	GetClientRect(hDlg, &rect);
@@ -580,6 +585,16 @@ INT_PTR GUI::OnButtonClick(HWND hDlg, WPARAM wParam)
 		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
 		return 0;
 
+	case IDC_NEWCOLOR:
+	{
+		const SColour &col = m_picker->GetCurrentColour();
+
+		m_picker->SetRGB(255 - col.r, 255 - col.g, 255 - col.b);
+		UpdateValues(hDlg);
+		RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+		return 0;
+	}
+
 	case IDC_OLDCOLOR:
 	{
 		const SColour &old = m_picker->GetOldColour();
@@ -611,7 +626,7 @@ INT_PTR GUI::OnButtonClick(HWND hDlg, WPARAM wParam)
 	}
 }
 
-INT_PTR GUI::OnNotify(LPARAM lParam)
+INT_PTR GUI::OnNotify(HWND hDlg, LPARAM lParam)
 {
 	NMHDR &notify = *reinterpret_cast<NMHDR *>(lParam);
 	switch (notify.code)
@@ -620,7 +635,7 @@ INT_PTR GUI::OnNotify(LPARAM lParam)
 		return OnUpDownControlChange(notify);
 
 	case TTN_GETDISPINFO:
-		return OnEditControlRequestWatermarkInfo(notify);
+		return OnEditControlRequestWatermarkInfo(hDlg, notify);
 
 	default:
 		return 0;
@@ -637,10 +652,17 @@ INT_PTR GUI::OnUpDownControlChange(NMHDR notify)
 	return 0;
 }
 
-INT_PTR GUI::OnEditControlRequestWatermarkInfo(NMHDR &notify)
+INT_PTR GUI::OnEditControlRequestWatermarkInfo(HWND hDlg, NMHDR &notify)
 {
 	NMTTDISPINFO &dispinfo = reinterpret_cast<NMTTDISPINFO &>(notify);
-	wcscpy_s(dispinfo.szText, L"Click to restore old color");
+	if (notify.idFrom == reinterpret_cast<UINT_PTR>(GetDlgItem(hDlg, IDC_NEWCOLOR)))
+	{
+		wcscpy_s(dispinfo.szText, L"Click to invert color");
+	}
+	else if (notify.idFrom == reinterpret_cast<UINT_PTR>(GetDlgItem(hDlg, IDC_OLDCOLOR)))
+	{
+		wcscpy_s(dispinfo.szText, L"Click to restore old color");
+	}
 	return 0;
 }
 
@@ -696,7 +718,7 @@ GUI::GUI(CColourPicker *picker, ID2D1Factory3 *factory, IDWriteFactory *dwFactor
 	m_pickerContext(factory),
 	m_colorSliderContext(factory),
 	m_alphaSliderContext(factory),
-	m_oldPreviewContext(picker->GetOldColour(), factory, dwFactory),
+	m_oldPreviewContext(factory, dwFactory),
 	m_newPreviewContext(factory, dwFactory),
 	m_contextPairs
 	{
