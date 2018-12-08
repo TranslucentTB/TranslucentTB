@@ -28,7 +28,7 @@ HRESULT ColorSliderContext::Refresh(HWND hwnd)
 	return S_OK;
 }
 
-HRESULT ColorSliderContext::Draw(HWND hDlg, const SColourF &col, const SColourF &)
+HRESULT ColorSliderContext::Draw(HWND hDlg, const SColourF &col)
 {
 	winrt::com_ptr<ID2D1LinearGradientBrush> brush;
 	DrawContext dc = BeginDraw();

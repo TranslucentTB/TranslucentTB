@@ -235,6 +235,87 @@ LRESULT CALLBACK GUI::NoOutlineButtonSubclass(HWND hWnd, UINT uMsg, WPARAM wPara
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
+bool GUI::RectFitsInRect(const RECT &outer, const RECT &inner)
+{
+	return inner.right <= outer.right && inner.left >= outer.left &&
+		outer.top <= inner.top && outer.bottom >= inner.bottom;
+}
+
+bool GUI::CalculateDialogCoords(HWND hDlg, RECT &coords)
+{
+	POINT point;
+	if (!GetCursorPos(&point))
+	{
+		return false;
+	}
+
+	HMONITOR mon = MonitorFromPoint(point, MONITOR_DEFAULTTONEAREST);
+	MONITORINFO mi = { sizeof(mi) };
+	if (!GetMonitorInfo(mon, &mi))
+	{
+		return false;
+	}
+
+	// TODO: move window to target monitor to consider DPI scaling in GetClientRect.
+	RECT rect;
+	if (!GetClientRect(hDlg, &rect))
+	{
+		return false;
+	}
+	const long width = rect.right - rect.left;
+	const long height = rect.bottom - rect.top;
+
+	// First try centering it on the mouse
+	coords.left = point.x - (width / 2);
+	coords.right = coords.left + width;
+
+	coords.top = point.y - (height / 2);
+	coords.bottom = coords.top + height;
+
+	if (RectFitsInRect(mi.rcWork, coords))
+	{
+		return true; // It fits!
+	}
+
+	const bool rightDoesntFits = coords.right > mi.rcWork.right;
+	const bool leftDoesntFits = coords.left < mi.rcWork.left;
+	const bool bottomDoesntFits = coords.bottom > mi.rcWork.bottom;
+	const bool topDoesntFits = coords.top < mi.rcWork.top;
+
+	if ((rightDoesntFits && leftDoesntFits) || (bottomDoesntFits && topDoesntFits))
+	{
+		return false; // Doesn't fits in the monitor work area
+	}
+
+	// Offset the rect so that it is completely in the work area
+	int x_offset = 0;
+	if (rightDoesntFits)
+	{
+		x_offset = mi.rcWork.right - coords.right; // Negative offset
+	}
+	else if (leftDoesntFits)
+	{
+		x_offset = mi.rcWork.left - coords.left;
+	}
+
+	int y_offset = 0;
+	if (bottomDoesntFits)
+	{
+		y_offset = mi.rcWork.bottom - coords.bottom; // Negative offset
+	}
+	else if (topDoesntFits)
+	{
+		y_offset = mi.rcWork.top - coords.top;
+	}
+
+	if (!OffsetRect(&coords, x_offset, y_offset))
+	{
+		return false;
+	}
+
+	return RectFitsInRect(mi.rcWork, coords); // Shouldn't return false at this point
+}
+
 INT_PTR GUI::OnDialogInit(HWND hDlg)
 {
 	for (const auto &[buddy_id, slider_id, slider_max] : SLIDERS)
@@ -278,12 +359,29 @@ INT_PTR GUI::OnDialogInit(HWND hDlg)
 	SendMessage(m_newColorTip, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&ti));
 	SendMessage(m_newColorTip, TTM_ACTIVATE, TRUE, 0);
 
-	RECT rect;
-	GetClientRect(hDlg, &rect);
-
 	const MARGINS mar = { -1 };
 	DwmExtendFrameIntoClientArea(hDlg, &mar);
-	SetWindowPos(hDlg, NULL, 0, 0, rect.right + 1, rect.bottom, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+
+	UINT flags = SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER;
+	int x = 0;
+	int y = 0;
+	int width;
+	int height;
+	if (RECT coords; CalculateDialogCoords(hDlg, coords))
+	{
+		x = coords.left;
+		y = coords.top;
+		width = coords.right - coords.left;
+		height = coords.bottom - coords.top;
+	}
+	else
+	{
+		GetClientRect(hDlg, &coords);
+		width = coords.right;
+		height = coords.bottom;
+		flags |= SWP_NOMOVE;
+	}
+	SetWindowPos(hDlg, NULL, x, y, width, height, flags);
 
 	return OnDpiChange(hDlg);
 }
@@ -308,12 +406,11 @@ INT_PTR GUI::OnDpiChange(HWND hDlg)
 INT_PTR GUI::OnPaint(HWND hDlg)
 {
 	const SColourF color = m_picker->GetCurrentColour();
-	const SColourF old = m_picker->GetOldColour();
 
 	HRESULT hr;
 	for (auto &[context, item_id] : m_contextPairs)
 	{
-		hr = DrawItem(hDlg, context, item_id, color, old);
+		hr = DrawItem(hDlg, context, item_id, color);
 		if (FAILED(hr))
 		{
 			EndDialog(hDlg, hr);
@@ -703,12 +800,11 @@ HRESULT GUI::Redraw(HWND hDlg, bool skipMain, bool skipCircle, bool skipSlide, b
 	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW);
 
 	const SColourF col = m_picker->GetCurrentColour();
-	const SColourF old = m_picker->GetOldColour();
 	HRESULT hr;
 
 	if (!skipMain)
 	{
-		hr = DrawItem(hDlg, m_pickerContext, IDC_COLOR, col, old);
+		hr = DrawItem(hDlg, m_pickerContext, IDC_COLOR, col);
 		if (FAILED(hr))
 		{
 			return hr;
@@ -717,7 +813,7 @@ HRESULT GUI::Redraw(HWND hDlg, bool skipMain, bool skipCircle, bool skipSlide, b
 
 	if (!skipCircle)
 	{
-		hr = DrawItem(hDlg, m_circleContext, IDC_COLORCIRCLE, col, old);
+		hr = DrawItem(hDlg, m_circleContext, IDC_COLORCIRCLE, col);
 		if (FAILED(hr))
 		{
 			return hr;
@@ -726,7 +822,7 @@ HRESULT GUI::Redraw(HWND hDlg, bool skipMain, bool skipCircle, bool skipSlide, b
 
 	if (!skipSlide)
 	{
-		hr = DrawItem(hDlg, m_colorSliderContext, IDC_COLOR2, col, old);
+		hr = DrawItem(hDlg, m_colorSliderContext, IDC_COLOR2, col);
 		if (FAILED(hr))
 		{
 			return hr;
@@ -735,7 +831,7 @@ HRESULT GUI::Redraw(HWND hDlg, bool skipMain, bool skipCircle, bool skipSlide, b
 
 	if (!skipAlpha)
 	{
-		hr = DrawItem(hDlg, m_alphaSliderContext, IDC_ALPHASLIDE, col, old);
+		hr = DrawItem(hDlg, m_alphaSliderContext, IDC_ALPHASLIDE, col);
 		if (FAILED(hr))
 		{
 			return hr;
@@ -744,7 +840,7 @@ HRESULT GUI::Redraw(HWND hDlg, bool skipMain, bool skipCircle, bool skipSlide, b
 
 	if (!skipNew)
 	{
-		hr = DrawItem(hDlg, m_newPreviewContext, IDC_NEWCOLOR, col, old);
+		hr = DrawItem(hDlg, m_newPreviewContext, IDC_NEWCOLOR, col);
 		if (FAILED(hr))
 		{
 			return hr;
@@ -754,12 +850,12 @@ HRESULT GUI::Redraw(HWND hDlg, bool skipMain, bool skipCircle, bool skipSlide, b
 	return S_OK;
 }
 
-HRESULT GUI::DrawItem(HWND hDlg, RenderContext &context, unsigned int id, const SColourF &col, const SColourF &old)
+HRESULT GUI::DrawItem(HWND hDlg, RenderContext &context, unsigned int id, const SColourF &col)
 {
 	const HWND item_handle = GetDlgItem(hDlg, id);
 	const PaintContext pc(item_handle);
 
-	HRESULT hr = context.Draw(hDlg, col, old);
+	HRESULT hr = context.Draw(hDlg, col);
 	if (hr == D2DERR_RECREATE_TARGET)
 	{
 		hr = context.Refresh(item_handle);
@@ -768,7 +864,7 @@ HRESULT GUI::DrawItem(HWND hDlg, RenderContext &context, unsigned int id, const 
 			return hr;
 		}
 
-		hr = context.Draw(hDlg, col, old);
+		hr = context.Draw(hDlg, col);
 		if (FAILED(hr))
 		{
 			return hr;
@@ -788,7 +884,7 @@ GUI::GUI(CColourPicker *picker, ID2D1Factory3 *factory, IDWriteFactory *dwFactor
 	m_circleContext(factory),
 	m_colorSliderContext(factory),
 	m_alphaSliderContext(factory),
-	m_oldPreviewContext(factory, dwFactory),
+	m_oldPreviewContext(picker->GetOldColour(), factory, dwFactory),
 	m_newPreviewContext(factory, dwFactory),
 	m_contextPairs
 	{

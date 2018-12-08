@@ -15,5 +15,5 @@ public:
 	using RenderContext::RenderContext;
 
 	HRESULT Refresh(HWND hwnd) override;
-	HRESULT Draw(HWND hDlg, const SColourF &col, const SColourF &) override;
+	HRESULT Draw(HWND hDlg, const SColourF &col) override;
 };

@@ -121,7 +121,7 @@ protected:
 
 public:
 	virtual HRESULT Refresh(HWND hwnd);
-	virtual HRESULT Draw(HWND hDlg, const SColourF &col, const SColourF &old) = 0;
+	virtual HRESULT Draw(HWND hDlg, const SColourF &col) = 0;
 
 	inline explicit RenderContext(ID2D1Factory3 *factory) : m_factory(factory), m_size() { }
 

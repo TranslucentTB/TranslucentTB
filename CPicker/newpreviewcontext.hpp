@@ -10,7 +10,7 @@ private:
 
 public:
 	using PreviewContext::PreviewContext;
-	inline HRESULT Draw(HWND, const SColourF &col, const SColourF &) override
+	inline HRESULT Draw(HWND, const SColourF &col) override
 	{
 		return DrawPreview(col, false);
 	}

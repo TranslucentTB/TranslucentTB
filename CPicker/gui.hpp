@@ -28,6 +28,10 @@ private:
 	static INT_PTR CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK NoOutlineButtonSubclass(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR);
 
+	static bool RectFitsInRect(const RECT &outer, const RECT &inner);
+
+	static bool CalculateDialogCoords(HWND hDlg, RECT &coords);
+
 	inline static void FailedParse(HWND hDlg)
 	{
 		EDITBALLOONTIP ebt = {
@@ -88,7 +92,7 @@ private:
 
 	HRESULT Redraw(HWND hDlg, bool skipMain = false, bool skipCircle = false,
 		bool skipSlide = false, bool skipAlpha = false, bool skipNew = false, bool updateValues = true);
-	HRESULT DrawItem(HWND hDlg, RenderContext &context, unsigned int id, const SColourF &col, const SColourF &old);
+	HRESULT DrawItem(HWND hDlg, RenderContext &context, unsigned int id, const SColourF &col);
 
 	void UpdateValues(HWND hDlg);
 	void ParseHex(HWND hDlg);

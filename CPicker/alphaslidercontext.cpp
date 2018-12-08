@@ -26,7 +26,7 @@ HRESULT AlphaSliderContext::Refresh(HWND hwnd)
 	return S_OK;
 }
 
-HRESULT AlphaSliderContext::Draw(HWND, const SColourF &col, const SColourF &)
+HRESULT AlphaSliderContext::Draw(HWND, const SColourF &col)
 {
 	DrawContext dc = BeginDraw();
 	m_dc->Clear(D2D1::ColorF(0, 0.0f));

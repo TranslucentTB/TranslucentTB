@@ -11,5 +11,5 @@ public:
 	using SliderContext::SliderContext;
 
 	HRESULT Refresh(HWND hwnd) override;
-	HRESULT Draw(HWND, const SColourF &col, const SColourF &) override;
+	HRESULT Draw(HWND, const SColourF &col) override;
 };

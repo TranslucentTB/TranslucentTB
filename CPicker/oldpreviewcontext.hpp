@@ -3,15 +3,21 @@
 
 class OldPreviewContext : public PreviewContext {
 private:
+	SColourF m_old;
+
 	std::wstring_view GetText() override
 	{
 		return L"Old";
 	}
 
 public:
-	using PreviewContext::PreviewContext;
-	inline HRESULT Draw(HWND, const SColourF &, const SColourF &old) override
+	inline OldPreviewContext(const SColour &old, ID2D1Factory3 *factory, IDWriteFactory *dwFactory) :
+		PreviewContext(factory, dwFactory),
+		m_old(old)
+	{ }
+
+	inline HRESULT Draw(HWND, const SColourF &) override
 	{
-		return DrawPreview(old, true);
+		return DrawPreview(m_old, true);
 	}
 };

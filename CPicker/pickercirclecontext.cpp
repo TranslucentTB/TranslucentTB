@@ -1,7 +1,7 @@
 #include "pickercirclecontext.hpp"
 #include "resource.h"
 
-HRESULT PickerCircleContext::Draw(HWND hDlg, const SColourF &col, const SColourF &)
+HRESULT PickerCircleContext::Draw(HWND hDlg, const SColourF &col)
 {
 	DrawContext dc = BeginDraw();
 	m_dc->Clear(D2D1::ColorF(0, 0.0f));
