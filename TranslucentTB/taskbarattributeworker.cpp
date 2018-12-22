@@ -286,14 +286,15 @@ EventHook::callback_t TaskbarAttributeWorker::BindHook()
 TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance) :
 	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance),
 	m_PeekActive(false),
-	m_PeekUnpeekHook(EVENT_SYSTEM_PEEKSTART, EVENT_SYSTEM_PEEKEND, std::bind(&TaskbarAttributeWorker::OnAeroPeekEnterExit, this, std::placeholders::_1), WINEVENT_OUTOFCONTEXT),
-	m_CloakUncloakHook(EVENT_OBJECT_CLOAKED, EVENT_OBJECT_UNCLOAKED, BindHook(), WINEVENT_OUTOFCONTEXT),
-	m_MinimizeRestoreHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, BindHook(), WINEVENT_OUTOFCONTEXT),
-	m_ResizeMoveHook(EVENT_OBJECT_LOCATIONCHANGE, EVENT_OBJECT_LOCATIONCHANGE, BindHook(), WINEVENT_OUTOFCONTEXT),
+	m_PeekUnpeekHook(EVENT_SYSTEM_PEEKSTART, EVENT_SYSTEM_PEEKEND, std::bind(&TaskbarAttributeWorker::OnAeroPeekEnterExit, this, std::placeholders::_1)),
+	m_CloakUncloakHook(EVENT_OBJECT_CLOAKED, EVENT_OBJECT_UNCLOAKED, BindHook()),
+	m_MinimizeRestoreHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, BindHook()),
+	m_ResizeMoveHook(EVENT_OBJECT_LOCATIONCHANGE, BindHook()),
+	m_ShowHideHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, BindHook()),
 	m_CurrentStartMonitor(nullptr),
 	m_IAV(create_instance<IAppVisibility>(CLSID_AppVisibility)),
 	m_IAVECookie(0),
-	m_CreateDestroyHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, std::bind(&TaskbarAttributeWorker::OnWindowCreateDestroy, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), WINEVENT_OUTOFCONTEXT),
+	m_CreateDestroyHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, std::bind(&TaskbarAttributeWorker::OnWindowCreateDestroy, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)),
 	m_returningToStock(false)
 {
 	if (m_IAV)

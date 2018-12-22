@@ -34,7 +34,6 @@ private:
 	//     not sure if an undocumented COM interface is any better
 	//     maybe EVENT_SYSTEM_DESKTOPSWITCH
 	// support alt-tab? EVENT_SYSTEM_SWITCH{START,END}
-	// handle EVENT_OBJECT_SHOW (but what is the reverse that signals it for window objects, EVENT_OBJECT_HIDE doesn't works)
 	// on current desktop not working after explorer restart?
 	// explorer slows to a crawl when using normal mode. sounds like we have recursion problems
 
@@ -44,6 +43,7 @@ private:
 	EventHook m_CloakUncloakHook;
 	EventHook m_MinimizeRestoreHook;
 	EventHook m_ResizeMoveHook;
+	EventHook m_ShowHideHook;
 	void OnAeroPeekEnterExit(DWORD event, ...);
 	void OnWindowStateChange(bool skipCheck, DWORD, Window window, LONG idObject, ...);
 	static bool IsWindowMaximised(Window window);

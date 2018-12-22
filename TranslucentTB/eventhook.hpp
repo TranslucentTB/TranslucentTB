@@ -24,7 +24,8 @@ private:
 
 public:
 	inline EventHook(HWINEVENTHOOK handle) : m_Handle(handle) { }
-	EventHook(DWORD min, DWORD max, callback_t callback, DWORD flags, HMODULE hMod = NULL, DWORD idProcess = 0, DWORD idThread = 0);
+	inline EventHook(DWORD event, callback_t callback, DWORD idProcess = 0, DWORD idThread = 0, DWORD flags = WINEVENT_OUTOFCONTEXT) : EventHook(event, event, callback, idProcess, idThread, flags) { }
+	EventHook(DWORD min, DWORD max, callback_t callback, DWORD idProcess = 0, DWORD idThread = 0, DWORD flags = WINEVENT_OUTOFCONTEXT);
 
 	inline EventHook(const EventHook &) = delete;
 	inline EventHook &operator =(const EventHook &) = delete;
