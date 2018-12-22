@@ -12,8 +12,8 @@ std::vector<std::wstring> Blacklist::m_TitleBlacklist;
 
 std::unordered_map<Window, bool> Blacklist::m_Cache;
 
-const EventHook Blacklist::m_ChangeHook(EVENT_OBJECT_NAMECHANGE, EVENT_OBJECT_NAMECHANGE, Blacklist::HandleChangeEvent, WINEVENT_OUTOFCONTEXT);
-const EventHook Blacklist::m_DestroyHook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_DESTROY, Blacklist::HandleDestroyEvent, WINEVENT_OUTOFCONTEXT);
+const EventHook Blacklist::m_ChangeHook(EVENT_OBJECT_NAMECHANGE, Blacklist::HandleChangeEvent);
+const EventHook Blacklist::m_DestroyHook(EVENT_OBJECT_DESTROY, Blacklist::HandleDestroyEvent);
 
 void Blacklist::Parse(const std::wstring &file)
 {

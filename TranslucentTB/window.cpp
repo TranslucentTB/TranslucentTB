@@ -9,8 +9,8 @@
 #include "eventhook.hpp"
 #include "ttberror.hpp"
 
-const EventHook Window::m_ChangeHook(EVENT_OBJECT_NAMECHANGE, EVENT_OBJECT_NAMECHANGE, Window::HandleChangeEvent, WINEVENT_OUTOFCONTEXT);
-const EventHook Window::m_DestroyHook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_DESTROY, Window::HandleDestroyEvent, WINEVENT_OUTOFCONTEXT);
+const EventHook Window::m_ChangeHook(EVENT_OBJECT_NAMECHANGE, Window::HandleChangeEvent);
+const EventHook Window::m_DestroyHook(EVENT_OBJECT_DESTROY, Window::HandleDestroyEvent);
 
 std::unordered_map<Window, std::wstring> Window::m_ClassNames;
 std::unordered_map<Window, std::wstring> Window::m_Filenames;
