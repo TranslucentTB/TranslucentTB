@@ -11,17 +11,23 @@
 
 class RenderContext {
 private:
-	static HRESULT CreateDevice(D3D_DRIVER_TYPE type, ID3D11Device **device, ID3D11DeviceContext **context);
-	static bool NeedsAlpha(HWND hwnd);
+	static HRESULT CreateDevice(IDXGIAdapter *adapter, D3D_DRIVER_TYPE type, ID3D11Device **device, ID3D11DeviceContext **context);
+	inline static bool NeedsAlpha(HWND hwnd)
+	{
+		return GetWindowLongPtr(hwnd, GWL_EXSTYLE) & WS_EX_TRANSPARENT;
+	}
 
 	HRESULT CreateNonAlphaSwapChain(HWND hwnd, IDXGIFactory2 *factory, ID3D11Device *device);
 	HRESULT CreateAlphaSwapChain(HWND hwnd, IDXGIFactory2 *factory, ID3D11Device *device, IDXGIDevice1 *dxgidevice);
+
+	HRESULT CreateDeviceContext(HWND hwnd, bool needsAlpha);
 
 	ID2D1Factory3 *m_factory;
 	winrt::com_ptr<IDXGISwapChain1> m_swapChain;
 	winrt::com_ptr<ID3D11DeviceContext> m_d3dc;
 	winrt::com_ptr<IDCompositionDevice> m_compDevice;
 	winrt::com_ptr<IDCompositionTarget> m_compTarget;
+	winrt::com_ptr<ID2D1Device2> m_d2device;
 
 protected:
 	winrt::com_ptr<ID2D1DeviceContext2> m_dc;
@@ -119,6 +125,11 @@ protected:
 
 	virtual void Destroy();
 
+	inline virtual HRESULT ResizeResources()
+	{
+		return S_OK;
+	}
+
 public:
 	virtual HRESULT Refresh(HWND hwnd);
 	virtual HRESULT Draw(HWND hDlg, const SColourF &col) = 0;
@@ -127,4 +138,7 @@ public:
 
 	inline RenderContext(const RenderContext &) = delete;
 	inline RenderContext &operator =(const RenderContext &) = delete;
+
+	HRESULT OnDpiChange(HWND hwnd);
+	HRESULT OnSizeChange(HWND hwnd);
 };

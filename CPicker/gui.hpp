@@ -11,6 +11,7 @@
 #include "alphaslidercontext.hpp"
 #include "colorslidercontext.hpp"
 #include "ccolourpicker.hpp"
+#include "dlldata.hpp"
 #include "mainpickercontext.hpp"
 #include "newpreviewcontext.hpp"
 #include "oldpreviewcontext.hpp"
@@ -21,6 +22,13 @@
 
 class GUI {
 private:
+	struct DLGTEMPLATEEX {
+		WORD dlgVer, signature;
+		DWORD helpID, exStyle, style;
+		WORD cDlgItems;
+		short x, y, cx, cy;
+	};
+
 	static const Util::string_view_map<const uint32_t> COLOR_MAP;
 	static const std::tuple<const unsigned int, const unsigned int, const unsigned int> SLIDERS[8];
 	static std::unordered_map<const uint32_t *, HWND> m_pickerMap;
@@ -28,9 +36,11 @@ private:
 	static INT_PTR CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK NoOutlineButtonSubclass(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR);
 
+	static const RECT &GetDialogUnitsSize();
+
 	static bool RectFitsInRect(const RECT &outer, const RECT &inner);
 
-	static bool CalculateDialogCoords(HWND hDlg, RECT &coords);
+	static HRESULT CalculateDialogCoords(HWND hDlg, RECT &coords);
 
 	inline static void FailedParse(HWND hDlg)
 	{
@@ -52,6 +62,23 @@ private:
 		return (firstDigit << 4) + firstDigit;
 	}
 
+	inline static HWND CreateTip(HWND hDlg, int item)
+	{
+		HWND tip = CreateWindow(TOOLTIPS_CLASS, NULL, TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, DllData::GetInstanceHandle(), NULL);
+
+		TOOLINFO ti = {
+			sizeof(ti),
+			TTF_IDISHWND | TTF_SUBCLASS,
+			hDlg,
+			reinterpret_cast<UINT_PTR>(GetDlgItem(hDlg, item))
+		};
+		ti.lpszText = LPSTR_TEXTCALLBACK;
+		SendMessage(tip, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&ti));
+		SendMessage(tip, TTM_ACTIVATE, TRUE, 0);
+
+		return tip;
+	}
+
 	using initdialog_pair_t = const std::pair<GUI *const, const uint32_t *const>;
 
 	CColourPicker *m_picker;
@@ -66,6 +93,7 @@ private:
 
 	bool m_changingText;
 	bool m_changingHexViaSpin;
+	bool m_initDone;
 	HWND m_oldColorTip;
 	HWND m_newColorTip;
 
@@ -73,6 +101,7 @@ private:
 
 	INT_PTR OnDialogInit(HWND hDlg);
 	INT_PTR OnDpiChange(HWND hDlg);
+	INT_PTR OnSizeChange(HWND hDlg);
 	INT_PTR OnPaint(HWND hDlg);
 	INT_PTR OnClick(HWND hDlg, LPARAM lParam);
 	void OnColorPickerClick(HWND hDlg, RECT position, POINT cursor);

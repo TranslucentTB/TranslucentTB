@@ -1,18 +1,13 @@
 #include "rendercontext.hpp"
 
-HRESULT RenderContext::CreateDevice(D3D_DRIVER_TYPE type, ID3D11Device **device, ID3D11DeviceContext **context)
+HRESULT RenderContext::CreateDevice(IDXGIAdapter *adapter, D3D_DRIVER_TYPE type, ID3D11Device **device, ID3D11DeviceContext **context)
 {
 	UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #ifdef _DEBUG
 	flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-	return D3D11CreateDevice(nullptr, type, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, device, nullptr, context);
-}
-
-bool RenderContext::NeedsAlpha(HWND hwnd)
-{
-	return GetWindowLongPtr(hwnd, GWL_EXSTYLE) & WS_EX_TRANSPARENT;
+	return D3D11CreateDevice(adapter, type, nullptr, flags, nullptr, 0, D3D11_SDK_VERSION, device, nullptr, context);
 }
 
 HRESULT RenderContext::CreateNonAlphaSwapChain(HWND hwnd, IDXGIFactory2 *factory, ID3D11Device *device)
@@ -50,7 +45,7 @@ HRESULT RenderContext::CreateAlphaSwapChain(HWND hwnd, IDXGIFactory2 *factory, I
 	}
 
 	RECT rect;
-	if (!GetWindowRect(hwnd, &rect))
+	if (!GetClientRect(hwnd, &rect))
 	{
 		return HRESULT_FROM_WIN32(GetLastError());
 	}
@@ -78,6 +73,51 @@ HRESULT RenderContext::CreateAlphaSwapChain(HWND hwnd, IDXGIFactory2 *factory, I
 	}
 
 	return m_compTarget->SetRoot(compVisual.get());
+}
+
+HRESULT RenderContext::CreateDeviceContext(HWND hwnd, bool needsAlpha)
+{
+	HRESULT hr = m_d2device->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, m_dc.put());
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	winrt::com_ptr<IDXGISurface> surface;
+	hr = m_swapChain->GetBuffer(0, IID_PPV_ARGS(surface.put()));
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	const UINT dpi = GetDpiForWindow(hwnd);
+	if (!dpi)
+	{
+		return HRESULT_FROM_WIN32(ERROR_INVALID_WINDOW_HANDLE);
+	}
+
+	const D2D1_BITMAP_PROPERTIES1 props = D2D1::BitmapProperties1(
+		D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+		D2D1::PixelFormat(
+			DXGI_FORMAT_B8G8R8A8_UNORM,
+			needsAlpha ? D2D1_ALPHA_MODE_PREMULTIPLIED : D2D1_ALPHA_MODE_IGNORE
+		),
+		dpi,
+		dpi
+	);
+
+	winrt::com_ptr<ID2D1Bitmap1> bitmap;
+	hr = m_dc->CreateBitmapFromDxgiSurface(surface.get(), props, bitmap.put());
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	m_dc->SetTarget(bitmap.get());
+
+	m_size = m_dc->GetSize();
+
+	return S_OK;
 }
 
 HRESULT RenderContext::CreateGradient(ID2D1LinearGradientBrush **brush, const D2D1_COLOR_F &top, const D2D1_COLOR_F &bottom)
@@ -129,6 +169,7 @@ void RenderContext::Destroy()
 	m_compDevice = nullptr;
 	m_compTarget = nullptr;
 	m_swapChain = nullptr;
+	m_d2device = nullptr;
 	m_dc = nullptr;
 	m_brush = nullptr;
 
@@ -146,16 +187,33 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 	Destroy();
 	HRESULT hr;
 
-	winrt::com_ptr<ID3D11Device> d3device;
-	hr = CreateDevice(D3D_DRIVER_TYPE_HARDWARE, d3device.put(), m_d3dc.put());
-	if (hr == DXGI_ERROR_UNSUPPORTED || hr == DXGI_ERROR_DYNAMIC_CODE_POLICY_VIOLATION)
-	{
-		hr = CreateDevice(D3D_DRIVER_TYPE_WARP, d3device.put(), m_d3dc.put());
-	}
-
+	winrt::com_ptr<IDXGIFactory2> factory;
+	UINT flags = 0;
+#ifdef _DEBUG
+	flags |= DXGI_CREATE_FACTORY_DEBUG;
+#endif
+	hr = CreateDXGIFactory2(flags, IID_PPV_ARGS(factory.put()));
 	if (FAILED(hr))
 	{
 		return hr;
+	}
+
+	winrt::com_ptr<IDXGIAdapter1> dxgiadapter;
+	hr = factory->EnumAdapters1(0, dxgiadapter.put());
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	winrt::com_ptr<ID3D11Device> d3device;
+	hr = CreateDevice(dxgiadapter.get(), D3D_DRIVER_TYPE_UNKNOWN, d3device.put(), m_d3dc.put());
+	if (FAILED(hr))
+	{
+		hr = CreateDevice(nullptr, D3D_DRIVER_TYPE_WARP, d3device.put(), m_d3dc.put());
+		if (FAILED(hr))
+		{
+			return hr;
+		}
 	}
 
 	winrt::com_ptr<IDXGIDevice1> dxdevice;
@@ -171,33 +229,6 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 		return hr;
 	}
 
-	winrt::com_ptr<IDXGIAdapter> adapter;
-	hr = dxdevice->GetAdapter(adapter.put());
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
-	winrt::com_ptr<IDXGIFactory2> factory;
-	hr = adapter->GetParent(IID_PPV_ARGS(factory.put()));
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
-	winrt::com_ptr<ID2D1Device2> device;
-	hr = m_factory->CreateDevice(dxdevice.get(), device.put());
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
-	hr = device->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, m_dc.put());
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
 	const bool needsAlpha = NeedsAlpha(hwnd);
 	hr = needsAlpha
 		? CreateAlphaSwapChain(hwnd, factory.get(), d3device.get(), dxdevice.get())
@@ -207,44 +238,73 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 		return hr;
 	}
 
-	winrt::com_ptr<IDXGISurface> surface;
-	hr = m_swapChain->GetBuffer(0, IID_PPV_ARGS(surface.put()));
+	hr = m_factory->CreateDevice(dxdevice.get(), m_d2device.put());
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
+	hr = CreateDeviceContext(hwnd, needsAlpha);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	return m_dc->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), m_brush.put());
+}
+
+HRESULT RenderContext::OnDpiChange(HWND hwnd)
+{
 	const UINT dpi = GetDpiForWindow(hwnd);
 	if (!dpi)
 	{
 		return HRESULT_FROM_WIN32(ERROR_INVALID_WINDOW_HANDLE);
 	}
 
-	const D2D1_BITMAP_PROPERTIES1 props = D2D1::BitmapProperties1(
-		D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
-		D2D1::PixelFormat(
-			DXGI_FORMAT_B8G8R8A8_UNORM,
-			needsAlpha ? D2D1_ALPHA_MODE_PREMULTIPLIED : D2D1_ALPHA_MODE_IGNORE
-		),
-		dpi,
-		dpi
-	);
+	float dpiX, dpiY;
+	m_dc->GetDpi(&dpiX, &dpiY);
 
-	winrt::com_ptr<ID2D1Bitmap1> bitmap;
-	hr = m_dc->CreateBitmapFromDxgiSurface(surface.get(), props, bitmap.put());
-	if (FAILED(hr))
+	if (static_cast<UINT>(std::roundf(dpiX)) != dpi || static_cast<UINT>(std::roundf(dpiY)) != dpi)
 	{
-		return hr;
+		m_dc->SetDpi(dpi, dpi);
+
+		// Not setting m_size because a DPI change is immediatly followed by a size change which does it.
 	}
 
-	m_dc->SetTarget(bitmap.get());
+	return S_OK;
+}
 
-	m_size = m_dc->GetSize();
-
-	hr = m_dc->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), m_brush.put());
-	if (FAILED(hr))
+HRESULT RenderContext::OnSizeChange(HWND hwnd)
+{
+	RECT rect;
+	if (!GetClientRect(hwnd, &rect))
 	{
-		return hr;
+		return HRESULT_FROM_WIN32(GetLastError());
+	}
+
+	const D2D1_SIZE_U size = m_dc->GetPixelSize();
+	const UINT width = rect.right - rect.left;
+	const UINT height = rect.bottom - rect.top;
+
+	if (width != size.width || height != size.height)
+	{
+		m_dc = nullptr;
+		m_d3dc->Flush();
+		m_d3dc->ClearState();
+
+		HRESULT hr = m_swapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
+		if (FAILED(hr))
+		{
+			return hr;
+		}
+
+		hr = CreateDeviceContext(hwnd, NeedsAlpha(hwnd));
+		if (FAILED(hr))
+		{
+			return hr;
+		}
+
+		return ResizeResources();
 	}
 
 	return S_OK;

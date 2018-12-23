@@ -5,7 +5,6 @@
 #include <string>
 
 #include "boolguard.hpp"
-#include "dlldata.hpp"
 #include "paintcontext.hpp"
 
 const Util::string_view_map<const uint32_t> GUI::COLOR_MAP = {
@@ -195,6 +194,9 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	case WM_DPICHANGED:
 		return gui_data->OnDpiChange(hDlg);
 
+	case WM_SIZE:
+		return gui_data->OnSizeChange(hDlg);
+
 	case WM_PAINT:
 		return gui_data->OnPaint(hDlg);
 
@@ -235,33 +237,74 @@ LRESULT CALLBACK GUI::NoOutlineButtonSubclass(HWND hWnd, UINT uMsg, WPARAM wPara
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
+const RECT &GUI::GetDialogUnitsSize()
+{
+	static RECT size{};
+
+	if (size.right == 0 || size.bottom == 0)
+	{
+		HRSRC dialog = FindResource(DllData::GetInstanceHandle(), MAKEINTRESOURCE(IDD_COLORPICKER), RT_DIALOG);
+		HGLOBAL res = LoadResource(DllData::GetInstanceHandle(), dialog);
+		auto dialogTemplate = reinterpret_cast<const DLGTEMPLATEEX *>(LockResource(res));
+
+		size = {
+			dialogTemplate->x,
+			dialogTemplate->y,
+			dialogTemplate->x + dialogTemplate->cx,
+			dialogTemplate->y + dialogTemplate->cy
+		};
+
+		UnlockResource(dialogTemplate);
+		FreeResource(res);
+	}
+
+	return size;
+}
+
 bool GUI::RectFitsInRect(const RECT &outer, const RECT &inner)
 {
 	return inner.right <= outer.right && inner.left >= outer.left &&
 		outer.top <= inner.top && outer.bottom >= inner.bottom;
 }
 
-bool GUI::CalculateDialogCoords(HWND hDlg, RECT &coords)
+HRESULT GUI::CalculateDialogCoords(HWND hDlg, RECT &coords)
 {
 	POINT point;
 	if (!GetCursorPos(&point))
 	{
-		return false;
+		return HRESULT_FROM_WIN32(GetLastError());
 	}
 
 	HMONITOR mon = MonitorFromPoint(point, MONITOR_DEFAULTTONEAREST);
 	MONITORINFO mi = { sizeof(mi) };
 	if (!GetMonitorInfo(mon, &mi))
 	{
-		return false;
+		return E_FAIL;
 	}
 
-	// TODO: move window to target monitor to consider DPI scaling in GetClientRect.
+	// Move to the appropriate monitor to consider DPI.
+	// Window still invisible at this point.
+	BOOL ret = SetWindowPos(
+		hDlg,
+		nullptr,
+		mi.rcWork.right,
+		mi.rcWork.top,
+		0,
+		0,
+		SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOSIZE
+	);
+
+	if (!ret)
+	{
+		return HRESULT_FROM_WIN32(GetLastError());
+	}
+
 	RECT rect;
 	if (!GetClientRect(hDlg, &rect))
 	{
-		return false;
+		return HRESULT_FROM_WIN32(GetLastError());
 	}
+
 	const long width = rect.right - rect.left;
 	const long height = rect.bottom - rect.top;
 
@@ -274,7 +317,7 @@ bool GUI::CalculateDialogCoords(HWND hDlg, RECT &coords)
 
 	if (RectFitsInRect(mi.rcWork, coords))
 	{
-		return true; // It fits!
+		return S_OK; // It fits!
 	}
 
 	const bool rightDoesntFits = coords.right > mi.rcWork.right;
@@ -284,7 +327,8 @@ bool GUI::CalculateDialogCoords(HWND hDlg, RECT &coords)
 
 	if ((rightDoesntFits && leftDoesntFits) || (bottomDoesntFits && topDoesntFits))
 	{
-		return false; // Doesn't fits in the monitor work area
+		// Doesn't fits in the monitor work area (lol wat)
+		return E_BOUNDS;
 	}
 
 	// Offset the rect so that it is completely in the work area
@@ -310,10 +354,16 @@ bool GUI::CalculateDialogCoords(HWND hDlg, RECT &coords)
 
 	if (!OffsetRect(&coords, x_offset, y_offset))
 	{
-		return false;
+		return E_FAIL;
 	}
 
-	return RectFitsInRect(mi.rcWork, coords); // Shouldn't return false at this point
+	// Shouldn't return false at this point, but still check
+	if (!RectFitsInRect(mi.rcWork, coords))
+	{
+		return E_BOUNDS;
+	}
+
+	return S_OK;
 }
 
 INT_PTR GUI::OnDialogInit(HWND hDlg)
@@ -342,56 +392,39 @@ INT_PTR GUI::OnDialogInit(HWND hDlg)
 
 	SendDlgItemMessage(hDlg, IDC_R, BM_SETCHECK, BST_CHECKED, 0);
 
-	m_oldColorTip = CreateWindow(TOOLTIPS_CLASS, NULL, TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, DllData::GetInstanceHandle(), NULL);
+	m_oldColorTip = CreateTip(hDlg, IDC_OLDCOLOR);
+	m_newColorTip = CreateTip(hDlg, IDC_NEWCOLOR);
 
-	TOOLINFO ti = {
-		sizeof(ti),
-		TTF_IDISHWND | TTF_SUBCLASS,
-		hDlg,
-		reinterpret_cast<UINT_PTR>(GetDlgItem(hDlg, IDC_OLDCOLOR))
-	};
-	ti.lpszText = LPSTR_TEXTCALLBACK;
-	SendMessage(m_oldColorTip, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&ti));
-	SendMessage(m_oldColorTip, TTM_ACTIVATE, TRUE, 0);
-
-	m_newColorTip = CreateWindow(TOOLTIPS_CLASS, NULL, TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, DllData::GetInstanceHandle(), NULL);
-	ti.uId = reinterpret_cast<UINT_PTR>(GetDlgItem(hDlg, IDC_NEWCOLOR));
-	SendMessage(m_newColorTip, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&ti));
-	SendMessage(m_newColorTip, TTM_ACTIVATE, TRUE, 0);
-
-	const MARGINS mar = { -1 };
-	DwmExtendFrameIntoClientArea(hDlg, &mar);
-
-	UINT flags = SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER;
-	int x = 0;
-	int y = 0;
-	int width;
-	int height;
-	if (RECT coords; CalculateDialogCoords(hDlg, coords))
-	{
-		x = coords.left;
-		y = coords.top;
-		width = coords.right - coords.left;
-		height = coords.bottom - coords.top;
-	}
-	else
+	RECT coords;
+	UINT flags = SWP_FRAMECHANGED | SWP_NOOWNERZORDER;
+	HRESULT hr = CalculateDialogCoords(hDlg, coords);
+	if (FAILED(hr))
 	{
 		GetClientRect(hDlg, &coords);
-		width = coords.right;
-		height = coords.bottom;
 		flags |= SWP_NOMOVE;
 	}
-	SetWindowPos(hDlg, NULL, x, y, width, height, flags);
 
-	return OnDpiChange(hDlg);
-}
+	const int x = coords.left;
+	const int y = coords.top;
+	const int width = coords.right - coords.left;
+	const int height = coords.bottom - coords.top;
 
-INT_PTR GUI::OnDpiChange(HWND hDlg)
-{
-	HRESULT hr;
+	SetWindowPos(hDlg, HWND_TOPMOST, x, y, width, height, flags);
+
+	SetDialogDpiChangeBehavior(hDlg, DDC_DISABLE_RESIZE, DDC_DISABLE_RESIZE); // Handled by ourself
+
 	for (auto &[context, item_id] : m_contextPairs)
 	{
-		hr = context.Refresh(GetDlgItem(hDlg, item_id));
+		const HWND item_handle = GetDlgItem(hDlg, item_id);
+		hr = context.Refresh(item_handle);
+		if (FAILED(hr))
+		{
+			EndDialog(hDlg, hr);
+			return 0;
+		}
+
+		const PaintContext pc(item_handle);
+		hr = context.Draw(hDlg, m_picker->GetCurrentColour());
 		if (FAILED(hr))
 		{
 			EndDialog(hDlg, hr);
@@ -399,7 +432,56 @@ INT_PTR GUI::OnDpiChange(HWND hDlg)
 		}
 	}
 
-	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_INTERNALPAINT);
+	m_initDone = true;
+
+	return 0;
+}
+
+INT_PTR GUI::OnDpiChange(HWND hDlg)
+{
+	if (m_initDone)
+	{
+		for (auto &[context, item_id] : m_contextPairs)
+		{
+			const HRESULT hr = context.OnDpiChange(GetDlgItem(hDlg, item_id));
+			if (FAILED(hr))
+			{
+				EndDialog(hDlg, hr);
+				return 0;
+			}
+		}
+
+		RECT size = GetDialogUnitsSize();
+		MapDialogRect(hDlg, &size);
+		SetWindowPos(
+			hDlg,
+			nullptr,
+			0,
+			0,
+			size.right - size.left,
+			size.bottom - size.top,
+			SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE
+		);
+	}
+
+	return 0;
+}
+
+INT_PTR GUI::OnSizeChange(HWND hDlg)
+{
+	if (m_initDone)
+	{
+		for (auto &[context, item_id] : m_contextPairs)
+		{
+			const HRESULT hr = context.OnSizeChange(GetDlgItem(hDlg, item_id));
+			if (FAILED(hr))
+			{
+				EndDialog(hDlg, hr);
+				return 0;
+			}
+		}
+	}
+
 	return 0;
 }
 
@@ -407,10 +489,9 @@ INT_PTR GUI::OnPaint(HWND hDlg)
 {
 	const SColourF color = m_picker->GetCurrentColour();
 
-	HRESULT hr;
 	for (auto &[context, item_id] : m_contextPairs)
 	{
-		hr = DrawItem(hDlg, context, item_id, color);
+		const HRESULT hr = DrawItem(hDlg, context, item_id, color);
 		if (FAILED(hr))
 		{
 			EndDialog(hDlg, hr);
@@ -788,6 +869,7 @@ INT_PTR GUI::OnNonClientCalculateSize(HWND hDlg, WPARAM wParam)
 INT_PTR GUI::OnWindowDestroy()
 {
 	DestroyWindow(m_oldColorTip);
+	DestroyWindow(m_newColorTip);
 	return 0;
 }
 
@@ -856,23 +938,24 @@ HRESULT GUI::DrawItem(HWND hDlg, RenderContext &context, unsigned int id, const 
 	const PaintContext pc(item_handle);
 
 	HRESULT hr = context.Draw(hDlg, col);
-	if (hr == D2DERR_RECREATE_TARGET)
+	if (FAILED(hr))
 	{
-		hr = context.Refresh(item_handle);
-		if (FAILED(hr))
+		for (auto &[context2, item_id] : m_contextPairs)
 		{
-			return hr;
-		}
+			const HWND item2_handle = GetDlgItem(hDlg, item_id);
+			hr = context2.Refresh(item2_handle);
+			if (FAILED(hr))
+			{
+				return hr;
+			}
 
-		hr = context.Draw(hDlg, col);
-		if (FAILED(hr))
-		{
-			return hr;
+			const PaintContext pc2(item2_handle);
+			hr = context2.Draw(hDlg, col);
+			if (FAILED(hr))
+			{
+				return hr;
+			}
 		}
-	}
-	else if (FAILED(hr))
-	{
-		return hr;
 	}
 
 	return S_OK;
@@ -897,7 +980,9 @@ GUI::GUI(CColourPicker *picker, ID2D1Factory3 *factory, IDWriteFactory *dwFactor
 	},
 	m_changingText(false),
 	m_changingHexViaSpin(false),
-	m_oldColorTip(nullptr)
+	m_initDone(false),
+	m_oldColorTip(nullptr),
+	m_newColorTip(nullptr)
 { }
 
 void GUI::UpdateValues(HWND hDlg)
