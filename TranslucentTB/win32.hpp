@@ -52,7 +52,7 @@ public:
 	// Opens a color picker.
 	// NOTE: the function returns the thread ID, use it with OpenThread and
 	// WaitForSingleObject if you want to block for input.
-	static DWORD PickColor(uint32_t &color);
+	static DWORD PickColor(COLORREF &color);
 
 	// Cancels all active color pickers.
 	static void ClosePickers();

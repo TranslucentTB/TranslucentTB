@@ -10,6 +10,8 @@
 template<typename T>
 inline winrt::com_ptr<T> create_instance(REFCLSID rclsid, IUnknown *pUnkOuter = nullptr, CLSCTX dwClsContext = CLSCTX_INPROC_SERVER) noexcept
 {
+	static_assert(std::is_base_of_v<IUnknown, T>, "T is not a COM interface.");
+
 	winrt::com_ptr<T> ptr;
 	const HRESULT hr = CoCreateInstance(rclsid, pUnkOuter, dwClsContext, IID_PPV_ARGS(ptr.put()));
 	if (FAILED(hr))

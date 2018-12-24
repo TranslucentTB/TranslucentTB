@@ -54,7 +54,7 @@
     <ClInclude Include="aboutdialog.hpp" />
     <ClInclude Include="windowshook.hpp" />
     <ClInclude Include="messagewindow.hpp" />
-    <ClInclude Include="swcadata.hpp" />
+    <ClInclude Include="swcadef.h" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="taskdialog.hpp" />

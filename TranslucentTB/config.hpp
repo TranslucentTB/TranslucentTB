@@ -5,13 +5,13 @@
 #include <utility>
 #include <vector>
 
-#include "swcadata.hpp"
+#include "swcadef.h"
 
 class Config {
 public:
 	struct TASKBAR_APPEARANCE {
-		swca::ACCENT ACCENT;
-		uint32_t     COLOR;
+		ACCENT_STATE ACCENT;
+		COLORREF     COLOR;
 	};
 
 	// Regular
@@ -61,9 +61,9 @@ private:
 	static std::vector<std::wstring> GetArgs();
 
 	static void UnknownValue(const std::wstring &key, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
-	static bool ParseAccent(const std::wstring &value, swca::ACCENT &accent);
-	static bool ParseColor(std::wstring value, uint32_t &color);
-	static bool ParseOpacity(const std::wstring &value, uint32_t &color);
+	static bool ParseAccent(const std::wstring &value, ACCENT_STATE &accent);
+	static bool ParseColor(std::wstring value, COLORREF &color);
+	static bool ParseOpacity(const std::wstring &value, COLORREF &color);
 	static bool ParseBool(const std::wstring &value, bool &setting);
 	static void ParseKeyValuePair(std::wstring kvp);
 	static bool ParseFlags(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
@@ -71,7 +71,7 @@ private:
 	static bool ParseAppearances(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
 	static void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
 
-	static std::wstring GetAccentText(swca::ACCENT accent);
+	static std::wstring GetAccentText(ACCENT_STATE accent);
 	static std::wstring GetColorText(uint32_t color);
 	static std::wstring GetOpacityText(uint32_t color);
 	static std::wstring GetBoolText(bool value);

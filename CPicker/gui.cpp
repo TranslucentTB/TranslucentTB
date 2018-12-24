@@ -169,7 +169,7 @@ const std::tuple<const unsigned int, const unsigned int, const unsigned int> GUI
 	{ IDC_HEXCOL,     IDC_HEXSLIDER, 0xFFFFFFFF }
 };
 
-std::unordered_map<const uint32_t *, HWND> GUI::m_pickerMap;
+std::unordered_map<const COLORREF *, HWND> GUI::m_pickerMap;
 
 INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -199,6 +199,9 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 	case WM_PAINT:
 		return gui_data->OnPaint(hDlg);
+
+	case WM_ERASEBKGND:
+		return gui_data->OnEraseBackground(hDlg, wParam);
 
 	case WM_LBUTTONDOWN:
 		return gui_data->OnClick(hDlg, lParam);
@@ -500,6 +503,20 @@ INT_PTR GUI::OnPaint(HWND hDlg)
 	}
 
 	return 0;
+}
+
+INT_PTR GUI::OnEraseBackground(HWND hDlg, WPARAM wParam)
+{
+	RECT rect;
+	GetClientRect(hDlg, &rect);
+
+	FillRect(
+		reinterpret_cast<HDC>(wParam),
+		&rect,
+		reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH))
+	);
+
+	return true;
 }
 
 INT_PTR GUI::OnClick(HWND hDlg, LPARAM lParam)
@@ -870,6 +887,7 @@ INT_PTR GUI::OnWindowDestroy()
 {
 	DestroyWindow(m_oldColorTip);
 	DestroyWindow(m_newColorTip);
+
 	return 0;
 }
 
@@ -1064,7 +1082,7 @@ void GUI::ParseHex(HWND hDlg)
 	}
 }
 
-HRESULT GUI::CreateGUI(CColourPicker *picker, uint32_t &value, HWND hParent)
+HRESULT GUI::CreateGUI(CColourPicker *picker, COLORREF &value, HWND hParent)
 {
 	if (m_pickerMap.count(&value) == 0)
 	{

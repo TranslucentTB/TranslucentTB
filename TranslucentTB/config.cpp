@@ -15,24 +15,24 @@
 // Defaults
 
 // Regular
-Config::TASKBAR_APPEARANCE Config::REGULAR_APPEARANCE = { swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT, 0x0 };
+Config::TASKBAR_APPEARANCE Config::REGULAR_APPEARANCE = { ACCENT_ENABLE_TRANSPARENTGRADIENT, 0x0 };
 
 // Maximised
 bool Config::MAXIMISED_ENABLED = true;
-Config::TASKBAR_APPEARANCE Config::MAXIMISED_APPEARANCE = { swca::ACCENT::ACCENT_ENABLE_BLURBEHIND, 0xaa000000 };
+Config::TASKBAR_APPEARANCE Config::MAXIMISED_APPEARANCE = { ACCENT_ENABLE_BLURBEHIND, 0xaa000000 };
 bool Config::MAXIMISED_REGULAR_ON_PEEK = true;
 
 // Start
 bool Config::START_ENABLED = true;
-Config::TASKBAR_APPEARANCE Config::START_APPEARANCE = { swca::ACCENT::ACCENT_NORMAL, 0x0 };
+Config::TASKBAR_APPEARANCE Config::START_APPEARANCE = { ACCENT_NORMAL, 0x0 };
 
 // Cortana
 bool Config::CORTANA_ENABLED = true;
-Config::TASKBAR_APPEARANCE Config::CORTANA_APPEARANCE = { swca::ACCENT::ACCENT_NORMAL, 0x0 };
+Config::TASKBAR_APPEARANCE Config::CORTANA_APPEARANCE = { ACCENT_NORMAL, 0x0 };
 
 // Timeline/Task View
 bool Config::TIMELINE_ENABLED = true;
-Config::TASKBAR_APPEARANCE Config::TIMELINE_APPEARANCE = { swca::ACCENT::ACCENT_NORMAL, 0x0 };
+Config::TASKBAR_APPEARANCE Config::TIMELINE_APPEARANCE = { ACCENT_NORMAL, 0x0 };
 
 // Peek
 enum Config::PEEK Config::PEEK = PEEK::Dynamic;
@@ -295,27 +295,27 @@ void Config::UnknownValue(const std::wstring &key, const std::wstring &value, co
 	logger(L"Unknown value found: " + value + L" (for key: " + key + L')');
 }
 
-bool Config::ParseAccent(const std::wstring &value, swca::ACCENT &accent)
+bool Config::ParseAccent(const std::wstring &value, ACCENT_STATE &accent)
 {
 	if (value == L"blur")
 	{
-		accent = swca::ACCENT::ACCENT_ENABLE_BLURBEHIND;
+		accent = ACCENT_ENABLE_BLURBEHIND;
 	}
 	else if (value == L"opaque")
 	{
-		accent = swca::ACCENT::ACCENT_ENABLE_GRADIENT;
+		accent = ACCENT_ENABLE_GRADIENT;
 	}
 	else if (value == L"transparent" || value == L"translucent" || value == L"clear")
 	{
-		accent = swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT;
+		accent = ACCENT_ENABLE_TRANSPARENTGRADIENT;
 	}
 	else if (value == L"normal")
 	{
-		accent = swca::ACCENT::ACCENT_NORMAL;
+		accent = ACCENT_NORMAL;
 	}
 	else if (value == L"fluent")
 	{
-		accent = swca::ACCENT::ACCENT_ENABLE_FLUENT;
+		accent = ACCENT_ENABLE_ACRYLICBLURBEHIND;
 	}
 	else
 	{
@@ -325,7 +325,7 @@ bool Config::ParseAccent(const std::wstring &value, swca::ACCENT &accent)
 	return true;
 }
 
-bool Config::ParseColor(std::wstring value, uint32_t &color)
+bool Config::ParseColor(std::wstring value, COLORREF &color)
 {
 	Util::TrimInplace(value);
 
@@ -352,7 +352,7 @@ bool Config::ParseColor(std::wstring value, uint32_t &color)
 	return true;
 }
 
-bool Config::ParseOpacity(const std::wstring &value, uint32_t &color)
+bool Config::ParseOpacity(const std::wstring &value, COLORREF &color)
 {
 	try
 	{
@@ -529,19 +529,19 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 	}
 }
 
-std::wstring Config::GetAccentText(swca::ACCENT accent)
+std::wstring Config::GetAccentText(ACCENT_STATE accent)
 {
 	switch (accent)
 	{
-	case swca::ACCENT::ACCENT_ENABLE_GRADIENT:
+	case ACCENT_ENABLE_GRADIENT:
 		return L"opaque";
-	case swca::ACCENT::ACCENT_ENABLE_TRANSPARENTGRADIENT:
+	case ACCENT_ENABLE_TRANSPARENTGRADIENT:
 		return L"clear";
-	case swca::ACCENT::ACCENT_ENABLE_BLURBEHIND:
+	case ACCENT_ENABLE_BLURBEHIND:
 		return L"blur";
-	case swca::ACCENT::ACCENT_NORMAL:
+	case ACCENT_NORMAL:
 		return L"normal";
-	case swca::ACCENT::ACCENT_ENABLE_FLUENT:
+	case ACCENT_ENABLE_ACRYLICBLURBEHIND:
 		return L"fluent";
 	default:
 		throw std::invalid_argument("accent was not one of the known values");

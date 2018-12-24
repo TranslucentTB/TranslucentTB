@@ -31,7 +31,7 @@ private:
 
 	static const Util::string_view_map<const uint32_t> COLOR_MAP;
 	static const std::tuple<const unsigned int, const unsigned int, const unsigned int> SLIDERS[8];
-	static std::unordered_map<const uint32_t *, HWND> m_pickerMap;
+	static std::unordered_map<const COLORREF *, HWND> m_pickerMap;
 
 	static INT_PTR CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK NoOutlineButtonSubclass(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR);
@@ -79,7 +79,7 @@ private:
 		return tip;
 	}
 
-	using initdialog_pair_t = const std::pair<GUI *const, const uint32_t *const>;
+	using initdialog_pair_t = const std::pair<GUI *const, const COLORREF *const>;
 
 	CColourPicker *m_picker;
 
@@ -103,6 +103,7 @@ private:
 	INT_PTR OnDpiChange(HWND hDlg);
 	INT_PTR OnSizeChange(HWND hDlg);
 	INT_PTR OnPaint(HWND hDlg);
+	INT_PTR OnEraseBackground(HWND hDlg, WPARAM wParam);
 	INT_PTR OnClick(HWND hDlg, LPARAM lParam);
 	void OnColorPickerClick(HWND hDlg, RECT position, POINT cursor);
 	void OnColorSliderClick(HWND hDlg, RECT position, POINT cursor);
@@ -130,5 +131,5 @@ private:
 	inline GUI &operator =(const GUI &) = delete;
 
 public:
-	static HRESULT CreateGUI(CColourPicker *picker, uint32_t &value, HWND hParent);
+	static HRESULT CreateGUI(CColourPicker *picker, COLORREF &value, HWND hParent);
 };

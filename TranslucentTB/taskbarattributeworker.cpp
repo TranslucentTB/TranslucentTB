@@ -9,8 +9,8 @@
 #include "ttblog.hpp"
 #include "win32.hpp"
 
-const swca::pSetWindowCompositionAttribute TaskbarAttributeWorker::SetWindowCompositionAttribute =
-	reinterpret_cast<swca::pSetWindowCompositionAttribute>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
+const PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE TaskbarAttributeWorker::SetWindowCompositionAttribute =
+	reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
 
 void TaskbarAttributeWorker::OnAeroPeekEnterExit(DWORD event, ...)
 {
@@ -171,27 +171,27 @@ bool TaskbarAttributeWorker::SetAttribute(Window window, Config::TASKBAR_APPEARA
 {
 	if (SetWindowCompositionAttribute)
 	{
-		if (config.ACCENT == swca::ACCENT::ACCENT_NORMAL)
+		if (config.ACCENT == ACCENT_NORMAL)
 		{
 			window.send_message(WM_THEMECHANGED);
 			return false;
 		}
 
-		swca::ACCENTPOLICY policy = {
+		ACCENT_POLICY policy = {
 			config.ACCENT,
 			2,
 			(config.COLOR & 0xFF00FF00) + ((config.COLOR & 0x00FF0000) >> 16) + ((config.COLOR & 0x000000FF) << 16),
 			0
 		};
 
-		if (policy.nAccentState == swca::ACCENT::ACCENT_ENABLE_FLUENT && policy.nColor >> 24 == 0x00)
+		if (policy.AccentState == ACCENT_ENABLE_ACRYLICBLURBEHIND && policy.GradientColor >> 24 == 0x00)
 		{
 			// Fluent mode doesn't likes a completely 0 opacity
-			policy.nColor = (0x01 << 24) + (policy.nColor & 0x00FFFFFF);
+			policy.GradientColor = (0x01 << 24) + (policy.GradientColor & 0x00FFFFFF);
 		}
 
-		swca::WINCOMPATTRDATA data = {
-			swca::WindowCompositionAttribute::WCA_ACCENT_POLICY,
+		WINDOWCOMPOSITIONATTRIBDATA data = {
+			WCA_ACCENT_POLICY,
 			&policy,
 			sizeof(policy)
 		};
@@ -249,7 +249,7 @@ long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, LPARAM lParam)
 		if (taskbar == window)
 		{
 			const auto config = GetConfigForMonitor(taskbar.monitor(), true);
-			if (config.ACCENT == swca::ACCENT::ACCENT_NORMAL || m_returningToStock)
+			if (config.ACCENT == ACCENT_NORMAL || m_returningToStock)
 			{
 				return 0;
 			}
@@ -274,7 +274,7 @@ void TaskbarAttributeWorker::ReturnToStock()
 	bool_guard guard(m_returningToStock);
 	for (const auto &[_, monInf] : m_Taskbars)
 	{
-		SetAttribute(monInf.TaskbarWindow, { swca::ACCENT::ACCENT_NORMAL });
+		SetAttribute(monInf.TaskbarWindow, { ACCENT_NORMAL });
 	}
 }
 

@@ -87,9 +87,6 @@
     <ClInclude Include="util.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="swcadata.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ttberror.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -169,6 +166,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="autounlock.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="swcadef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

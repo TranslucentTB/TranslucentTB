@@ -118,7 +118,7 @@ const std::wstring &Window::filename() const
 
 bool Window::on_current_desktop() const
 {
-	static auto desktop_manager = create_instance<IVirtualDesktopManager>(CLSID_VirtualDesktopManager);
+	static const auto desktop_manager = create_instance<IVirtualDesktopManager>(CLSID_VirtualDesktopManager);
 
 	BOOL on_current_desktop;
 	if (desktop_manager && ErrorHandle(desktop_manager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop), Error::Level::Log, L"Verifying if a window is on the current virtual desktop failed."))

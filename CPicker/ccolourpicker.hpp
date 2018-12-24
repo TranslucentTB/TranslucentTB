@@ -14,7 +14,7 @@ dllimport
 #endif
 ) CColourPicker {
 public:
-	constexpr CColourPicker(uint32_t &value, HWND hParentWindow = NULL) : Value(value), CurrCol(), OldCol(), hParent(hParentWindow)
+	constexpr CColourPicker(COLORREF &value, HWND hParentWindow = NULL) : Value(value), CurrCol(), OldCol(), hParent(hParentWindow)
 	{
 		CurrCol.r = (Value & 0x00FF0000) >> 16;
 		CurrCol.g = (Value & 0x0000FF00) >> 8;
@@ -75,7 +75,7 @@ private:
 		Value = (CurrCol.a << 24) + (CurrCol.r << 16) + (CurrCol.g << 8) + CurrCol.b;
 	}
 
-	uint32_t &Value;
+	COLORREF &Value;
 	// The current selected colour and the previous selected one
 	SColour CurrCol, OldCol;
 	HWND hParent;

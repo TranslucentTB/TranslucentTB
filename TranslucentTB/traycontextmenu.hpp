@@ -106,7 +106,7 @@ public:
 		});
 	}
 
-	inline void BindColor(unsigned int item, uint32_t &color)
+	inline void BindColor(unsigned int item, COLORREF &color)
 	{
 		RegisterContextMenuCallback(item, std::bind(&win32::PickColor, std::ref(color)));
 	}

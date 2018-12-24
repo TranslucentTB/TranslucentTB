@@ -7,7 +7,7 @@
 #include <utility>
 #include <windef.h>
 
-#include "../TranslucentTB/swcadata.hpp"
+#include "../TranslucentTB/swcadef.h"
 
 #ifdef _EXPLORERDETOUR_DLL
 #define EXPLORERHOOK_EXPORT dllexport
@@ -17,13 +17,13 @@
 
 class Hook {
 private:
-	static swca::pSetWindowCompositionAttribute SetWindowCompositionAttribute;
+	static PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SetWindowCompositionAttribute;
 
 	static std::mutex m_initDoneLock;
 	static bool m_initDone;
 
 	static const HWND m_TTBMsgWnd;
-	static BOOL WINAPI SetWindowCompositionAttributeDetour(HWND hWnd, swca::WINCOMPATTRDATA *data);
+	static BOOL WINAPI SetWindowCompositionAttributeDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data);
 	static LRESULT CALLBACK CallWndProc(int nCode, WPARAM wParam, LPARAM lParam);
 
 	friend BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID);

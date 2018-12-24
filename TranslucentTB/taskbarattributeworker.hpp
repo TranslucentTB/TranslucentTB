@@ -10,11 +10,11 @@
 #include "eventhook.hpp"
 #include "windowshook.hpp"
 #include "messagewindow.hpp"
-#include "swcadata.hpp"
+#include "swcadef.h"
 
 class TaskbarAttributeWorker : public MessageWindow {
 private:
-	static const swca::pSetWindowCompositionAttribute SetWindowCompositionAttribute;
+	static const PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SetWindowCompositionAttribute;
 
 	struct MonitorInfo {
 		Window TaskbarWindow;

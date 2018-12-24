@@ -30,7 +30,7 @@ std::unordered_set<DWORD> win32::m_PickerThreads;
 
 DWORD win32::PickerThreadProc(LPVOID data)
 {
-	const HRESULT hr = CColourPicker(*reinterpret_cast<uint32_t *>(data)).CreateColourPicker();
+	const HRESULT hr = CColourPicker(*reinterpret_cast<COLORREF *>(data)).CreateColourPicker();
 	{
 		std::lock_guard guard(m_PickerThreadsLock);
 		m_PickerThreads.erase(GetCurrentThreadId());
@@ -292,7 +292,7 @@ void win32::OpenLink(const std::wstring &link)
 	}
 }
 
-DWORD win32::PickColor(uint32_t &color)
+DWORD win32::PickColor(COLORREF &color)
 {
 	DWORD threadId;
 	const winrt::handle hThread(CreateThread(nullptr, 0, PickerThreadProc, &color, CREATE_SUSPENDED, &threadId));

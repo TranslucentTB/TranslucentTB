@@ -7,16 +7,16 @@
 #include "../detours/detours.h"
 #include "dlldata.hpp"
 
-swca::pSetWindowCompositionAttribute Hook::SetWindowCompositionAttribute =
-	reinterpret_cast<swca::pSetWindowCompositionAttribute>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
+PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE Hook::SetWindowCompositionAttribute =
+	reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
 std::mutex Hook::m_initDoneLock;
 bool Hook::m_initDone = false;
 const HWND Hook::m_TTBMsgWnd = FindWindow(WORKER_WINDOW, WORKER_WINDOW);
 const unsigned int Hook::RequestAttributeRefresh = RegisterWindowMessage(L"TTBHook_RequestAttributeRefresh");
 
-BOOL Hook::SetWindowCompositionAttributeDetour(HWND hWnd, swca::WINCOMPATTRDATA *data)
+BOOL Hook::SetWindowCompositionAttributeDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data)
 {
-	if (data->nAttribute == swca::WindowCompositionAttribute::WCA_ACCENT_POLICY && SendMessage(m_TTBMsgWnd, RequestAttributeRefresh, 0, reinterpret_cast<LPARAM>(hWnd)))
+	if (data->Attrib == WCA_ACCENT_POLICY && SendMessage(m_TTBMsgWnd, RequestAttributeRefresh, 0, reinterpret_cast<LPARAM>(hWnd)))
 	{
 		return TRUE;
 	}
