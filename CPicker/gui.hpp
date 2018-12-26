@@ -27,7 +27,6 @@ private:
 	static std::unordered_map<const COLORREF *, HWND> m_pickerMap;
 
 	static INT_PTR CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static LRESULT CALLBACK NoOutlineButtonSubclass(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR);
 
 	using initdialog_pair_t = const std::pair<GUI *const, const COLORREF *const>;
 
@@ -52,7 +51,7 @@ private:
 	INT_PTR OnDialogInit(HWND hDlg);
 	INT_PTR OnDpiChange(HWND hDlg);
 	INT_PTR OnSizeChange(HWND hDlg);
-	INT_PTR OnPaint(HWND hDlg);
+	INT_PTR OnDrawItem(HWND hDlg, LPARAM lParam);
 	INT_PTR OnEraseBackground(HWND hDlg, WPARAM wParam);
 	INT_PTR OnClick(HWND hDlg, LPARAM lParam);
 	void OnColorPickerClick(HWND hDlg, RECT position, POINT cursor);
@@ -74,7 +73,6 @@ private:
 	static HWND CreateTip(HWND hDlg, int item);
 	static HRESULT CalculateDialogCoords(HWND hDlg, RECT &coords);
 
-	bool NeedsRedraw(HWND hDlg, unsigned int id, const PAINTSTRUCT &ps);
 	HRESULT Redraw(HWND hDlg, bool skipMain = false, bool skipCircle = false,
 		bool skipSlide = false, bool skipAlpha = false, bool skipNew = false, bool updateValues = true);
 	HRESULT DrawItem(HWND hDlg, RenderContext &context, const SColourF &col);
@@ -87,11 +85,6 @@ private:
 	{
 		return inner.right <= outer.right && inner.left >= outer.left &&
 			outer.top <= inner.top && outer.bottom >= inner.bottom;
-	}
-
-	static constexpr bool RectDoesNotIntersects(const RECT &a, const RECT &b)
-	{
-		return a.left < b.right && a.right > b.left && a.top > b.bottom && a.bottom < b.top;
 	}
 
 	static constexpr uint8_t ExpandOneLetterByte(uint8_t byte)

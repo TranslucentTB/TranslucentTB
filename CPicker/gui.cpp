@@ -5,7 +5,8 @@
 #include <string>
 
 #include "boolguard.hpp"
-#include "paintcontext.hpp"
+#include "subclasses/basetransparentsubclass.h"
+#include "subclasses/nooutlinebuttonsubclass.h"
 
 const Util::string_view_map<const uint32_t> GUI::COLOR_MAP = {
 	{ L"aliceblue",				0xf0f8ff },
@@ -197,8 +198,8 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	case WM_SIZE:
 		return gui_data->OnSizeChange(hDlg);
 
-	case WM_PAINT:
-		return gui_data->OnPaint(hDlg);
+	case WM_DRAWITEM:
+		return gui_data->OnDrawItem(hDlg, lParam);
 
 	case WM_ERASEBKGND:
 		return gui_data->OnEraseBackground(hDlg, wParam);
@@ -226,20 +227,6 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	}
 }
 
-LRESULT CALLBACK GUI::NoOutlineButtonSubclass(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR)
-{
-	switch (uMsg)
-	{
-	case WM_SETFOCUS:
-		return 0;
-
-	case WM_NCDESTROY:
-		RemoveWindowSubclass(hWnd, NoOutlineButtonSubclass, uIdSubclass);
-	}
-
-	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
-}
-
 INT_PTR GUI::OnDialogInit(HWND hDlg)
 {
 	// Set sliders buddies and ranges
@@ -247,6 +234,8 @@ INT_PTR GUI::OnDialogInit(HWND hDlg)
 	{
 		SendDlgItemMessage(hDlg, slider_id, UDM_SETBUDDY, reinterpret_cast<WPARAM>(GetDlgItem(hDlg, buddy_id)), 0);
 		SendDlgItemMessage(hDlg, slider_id, UDM_SETRANGE32, 0, slider_max);
+
+		SetWindowSubclass(GetDlgItem(hDlg, slider_id), BaseTransparentSubclass, slider_id, NULL);
 	}
 
 	InitHexInput(hDlg);
@@ -364,32 +353,49 @@ INT_PTR GUI::OnSizeChange(HWND hDlg)
 	return 0;
 }
 
-INT_PTR GUI::OnPaint(HWND hDlg)
+INT_PTR GUI::OnDrawItem(HWND hDlg, LPARAM lParam)
 {
-	PaintContext pc(hDlg);
-
 	if (m_initDone)
 	{
-		const SColourF color = m_picker->GetCurrentColour();
-
-		for (auto &[context, item_id] : m_contextPairs)
+		RenderContext *context;
+		switch (reinterpret_cast<const DRAWITEMSTRUCT *>(lParam)->CtlID)
 		{
-			if (!NeedsRedraw(hDlg, item_id, *pc))
-			{
-				// No need to redraw an item not in the invalid area
-				continue;
-			}
+		case IDC_COLORCIRCLE:
+			context = &m_circleContext;
+			break;
 
-			const HRESULT hr = DrawItem(hDlg, context, color);
-			if (FAILED(hr))
-			{
-				EndDialog(hDlg, hr);
-				return 0;
-			}
+		case IDC_COLOR:
+			context = &m_pickerContext;
+			break;
+
+		case IDC_COLOR2:
+			context = &m_colorSliderContext;
+			break;
+
+		case IDC_ALPHASLIDE:
+			context = &m_alphaSliderContext;
+			break;
+
+		case IDC_OLDCOLOR:
+			context = &m_oldPreviewContext;
+			break;
+
+		case IDC_NEWCOLOR:
+			context = &m_newPreviewContext;
+			break;
+
+		default: return 0;
+		}
+
+		const HRESULT hr = DrawItem(hDlg, *context, m_picker->GetCurrentColour());
+		if (FAILED(hr))
+		{
+			EndDialog(hDlg, hr);
+			return 0;
 		}
 	}
 
-	return 0;
+	return 1;
 }
 
 INT_PTR GUI::OnEraseBackground(HWND hDlg, WPARAM wParam)
@@ -789,7 +795,20 @@ void GUI::InitHexInput(HWND hDlg)
 
 HWND GUI::CreateTip(HWND hDlg, int item)
 {
-	HWND tip = CreateWindow(TOOLTIPS_CLASS, NULL, TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, DllData::GetInstanceHandle(), NULL);
+	HWND tip = CreateWindowEx(
+		WS_EX_TOPMOST,
+		TOOLTIPS_CLASS,
+		NULL,
+		TTS_ALWAYSTIP,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		hDlg,
+		NULL,
+		DllData::GetInstanceHandle(),
+		NULL
+	);
 
 	TOOLINFO ti = {
 		sizeof(ti),
@@ -901,17 +920,6 @@ HRESULT GUI::CalculateDialogCoords(HWND hDlg, RECT &coords)
 	}
 
 	return S_OK;
-}
-
-bool GUI::NeedsRedraw(HWND hDlg, unsigned int id, const PAINTSTRUCT &ps)
-{
-	RECT dlgRect, itemRect;
-	GetWindowRect(hDlg, &dlgRect);
-	GetWindowRect(GetDlgItem(hDlg, id), &itemRect);
-
-	OffsetRect(&itemRect, -dlgRect.left, -dlgRect.top);
-
-	return !RectDoesNotIntersects(ps.rcPaint, itemRect);
 }
 
 HRESULT GUI::Redraw(HWND hDlg, bool skipMain, bool skipCircle, bool skipSlide, bool skipAlpha, bool skipNew, bool updateValues)

@@ -3,6 +3,7 @@
 #endif
 
 #include "resource.h"
+#include <ddeml.h>
 #include <winres.h>
 
 #pragma code_page(65001)
@@ -155,6 +156,6 @@ BEGIN
     END
     BLOCK "VarFileInfo"
     BEGIN
-        VALUE "Translation", 0x409, 1200
+        VALUE "Translation", 0x0409, CP_WINUNICODE
     END
 END

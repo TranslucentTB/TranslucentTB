@@ -11,7 +11,7 @@
       <PreprocessorDefinitions>_CPICKER_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;d2d1.lib;d3d11.lib;dcomp.lib;dwmapi.lib;dwrite.lib;dxgi.lib;dxguid.lib;gdi32.lib;ole32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;d2d1.lib;d3d11.lib;dcomp.lib;dwmapi.lib;dwrite.lib;dxgi.lib;dxguid.lib;gdi32.lib;ole32.lib;user32.lib;uxtheme.lib</AdditionalDependencies>
       <AdditionalManifestDependencies>"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'"</AdditionalManifestDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -26,6 +26,8 @@
     <ClCompile Include="mainpickercontext.cpp" />
     <ClCompile Include="rendercontext.cpp" />
     <ClCompile Include="slidercontext.cpp" />
+    <ClCompile Include="subclasses\basetransparentsubclass.cpp" />
+    <ClCompile Include="subclasses\nooutlinebuttonsubclass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="alphaslidercontext.hpp" />
@@ -40,11 +42,12 @@
     <ClInclude Include="huegradient.hpp" />
     <ClInclude Include="ccolourpicker.hpp" />
     <ClInclude Include="mainpickercontext.hpp" />
-    <ClInclude Include="paintcontext.hpp" />
     <ClInclude Include="rendercontext.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="scolour.hpp" />
     <ClInclude Include="slidercontext.hpp" />
+    <ClInclude Include="subclasses\basetransparentsubclass.h" />
+    <ClInclude Include="subclasses\nooutlinebuttonsubclass.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CPicker.rc2" />

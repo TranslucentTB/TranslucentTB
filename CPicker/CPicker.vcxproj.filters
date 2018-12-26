@@ -45,6 +45,12 @@
     <ClCompile Include="pickercirclecontext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="subclasses\basetransparentsubclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="subclasses\nooutlinebuttonsubclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -80,9 +86,6 @@
     <ClInclude Include="gui.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="paintcontext.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="boolguard.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -96,6 +99,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pickercirclecontext.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="subclasses\nooutlinebuttonsubclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="subclasses\basetransparentsubclass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
