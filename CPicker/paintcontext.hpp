@@ -7,11 +7,22 @@ class PaintContext {
 private:
 	HWND m_handle;
 	PAINTSTRUCT m_ps;
+	HDC m_hdc;
 
 public:
 	inline PaintContext(HWND hWnd) : m_handle(hWnd)
 	{
-		BeginPaint(m_handle, &m_ps);
+		m_hdc = BeginPaint(m_handle, &m_ps);
+	}
+
+	inline PAINTSTRUCT &operator *()
+	{
+		return m_ps;
+	}
+
+	inline PAINTSTRUCT *operator ->()
+	{
+		return &m_ps;
 	}
 
 	inline ~PaintContext()

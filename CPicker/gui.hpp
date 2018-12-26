@@ -22,62 +22,12 @@
 
 class GUI {
 private:
-	struct DLGTEMPLATEEX {
-		WORD dlgVer, signature;
-		DWORD helpID, exStyle, style;
-		WORD cDlgItems;
-		short x, y, cx, cy;
-	};
-
 	static const Util::string_view_map<const uint32_t> COLOR_MAP;
 	static const std::tuple<const unsigned int, const unsigned int, const unsigned int> SLIDERS[8];
 	static std::unordered_map<const COLORREF *, HWND> m_pickerMap;
 
 	static INT_PTR CALLBACK ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK NoOutlineButtonSubclass(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR);
-
-	static const RECT &GetDialogUnitsSize();
-
-	static bool RectFitsInRect(const RECT &outer, const RECT &inner);
-
-	static HRESULT CalculateDialogCoords(HWND hDlg, RECT &coords);
-
-	inline static void FailedParse(HWND hDlg)
-	{
-		EDITBALLOONTIP ebt = {
-			sizeof(ebt),
-			L"Error when parsing color code!",
-			L"Make sure the code is valid hexadecimal. (0x and # prefixes accepted)\n"
-			L"Code can be 3 (RGB), 4 (RGBA), 6 (RRGGBB) or 8 (RRGGBBAA) characters.\n\n"
-			L"HTML color names are also understood. (for example: yellow, white, blue)",
-			TTI_WARNING_LARGE
-		};
-
-		Edit_ShowBalloonTip(GetDlgItem(hDlg, IDC_HEXCOL), &ebt);
-	}
-
-	static constexpr uint8_t ExpandOneLetterByte(uint8_t byte)
-	{
-		const uint8_t firstDigit = byte & 0xF;
-		return (firstDigit << 4) + firstDigit;
-	}
-
-	inline static HWND CreateTip(HWND hDlg, int item)
-	{
-		HWND tip = CreateWindow(TOOLTIPS_CLASS, NULL, TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, DllData::GetInstanceHandle(), NULL);
-
-		TOOLINFO ti = {
-			sizeof(ti),
-			TTF_IDISHWND | TTF_SUBCLASS,
-			hDlg,
-			reinterpret_cast<UINT_PTR>(GetDlgItem(hDlg, item))
-		};
-		ti.lpszText = LPSTR_TEXTCALLBACK;
-		SendMessage(tip, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&ti));
-		SendMessage(tip, TTM_ACTIVATE, TRUE, 0);
-
-		return tip;
-	}
 
 	using initdialog_pair_t = const std::pair<GUI *const, const COLORREF *const>;
 
@@ -117,15 +67,38 @@ private:
 	INT_PTR OnNotify(HWND hDlg, LPARAM lParam);
 	INT_PTR OnUpDownControlChange(NMHDR notify);
 	INT_PTR OnEditControlRequestWatermarkInfo(HWND hDlg, NMHDR &notify);
-	INT_PTR OnNonClientCalculateSize(HWND hDlg, WPARAM wParam);
+	INT_PTR OnNonClientCalculateSize(HWND hDlg);
 	INT_PTR OnWindowDestroy();
 
+	static void InitHexInput(HWND hDlg);
+	static HWND CreateTip(HWND hDlg, int item);
+	static HRESULT CalculateDialogCoords(HWND hDlg, RECT &coords);
+
+	bool NeedsRedraw(HWND hDlg, unsigned int id, const PAINTSTRUCT &ps);
 	HRESULT Redraw(HWND hDlg, bool skipMain = false, bool skipCircle = false,
 		bool skipSlide = false, bool skipAlpha = false, bool skipNew = false, bool updateValues = true);
-	HRESULT DrawItem(HWND hDlg, RenderContext &context, unsigned int id, const SColourF &col);
+	HRESULT DrawItem(HWND hDlg, RenderContext &context, const SColourF &col);
 
 	void UpdateValues(HWND hDlg);
 	void ParseHex(HWND hDlg);
+	static void FailedParse(HWND hDlg);
+
+	static constexpr bool RectFitsInRect(const RECT &outer, const RECT &inner)
+	{
+		return inner.right <= outer.right && inner.left >= outer.left &&
+			outer.top <= inner.top && outer.bottom >= inner.bottom;
+	}
+
+	static constexpr bool RectDoesNotIntersects(const RECT &a, const RECT &b)
+	{
+		return a.left < b.right && a.right > b.left && a.top > b.bottom && a.bottom < b.top;
+	}
+
+	static constexpr uint8_t ExpandOneLetterByte(uint8_t byte)
+	{
+		const uint8_t firstDigit = byte & 0xF;
+		return (firstDigit << 4) + firstDigit;
+	}
 
 	inline GUI(const GUI &) = delete;
 	inline GUI &operator =(const GUI &) = delete;

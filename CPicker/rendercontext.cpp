@@ -250,7 +250,13 @@ HRESULT RenderContext::Refresh(HWND hwnd)
 		return hr;
 	}
 
-	return m_dc->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), m_brush.put());
+	hr = m_dc->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), m_brush.put());
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	return ResizeResources();
 }
 
 HRESULT RenderContext::OnDpiChange(HWND hwnd)

@@ -47,7 +47,7 @@ private:
 		std::wostringstream str;
 
 		str << L"Build configuration: "
-#ifdef NDEBUG
+#if defined(NDEBUG)
 			L"Release"
 #elif defined(_DEBUG)
 			L"Debug"

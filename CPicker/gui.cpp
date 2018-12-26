@@ -216,7 +216,7 @@ INT_PTR GUI::ColourPickerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		return gui_data->OnNotify(hDlg, lParam);
 
 	case WM_NCCALCSIZE:
-		return gui_data->OnNonClientCalculateSize(hDlg, wParam);
+		return gui_data->OnNonClientCalculateSize(hDlg);
 
 	case WM_DESTROY:
 		return gui_data->OnWindowDestroy();
@@ -240,164 +240,34 @@ LRESULT CALLBACK GUI::NoOutlineButtonSubclass(HWND hWnd, UINT uMsg, WPARAM wPara
 	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
-const RECT &GUI::GetDialogUnitsSize()
-{
-	static RECT size{};
-
-	if (size.right == 0 || size.bottom == 0)
-	{
-		HRSRC dialog = FindResource(DllData::GetInstanceHandle(), MAKEINTRESOURCE(IDD_COLORPICKER), RT_DIALOG);
-		HGLOBAL res = LoadResource(DllData::GetInstanceHandle(), dialog);
-		auto dialogTemplate = reinterpret_cast<const DLGTEMPLATEEX *>(LockResource(res));
-
-		size = {
-			dialogTemplate->x,
-			dialogTemplate->y,
-			dialogTemplate->x + dialogTemplate->cx,
-			dialogTemplate->y + dialogTemplate->cy
-		};
-
-		UnlockResource(dialogTemplate);
-		FreeResource(res);
-	}
-
-	return size;
-}
-
-bool GUI::RectFitsInRect(const RECT &outer, const RECT &inner)
-{
-	return inner.right <= outer.right && inner.left >= outer.left &&
-		outer.top <= inner.top && outer.bottom >= inner.bottom;
-}
-
-HRESULT GUI::CalculateDialogCoords(HWND hDlg, RECT &coords)
-{
-	POINT point;
-	if (!GetCursorPos(&point))
-	{
-		return HRESULT_FROM_WIN32(GetLastError());
-	}
-
-	HMONITOR mon = MonitorFromPoint(point, MONITOR_DEFAULTTONEAREST);
-	MONITORINFO mi = { sizeof(mi) };
-	if (!GetMonitorInfo(mon, &mi))
-	{
-		return E_FAIL;
-	}
-
-	// Move to the appropriate monitor to consider DPI.
-	// Window still invisible at this point.
-	BOOL ret = SetWindowPos(
-		hDlg,
-		nullptr,
-		mi.rcWork.right,
-		mi.rcWork.top,
-		0,
-		0,
-		SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOSIZE
-	);
-
-	if (!ret)
-	{
-		return HRESULT_FROM_WIN32(GetLastError());
-	}
-
-	RECT rect;
-	if (!GetClientRect(hDlg, &rect))
-	{
-		return HRESULT_FROM_WIN32(GetLastError());
-	}
-
-	const long width = rect.right - rect.left;
-	const long height = rect.bottom - rect.top;
-
-	// First try centering it on the mouse
-	coords.left = point.x - (width / 2);
-	coords.right = coords.left + width;
-
-	coords.top = point.y - (height / 2);
-	coords.bottom = coords.top + height;
-
-	if (RectFitsInRect(mi.rcWork, coords))
-	{
-		return S_OK; // It fits!
-	}
-
-	const bool rightDoesntFits = coords.right > mi.rcWork.right;
-	const bool leftDoesntFits = coords.left < mi.rcWork.left;
-	const bool bottomDoesntFits = coords.bottom > mi.rcWork.bottom;
-	const bool topDoesntFits = coords.top < mi.rcWork.top;
-
-	if ((rightDoesntFits && leftDoesntFits) || (bottomDoesntFits && topDoesntFits))
-	{
-		// Doesn't fits in the monitor work area (lol wat)
-		return E_BOUNDS;
-	}
-
-	// Offset the rect so that it is completely in the work area
-	int x_offset = 0;
-	if (rightDoesntFits)
-	{
-		x_offset = mi.rcWork.right - coords.right; // Negative offset
-	}
-	else if (leftDoesntFits)
-	{
-		x_offset = mi.rcWork.left - coords.left;
-	}
-
-	int y_offset = 0;
-	if (bottomDoesntFits)
-	{
-		y_offset = mi.rcWork.bottom - coords.bottom; // Negative offset
-	}
-	else if (topDoesntFits)
-	{
-		y_offset = mi.rcWork.top - coords.top;
-	}
-
-	if (!OffsetRect(&coords, x_offset, y_offset))
-	{
-		return E_FAIL;
-	}
-
-	// Shouldn't return false at this point, but still check
-	if (!RectFitsInRect(mi.rcWork, coords))
-	{
-		return E_BOUNDS;
-	}
-
-	return S_OK;
-}
-
 INT_PTR GUI::OnDialogInit(HWND hDlg)
 {
+	// Set sliders buddies and ranges
 	for (const auto &[buddy_id, slider_id, slider_max] : SLIDERS)
 	{
 		SendDlgItemMessage(hDlg, slider_id, UDM_SETBUDDY, reinterpret_cast<WPARAM>(GetDlgItem(hDlg, buddy_id)), 0);
 		SendDlgItemMessage(hDlg, slider_id, UDM_SETRANGE32, 0, slider_max);
 	}
-	SendDlgItemMessage(hDlg, IDC_HEXSLIDER, UDM_SETBASE, 16, 0);
 
-	static const auto longestName = std::max_element(COLOR_MAP.begin(), COLOR_MAP.end(), [](auto &&a, auto &&b)
-	{
-		return a.first.length() < b.first.length();
-	})->first.length();
-	SendDlgItemMessage(hDlg, IDC_HEXCOL, EM_SETLIMITTEXT, longestName, 0);
+	InitHexInput(hDlg);
 
-	Edit_SetCueBannerTextFocused(GetDlgItem(hDlg, IDC_HEXCOL), L"CSS color name or hex", TRUE);
-
+	// Set subclasses
 	for (const int &button : { IDC_R, IDC_G, IDC_B, IDC_H, IDC_S, IDC_V })
 	{
 		SetWindowSubclass(GetDlgItem(hDlg, button), NoOutlineButtonSubclass, button, NULL);
 	}
 
+	// Set edit control text
 	UpdateValues(hDlg);
 
+	// Check red by default
 	SendDlgItemMessage(hDlg, IDC_R, BM_SETCHECK, BST_CHECKED, 0);
 
+	// Add tips for old & new color
 	m_oldColorTip = CreateTip(hDlg, IDC_OLDCOLOR);
 	m_newColorTip = CreateTip(hDlg, IDC_NEWCOLOR);
 
+	// Calculate window position
 	RECT coords;
 	UINT flags = SWP_FRAMECHANGED | SWP_NOOWNERZORDER;
 	HRESULT hr = CalculateDialogCoords(hDlg, coords);
@@ -412,10 +282,17 @@ INT_PTR GUI::OnDialogInit(HWND hDlg)
 	const int width = coords.right - coords.left;
 	const int height = coords.bottom - coords.top;
 
+	// Extend DWM frame by 1 pixel for shadows
+	//const MARGINS mar = { 1 };
+	//DwmExtendFrameIntoClientArea(hDlg, &mar);
+
 	SetWindowPos(hDlg, HWND_TOPMOST, x, y, width, height, flags);
 
-	SetDialogDpiChangeBehavior(hDlg, DDC_DISABLE_RESIZE, DDC_DISABLE_RESIZE); // Handled by ourself
+	// Disable auto resize because it is wrong with a custom non-client area, handle it ourself in WM_DPICHANGE
+	SetDialogDpiChangeBehavior(hDlg, DDC_DISABLE_RESIZE, DDC_DISABLE_RESIZE);
 
+	// Initialize contexts and first draw
+	const SColour &col = m_picker->GetCurrentColour();
 	for (auto &[context, item_id] : m_contextPairs)
 	{
 		const HWND item_handle = GetDlgItem(hDlg, item_id);
@@ -426,8 +303,7 @@ INT_PTR GUI::OnDialogInit(HWND hDlg)
 			return 0;
 		}
 
-		const PaintContext pc(item_handle);
-		hr = context.Draw(hDlg, m_picker->GetCurrentColour());
+		hr = context.Draw(hDlg, col);
 		if (FAILED(hr))
 		{
 			EndDialog(hDlg, hr);
@@ -454,7 +330,7 @@ INT_PTR GUI::OnDpiChange(HWND hDlg)
 			}
 		}
 
-		RECT size = GetDialogUnitsSize();
+		RECT size = DllData::GetDialogSize();
 		MapDialogRect(hDlg, &size);
 		SetWindowPos(
 			hDlg,
@@ -490,15 +366,26 @@ INT_PTR GUI::OnSizeChange(HWND hDlg)
 
 INT_PTR GUI::OnPaint(HWND hDlg)
 {
-	const SColourF color = m_picker->GetCurrentColour();
+	PaintContext pc(hDlg);
 
-	for (auto &[context, item_id] : m_contextPairs)
+	if (m_initDone)
 	{
-		const HRESULT hr = DrawItem(hDlg, context, item_id, color);
-		if (FAILED(hr))
+		const SColourF color = m_picker->GetCurrentColour();
+
+		for (auto &[context, item_id] : m_contextPairs)
 		{
-			EndDialog(hDlg, hr);
-			return 0;
+			if (!NeedsRedraw(hDlg, item_id, *pc))
+			{
+				// No need to redraw an item not in the invalid area
+				continue;
+			}
+
+			const HRESULT hr = DrawItem(hDlg, context, color);
+			if (FAILED(hr))
+			{
+				EndDialog(hDlg, hr);
+				return 0;
+			}
 		}
 	}
 
@@ -870,17 +757,10 @@ INT_PTR GUI::OnEditControlRequestWatermarkInfo(HWND hDlg, NMHDR &notify)
 	return 0;
 }
 
-INT_PTR GUI::OnNonClientCalculateSize(HWND hDlg, WPARAM wParam)
+INT_PTR GUI::OnNonClientCalculateSize(HWND hDlg)
 {
-	if (wParam)
-	{
-		SetWindowLongPtr(hDlg, DWLP_MSGRESULT, 0);
-		return 1;
-	}
-	else
-	{
-		return 0;
-	}
+	SetWindowLongPtr(hDlg, DWLP_MSGRESULT, 0);
+	return 1;
 }
 
 INT_PTR GUI::OnWindowDestroy()
@@ -889,6 +769,149 @@ INT_PTR GUI::OnWindowDestroy()
 	DestroyWindow(m_newColorTip);
 
 	return 0;
+}
+
+void GUI::InitHexInput(HWND hDlg)
+{
+	// Slider in base 16
+	SendDlgItemMessage(hDlg, IDC_HEXSLIDER, UDM_SETBASE, 16, 0);
+
+	// Set maximum input length
+	static const auto longestName = std::max_element(COLOR_MAP.begin(), COLOR_MAP.end(), [](auto &&a, auto &&b)
+	{
+		return a.first.length() < b.first.length();
+	})->first.length();
+	SendDlgItemMessage(hDlg, IDC_HEXCOL, EM_SETLIMITTEXT, longestName, 0);
+
+	// Watermark
+	Edit_SetCueBannerTextFocused(GetDlgItem(hDlg, IDC_HEXCOL), L"CSS color name or hex", TRUE);
+}
+
+HWND GUI::CreateTip(HWND hDlg, int item)
+{
+	HWND tip = CreateWindow(TOOLTIPS_CLASS, NULL, TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, DllData::GetInstanceHandle(), NULL);
+
+	TOOLINFO ti = {
+		sizeof(ti),
+		TTF_IDISHWND | TTF_SUBCLASS,
+		hDlg,
+		reinterpret_cast<UINT_PTR>(GetDlgItem(hDlg, item))
+	};
+	ti.lpszText = LPSTR_TEXTCALLBACK;
+	SendMessage(tip, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&ti));
+	SendMessage(tip, TTM_ACTIVATE, TRUE, 0);
+
+	return tip;
+}
+
+HRESULT GUI::CalculateDialogCoords(HWND hDlg, RECT &coords)
+{
+	POINT point;
+	if (!GetCursorPos(&point))
+	{
+		return HRESULT_FROM_WIN32(GetLastError());
+	}
+
+	HMONITOR mon = MonitorFromPoint(point, MONITOR_DEFAULTTONEAREST);
+	MONITORINFO mi = { sizeof(mi) };
+	if (!GetMonitorInfo(mon, &mi))
+	{
+		return E_FAIL;
+	}
+
+	// Move to the appropriate monitor to consider DPI.
+	// Window still invisible at this point.
+	BOOL ret = SetWindowPos(
+		hDlg,
+		nullptr,
+		mi.rcWork.right,
+		mi.rcWork.top,
+		0,
+		0,
+		SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOSIZE
+	);
+
+	if (!ret)
+	{
+		return HRESULT_FROM_WIN32(GetLastError());
+	}
+
+	RECT rect;
+	if (!GetClientRect(hDlg, &rect))
+	{
+		return HRESULT_FROM_WIN32(GetLastError());
+	}
+
+	const long width = rect.right - rect.left;
+	const long height = rect.bottom - rect.top;
+
+	// First try centering it on the mouse
+	coords.left = point.x - (width / 2);
+	coords.right = coords.left + width;
+
+	coords.top = point.y - (height / 2);
+	coords.bottom = coords.top + height;
+
+	if (RectFitsInRect(mi.rcWork, coords))
+	{
+		return S_OK; // It fits!
+	}
+
+	const bool rightDoesntFits = coords.right > mi.rcWork.right;
+	const bool leftDoesntFits = coords.left < mi.rcWork.left;
+	const bool bottomDoesntFits = coords.bottom > mi.rcWork.bottom;
+	const bool topDoesntFits = coords.top < mi.rcWork.top;
+
+	if ((rightDoesntFits && leftDoesntFits) || (bottomDoesntFits && topDoesntFits))
+	{
+		// Doesn't fits in the monitor work area (lol wat)
+		return E_BOUNDS;
+	}
+
+	// Offset the rect so that it is completely in the work area
+	int x_offset = 0;
+	if (rightDoesntFits)
+	{
+		x_offset = mi.rcWork.right - coords.right; // Negative offset
+	}
+	else if (leftDoesntFits)
+	{
+		x_offset = mi.rcWork.left - coords.left;
+	}
+
+	int y_offset = 0;
+	if (bottomDoesntFits)
+	{
+		y_offset = mi.rcWork.bottom - coords.bottom; // Negative offset
+	}
+	else if (topDoesntFits)
+	{
+		y_offset = mi.rcWork.top - coords.top;
+	}
+
+	if (!OffsetRect(&coords, x_offset, y_offset))
+	{
+		return E_FAIL;
+	}
+
+	// Shouldn't return false at this point, but still check
+	if (!RectFitsInRect(mi.rcWork, coords))
+	{
+		return E_BOUNDS;
+	}
+
+	return S_OK;
+}
+
+bool GUI::NeedsRedraw(HWND hDlg, unsigned int id, const PAINTSTRUCT &ps)
+{
+	RECT dlgRect, itemRect;
+	GetWindowRect(hDlg, &dlgRect);
+	GetWindowRect(GetDlgItem(hDlg, id), &itemRect);
+
+	OffsetRect(&itemRect, -dlgRect.left, -dlgRect.top);
+
+	return !RectDoesNotIntersects(ps.rcPaint, itemRect);
 }
 
 HRESULT GUI::Redraw(HWND hDlg, bool skipMain, bool skipCircle, bool skipSlide, bool skipAlpha, bool skipNew, bool updateValues)
@@ -904,7 +927,7 @@ HRESULT GUI::Redraw(HWND hDlg, bool skipMain, bool skipCircle, bool skipSlide, b
 
 	if (!skipMain)
 	{
-		hr = DrawItem(hDlg, m_pickerContext, IDC_COLOR, col);
+		hr = DrawItem(hDlg, m_pickerContext, col);
 		if (FAILED(hr))
 		{
 			return hr;
@@ -913,7 +936,7 @@ HRESULT GUI::Redraw(HWND hDlg, bool skipMain, bool skipCircle, bool skipSlide, b
 
 	if (!skipCircle)
 	{
-		hr = DrawItem(hDlg, m_circleContext, IDC_COLORCIRCLE, col);
+		hr = DrawItem(hDlg, m_circleContext, col);
 		if (FAILED(hr))
 		{
 			return hr;
@@ -922,7 +945,7 @@ HRESULT GUI::Redraw(HWND hDlg, bool skipMain, bool skipCircle, bool skipSlide, b
 
 	if (!skipSlide)
 	{
-		hr = DrawItem(hDlg, m_colorSliderContext, IDC_COLOR2, col);
+		hr = DrawItem(hDlg, m_colorSliderContext, col);
 		if (FAILED(hr))
 		{
 			return hr;
@@ -931,7 +954,7 @@ HRESULT GUI::Redraw(HWND hDlg, bool skipMain, bool skipCircle, bool skipSlide, b
 
 	if (!skipAlpha)
 	{
-		hr = DrawItem(hDlg, m_alphaSliderContext, IDC_ALPHASLIDE, col);
+		hr = DrawItem(hDlg, m_alphaSliderContext, col);
 		if (FAILED(hr))
 		{
 			return hr;
@@ -940,7 +963,7 @@ HRESULT GUI::Redraw(HWND hDlg, bool skipMain, bool skipCircle, bool skipSlide, b
 
 	if (!skipNew)
 	{
-		hr = DrawItem(hDlg, m_newPreviewContext, IDC_NEWCOLOR, col);
+		hr = DrawItem(hDlg, m_newPreviewContext, col);
 		if (FAILED(hr))
 		{
 			return hr;
@@ -950,24 +973,20 @@ HRESULT GUI::Redraw(HWND hDlg, bool skipMain, bool skipCircle, bool skipSlide, b
 	return S_OK;
 }
 
-HRESULT GUI::DrawItem(HWND hDlg, RenderContext &context, unsigned int id, const SColourF &col)
+HRESULT GUI::DrawItem(HWND hDlg, RenderContext &context, const SColourF &col)
 {
-	const HWND item_handle = GetDlgItem(hDlg, id);
-	const PaintContext pc(item_handle);
-
 	HRESULT hr = context.Draw(hDlg, col);
 	if (FAILED(hr))
 	{
 		for (auto &[context2, item_id] : m_contextPairs)
 		{
-			const HWND item2_handle = GetDlgItem(hDlg, item_id);
-			hr = context2.Refresh(item2_handle);
+			const HWND item_handle = GetDlgItem(hDlg, item_id);
+			hr = context2.Refresh(item_handle);
 			if (FAILED(hr))
 			{
 				return hr;
 			}
 
-			const PaintContext pc2(item2_handle);
 			hr = context2.Draw(hDlg, col);
 			if (FAILED(hr))
 			{
@@ -1080,6 +1099,20 @@ void GUI::ParseHex(HWND hDlg)
 			FailedParse(hDlg);
 		}
 	}
+}
+
+void GUI::FailedParse(HWND hDlg)
+{
+	EDITBALLOONTIP ebt = {
+		sizeof(ebt),
+		L"Error when parsing color code!",
+		L"Make sure the code is valid hexadecimal. (0x and # prefixes accepted)\n"
+		L"Code can be 3 (RGB), 4 (RGBA), 6 (RRGGBB) or 8 (RRGGBBAA) characters.\n\n"
+		L"HTML color names are also understood. (for example: yellow, white, blue)",
+		TTI_WARNING_LARGE
+	};
+
+	Edit_ShowBalloonTip(GetDlgItem(hDlg, IDC_HEXCOL), &ebt);
 }
 
 HRESULT GUI::CreateGUI(CColourPicker *picker, COLORREF &value, HWND hParent)
