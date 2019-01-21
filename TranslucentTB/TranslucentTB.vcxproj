@@ -42,6 +42,7 @@
     <ClInclude Include="autostart.hpp" />
     <ClInclude Include="autounlock.hpp" />
     <ClInclude Include="blacklist.hpp" />
+    <ClInclude Include="boolguard.hpp" />
     <ClInclude Include="changenotificationhandle.hpp" />
     <ClInclude Include="clipboardcontext.hpp" />
     <ClInclude Include="common.hpp" />

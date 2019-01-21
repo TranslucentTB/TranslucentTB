@@ -161,19 +161,6 @@ public:
 		}
 	}
 
-	// Changes a value. Use with std::bind and context menu callbacks (BindEnum preferred).
-	template<typename T>
-	inline static void UpdateValue(T &toupdate, const T &newvalue)
-	{
-		toupdate = newvalue;
-	}
-
-	// Inverts a boolean. Use with std::bind and context menu callbacks (BindBool preferred).
-	inline static void InvertBool(bool &value)
-	{
-		value = !value;
-	}
-
 private:
 	// Correctly seeds and creates a Mersenne Twister engine.
 	template<class T>
@@ -187,7 +174,7 @@ private:
 		return T(seed);
 	}
 
-	// Gets a thread local and static instance of a Mersenne Twister engine. Can't be put directly in
+	// Gets a static instance of a Mersenne Twister engine. Can't be put directly in
 	// GetRandomNumber because every different template instantion will get a different static variable.
 	template<class T>
 	inline static T &GetRandomEngine()
@@ -220,12 +207,12 @@ public:
 		using namespace std::chrono;
 		return duration_cast<T>(system_clock::now().time_since_epoch());
 	}
-
-	// Gets the time elapsed since the Unix epoch for use with C APIs
-	template<>
-	inline std::time_t GetTime<std::time_t>()
-	{
-		using namespace std::chrono;
-		return system_clock::to_time_t(system_clock::now());
-	}
 };
+
+// Gets the time elapsed since the Unix epoch for use with C APIs
+template<>
+inline std::time_t Util::GetTime<std::time_t>()
+{
+	using std::chrono::system_clock;
+	return system_clock::to_time_t(system_clock::now());
+}

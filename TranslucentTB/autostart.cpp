@@ -2,15 +2,17 @@
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 
-using namespace winrt::Windows::Foundation;
+using namespace winrt;
+using namespace Windows::ApplicationModel;
+using namespace Windows::Foundation;
 
-IAsyncOperation<winrt::Windows::ApplicationModel::StartupTask> Autostart::GetApplicationStartupTask()
+IAsyncOperation<StartupTask> Autostart::GetApplicationStartupTask()
 {
-	static const auto task = (co_await winrt::Windows::ApplicationModel::StartupTask::GetForCurrentPackageAsync()).GetAt(0);
+	static const auto task = (co_await StartupTask::GetForCurrentPackageAsync()).GetAt(0);
 	co_return task;
 }
 
-IAsyncOperation<Autostart::StartupState> Autostart::GetStartupState()
+IAsyncOperation<StartupTaskState> Autostart::GetStartupState()
 {
 	try
 	{
@@ -19,16 +21,16 @@ IAsyncOperation<Autostart::StartupState> Autostart::GetStartupState()
 	catch (...)
 	{
 		ErrorHandle(winrt::to_hresult(), Error::Level::Log, L"Getting startup task state failed.");
-		co_return StartupState::Disabled;
+		co_return StartupTaskState::Disabled;
 	}
 }
 
-IAsyncAction Autostart::SetStartupState(StartupState state)
+IAsyncAction Autostart::SetStartupState(StartupTaskState state)
 {
 	try
 	{
 		const auto task = co_await GetApplicationStartupTask();
-		if (state == StartupState::Enabled)
+		if (state == StartupTaskState::Enabled)
 		{
 			const auto new_state = co_await task.RequestEnableAsync();
 			if (new_state != state)
@@ -36,7 +38,7 @@ IAsyncAction Autostart::SetStartupState(StartupState state)
 				Log::OutputMessage(L"Failed to change startup state.");
 			}
 		}
-		else if (state == StartupState::Disabled)
+		else if (state == StartupTaskState::Disabled)
 		{
 			task.Disable();
 		}

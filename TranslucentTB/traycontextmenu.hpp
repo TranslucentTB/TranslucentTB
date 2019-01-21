@@ -15,6 +15,17 @@ protected:
 	using callback_t = std::function<void()>;
 
 private:
+	template<typename T>
+	inline static void UpdateValue(T &toupdate, const T &newvalue)
+	{
+		toupdate = newvalue;
+	}
+
+	inline static void InvertBool(bool &value)
+	{
+		value = !value;
+	}
+
 	HMENU m_Menu;
 	std::unordered_map<unsigned int, std::forward_list<std::pair<unsigned short, callback_t>>> m_MenuCallbackMap;
 	long TrayCallback(WPARAM, LPARAM);
@@ -81,7 +92,7 @@ public:
 	{
 		if (effect == Toggle)
 		{
-			RegisterContextMenuCallback(item, std::bind(&Util::InvertBool, std::ref(value)));
+			RegisterContextMenuCallback(item, std::bind(&InvertBool, std::ref(value)));
 		}
 
 		m_RefreshFunctions.push_back(std::bind(&TrayContextMenu::RefreshBool, item, m_Menu, std::ref(value), effect));
@@ -93,7 +104,7 @@ public:
 		static_assert(std::is_enum_v<T>, "T is not an enum.");
 		for (const auto &[item_value, item] : map)
 		{
-			RegisterContextMenuCallback(item, std::bind(&Util::UpdateValue<T>, std::ref(value), std::ref(item_value)));
+			RegisterContextMenuCallback(item, std::bind(&UpdateValue<T>, std::ref(value), std::cref(item_value)));
 		}
 
 		const auto [min_p, max_p] = std::minmax_element(map.begin(), map.end(), Util::map_value_compare<T, unsigned int>());

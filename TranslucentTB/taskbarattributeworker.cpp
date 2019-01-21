@@ -1,6 +1,6 @@
 #include "taskbarattributeworker.hpp"
 #include "appvisibilitysink.hpp"
-#include "../CPicker/boolguard.hpp"
+#include "boolguard.hpp"
 #include "blacklist.hpp"
 #include "common.hpp"
 #include "createinstance.hpp"
@@ -190,7 +190,7 @@ bool TaskbarAttributeWorker::SetAttribute(Window window, Config::TASKBAR_APPEARA
 			policy.GradientColor = (0x01 << 24) + (policy.GradientColor & 0x00FFFFFF);
 		}
 
-		WINDOWCOMPOSITIONATTRIBDATA data = {
+		const WINDOWCOMPOSITIONATTRIBDATA data = {
 			WCA_ACCENT_POLICY,
 			&policy,
 			sizeof(policy)

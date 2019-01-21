@@ -65,7 +65,6 @@ bool Error::Handle(HRESULT error, Level level, const wchar_t *message, const wch
 			break;
 		default:
 			throw std::invalid_argument("level was not one of known values");
-			break;
 		}
 
 		return false;
