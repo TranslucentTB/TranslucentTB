@@ -1,5 +1,5 @@
 #pragma once
-#include <set>
+#include <unordered_set>
 #include <ShObjIdl.h>
 #include <unordered_map>
 #include <utility>
@@ -18,7 +18,7 @@ private:
 
 	struct MonitorInfo {
 		Window TaskbarWindow;
-		std::set<Window> MaximisedWindows;
+		std::unordered_set<Window> MaximisedWindows;
 	};
 
 	// todo:

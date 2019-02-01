@@ -28,15 +28,13 @@ void TaskbarAttributeWorker::OnWindowStateChange(bool skipCheck, DWORD, Window w
 		const HMONITOR monitor = window.monitor();
 		if (m_Taskbars.count(monitor) != 0)
 		{
-			auto &monInf = m_Taskbars.at(monitor);
-
 			if (IsWindowMaximised(window))
 			{
-				monInf.MaximisedWindows.insert(window);
+				m_Taskbars.at(monitor).MaximisedWindows.insert(window);
 			}
 			else
 			{
-				monInf.MaximisedWindows.erase(window);
+				m_Taskbars.at(monitor).MaximisedWindows.erase(window);
 			}
 
 			RefreshAttribute(monitor, true);
@@ -60,16 +58,13 @@ BOOL CALLBACK TaskbarAttributeWorker::EnumWindowsProcess(HWND hWnd, LPARAM lPara
 	const Window window(hWnd);
 
 	const HMONITOR monitor = window.monitor();
-	if (IsWindowMaximised(window))
+	if (pThis->m_Taskbars.count(monitor) != 0)
 	{
-		if (pThis->m_Taskbars.count(monitor) != 0)
+		if (IsWindowMaximised(window))
 		{
 			pThis->m_Taskbars.at(monitor).MaximisedWindows.insert(window);
 		}
-	}
-	else
-	{
-		if (pThis->m_Taskbars.count(monitor) != 0)
+		else
 		{
 			pThis->m_Taskbars.at(monitor).MaximisedWindows.erase(window);
 		}
