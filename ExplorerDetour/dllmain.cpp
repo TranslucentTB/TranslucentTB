@@ -1,4 +1,4 @@
-#include "../TranslucentTB/arch.h"
+#include "arch.h"
 #include <windef.h>
 #include <WinBase.h>
 

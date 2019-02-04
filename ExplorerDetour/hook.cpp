@@ -3,7 +3,7 @@
 #include <winerror.h>
 #include <WinUser.h>
 
-#include "../TranslucentTB/common.hpp"
+#include "constants.hpp"
 #include "../detours/detours.h"
 #include "dlldata.hpp"
 

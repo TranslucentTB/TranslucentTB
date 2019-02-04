@@ -1,3 +1,4 @@
+#pragma once
 #include "arch.h"
 #include <functional>
 #include <string>
@@ -6,7 +7,7 @@
 #include <WinBase.h>
 
 #include "changenotificationhandle.hpp"
-#include "common.hpp"
+#include "constants.hpp"
 #include "ttberror.hpp"
 #include "window.hpp"
 
@@ -31,7 +32,7 @@ private:
 			{
 				if (ret == WAIT_OBJECT_0)
 				{
-					m_callbackWnd.send_message(FILE_CHANGED);
+					m_callbackWnd.send_message(WM_FILECHANGED);
 					if (!FindNextChangeNotification(m_changeHandle.get()))
 					{
 						LastErrorHandle(Error::Level::Log, L"Failed to resume folder watch. Hot loading of config will not work.");

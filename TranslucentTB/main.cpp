@@ -14,7 +14,7 @@
 #include "autofree.hpp"
 #include "autostart.hpp"
 #include "blacklist.hpp"
-#include "common.hpp"
+#include "constants.hpp"
 #include "config.hpp"
 #include "folderwatcher.hpp"
 #include "messagewindow.hpp"
@@ -400,15 +400,42 @@ long ExitApp(EXITREASON reason, ...)
 
 #pragma region Startup
 
+bool IsSingleInstance()
+{
+	static winrt::handle mutex;
+
+	if (!mutex)
+	{
+		mutex.attach(CreateMutex(NULL, FALSE, MUTEX_GUID));
+		DWORD error = GetLastError();
+		switch (error)
+		{
+		case ERROR_ALREADY_EXISTS:
+			return false;
+
+		case ERROR_SUCCESS:
+			return true;
+
+		default:
+			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Failed to open app mutex!");
+			return true;
+		}
+	}
+	else
+	{
+		return true;
+	}
+}
+
 void InitializeTray(HINSTANCE hInstance)
 {
 	static MessageWindow window(TRAY_WINDOW, NAME, hInstance);
 	static TaskbarAttributeWorker worker(hInstance);
 	static FolderWatcher watcher(run.config_folder, FILE_NOTIFY_CHANGE_LAST_WRITE, window);
 
-	window.RegisterCallback(FILE_CHANGED, LoadConfig);
+	window.RegisterCallback(WM_FILECHANGED, LoadConfig);
 
-	window.RegisterCallback(NEW_TTB_INSTANCE, std::bind(&ExitApp, EXITREASON::NewInstance));
+	window.RegisterCallback(WM_NEWTTBINSTANCE, std::bind(&ExitApp, EXITREASON::NewInstance));
 
 	window.RegisterCallback(WM_CLOSE, std::bind(&ExitApp, EXITREASON::UserAction));
 
@@ -553,9 +580,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	}
 
 	// If there already is another instance running, tell it to exit
-	if (!win32::IsSingleInstance())
+	if (!IsSingleInstance())
 	{
-		Window::Find(TRAY_WINDOW, NAME).send_message(NEW_TTB_INSTANCE);
+		Window::Find(TRAY_WINDOW, NAME).send_message(WM_NEWTTBINSTANCE);
 	}
 
 	// Get configuration file paths
@@ -579,13 +606,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 
 	// Run the main program loop. When this method exits, TranslucentTB itself is about to exit.
 	MessageWindow::RunMessageLoop();
-
-	// Close all open CPicker windows to avoid:
-	// 1. Saving the colors currently previewed.
-	// 2. Direct2D and Direct3D bothering us about leaks in debug mode (because CPicker gets unloaded after Direct2D so Direct2D
-	//    does a leak check before CPicker even has a chance to cleanup anything). We don't care about them because we are closing,
-	//    and if we have actual leaks, they won't be drowned in the noise since closing the window will make CPicker cleanup.
-	win32::ClosePickers();
 
 	// If it's a new instance, don't save or restore taskbar to default
 	if (run.exit_reason != EXITREASON::NewInstance)

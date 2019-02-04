@@ -16,6 +16,7 @@ private:
 	NOTIFYICONDATA m_IconData;
 	MessageWindow::CALLBACKCOOKIE m_TaskbarCreatedCookie;
 	MessageWindow::CALLBACKCOOKIE m_SettingsChangedCookie;
+	MessageWindow::CALLBACKCOOKIE m_DpiChangedCookie;
 	HINSTANCE m_hInstance;
 	const wchar_t *m_BrightIconResource;
 	const wchar_t *m_DarkIconResource;

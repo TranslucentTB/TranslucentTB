@@ -2,8 +2,7 @@
 #include "appvisibilitysink.hpp"
 #include "boolguard.hpp"
 #include "blacklist.hpp"
-#include "common.hpp"
-#include "createinstance.hpp"
+#include "constants.hpp"
 #include "../ExplorerDetour/hook.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
@@ -287,17 +286,13 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance) :
 	m_ResizeMoveHook(EVENT_OBJECT_LOCATIONCHANGE, BindHook()),
 	m_ShowHideHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, BindHook()),
 	m_CurrentStartMonitor(nullptr),
-	m_IAV(create_instance<IAppVisibility>(CLSID_AppVisibility)),
+	m_IAV(winrt::create_instance<IAppVisibility>(CLSID_AppVisibility)),
 	m_IAVECookie(0),
 	m_CreateDestroyHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, std::bind(&TaskbarAttributeWorker::OnWindowCreateDestroy, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)),
 	m_returningToStock(false)
 {
-	if (m_IAV)
-	{
-		using namespace Microsoft::WRL; // See comment on AppVisibilitySink for reason why WRL is used here
-		ComPtr<IAppVisibilityEvents> av_sink = Make<AppVisibilitySink>(std::bind(&TaskbarAttributeWorker::OnStartVisibilityChange, this, std::placeholders::_1));
-		ErrorHandle(m_IAV->Advise(av_sink.Get(), &m_IAVECookie), Error::Level::Log, L"Failed to register app visibility sink.");
-	}
+	const auto av_sink = winrt::make<AppVisibilitySink>(std::bind(&TaskbarAttributeWorker::OnStartVisibilityChange, this, std::placeholders::_1));
+	ErrorHandle(m_IAV->Advise(av_sink.get(), &m_IAVECookie), Error::Level::Log, L"Failed to register app visibility sink.");
 
 	RegisterCallback(Hook::RequestAttributeRefresh, std::bind(&TaskbarAttributeWorker::OnRequestAttributeRefresh, this, std::placeholders::_1, std::placeholders::_2));
 

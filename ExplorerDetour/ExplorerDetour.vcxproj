@@ -5,7 +5,7 @@
     <RootNamespace>ExplorerDetour</RootNamespace>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
-  <Import Project="..\common.props" />
+  <Import Project="..\Common\CppProject.props" />
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
       <PreprocessorDefinitions>_EXPLORERDETOUR_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>

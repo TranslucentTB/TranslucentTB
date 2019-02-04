@@ -171,7 +171,7 @@ protected:
 
 	template<unsigned int flags>
 	struct GlobalTraits {
-		static constexpr bool needs_lock = flags & GMEM_MOVEABLE;
+		static constexpr bool needs_lock = static_cast<bool>(flags & GMEM_MOVEABLE);
 
 		inline static void *alloc(std::size_t size)
 		{

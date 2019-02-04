@@ -4,11 +4,13 @@ configuration:
 - Release
 - Debug
 platform:
+- x86
 - x64
+- ARM
+- ARM64
 
 before_build:
 - ps: .\update-version.ps1
-- nuget restore
 
 build:
   parallel: true
@@ -17,21 +19,9 @@ build:
 test: off
 
 artifacts:
-- path: $(CONFIGURATION)
+- path: $(PLATFORM)\$(CONFIGURATION)
   name: Raw build artifacts
-- path: $(CONFIGURATION)\*.pdb
+- path: $(PLATFORM)\$(CONFIGURATION)\*.pdb
   name: Debug symbols
 - path: AppPackage\AppPackages
   name: App packages
-
-deploy:
-  provider: GitHub
-  description: 'To be filled and uploaded'
-  draft: true
-  artifact: Debug symbols
-  auth_token:
-    secure: KofMs1LM/RjB79NyxThnuOxkUUZxaN98cJdRJepe9ZIwf4/5nxMi+cNiZVe83QxD
-  on:
-    configuration: Release
-    platform: x64
-    appveyor_repo_tag: true

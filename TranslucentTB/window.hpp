@@ -34,9 +34,9 @@ public:
 		std::wstring m_name;
 		HWND m_parent;
 	public:
-		inline FindEnum(const std::wstring &className = L"", const std::wstring &windowName = L"", Window parent = Window::NullWindow) :
-			m_class(className),
-			m_name(windowName),
+		inline FindEnum(std::wstring className = L"", std::wstring windowName = L"", Window parent = Window::NullWindow) :
+			m_class(std::move(className)),
+			m_name(std::move(windowName)),
 			m_parent(parent)
 		{ }
 
@@ -113,11 +113,11 @@ public:
 	{
 		return MonitorFromWindow(m_WindowHandle, MONITOR_DEFAULTTOPRIMARY);
 	}
-	inline long send_message(unsigned int message, unsigned int wparam = 0, long lparam = 0) const
+	inline LRESULT send_message(unsigned int message, WPARAM wparam = 0, LPARAM lparam = 0) const
 	{
 		return SendMessage(m_WindowHandle, message, wparam, lparam);
 	}
-	inline long send_message(const std::wstring &message, unsigned int wparam = 0, long lparam = 0) const
+	inline LRESULT send_message(const std::wstring &message, WPARAM wparam = 0, LPARAM lparam = 0) const
 	{
 		return send_message(RegisterWindowMessage(message.c_str()), wparam, lparam);
 	}
@@ -143,8 +143,6 @@ public:
 
 	friend struct std::hash<Window>;
 };
-
-constexpr Window Window::NullWindow = nullptr;
 
 // Specialize std::hash to allow the use of Window as unordered_map key
 namespace std {

@@ -17,6 +17,10 @@
       <UniqueIdentifier>{8a3034e1-4c07-4ca8-a036-8cfc161a562d}</UniqueIdentifier>
       <Extensions>cfg;csv</Extensions>
     </Filter>
+    <Filter Include="Debug Visualizer Files">
+      <UniqueIdentifier>{1cd26573-fbcf-4c0e-9927-0ac8a66535e7}</UniqueIdentifier>
+      <Extensions>natvis</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -58,9 +62,6 @@
     <ClCompile Include="blacklist.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="appvisibilitysink.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="findwindowiterator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -99,9 +100,6 @@
     <ClInclude Include="uwp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="arch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -126,9 +124,6 @@
     <ClInclude Include="blacklist.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="common.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="clipboardcontext.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -136,9 +131,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="findwindowiterator.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="createinstance.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="changenotificationhandle.hpp">
@@ -159,16 +151,10 @@
     <ClInclude Include="taskbarattributeworker.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="coroutine.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="windowshook.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="autounlock.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="swcadef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="boolguard.hpp">
@@ -203,5 +189,13 @@
     <Image Include="TTB_black.ico">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="AutoFree.natvis">
+      <Filter>Debug Visualizer Files</Filter>
+    </Natvis>
+    <Natvis Include="Window.natvis">
+      <Filter>Debug Visualizer Files</Filter>
+    </Natvis>
   </ItemGroup>
 </Project>

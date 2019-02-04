@@ -13,13 +13,6 @@ class win32 {
 private:
 	static std::wstring m_ExeLocation;
 
-	// TODO: move CPicker related stuff to CPicker project
-	static std::mutex m_PickerThreadsLock;
-	static std::unordered_set<DWORD> m_PickerThreads;
-
-	static DWORD WINAPI PickerThreadProc(LPVOID data);
-	static BOOL CALLBACK EnumThreadWindowsProc(HWND hwnd, LPARAM lParam);
-
 public:
 	// Gets location of the file of a process
 	static std::pair<std::wstring, HRESULT> GetProcessFileName(HANDLE process);
@@ -29,9 +22,6 @@ public:
 
 	// Checks Windows build number.
 	static bool IsAtLeastBuild(uint32_t buildNumber);
-
-	// Checks for uniqueness.
-	static bool IsSingleInstance();
 
 	// Checks if path exists and is a folder.
 	static bool IsDirectory(const std::wstring &directory);
@@ -49,19 +39,8 @@ public:
 	// NOTE: doesn't attempts to validate the link, make sure it's correct.
 	static void OpenLink(const std::wstring &link);
 
-	// Opens a color picker.
-	// NOTE: the function returns the thread ID, use it with OpenThread and
-	// WaitForSingleObject if you want to block for input.
-	static DWORD PickColor(COLORREF &color);
-
-	// Cancels all active color pickers.
-	static void ClosePickers();
-
 	// Applies various settings that make code execution more secure.
 	static void HardenProcess();
-
-	// Converts a ASCII string to a wide character string.
-	static std::wstring CharToWchar(std::string_view str);
 
 	// Gets the current Windows build identifier.
 	static std::pair<std::wstring, HRESULT> GetWindowsBuild();

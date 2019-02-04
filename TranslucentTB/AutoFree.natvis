@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="AutoFree::Base&lt;wchar_t[0],*&gt;">
+    <DisplayString>{m_DataPtr,su}</DisplayString>
+    <StringView>m_DataPtr,su</StringView>
+  </Type>
+</AutoVisualizer>

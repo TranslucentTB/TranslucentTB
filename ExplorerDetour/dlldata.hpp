@@ -1,5 +1,5 @@
 #pragma once
-#include "../TranslucentTB/arch.h"
+#include "arch.h"
 #include <windef.h>
 
 class DllData {

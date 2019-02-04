@@ -13,7 +13,7 @@
 #include <WinUser.h>
 
 #include "autofree.hpp"
-#include "common.hpp"
+#include "constants.hpp"
 #include "win32.hpp"
 #include "window.hpp"
 #include "util.hpp"

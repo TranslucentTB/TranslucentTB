@@ -1,3 +1,4 @@
+#pragma once
 #include "arch.h"
 #include <fileapi.h>
 #include <windef.h>

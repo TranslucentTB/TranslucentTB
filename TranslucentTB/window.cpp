@@ -4,10 +4,10 @@
 #include <winrt/base.h>
 #include <vector>
 
-#include "createinstance.hpp"
-#include "common.hpp"
+#include "constants.hpp"
 #include "eventhook.hpp"
 #include "ttberror.hpp"
+#include "win32.hpp"
 
 const EventHook Window::m_ChangeHook(EVENT_OBJECT_NAMECHANGE, Window::HandleChangeEvent);
 const EventHook Window::m_DestroyHook(EVENT_OBJECT_DESTROY, Window::HandleDestroyEvent);
@@ -16,6 +16,7 @@ std::unordered_map<Window, std::wstring> Window::m_ClassNames;
 std::unordered_map<Window, std::wstring> Window::m_Filenames;
 std::unordered_map<Window, std::wstring> Window::m_Titles;
 
+const Window Window::NullWindow = NULL;
 const Window Window::BroadcastWindow = HWND_BROADCAST;
 const Window Window::MessageOnlyWindow = HWND_MESSAGE;
 
@@ -118,10 +119,10 @@ const std::wstring &Window::filename() const
 
 bool Window::on_current_desktop() const
 {
-	static const auto desktop_manager = create_instance<IVirtualDesktopManager>(CLSID_VirtualDesktopManager);
+	static const auto desktop_manager = winrt::create_instance<IVirtualDesktopManager>(CLSID_VirtualDesktopManager);
 
 	BOOL on_current_desktop;
-	if (desktop_manager && ErrorHandle(desktop_manager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop), Error::Level::Log, L"Verifying if a window is on the current virtual desktop failed."))
+	if (ErrorHandle(desktop_manager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop), Error::Level::Log, L"Verifying if a window is on the current virtual desktop failed."))
 	{
 		return on_current_desktop;
 	}

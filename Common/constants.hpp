@@ -36,10 +36,10 @@ static constexpr wchar_t MUTEX_GUID[] = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
 static constexpr wchar_t WM_TASKBARCREATED[] = L"TaskbarCreated";
 
 // Message used by a new instance to close the old instance
-static constexpr wchar_t NEW_TTB_INSTANCE[] = L"NewTTBInstance";
+static constexpr wchar_t WM_NEWTTBINSTANCE[] = L"NewTTBInstance";
 
 // Message sent by FolderWatcher when a file is changed.
-static constexpr wchar_t FILE_CHANGED[] = L"TTBFileChanged";
+static constexpr wchar_t WM_FILECHANGED[] = L"TTBFileChanged";
 
 // Event hook event when Aero Peek begins
 static constexpr uint32_t EVENT_SYSTEM_PEEKSTART = 0x21;

@@ -1,15 +1,32 @@
 #pragma once
 #include <functional>
 #include <ShObjIdl.h>
-#include <wrl/implements.h>
+#include <winrt/base.h>
 
-// Cannot use winrt::implements here because of https://bugs.llvm.org/show_bug.cgi?id=38490
-class AppVisibilitySink : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, IAppVisibilityEvents> {
+class AppVisibilitySink : public winrt::implements<AppVisibilitySink, IAppVisibilityEvents> {
 private:
 	std::function<void(bool)> m_startOpenedCallback;
 
 public:
-	AppVisibilitySink(std::function<void(bool)> startOpenedCallback);
-	IFACEMETHODIMP LauncherVisibilityChange(BOOL currentVisibleState) override;
-	IFACEMETHODIMP AppVisibilityOnMonitorChanged(HMONITOR, MONITOR_APP_VISIBILITY, MONITOR_APP_VISIBILITY) override;
+	inline AppVisibilitySink(std::function<void(bool)> startOpenedCallback) :
+		m_startOpenedCallback(std::move(startOpenedCallback))
+	{ }
+
+	inline IFACEMETHODIMP LauncherVisibilityChange(BOOL currentVisibleState) override
+	{
+		try
+		{
+			m_startOpenedCallback(currentVisibleState);
+			return S_OK;
+		}
+		catch (...)
+		{
+			return winrt::to_hresult();
+		}
+	}
+
+	inline IFACEMETHODIMP AppVisibilityOnMonitorChanged(HMONITOR, MONITOR_APP_VISIBILITY, MONITOR_APP_VISIBILITY) override
+	{
+		return S_OK;
+	}
 };

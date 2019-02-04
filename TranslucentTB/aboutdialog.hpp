@@ -3,7 +3,7 @@
 #include <array>
 #include <sstream>
 
-#include "common.hpp"
+#include "constants.hpp"
 #include "../ExplorerDetour/hook.hpp"
 #include "ttberror.hpp"
 #include "uwp.hpp"

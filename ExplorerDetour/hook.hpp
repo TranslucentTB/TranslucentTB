@@ -1,5 +1,5 @@
 #pragma once
-#include"../TranslucentTB/arch.h"
+#include "arch.h"
 #include <mutex>
 #include <tuple>
 #include <type_traits>
@@ -7,7 +7,7 @@
 #include <utility>
 #include <windef.h>
 
-#include "../TranslucentTB/swcadef.h"
+#include "swcadef.h"
 
 #ifdef _EXPLORERDETOUR_DLL
 #define EXPLORERHOOK_EXPORT dllexport

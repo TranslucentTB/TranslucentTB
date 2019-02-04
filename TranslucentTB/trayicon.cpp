@@ -1,7 +1,7 @@
 #include "trayicon.hpp"
 #include <shellapi.h>
 
-#include "common.hpp"
+#include "constants.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 #include "util.hpp"
@@ -13,9 +13,8 @@ bool TrayIcon::IsSystemLightThemeEnabled()
 
 	if (isLightThemeAvailable)
 	{
-		DWORD value;
-		DWORD size = sizeof(value);
-		LRESULT error = RegGetValue(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize)", L"SystemUsesLightTheme", RRF_RT_REG_DWORD, NULL, &value, &size);
+		DWORD value, size = sizeof(value);
+		const LSTATUS error = RegGetValue(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize)", L"SystemUsesLightTheme", RRF_RT_REG_DWORD, NULL, &value, &size);
 		switch (error)
 		{
 		case ERROR_SUCCESS:
@@ -95,6 +94,10 @@ TrayIcon::TrayIcon(MessageWindow &window, const wchar_t *brightIconResource, con
 
 	m_TaskbarCreatedCookie = m_Window.RegisterCallback(WM_TASKBARCREATED, std::bind(&TrayIcon::RegisterIcon, this));
 	m_SettingsChangedCookie = m_Window.RegisterCallback(WM_SETTINGCHANGE, std::bind(&TrayIcon::UpdateIcon, this, true));
+	// TODO: is this needed
+	// also add all the sizes in https://docs.microsoft.com/fr-fr/windows/desktop/uxguide/vis-icons#size-requirements
+	// do it for main window too
+	m_DpiChangedCookie = m_Window.RegisterCallback(WM_DPICHANGED, std::bind(&TrayIcon::UpdateIcon, this, true));
 }
 
 TrayIcon::~TrayIcon()
@@ -105,5 +108,6 @@ TrayIcon::~TrayIcon()
 	}
 	m_Window.UnregisterCallback(m_TaskbarCreatedCookie);
 	m_Window.UnregisterCallback(m_SettingsChangedCookie);
+	m_Window.UnregisterCallback(m_DpiChangedCookie);
 	DestroyIconHandle();
 }

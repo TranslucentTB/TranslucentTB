@@ -17,48 +17,13 @@
 
 #include "autofree.hpp"
 #include "autounlock.hpp"
-#include "../CPicker/ccolourpicker.hpp"
 #include "clipboardcontext.hpp"
-#include "common.hpp"
+#include "constants.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 #include "window.hpp"
 
 std::wstring win32::m_ExeLocation;
-std::mutex win32::m_PickerThreadsLock;
-std::unordered_set<DWORD> win32::m_PickerThreads;
-
-DWORD win32::PickerThreadProc(LPVOID data)
-{
-	const HRESULT hr = CColourPicker(*reinterpret_cast<COLORREF *>(data)).CreateColourPicker();
-	{
-		std::lock_guard guard(m_PickerThreadsLock);
-		m_PickerThreads.erase(GetCurrentThreadId());
-	}
-	if (FAILED(hr))
-	{
-		// TODO: NOT THREAD-SAFE but should be fixed by future reorganization
-		ErrorHandle(hr, Error::Level::Error, L"An error occured in the color picker!");
-	}
-
-	return 0;
-}
-
-BOOL win32::EnumThreadWindowsProc(HWND hwnd, LPARAM lParam)
-{
-	Window wnd(hwnd);
-	bool &needs_wait = *reinterpret_cast<bool *>(lParam);
-
-	if (wnd.title() == L"Color Picker")
-	{
-		wnd.send_message(WM_COMMAND, MAKEWPARAM(IDCANCEL, BN_CLICKED));
-
-		needs_wait = true;
-		return false;
-	}
-
-	return true;
-}
 
 std::pair<std::wstring, HRESULT> win32::GetProcessFileName(HANDLE process)
 {
@@ -118,33 +83,6 @@ bool win32::IsAtLeastBuild(uint32_t buildNumber)
 		}
 
 		return false;
-	}
-}
-
-bool win32::IsSingleInstance()
-{
-	static winrt::handle mutex;
-
-	if (!mutex)
-	{
-		mutex.attach(CreateMutex(NULL, FALSE, MUTEX_GUID));
-		LRESULT error = GetLastError();
-		switch (error)
-		{
-		case ERROR_ALREADY_EXISTS:
-			return false;
-
-		case ERROR_SUCCESS:
-			return true;
-
-		default:
-			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Failed to open app mutex!");
-			return true;
-		}
-	}
-	else
-	{
-		return true;
 	}
 }
 
@@ -292,51 +230,6 @@ void win32::OpenLink(const std::wstring &link)
 	}
 }
 
-DWORD win32::PickColor(COLORREF &color)
-{
-	DWORD threadId;
-	const winrt::handle hThread(CreateThread(nullptr, 0, PickerThreadProc, &color, CREATE_SUSPENDED, &threadId));
-
-	if (hThread)
-	{
-		{
-			std::lock_guard guard(m_PickerThreadsLock);
-			m_PickerThreads.insert(threadId);
-		}
-
-		ResumeThread(hThread.get());
-		return threadId;
-	}
-	else
-	{
-		LastErrorHandle(Error::Level::Error, L"Failed to spawn color picker thread!");
-		return 0;
-	}
-}
-
-void win32::ClosePickers()
-{
-	std::unique_lock guard(m_PickerThreadsLock);
-	while (!m_PickerThreads.empty())
-	{
-		const DWORD tid = *m_PickerThreads.begin();
-		bool needs_wait = false;
-		guard.unlock();
-		EnumThreadWindows(tid, EnumThreadWindowsProc, reinterpret_cast<LPARAM>(&needs_wait));
-
-		if (needs_wait)
-		{
-			const winrt::handle thread(OpenThread(SYNCHRONIZE, FALSE, tid));
-			if (thread)
-			{
-				WaitForSingleObject(thread.get(), INFINITE);
-			}
-		}
-
-		guard.lock();
-	}
-}
-
 void win32::HardenProcess()
 {
 	PROCESS_MITIGATION_ASLR_POLICY aslr_policy;
@@ -427,24 +320,6 @@ void win32::HardenProcess()
 	{
 		LastErrorHandle(Error::Level::Log, L"Couldn't set image load policy.");
 	}
-}
-
-std::wstring win32::CharToWchar(std::string_view str)
-{
-	const std::size_t length = str.length();
-	std::wstring strW;
-	strW.resize(length);
-	int count = MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED | MB_ERR_INVALID_CHARS, str.data(), length, strW.data(), length);
-	if (count)
-	{
-		strW.resize(count);
-	}
-	else
-	{
-		strW.erase();
-	}
-
-	return strW;
 }
 
 std::pair<std::wstring, HRESULT> win32::GetWindowsBuild()

@@ -5,18 +5,15 @@
     <RootNamespace>TranslucentTB</RootNamespace>
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
-  <Import Project="..\common.props" />
+  <Import Project="..\Common\CppProject.props" />
   <ItemDefinitionGroup Label="Globals">
     <Link>
       <AdditionalDependencies>advapi32.lib;comctl32.lib;dwmapi.lib;mincore.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;user32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="appvisibilitysink.cpp" />
     <ClCompile Include="autostart.cpp">
-      <AdditionalOptions>%(AdditionalOptions) -Xclang -fcoroutines-ts</AdditionalOptions>
-      <ForcedIncludeFiles>coroutine.hpp</ForcedIncludeFiles>
-      <PreprocessorDefinitions>_EXPERIMENTAL_RESUMABLE_;_RESUMABLE_FUNCTIONS_SUPPORTED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ClCompile Include="blacklist.cpp" />
     <ClCompile Include="config.cpp" />
@@ -37,7 +34,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="appvisibilitysink.hpp" />
-    <ClInclude Include="arch.h" />
     <ClInclude Include="autofree.hpp" />
     <ClInclude Include="autostart.hpp" />
     <ClInclude Include="autounlock.hpp" />
@@ -45,9 +41,6 @@
     <ClInclude Include="boolguard.hpp" />
     <ClInclude Include="changenotificationhandle.hpp" />
     <ClInclude Include="clipboardcontext.hpp" />
-    <ClInclude Include="common.hpp" />
-    <ClInclude Include="coroutine.hpp" />
-    <ClInclude Include="createinstance.hpp" />
     <ClInclude Include="taskbarattributeworker.hpp" />
     <ClInclude Include="eventhook.hpp" />
     <ClInclude Include="findwindowiterator.hpp" />
@@ -55,7 +48,6 @@
     <ClInclude Include="aboutdialog.hpp" />
     <ClInclude Include="windowshook.hpp" />
     <ClInclude Include="messagewindow.hpp" />
-    <ClInclude Include="swcadef.h" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="taskdialog.hpp" />
@@ -84,10 +76,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CPicker\CPicker.vcxproj">
-      <Project>{ab4d3015-2ad4-4152-bdd2-fc1343b22b6c}</Project>
-      <DeploymentContent>true</DeploymentContent>
-    </ProjectReference>
     <ProjectReference Include="..\ExplorerDetour\ExplorerDetour.vcxproj">
       <Project>{d0004e78-f00b-4943-b77e-9a278f8ba399}</Project>
       <DeploymentContent>true</DeploymentContent>
@@ -100,5 +88,9 @@
     <Image Include="TTB_black.ico" />
     <Image Include="TTB_color.ico" />
     <Image Include="TTB_white.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="AutoFree.natvis" />
+    <Natvis Include="Window.natvis" />
   </ItemGroup>
 </Project>

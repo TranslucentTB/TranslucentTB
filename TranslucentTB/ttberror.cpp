@@ -11,7 +11,7 @@
 #include <WinUser.h>
 
 #include "autofree.hpp"
-#include "common.hpp"
+#include "constants.hpp"
 #include "ttblog.hpp"
 #include "util.hpp"
 #include "win32.hpp"
