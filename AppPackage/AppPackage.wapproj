@@ -52,6 +52,7 @@
     <AppxBundlePlatforms>ARM64</AppxBundlePlatforms>
     <AppxBundle>Never</AppxBundle>
     <PackageCertificateThumbprint>1BDB9301A782A3EF31454E5792A4931D39BB5E8C</PackageCertificateThumbprint>
+    <DebuggerType>NativeOnly</DebuggerType>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
