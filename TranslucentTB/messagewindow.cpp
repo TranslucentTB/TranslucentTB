@@ -53,6 +53,13 @@ MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &
 	{
 		LastErrorHandle(Error::Level::Fatal, L"Failed to create message window!");
 	}
+
+	RegisterCallback(WM_DPICHANGED, [this, iconResource](...)
+	{
+		m_WindowClass.ChangeIcon(*this, iconResource);
+
+		return 0;
+	});
 }
 
 MessageWindow::CALLBACKCOOKIE MessageWindow::RegisterCallback(unsigned int message, callback_t callback)

@@ -19,6 +19,24 @@ LRESULT WindowClass::RawWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	return m_CallbackMap[atom](hwnd, msg, wParam, lParam);
 }
 
+void WindowClass::LoadIcons(const wchar_t *iconResource)
+{
+	ErrorHandle(LoadIconMetric(m_ClassStruct.hInstance, iconResource, LIM_LARGE, &m_ClassStruct.hIcon), Error::Level::Log, L"Failed to load large window class icon.");
+	ErrorHandle(LoadIconMetric(m_ClassStruct.hInstance, iconResource, LIM_SMALL, &m_ClassStruct.hIconSm), Error::Level::Log, L"Failed to load small window class icon.");
+}
+
+void WindowClass::DestroyIcons()
+{
+	if (!DestroyIcon(m_ClassStruct.hIcon))
+	{
+		LastErrorHandle(Error::Level::Log, L"Failed to destroy large window class icon.");
+	}
+	if (!DestroyIcon(m_ClassStruct.hIconSm))
+	{
+		LastErrorHandle(Error::Level::Log, L"Failed to destory small window class icon.");
+	}
+}
+
 WindowClass::WindowClass(callback_t callback, const std::wstring &className, const wchar_t *iconResource, unsigned int style, HINSTANCE hInstance, HBRUSH brush, HCURSOR cursor) :
 	m_ClassStruct {
 		sizeof(m_ClassStruct),
@@ -35,8 +53,7 @@ WindowClass::WindowClass(callback_t callback, const std::wstring &className, con
 		nullptr
 	}
 {
-	ErrorHandle(LoadIconMetric(hInstance, iconResource, LIM_LARGE, &m_ClassStruct.hIcon), Error::Level::Log, L"Failed to load large window class icon.");
-	ErrorHandle(LoadIconMetric(hInstance, iconResource, LIM_SMALL, &m_ClassStruct.hIconSm), Error::Level::Log, L"Failed to load small window class icon.");
+	LoadIcons(iconResource);
 
 	m_Atom = RegisterClassEx(&m_ClassStruct);
 	if (m_Atom)
@@ -49,6 +66,15 @@ WindowClass::WindowClass(callback_t callback, const std::wstring &className, con
 	}
 }
 
+void WindowClass::ChangeIcon(Window window, const wchar_t *iconResource)
+{
+	DestroyIcons();
+	LoadIcons(iconResource);
+
+	SetClassLongPtr(window, GCLP_HICON, reinterpret_cast<LONG_PTR>(m_ClassStruct.hIcon));
+	SetClassLongPtr(window, GCLP_HICONSM, reinterpret_cast<LONG_PTR>(m_ClassStruct.hIconSm));
+}
+
 WindowClass::~WindowClass()
 {
 	m_CallbackMap.erase(m_Atom);
@@ -57,12 +83,5 @@ WindowClass::~WindowClass()
 		LastErrorHandle(Error::Level::Log, L"Failed to unregister window class.");
 	}
 
-	if (!DestroyIcon(m_ClassStruct.hIcon))
-	{
-		LastErrorHandle(Error::Level::Log, L"Failed to destroy large window class icon.");
-	}
-	if (!DestroyIcon(m_ClassStruct.hIconSm))
-	{
-		LastErrorHandle(Error::Level::Log, L"Failed to destory small window class icon.");
-	}
+	DestroyIcons();
 }

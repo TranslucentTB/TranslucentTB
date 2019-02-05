@@ -94,9 +94,6 @@ TrayIcon::TrayIcon(MessageWindow &window, const wchar_t *brightIconResource, con
 
 	m_TaskbarCreatedCookie = m_Window.RegisterCallback(WM_TASKBARCREATED, std::bind(&TrayIcon::RegisterIcon, this));
 	m_SettingsChangedCookie = m_Window.RegisterCallback(WM_SETTINGCHANGE, std::bind(&TrayIcon::UpdateIcon, this, true));
-	// TODO: is this needed
-	// also add all the sizes in https://docs.microsoft.com/fr-fr/windows/desktop/uxguide/vis-icons#size-requirements
-	// do it for main window too
 	m_DpiChangedCookie = m_Window.RegisterCallback(WM_DPICHANGED, std::bind(&TrayIcon::UpdateIcon, this, true));
 }
 
