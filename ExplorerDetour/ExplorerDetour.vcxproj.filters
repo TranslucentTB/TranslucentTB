@@ -32,5 +32,11 @@
     <ClInclude Include="dlldata.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="detourtransaction.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="detourexception.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

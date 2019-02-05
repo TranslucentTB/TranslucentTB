@@ -6,17 +6,19 @@
 #include "constants.hpp"
 #include "../detours/detours.h"
 #include "dlldata.hpp"
+#include "detourexception.h"
+#include "detourtransaction.hpp"
 
 PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE Hook::SetWindowCompositionAttribute =
 	reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
-std::mutex Hook::m_initDoneLock;
-bool Hook::m_initDone = false;
-const HWND Hook::m_TTBMsgWnd = FindWindow(WORKER_WINDOW, WORKER_WINDOW);
+std::mutex Hook::s_initLock;
+Hook::InitializationState Hook::s_initState = Hook::InitializationState::NotInitialized;
+const HWND Hook::s_TTBMsgWnd = FindWindow(WORKER_WINDOW, WORKER_WINDOW);
 const unsigned int Hook::RequestAttributeRefresh = RegisterWindowMessage(L"TTBHook_RequestAttributeRefresh");
 
 BOOL Hook::SetWindowCompositionAttributeDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data)
 {
-	if (data->Attrib == WCA_ACCENT_POLICY && SendMessage(m_TTBMsgWnd, RequestAttributeRefresh, 0, reinterpret_cast<LPARAM>(hWnd)))
+	if (data->Attrib == WCA_ACCENT_POLICY && SendMessage(s_TTBMsgWnd, RequestAttributeRefresh, 0, reinterpret_cast<LPARAM>(hWnd)))
 	{
 		return TRUE;
 	}
@@ -28,16 +30,29 @@ LRESULT Hook::CallWndProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
 	if (nCode == HC_ACTION)
 	{
-		std::lock_guard guard(m_initDoneLock);
-		if (!m_initDone)
+		std::lock_guard guard(s_initLock);
+		if (s_initState == InitializationState::NotInitialized)
 		{
-			// TODO: error handling using OutputDebugString
-			DetourTransactionBegin();
-			DetourUpdateThread(GetCurrentThread());
-			DetourAttach(reinterpret_cast<void **>(&SetWindowCompositionAttribute), reinterpret_cast<void *>(SetWindowCompositionAttributeDetour));
-			DetourTransactionCommit();
+			try
+			{
+				DetourTransaction transaction;
 
-			m_initDone = true;
+				transaction.update_current_thread();
+				transaction.attach(Hook::SetWindowCompositionAttribute, &Hook::SetWindowCompositionAttributeDetour);
+				transaction.commit();
+
+				s_initState = InitializationState::InitializationDone;
+			}
+			catch (const DetourException &err)
+			{
+				MessageBox(
+					NULL,
+					(L"Failed to install detour: " + err.message()).c_str(),
+					NAME L" Hook - Error",
+					MB_ICONERROR | MB_OK | MB_SETFOREGROUND
+				);
+				s_initState = InitializationState::InitializationFailed;
+			}
 		}
 	}
 

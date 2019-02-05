@@ -17,12 +17,18 @@
 
 class Hook {
 private:
+	enum class InitializationState {
+		InitializationDone,
+		InitializationFailed,
+		NotInitialized
+	};
+
 	static PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SetWindowCompositionAttribute;
 
-	static std::mutex m_initDoneLock;
-	static bool m_initDone;
+	static std::mutex s_initLock;
+	static InitializationState s_initState;
 
-	static const HWND m_TTBMsgWnd;
+	static const HWND s_TTBMsgWnd;
 	static BOOL WINAPI SetWindowCompositionAttributeDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data);
 	static LRESULT CALLBACK CallWndProc(int nCode, WPARAM wParam, LPARAM lParam);
 
