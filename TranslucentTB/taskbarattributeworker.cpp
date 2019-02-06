@@ -36,6 +36,10 @@ void TaskbarAttributeWorker::OnWindowStateChange(bool skipCheck, DWORD, Window w
 				m_Taskbars.at(monitor).MaximisedWindows.erase(window);
 			}
 
+			if (monitor == m_MainTaskbarMonitor)
+			{
+				RefreshAeroPeekButton();
+			}
 			RefreshAttribute(monitor, true);
 		}
 	}
@@ -125,7 +129,8 @@ void TaskbarAttributeWorker::RefreshTaskbars()
 	m_Hooks.clear(); // Bring back m_Hooks to a known state after being moved from.
 
 	const Window main_taskbar = Window::Find(TASKBAR);
-	m_Taskbars[main_taskbar.monitor()] = { main_taskbar };
+	m_MainTaskbarMonitor = main_taskbar.monitor();
+	m_Taskbars[m_MainTaskbarMonitor] = { main_taskbar };
 	HookTaskbar(main_taskbar);
 
 	for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))
@@ -234,6 +239,35 @@ bool TaskbarAttributeWorker::RefreshAttribute(HMONITOR monitor, bool skipCheck)
 	}
 }
 
+void TaskbarAttributeWorker::ShowAeroPeekButton(Window taskbar, bool show)
+{
+	const Window peek = taskbar.find_child(L"TrayNotifyWnd").find_child(L"TrayShowDesktopButtonWClass");
+
+	if (show)
+	{
+		SetWindowLong(peek, GWL_EXSTYLE, GetWindowLong(peek, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+	}
+	else
+	{
+		SetWindowLong(peek, GWL_EXSTYLE, GetWindowLong(peek, GWL_EXSTYLE) | WS_EX_LAYERED);
+
+		SetLayeredWindowAttributes(peek, 0, 0, LWA_ALPHA);
+	}
+}
+
+void TaskbarAttributeWorker::RefreshAeroPeekButton()
+{
+	const auto& taskbarInfo = m_Taskbars.at(m_MainTaskbarMonitor);
+	if (Config::PEEK == Config::PEEK::Enabled || Config::PEEK == Config::PEEK::Disabled)
+	{
+		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, Config::PEEK == Config::PEEK::Enabled);
+	}
+	else
+	{
+		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, !taskbarInfo.MaximisedWindows.empty());
+	}
+}
+
 long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, LPARAM lParam)
 {
 	const Window window = reinterpret_cast<HWND>(lParam);
@@ -265,6 +299,8 @@ long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, LPARAM lParam)
 
 void TaskbarAttributeWorker::ReturnToStock()
 {
+	ShowAeroPeekButton(m_Taskbars.at(m_MainTaskbarMonitor).TaskbarWindow, true);
+
 	bool_guard guard(m_returningToStock);
 	for (const auto &[_, monInf] : m_Taskbars)
 	{
@@ -288,6 +324,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance) :
 	m_CurrentStartMonitor(nullptr),
 	m_IAV(winrt::create_instance<IAppVisibility>(CLSID_AppVisibility)),
 	m_IAVECookie(0),
+	m_MainTaskbarMonitor(nullptr),
 	m_CreateDestroyHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, std::bind(&TaskbarAttributeWorker::OnWindowCreateDestroy, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)),
 	m_returningToStock(false)
 {
@@ -312,6 +349,7 @@ void TaskbarAttributeWorker::ResetState()
 {
 	RefreshTaskbars();
 	Poll();
+	RefreshAeroPeekButton();
 	for (const auto &[monitor, _] : m_Taskbars)
 	{
 		RefreshAttribute(monitor, true);

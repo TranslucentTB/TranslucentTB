@@ -368,20 +368,6 @@ std::pair<std::wstring, HRESULT> win32::GetFileVersion(const std::wstring &file)
 	return { { fileVersion, length - 1 }, S_OK };
 }
 
-uint64_t win32::FiletimeToUnixEpoch(FILETIME time)
-{
-	uint64_t timeStamp = ULARGE_INTEGER{{ time.dwLowDateTime, time.dwHighDateTime }}.QuadPart;
-
-	// FILETIME is in hundreds of nanoseconds, but Unix timestamps are in seconds.
-	timeStamp /= 10000000;
-
-	// Unix timestamps are since 1970, but FILETIME is since 1601.
-	// Black magic told me there are 11644473600 seconds between the two years.
-	timeStamp -= 11644473600;
-
-	return timeStamp;
-}
-
 std::wstring_view win32::GetProcessorArchitecture()
 {
 	SYSTEM_INFO info;

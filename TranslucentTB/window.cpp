@@ -32,13 +32,6 @@ void Window::HandleDestroyEvent(DWORD, Window window, ...)
 	m_Filenames.erase(window);
 }
 
-void Window::ClearCache()
-{
-	m_ClassNames.clear();
-	m_Filenames.clear();
-	m_Titles.clear();
-}
-
 const std::wstring &Window::title() const
 {
 	if (m_Titles.count(m_WindowHandle) == 0)

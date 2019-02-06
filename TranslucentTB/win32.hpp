@@ -9,6 +9,8 @@
 #include <windef.h>
 #include <winrt/base.h>
 
+#include "util.hpp"
+
 class win32 {
 private:
 	static std::wstring m_ExeLocation;
@@ -49,7 +51,19 @@ public:
 	static std::pair<std::wstring, HRESULT> GetFileVersion(const std::wstring &file);
 
 	// Converts a Windows-style filetime to a unix epoch,
-	static uint64_t FiletimeToUnixEpoch(FILETIME time);
+	inline static uint64_t FiletimeToUnixEpoch(FILETIME time)
+	{
+		auto timeStamp = Util::WordCast<uint64_t>(time);
+
+		// FILETIME is in hundreds of nanoseconds, but Unix timestamps are in seconds.
+		timeStamp /= 10000000;
+
+		// Unix timestamps are since 1970, but FILETIME is since 1601.
+		// Black magic told me there are 11644473600 seconds between the two years.
+		timeStamp -= 11644473600;
+
+		return timeStamp;
+	}
 
 	// Gets the current processor architecture as a string.
 	static std::wstring_view GetProcessorArchitecture();
