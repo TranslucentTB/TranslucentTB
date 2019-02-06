@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <cstring>
 #include <ctime>
 #include <cwctype>
 #include <initializer_list>
@@ -10,6 +11,7 @@
 #include <random>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <unordered_map>
 
 class Util {
@@ -198,6 +200,19 @@ public:
 	static constexpr T ClampTo(U value)
 	{
 		return static_cast<T>(std::clamp<U>(value, (std::numeric_limits<T>::min)(), (std::numeric_limits<T>::max)()));
+	}
+
+	// Converts between bit representations. Superseded in C++20 by std::bit_cast.
+	template<typename T, typename F>
+	inline static T WordCast(F v)
+	{
+		static_assert(sizeof(T) == sizeof(F), "Sizes do not match.");
+		static_assert(std::is_trivially_copyable_v<T>, "T is not trivially copyable.");
+		static_assert(std::is_trivially_copyable_v<F>, "F is not trivially copyable.");
+
+		T ret;
+		std::memcpy(&ret, &v, sizeof(T));
+		return ret;
 	}
 
 	// Gets the number of T elapsed since the Unix epoch

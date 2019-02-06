@@ -57,6 +57,7 @@ private:
 	HMONITOR GetStartMenuMonitor();
 
 	// Taskbar find & hook
+	HMONITOR m_MainTaskbarMonitor;
 	std::unordered_map<HMONITOR, MonitorInfo> m_Taskbars;
 	std::vector<WindowsHook> m_Hooks;
 	EventHook m_CreateDestroyHook;
@@ -69,6 +70,8 @@ private:
 	bool SetAttribute(Window window, Config::TASKBAR_APPEARANCE config);
 	Config::TASKBAR_APPEARANCE GetConfigForMonitor(HMONITOR monitor, bool skipCheck = false);
 	bool RefreshAttribute(HMONITOR monitor, bool skipCheck = false);
+	void ShowAeroPeekButton(Window taskbar, bool show);
+	void RefreshAeroPeekButton();
 	long OnRequestAttributeRefresh(WPARAM, LPARAM lParam);
 
 	// Other

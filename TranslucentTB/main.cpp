@@ -207,36 +207,6 @@ long LoadConfig(...)
 
 #pragma endregion
 
-#pragma region Utilities
-
-// todo: move to worker?
-// void TogglePeek(const bool &status)
-// {
-// 	static bool cached_peek = true;
-// 	static Window cached_taskbar = Window(run.main_taskbar);
-//
-// 	if (status != cached_peek || cached_taskbar != run.main_taskbar)
-// 	{
-// 		Window _peek = Window::Find(L"TrayShowDesktopButtonWClass", L"", Window::Find(L"TrayNotifyWnd", L"", run.main_taskbar));
-//
-// 		if (!status)
-// 		{
-// 			SetWindowLong(_peek, GWL_EXSTYLE, GetWindowLong(_peek, GWL_EXSTYLE) | WS_EX_LAYERED);
-//
-// 			SetLayeredWindowAttributes(_peek, 0, 0, LWA_ALPHA);
-// 		}
-// 		else
-// 		{
-// 			SetWindowLong(_peek, GWL_EXSTYLE, GetWindowLong(_peek, GWL_EXSTYLE) & ~WS_EX_LAYERED);
-// 		}
-//
-// 		cached_peek = status;
-// 		cached_taskbar = Window(run.main_taskbar);
-// 	}
-// }
-
-#pragma endregion
-
 #pragma region Tray
 
 void RefreshAutostartMenu(HMENU menu, const winrt::Windows::Foundation::IAsyncOperation<Autostart::StartupState> &sender, ...)
