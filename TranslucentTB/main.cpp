@@ -87,9 +87,11 @@ static const std::unordered_map<ACCENT_STATE, uint32_t> TIMELINE_BUTTON_MAP = {
 };
 
 static const std::unordered_map<enum Config::PEEK, uint32_t> PEEK_BUTTON_MAP = {
-	{ Config::PEEK::Enabled,		ID_PEEK_SHOW    },
-	{ Config::PEEK::Dynamic,		ID_PEEK_DYNAMIC },
-	{ Config::PEEK::Disabled,		ID_PEEK_HIDE    }
+	{ Config::PEEK::Enabled,					ID_PEEK_SHOW    },
+	{ Config::PEEK::DynamicMainMonitor,			ID_PEEK_DYNAMIC_MAIN_MONITOR },
+	{ Config::PEEK::DynamicAnyMonitor,			ID_PEEK_DYNAMIC_ANY_MONITOR },
+	{ Config::PEEK::DynamicDesktopForeground,	ID_PEEK_DYNAMIC_FOREGROUND_DESKTOP },
+	{ Config::PEEK::Disabled,					ID_PEEK_HIDE    }
 };
 
 #pragma endregion
@@ -274,9 +276,6 @@ void RefreshMenu(HMENU menu)
 		TrayContextMenu::ControlsEnabled);
 	TrayContextMenu::RefreshBool(ID_TIMELINE_COLOR,  menu,
 		Config::TIMELINE_ENABLED  && Config::TIMELINE_APPEARANCE.ACCENT != ACCENT_NORMAL,
-		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(ID_PEEK_ONLY_MAIN,  menu,
-		Config::PEEK == Config::PEEK::Dynamic,
 		TrayContextMenu::ControlsEnabled);
 }
 
@@ -478,7 +477,6 @@ void InitializeTray(HINSTANCE hInstance)
 
 
 		tray.BindEnum(Config::PEEK, PEEK_BUTTON_MAP);
-		tray.BindBool(ID_PEEK_ONLY_MAIN, Config::PEEK_ONLY_MAIN, TrayContextMenu::Toggle);
 
 
 		tray.RegisterContextMenuCallback(ID_OPENLOG, []

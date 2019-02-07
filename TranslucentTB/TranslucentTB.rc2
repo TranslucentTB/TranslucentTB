@@ -34,92 +34,92 @@ BEGIN
     BEGIN
         POPUP "Regular"
         BEGIN
-            MENUITEM "Accent Color",                ID_REGULAR_COLOR
-            MENUITEM "",                            0, MFT_SEPARATOR
-            MENUITEM "Normal",                      ID_REGULAR_NORMAL
-            MENUITEM "Clear",                       ID_REGULAR_CLEAR
-            MENUITEM "Opaque",                      ID_REGULAR_OPAQUE
-            MENUITEM "Blur",                        ID_REGULAR_BLUR
-            MENUITEM "Fluent",                      ID_REGULAR_FLUENT
+            MENUITEM "Accent Color",                                   ID_REGULAR_COLOR
+            MENUITEM "",                                               0, MFT_SEPARATOR
+            MENUITEM "Normal",                                         ID_REGULAR_NORMAL
+            MENUITEM "Clear",                                          ID_REGULAR_CLEAR
+            MENUITEM "Opaque",                                         ID_REGULAR_OPAQUE
+            MENUITEM "Blur",                                           ID_REGULAR_BLUR
+            MENUITEM "Fluent",                                         ID_REGULAR_FLUENT
         END
         POPUP "Maximised window"
         BEGIN
-            MENUITEM "Enabled",                     ID_MAXIMISED
-            MENUITEM "Regular when peeking",        ID_MAXIMISED_PEEK
-            MENUITEM "Accent Color",                ID_MAXIMISED_COLOR
-            MENUITEM "",                            0, MFT_SEPARATOR
-            MENUITEM "Normal",                      ID_MAXIMISED_NORMAL
-            MENUITEM "Clear",                       ID_MAXIMISED_CLEAR
-            MENUITEM "Opaque",                      ID_MAXIMISED_OPAQUE
-            MENUITEM "Blur",                        ID_MAXIMISED_BLUR
-            MENUITEM "Fluent",                      ID_MAXIMISED_FLUENT
+            MENUITEM "Enabled",                                        ID_MAXIMISED
+            MENUITEM "Regular when peeking",                           ID_MAXIMISED_PEEK
+            MENUITEM "Accent Color",                                   ID_MAXIMISED_COLOR
+            MENUITEM "",                                               0, MFT_SEPARATOR
+            MENUITEM "Normal",                                         ID_MAXIMISED_NORMAL
+            MENUITEM "Clear",                                          ID_MAXIMISED_CLEAR
+            MENUITEM "Opaque",                                         ID_MAXIMISED_OPAQUE
+            MENUITEM "Blur",                                           ID_MAXIMISED_BLUR
+            MENUITEM "Fluent",                                         ID_MAXIMISED_FLUENT
         END
         POPUP "Start Menu opened"
         BEGIN
-            MENUITEM "Enabled",                     ID_START
-            MENUITEM "Accent Color",                ID_START_COLOR
-            MENUITEM "",                            0, MFT_SEPARATOR
-            MENUITEM "Normal",                      ID_START_NORMAL
-            MENUITEM "Clear",                       ID_START_CLEAR
-            MENUITEM "Opaque",                      ID_START_OPAQUE
-            MENUITEM "Blur",                        ID_START_BLUR
-            MENUITEM "Fluent",                      ID_START_FLUENT
+            MENUITEM "Enabled",                                        ID_START
+            MENUITEM "Accent Color",                                   ID_START_COLOR
+            MENUITEM "",                                               0, MFT_SEPARATOR
+            MENUITEM "Normal",                                         ID_START_NORMAL
+            MENUITEM "Clear",                                          ID_START_CLEAR
+            MENUITEM "Opaque",                                         ID_START_OPAQUE
+            MENUITEM "Blur",                                           ID_START_BLUR
+            MENUITEM "Fluent",                                         ID_START_FLUENT
         END
         POPUP "Cortana/Search opened"
         BEGIN
-            MENUITEM "Enabled",                     ID_CORTANA
-            MENUITEM "Accent Color",                ID_CORTANA_COLOR
-            MENUITEM "",                            0, MFT_SEPARATOR
-            MENUITEM "Normal",                      ID_CORTANA_NORMAL
-            MENUITEM "Clear",                       ID_CORTANA_CLEAR
-            MENUITEM "Opaque",                      ID_CORTANA_OPAQUE
-            MENUITEM "Blur",                        ID_CORTANA_BLUR
-            MENUITEM "Fluent",                      ID_CORTANA_FLUENT
+            MENUITEM "Enabled",                                        ID_CORTANA
+            MENUITEM "Accent Color",                                   ID_CORTANA_COLOR
+            MENUITEM "",                                               0, MFT_SEPARATOR
+            MENUITEM "Normal",                                         ID_CORTANA_NORMAL
+            MENUITEM "Clear",                                          ID_CORTANA_CLEAR
+            MENUITEM "Opaque",                                         ID_CORTANA_OPAQUE
+            MENUITEM "Blur",                                           ID_CORTANA_BLUR
+            MENUITEM "Fluent",                                         ID_CORTANA_FLUENT
         END
         POPUP "Timeline opened"
         BEGIN
-            MENUITEM "Enabled",                     ID_TIMELINE
-            MENUITEM "Accent Color",                ID_TIMELINE_COLOR
-            MENUITEM "",                            0, MFT_SEPARATOR
-            MENUITEM "Normal",                      ID_TIMELINE_NORMAL
-            MENUITEM "Clear",                       ID_TIMELINE_CLEAR
-            MENUITEM "Opaque",                      ID_TIMELINE_OPAQUE
-            MENUITEM "Blur",                        ID_TIMELINE_BLUR
-            MENUITEM "Fluent",                      ID_TIMELINE_FLUENT
+            MENUITEM "Enabled",                                        ID_TIMELINE
+            MENUITEM "Accent Color",                                   ID_TIMELINE_COLOR
+            MENUITEM "",                                               0, MFT_SEPARATOR
+            MENUITEM "Normal",                                         ID_TIMELINE_NORMAL
+            MENUITEM "Clear",                                          ID_TIMELINE_CLEAR
+            MENUITEM "Opaque",                                         ID_TIMELINE_OPAQUE
+            MENUITEM "Blur",                                           ID_TIMELINE_BLUR
+            MENUITEM "Fluent",                                         ID_TIMELINE_FLUENT
         END
-        MENUITEM "",                            0, MFT_SEPARATOR
+        MENUITEM "",                                               0, MFT_SEPARATOR
         POPUP "Show Aero Peek"
         BEGIN
-            MENUITEM "Always",                      ID_PEEK_SHOW
-            MENUITEM "Dynamic",                     ID_PEEK_DYNAMIC
-            MENUITEM "Never",                       ID_PEEK_HIDE
-            MENUITEM "",                            0, MFT_SEPARATOR
-            MENUITEM "Consider only main monitor",  ID_PEEK_ONLY_MAIN
+            MENUITEM "Always",                                         ID_PEEK_SHOW
+            MENUITEM "When a window is maximised on the main monitor", ID_PEEK_DYNAMIC_MAIN_MONITOR
+            MENUITEM "When a window is maximised on any monitor",      ID_PEEK_DYNAMIC_ANY_MONITOR
+            MENUITEM "When the desktop is the foreground window",      ID_PEEK_DYNAMIC_FOREGROUND_DESKTOP
+            MENUITEM "Never",                                          ID_PEEK_HIDE
         END
         POPUP "Advanced"
         BEGIN
-            MENUITEM "Open log file",               ID_OPENLOG
-            MENUITEM "Verbose logging",             ID_VERBOSE
-            MENUITEM "",                            0, MFT_SEPARATOR
-            MENUITEM "Save settings",               ID_SAVESETTINGS
-            MENUITEM "Reload settings",             ID_RELOADSETTINGS
-            MENUITEM "Edit settings",               ID_EDITSETTINGS
-            MENUITEM "Return to default settings",  ID_RETURNTODEFAULTSETTINGS
-            MENUITEM "",                            0, MFT_SEPARATOR
-            MENUITEM "Reload blacklist",            ID_RELOADDYNAMICBLACKLIST
-            MENUITEM "Edit blacklist",              ID_EDITDYNAMICBLACKLIST
-            MENUITEM "Return to default blacklist", ID_RETURNTODEFAULTBLACKLIST
-            MENUITEM "",                            0, MFT_SEPARATOR
-            MENUITEM "Clear window cache",          ID_CLEARWINDOWCACHE
-            MENUITEM "Clear blacklist cache",       ID_CLEARBLACKLISTCACHE
-            MENUITEM "Reset dynamic state",         ID_RESETWORKER
-            MENUITEM "",                            0, MFT_SEPARATOR
-            MENUITEM "About",                       ID_ABOUT
-            MENUITEM "Exit without saving",         ID_EXITWITHOUTSAVING
+            MENUITEM "Open log file",                                  ID_OPENLOG
+            MENUITEM "Verbose logging",                                ID_VERBOSE
+            MENUITEM "",                                               0, MFT_SEPARATOR
+            MENUITEM "Save settings",                                  ID_SAVESETTINGS
+            MENUITEM "Reload settings",                                ID_RELOADSETTINGS
+            MENUITEM "Edit settings",                                  ID_EDITSETTINGS
+            MENUITEM "Return to default settings",                     ID_RETURNTODEFAULTSETTINGS
+            MENUITEM "",                                               0, MFT_SEPARATOR
+            MENUITEM "Reload blacklist",                               ID_RELOADDYNAMICBLACKLIST
+            MENUITEM "Edit blacklist",                                 ID_EDITDYNAMICBLACKLIST
+            MENUITEM "Return to default blacklist",                    ID_RETURNTODEFAULTBLACKLIST
+            MENUITEM "",                                               0, MFT_SEPARATOR
+            MENUITEM "Clear window cache",                             ID_CLEARWINDOWCACHE
+            MENUITEM "Clear blacklist cache",                          ID_CLEARBLACKLISTCACHE
+            MENUITEM "Reset dynamic state",                            ID_RESETWORKER
+            MENUITEM "",                                               0, MFT_SEPARATOR
+            MENUITEM "About",                                          ID_ABOUT
+            MENUITEM "Exit without saving",                            ID_EXITWITHOUTSAVING
         END
-        MENUITEM "Open at boot",                ID_AUTOSTART
-        MENUITEM "Tips and tricks",             ID_TIPS
-        MENUITEM "Exit",                        ID_EXIT
+        MENUITEM "Open at boot",                                   ID_AUTOSTART
+        MENUITEM "Tips and tricks",                                ID_TIPS
+        MENUITEM "Exit",                                           ID_EXIT
     END
 END
 

@@ -35,12 +35,13 @@ public:
 	static TASKBAR_APPEARANCE TIMELINE_APPEARANCE;
 
 	// Peek
-	static enum /*class*/ PEEK {
-		Disabled, // Hide the button
-		Dynamic,  // Show when a window is maximised
-		Enabled   // Don't hide the button
+	static enum class PEEK {
+		Disabled,                 // Hide the button
+		DynamicMainMonitor,       // Show when a window is maximised on the main monitor
+		DynamicAnyMonitor,        // Show when a window is maximised on any monitor
+		DynamicDesktopForeground, // Show when the desktop is the foreground window
+		Enabled                   // Don't hide the button
 	} PEEK;
-	static bool PEEK_ONLY_MAIN;
 
 	// Advanced
 	static uint8_t SLEEP_TIME;
@@ -55,7 +56,7 @@ public:
 
 private:
 	static const std::wstring CLI_HELP_MSG;
-	static const std::pair<const std::wstring_view, bool &> FLAGS[10];
+	static const std::pair<const std::wstring_view, bool &> FLAGS[9];
 	static const std::pair<const std::wstring_view, TASKBAR_APPEARANCE &> APPEARANCES[5];
 
 	static std::vector<std::wstring> GetArgs();

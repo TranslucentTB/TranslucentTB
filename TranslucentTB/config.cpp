@@ -35,8 +35,7 @@ bool Config::TIMELINE_ENABLED = true;
 Config::TASKBAR_APPEARANCE Config::TIMELINE_APPEARANCE = { ACCENT_NORMAL, 0x0 };
 
 // Peek
-enum Config::PEEK Config::PEEK = PEEK::Dynamic;
-bool Config::PEEK_ONLY_MAIN = true;
+enum Config::PEEK Config::PEEK = PEEK::DynamicMainMonitor;
 
 // Advanced
 uint8_t Config::SLEEP_TIME = 10;
@@ -57,7 +56,6 @@ LR"(Flags (can be alone or take one of true or false):
 	--dynamic-start
 	--dynamic-cortana
 	--dynamic-timeline
-	--peek-only-main
 	--no-tray
 	--no-save
 	--no-hook
@@ -101,7 +99,6 @@ const std::pair<const std::wstring_view, bool &> Config::FLAGS[] = {
 	{ L"dynamic-start", START_ENABLED },
 	{ L"dynamic-cortana", CORTANA_ENABLED },
 	{ L"dynamic-timeline", TIMELINE_ENABLED },
-	{ L"peek-only-main", PEEK_ONLY_MAIN },
 	{ L"no-tray", NO_TRAY },
 	{ L"no-save", NO_SAVE },
 	{ L"no-hook", NO_HOOK },
@@ -251,15 +248,20 @@ void Config::Save(const std::wstring &file)
 	case PEEK::Disabled:
 		configstream << L"hide";
 		break;
-	case PEEK::Dynamic:
-		configstream << L"dynamic";
+	case PEEK::DynamicMainMonitor:
+		configstream << L"dynamic-main-monitor";
+		break;
+	case PEEK::DynamicAnyMonitor:
+		configstream << L"dynamic-any-monitor";
+		break;
+	case PEEK::DynamicDesktopForeground:
+		configstream << L"dynamic-desktop-foreground";
 		break;
 	case PEEK::Enabled:
 		configstream << L"show";
 		break;
 	}
 	configstream << std::endl;
-	configstream << L"peek-only-main=" << GetBoolText(PEEK_ONLY_MAIN) << L" ; Decides wether only the main monitor is considered when dynamic peek is enabled." << std::endl;
 
 	configstream << std::endl;
 	configstream << L"; Advanced settings" << std::endl;
@@ -499,9 +501,17 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 		{
 			PEEK = PEEK::Disabled;
 		}
-		else if (value == L"dynamic")
+		else if (value == L"dynamic" || value == L"dynamic-main-monitor")
 		{
-			PEEK = PEEK::Dynamic;
+			PEEK = PEEK::DynamicMainMonitor;
+		}
+		else if (value == L"dynamic-any-monitor")
+		{
+			PEEK = PEEK::DynamicAnyMonitor;
+		}
+		else if (value == L"dynamic-desktop-foreground")
+		{
+			PEEK = PEEK::DynamicDesktopForeground;
 		}
 		else if (value == L"show")
 		{

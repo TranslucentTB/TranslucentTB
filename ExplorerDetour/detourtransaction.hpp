@@ -145,7 +145,7 @@ public:
 		}
 	}
 
-	inline ~DetourTransaction()
+	inline ~DetourTransaction() noexcept(false)
 	{
 		if (m_IsTransacting)
 		{

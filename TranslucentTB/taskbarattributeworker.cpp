@@ -36,7 +36,8 @@ void TaskbarAttributeWorker::OnWindowStateChange(bool skipCheck, DWORD, Window w
 				m_Taskbars.at(monitor).MaximisedWindows.erase(window);
 			}
 
-			if (monitor == m_MainTaskbarMonitor)
+			if ((Config::PEEK == Config::PEEK::DynamicMainMonitor && monitor == m_MainTaskbarMonitor) ||
+				Config::PEEK == Config::PEEK::DynamicAnyMonitor)
 			{
 				RefreshAeroPeekButton();
 			}
@@ -257,14 +258,29 @@ void TaskbarAttributeWorker::ShowAeroPeekButton(Window taskbar, bool show)
 
 void TaskbarAttributeWorker::RefreshAeroPeekButton()
 {
-	const auto& taskbarInfo = m_Taskbars.at(m_MainTaskbarMonitor);
-	if (Config::PEEK == Config::PEEK::Enabled || Config::PEEK == Config::PEEK::Disabled)
+	const auto &taskbarInfo = m_Taskbars.at(m_MainTaskbarMonitor);
+
+	switch (Config::PEEK)
 	{
+	case Config::PEEK::Enabled:
+	case Config::PEEK::Disabled:
 		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, Config::PEEK == Config::PEEK::Enabled);
-	}
-	else
-	{
+		break;
+
+	case Config::PEEK::DynamicMainMonitor:
 		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, !taskbarInfo.MaximisedWindows.empty());
+		break;
+
+	case Config::PEEK::DynamicAnyMonitor:
+		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, std::any_of(m_Taskbars.begin(), m_Taskbars.end(), [](const auto &kvp)
+		{
+			return !kvp.second.MaximisedWindows.empty();
+		}));
+		break;
+
+	case Config::PEEK::DynamicDesktopForeground:
+		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, Window::DesktopWindow() != Window::ForegroundWindow());
+		break;
 	}
 }
 
