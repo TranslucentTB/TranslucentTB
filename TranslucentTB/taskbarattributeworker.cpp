@@ -86,7 +86,7 @@ void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 	}
 	else
 	{
-		HMONITOR old_start_mon = std::exchange(m_CurrentStartMonitor, nullptr);
+		const HMONITOR old_start_mon = std::exchange(m_CurrentStartMonitor, nullptr);
 		RefreshAttribute(old_start_mon);
 	}
 }
@@ -94,6 +94,17 @@ void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 HMONITOR TaskbarAttributeWorker::GetStartMenuMonitor()
 {
 	return Window::ForegroundWindow().monitor();
+}
+
+void TaskbarAttributeWorker::OnForegroundWindowChange(DWORD, Window window, LONG idObject, ...)
+{
+	if (idObject == OBJID_WINDOW && window.valid())
+	{
+		if (Config::PEEK == Config::PEEK::DynamicDesktopForeground)
+		{
+			RefreshAeroPeekButton();
+		}
+	}
 }
 
 void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, Window window, LONG idObject, ...)
@@ -279,8 +290,31 @@ void TaskbarAttributeWorker::RefreshAeroPeekButton()
 		break;
 
 	case Config::PEEK::DynamicDesktopForeground:
-		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, Window::DesktopWindow() != Window::ForegroundWindow());
+	{
+		// The desktop window has a child window with this class. The desktop window in
+		// itself has no unique identifier however, it's just one of the many WorkerW windows.
+		const Window foreground = Window::ForegroundWindow();
+		bool isDesktop = false;
+
+		if (foreground.monitor() == m_MainTaskbarMonitor)
+		{
+			isDesktop = foreground.find_child(L"SHELLDLL_DefView").valid();
+
+			// Consider the taskbar as part of the desktop if there is no maximised window
+			// on the main monitor.
+			if (!isDesktop)
+			{
+				const auto &mainMonInfo = m_Taskbars.at(m_MainTaskbarMonitor);
+				isDesktop = foreground == mainMonInfo.TaskbarWindow && mainMonInfo.MaximisedWindows.empty();
+			}
+		}
+
+		ShowAeroPeekButton(
+			taskbarInfo.TaskbarWindow,
+			!isDesktop
+		);
 		break;
+	}
 	}
 }
 
@@ -340,6 +374,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance) :
 	m_CurrentStartMonitor(nullptr),
 	m_IAV(winrt::create_instance<IAppVisibility>(CLSID_AppVisibility)),
 	m_IAVECookie(0),
+	m_ForegroundChangeHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, std::bind(&TaskbarAttributeWorker::OnForegroundWindowChange, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)),
 	m_MainTaskbarMonitor(nullptr),
 	m_CreateDestroyHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, std::bind(&TaskbarAttributeWorker::OnWindowCreateDestroy, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)),
 	m_returningToStock(false)

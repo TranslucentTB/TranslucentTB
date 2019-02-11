@@ -23,9 +23,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\detours\$(Platform)\detours.lib" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="hook.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

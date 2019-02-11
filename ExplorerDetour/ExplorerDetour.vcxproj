@@ -19,9 +19,6 @@
     <ClCompile Include="hook.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\detours\$(Platform)\detours.lib" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="detourexception.h" />
     <ClInclude Include="detourtransaction.hpp" />
     <ClInclude Include="dlldata.hpp" />

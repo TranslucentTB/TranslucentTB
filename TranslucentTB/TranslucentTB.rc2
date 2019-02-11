@@ -93,7 +93,7 @@ BEGIN
             MENUITEM "Always",                                         ID_PEEK_SHOW
             MENUITEM "When a window is maximised on the main monitor", ID_PEEK_DYNAMIC_MAIN_MONITOR
             MENUITEM "When a window is maximised on any monitor",      ID_PEEK_DYNAMIC_ANY_MONITOR
-            MENUITEM "When the desktop is the foreground window",      ID_PEEK_DYNAMIC_FOREGROUND_DESKTOP
+            MENUITEM "When the main monitor desktop is active",        ID_PEEK_DYNAMIC_FOREGROUND_DESKTOP
             MENUITEM "Never",                                          ID_PEEK_HIDE
         END
         POPUP "Advanced"

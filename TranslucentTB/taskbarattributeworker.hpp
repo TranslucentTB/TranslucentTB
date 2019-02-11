@@ -56,6 +56,10 @@ private:
 	void OnStartVisibilityChange(bool state);
 	HMONITOR GetStartMenuMonitor();
 
+	// Other
+	EventHook m_ForegroundChangeHook;
+	void OnForegroundWindowChange(DWORD, Window window, LONG idObject, ...);
+
 	// Taskbar find & hook
 	HMONITOR m_MainTaskbarMonitor;
 	std::unordered_map<HMONITOR, MonitorInfo> m_Taskbars;

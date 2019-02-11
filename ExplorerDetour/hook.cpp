@@ -1,10 +1,10 @@
 #include "hook.hpp"
+#include <detours.h>
 #include <WinBase.h>
 #include <winerror.h>
 #include <WinUser.h>
 
 #include "constants.hpp"
-#include "../detours/detours.h"
 #include "dlldata.hpp"
 #include "detourexception.h"
 #include "detourtransaction.hpp"

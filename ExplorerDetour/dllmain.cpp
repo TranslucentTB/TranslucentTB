@@ -3,7 +3,6 @@
 #include <WinBase.h>
 #include <WinUser.h>
 
-#include "../detours/detours.h"
 #include "constants.hpp"
 #include "dlldata.hpp"
 #include "hook.hpp"

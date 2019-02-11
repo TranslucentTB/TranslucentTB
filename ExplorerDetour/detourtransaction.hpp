@@ -1,11 +1,11 @@
 #pragma once
 #include "arch.h"
+#include <detours.h>
 #include <processthreadsapi.h>
 #include <type_traits>
 #include <windef.h>
 #include <winerror.h>
 
-#include "../detours/detours.h"
 #include "detourexception.h"
 
 class DetourTransaction {
