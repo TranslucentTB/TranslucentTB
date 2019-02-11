@@ -7,8 +7,8 @@
 #include <unordered_set>
 #include <vector>
 
-#include "eventhook.hpp"
-#include "window.hpp"
+#include "smart/eventhook.hpp"
+#include "windows/window.hpp"
 
 class Blacklist {
 public:

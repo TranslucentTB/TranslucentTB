@@ -18,59 +18,59 @@
     <ClCompile Include="blacklist.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="taskbarattributeworker.cpp" />
-    <ClCompile Include="eventhook.cpp" />
-    <ClCompile Include="findwindowiterator.cpp" />
+    <ClCompile Include="smart\eventhook.cpp" />
+    <ClCompile Include="windows\findwindowiterator.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="messagewindow.cpp" />
-    <ClCompile Include="taskdialog.cpp" />
-    <ClCompile Include="traycontextmenu.cpp" />
-    <ClCompile Include="trayicon.cpp" />
+    <ClCompile Include="windows\messagewindow.cpp" />
+    <ClCompile Include="taskdialogs\taskdialog.cpp" />
+    <ClCompile Include="tray\traycontextmenu.cpp" />
+    <ClCompile Include="tray\trayicon.cpp" />
     <ClCompile Include="ttberror.cpp" />
     <ClCompile Include="ttblog.cpp" />
     <ClCompile Include="uwp.cpp" />
     <ClCompile Include="win32.cpp" />
-    <ClCompile Include="window.cpp" />
-    <ClCompile Include="windowclass.cpp" />
+    <ClCompile Include="windows\window.cpp" />
+    <ClCompile Include="windows\windowclass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="appvisibilitysink.hpp" />
-    <ClInclude Include="autofree.hpp" />
+    <ClInclude Include="smart\autofree.hpp" />
     <ClInclude Include="autostart.hpp" />
-    <ClInclude Include="autounlock.hpp" />
+    <ClInclude Include="smart\autounlock.hpp" />
     <ClInclude Include="blacklist.hpp" />
-    <ClInclude Include="boolguard.hpp" />
-    <ClInclude Include="changenotificationhandle.hpp" />
-    <ClInclude Include="clipboardcontext.hpp" />
+    <ClInclude Include="smart\boolguard.hpp" />
+    <ClInclude Include="smart\changenotificationhandle.hpp" />
+    <ClInclude Include="smart\clipboardcontext.hpp" />
     <ClInclude Include="taskbarattributeworker.hpp" />
-    <ClInclude Include="eventhook.hpp" />
-    <ClInclude Include="findwindowiterator.hpp" />
+    <ClInclude Include="smart\eventhook.hpp" />
+    <ClInclude Include="windows\findwindowiterator.hpp" />
     <ClInclude Include="folderwatcher.hpp" />
-    <ClInclude Include="aboutdialog.hpp" />
-    <ClInclude Include="windowshook.hpp" />
-    <ClInclude Include="messagewindow.hpp" />
+    <ClInclude Include="taskdialogs\aboutdialog.hpp" />
+    <ClInclude Include="smart\windowshook.hpp" />
+    <ClInclude Include="windows\messagewindow.hpp" />
     <ClInclude Include="config.hpp" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="taskdialog.hpp" />
-    <ClInclude Include="traycontextmenu.hpp" />
-    <ClInclude Include="trayicon.hpp" />
+    <ClInclude Include="resources\ids.h" />
+    <ClInclude Include="taskdialogs\taskdialog.hpp" />
+    <ClInclude Include="tray\traycontextmenu.hpp" />
+    <ClInclude Include="tray\trayicon.hpp" />
     <ClInclude Include="ttberror.hpp" />
     <ClInclude Include="ttblog.hpp" />
     <ClInclude Include="util.hpp" />
     <ClInclude Include="uwp.hpp" />
-    <ClInclude Include="welcomedialog.hpp" />
+    <ClInclude Include="taskdialogs\welcomedialog.hpp" />
     <ClInclude Include="win32.hpp" />
-    <ClInclude Include="window.hpp" />
-    <ClInclude Include="windowclass.hpp" />
+    <ClInclude Include="windows\window.hpp" />
+    <ClInclude Include="windows\windowclass.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="TranslucentTB.rc2" />
+    <ResourceCompile Include="resources\TranslucentTB.rc2" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="config.cfg">
+    <Content Include="resources\config.cfg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <DeploymentContent>true</DeploymentContent>
     </Content>
-    <Content Include="dynamic-ws-exclude.csv">
+    <Content Include="resources\dynamic-ws-exclude.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <DeploymentContent>true</DeploymentContent>
     </Content>
@@ -82,15 +82,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="app.manifest" />
+    <Manifest Include="resources\app.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="TTB_black.ico" />
-    <Image Include="TTB_color.ico" />
-    <Image Include="TTB_white.ico" />
+    <Image Include="resources\TTB_black.ico" />
+    <Image Include="resources\TTB_color.ico" />
+    <Image Include="resources\TTB_white.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="AutoFree.natvis" />
-    <Natvis Include="Window.natvis" />
+    <Natvis Include="smart\AutoFree.natvis" />
+    <Natvis Include="windows\Window.natvis" />
   </ItemGroup>
 </Project>

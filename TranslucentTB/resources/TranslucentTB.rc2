@@ -2,7 +2,7 @@
 #error Please edit this file manually.
 #endif
 
-#include "resource.h"
+#include "ids.h"
 #include <ddeml.h>
 #include <winres.h>
 

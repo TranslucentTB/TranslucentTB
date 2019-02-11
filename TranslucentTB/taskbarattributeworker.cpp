@@ -1,6 +1,6 @@
 #include "taskbarattributeworker.hpp"
 #include "appvisibilitysink.hpp"
-#include "boolguard.hpp"
+#include "smart/boolguard.hpp"
 #include "blacklist.hpp"
 #include "constants.hpp"
 #include "../ExplorerDetour/hook.hpp"

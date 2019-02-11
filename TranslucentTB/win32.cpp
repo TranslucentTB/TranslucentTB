@@ -15,13 +15,13 @@
 #include <winnt.h>
 #include <winrt/base.h>
 
-#include "autofree.hpp"
-#include "autounlock.hpp"
-#include "clipboardcontext.hpp"
+#include "smart/autofree.hpp"
+#include "smart/autounlock.hpp"
+#include "smart/clipboardcontext.hpp"
 #include "constants.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
-#include "window.hpp"
+#include "windows/window.hpp"
 
 std::wstring win32::m_ExeLocation;
 

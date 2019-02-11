@@ -38,47 +38,44 @@
     <ClCompile Include="uwp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="eventhook.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="windowclass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="messagewindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="trayicon.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="traycontextmenu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="blacklist.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="findwindowiterator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="autostart.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="taskdialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="taskbarattributeworker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\findwindowiterator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\messagewindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="taskdialogs\taskdialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tray\traycontextmenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tray\trayicon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\windowclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="smart\eventhook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="win32.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -100,102 +97,105 @@
     <ClInclude Include="uwp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="window.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="eventhook.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windowclass.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="messagewindow.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="autofree.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="trayicon.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="traycontextmenu.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="blacklist.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="clipboardcontext.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="appvisibilitysink.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="findwindowiterator.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="changenotificationhandle.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="folderwatcher.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="taskdialog.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="welcomedialog.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="aboutdialog.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="taskbarattributeworker.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windowshook.hpp">
+    <ClInclude Include="taskdialogs\aboutdialog.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="autounlock.hpp">
+    <ClInclude Include="windows\findwindowiterator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="boolguard.hpp">
+    <ClInclude Include="windows\messagewindow.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="taskdialogs\taskdialog.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tray\traycontextmenu.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tray\trayicon.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="taskdialogs\welcomedialog.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\windowclass.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\window.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="smart\autofree.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="smart\autounlock.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="smart\boolguard.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="smart\changenotificationhandle.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="smart\clipboardcontext.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="smart\eventhook.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="smart\windowshook.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resources\ids.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="TranslucentTB.rc2">
+    <Content Include="resources\config.cfg">
+      <Filter>Stock Configuration Files</Filter>
+    </Content>
+    <Content Include="resources\dynamic-ws-exclude.csv">
+      <Filter>Stock Configuration Files</Filter>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resources\TTB_black.ico">
       <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    </Image>
+    <Image Include="resources\TTB_color.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\TTB_white.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="config.cfg">
-      <Filter>Stock Configuration Files</Filter>
-    </Content>
-    <Content Include="dynamic-ws-exclude.csv">
-      <Filter>Stock Configuration Files</Filter>
-    </Content>
+    <Natvis Include="windows\Window.natvis">
+      <Filter>Debug Visualizer Files</Filter>
+    </Natvis>
+    <Natvis Include="smart\AutoFree.natvis">
+      <Filter>Debug Visualizer Files</Filter>
+    </Natvis>
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="app.manifest">
+    <Manifest Include="resources\app.manifest">
       <Filter>Resource Files</Filter>
     </Manifest>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="TTB_white.ico">
+    <ResourceCompile Include="resources\TranslucentTB.rc2">
       <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="TTB_color.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="TTB_black.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <Natvis Include="AutoFree.natvis">
-      <Filter>Debug Visualizer Files</Filter>
-    </Natvis>
-    <Natvis Include="Window.natvis">
-      <Filter>Debug Visualizer Files</Filter>
-    </Natvis>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

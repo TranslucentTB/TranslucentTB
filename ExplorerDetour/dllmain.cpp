@@ -31,7 +31,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID)
 				DetourTransaction transaction;
 
 				transaction.update_current_thread();
-				transaction.detach(Hook::SetWindowCompositionAttribute, &Hook::SetWindowCompositionAttributeDetour);
+				transaction.detach(Hook::SetWindowCompositionAttribute, Hook::SetWindowCompositionAttributeDetour);
 				transaction.commit();
 
 				Hook::s_initState = Hook::InitializationState::NotInitialized;

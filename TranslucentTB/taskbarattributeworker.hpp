@@ -7,9 +7,9 @@
 #include <winrt/base.h>
 
 #include "config.hpp"
-#include "eventhook.hpp"
-#include "windowshook.hpp"
-#include "messagewindow.hpp"
+#include "smart/eventhook.hpp"
+#include "smart/windowshook.hpp"
+#include "windows/messagewindow.hpp"
 #include "swcadef.h"
 
 class TaskbarAttributeWorker : public MessageWindow {

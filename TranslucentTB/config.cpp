@@ -4,13 +4,13 @@
 #include <iomanip>
 #include <sstream>
 
-#include "autofree.hpp"
+#include "smart/autofree.hpp"
 #include "constants.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 #include "util.hpp"
 #include "win32.hpp"
-#include "window.hpp"
+#include "windows/window.hpp"
 
 // Defaults
 

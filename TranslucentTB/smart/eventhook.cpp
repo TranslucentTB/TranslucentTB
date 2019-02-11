@@ -1,6 +1,6 @@
 #include "eventhook.hpp"
 
-#include "ttblog.hpp"
+#include "../ttblog.hpp"
 
 void CALLBACK EventHook::RawHookCallback(HWINEVENTHOOK hook, DWORD event, HWND window, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime)
 {

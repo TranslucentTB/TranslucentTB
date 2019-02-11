@@ -1,7 +1,7 @@
 #include "traycontextmenu.hpp"
 
-#include "ttberror.hpp"
-#include "ttblog.hpp"
+#include "../ttberror.hpp"
+#include "../ttblog.hpp"
 
 long TrayContextMenu::TrayCallback(WPARAM, LPARAM lParam)
 {

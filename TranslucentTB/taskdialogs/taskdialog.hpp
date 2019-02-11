@@ -6,7 +6,7 @@
 #include <WinUser.h>
 #include <CommCtrl.h>
 
-#include "window.hpp"
+#include "../windows/window.hpp"
 
 class TTBTaskDialog {
 private:

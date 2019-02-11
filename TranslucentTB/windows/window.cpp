@@ -5,9 +5,9 @@
 #include <vector>
 
 #include "constants.hpp"
-#include "eventhook.hpp"
-#include "ttberror.hpp"
-#include "win32.hpp"
+#include "../smart/eventhook.hpp"
+#include "../ttberror.hpp"
+#include "../win32.hpp"
 
 const EventHook Window::m_ChangeHook(EVENT_OBJECT_NAMECHANGE, Window::HandleChangeEvent);
 const EventHook Window::m_DestroyHook(EVENT_OBJECT_DESTROY, Window::HandleDestroyEvent);

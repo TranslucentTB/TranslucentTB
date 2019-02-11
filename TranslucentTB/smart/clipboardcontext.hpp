@@ -2,8 +2,8 @@
 #include "arch.h"
 #include <WinUser.h>
 
-#include "window.hpp"
-#include "ttberror.hpp"
+#include "../windows/window.hpp"
+#include "../ttberror.hpp"
 
 class ClipboardContext {
 private:

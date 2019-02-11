@@ -1,5 +1,5 @@
 #pragma once
-#include "messagewindow.hpp"
+#include "../windows/messagewindow.hpp"
 #include <windef.h>
 
 class TrayIcon {

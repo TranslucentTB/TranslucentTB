@@ -10,12 +10,12 @@
 #include <winerror.h>
 #include <WinUser.h>
 
-#include "autofree.hpp"
+#include "smart/autofree.hpp"
 #include "constants.hpp"
 #include "ttblog.hpp"
 #include "util.hpp"
 #include "win32.hpp"
-#include "window.hpp"
+#include "windows/window.hpp"
 
 bool Error::Handle(HRESULT error, Level level, const wchar_t *message, const wchar_t *file, int line, const wchar_t *function)
 {

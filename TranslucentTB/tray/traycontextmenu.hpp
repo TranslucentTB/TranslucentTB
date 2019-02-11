@@ -7,8 +7,8 @@
 #include <windef.h>
 
 #include "trayicon.hpp"
-#include "util.hpp"
-#include "win32.hpp"
+#include "../util.hpp"
+#include "../win32.hpp"
 
 class TrayContextMenu : public TrayIcon {
 protected:

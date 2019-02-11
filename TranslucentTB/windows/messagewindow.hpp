@@ -3,7 +3,7 @@
 #include <functional>
 #include <unordered_map>
 
-#include "resource.h"
+#include "../resources/ids.h"
 #include "window.hpp"
 #include "windowclass.hpp"
 

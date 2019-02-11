@@ -58,7 +58,7 @@ public:
 	}
 
 	template<typename T>
-	inline void attach(T& function, const T& detour)
+	inline void attach(T& function, std::add_const_t<T> detour)
 	{
 		static_assert(std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>, "T is not a function pointer");
 
@@ -86,7 +86,7 @@ public:
 	}
 
 	template<typename T>
-	inline void detach(T &function, const T &detour)
+	inline void detach(T &function, std::add_const_t<T> detour)
 	{
 		static_assert(std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>, "T is not a function pointer");
 

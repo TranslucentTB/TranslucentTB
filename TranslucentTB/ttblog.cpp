@@ -12,10 +12,10 @@
 #include <winnt.h>
 #include <WinUser.h>
 
-#include "autofree.hpp"
+#include "smart/autofree.hpp"
 #include "constants.hpp"
 #include "win32.hpp"
-#include "window.hpp"
+#include "windows/window.hpp"
 #include "util.hpp"
 #include "uwp.hpp"
 

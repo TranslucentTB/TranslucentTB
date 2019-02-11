@@ -1,9 +1,9 @@
 #include "taskdialog.hpp"
 #include "constants.hpp"
-#include "resource.h"
-#include "ttberror.hpp"
-#include "util.hpp"
-#include "win32.hpp"
+#include "../resources/ids.h"
+#include "../ttberror.hpp"
+#include "../util.hpp"
+#include "../win32.hpp"
 
 HRESULT TTBTaskDialog::CallbackProc(HWND hwnd, UINT uNotification, WPARAM wParam, LPARAM lParam, LONG_PTR dwRefData)
 {

@@ -6,10 +6,10 @@
 #include <thread>
 #include <WinBase.h>
 
-#include "changenotificationhandle.hpp"
+#include "smart/changenotificationhandle.hpp"
 #include "constants.hpp"
 #include "ttberror.hpp"
-#include "window.hpp"
+#include "windows/window.hpp"
 
 class FolderWatcher {
 private:

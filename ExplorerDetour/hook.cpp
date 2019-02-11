@@ -1,6 +1,6 @@
 #include "hook.hpp"
-#include <detours.h>
 #include <WinBase.h>
+#include <detours.h>
 #include <winerror.h>
 #include <WinUser.h>
 
@@ -38,7 +38,7 @@ LRESULT Hook::CallWndProc(int nCode, WPARAM wParam, LPARAM lParam)
 				DetourTransaction transaction;
 
 				transaction.update_current_thread();
-				transaction.attach(Hook::SetWindowCompositionAttribute, &Hook::SetWindowCompositionAttributeDetour);
+				transaction.attach(Hook::SetWindowCompositionAttribute, Hook::SetWindowCompositionAttributeDetour);
 				transaction.commit();
 
 				s_initState = InitializationState::InitializationDone;

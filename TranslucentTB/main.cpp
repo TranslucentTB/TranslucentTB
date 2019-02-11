@@ -10,26 +10,26 @@
 #include <ShlObj.h>
 
 // Local stuff
-#include "aboutdialog.hpp"
-#include "autofree.hpp"
+#include "taskdialogs/aboutdialog.hpp"
+#include "smart/autofree.hpp"
 #include "autostart.hpp"
 #include "blacklist.hpp"
 #include "constants.hpp"
 #include "config.hpp"
 #include "folderwatcher.hpp"
-#include "messagewindow.hpp"
-#include "resource.h"
+#include "windows/messagewindow.hpp"
+#include "resources/ids.h"
 #include "swcadef.h"
-#include "welcomedialog.hpp"
+#include "taskdialogs/welcomedialog.hpp"
 #include "taskbarattributeworker.hpp"
-#include "traycontextmenu.hpp"
+#include "tray/traycontextmenu.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 #include "util.hpp"
 #include "uwp.hpp"
 #include "win32.hpp"
-#include "window.hpp"
-#include "windowclass.hpp"
+#include "windows/window.hpp"
+#include "windows/windowclass.hpp"
 
 #pragma region Data
 
