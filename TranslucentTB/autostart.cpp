@@ -3,8 +3,8 @@
 #include "ttblog.hpp"
 
 using namespace winrt;
-using namespace Windows::ApplicationModel;
-using namespace Windows::Foundation;
+using namespace winrt::Windows::ApplicationModel;
+using namespace winrt::Windows::Foundation;
 
 IAsyncOperation<StartupTask> Autostart::GetApplicationStartupTask()
 {
@@ -18,9 +18,9 @@ IAsyncOperation<StartupTaskState> Autostart::GetStartupState()
 	{
 		co_return (co_await GetApplicationStartupTask()).State();
 	}
-	catch (const winrt::hresult_error &error)
+	catch (const hresult_error &error)
 	{
-		ErrorHandle(error.code(), Error::Level::Log, L"Getting startup task state failed.");
+		WinrtExceptionHandle(error, Error::Level::Log, L"Getting startup task state failed.");
 		co_return StartupTaskState::Disabled;
 	}
 }
@@ -47,8 +47,5 @@ IAsyncAction Autostart::SetStartupState(StartupTaskState state)
 			throw std::invalid_argument("Can only set state to enabled or disabled");
 		}
 	}
-	catch (const winrt::hresult_error &error)
-	{
-		ErrorHandle(error.code(), Error::Level::Error, L"Changing startup task state failed!");
-	}
+	WinrtExceptionCatch(Error::Level::Error, L"Changing startup task state failed!")
 }

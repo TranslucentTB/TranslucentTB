@@ -4,7 +4,7 @@
 
 #include "config.hpp"
 #include "ttblog.hpp"
-#include "util.hpp"
+#include "util/strings.hpp"
 
 std::unordered_set<std::wstring> Blacklist::m_ClassBlacklist;
 std::unordered_set<std::wstring> Blacklist::m_FileBlacklist;

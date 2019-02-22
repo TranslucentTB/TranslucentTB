@@ -8,7 +8,8 @@
 #include "constants.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
-#include "util.hpp"
+#include "util/numbers.hpp"
+#include "util/strings.hpp"
 #include "win32.hpp"
 #include "windows/window.hpp"
 
@@ -134,7 +135,8 @@ void Config::Parse(const std::wstring &file)
 			line.erase(comment_index);
 		}
 
-		ParseKeyValuePair(std::move(line));
+		Util::ToLowerInplace(line);
+		ParseKeyValuePair(line);
 	}
 }
 
@@ -147,7 +149,10 @@ bool Config::ParseCommandLine()
 	}
 
 	std::for_each(args.begin(), args.end(), Util::ToLowerInplace);
-	std::for_each(args.begin(), args.end(), std::bind(&Util::TrimInplace, std::placeholders::_1, L' '));
+	std::for_each(args.begin(), args.end(), [](std::wstring &str)
+	{
+		Util::TrimInplace(str);
+	});
 
 	if (std::find(args.begin(), args.end(), L"--help") != args.end())
 	{
@@ -160,7 +165,7 @@ bool Config::ParseCommandLine()
 		// note: std::vector::erase's last item is non-inclusive, hence the use of + 2 over + 1
 
 		std::wostringstream output;
-		auto logger = [&output](const std::wstring &text)
+		auto logger = [&output](std::wstring_view text)
 		{
 			output << text << std::endl;
 		};
@@ -292,12 +297,14 @@ std::vector<std::wstring> Config::GetArgs()
 	}
 }
 
-void Config::UnknownValue(const std::wstring &key, const std::wstring &value, const std::function<void(const std::wstring &)> &logger)
+void Config::UnknownValue(std::wstring_view key, std::wstring_view value, const std::function<void(const std::wstring &)> &logger)
 {
-	logger(L"Unknown value found: " + value + L" (for key: " + key + L')');
+	std::wostringstream stream;
+	stream << L"Unknown value found: " << value << L" (for key: " << key << L')';
+	logger(stream.str());
 }
 
-bool Config::ParseAccent(const std::wstring &value, ACCENT_STATE &accent)
+bool Config::ParseAccent(std::wstring_view value, ACCENT_STATE &accent)
 {
 	if (value == L"blur")
 	{
@@ -327,24 +334,25 @@ bool Config::ParseAccent(const std::wstring &value, ACCENT_STATE &accent)
 	return true;
 }
 
-bool Config::ParseColor(std::wstring value, COLORREF &color)
+bool Config::ParseColor(std::wstring_view value, COLORREF &color)
 {
 	Util::TrimInplace(value);
 
 	Util::RemovePrefixInplace(value, L"#");
 	Util::RemovePrefixInplace(value, L"0x");
+	Util::RemovePrefixInplace(value, L"0X");
 
 	// Get only the last 6 characters, keeps compatibility with old version.
 	// It stored AARRGGBB in color, but now we store it as RRGGBB.
 	// We read AA from opacity instead, which the old version also saved alpha to.
 	if (value.length() > 6)
 	{
-		value.erase(0, 2);
+		value.remove_prefix(2);
 	}
 
 	try
 	{
-		color = (color & 0xFF000000) + (std::stoi(value, nullptr, 16) & 0x00FFFFFF);
+		color = (color & 0xFF000000) + (Util::ParseNumber<uint32_t, 16>(value) & 0x00FFFFFF);
 	}
 	catch (...)
 	{
@@ -354,11 +362,11 @@ bool Config::ParseColor(std::wstring value, COLORREF &color)
 	return true;
 }
 
-bool Config::ParseOpacity(const std::wstring &value, COLORREF &color)
+bool Config::ParseOpacity(std::wstring_view value, COLORREF &color)
 {
 	try
 	{
-		color = ((std::stoi(value) & 0xFF) << 24) + (color & 0x00FFFFFF);
+		color = (Util::ParseNumber<uint32_t>(value) << 24) + (color & 0x00FFFFFF);
 		return true;
 	}
 	catch (...)
@@ -367,7 +375,7 @@ bool Config::ParseOpacity(const std::wstring &value, COLORREF &color)
 	}
 }
 
-bool Config::ParseBool(const std::wstring &value, bool &setting)
+bool Config::ParseBool(std::wstring_view value, bool &setting)
 {
 	if (value == L"true" || value == L"enable" || value == L"enabled" )
 	{
@@ -385,25 +393,25 @@ bool Config::ParseBool(const std::wstring &value, bool &setting)
 	return true;
 }
 
-void Config::ParseKeyValuePair(std::wstring kvp)
+void Config::ParseKeyValuePair(std::wstring_view kvp)
 {
 	size_t split_index = kvp.find(L'=');
-	if (split_index != std::wstring::npos)
+	if (split_index != std::wstring_view::npos)
 	{
-		Util::ToLowerInplace(kvp);
-		std::wstring_view line_view = kvp;
-		std::wstring_view key = Util::Trim(line_view.substr(0, split_index));
-		std::wstring_view val = Util::Trim(line_view.substr(split_index + 1, line_view.length() - split_index - 1));
+		auto key = Util::Trim(kvp.substr(0, split_index));
+		auto val = Util::Trim(kvp.substr(split_index + 1, kvp.length() - split_index - 1));
 
-		ParseSingleConfigOption(std::wstring(key), std::wstring(val), Log::OutputMessage);
+		ParseSingleConfigOption(key, val, Log::OutputMessage);
 	}
 	else
 	{
-		Log::OutputMessage(L"Invalid line in configuration file: " + kvp);
+		std::wostringstream str;
+		str << L"Invalid line in configuration file: " << kvp;
+		Log::OutputMessage(str.str());
 	}
 }
 
-bool Config::ParseFlags(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger)
+bool Config::ParseFlags(std::wstring_view arg, std::wstring_view value, const logger_t &logger)
 {
 	for (const auto &pair : FLAGS)
 	{
@@ -421,7 +429,7 @@ bool Config::ParseFlags(const std::wstring &arg, const std::wstring &value, cons
 	return false;
 }
 
-void Config::ParseCliFlags(std::vector<std::wstring> &args, const std::function<void(const std::wstring &)> &logger)
+void Config::ParseCliFlags(std::vector<std::wstring> &args, const logger_t &logger)
 {
 	for (const auto &pair : FLAGS)
 	{
@@ -432,7 +440,7 @@ void Config::ParseCliFlags(std::vector<std::wstring> &args, const std::function<
 			{
 				if (!ParseBool(*(iter + 1), pair.second))
 				{
-					UnknownValue(std::wstring(Util::RemovePrefix(*iter, L"--")), *(iter + 1), logger);
+					UnknownValue(Util::RemovePrefix(*iter, L"--"), *(iter + 1), logger);
 				}
 
 				args.erase(iter, iter + 2);
@@ -446,12 +454,12 @@ void Config::ParseCliFlags(std::vector<std::wstring> &args, const std::function<
 	}
 }
 
-bool Config::ParseAppearances(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger)
+bool Config::ParseAppearances(std::wstring_view arg, std::wstring_view value, const logger_t &logger)
 {
 	for (const auto &pair : APPEARANCES)
 	{
-		std::wstring prefix(pair.first);
-		if (arg == prefix + L"accent")
+		auto noPrefixArg = Util::RemovePrefix(arg, pair.first);
+		if (noPrefixArg == L"accent")
 		{
 			if (!ParseAccent(value, pair.second.ACCENT))
 			{
@@ -460,7 +468,7 @@ bool Config::ParseAppearances(const std::wstring &arg, const std::wstring &value
 
 			return true;
 		}
-		else if (arg == prefix + L"color" || arg == prefix + L"tint")
+		else if (noPrefixArg == L"color" || noPrefixArg == L"tint")
 		{
 			if (!ParseColor(value, pair.second.COLOR))
 			{
@@ -469,7 +477,7 @@ bool Config::ParseAppearances(const std::wstring &arg, const std::wstring &value
 
 			return true;
 		}
-		else if (arg == prefix + L"opacity")
+		else if (noPrefixArg == L"opacity")
 		{
 			if (!ParseOpacity(value, pair.second.COLOR))
 			{
@@ -483,7 +491,7 @@ bool Config::ParseAppearances(const std::wstring &arg, const std::wstring &value
 	return false;
 }
 
-void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger)
+void Config::ParseSingleConfigOption(std::wstring_view arg, std::wstring_view value, const logger_t &logger)
 {
 	if (ParseFlags(arg, value, logger))
 	{
@@ -526,20 +534,24 @@ void Config::ParseSingleConfigOption(const std::wstring &arg, const std::wstring
 	{
 		try
 		{
-			SLEEP_TIME = Util::ClampTo<uint8_t>(std::stoi(value));
+			SLEEP_TIME = Util::ParseNumber<uint8_t>(value);
 		}
 		catch (...)
 		{
-			logger(L"Could not parse sleep time: " + value);
+			std::wostringstream str;
+			str << L"Could not parse sleep time: " << value;
+			logger(str.str());
 		}
 	}
 	else
 	{
-		logger(L"Unknown key found: " + arg);
+		std::wostringstream str;
+		str << L"Unknown key found: " << arg;
+		logger(str.str());
 	}
 }
 
-std::wstring Config::GetAccentText(ACCENT_STATE accent)
+std::wstring_view Config::GetAccentText(ACCENT_STATE accent)
 {
 	switch (accent)
 	{
@@ -572,7 +584,7 @@ std::wstring Config::GetOpacityText(uint32_t color)
 	return stream.str();
 }
 
-std::wstring Config::GetBoolText(bool value)
+std::wstring_view Config::GetBoolText(bool value)
 {
 	return value ? L"enable" : L"disable";
 }

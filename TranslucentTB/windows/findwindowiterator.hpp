@@ -1,26 +1,31 @@
 #pragma once
-#include "arch.h"
 #include <string>
-#include <windef.h>
 
-class Window; // Forward declare to prevent circular deps
+#include "window.hpp"
 
 class FindWindowIterator {
 private:
 	const std::wstring *m_class;
 	const std::wstring *m_name;
-	HWND m_parent;
+	Window m_parent, m_currentWindow;
 
-	HWND m_currentWindow;
+	inline void MoveNext()
+	{
+		m_currentWindow = Window::Find(*m_class, *m_name, m_parent, m_currentWindow);
+	}
 
-	FindWindowIterator();
-	void MoveNext();
+	inline FindWindowIterator(const std::wstring *className, const std::wstring *windowName, Window parent) :
+		m_class(className),
+		m_name(windowName),
+		m_parent(parent),
+		m_currentWindow(Window::NullWindow)
+	{
+		MoveNext();
+	}
+
+	friend class Window::FindEnum;
 
 public:
-	static const FindWindowIterator EndIterator;
-
-	FindWindowIterator(const std::wstring *className, const std::wstring *windowName, HWND parent);
-
 	inline FindWindowIterator &operator ++()
 	{
 		MoveNext();
@@ -37,5 +42,8 @@ public:
 		return !operator==(right);
 	}
 
-	Window operator *() const;
+	inline Window operator *() const
+	{
+		return m_currentWindow;
+	}
 };

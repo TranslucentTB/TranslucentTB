@@ -10,33 +10,32 @@
 #include <ShlObj.h>
 
 // Local stuff
-#include "taskdialogs/aboutdialog.hpp"
-#include "smart/autofree.hpp"
 #include "autostart.hpp"
 #include "blacklist.hpp"
-#include "constants.hpp"
 #include "config.hpp"
+#include "constants.hpp"
 #include "folderwatcher.hpp"
-#include "windows/messagewindow.hpp"
 #include "resources/ids.h"
+#include "smart/autofree.hpp"
 #include "swcadef.h"
-#include "taskdialogs/welcomedialog.hpp"
 #include "taskbarattributeworker.hpp"
+#include "taskdialogs/aboutdialog.hpp"
+#include "taskdialogs/welcomedialog.hpp"
 #include "tray/traycontextmenu.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
-#include "util.hpp"
 #include "uwp.hpp"
 #include "win32.hpp"
+#include "windows/messagewindow.hpp"
 #include "windows/window.hpp"
 #include "windows/windowclass.hpp"
 
 #pragma region Data
 
 enum class EXITREASON {
-	NewInstance,		// New instance told us to exit
-	UserAction,			// Triggered by the user
-	UserActionNoSave	// Triggered by the user, but doesn't saves config
+	NewInstance,	 // New instance told us to exit
+	UserAction,		 // Triggered by the user
+	UserActionNoSave // Triggered by the user, but doesn't saves config
 };
 
 static struct {
@@ -47,51 +46,51 @@ static struct {
 } run;
 
 static const std::unordered_map<ACCENT_STATE, uint32_t> REGULAR_BUTTOM_MAP = {
-	{ ACCENT_NORMAL,						ID_REGULAR_NORMAL },
-	{ ACCENT_ENABLE_TRANSPARENTGRADIENT,	ID_REGULAR_CLEAR  },
-	{ ACCENT_ENABLE_GRADIENT,				ID_REGULAR_OPAQUE },
-	{ ACCENT_ENABLE_BLURBEHIND,				ID_REGULAR_BLUR   },
-	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,		ID_REGULAR_FLUENT }
+	{ ACCENT_NORMAL,                     ID_REGULAR_NORMAL },
+	{ ACCENT_ENABLE_TRANSPARENTGRADIENT, ID_REGULAR_CLEAR  },
+	{ ACCENT_ENABLE_GRADIENT,            ID_REGULAR_OPAQUE },
+	{ ACCENT_ENABLE_BLURBEHIND,          ID_REGULAR_BLUR   },
+	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,   ID_REGULAR_FLUENT }
 };
 
 static const std::unordered_map<ACCENT_STATE, uint32_t> MAXIMISED_BUTTON_MAP = {
-	{ ACCENT_NORMAL,						ID_MAXIMISED_NORMAL },
-	{ ACCENT_ENABLE_TRANSPARENTGRADIENT,	ID_MAXIMISED_CLEAR  },
-	{ ACCENT_ENABLE_GRADIENT,				ID_MAXIMISED_OPAQUE },
-	{ ACCENT_ENABLE_BLURBEHIND,				ID_MAXIMISED_BLUR   },
-	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,		ID_MAXIMISED_FLUENT }
+	{ ACCENT_NORMAL,                     ID_MAXIMISED_NORMAL },
+	{ ACCENT_ENABLE_TRANSPARENTGRADIENT, ID_MAXIMISED_CLEAR },
+	{ ACCENT_ENABLE_GRADIENT,            ID_MAXIMISED_OPAQUE },
+	{ ACCENT_ENABLE_BLURBEHIND,          ID_MAXIMISED_BLUR },
+	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,   ID_MAXIMISED_FLUENT }
 };
 
 static const std::unordered_map<ACCENT_STATE, uint32_t> START_BUTTON_MAP = {
-	{ ACCENT_NORMAL,						ID_START_NORMAL },
-	{ ACCENT_ENABLE_TRANSPARENTGRADIENT,	ID_START_CLEAR  },
-	{ ACCENT_ENABLE_GRADIENT,				ID_START_OPAQUE },
-	{ ACCENT_ENABLE_BLURBEHIND,				ID_START_BLUR   },
-	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,		ID_START_FLUENT }
+	{ ACCENT_NORMAL,                     ID_START_NORMAL },
+	{ ACCENT_ENABLE_TRANSPARENTGRADIENT, ID_START_CLEAR },
+	{ ACCENT_ENABLE_GRADIENT,            ID_START_OPAQUE },
+	{ ACCENT_ENABLE_BLURBEHIND,          ID_START_BLUR },
+	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,   ID_START_FLUENT }
 };
 
 static const std::unordered_map<ACCENT_STATE, uint32_t> CORTANA_BUTTON_MAP = {
-	{ ACCENT_NORMAL,						ID_CORTANA_NORMAL },
-	{ ACCENT_ENABLE_TRANSPARENTGRADIENT,	ID_CORTANA_CLEAR  },
-	{ ACCENT_ENABLE_GRADIENT,				ID_CORTANA_OPAQUE },
-	{ ACCENT_ENABLE_BLURBEHIND,				ID_CORTANA_BLUR   },
-	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,		ID_CORTANA_FLUENT }
+	{ ACCENT_NORMAL,                     ID_CORTANA_NORMAL },
+	{ ACCENT_ENABLE_TRANSPARENTGRADIENT, ID_CORTANA_CLEAR },
+	{ ACCENT_ENABLE_GRADIENT,            ID_CORTANA_OPAQUE },
+	{ ACCENT_ENABLE_BLURBEHIND,          ID_CORTANA_BLUR },
+	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,   ID_CORTANA_FLUENT }
 };
 
 static const std::unordered_map<ACCENT_STATE, uint32_t> TIMELINE_BUTTON_MAP = {
-	{ ACCENT_NORMAL,						ID_TIMELINE_NORMAL },
-	{ ACCENT_ENABLE_TRANSPARENTGRADIENT,	ID_TIMELINE_CLEAR  },
-	{ ACCENT_ENABLE_GRADIENT,				ID_TIMELINE_OPAQUE },
-	{ ACCENT_ENABLE_BLURBEHIND,				ID_TIMELINE_BLUR   },
-	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,		ID_TIMELINE_FLUENT }
+	{ ACCENT_NORMAL,                     ID_TIMELINE_NORMAL },
+	{ ACCENT_ENABLE_TRANSPARENTGRADIENT, ID_TIMELINE_CLEAR },
+	{ ACCENT_ENABLE_GRADIENT,            ID_TIMELINE_OPAQUE },
+	{ ACCENT_ENABLE_BLURBEHIND,          ID_TIMELINE_BLUR },
+	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,   ID_TIMELINE_FLUENT }
 };
 
 static const std::unordered_map<enum Config::PEEK, uint32_t> PEEK_BUTTON_MAP = {
-	{ Config::PEEK::Enabled,					ID_PEEK_SHOW    },
-	{ Config::PEEK::DynamicMainMonitor,			ID_PEEK_DYNAMIC_MAIN_MONITOR },
-	{ Config::PEEK::DynamicAnyMonitor,			ID_PEEK_DYNAMIC_ANY_MONITOR },
-	{ Config::PEEK::DynamicDesktopForeground,	ID_PEEK_DYNAMIC_FOREGROUND_DESKTOP },
-	{ Config::PEEK::Disabled,					ID_PEEK_HIDE    }
+	{ Config::PEEK::Enabled,                  ID_PEEK_SHOW },
+	{ Config::PEEK::DynamicMainMonitor,       ID_PEEK_DYNAMIC_MAIN_MONITOR },
+	{ Config::PEEK::DynamicAnyMonitor,        ID_PEEK_DYNAMIC_ANY_MONITOR },
+	{ Config::PEEK::DynamicDesktopForeground, ID_PEEK_DYNAMIC_FOREGROUND_DESKTOP },
+	{ Config::PEEK::Disabled,                 ID_PEEK_HIDE }
 };
 
 #pragma endregion
@@ -142,10 +141,7 @@ void GetPaths()
 		run.config_file = configFile.get();
 		run.exclude_file = excludeFile.get();
 	}
-	catch (const winrt::hresult_error &error)
-	{
-		ErrorHandle(error.code(), Error::Level::Fatal, L"Getting application folder paths failed!");
-	}
+	WinrtExceptionCatch(Error::Level::Fatal, L"Getting application folder paths failed!")
 }
 
 void ApplyStock(const std::wstring &filename)
@@ -215,13 +211,10 @@ void RefreshAutostartMenu(HMENU menu, const winrt::Windows::Foundation::IAsyncOp
 {
 	const auto state = sender.GetResults();
 
-	TrayContextMenu::RefreshBool(ID_AUTOSTART, menu, !(state == Autostart::StartupState::DisabledByUser
-		|| state == Autostart::StartupState::DisabledByPolicy
-		|| state == Autostart::StartupState::EnabledByPolicy),
+	TrayContextMenu::RefreshBool(ID_AUTOSTART, menu, !(state == Autostart::StartupState::DisabledByUser || state == Autostart::StartupState::DisabledByPolicy || state == Autostart::StartupState::EnabledByPolicy),
 		TrayContextMenu::ControlsEnabled);
 
-	TrayContextMenu::RefreshBool(ID_AUTOSTART, menu, state == Autostart::StartupState::Enabled
-		|| state == Autostart::StartupState::EnabledByPolicy,
+	TrayContextMenu::RefreshBool(ID_AUTOSTART, menu, state == Autostart::StartupState::Enabled || state == Autostart::StartupState::EnabledByPolicy,
 		TrayContextMenu::Toggle);
 
 	std::wstring autostart_text;
@@ -262,20 +255,20 @@ void RefreshMenu(HMENU menu)
 
 	TrayContextMenu::RefreshBool(ID_SAVESETTINGS, menu, !Config::NO_SAVE, TrayContextMenu::ControlsEnabled);
 
-	TrayContextMenu::RefreshBool(ID_REGULAR_COLOR,   menu,
+	TrayContextMenu::RefreshBool(ID_REGULAR_COLOR, menu,
 		Config::REGULAR_APPEARANCE.ACCENT != ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
 	TrayContextMenu::RefreshBool(ID_MAXIMISED_COLOR, menu,
 		Config::MAXIMISED_ENABLED && Config::MAXIMISED_APPEARANCE.ACCENT != ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(ID_START_COLOR,     menu,
-		Config::START_ENABLED     && Config::START_APPEARANCE.ACCENT != ACCENT_NORMAL,
+	TrayContextMenu::RefreshBool(ID_START_COLOR, menu,
+		Config::START_ENABLED && Config::START_APPEARANCE.ACCENT != ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(ID_CORTANA_COLOR,     menu,
-		Config::CORTANA_ENABLED   && Config::CORTANA_APPEARANCE.ACCENT != ACCENT_NORMAL,
+	TrayContextMenu::RefreshBool(ID_CORTANA_COLOR, menu,
+		Config::CORTANA_ENABLED && Config::CORTANA_APPEARANCE.ACCENT != ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(ID_TIMELINE_COLOR,  menu,
-		Config::TIMELINE_ENABLED  && Config::TIMELINE_APPEARANCE.ACCENT != ACCENT_NORMAL,
+	TrayContextMenu::RefreshBool(ID_TIMELINE_COLOR, menu,
+		Config::TIMELINE_ENABLED && Config::TIMELINE_APPEARANCE.ACCENT != ACCENT_NORMAL,
 		TrayContextMenu::ControlsEnabled);
 }
 
@@ -438,8 +431,8 @@ void InitializeTray(HINSTANCE hInstance)
 		tray.BindEnum(Config::REGULAR_APPEARANCE.ACCENT, REGULAR_BUTTOM_MAP);
 
 
-		tray.BindBool(ID_MAXIMISED,      Config::MAXIMISED_ENABLED,         TrayContextMenu::Toggle);
-		tray.BindBool(ID_MAXIMISED_PEEK, Config::MAXIMISED_ENABLED,         TrayContextMenu::ControlsEnabled);
+		tray.BindBool(ID_MAXIMISED, Config::MAXIMISED_ENABLED, TrayContextMenu::Toggle);
+		tray.BindBool(ID_MAXIMISED_PEEK, Config::MAXIMISED_ENABLED, TrayContextMenu::ControlsEnabled);
 		tray.BindBool(ID_MAXIMISED_PEEK, Config::MAXIMISED_REGULAR_ON_PEEK, TrayContextMenu::Toggle);
 		tray.BindColor(ID_MAXIMISED_COLOR, Config::MAXIMISED_APPEARANCE.COLOR);
 		tray.BindEnum(Config::MAXIMISED_APPEARANCE.ACCENT, MAXIMISED_BUTTON_MAP);
@@ -542,10 +535,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	{
 		winrt::init_apartment(winrt::apartment_type::single_threaded);
 	}
-	catch (const winrt::hresult_error &error)
-	{
-		ErrorHandle(error.code(), Error::Level::Fatal, L"Initialization of Windows Runtime failed.");
-	}
+	WinrtExceptionCatch(Error::Level::Fatal, L"Initialization of Windows Runtime failed.")
 
 	// If there already is another instance running, tell it to exit
 	if (!IsSingleInstance())

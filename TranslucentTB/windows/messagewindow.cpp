@@ -2,7 +2,7 @@
 #include <algorithm>
 
 #include "../ttberror.hpp"
-#include "../util.hpp"
+#include "util/random.hpp"
 
 LRESULT MessageWindow::WindowProcedure(Window window, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
 {

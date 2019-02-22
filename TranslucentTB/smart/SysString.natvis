@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="SysString">
+    <DisplayString>{m_str,su}</DisplayString>
+    <StringView>m_str,su</StringView>
+  </Type>
+</AutoVisualizer>

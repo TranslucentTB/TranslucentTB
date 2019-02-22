@@ -55,25 +55,27 @@ public:
 	static void Save(const std::wstring &file);
 
 private:
+	using logger_t = std::function<void(std::wstring_view)>;
+
 	static const std::wstring CLI_HELP_MSG;
 	static const std::pair<const std::wstring_view, bool &> FLAGS[9];
 	static const std::pair<const std::wstring_view, TASKBAR_APPEARANCE &> APPEARANCES[5];
 
 	static std::vector<std::wstring> GetArgs();
 
-	static void UnknownValue(const std::wstring &key, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
-	static bool ParseAccent(const std::wstring &value, ACCENT_STATE &accent);
-	static bool ParseColor(std::wstring value, COLORREF &color);
-	static bool ParseOpacity(const std::wstring &value, COLORREF &color);
-	static bool ParseBool(const std::wstring &value, bool &setting);
-	static void ParseKeyValuePair(std::wstring kvp);
-	static bool ParseFlags(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
-	static void ParseCliFlags(std::vector<std::wstring> &args, const std::function<void(const std::wstring &)> &logger);
-	static bool ParseAppearances(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
-	static void ParseSingleConfigOption(const std::wstring &arg, const std::wstring &value, const std::function<void(const std::wstring &)> &logger);
+	static void UnknownValue(std::wstring_view key, std::wstring_view value, const std::function<void(const std::wstring &)> &logger);
+	static bool ParseAccent(std::wstring_view value, ACCENT_STATE &accent);
+	static bool ParseColor(std::wstring_view value, COLORREF &color);
+	static bool ParseOpacity(std::wstring_view value, COLORREF &color);
+	static bool ParseBool(std::wstring_view value, bool &setting);
+	static void ParseKeyValuePair(std::wstring_view kvp);
+	static bool ParseFlags(std::wstring_view arg, std::wstring_view value, const logger_t &logger);
+	static void ParseCliFlags(std::vector<std::wstring> &args, const logger_t &logger);
+	static bool ParseAppearances(std::wstring_view arg, std::wstring_view value, const logger_t &logger);
+	static void ParseSingleConfigOption(std::wstring_view arg, std::wstring_view value, const logger_t &logger);
 
-	static std::wstring GetAccentText(ACCENT_STATE accent);
+	static std::wstring_view GetAccentText(ACCENT_STATE accent);
 	static std::wstring GetColorText(uint32_t color);
 	static std::wstring GetOpacityText(uint32_t color);
-	static std::wstring GetBoolText(bool value);
+	static std::wstring_view GetBoolText(bool value);
 };

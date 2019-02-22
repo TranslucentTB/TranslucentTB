@@ -16,7 +16,7 @@
 #include "constants.hpp"
 #include "win32.hpp"
 #include "windows/window.hpp"
-#include "util.hpp"
+#include "util/time.hpp"
 #include "uwp.hpp"
 
 std::optional<winrt::file_handle> Log::m_FileHandle;

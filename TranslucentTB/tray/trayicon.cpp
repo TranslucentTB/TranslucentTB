@@ -4,7 +4,7 @@
 #include "constants.hpp"
 #include "../ttberror.hpp"
 #include "../ttblog.hpp"
-#include "../util.hpp"
+#include "util/random.hpp"
 #include "../win32.hpp"
 
 bool TrayIcon::IsSystemLightThemeEnabled()

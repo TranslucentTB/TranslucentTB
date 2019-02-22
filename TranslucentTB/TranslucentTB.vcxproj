@@ -19,7 +19,6 @@
     <ClCompile Include="config.cpp" />
     <ClCompile Include="taskbarattributeworker.cpp" />
     <ClCompile Include="smart\eventhook.cpp" />
-    <ClCompile Include="windows\findwindowiterator.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="windows\messagewindow.cpp" />
     <ClCompile Include="taskdialogs\taskdialog.cpp" />
@@ -41,8 +40,10 @@
     <ClInclude Include="smart\boolguard.hpp" />
     <ClInclude Include="smart\changenotificationhandle.hpp" />
     <ClInclude Include="smart\clipboardcontext.hpp" />
+    <ClInclude Include="smart\sysstring.hpp" />
     <ClInclude Include="taskbarattributeworker.hpp" />
     <ClInclude Include="smart\eventhook.hpp" />
+    <ClInclude Include="windows\findenum.hpp" />
     <ClInclude Include="windows\findwindowiterator.hpp" />
     <ClInclude Include="folderwatcher.hpp" />
     <ClInclude Include="taskdialogs\aboutdialog.hpp" />
@@ -55,7 +56,6 @@
     <ClInclude Include="tray\trayicon.hpp" />
     <ClInclude Include="ttberror.hpp" />
     <ClInclude Include="ttblog.hpp" />
-    <ClInclude Include="util.hpp" />
     <ClInclude Include="uwp.hpp" />
     <ClInclude Include="taskdialogs\welcomedialog.hpp" />
     <ClInclude Include="win32.hpp" />
@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="smart\AutoFree.natvis" />
+    <Natvis Include="smart\SysString.natvis" />
     <Natvis Include="windows\Window.natvis" />
   </ItemGroup>
 </Project>

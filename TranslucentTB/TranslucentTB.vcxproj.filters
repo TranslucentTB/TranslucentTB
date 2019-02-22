@@ -50,9 +50,6 @@
     <ClCompile Include="taskbarattributeworker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\findwindowiterator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\messagewindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -80,9 +77,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="config.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="util.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ttberror.hpp">
@@ -160,6 +154,12 @@
     <ClInclude Include="resources\ids.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="smart\sysstring.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\findenum.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Content Include="resources\config.cfg">
@@ -185,6 +185,9 @@
       <Filter>Debug Visualizer Files</Filter>
     </Natvis>
     <Natvis Include="smart\AutoFree.natvis">
+      <Filter>Debug Visualizer Files</Filter>
+    </Natvis>
+    <Natvis Include="smart\SysString.natvis">
       <Filter>Debug Visualizer Files</Filter>
     </Natvis>
   </ItemGroup>
