@@ -20,8 +20,8 @@ class Window::FindEnum {
 		 return { &m_class, &m_name, m_parent };
 	 }
 
-	 inline FindWindowIterator end()
+	 constexpr FindWindowIterator end()
 	 {
-		 return { nullptr, nullptr, Window::NullWindow };
+		 return { };
 	 }
 };

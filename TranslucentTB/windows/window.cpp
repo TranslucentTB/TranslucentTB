@@ -16,7 +16,6 @@ std::unordered_map<Window, std::wstring> Window::m_ClassNames;
 std::unordered_map<Window, std::wstring> Window::m_Filenames;
 std::unordered_map<Window, std::wstring> Window::m_Titles;
 
-const Window Window::NullWindow = NULL;
 const Window Window::BroadcastWindow = HWND_BROADCAST;
 const Window Window::MessageOnlyWindow = HWND_MESSAGE;
 

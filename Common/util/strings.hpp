@@ -35,7 +35,7 @@ namespace Util {
 		struct string_lowercase_hash {
 			inline std::size_t operator()(std::wstring_view k) const noexcept
 			{
-				static const std::hash<std::wstring> hasher;
+				static constexpr std::hash<std::wstring> hasher;
 				return hasher(ToLower(std::wstring(k)));
 			}
 		};
@@ -77,6 +77,7 @@ namespace Util {
 		if (first == std::wstring_view::npos)
 		{
 			str = { };
+			return;
 		}
 
 		str.remove_prefix(first);

@@ -82,7 +82,7 @@ namespace Util {
 				}
 
 				T result {};
-				for (std::size_t i = number.length() - 1; i >= 0; i--)
+				for (std::size_t i = 0; i < number.length(); i++)
 				{
 					if (impl::IsDecimalDigit(number[i]))
 					{
@@ -118,7 +118,7 @@ namespace Util {
 				}
 
 				T result {};
-				for (std::size_t i = number.length() - 1; i >= 0; i--)
+				for (std::size_t i = 0; i < number.length(); i++)
 				{
 					const T power = 1 << ((number.length() - i - 1) * 4);
 					if (impl::IsDecimalDigit(number[i]))

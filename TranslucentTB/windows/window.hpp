@@ -148,13 +148,15 @@ public:
 	friend struct std::hash<Window>;
 };
 
+inline constexpr Window Window::NullWindow = nullptr;
+
 // Specialize std::hash to allow the use of Window as unordered_map and unordered_set key.
 namespace std {
 	template<>
 	struct hash<Window> {
 		inline std::size_t operator()(Window k) const noexcept
 		{
-			static const std::hash<HWND> hasher;
+			static constexpr std::hash<HWND> hasher;
 			return hasher(k.m_WindowHandle);
 		}
 	};
