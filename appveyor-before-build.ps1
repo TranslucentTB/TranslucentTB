@@ -1,5 +1,3 @@
-$ErrorActionPreference = "Stop"
-
 Set-Location C:\tools\vcpkg
 git pull
 .\bootstrap-vcpkg.bat
