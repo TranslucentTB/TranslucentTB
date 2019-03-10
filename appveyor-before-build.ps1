@@ -10,10 +10,10 @@ if ($LastExitCode -ne 0) { exit $LastExitCode }
 .\vcpkg.exe integrate install
 if ($LastExitCode -ne 0) { exit $LastExitCode }
 
-.\vcpkg.exe install detours:$env:CONFIGURATION-windows
+.\vcpkg.exe install detours:$env:PLATFORM-windows
 if ($LastExitCode -ne 0) { exit $LastExitCode }
 
-.\vcpkg.exe install gtest:$env:CONFIGURATION-windows
+.\vcpkg.exe install gtest:$env:PLATFORM-windows
 if ($LastExitCode -ne 0) { exit $LastExitCode }
 
 Set-Location $env:APPVEYOR_BUILD_FOLDER
