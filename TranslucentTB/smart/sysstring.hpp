@@ -47,7 +47,7 @@ public:
 		AddRef();
 	}
 
-	inline SysString(SysString &&other) : m_str(std::exchange(other.m_str, nullptr)) { }
+	inline SysString(SysString &&other) noexcept : m_str(std::exchange(other.m_str, nullptr)) { }
 
 	inline SysString(std::wstring_view val) : m_str(SysAllocStringLen(val.data(), val.length()))
 	{
@@ -68,7 +68,7 @@ public:
 		}
 	}
 
-	inline SysString &operator =(SysString &&other)
+	inline SysString &operator =(SysString &&other) noexcept
 	{
 		if (this != &other)
 		{

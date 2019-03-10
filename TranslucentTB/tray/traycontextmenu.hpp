@@ -109,10 +109,8 @@ public:
 		}
 
 		const auto [min_p, max_p] = std::minmax_element(map.begin(), map.end(), Util::map_value_compare<T, unsigned int>());
-		unsigned int min = min_p->second;
-		unsigned int max = max_p->second;
 
-		m_RefreshFunctions.push_back([this, min, max, &value, &map]
+		m_RefreshFunctions.push_back([this, min = min_p->second, max = max_p->second, &value, &map]
 		{
 			RefreshEnum(m_Menu, min, max, map.at(value));
 		});

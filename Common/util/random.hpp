@@ -30,7 +30,7 @@ namespace Util {
 
 	// Gets a random number from an distribution of numbers.
 	template<typename T = int>
-	inline T GetRandomNumber(T begin = (std::numeric_limits<T>::min)(), T end = (std::numeric_limits<T>::max)())
+	inline T GetRandomNumber(T begin = std::numeric_limits<T>::min(), T end = std::numeric_limits<T>::max())
 	{
 		std::uniform_int_distribution<T> distribution(begin, end);
 		return distribution(impl::GetRandomEngine<std::mt19937>());

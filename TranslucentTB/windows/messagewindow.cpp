@@ -12,7 +12,7 @@ LRESULT MessageWindow::WindowProcedure(Window window, unsigned int uMsg, WPARAM 
 		long result = 0;
 		for (const auto &[_, callback] : callbackList)
 		{
-			result = (std::max)(callback(wParam, lParam), result);
+			result = std::max(callback(wParam, lParam), result);
 		}
 		return result;
 	}

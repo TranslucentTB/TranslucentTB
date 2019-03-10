@@ -60,13 +60,15 @@ namespace Util {
 	{
 		const size_t first = str.find_first_not_of(characters);
 
-		if (first == std::wstring_view::npos)
+		if (first != std::wstring_view::npos)
+		{
+			const size_t last = str.find_last_not_of(characters);
+			return str.substr(first, last - first + 1);
+		}
+		else
 		{
 			return { };
 		}
-
-		const size_t last = str.find_last_not_of(characters);
-		return str.substr(first, last - first + 1);
 	}
 
 	// Removes instances of a character at the beginning and end of the string.
@@ -74,16 +76,17 @@ namespace Util {
 	{
 		const size_t first = str.find_first_not_of(characters);
 
-		if (first == std::wstring_view::npos)
+		if (first != std::wstring_view::npos)
+		{
+			str.remove_prefix(first);
+
+			const size_t last = str.find_last_not_of(characters);
+			str.remove_suffix(str.length() - last - 1);
+		}
+		else
 		{
 			str = { };
-			return;
 		}
-
-		str.remove_prefix(first);
-
-		const size_t last = str.find_last_not_of(characters);
-		str.remove_suffix(str.length() - last - 1);
 	}
 
 	// Removes instances of a character at the beginning and end of the string.
@@ -91,34 +94,36 @@ namespace Util {
 	{
 		const size_t first = str.find_first_not_of(characters);
 
-		if (first == std::wstring::npos)
+		if (first != std::wstring::npos)
+		{
+			const size_t last = str.find_last_not_of(characters);
+			str.erase(last + 1);
+			str.erase(0, first);
+		}
+		else
 		{
 			str.erase();
-			return;
 		}
-
-		const size_t last = str.find_last_not_of(characters);
-		str.erase(last + 1);
-		str.erase(0, first);
 	}
 
 	// Checks if a string begins with another string. More efficient than str.find(text) == 0.
 	constexpr bool StringBeginsWith(std::wstring_view string, std::wstring_view string_to_test)
 	{
-		const size_t length = string_to_test.length();
-		if (string.length() < length)
+		if (string.length() >= string_to_test.length())
+		{
+			for (std::size_t i = 0; i < string_to_test.length(); i++)
+			{
+				if (string_to_test[i] != string[i])
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+		else
 		{
 			return false;
 		}
-
-		for (size_t i = 0; i < length; i++)
-		{
-			if (string_to_test[i] != string[i])
-			{
-				return false;
-			}
-		}
-		return true;
 	}
 
 	// Checks if a string begins with any of the strings in the second parameter.
@@ -129,13 +134,13 @@ namespace Util {
 	{
 		for (const auto &string_to_test : strings_to_test)
 		{
-			if (StringBeginsWith(string, string_to_test))
+			if (!StringBeginsWith(string, string_to_test))
 			{
-				return true;
+				continue;
 			}
 			else
 			{
-				continue;
+				return true;
 			}
 		}
 

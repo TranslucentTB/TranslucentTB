@@ -65,8 +65,8 @@ private:
 
 	static void UnknownValue(std::wstring_view key, std::wstring_view value, const std::function<void(const std::wstring &)> &logger);
 	static bool ParseAccent(std::wstring_view value, ACCENT_STATE &accent);
-	static bool ParseColor(std::wstring_view value, COLORREF &color);
-	static bool ParseOpacity(std::wstring_view value, COLORREF &color);
+	static bool ParseColor(std::wstring_view value, COLORREF &color, const logger_t &logger);
+	static bool ParseOpacity(std::wstring_view value, COLORREF &color, const logger_t &logger);
 	static bool ParseBool(std::wstring_view value, bool &setting);
 	static void ParseKeyValuePair(std::wstring_view kvp);
 	static bool ParseFlags(std::wstring_view arg, std::wstring_view value, const logger_t &logger);

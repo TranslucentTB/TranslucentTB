@@ -1,5 +1,4 @@
 #pragma once
-#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <limits>
@@ -10,12 +9,33 @@
 #include "strings.hpp"
 
 namespace Util {
+#pragma warning(push)
+#pragma warning(disable: 4018)
 	// Clamps a numeric type to a narrower numeric type.
-	template<typename T, typename U>
-	constexpr T ClampTo(U value)
+	template<typename T, typename F>
+	constexpr T ClampTo(F value)
 	{
-		return static_cast<T>(std::clamp<U>(value, (std::numeric_limits<T>::min)(), (std::numeric_limits<T>::max)()));
+		// Don't you just love corner cases
+		// When F is unsigned and T signed, magic implicit conversion when comparing breaks things.
+		// No need to compare because an unsigned minimum value is always 0.
+		if constexpr (!(std::is_signed_v<T> && std::is_unsigned_v<F>))
+		{
+			if (value < std::numeric_limits<T>::min())
+			{
+				return std::numeric_limits<T>::min();
+			}
+		}
+
+		if (value > std::numeric_limits<T>::max())
+		{
+			return std::numeric_limits<T>::max();
+		}
+		else
+		{
+			return static_cast<T>(value);
+		}
 	}
+#pragma warning(pop)
 
 	// Converts between bit representations. Superseded in C++20 by std::bit_cast.
 	template<typename T, typename F>
@@ -72,12 +92,16 @@ namespace Util {
 			static constexpr T impl(std::wstring_view number)
 			{
 				bool isNegative = false;
-				if constexpr (std::is_signed_v<T>)
+				if (number.length() > 1 && number[0] == L'-')
 				{
-					if (number.length() > 1 && number[0] == L'-')
+					if constexpr (std::is_signed_v<T>)
 					{
 						number.remove_prefix(1);
 						isNegative = true;
+					}
+					else
+					{
+						throw std::out_of_range("Cannot convert a negative number to a unsigned integer");
 					}
 				}
 

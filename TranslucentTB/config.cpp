@@ -334,7 +334,7 @@ bool Config::ParseAccent(std::wstring_view value, ACCENT_STATE &accent)
 	return true;
 }
 
-bool Config::ParseColor(std::wstring_view value, COLORREF &color)
+bool Config::ParseColor(std::wstring_view value, COLORREF &color, const logger_t &logger)
 {
 	Util::TrimInplace(value);
 
@@ -352,25 +352,31 @@ bool Config::ParseColor(std::wstring_view value, COLORREF &color)
 
 	try
 	{
-		color = (color & 0xFF000000) + (Util::ParseNumber<uint32_t, 16>(value) & 0x00FFFFFF);
+		color = (color & 0xFF000000) + (Util::ParseNumber<COLORREF, 16>(value) & 0x00FFFFFF);
 	}
-	catch (...)
+	catch (const std::exception &err)
 	{
+		std::wostringstream str;
+		str << L"Could not parse color: " << err.what();
+		logger(str.str());
 		return false;
 	}
 
 	return true;
 }
 
-bool Config::ParseOpacity(std::wstring_view value, COLORREF &color)
+bool Config::ParseOpacity(std::wstring_view value, COLORREF &color, const logger_t &logger)
 {
 	try
 	{
-		color = (Util::ParseNumber<uint32_t>(value) << 24) + (color & 0x00FFFFFF);
+		color = (static_cast<COLORREF>(Util::ParseNumber<uint8_t>(value)) << 24) + (color & 0x00FFFFFF);
 		return true;
 	}
-	catch (...)
+	catch (const std::exception &err)
 	{
+		std::wostringstream str;
+		str << L"Could not parse opacity: " << err.what();
+		logger(str.str());
 		return false;
 	}
 }
@@ -470,7 +476,7 @@ bool Config::ParseAppearances(std::wstring_view arg, std::wstring_view value, co
 		}
 		else if (noPrefixArg == L"color" || noPrefixArg == L"tint")
 		{
-			if (!ParseColor(value, pair.second.COLOR))
+			if (!ParseColor(value, pair.second.COLOR, logger))
 			{
 				UnknownValue(arg, value, logger);
 			}
@@ -479,7 +485,7 @@ bool Config::ParseAppearances(std::wstring_view arg, std::wstring_view value, co
 		}
 		else if (noPrefixArg == L"opacity")
 		{
-			if (!ParseOpacity(value, pair.second.COLOR))
+			if (!ParseOpacity(value, pair.second.COLOR, logger))
 			{
 				UnknownValue(arg, value, logger);
 			}
@@ -536,10 +542,10 @@ void Config::ParseSingleConfigOption(std::wstring_view arg, std::wstring_view va
 		{
 			SLEEP_TIME = Util::ParseNumber<uint8_t>(value);
 		}
-		catch (...)
+		catch (const std::exception &err)
 		{
 			std::wostringstream str;
-			str << L"Could not parse sleep time: " << value;
+			str << L"Could not parse sleep time: " << value << L" (" << err.what() << L')';
 			logger(str.str());
 		}
 	}
