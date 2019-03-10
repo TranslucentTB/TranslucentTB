@@ -10,13 +10,25 @@ platform:
 - ARM64
 
 before_build:
+- cd C:\tools\vcpkg
+- git pull
+- bootstrap-vcpkg
+- vcpkg integrate install
+- vcpkg install detours:$(CONFIGURATION)-windows gtest:$(CONFIGURATION)-windows
+- cd %APPVEYOR_BUILD_FOLDER%
 - ps: .\update-version.ps1
 
 build:
   parallel: true
   project: TranslucentTB.sln
 
-test: off
+test_script:
+- $(PLATFORM)\$(CONFIGURATION)\Tests.exe --gtest_output=xml:.\tests.xml
+
+after_test:
+- ps: Invoke-WebRequest -Uri "https://ci.appveyor.com/api/testresults/junit/$env:APPVEYOR_JOB_ID" -Method Put -Infile .\tests.xml
+
+cache: C:\tools\vcpkg\installed\
 
 artifacts:
 - path: $(PLATFORM)\$(CONFIGURATION)
