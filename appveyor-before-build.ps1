@@ -1,5 +1,3 @@
-$ErrorActionPreference = "Stop"
-
 Set-Location C:\tools\vcpkg
 
 # Git decides to use stderr for regular output apparently. PowerShell no likey.
