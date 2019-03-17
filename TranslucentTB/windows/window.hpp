@@ -122,6 +122,8 @@ public:
 		return Find(className, windowName, *this, childAfter);
 	}
 
+	FindEnum find_childs(std::wstring className = L"", std::wstring windowName = L"");
+
 	constexpr HWND handle() const noexcept
 	{
 		return m_WindowHandle;

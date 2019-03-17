@@ -135,6 +135,11 @@ WINDOWPLACEMENT Window::placement() const
 	return result;
 }
 
+Window::FindEnum Window::find_childs(std::wstring className, std::wstring windowName)
+{
+	return FindEnum(std::move(className), std::move(windowName), *this);
+}
+
 template<typename T>
 T Window::get_attribute(DWMWINDOWATTRIBUTE attrib) const
 {

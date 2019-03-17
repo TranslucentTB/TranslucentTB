@@ -11,7 +11,7 @@ private:
 
 	inline void MoveNext()
 	{
-		m_currentWindow = Window::Find(*m_class, *m_name, m_parent, m_currentWindow);
+		m_currentWindow = m_parent.find_child(*m_class, *m_name, m_currentWindow);
 	}
 
 	constexpr FindWindowIterator() :
