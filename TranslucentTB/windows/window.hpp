@@ -122,7 +122,7 @@ public:
 		return Find(className, windowName, *this, childAfter);
 	}
 
-	FindEnum find_childs(std::wstring className = { }, std::wstring windowName = { });
+	FindEnum find_childs(std::wstring className = { }, std::wstring windowName = { }) const;
 
 	constexpr HWND handle() const noexcept
 	{
@@ -236,18 +236,18 @@ public:
 		m_parent(parent)
 	{ }
 
-	inline FindWindowIterator begin()
+	inline FindWindowIterator begin() const
 	{
 		return { &m_class, &m_name, m_parent };
 	}
 
-	constexpr FindWindowIterator end()
+	constexpr FindWindowIterator end() const
 	{
 		return { };
 	}
 };
 
-inline Window::FindEnum Window::find_childs(std::wstring className, std::wstring windowName)
+inline Window::FindEnum Window::find_childs(std::wstring className, std::wstring windowName) const
 {
 	return FindEnum(std::move(className), std::move(windowName), *this);
 }
