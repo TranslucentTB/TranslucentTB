@@ -90,22 +90,22 @@ protected:
 
 		inline T *operator ->()
 		{
-			return m_DataPtr;
+			return this->m_DataPtr;
 		}
 
 		inline const T *operator ->() const
 		{
-			return m_DataPtr;
+			return this->m_DataPtr;
 		}
 
 		inline T &operator *()
 		{
-			return *m_DataPtr;
+			return *this->m_DataPtr;
 		}
 
 		inline const T &operator *() const
 		{
-			return *m_DataPtr;
+			return *this->m_DataPtr;
 		}
 	};
 
@@ -121,12 +121,12 @@ protected:
 
 		inline T &operator [](std::size_t i)
 		{
-			return m_DataPtr[i];
+			return this->m_DataPtr[i];
 		}
 
 		inline const T &operator [](std::size_t i) const
 		{
-			return m_DataPtr[i];
+			return this->m_DataPtr[i];
 		}
 	};
 
