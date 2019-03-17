@@ -43,8 +43,6 @@
     <ClInclude Include="smart\sysstring.hpp" />
     <ClInclude Include="taskbarattributeworker.hpp" />
     <ClInclude Include="smart\eventhook.hpp" />
-    <ClInclude Include="windows\findenum.hpp" />
-    <ClInclude Include="windows\findwindowiterator.hpp" />
     <ClInclude Include="folderwatcher.hpp" />
     <ClInclude Include="taskdialogs\aboutdialog.hpp" />
     <ClInclude Include="smart\windowshook.hpp" />

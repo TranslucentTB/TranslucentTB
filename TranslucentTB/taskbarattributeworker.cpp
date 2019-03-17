@@ -27,6 +27,7 @@ void TaskbarAttributeWorker::OnWindowStateChange(bool skipCheck, DWORD, Window w
 		const HMONITOR monitor = window.monitor();
 		if (m_Taskbars.count(monitor) != 0)
 		{
+			// Note: at() is done here after the check because if not we get some weird crashes when changing DPI.
 			if (IsWindowMaximised(window))
 			{
 				m_Taskbars.at(monitor).MaximisedWindows.insert(window);
@@ -37,7 +38,7 @@ void TaskbarAttributeWorker::OnWindowStateChange(bool skipCheck, DWORD, Window w
 			}
 
 			if ((Config::PEEK == Config::PEEK::DynamicMainMonitor && monitor == m_MainTaskbarMonitor) ||
-				Config::PEEK == Config::PEEK::DynamicAnyMonitor)
+				Config::PEEK == Config::PEEK::DynamicAnyMonitor || Config::PEEK == Config::PEEK::DynamicDesktopForeground)
 			{
 				RefreshAeroPeekButton();
 			}
@@ -300,12 +301,13 @@ void TaskbarAttributeWorker::RefreshAeroPeekButton()
 		{
 			isDesktop = foreground.find_child(L"SHELLDLL_DefView").valid();
 
-			// Consider the taskbar as part of the desktop if there is no maximised window
-			// on the main monitor.
+			// Consider the taskbar as part of the desktop if there is no maximised window on the main monitor.
+			// Consider being on the desktop if the foreground window is cloacked or invisible and there are no maximised windows.
+			// Some apps such as Discord exhibit a weird behavior when being closed: the window just becomes invisible and it still is the foreground window.
 			if (!isDesktop)
 			{
 				const auto &mainMonInfo = m_Taskbars.at(m_MainTaskbarMonitor);
-				isDesktop = foreground == mainMonInfo.TaskbarWindow && mainMonInfo.MaximisedWindows.empty();
+				isDesktop = (foreground == mainMonInfo.TaskbarWindow || !foreground.visible() || foreground.get_attribute<BOOL>(DWMWA_CLOAKED)) && mainMonInfo.MaximisedWindows.empty();
 			}
 		}
 

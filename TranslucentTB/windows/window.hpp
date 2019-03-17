@@ -122,7 +122,7 @@ public:
 		return Find(className, windowName, *this, childAfter);
 	}
 
-	FindEnum find_childs(std::wstring className = L"", std::wstring windowName = L"");
+	FindEnum find_childs(std::wstring className = { }, std::wstring windowName = { });
 
 	constexpr HWND handle() const noexcept
 	{
@@ -172,4 +172,82 @@ inline void Window::ClearCache()
 	m_Titles.clear();
 }
 
-#include "findenum.hpp"
+// Iterator class for FindEnum
+class FindWindowIterator {
+private:
+	const std::wstring *m_class;
+	const std::wstring *m_name;
+	Window m_parent, m_currentWindow;
+
+	inline void MoveNext()
+	{
+		m_currentWindow = m_parent.find_child(*m_class, *m_name, m_currentWindow);
+	}
+
+	constexpr FindWindowIterator() :
+		m_class(nullptr),
+		m_name(nullptr),
+		m_parent(Window::NullWindow),
+		m_currentWindow(Window::NullWindow)
+	{ }
+
+	inline FindWindowIterator(const std::wstring *className, const std::wstring *windowName, Window parent) :
+		m_class(className),
+		m_name(windowName),
+		m_parent(parent),
+		m_currentWindow(Window::NullWindow)
+	{
+		MoveNext();
+	}
+
+	friend class Window::FindEnum;
+
+public:
+	inline FindWindowIterator &operator ++()
+	{
+		MoveNext();
+		return *this;
+	}
+
+	constexpr bool operator ==(const FindWindowIterator &right) const
+	{
+		return m_currentWindow == right.m_currentWindow;
+	}
+
+	constexpr bool operator !=(const FindWindowIterator &right) const
+	{
+		return !operator==(right);
+	}
+
+	constexpr Window operator *() const
+	{
+		return m_currentWindow;
+	}
+};
+
+class Window::FindEnum {
+private:
+	std::wstring m_class, m_name;
+	Window m_parent;
+public:
+	inline FindEnum(std::wstring className = { }, std::wstring windowName = { }, Window parent = Window::NullWindow) :
+		m_class(std::move(className)),
+		m_name(std::move(windowName)),
+		m_parent(parent)
+	{ }
+
+	inline FindWindowIterator begin()
+	{
+		return { &m_class, &m_name, m_parent };
+	}
+
+	constexpr FindWindowIterator end()
+	{
+		return { };
+	}
+};
+
+inline Window::FindEnum Window::find_childs(std::wstring className, std::wstring windowName)
+{
+	return FindEnum(std::move(className), std::move(windowName), *this);
+}

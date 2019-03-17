@@ -106,9 +106,6 @@
     <ClInclude Include="taskdialogs\aboutdialog.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\findwindowiterator.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="windows\messagewindow.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -155,9 +152,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="smart\sysstring.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\findenum.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
