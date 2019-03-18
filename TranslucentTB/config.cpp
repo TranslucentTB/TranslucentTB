@@ -107,7 +107,7 @@ const std::pair<const std::wstring_view, bool &> Config::FLAGS[] = {
 };
 
 const std::pair<const std::wstring_view, Config::TASKBAR_APPEARANCE &> Config::APPEARANCES[] = {
-	{ L"", REGULAR_APPEARANCE },
+	{ { }, REGULAR_APPEARANCE },
 	{ L"dynamic-ws-", MAXIMISED_APPEARANCE },
 	{ L"dynamic-start-", START_APPEARANCE },
 	{ L"dynamic-cortana-", CORTANA_APPEARANCE },

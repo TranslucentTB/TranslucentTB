@@ -330,14 +330,14 @@ std::pair<std::wstring, HRESULT> win32::GetWindowsBuild()
 	HRESULT hr = SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, NULL, system32.put());
 	if (FAILED(hr))
 	{
-		return { L"", hr };
+		return { { }, hr };
 	}
 
 	AutoFree::Local<wchar_t[]> kernel32;
 	hr = PathAllocCombine(system32.get(), L"kernel32.dll", PATHCCH_ALLOW_LONG_PATHS, kernel32.put());
 	if (FAILED(hr))
 	{
-		return { L"", hr };
+		return { { }, hr };
 	}
 
 	return GetFileVersion(kernel32.get());
@@ -349,20 +349,20 @@ std::pair<std::wstring, HRESULT> win32::GetFileVersion(const std::wstring &file)
 	DWORD size = GetFileVersionInfoSize(file.c_str(), &handle);
 	if (!size)
 	{
-		return { L"", HRESULT_FROM_WIN32(GetLastError()) };
+		return { { }, HRESULT_FROM_WIN32(GetLastError()) };
 	}
 
 	auto data = std::make_unique<std::byte[]>(size);
 	if (!GetFileVersionInfo(file.c_str(), handle, size, data.get()))
 	{
-		return { L"", HRESULT_FROM_WIN32(GetLastError()) };
+		return { { }, HRESULT_FROM_WIN32(GetLastError()) };
 	}
 
 	wchar_t *fileVersion;
 	unsigned int length;
 	if (!VerQueryValue(data.get(), LR"(\StringFileInfo\040904b0\FileVersion)", reinterpret_cast<void **>(&fileVersion), &length))
 	{
-		return { L"", HRESULT_FROM_WIN32(GetLastError()) };
+		return { { }, HRESULT_FROM_WIN32(GetLastError()) };
 	}
 
 	return { { fileVersion, length - 1 }, S_OK };

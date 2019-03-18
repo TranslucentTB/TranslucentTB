@@ -68,38 +68,96 @@ TEST(StringLowerCaseHash, SameWhenContentSame)
 	EXPECT_EQ(hasher(L"foo"), hasher(L"foo"));
 }
 
-TEST(Trim, ReturnsContentNotToBeTrimmed)
+TEST(Trim, TrimsLeft)
 {
-	EXPECT_EQ(Util::Trim(L" \f\n\r\t\vfoo \nbar \f\n\r\t\v"), L"foo \nbar");
+	EXPECT_EQ(Util::Trim(L"\t\v \f\n\rfoo \nbar"), L"foo \nbar");
 }
 
-TEST(Trim, ReturnsNullWhenAllContentIsToBeTrimmed)
+TEST(Trim, TrimsRight)
+{
+	EXPECT_EQ(Util::Trim(L"foo \nbar\t\r \f\n\v"), L"foo \nbar");
+}
+
+
+TEST(Trim, TrimsLeftRight)
+{
+	EXPECT_EQ(Util::Trim(L"\t\v \f\n\rfoo \nbar\t\r \f\n\v"), L"foo \nbar");
+}
+
+TEST(Trim, TrimsNothing)
+{
+	EXPECT_EQ(Util::Trim(L"foo \nbar"), L"foo \nbar");
+}
+
+TEST(Trim, TrimsAll)
 {
 	EXPECT_EQ(Util::Trim(L" \f\n\r\t\v"), std::wstring_view{});
 }
 
-TEST(TrimInplaceStringView, ChangesVariableToContentNotToBeTrimmed)
+TEST(TrimInplaceStringView, TrimsLeft)
 {
-	std::wstring_view str = L" \f\n\r\t\vfoo \nbar \f\n\r\t\v";
+	std::wstring_view str = L"\t\v \f\n\rfoo \nbar";
 	Util::TrimInplace(str);
 	EXPECT_EQ(str, L"foo \nbar");
 }
 
-TEST(TrimInplaceStringView, ChangesVariableToNullWhenAllContentIsToBeTrimmed)
+TEST(TrimInplaceStringView, TrimsRight)
+{
+	std::wstring_view str = L"foo \nbar\t\r \f\n\v";
+	Util::TrimInplace(str);
+	EXPECT_EQ(str, L"foo \nbar");
+}
+
+TEST(TrimInplaceStringView, TrimsLeftRight)
+{
+	std::wstring_view str = L"\t\v \f\n\rfoo \nbar\t\r \f\n\v";
+	Util::TrimInplace(str);
+	EXPECT_EQ(str, L"foo \nbar");
+}
+
+TEST(TrimInplaceStringView, TrimsNothing)
+{
+	std::wstring_view str = L"foo \nbar";
+	Util::TrimInplace(str);
+	EXPECT_EQ(str, L"foo \nbar");
+}
+
+TEST(TrimInplaceStringView, TrimsAll)
 {
 	std::wstring_view str = L" \f\n\r\t\v";
 	Util::TrimInplace(str);
 	EXPECT_EQ(str, std::wstring_view{});
 }
 
-TEST(TrimInplaceString, ChangesVariableToContentNotToBeTrimmed)
+TEST(TrimInplaceString, TrimsLeft)
 {
-	std::wstring str = L" \f\n\r\t\vfoo \nbar \f\n\r\t\v";
+	std::wstring str = L"\t\v \f\n\rfoo \nbar";
 	Util::TrimInplace(str);
 	EXPECT_EQ(str, L"foo \nbar");
 }
 
-TEST(TrimInplaceString, ChangesVariableToNullWhenAllContentIsToBeTrimmed)
+TEST(TrimInplaceString, TrimsRight)
+{
+	std::wstring str = L"foo \nbar\t\r \f\n\v";
+	Util::TrimInplace(str);
+	EXPECT_EQ(str, L"foo \nbar");
+}
+
+TEST(TrimInplaceString, TrimsLeftRight)
+{
+	std::wstring str = L"\t\v \f\n\rfoo \nbar\t\r \f\n\v";
+	Util::TrimInplace(str);
+	EXPECT_EQ(str, L"foo \nbar");
+}
+
+TEST(TrimInplaceString, TrimsNothing)
+{
+	std::wstring str = L"foo \nbar";
+	Util::TrimInplace(str);
+	EXPECT_EQ(str, L"foo \nbar");
+}
+
+TEST(TrimInplaceString, TrimsAll)
 {
 	std::wstring str = L" \f\n\r\t\v";
 	Util::TrimInplace(str);

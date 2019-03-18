@@ -30,7 +30,7 @@ std::tuple<std::wstring, HRESULT, std::wstring> Log::GetPath()
 	int size = GetTempPath(LONG_PATH, temp.data());
 	if (!size)
 	{
-		return { L"", HRESULT_FROM_WIN32(GetLastError()), L"Failed to determine temporary folder location!" };
+		return { { }, HRESULT_FROM_WIN32(GetLastError()), L"Failed to determine temporary folder location!" };
 	}
 	temp.resize(size);
 
@@ -38,10 +38,10 @@ std::tuple<std::wstring, HRESULT, std::wstring> Log::GetPath()
 	const HRESULT hr = PathAllocCombine(temp.c_str(), NAME, PATHCCH_ALLOW_LONG_PATHS, log_folder_safe.put());
 	if (FAILED(hr))
 	{
-		return { L"", hr, L"Failed to combine temporary folder location and app name!" };
+		return { { }, hr, L"Failed to combine temporary folder location and app name!" };
 	}
 
-	return { log_folder_safe.get(), S_OK, L"" };
+	return { log_folder_safe.get(), S_OK, { } };
 }
 #endif
 
@@ -102,7 +102,7 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 	}
 
 	m_File = log_file.get();
-	return { S_OK, L"" };
+	return { S_OK, { } };
 }
 
 void Log::OutputMessage(std::wstring_view message)

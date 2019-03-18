@@ -88,7 +88,7 @@ const std::wstring &Window::filename() const
 		if (!processHandle)
 		{
 			LastErrorHandle(Error::Level::Log, L"Getting process handle of a window failed.");
-			return m_Filenames[m_WindowHandle] = L"";
+			return m_Filenames[m_WindowHandle] = { };
 		}
 
 		auto [loc, hr] = win32::GetProcessFileName(processHandle.get());

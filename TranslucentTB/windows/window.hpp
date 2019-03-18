@@ -29,7 +29,7 @@ public:
 
 	class FindEnum;
 
-	inline static Window Find(const std::wstring &className = L"", const std::wstring &windowName = L"", Window parent = Window::NullWindow, Window childAfter = Window::NullWindow)
+	inline static Window Find(const std::wstring &className = { }, const std::wstring &windowName = { }, Window parent = Window::NullWindow, Window childAfter = Window::NullWindow)
 	{
 		return FindWindowEx(parent, childAfter, className.empty() ? NULL : className.c_str(), windowName.empty() ? NULL : windowName.c_str());
 	}
@@ -117,7 +117,7 @@ public:
 		return send_message(RegisterWindowMessage(message.c_str()), wparam, lparam);
 	}
 
-	inline Window find_child(const std::wstring &className = L"", const std::wstring &windowName = L"", Window childAfter = Window::NullWindow) const
+	inline Window find_child(const std::wstring &className = { }, const std::wstring &windowName = { }, Window childAfter = Window::NullWindow) const
 	{
 		return Find(className, windowName, *this, childAfter);
 	}
