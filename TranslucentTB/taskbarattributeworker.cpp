@@ -37,8 +37,8 @@ void TaskbarAttributeWorker::OnWindowStateChange(bool skipCheck, DWORD, Window w
 				m_Taskbars.at(monitor).MaximisedWindows.erase(window);
 			}
 
-			if ((Config::PEEK == Config::PEEK::DynamicMainMonitor && monitor == m_MainTaskbarMonitor) ||
-				Config::PEEK == Config::PEEK::DynamicAnyMonitor || Config::PEEK == Config::PEEK::DynamicDesktopForeground)
+			if ((monitor == m_MainTaskbarMonitor && (Config::PEEK == Config::PEEK::DynamicMainMonitor || Config::PEEK == Config::PEEK::DynamicDesktopForeground)) ||
+				Config::PEEK == Config::PEEK::DynamicAnyMonitor)
 			{
 				RefreshAeroPeekButton();
 			}
