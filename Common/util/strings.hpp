@@ -53,7 +53,11 @@ namespace Util {
 
 	// Case-insensitive std::unordered_map with string keys.
 	template<typename T>
-	using string_view_map = std::unordered_map<const std::wstring_view, T, impl::string_lowercase_hash, impl::string_lowercase_compare>;
+	using string_view_map = std::unordered_map<std::wstring_view, T, impl::string_lowercase_hash, impl::string_lowercase_compare>;
+
+	// Case-insensitive std::unordered_multimap with string keys.
+	template<typename T>
+	using string_multimap = std::unordered_multimap<std::wstring, T, impl::string_lowercase_hash, impl::string_lowercase_compare>;
 
 	// Removes instances of a character at the beginning and end of the string.
 	constexpr std::wstring_view Trim(std::wstring_view str, std::wstring_view characters = impl::WHITESPACES)

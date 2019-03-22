@@ -13,7 +13,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="parsers\commentedkvpparser.cpp" />
+    <ClCompile Include="parsers\kvpparser.cpp" />
     <ClCompile Include="util\numbers.cpp" />
     <ClCompile Include="util\strings.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ConfigurationParsers\ConfigurationParsers.vcxproj">
+      <Project>{032fa44d-a5e5-4cb4-8926-320948db99c7}</Project>
+    </ProjectReference>
   </ItemGroup>
 </Project>

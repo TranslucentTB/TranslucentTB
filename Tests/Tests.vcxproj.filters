@@ -4,6 +4,9 @@
     <Filter Include="Util Tests">
       <UniqueIdentifier>{fbed2b1b-deaf-4229-b819-e9e4fdf72b8b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Parsers Tests">
+      <UniqueIdentifier>{9b7557d8-89c9-4808-a084-f5739ad08915}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="util\numbers.cpp">
@@ -12,5 +15,9 @@
     <ClCompile Include="util\strings.cpp">
       <Filter>Util Tests</Filter>
     </ClCompile>
+    <ClCompile Include="parsers\kvpparser.cpp">
+      <Filter>Parsers Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="parsers\commentedkvpparser.cpp" />
   </ItemGroup>
 </Project>

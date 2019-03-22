@@ -11,4 +11,12 @@
       <PreprocessorDefinitions>_PARSERS_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="commentedkvpparser.hpp" />
+    <ClInclude Include="kvpparser.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="commentedkvpparser.cpp" />
+    <ClCompile Include="kvpparser.cpp" />
+  </ItemGroup>
 </Project>
