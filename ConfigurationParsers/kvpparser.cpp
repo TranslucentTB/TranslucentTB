@@ -3,6 +3,13 @@
 
 std::pair<std::wstring, std::wstring> KeyValueParser::ParseLine(std::wstring_view line) const
 {
+	Util::TrimInplace(line);
+
+	if (line.empty() || line[0] == m_Comment)
+	{
+		return { { }, { } };
+	}
+
 	// pre-allocate
 	std::wstring key(line.length(), L'\0');
 	key.clear();
@@ -30,6 +37,10 @@ std::pair<std::wstring, std::wstring> KeyValueParser::ParseLine(std::wstring_vie
 		{
 			isEscaped = true;
 		}
+		else if (current == m_Comment && !isEscaped)
+		{
+			break;
+		}
 		else
 		{
 			(isValue ? value : key) += current;
@@ -43,7 +54,10 @@ std::pair<std::wstring, std::wstring> KeyValueParser::ParseLine(std::wstring_vie
 	}
 
 	Util::TrimInplace(key);
+	key.shrink_to_fit();
+
 	Util::TrimInplace(value);
+	value.shrink_to_fit();
 
 	return { std::move(key), std::move(value) };
 }

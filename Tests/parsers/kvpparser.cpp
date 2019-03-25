@@ -1,58 +1,131 @@
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include "../../ConfigurationParsers/kvpparser.hpp"
 
-class KeyValueParser_ParseLine : public ::testing::Test {
+using namespace testing;
+
+class KeyValueParser_ParseLine : public Test {
 protected:
 	KeyValueParser parser;
 };
 
 TEST(KeyValueParser_Constructor, ThrowsWhenDelimiterAndEscapeSame)
 {
-	EXPECT_THROW(KeyValueParser(L'a', L'a'), std::invalid_argument);
+	ASSERT_THROW(KeyValueParser(L'a', L'a'), std::invalid_argument);
 }
 
-TEST_F(KeyValueParser_ParseLine, IgnoresEscapedDelimiterInKey)
+TEST(KeyValueParser_Constructor, ThrowsWhenDelimiterAndCommentSame)
 {
-	EXPECT_EQ(parser.ParseLine(LR"(Hello\==world)").first, L"Hello=");
+	ASSERT_THROW(KeyValueParser(L'a', L'\\', L'a'), std::invalid_argument);
 }
 
-TEST_F(KeyValueParser_ParseLine, IgnoresEscapedDelimiterInValue)
+TEST(KeyValueParser_Constructor, ThrowsWhenEscapeAndCommentSame)
 {
-	EXPECT_EQ(parser.ParseLine(LR"(Hello=\=world)").second, L"=world");
+	ASSERT_THROW(KeyValueParser(L'=', L'a', L'a'), std::invalid_argument);
 }
 
-TEST_F(KeyValueParser_ParseLine, IgnoresEscapedEscapeInKey)
+TEST_F(KeyValueParser_ParseLine, IncludesEscapedDelimiterInKey)
 {
-	EXPECT_EQ(parser.ParseLine(LR"(Hello\\=world)").first, LR"(Hello\)");
+	ASSERT_EQ(parser.ParseLine(LR"(Hello\==world)").first, L"Hello=");
 }
 
-TEST_F(KeyValueParser_ParseLine, IgnoresEscapedEscapeInValue)
+TEST_F(KeyValueParser_ParseLine, IncludesEscapedDelimiterInValue)
 {
-	EXPECT_EQ(parser.ParseLine(LR"(Hello=\\world)").second, LR"(\world)");
+	ASSERT_EQ(parser.ParseLine(LR"(Hello=\=world)").second, L"=world");
 }
 
-TEST_F(KeyValueParser_ParseLine, ThrowsWhenMultipleDelimiter)
+TEST_F(KeyValueParser_ParseLine, IncludesEscapedEscapeInKey)
 {
-	EXPECT_THROW(parser.ParseLine(L"Foo=bar=buz"), std::invalid_argument);
+	ASSERT_EQ(parser.ParseLine(LR"(Hello\\=world)").first, LR"(Hello\)");
+}
+
+TEST_F(KeyValueParser_ParseLine, IncludesEscapedEscapeInValue)
+{
+	ASSERT_EQ(parser.ParseLine(LR"(Hello=\\world)").second, LR"(\world)");
+}
+
+TEST_F(KeyValueParser_ParseLine, IncludesEscapedCommentInKey)
+{
+	ASSERT_EQ(parser.ParseLine(LR"(\;Hello=world)").first, L";Hello");
+}
+
+TEST_F(KeyValueParser_ParseLine, IncludesEscapedCommentInValue)
+{
+	ASSERT_EQ(parser.ParseLine(LR"(Hello=\;world)").second, L";world");
+}
+
+TEST_F(KeyValueParser_ParseLine, ThrowsWhenMultipleDelimiters)
+{
+	ASSERT_THROW(parser.ParseLine(L"Foo=bar=buz"), std::invalid_argument);
 }
 
 TEST_F(KeyValueParser_ParseLine, ThrowsWhenNoDelimiter)
 {
-	EXPECT_THROW(parser.ParseLine(L"Hello world"), std::invalid_argument);
+	ASSERT_THROW(parser.ParseLine(L"Hello world"), std::invalid_argument);
 }
 
 TEST_F(KeyValueParser_ParseLine, TrimsKey)
 {
-	EXPECT_EQ(parser.ParseLine(L" \t Hello \t =world)").first, L"Hello");
+	ASSERT_EQ(parser.ParseLine(L" \t Hello \t =world)").first, L"Hello");
 }
 
 TEST_F(KeyValueParser_ParseLine, TrimsValue)
 {
-	EXPECT_EQ(parser.ParseLine(L"Hello= \t world \t ").second, L"world");
+	ASSERT_EQ(parser.ParseLine(L"Hello= \t world \t ").second, L"world");
 }
 
-TEST_F(KeyValueParser_ParseLine, DoesNotIgnoresComment)
+TEST_F(KeyValueParser_ParseLine, IgnoresComment)
 {
-	EXPECT_EQ(parser.ParseLine(L"Hello=world;test").second, L"world;test");
+	ASSERT_EQ(parser.ParseLine(L"Hello=world;test").second, L"world");
+}
+
+TEST_F(KeyValueParser_ParseLine, KeyIsEmptyOnEmptyLine)
+{
+	ASSERT_THAT(parser.ParseLine({ }).first, IsEmpty());
+}
+
+TEST_F(KeyValueParser_ParseLine, ValueIsEmptyOnEmptyLine)
+{
+	ASSERT_THAT(parser.ParseLine({ }).second, IsEmpty());
+}
+
+TEST_F(KeyValueParser_ParseLine, KeyIsEmptyIfAllInputTrimmed)
+{
+	ASSERT_THAT(parser.ParseLine(L"    \t   ").first, IsEmpty());
+}
+
+TEST_F(KeyValueParser_ParseLine, ValueIsEmptyIfAllInputTrimmed)
+{
+	ASSERT_THAT(parser.ParseLine(L"    \t   ").second, IsEmpty());
+}
+
+TEST_F(KeyValueParser_ParseLine, KeyIsEmptyOnWholeLineComment)
+{
+	ASSERT_THAT(parser.ParseLine(L";test").first, IsEmpty());
+}
+
+TEST_F(KeyValueParser_ParseLine, ValueIsEmptyOnWholeLineComment)
+{
+	ASSERT_THAT(parser.ParseLine(L";test").second, IsEmpty());
+}
+
+TEST_F(KeyValueParser_ParseLine, KeyIsEmptyOnNoTextBeforeDelimiter)
+{
+	ASSERT_THAT(parser.ParseLine(L"=world").first, IsEmpty());
+}
+
+TEST_F(KeyValueParser_ParseLine, ValueIsEmptyOnNoTextAfterDelimiter)
+{
+	ASSERT_THAT(parser.ParseLine(L"Hello=").second, IsEmpty());
+}
+
+TEST_F(KeyValueParser_ParseLine, KeyIsEmptyOnNoTextExceptDelimiter)
+{
+	ASSERT_THAT(parser.ParseLine(L"=").first, IsEmpty());
+}
+
+TEST_F(KeyValueParser_ParseLine, ValueIsEmptyOnNoTextExceptDelimiter)
+{
+	ASSERT_THAT(parser.ParseLine(L"=").second, IsEmpty());
 }

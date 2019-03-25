@@ -12,11 +12,11 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="commentedkvpparser.hpp" />
     <ClInclude Include="kvpparser.hpp" />
+    <ClInclude Include="csvsplitter.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="commentedkvpparser.cpp" />
     <ClCompile Include="kvpparser.cpp" />
+    <ClCompile Include="csvsplitter.cpp" />
   </ItemGroup>
 </Project>

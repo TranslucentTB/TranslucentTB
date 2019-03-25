@@ -15,18 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="kvpparser.hpp">
+    <ClInclude Include="csvsplitter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="commentedkvpparser.hpp">
+    <ClInclude Include="kvpparser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="kvpparser.cpp">
+    <ClCompile Include="csvsplitter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="commentedkvpparser.cpp">
+    <ClCompile Include="kvpparser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

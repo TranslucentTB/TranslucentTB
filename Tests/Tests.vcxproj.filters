@@ -15,9 +15,11 @@
     <ClCompile Include="util\strings.cpp">
       <Filter>Util Tests</Filter>
     </ClCompile>
+    <ClCompile Include="parsers\csvsplitter.cpp">
+      <Filter>Parsers Tests</Filter>
+    </ClCompile>
     <ClCompile Include="parsers\kvpparser.cpp">
       <Filter>Parsers Tests</Filter>
     </ClCompile>
-    <ClCompile Include="parsers\commentedkvpparser.cpp" />
   </ItemGroup>
 </Project>
