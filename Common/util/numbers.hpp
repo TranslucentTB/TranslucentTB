@@ -35,6 +35,31 @@ namespace Util {
 			return static_cast<T>(value);
 		}
 	}
+
+	// Converts a numeric type to a narrower numeric type and throws if the value overflows or underflow.
+	template<typename T, typename F>
+	constexpr T CheckedNarrow(F value)
+	{
+		// Don't you just love corner cases
+		// When F is unsigned and T signed, magic implicit conversion when comparing breaks things.
+		// No need to compare because an unsigned minimum value is always 0.
+		if constexpr (!(std::is_signed_v<T> && std::is_unsigned_v<F>))
+		{
+			if (value < std::numeric_limits<T>::min())
+			{
+				throw std::out_of_range("Numeric underflow");
+			}
+		}
+
+		if (value > std::numeric_limits<T>::max())
+		{
+			throw std::out_of_range("Numeric overflow");
+		}
+		else
+		{
+			return static_cast<T>(value);
+		}
+	}
 #pragma warning(pop)
 
 	// Converts between bit representations. Superseded in C++20 by std::bit_cast.

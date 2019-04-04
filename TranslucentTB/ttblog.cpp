@@ -16,6 +16,7 @@
 #include "constants.hpp"
 #include "win32.hpp"
 #include "windows/window.hpp"
+#include "util/numbers.hpp"
 #include "util/time.hpp"
 #include "uwp.hpp"
 
@@ -141,7 +142,7 @@ void Log::OutputMessage(std::wstring_view message)
 		const std::wstring error = buffer.str();
 
 		DWORD bytesWritten;
-		if (!WriteFile(m_FileHandle->get(), error.c_str(), error.length() * sizeof(wchar_t), &bytesWritten, NULL))
+		if (!WriteFile(m_FileHandle->get(), error.c_str(), Util::CheckedNarrow<DWORD>(error.length() * sizeof(wchar_t)), &bytesWritten, NULL))
 		{
 			LastErrorHandle(Error::Level::Debug, L"Writing to log file failed.");
 		}

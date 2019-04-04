@@ -6,13 +6,21 @@
 #include <utility>
 
 #include "../ttberror.hpp"
+#include "util/numbers.hpp"
 
 class SysString {
 private:
 	class PutProxy {
 	private:
 		SysString &m_strRef;
-		inline PutProxy(SysString &str) : m_strRef(str) { }
+		constexpr PutProxy(SysString &str) : m_strRef(str) { }
+
+		constexpr PutProxy(const PutProxy &) = delete;
+		constexpr PutProxy(PutProxy &&) = default;
+
+		constexpr PutProxy &operator =(const PutProxy &) = delete;
+		constexpr PutProxy &operator =(PutProxy &&) = delete;
+
 		friend class SysString;
 
 	public:
@@ -40,7 +48,7 @@ private:
 	}
 
 public:
-	inline SysString() : m_str(nullptr) { }
+	constexpr SysString() : m_str(nullptr) { }
 
 	inline SysString(const SysString &other) : m_str(other.m_str)
 	{
@@ -49,7 +57,8 @@ public:
 
 	inline SysString(SysString &&other) noexcept : m_str(std::exchange(other.m_str, nullptr)) { }
 
-	inline SysString(std::wstring_view val) : m_str(SysAllocStringLen(val.data(), val.length()))
+	inline SysString(std::wstring_view val) :
+		m_str(SysAllocStringLen(val.data(), Util::CheckedNarrow<UINT>(val.length())))
 	{
 		AddRef();
 	}
@@ -76,7 +85,7 @@ public:
 		}
 	}
 
-	inline explicit operator bool() { return m_str; }
+	constexpr explicit operator bool() { return m_str; }
 
 	inline operator std::wstring_view()
 	{

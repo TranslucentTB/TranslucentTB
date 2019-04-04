@@ -56,6 +56,56 @@ TEST(Util_ClampTo_Signed_Signed, DoesNotClampsWhenSourceFits)
 	ASSERT_EQ((Util::ClampTo<int16_t, int32_t>(300)), 300);
 }
 
+TEST(Util_CheckedNarrow_Unsigned_Signed, ThrowsWhenSourceTooBig)
+{
+	ASSERT_THROW((Util::CheckedNarrow<int16_t, uint32_t>(4000000)), std::out_of_range);
+}
+
+TEST(Util_CheckedNarrow_Unsigned_Signed, ReturnsSameValueWhenSourceFits)
+{
+	ASSERT_EQ((Util::CheckedNarrow<int16_t, uint32_t>(300)), 300);
+}
+
+TEST(Util_CheckedNarrow_Unsigned_Unsigned, ThrowsWhenSourceTooBig)
+{
+	ASSERT_THROW((Util::CheckedNarrow<uint16_t, uint32_t>(4000000)), std::out_of_range);
+}
+
+TEST(Util_CheckedNarrow_Unsigned_Unsigned, ReturnsSameValueWhenSourceFits)
+{
+	ASSERT_EQ((Util::CheckedNarrow<uint16_t, uint32_t>(300)), 300);
+}
+
+TEST(Util_CheckedNarrow_Signed_Unsigned, ThrowsWhenSourceNegative)
+{
+	ASSERT_THROW((Util::CheckedNarrow<uint16_t, int32_t>(-2000000)), std::out_of_range);
+}
+
+TEST(Util_CheckedNarrow_Signed_Unsigned, ThrowsWhenSourceTooBig)
+{
+	ASSERT_THROW((Util::CheckedNarrow<uint16_t, int32_t>(2000000)), std::out_of_range);
+}
+
+TEST(Util_CheckedNarrow_Signed_Unsigned, ReturnsSameValueWhenSourceFits)
+{
+	ASSERT_EQ((Util::CheckedNarrow<uint16_t, int32_t>(300)), 300);
+}
+
+TEST(Util_CheckedNarrow_Signed_Signed, ThrowsWhenSourceTooSmall)
+{
+	ASSERT_THROW((Util::CheckedNarrow<int16_t, int32_t>(-2000000)), std::out_of_range);
+}
+
+TEST(Util_CheckedNarrow_Signed_Signed, ThrowsWhenSourceTooBig)
+{
+	ASSERT_THROW((Util::CheckedNarrow<int16_t, int32_t>(2000000)), std::out_of_range);
+}
+
+TEST(Util_CheckedNarrow_Signed_Signed, ReturnsSameValueWhenSourceFits)
+{
+	ASSERT_EQ((Util::CheckedNarrow<int16_t, int32_t>(300)), 300);
+}
+
 TEST(Util_IsDecimalDigit, ReturnsFalseWhenNotDigit)
 {
 	ASSERT_THAT(Util::impl::IsDecimalDigit(L'a'), IsFalse());

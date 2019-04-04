@@ -574,6 +574,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		}
 	}
 
+	winrt::uninit_apartment();
+
 	return EXIT_SUCCESS;
 }
 
