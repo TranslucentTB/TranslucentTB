@@ -12,9 +12,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="autostart.cpp">
-      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
+    <ClCompile Include="autostart.cpp" />
     <ClCompile Include="blacklist.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="taskbarattributeworker.cpp" />

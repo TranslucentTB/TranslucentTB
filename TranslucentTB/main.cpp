@@ -8,6 +8,7 @@
 #include "arch.h"
 #include <PathCch.h>
 #include <ShlObj.h>
+#include <winrt/base.h>
 
 // Local stuff
 #include "autostart.hpp"
@@ -207,15 +208,37 @@ long LoadConfig(...)
 
 #pragma region Tray
 
-void RefreshAutostartMenu(HMENU menu, const winrt::Windows::Foundation::IAsyncOperation<Autostart::StartupState> &sender, ...)
+winrt::fire_and_forget RefreshMenu(TrayContextMenu::ContextMenuUpdater updater)
 {
-	const auto state = sender.GetResults();
+	// Fire off the task and do what we can do before blocking
+	const auto task = Autostart::GetStartupState();
+	updater.EnableItem(ID_AUTOSTART, false);
+	updater.CheckItem(ID_AUTOSTART, false);
+	updater.SetText(ID_AUTOSTART, L"Querying startup state...");
 
-	TrayContextMenu::RefreshBool(ID_AUTOSTART, menu, !(state == Autostart::StartupState::DisabledByUser || state == Autostart::StartupState::DisabledByPolicy || state == Autostart::StartupState::EnabledByPolicy),
-		TrayContextMenu::ControlsEnabled);
 
-	TrayContextMenu::RefreshBool(ID_AUTOSTART, menu, state == Autostart::StartupState::Enabled || state == Autostart::StartupState::EnabledByPolicy,
-		TrayContextMenu::Toggle);
+	const bool has_log = !Log::file().empty();
+	updater.EnableItem(ID_OPENLOG, has_log);
+	updater.SetText(ID_OPENLOG, has_log
+		? L"Open log file"
+		: Log::init_done()
+			? L"Error when initializing log file"
+			: L"Nothing has been logged yet"
+	);
+
+	updater.EnableItem(ID_SAVESETTINGS, !Config::NO_SAVE);
+
+	updater.EnableItem(ID_REGULAR_COLOR, Config::REGULAR_APPEARANCE.ACCENT != ACCENT_NORMAL);
+	updater.EnableItem(ID_MAXIMISED_COLOR, Config::MAXIMISED_ENABLED && Config::MAXIMISED_APPEARANCE.ACCENT != ACCENT_NORMAL);
+	updater.EnableItem(ID_START_COLOR, Config::START_ENABLED && Config::START_APPEARANCE.ACCENT != ACCENT_NORMAL);
+	updater.EnableItem(ID_CORTANA_COLOR, Config::CORTANA_ENABLED && Config::CORTANA_APPEARANCE.ACCENT != ACCENT_NORMAL);
+	updater.EnableItem(ID_TIMELINE_COLOR, Config::TIMELINE_ENABLED && Config::TIMELINE_APPEARANCE.ACCENT != ACCENT_NORMAL);
+
+	// Block until it finishes
+	const auto state = co_await task;
+	updater.EnableItem(ID_AUTOSTART,
+		!(state == Autostart::StartupState::DisabledByUser || state == Autostart::StartupState::DisabledByPolicy || state == Autostart::StartupState::EnabledByPolicy));
+	updater.CheckItem(ID_AUTOSTART, state == Autostart::StartupState::Enabled || state == Autostart::StartupState::EnabledByPolicy);
 
 	std::wstring autostart_text;
 	switch (state)
@@ -233,43 +256,7 @@ void RefreshAutostartMenu(HMENU menu, const winrt::Windows::Foundation::IAsyncOp
 	case Autostart::StartupState::Disabled:
 		autostart_text = L"Open at boot";
 	}
-	TrayContextMenu::ChangeItemText(menu, ID_AUTOSTART, std::move(autostart_text));
-}
-
-void RefreshMenu(HMENU menu)
-{
-	TrayContextMenu::RefreshBool(ID_AUTOSTART, menu, false, TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(ID_AUTOSTART, menu, false, TrayContextMenu::Toggle);
-	TrayContextMenu::ChangeItemText(menu, ID_AUTOSTART, L"Querying startup state...");
-	Autostart::GetStartupState().Completed(std::bind(&RefreshAutostartMenu, menu, std::placeholders::_1));
-
-
-	const bool has_log = !Log::file().empty();
-	TrayContextMenu::RefreshBool(ID_OPENLOG, menu, has_log, TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::ChangeItemText(menu, ID_OPENLOG, has_log
-		? L"Open log file"
-		: Log::init_done()
-			? L"Error when initializing log file"
-			: L"Nothing has been logged yet"
-	);
-
-	TrayContextMenu::RefreshBool(ID_SAVESETTINGS, menu, !Config::NO_SAVE, TrayContextMenu::ControlsEnabled);
-
-	TrayContextMenu::RefreshBool(ID_REGULAR_COLOR, menu,
-		Config::REGULAR_APPEARANCE.ACCENT != ACCENT_NORMAL,
-		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(ID_MAXIMISED_COLOR, menu,
-		Config::MAXIMISED_ENABLED && Config::MAXIMISED_APPEARANCE.ACCENT != ACCENT_NORMAL,
-		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(ID_START_COLOR, menu,
-		Config::START_ENABLED && Config::START_APPEARANCE.ACCENT != ACCENT_NORMAL,
-		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(ID_CORTANA_COLOR, menu,
-		Config::CORTANA_ENABLED && Config::CORTANA_APPEARANCE.ACCENT != ACCENT_NORMAL,
-		TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::RefreshBool(ID_TIMELINE_COLOR, menu,
-		Config::TIMELINE_ENABLED && Config::TIMELINE_APPEARANCE.ACCENT != ACCENT_NORMAL,
-		TrayContextMenu::ControlsEnabled);
+	updater.SetText(ID_AUTOSTART, std::move(autostart_text));
 }
 
 long ExitApp(EXITREASON reason, ...)
@@ -512,12 +499,13 @@ void InitializeTray(HINSTANCE hInstance)
 		tray.RegisterContextMenuCallback(ID_EXITWITHOUTSAVING, std::bind(&ExitApp, EXITREASON::UserActionNoSave));
 
 
-		tray.RegisterContextMenuCallback(ID_AUTOSTART, []
+		tray.RegisterContextMenuCallback(ID_AUTOSTART, []() -> winrt::fire_and_forget
 		{
-			Autostart::GetStartupState().Completed([](auto &&sender, ...)
-			{
-				Autostart::SetStartupState(sender.GetResults() == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
-			});
+			co_await Autostart::SetStartupState(
+				co_await Autostart::GetStartupState() == Autostart::StartupState::Enabled
+					? Autostart::StartupState::Disabled
+					: Autostart::StartupState::Enabled
+			);
 		});
 		tray.RegisterContextMenuCallback(ID_TIPS, std::bind(&win32::OpenLink,
 			L"https://github.com/TranslucentTB/TranslucentTB/wiki/Tips-and-tricks-for-a-better-looking-taskbar"));

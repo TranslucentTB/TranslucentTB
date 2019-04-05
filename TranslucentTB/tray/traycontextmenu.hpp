@@ -15,6 +15,12 @@ class TrayContextMenu : public TrayIcon {
 protected:
 	using callback_t = std::function<void()>;
 
+public:
+	enum BoolBindingEffect {
+		Toggle,
+		ControlsEnabled
+	};
+
 private:
 	template<typename T>
 	inline static void UpdateValue(T &toupdate, const T &newvalue)
@@ -26,43 +32,6 @@ private:
 	{
 		value = !value;
 	}
-
-	HMENU m_Menu;
-	std::unordered_map<unsigned int, std::forward_list<std::pair<unsigned short, callback_t>>> m_MenuCallbackMap;
-	long TrayCallback(WPARAM, LPARAM);
-	MessageWindow::CALLBACKCOOKIE m_TrayCallbackCookie;
-	MessageWindow::CALLBACKCOOKIE m_MenuInitCookie;
-
-	std::vector<std::function<void()>> m_RefreshFunctions;
-
-public:
-	TrayContextMenu(MessageWindow &window, const wchar_t *brightIconResource, const wchar_t *darkIconResource, const wchar_t *menuResource, HINSTANCE hInstance = GetModuleHandle(NULL));
-
-	using MENUCALLBACKCOOKIE = unsigned long long;
-
-	inline MENUCALLBACKCOOKIE RegisterContextMenuCallback(unsigned int item, callback_t callback)
-	{
-		unsigned short secret = Util::GetRandomNumber<unsigned short>();
-		m_MenuCallbackMap[item].push_front({ secret, std::move(callback) });
-
-		return (static_cast<MENUCALLBACKCOOKIE>(secret) << 32) + item;
-	}
-
-	inline void UnregisterContextMenuCallback(MENUCALLBACKCOOKIE cookie)
-	{
-		unsigned int item = cookie & 0xFFFFFFFF;
-		unsigned short secret = (cookie >> 32) & 0xFFFF;
-
-		m_MenuCallbackMap[item].remove_if([&secret](const std::pair<unsigned short, callback_t> &pair) -> bool
-		{
-			return pair.first == secret;
-		});
-	}
-
-	enum BoolBindingEffect {
-		Toggle,
-		ControlsEnabled
-	};
 
 	inline static void RefreshBool(unsigned int item, HMENU menu, bool value, BoolBindingEffect effect)
 	{
@@ -81,12 +50,67 @@ public:
 		CheckMenuRadioItem(menu, first, last, position, MF_BYCOMMAND);
 	}
 
-	inline static void ChangeItemText(HMENU menu, uint32_t item, std::wstring &&new_text)
+	inline static void ChangeItemText(HMENU menu, unsigned int item, std::wstring &&new_text)
 	{
 		MENUITEMINFO item_info = { sizeof(item_info), MIIM_STRING };
 
 		item_info.dwTypeData = new_text.data();
 		SetMenuItemInfo(menu, item, false, &item_info);
+	}
+
+	HMENU m_Menu;
+	std::unordered_map<unsigned int, std::forward_list<std::pair<unsigned short, callback_t>>> m_MenuCallbackMap;
+	long TrayCallback(WPARAM, LPARAM);
+	MessageWindow::CALLBACKCOOKIE m_TrayCallbackCookie;
+	MessageWindow::CALLBACKCOOKIE m_MenuInitCookie;
+
+	std::vector<std::function<void()>> m_RefreshFunctions;
+
+public:
+	class ContextMenuUpdater {
+	private:
+		HMENU m_hMenu;
+		inline ContextMenuUpdater(HMENU hmenu) : m_hMenu(hmenu) { }
+		friend class TrayContextMenu;
+
+	public:
+		inline void CheckItem(unsigned int id, bool state)
+		{
+			RefreshBool(id, m_hMenu, state, BoolBindingEffect::Toggle);
+		}
+
+		inline void EnableItem(unsigned int id, bool state)
+		{
+			RefreshBool(id, m_hMenu, state, BoolBindingEffect::ControlsEnabled);
+		}
+
+		inline void SetText(unsigned int id, std::wstring &&new_text)
+		{
+			ChangeItemText(m_hMenu, id, std::forward<std::wstring>(new_text));
+		}
+	};
+
+	TrayContextMenu(MessageWindow &window, const wchar_t *brightIconResource, const wchar_t *darkIconResource, const wchar_t *menuResource, HINSTANCE hInstance = GetModuleHandle(NULL));
+
+	using MENUCALLBACKCOOKIE = unsigned long long;
+
+	inline MENUCALLBACKCOOKIE RegisterContextMenuCallback(unsigned int item, callback_t callback)
+	{
+		unsigned short secret = Util::GetRandomNumber<unsigned short>();
+		m_MenuCallbackMap[item].push_front({ secret, std::move(callback) });
+
+		return (static_cast<MENUCALLBACKCOOKIE>(secret) << 32) + item;
+	}
+
+	inline void UnregisterContextMenuCallback(MENUCALLBACKCOOKIE cookie)
+	{
+		unsigned int item = cookie & 0xFFFFFFFF;
+		unsigned short secret = (cookie >> 32) & 0xFFFF;
+
+		m_MenuCallbackMap[item].remove_if([&secret](const auto &pair) -> bool
+		{
+			return pair.first == secret;
+		});
 	}
 
 	inline void BindBool(unsigned int item, bool &value, BoolBindingEffect effect)
@@ -121,9 +145,9 @@ public:
 		// TODO: no op
 	}
 
-	inline void RegisterCustomRefresh(std::function<void(HMENU menu)> function)
+	inline void RegisterCustomRefresh(std::function<void(ContextMenuUpdater)> function)
 	{
-		m_RefreshFunctions.push_back(std::bind(std::move(function), m_Menu));
+		m_RefreshFunctions.push_back(std::bind(std::move(function), ContextMenuUpdater(m_Menu)));
 	}
 
 	~TrayContextMenu();
