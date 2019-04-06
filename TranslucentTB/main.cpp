@@ -7,6 +7,7 @@
 // Windows API
 #include "arch.h"
 #include <PathCch.h>
+#include <sal.h>
 #include <ShlObj.h>
 #include <winrt/base.h>
 
@@ -516,7 +517,7 @@ void InitializeTray(HINSTANCE hInstance)
 	}
 }
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
+int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *, _In_ int)
 {
 	win32::HardenProcess();
 	try

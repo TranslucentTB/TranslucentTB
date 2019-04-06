@@ -345,15 +345,14 @@ std::pair<std::wstring, HRESULT> win32::GetWindowsBuild()
 
 std::pair<std::wstring, HRESULT> win32::GetFileVersion(const std::wstring &file)
 {
-	DWORD handle;
-	DWORD size = GetFileVersionInfoSize(file.c_str(), &handle);
+	DWORD size = GetFileVersionInfoSize(file.c_str(), nullptr);
 	if (!size)
 	{
 		return { { }, HRESULT_FROM_WIN32(GetLastError()) };
 	}
 
 	auto data = std::make_unique<std::byte[]>(size);
-	if (!GetFileVersionInfo(file.c_str(), handle, size, data.get()))
+	if (!GetFileVersionInfo(file.c_str(), 0, size, data.get()))
 	{
 		return { { }, HRESULT_FROM_WIN32(GetLastError()) };
 	}
