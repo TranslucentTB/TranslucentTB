@@ -47,7 +47,6 @@ private:
 	void OnAeroPeekEnterExit(DWORD event, ...);
 	void OnWindowStateChange(bool skipCheck, DWORD, Window window, LONG idObject, ...);
 	static bool IsWindowMaximised(Window window);
-	static BOOL CALLBACK EnumWindowsProcess(HWND hWnd, LPARAM lParam);
 
 	// Start menu
 	HMONITOR m_CurrentStartMonitor;

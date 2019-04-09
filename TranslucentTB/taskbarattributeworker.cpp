@@ -57,27 +57,6 @@ bool TaskbarAttributeWorker::IsWindowMaximised(Window window)
 		!Blacklist::IsBlacklisted(window);
 }
 
-BOOL CALLBACK TaskbarAttributeWorker::EnumWindowsProcess(HWND hWnd, LPARAM lParam)
-{
-	auto pThis = reinterpret_cast<TaskbarAttributeWorker *>(lParam);
-	const Window window(hWnd);
-
-	const HMONITOR monitor = window.monitor();
-	if (pThis->m_Taskbars.count(monitor) != 0)
-	{
-		if (IsWindowMaximised(window))
-		{
-			pThis->m_Taskbars.at(monitor).MaximisedWindows.insert(window);
-		}
-		else
-		{
-			pThis->m_Taskbars.at(monitor).MaximisedWindows.erase(window);
-		}
-	}
-
-	return true;
-}
-
 void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 {
 	if (state)
@@ -176,7 +155,21 @@ void TaskbarAttributeWorker::Poll()
 		m_CurrentStartMonitor = GetStartMenuMonitor();
 	}
 
-	EnumWindows(EnumWindowsProcess, reinterpret_cast<LPARAM>(this));
+	for (const Window window : Window::FindEnum())
+	{
+		const HMONITOR monitor = window.monitor();
+		if (m_Taskbars.count(monitor) != 0)
+		{
+			if (IsWindowMaximised(window))
+			{
+				m_Taskbars.at(monitor).MaximisedWindows.insert(window);
+			}
+			else
+			{
+				m_Taskbars.at(monitor).MaximisedWindows.erase(window);
+			}
+		}
+	}
 }
 
 bool TaskbarAttributeWorker::SetAttribute(Window window, Config::TASKBAR_APPEARANCE config)
