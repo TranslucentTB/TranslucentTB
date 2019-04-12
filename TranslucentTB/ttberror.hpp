@@ -24,7 +24,15 @@ public:
 	static std::wstring ExceptionFromIRestrictedErrorInfo(HRESULT hr, IRestrictedErrorInfo *info);
 
 private:
-	static void HandleCommon(Level level, const wchar_t *message, std::wstring_view error_message, const wchar_t *file, int line, const wchar_t *function);
+	static const size_t PREFIX_LENGTH;
+
+	static constexpr size_t GetPrefixLength(std::wstring_view filename)
+	{
+		const size_t pos = filename.find_last_of(LR"(/\)");
+		return pos != std::wstring_view::npos ? pos + 1 : 0;
+	}
+
+	static void HandleCommon(Level level, const wchar_t *message, std::wstring_view error_message, std::wstring_view file, int line, const wchar_t *function);
 };
 
 #define ErrorHandle(x, y, z) (Error::Handle((x), (y), (z), _T(__FILE__), __LINE__, _T(__FUNCSIG__)))

@@ -18,6 +18,8 @@
 #include "win32.hpp"
 #include "windows/window.hpp"
 
+const size_t Error::PREFIX_LENGTH = GetPrefixLength(_T(__FILE__));
+
 bool Error::Handle(HRESULT error, Level level, const wchar_t *message, const wchar_t *file, int line, const wchar_t *function)
 {
 	if (FAILED(error))
@@ -65,22 +67,27 @@ std::wstring Error::ExceptionFromIRestrictedErrorInfo(HRESULT hr, IRestrictedErr
 		SUCCEEDED(info->GetErrorDetails(description.put(), &code, restrictedDescription.put(), capabilitySid.put())) &&
 		hr == code)
 	{
+		std::wostringstream buffer;
 		if (restrictedDescription)
 		{
-			return L"Restricted exception from IRestrictedErrorInfo: " +
-				std::wstring(Util::Trim(restrictedDescription));
+			buffer
+				<< L"Restricted exception from IRestrictedErrorInfo: "
+				<< Util::Trim(restrictedDescription);
 		}
 		else if (description)
 		{
-			return L"Exception from IRestrictedErrorInfo: " +
-				std::wstring(Util::Trim(description));
+			buffer
+				<< L"Exception from IRestrictedErrorInfo: "
+				<< Util::Trim(description);
 		}
+
+		return buffer.str();
 	}
 
 	return ExceptionFromHRESULT(hr);
 }
 
-void Error::HandleCommon(Level level, const wchar_t *message, std::wstring_view error_message, const wchar_t *file, int line, const wchar_t *function)
+void Error::HandleCommon(Level level, const wchar_t *message, std::wstring_view error_message, std::wstring_view file, int line, const wchar_t *function)
 {
 	std::wostringstream boxbuffer;
 	if (level != Level::Log && level != Level::Debug)
@@ -94,6 +101,8 @@ void Error::HandleCommon(Level level, const wchar_t *message, std::wstring_view 
 
 		boxbuffer << error_message;
 	}
+
+	file.remove_prefix(PREFIX_LENGTH);
 
 	std::wostringstream err;
 	err << message << L' ' << error_message <<
