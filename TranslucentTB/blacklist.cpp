@@ -51,7 +51,7 @@ void Blacklist::Parse(const std::filesystem::path &file)
 
 		std::wstring line_lowercase = Util::ToLower(line);
 
-		if (Util::StringBeginsWith(line_lowercase, L"class"))
+		if (line_lowercase.starts_with(L"class"))
 		{
 			AddToSet(line, s_ClassBlacklist, delimiter);
 		}
@@ -59,7 +59,7 @@ void Blacklist::Parse(const std::filesystem::path &file)
 		{
 			AddToVector(line, s_TitleBlacklist, delimiter);
 		}
-		else if (Util::StringBeginsWith(line_lowercase, L"exename"))
+		else if (line_lowercase.starts_with(L"exename"))
 		{
 			AddToSet(line_lowercase, s_FileBlacklist, delimiter);
 		}
@@ -74,7 +74,7 @@ void Blacklist::Parse(const std::filesystem::path &file)
 
 bool Blacklist::IsBlacklisted(Window window)
 {
-	if (s_Cache.count(window) != 0)
+	if (s_Cache.contains(window))
 	{
 		return s_Cache.at(window);
 	}
@@ -83,7 +83,7 @@ bool Blacklist::IsBlacklisted(Window window)
 		// This is the fastest because we do the less string manipulation, so always try it first
 		if (!s_ClassBlacklist.empty())
 		{
-			if (s_ClassBlacklist.count(window.classname()) != 0)
+			if (s_ClassBlacklist.contains(window.classname()))
 			{
 				return OutputMatchToLog(window, s_Cache[window] = true);
 			}
@@ -91,7 +91,7 @@ bool Blacklist::IsBlacklisted(Window window)
 
 		if (!s_FileBlacklist.empty())
 		{
-			if (s_FileBlacklist.count(Util::ToLower(window.file().filename())) != 0)
+			if (s_FileBlacklist.contains(Util::ToLower(window.file().filename().native())))
 			{
 				return OutputMatchToLog(window, s_Cache[window] = true);
 			}

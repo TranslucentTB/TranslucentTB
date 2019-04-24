@@ -55,10 +55,6 @@ namespace Util {
 	template<typename T>
 	using string_view_map = std::unordered_map<std::wstring_view, T, impl::string_lowercase_hash, impl::string_lowercase_compare>;
 
-	// Case-insensitive std::unordered_multimap with string keys.
-	template<typename T>
-	using string_multimap = std::unordered_multimap<std::wstring, T, impl::string_lowercase_hash, impl::string_lowercase_compare>;
-
 	// Removes instances of a character at the beginning and end of the string.
 	constexpr std::wstring_view Trim(std::wstring_view str, std::wstring_view characters = impl::WHITESPACES)
 	{
@@ -110,26 +106,6 @@ namespace Util {
 		}
 	}
 
-	// Checks if a string begins with another string. More efficient than str.find(text) == 0.
-	constexpr bool StringBeginsWith(std::wstring_view string, std::wstring_view string_to_test)
-	{
-		if (string.length() >= string_to_test.length())
-		{
-			for (std::size_t i = 0; i < string_to_test.length(); i++)
-			{
-				if (string_to_test[i] != string[i])
-				{
-					return false;
-				}
-			}
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
 	// Checks if a string begins with any of the strings in the second parameter.
 	// T must be iteratable using a range-for with a type convertible to std::wstring_view.
 	// For example std::vector<std::wstring> works, as well as IVectorView<winrt::hstring>.
@@ -138,7 +114,7 @@ namespace Util {
 	{
 		for (const auto &string_to_test : strings_to_test)
 		{
-			if (!StringBeginsWith(string, string_to_test))
+			if (!string.starts_with(string_to_test))
 			{
 				continue;
 			}
@@ -154,7 +130,7 @@ namespace Util {
 	// Removes a string at the beginning of another string.
 	constexpr std::wstring_view RemovePrefix(std::wstring_view str, std::wstring_view prefix)
 	{
-		if (StringBeginsWith(str, prefix))
+		if (str.starts_with(prefix))
 		{
 			str.remove_prefix(prefix.length());
 		}
@@ -165,7 +141,7 @@ namespace Util {
 	// Removes a string at the beginning of another string.
 	constexpr void RemovePrefixInplace(std::wstring_view &str, std::wstring_view prefix)
 	{
-		if (StringBeginsWith(str, prefix))
+		if (str.starts_with(prefix))
 		{
 			str.remove_prefix(prefix.length());
 		}
@@ -174,7 +150,7 @@ namespace Util {
 	// Removes a string at the beginning of another string.
 	inline void RemovePrefixInplace(std::wstring &str, std::wstring_view prefix)
 	{
-		if (StringBeginsWith(str, prefix))
+		if (str.starts_with(prefix))
 		{
 			str.erase(0, prefix.length());
 		}

@@ -39,18 +39,13 @@ void WindowClass::DestroyIcons()
 
 WindowClass::WindowClass(callback_t callback, const std::wstring &className, const wchar_t *iconResource, unsigned int style, HINSTANCE hInstance, HBRUSH brush, HCURSOR cursor) :
 	m_ClassStruct {
-		sizeof(m_ClassStruct),
-		style,
-		RawWindowProcedure,
-		0,
-		0,
-		hInstance,
-		nullptr,
-		cursor,
-		brush,
-		nullptr,
-		className.c_str(),
-		nullptr
+		.cbSize = sizeof(m_ClassStruct),
+		.style = style,
+		.lpfnWndProc = RawWindowProcedure,
+		.hInstance = hInstance,
+		.hCursor = cursor,
+		.hbrBackground = brush,
+		.lpszClassName = className.c_str()
 	}
 {
 	LoadIcons(iconResource);

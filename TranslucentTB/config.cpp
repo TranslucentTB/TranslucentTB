@@ -174,7 +174,7 @@ bool Config::ParseCommandLine()
 
 		while (args.size() >= 2)
 		{
-			if (!Util::StringBeginsWith(args[1], L"--"))
+			if (!args[1].starts_with(L"--"))
 			{
 				Util::RemovePrefixInplace(args[0], L"--");
 
@@ -442,7 +442,7 @@ void Config::ParseCliFlags(std::vector<std::wstring> &args, const logger_t &logg
 		auto iter = std::find(args.begin(), args.end(), L"--" + std::wstring(pair.first));
 		if (iter != args.end())
 		{
-			if (iter + 1 != args.end() && !Util::StringBeginsWith(*(iter + 1), L"--"))
+			if (iter + 1 != args.end() && !(iter + 1)->starts_with(L"--"))
 			{
 				if (!ParseBool(*(iter + 1), pair.second))
 				{

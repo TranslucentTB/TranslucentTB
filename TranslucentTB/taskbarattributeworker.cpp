@@ -25,7 +25,7 @@ void TaskbarAttributeWorker::OnWindowStateChange(bool skipCheck, DWORD, Window w
 	if (skipCheck || (idObject == OBJID_WINDOW && window.valid()))
 	{
 		const HMONITOR monitor = window.monitor();
-		if (m_Taskbars.count(monitor) != 0)
+		if (m_Taskbars.contains(monitor))
 		{
 			// Note: at() is done here after the check because if not we get some weird crashes when changing DPI.
 			if (IsWindowMaximised(window))
@@ -158,7 +158,7 @@ void TaskbarAttributeWorker::Poll()
 	for (const Window window : Window::FindEnum())
 	{
 		const HMONITOR monitor = window.monitor();
-		if (m_Taskbars.count(monitor) != 0)
+		if (m_Taskbars.contains(monitor))
 		{
 			if (IsWindowMaximised(window))
 			{
@@ -223,7 +223,7 @@ Config::TASKBAR_APPEARANCE TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR 
 		{
 			return Config::REGULAR_APPEARANCE;
 		}
-		else if ((skipCheck || m_Taskbars.count(monitor) != 0) &&
+		else if ((skipCheck || m_Taskbars.contains(monitor)) &&
 			!m_Taskbars.at(monitor).MaximisedWindows.empty())
 		{
 			return Config::MAXIMISED_APPEARANCE;
@@ -235,7 +235,7 @@ Config::TASKBAR_APPEARANCE TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR 
 
 bool TaskbarAttributeWorker::RefreshAttribute(HMONITOR monitor, bool skipCheck)
 {
-	if (skipCheck || m_Taskbars.count(monitor) != 0)
+	if (skipCheck || m_Taskbars.contains(monitor))
 	{
 		return SetAttribute(m_Taskbars.at(monitor).TaskbarWindow, GetConfigForMonitor(monitor, true));
 	}
@@ -316,7 +316,7 @@ void TaskbarAttributeWorker::RefreshAeroPeekButton()
 long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, LPARAM lParam)
 {
 	const Window window = reinterpret_cast<HWND>(lParam);
-	if (m_Taskbars.count(window.monitor()) != 0)
+	if (m_Taskbars.contains(window.monitor()))
 	{
 		const auto taskbar = m_Taskbars.at(window.monitor()).TaskbarWindow;
 		if (taskbar == window)

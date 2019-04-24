@@ -129,17 +129,12 @@ bool win32::CopyToClipboard(std::wstring_view text)
 void win32::EditFile(const std::filesystem::path &file)
 {
 	SHELLEXECUTEINFO info = {
-		sizeof(info),		// cbSize
-		SEE_MASK_CLASSNAME,	// fMask
-		NULL,				// hwnd
-		L"open",			// lpVerb
-		file.c_str(),		// lpFile
-		NULL,				// lpParameters
-		NULL,				// lpDirectory
-		SW_SHOW,			// nShow
-		nullptr,			// hInstApp
-		nullptr,			// lpIDList
-		L"txtfile"			// lpClass
+		.cbSize = sizeof(info),
+		.fMask = SEE_MASK_CLASSNAME,
+		.lpVerb = L"open",
+		.lpFile = file.c_str(),
+		.nShow = SW_SHOW,
+		.lpClass = L"txtfile"
 	};
 
 	if (!ShellExecuteEx(&info))
@@ -163,17 +158,12 @@ void win32::EditFile(const std::filesystem::path &file)
 void win32::OpenLink(const std::wstring &link)
 {
 	SHELLEXECUTEINFO info = {
-		sizeof(info),							// cbSize
-		SEE_MASK_CLASSNAME,						// fMask
-		NULL,									// hwnd
-		L"open",								// lpVerb
-		link.c_str(),							// lpFile
-		NULL,									// lpParameters
-		NULL,									// lpDirectory
-		SW_SHOW,								// nShow
-		nullptr,								// hInstApp
-		nullptr,								// lpIDList
-		link[4] == L's' ? L"https" : L"http"	// lpClass
+		.cbSize = sizeof(info),
+		.fMask = SEE_MASK_CLASSNAME,
+		.lpVerb = L"open",
+		.lpFile = link.c_str(),
+		.nShow = SW_SHOW,
+		.lpClass = link[4] == L's' ? L"https" : L"http"
 	};
 
 	if (!ShellExecuteEx(&info))
@@ -353,17 +343,12 @@ std::wstring_view win32::GetProcessorArchitecture()
 void win32::OpenFolder(const std::filesystem::path &folder)
 {
 	SHELLEXECUTEINFO info = {
-		sizeof(info),							// cbSize
-		SEE_MASK_CLASSNAME,						// fMask
-		NULL,									// hwnd
-		L"open",								// lpVerb
-		folder.c_str(),							// lpFile
-		NULL,									// lpParameters
-		NULL,									// lpDirectory
-		SW_SHOW,								// nShow
-		nullptr,								// hInstApp
-		nullptr,								// lpIDList
-		L"folder"								// lpClass
+		.cbSize = sizeof(info),
+		.fMask = SEE_MASK_CLASSNAME,
+		.lpVerb = L"open",
+		.lpFile = folder.c_str(),
+		.nShow = SW_SHOW,
+		.lpClass = L"folder"
 	};
 
 	if (!ShellExecuteEx(&info))

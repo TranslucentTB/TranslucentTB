@@ -33,7 +33,7 @@ void Window::HandleDestroyEvent(DWORD, Window window, ...)
 
 const std::wstring &Window::title() const
 {
-	if (s_Titles.count(m_WindowHandle) == 0)
+	if (s_Titles.contains(m_WindowHandle))
 	{
 		std::wstring windowTitle;
 		const int titleSize = GetWindowTextLength(m_WindowHandle) + 1; // For the null terminator
@@ -56,7 +56,7 @@ const std::wstring &Window::title() const
 
 const std::wstring &Window::classname() const
 {
-	if (s_ClassNames.count(m_WindowHandle) == 0)
+	if (s_ClassNames.contains(m_WindowHandle))
 	{
 		std::wstring className;
 		className.resize(257);	// According to docs, maximum length of a class name is 256, but it's ambiguous
@@ -79,7 +79,7 @@ const std::wstring &Window::classname() const
 
 const std::filesystem::path &Window::file() const
 {
-	if (s_FilePaths.count(m_WindowHandle) == 0)
+	if (s_FilePaths.contains(m_WindowHandle))
 	{
 		DWORD pid;
 		GetWindowThreadProcessId(m_WindowHandle, &pid);

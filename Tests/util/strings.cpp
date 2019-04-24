@@ -167,26 +167,6 @@ TEST(Util_TrimInplace_String, TrimsAll)
 	ASSERT_THAT(str, IsEmpty());
 }
 
-TEST(Util_StringBeginsWith, ReturnsFalseWhenStringShorterThanPrefix)
-{
-	ASSERT_THAT(Util::StringBeginsWith(L"foo", L"foobar"), IsFalse());
-}
-
-TEST(Util_StringBeginsWith, ReturnsFalseWhenStringDoesNotBeginsWith)
-{
-	ASSERT_THAT(Util::StringBeginsWith(L"foobar", L"bar"), IsFalse());
-}
-
-TEST(Util_StringBeginsWith, ReturnsTrueWhenSame)
-{
-	ASSERT_THAT(Util::StringBeginsWith(L"foobar", L"foobar"), IsTrue());
-}
-
-TEST(Util_StringBeginsWith, ReturnsTrueWhenStringLongerThanPrefixAndBeginsWith)
-{
-	ASSERT_THAT(Util::StringBeginsWith(L"foobar", L"foo"), IsTrue());
-}
-
 TEST(Util_StringBeginsWithOneOf, ReturnsTrueWhenStringBeginsWithOneOf)
 {
 	ASSERT_THAT(Util::StringBeginsWithOneOf(L"foobar", { L"bar", L"foobar", L"foo" }), IsTrue());
