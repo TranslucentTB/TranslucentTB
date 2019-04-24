@@ -1,5 +1,6 @@
 #pragma once
 #include <dwmapi.h>
+#include <filesystem>
 #include <string>
 #include <unordered_map>
 
@@ -9,12 +10,12 @@ class EventHook; // Forward declare to avoid circular deps
 
 class Window {
 private:
-	static std::unordered_map<Window, std::wstring> m_ClassNames;
-	static std::unordered_map<Window, std::wstring> m_Filenames;
-	static std::unordered_map<Window, std::wstring> m_Titles;
+	static std::unordered_map<Window, std::wstring> s_ClassNames;
+	static std::unordered_map<Window, std::filesystem::path> s_FilePaths;
+	static std::unordered_map<Window, std::wstring> s_Titles;
 
-	static const EventHook m_ChangeHook;
-	static const EventHook m_DestroyHook;
+	static const EventHook s_ChangeHook;
+	static const EventHook s_DestroyHook;
 
 	static void HandleChangeEvent(const DWORD, Window window, ...);
 	static void HandleDestroyEvent(const DWORD, Window window, ...);
@@ -70,7 +71,7 @@ public:
 
 	const std::wstring &classname() const;
 
-	const std::wstring &filename() const;
+	const std::filesystem::path &file() const;
 
 	bool on_current_desktop() const;
 
@@ -167,9 +168,9 @@ namespace std {
 // Under hash specialization because this uses it.
 inline void Window::ClearCache()
 {
-	m_ClassNames.clear();
-	m_Filenames.clear();
-	m_Titles.clear();
+	s_ClassNames.clear();
+	s_FilePaths.clear();
+	s_Titles.clear();
 }
 
 // Iterator class for FindEnum

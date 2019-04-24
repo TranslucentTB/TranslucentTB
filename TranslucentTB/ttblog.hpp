@@ -1,5 +1,6 @@
 #pragma once
 #include "arch.h"
+#include <filesystem>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -10,7 +11,7 @@
 class Log {
 private:
 	static std::optional<winrt::file_handle> m_FileHandle;
-	static std::wstring m_File;
+	static std::filesystem::path m_File;
 
 	static std::pair<HRESULT, std::wstring> InitStream();
 
@@ -19,7 +20,7 @@ public:
 	{
 		return m_FileHandle.has_value();
 	}
-	inline static const std::wstring &file()
+	inline static const std::filesystem::path &file()
 	{
 		return m_File;
 	}

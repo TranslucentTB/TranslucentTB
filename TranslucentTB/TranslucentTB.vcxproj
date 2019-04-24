@@ -36,7 +36,6 @@
     <ClInclude Include="smart\autounlock.hpp" />
     <ClInclude Include="blacklist.hpp" />
     <ClInclude Include="smart\boolguard.hpp" />
-    <ClInclude Include="smart\changenotificationhandle.hpp" />
     <ClInclude Include="smart\clipboardcontext.hpp" />
     <ClInclude Include="smart\sysstring.hpp" />
     <ClInclude Include="taskbarattributeworker.hpp" />

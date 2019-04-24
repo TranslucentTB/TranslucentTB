@@ -6,21 +6,21 @@
 #include "ttblog.hpp"
 #include "util/strings.hpp"
 
-std::unordered_set<std::wstring> Blacklist::m_ClassBlacklist;
-std::unordered_set<std::wstring> Blacklist::m_FileBlacklist;
-std::vector<std::wstring> Blacklist::m_TitleBlacklist;
+std::unordered_set<std::wstring> Blacklist::s_ClassBlacklist;
+std::unordered_set<std::wstring> Blacklist::s_FileBlacklist;
+std::vector<std::wstring> Blacklist::s_TitleBlacklist;
 
-std::unordered_map<Window, bool> Blacklist::m_Cache;
+std::unordered_map<Window, bool> Blacklist::s_Cache;
 
-const EventHook Blacklist::m_ChangeHook(EVENT_OBJECT_NAMECHANGE, Blacklist::HandleChangeEvent);
-const EventHook Blacklist::m_DestroyHook(EVENT_OBJECT_DESTROY, Blacklist::HandleDestroyEvent);
+const EventHook Blacklist::s_ChangeHook(EVENT_OBJECT_NAMECHANGE, Blacklist::HandleChangeEvent);
+const EventHook Blacklist::s_DestroyHook(EVENT_OBJECT_DESTROY, Blacklist::HandleDestroyEvent);
 
-void Blacklist::Parse(const std::wstring &file)
+void Blacklist::Parse(const std::filesystem::path &file)
 {
 	// Clear our vectors
-	m_ClassBlacklist.clear();
-	m_TitleBlacklist.clear();
-	m_FileBlacklist.clear();
+	s_ClassBlacklist.clear();
+	s_TitleBlacklist.clear();
+	s_FileBlacklist.clear();
 
 	const wchar_t delimiter = L',';
 	const wchar_t comment = L';';
@@ -53,15 +53,15 @@ void Blacklist::Parse(const std::wstring &file)
 
 		if (Util::StringBeginsWith(line_lowercase, L"class"))
 		{
-			AddToSet(line, m_ClassBlacklist, delimiter);
+			AddToSet(line, s_ClassBlacklist, delimiter);
 		}
 		else if (Util::StringBeginsWithOneOf(line_lowercase, { L"title", L"windowtitle" }))
 		{
-			AddToVector(line, m_TitleBlacklist, delimiter);
+			AddToVector(line, s_TitleBlacklist, delimiter);
 		}
 		else if (Util::StringBeginsWith(line_lowercase, L"exename"))
 		{
-			AddToSet(line_lowercase, m_FileBlacklist, delimiter);
+			AddToSet(line_lowercase, s_FileBlacklist, delimiter);
 		}
 		else
 		{
@@ -74,48 +74,48 @@ void Blacklist::Parse(const std::wstring &file)
 
 bool Blacklist::IsBlacklisted(Window window)
 {
-	if (m_Cache.count(window) != 0)
+	if (s_Cache.count(window) != 0)
 	{
-		return m_Cache.at(window);
+		return s_Cache.at(window);
 	}
 	else
 	{
 		// This is the fastest because we do the less string manipulation, so always try it first
-		if (!m_ClassBlacklist.empty())
+		if (!s_ClassBlacklist.empty())
 		{
-			if (m_ClassBlacklist.count(window.classname()) != 0)
+			if (s_ClassBlacklist.count(window.classname()) != 0)
 			{
-				return OutputMatchToLog(window, m_Cache[window] = true);
+				return OutputMatchToLog(window, s_Cache[window] = true);
 			}
 		}
 
-		if (!m_FileBlacklist.empty())
+		if (!s_FileBlacklist.empty())
 		{
-			if (m_FileBlacklist.count(Util::ToLower(window.filename())) != 0)
+			if (s_FileBlacklist.count(Util::ToLower(window.file().filename())) != 0)
 			{
-				return OutputMatchToLog(window, m_Cache[window] = true);
+				return OutputMatchToLog(window, s_Cache[window] = true);
 			}
 		}
 
 		// Do it last because titles can change, so it's less reliable.
-		if (!m_TitleBlacklist.empty())
+		if (!s_TitleBlacklist.empty())
 		{
-			for (const std::wstring &value : m_TitleBlacklist)
+			for (const std::wstring &value : s_TitleBlacklist)
 			{
 				if (window.title().find(value) != std::wstring::npos)
 				{
-					return OutputMatchToLog(window, m_Cache[window] = true);
+					return OutputMatchToLog(window, s_Cache[window] = true);
 				}
 			}
 		}
 
-		return OutputMatchToLog(window, m_Cache[window] = false);
+		return OutputMatchToLog(window, s_Cache[window] = false);
 	}
 }
 
 void Blacklist::ClearCache()
 {
-	m_Cache.clear();
+	s_Cache.clear();
 
 	if (Config::VERBOSE)
 	{
@@ -125,12 +125,12 @@ void Blacklist::ClearCache()
 
 void Blacklist::HandleChangeEvent(DWORD, Window window, ...)
 {
-	m_Cache.erase(window);
+	s_Cache.erase(window);
 }
 
 void Blacklist::HandleDestroyEvent(DWORD, Window window, ...)
 {
-	m_Cache.erase(window);
+	s_Cache.erase(window);
 }
 
 void Blacklist::AddToContainer(std::wstring_view line, wchar_t delimiter, const std::function<void(std::wstring_view)> &inserter)
@@ -173,7 +173,7 @@ bool Blacklist::OutputMatchToLog(Window window, bool isMatch)
 	{
 		std::wostringstream message;
 		message << (isMatch ? L"B" : L"No b") << L"lacklist match found for window: ";
-		message << window.handle() << L" [" << window.classname() << L"] [" << window.filename() << L"] [" << window.title() << L']';
+		message << window.handle() << L" [" << window.classname() << L"] [" << window.file().filename() << L"] [" << window.title() << L']';
 
 		Log::OutputMessage(message.str());
 	}

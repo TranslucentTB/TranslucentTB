@@ -23,9 +23,9 @@
 #include "ttblog.hpp"
 #include "windows/window.hpp"
 
-std::wstring win32::m_ExeLocation;
+std::filesystem::path win32::m_ExeLocation;
 
-std::pair<std::wstring, HRESULT> win32::GetProcessFileName(HANDLE process)
+std::pair<std::filesystem::path, HRESULT> win32::GetProcessFileName(HANDLE process)
 {
 	DWORD exeLocation_size = LONG_PATH;
 	std::wstring exeLocation;
@@ -33,16 +33,15 @@ std::pair<std::wstring, HRESULT> win32::GetProcessFileName(HANDLE process)
 	if (QueryFullProcessImageName(process, 0, exeLocation.data(), &exeLocation_size))
 	{
 		exeLocation.resize(exeLocation_size);
-		return { exeLocation, S_OK };
+		return { std::move(exeLocation), S_OK };
 	}
 	else
 	{
-		exeLocation.erase();
-		return { exeLocation, HRESULT_FROM_WIN32(GetLastError()) };
+		return { { }, HRESULT_FROM_WIN32(GetLastError()) };
 	}
 }
 
-const std::wstring &win32::GetExeLocation()
+std::filesystem::path win32::GetExeLocation()
 {
 	if (m_ExeLocation.empty())
 	{
@@ -83,43 +82,6 @@ bool win32::IsAtLeastBuild(uint32_t buildNumber)
 		}
 
 		return false;
-	}
-}
-
-bool win32::IsDirectory(const std::wstring &directory)
-{
-	DWORD attributes = GetFileAttributes(directory.c_str());
-	if (attributes == INVALID_FILE_ATTRIBUTES)
-	{
-		DWORD error = GetLastError();
-		if (error != ERROR_FILE_NOT_FOUND && error != ERROR_PATH_NOT_FOUND)
-		{
-			// This function gets called during log initialization, so avoid potential recursivity
-			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Debug, L"Failed to check if directory exists.");
-		}
-		return false;
-	}
-	else
-	{
-		return attributes & FILE_ATTRIBUTE_DIRECTORY;
-	}
-}
-
-bool win32::FileExists(const std::wstring &file)
-{
-	DWORD attributes = GetFileAttributes(file.c_str());
-	if (attributes == INVALID_FILE_ATTRIBUTES)
-	{
-		DWORD error = GetLastError();
-		if (error != ERROR_FILE_NOT_FOUND && error != ERROR_PATH_NOT_FOUND)
-		{
-			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Failed to check if file exists.");
-		}
-		return false;
-	}
-	else
-	{
-		return !(attributes & FILE_ATTRIBUTE_DIRECTORY);
 	}
 }
 
@@ -164,7 +126,7 @@ bool win32::CopyToClipboard(std::wstring_view text)
 	return true;
 }
 
-void win32::EditFile(const std::wstring &file)
+void win32::EditFile(const std::filesystem::path &file)
 {
 	SHELLEXECUTEINFO info = {
 		sizeof(info),		// cbSize
@@ -184,14 +146,15 @@ void win32::EditFile(const std::wstring &file)
 	{
 		std::thread([file, err = GetLastError()]
 		{
-			std::wstring boxbuffer =
-				L"Failed to open file \"" + file + L"\"." +
-				L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(err)) +
-				L"\n\nCopy the file location to the clipboard?";
+			std::wostringstream str;
+			str
+				<< L"Failed to open file \"" << file << L"\".\n\n"
+				<< Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(err))
+				<< L"\n\nCopy the file location to the clipboard?";
 
-			if (MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+			if (MessageBox(Window::NullWindow, str.str().c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 			{
-				CopyToClipboard(file);
+				CopyToClipboard(file.native());
 			}
 		}).detach();
 	}
@@ -327,17 +290,13 @@ std::pair<std::wstring, HRESULT> win32::GetWindowsBuild()
 		return { { }, hr };
 	}
 
-	AutoFree::Local<wchar_t[]> kernel32;
-	hr = PathAllocCombine(system32.get(), L"kernel32.dll", PATHCCH_ALLOW_LONG_PATHS, kernel32.put());
-	if (FAILED(hr))
-	{
-		return { { }, hr };
-	}
+	std::filesystem::path kernel32 = system32.get();
+	kernel32 /= L"kernel32.dll";
 
-	return GetFileVersion(kernel32.get());
+	return GetFileVersion(kernel32);
 }
 
-std::pair<std::wstring, HRESULT> win32::GetFileVersion(const std::wstring &file)
+std::pair<std::wstring, HRESULT> win32::GetFileVersion(const std::filesystem::path &file)
 {
 	DWORD size = GetFileVersionInfoSize(file.c_str(), nullptr);
 	if (!size)
@@ -391,7 +350,7 @@ std::wstring_view win32::GetProcessorArchitecture()
 	}
 }
 
-void win32::OpenFolder(const std::wstring &folder)
+void win32::OpenFolder(const std::filesystem::path &folder)
 {
 	SHELLEXECUTEINFO info = {
 		sizeof(info),							// cbSize
@@ -411,14 +370,15 @@ void win32::OpenFolder(const std::wstring &folder)
 	{
 		std::thread([folder, err = GetLastError()]
 		{
-			std::wstring boxbuffer =
-				L"Failed to open folder \"" + folder + L"\"." +
-				L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(err)) +
-				L"\n\nCopy the path to the clipboard?";
+			std::wostringstream str;
+			str
+				<< L"Failed to open folder \"" << folder << L"\".\n\n"
+				<< Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(err))
+				<< L"\n\nCopy the path to the clipboard?";
 
-			if (MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+			if (MessageBox(Window::NullWindow, str.str().c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 			{
-				CopyToClipboard(folder);
+				CopyToClipboard(folder.native());
 			}
 		}).detach();
 	}

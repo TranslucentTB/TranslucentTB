@@ -114,7 +114,7 @@ const std::pair<const std::wstring_view, Config::TASKBAR_APPEARANCE &> Config::A
 	{ L"dynamic-timeline-", TIMELINE_APPEARANCE }
 };
 
-void Config::Parse(const std::wstring &file)
+void Config::Parse(const std::filesystem::path &file)
 {
 	std::wifstream configstream(file);
 	for (std::wstring line; std::getline(configstream, line);)
@@ -203,7 +203,7 @@ bool Config::ParseCommandLine()
 	}
 }
 
-void Config::Save(const std::wstring &file)
+void Config::Save(const std::filesystem::path &file)
 {
 	if (NO_SAVE)
 	{

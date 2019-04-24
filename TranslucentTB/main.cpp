@@ -1,6 +1,8 @@
 // Standard API
+#include <filesystem>
 #include <functional>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <unordered_map>
 
@@ -42,9 +44,9 @@ enum class EXITREASON {
 
 static struct {
 	EXITREASON exit_reason = EXITREASON::UserAction;
-	std::wstring config_folder;
-	std::wstring config_file;
-	std::wstring exclude_file;
+	std::filesystem::path config_folder;
+	std::filesystem::path config_file;
+	std::filesystem::path exclude_file;
 } run;
 
 static const std::unordered_map<ACCENT_STATE, uint32_t> REGULAR_BUTTOM_MAP = {
@@ -129,69 +131,42 @@ void GetPaths()
 
 void GetPaths()
 {
+	std::filesystem::path config_folder;
 	try
 	{
-		AutoFree::Local<wchar_t[]> configFolder;
-		AutoFree::Local<wchar_t[]> configFile;
-		AutoFree::Local<wchar_t[]> excludeFile;
-
-		ErrorHandle(PathAllocCombine(UWP::GetApplicationFolderPath(UWP::FolderType::Roaming).c_str(), NAME, PATHCCH_ALLOW_LONG_PATHS, configFolder.put()), Error::Level::Fatal, L"Failed to combine roaming folder and application name!");
-		ErrorHandle(PathAllocCombine(configFolder.get(), CONFIG_FILE, PATHCCH_ALLOW_LONG_PATHS, configFile.put()), Error::Level::Fatal, L"Failed to combine config folder and config file!");
-		ErrorHandle(PathAllocCombine(configFolder.get(), EXCLUDE_FILE, PATHCCH_ALLOW_LONG_PATHS, excludeFile.put()), Error::Level::Fatal, L"Failed to combine config folder and exclude file!");
-
-		run.config_folder = configFolder.get();
-		run.config_file = configFile.get();
-		run.exclude_file = excludeFile.get();
+		config_folder = static_cast<std::wstring_view>(UWP::GetApplicationFolderPath(UWP::FolderType::Roaming));
 	}
 	WinrtExceptionCatch(Error::Level::Fatal, L"Getting application folder paths failed!")
+
+	config_folder /= NAME;
+
+	run.config_folder = std::move(config_folder);
+	run.config_file = run.config_folder / CONFIG_FILE;
+	run.exclude_file = run.config_folder / EXCLUDE_FILE;
 }
 
-void ApplyStock(const std::wstring &filename)
+void ApplyStock(std::wstring_view filename)
 {
-	std::wstring exeFolder_str = win32::GetExeLocation();
-	exeFolder_str.erase(exeFolder_str.find_last_of(LR"(/\)") + 1);
-
-	AutoFree::Local<wchar_t[]> stockFile;
-	if (!ErrorHandle(PathAllocCombine(exeFolder_str.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, stockFile.put()), Error::Level::Error, L"Failed to combine executable folder and config file!"))
-	{
-		return;
-	}
-
-	AutoFree::Local<wchar_t[]> configFile;
-	if (!ErrorHandle(PathAllocCombine(run.config_folder.c_str(), filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, configFile.put()), Error::Level::Error, L"Failed to combine config folder and config file!"))
-	{
-		return;
-	}
-
-	if (!win32::IsDirectory(run.config_folder))
-	{
-		if (!CreateDirectory(run.config_folder.c_str(), NULL))
-		{
-			LastErrorHandle(Error::Level::Error, L"Creating configuration files directory failed!");
-			return;
-		}
-	}
-
-	if (!CopyFile(stockFile.get(), configFile.get(), FALSE))
-	{
-		LastErrorHandle(Error::Level::Error, L"Copying stock configuration file failed!");
-	}
+	std::filesystem::create_directory(run.config_folder);
+	std::filesystem::copy_file(win32::GetExeLocation().remove_filename() / filename, run.config_folder / filename);
 }
 
 bool CheckAndRunWelcome()
 {
-	if (!win32::IsDirectory(run.config_folder))
+	if (!std::filesystem::is_directory(run.config_folder))
 	{
 		if (!WelcomeDialog(run.config_folder).Run())
 		{
 			return false;
 		}
 	}
-	if (!win32::FileExists(run.config_file))
+
+	if (!std::filesystem::is_regular_file(run.config_file))
 	{
 		ApplyStock(CONFIG_FILE);
 	}
-	if (!win32::FileExists(run.exclude_file))
+
+	if (!std::filesystem::is_regular_file(run.exclude_file))
 	{
 		ApplyStock(EXCLUDE_FILE);
 	}
@@ -531,6 +506,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 	{
 		Window::Find(TRAY_WINDOW, NAME).send_message(WM_NEWTTBINSTANCE);
 	}
+
+	// TODO: std::filesystem::filesystem_exception handling
 
 	// Get configuration file paths
 	GetPaths();

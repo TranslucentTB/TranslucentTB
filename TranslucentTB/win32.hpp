@@ -1,6 +1,7 @@
 #pragma once
 #include "arch.h"
 #include <cstdint>
+#include <filesystem>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -13,29 +14,23 @@
 
 class win32 {
 private:
-	static std::wstring m_ExeLocation;
+	static std::filesystem::path m_ExeLocation;
 
 public:
 	// Gets location of the file of a process
-	static std::pair<std::wstring, HRESULT> GetProcessFileName(HANDLE process);
+	static std::pair<std::filesystem::path, HRESULT> GetProcessFileName(HANDLE process);
 
 	// Gets location of current module, fatally dies if failed.
-	static const std::wstring &GetExeLocation();
+	static std::filesystem::path GetExeLocation();
 
 	// Checks Windows build number.
 	static bool IsAtLeastBuild(uint32_t buildNumber);
-
-	// Checks if path exists and is a folder.
-	static bool IsDirectory(const std::wstring &directory);
-
-	// Checks if a file exists.
-	static bool FileExists(const std::wstring &file);
 
 	// Copies text to the clipboard.
 	static bool CopyToClipboard(std::wstring_view text);
 
 	// Opens a file in the default text editor.
-	static void EditFile(const std::wstring &file);
+	static void EditFile(const std::filesystem::path &file);
 
 	// Opens a link in the default browser.
 	// NOTE: doesn't attempts to validate the link, make sure it's correct.
@@ -48,7 +43,7 @@ public:
 	static std::pair<std::wstring, HRESULT> GetWindowsBuild();
 
 	// Gets the FileVersion of a PE binary.
-	static std::pair<std::wstring, HRESULT> GetFileVersion(const std::wstring &file);
+	static std::pair<std::wstring, HRESULT> GetFileVersion(const std::filesystem::path &file);
 
 	// Converts a Windows-style filetime to a unix epoch,
 	inline static uint64_t FiletimeToUnixEpoch(FILETIME time)
@@ -69,5 +64,5 @@ public:
 	static std::wstring_view GetProcessorArchitecture();
 
 	// Opens a folder in the File Explorer
-	static void OpenFolder(const std::wstring &folder);
+	static void OpenFolder(const std::filesystem::path &folder);
 };

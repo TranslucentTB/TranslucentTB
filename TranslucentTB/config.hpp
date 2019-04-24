@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <filesystem>
 #include <functional>
 #include <string>
 #include <utility>
@@ -50,9 +51,9 @@ public:
 	static bool NO_HOOK;
 	static bool VERBOSE;
 
-	static void Parse(const std::wstring &file);
+	static void Parse(const std::filesystem::path &file);
 	static bool ParseCommandLine();
-	static void Save(const std::wstring &file);
+	static void Save(const std::filesystem::path &file);
 
 private:
 	using logger_t = std::function<void(std::wstring_view)>;

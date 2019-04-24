@@ -1,6 +1,9 @@
 #pragma once
-#include "constants.hpp"
 #include "taskdialog.hpp"
+#include <filesystem>
+#include <sstream>
+
+#include "constants.hpp"
 #include "ttberror.hpp"
 
 class WelcomeDialog : public TTBTaskDialog {
@@ -27,20 +30,24 @@ private:
 		return S_OK;
 	}
 
-	inline std::wstring BuildWelcomeContent(const std::wstring &configLocation)
+	inline std::wstring BuildWelcomeContent(const std::filesystem::path &configLocation)
 	{
-		return L"All the settings for the application can be edited from the tray icon. "
-			L"If you want to edit the raw configuration files, take a look at <A HREF=\"" +
-			configLocation + L"\">" + configLocation + L"</A>. If you prefer a command line, run "
-			NAME L" with the --help command line argument to get more info.\n\n"
-			L"If you appreciate " NAME L" you are more than welcome to "
-			LR"(<A HREF="https://liberapay.com/TranslucentTB">donate</A>.)"
-			L"\n\nYou must agree to our license, the GPLv3, before using " NAME
-			L". We will only ask this once. Check the box and press OK to continue.";
+		std::wostringstream str;
+		str
+			<< L"All the settings for the application can be edited from the tray icon. "
+			   L"If you want to edit the raw configuration files, take a look at <A HREF=\""
+			<< configLocation << L"\">" << configLocation
+			<< L"</A>. If you prefer a command line, run " NAME
+			   L" with the --help command line argument to get more info.\n\n"
+			   L"If you appreciate " NAME L" you are more than welcome to "
+			   LR"(<A HREF="https://liberapay.com/TranslucentTB">donate</A>.)"
+			   L"\n\nYou must agree to our license, the GPLv3, before using " NAME
+			   L". We will only ask this once. Check the box and press OK to continue.";
+		return str.str();
 	}
 
 public:
-	inline WelcomeDialog(const std::wstring &configLocation) :
+	inline WelcomeDialog(const std::filesystem::path &configLocation) :
 		TTBTaskDialog(
 			L"Welcome to " NAME L"!",
 			BuildWelcomeContent(configLocation),

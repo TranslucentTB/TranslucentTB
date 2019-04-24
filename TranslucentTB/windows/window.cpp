@@ -9,31 +9,31 @@
 #include "../ttberror.hpp"
 #include "../win32.hpp"
 
-const EventHook Window::m_ChangeHook(EVENT_OBJECT_NAMECHANGE, Window::HandleChangeEvent);
-const EventHook Window::m_DestroyHook(EVENT_OBJECT_DESTROY, Window::HandleDestroyEvent);
+const EventHook Window::s_ChangeHook(EVENT_OBJECT_NAMECHANGE, Window::HandleChangeEvent);
+const EventHook Window::s_DestroyHook(EVENT_OBJECT_DESTROY, Window::HandleDestroyEvent);
 
-std::unordered_map<Window, std::wstring> Window::m_ClassNames;
-std::unordered_map<Window, std::wstring> Window::m_Filenames;
-std::unordered_map<Window, std::wstring> Window::m_Titles;
+std::unordered_map<Window, std::wstring> Window::s_ClassNames;
+std::unordered_map<Window, std::filesystem::path> Window::s_FilePaths;
+std::unordered_map<Window, std::wstring> Window::s_Titles;
 
 const Window Window::BroadcastWindow = HWND_BROADCAST;
 const Window Window::MessageOnlyWindow = HWND_MESSAGE;
 
 void Window::HandleChangeEvent(DWORD, Window window, ...)
 {
-	m_Titles.erase(window);
+	s_Titles.erase(window);
 }
 
 void Window::HandleDestroyEvent(DWORD, Window window, ...)
 {
-	m_Titles.erase(window);
-	m_ClassNames.erase(window);
-	m_Filenames.erase(window);
+	s_Titles.erase(window);
+	s_ClassNames.erase(window);
+	s_FilePaths.erase(window);
 }
 
 const std::wstring &Window::title() const
 {
-	if (m_Titles.count(m_WindowHandle) == 0)
+	if (s_Titles.count(m_WindowHandle) == 0)
 	{
 		std::wstring windowTitle;
 		const int titleSize = GetWindowTextLength(m_WindowHandle) + 1; // For the null terminator
@@ -46,17 +46,17 @@ const std::wstring &Window::title() const
 		}
 
 		windowTitle.resize(copiedChars);
-		return m_Titles[m_WindowHandle] = std::move(windowTitle);
+		return s_Titles[m_WindowHandle] = std::move(windowTitle);
 	}
 	else
 	{
-		return m_Titles.at(m_WindowHandle);
+		return s_Titles.at(m_WindowHandle);
 	}
 }
 
 const std::wstring &Window::classname() const
 {
-	if (m_ClassNames.count(m_WindowHandle) == 0)
+	if (s_ClassNames.count(m_WindowHandle) == 0)
 	{
 		std::wstring className;
 		className.resize(257);	// According to docs, maximum length of a class name is 256, but it's ambiguous
@@ -69,17 +69,17 @@ const std::wstring &Window::classname() const
 		}
 
 		className.resize(count);
-		return m_ClassNames[m_WindowHandle] = std::move(className);
+		return s_ClassNames[m_WindowHandle] = std::move(className);
 	}
 	else
 	{
-		return m_ClassNames.at(m_WindowHandle);
+		return s_ClassNames.at(m_WindowHandle);
 	}
 }
 
-const std::wstring &Window::filename() const
+const std::filesystem::path &Window::file() const
 {
-	if (m_Filenames.count(m_WindowHandle) == 0)
+	if (s_FilePaths.count(m_WindowHandle) == 0)
 	{
 		DWORD pid;
 		GetWindowThreadProcessId(m_WindowHandle, &pid);
@@ -88,24 +88,20 @@ const std::wstring &Window::filename() const
 		if (!processHandle)
 		{
 			LastErrorHandle(Error::Level::Log, L"Getting process handle of a window failed.");
-			return m_Filenames[m_WindowHandle] = { };
+			return s_FilePaths[m_WindowHandle] = std::filesystem::path();
 		}
 
 		auto [loc, hr] = win32::GetProcessFileName(processHandle.get());
-		if (SUCCEEDED(hr))
-		{
-			loc.erase(0, loc.find_last_of(LR"(/\)") + 1);
-		}
-		else
+		if (FAILED(hr))
 		{
 			ErrorHandle(hr, Error::Level::Log, L"Getting file name of a window failed.");
 		}
 
-		return m_Filenames[m_WindowHandle] = std::move(loc);
+		return s_FilePaths[m_WindowHandle] = std::move(loc);
 	}
 	else
 	{
-		return m_Filenames.at(m_WindowHandle);
+		return s_FilePaths.at(m_WindowHandle);
 	}
 }
 

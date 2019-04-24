@@ -21,7 +21,7 @@
 #include "uwp.hpp"
 
 std::optional<winrt::file_handle> Log::m_FileHandle;
-std::wstring Log::m_File;
+std::filesystem::path Log::m_File;
 
 #if 0
 std::tuple<std::wstring, HRESULT, std::wstring> Log::GetPath()
@@ -48,49 +48,43 @@ std::tuple<std::wstring, HRESULT, std::wstring> Log::GetPath()
 
 std::pair<HRESULT, std::wstring> Log::InitStream()
 {
-	m_FileHandle.emplace(); // put this here so that if we fail before creating the file, we won't try constantly doing init.
+	// put this here so that if we fail before creating the file, we won't try constantly doing init.
+	m_FileHandle.emplace();
 
-	std::wstring log_folder;
+	std::filesystem::path log;
 	try
 	{
-		log_folder = UWP::GetApplicationFolderPath(UWP::FolderType::Temporary).c_str();
+		log = static_cast<std::wstring_view>(UWP::GetApplicationFolderPath(UWP::FolderType::Temporary));
 	}
 	catch (const winrt::hresult_error &error)
 	{
 		return { error.code(), L"Failed to determine temporary folder location!" };
 	}
 
-	if (!win32::IsDirectory(log_folder))
+	if (!std::filesystem::is_directory(log))
 	{
-		if (!CreateDirectory(log_folder.c_str(), NULL))
+		try
 		{
-			return { HRESULT_FROM_WIN32(GetLastError()), L"Creating log files directory failed!" };
+			std::filesystem::create_directory(log);
+		}
+		catch (const std::filesystem::filesystem_error &err)
+		{
+			return { HRESULT_FROM_WIN32(err.code().value()), L"Creating log files directory failed!" };
 		}
 	}
 
 	std::wstring log_filename;
-	FILETIME creationTime;
-	FILETIME useless1;
-	FILETIME useless2;
-	FILETIME useless3;
-	if (GetProcessTimes(GetCurrentProcess(), &creationTime, &useless1, &useless2, &useless3))
+	if (FILETIME creationTime, _, __, ___; GetProcessTimes(GetCurrentProcess(), &creationTime, &_, &__, &___))
 	{
-		log_filename = std::to_wstring(win32::FiletimeToUnixEpoch(creationTime)) + L".log";
+		log /= std::to_wstring(win32::FiletimeToUnixEpoch(creationTime)) + L".log";
 	}
 	else
 	{
 		// Fallback to current time
-		log_filename = std::to_wstring(Util::GetTime().count()) + L".log";
+		log /= std::to_wstring(Util::GetTime().count()) + L".log";
 	}
 
-	AutoFree::DebugLocal<wchar_t[]> log_file;
-	const HRESULT hr = PathAllocCombine(log_folder.c_str(), log_filename.c_str(), PATHCCH_ALLOW_LONG_PATHS, log_file.put());
-	if (FAILED(hr))
-	{
-		return { hr, L"Failed to combine log folder location and log file name!" };
-	}
-
-	m_FileHandle->attach(CreateFile(log_file.get(), GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL));
+	m_FileHandle->attach(CreateFile(log.c_str(), GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL));
 	if (!*m_FileHandle)
 	{
 		return { HRESULT_FROM_WIN32(GetLastError()), L"Failed to create and open log file!" };
@@ -102,7 +96,7 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 		LastErrorHandle(Error::Level::Debug, L"Failed to write byte-order marker.");
 	}
 
-	m_File = log_file.get();
+	m_File = std::move(log);
 	return { S_OK, { } };
 }
 
@@ -116,13 +110,13 @@ void Log::OutputMessage(std::wstring_view message)
 			// https://stackoverflow.com/questions/50799719/reference-to-local-binding-declared-in-enclosing-function
 			std::thread([hr = hr, err = std::move(err_message)]() mutable
 			{
-				std::wstring boxbuffer = err +
-				L" Logs will not be available during this session.\n\n" + Error::ExceptionFromHRESULT(hr);
+				std::wostringstream buffer;
+				buffer << err << L" Logs will not be available during this session.\n\n" << Error::ExceptionFromHRESULT(hr);
 
 				err += L'\n';
 				OutputDebugString(err.c_str()); // OutputDebugString is thread-safe, no issues using it here.
 
-				MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+				MessageBox(Window::NullWindow, buffer.str().c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 			}).detach();
 		}
 	}

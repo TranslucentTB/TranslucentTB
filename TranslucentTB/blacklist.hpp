@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <filesystem>
 #include <functional>
 #include <string>
 #include <string_view>
@@ -12,19 +13,19 @@
 
 class Blacklist {
 public:
-	static void Parse(const std::wstring &file);
+	static void Parse(const std::filesystem::path &file);
 	static bool IsBlacklisted(Window window);
 	static void ClearCache();
 
 private:
-	static std::unordered_set<std::wstring> m_ClassBlacklist;
-	static std::unordered_set<std::wstring> m_FileBlacklist;
-	static std::vector<std::wstring> m_TitleBlacklist;
+	static std::unordered_set<std::wstring> s_ClassBlacklist;
+	static std::unordered_set<std::wstring> s_FileBlacklist;
+	static std::vector<std::wstring> s_TitleBlacklist;
 
-	static std::unordered_map<Window, bool> m_Cache;
+	static std::unordered_map<Window, bool> s_Cache;
 
-	static const EventHook m_ChangeHook;
-	static const EventHook m_DestroyHook;
+	static const EventHook s_ChangeHook;
+	static const EventHook s_DestroyHook;
 
 	static void HandleChangeEvent(DWORD, Window window, ...);
 	static void HandleDestroyEvent(DWORD, Window window, ...);
