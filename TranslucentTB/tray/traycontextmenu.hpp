@@ -1,7 +1,6 @@
 #pragma once
 #include "arch.h"
 #include <algorithm>
-#include <forward_list>
 #include <string>
 #include <type_traits>
 #include <windef.h>
@@ -59,7 +58,7 @@ private:
 	}
 
 	HMENU m_Menu;
-	std::unordered_map<unsigned int, std::forward_list<std::pair<unsigned short, callback_t>>> m_MenuCallbackMap;
+	std::unordered_map<unsigned int, std::unordered_map<unsigned short, callback_t>> m_MenuCallbackMap;
 	long TrayCallback(WPARAM, LPARAM);
 	MessageWindow::CALLBACKCOOKIE m_TrayCallbackCookie;
 	MessageWindow::CALLBACKCOOKIE m_MenuInitCookie;
@@ -96,8 +95,16 @@ public:
 
 	inline MENUCALLBACKCOOKIE RegisterContextMenuCallback(unsigned int item, callback_t callback)
 	{
-		unsigned short secret = Util::GetRandomNumber<unsigned short>();
-		m_MenuCallbackMap[item].push_front({ secret, std::move(callback) });
+		auto &callbackMap = m_MenuCallbackMap[item];
+
+		unsigned short secret;
+		do
+		{
+			secret = Util::GetRandomNumber<unsigned short>();
+		}
+		while (callbackMap.contains(secret));
+
+		callbackMap[secret] = std::move(callback);
 
 		return (static_cast<MENUCALLBACKCOOKIE>(secret) << 32) + item;
 	}
@@ -107,10 +114,7 @@ public:
 		unsigned int item = cookie & 0xFFFFFFFF;
 		unsigned short secret = (cookie >> 32) & 0xFFFF;
 
-		m_MenuCallbackMap[item].remove_if([&secret](const auto &pair) -> bool
-		{
-			return pair.first == secret;
-		});
+		m_MenuCallbackMap[item].erase(secret);
 	}
 
 	inline void BindBool(unsigned int item, bool &value, BoolBindingEffect effect)

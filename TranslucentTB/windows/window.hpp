@@ -2,6 +2,7 @@
 #include <dwmapi.h>
 #include <filesystem>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
 #include "windowclass.hpp"
@@ -67,9 +68,9 @@ public:
 
 	constexpr Window(HWND handle = Window::NullWindow) noexcept : m_WindowHandle(handle) { };
 
-	const std::wstring &title() const;
+	std::wstring_view title() const;
 
-	const std::wstring &classname() const;
+	std::wstring_view classname() const;
 
 	const std::filesystem::path &file() const;
 

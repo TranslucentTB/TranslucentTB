@@ -2,15 +2,14 @@
 #include <algorithm>
 
 #include "../ttberror.hpp"
-#include "util/random.hpp"
 
 LRESULT MessageWindow::WindowProcedure(Window window, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
 {
-	const auto &callbackList = m_CallbackMap[uMsg];
-	if (!callbackList.empty())
+	const auto &callbackMap = m_CallbackMap[uMsg];
+	if (!callbackMap.empty())
 	{
 		long result = 0;
-		for (const auto &[_, callback] : callbackList)
+		for (const auto &[_, callback] : callbackMap)
 		{
 			result = std::max(callback(wParam, lParam), result);
 		}
@@ -59,25 +58,6 @@ MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &
 		m_WindowClass.ChangeIcon(*this, iconResource);
 
 		return 0;
-	});
-}
-
-MessageWindow::CALLBACKCOOKIE MessageWindow::RegisterCallback(unsigned int message, callback_t callback)
-{
-	unsigned short secret = Util::GetRandomNumber<unsigned short>();
-	m_CallbackMap[message].push_front({ secret, std::move(callback) });
-
-	return (static_cast<CALLBACKCOOKIE>(secret) << 32) + message;
-}
-
-void MessageWindow::UnregisterCallback(CALLBACKCOOKIE cookie)
-{
-	unsigned int message = cookie & 0xFFFFFFFF;
-	unsigned short secret = (cookie >> 32) & 0xFFFF;
-
-	m_CallbackMap[message].remove_if([&secret](const std::pair<unsigned short, callback_t> &pair) -> bool
-	{
-		return pair.first == secret;
 	});
 }
 

@@ -31,9 +31,9 @@ void Window::HandleDestroyEvent(DWORD, Window window, ...)
 	s_FilePaths.erase(window);
 }
 
-const std::wstring &Window::title() const
+std::wstring_view Window::title() const
 {
-	if (s_Titles.contains(m_WindowHandle))
+	if (!s_Titles.contains(m_WindowHandle))
 	{
 		std::wstring windowTitle;
 		const int titleSize = GetWindowTextLength(m_WindowHandle) + 1; // For the null terminator
@@ -54,9 +54,9 @@ const std::wstring &Window::title() const
 	}
 }
 
-const std::wstring &Window::classname() const
+std::wstring_view Window::classname() const
 {
-	if (s_ClassNames.contains(m_WindowHandle))
+	if (!s_ClassNames.contains(m_WindowHandle))
 	{
 		std::wstring className;
 		className.resize(257);	// According to docs, maximum length of a class name is 256, but it's ambiguous

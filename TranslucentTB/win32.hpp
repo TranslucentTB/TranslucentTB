@@ -21,7 +21,7 @@ public:
 	static std::pair<std::filesystem::path, HRESULT> GetProcessFileName(HANDLE process);
 
 	// Gets location of current module, fatally dies if failed.
-	static std::filesystem::path GetExeLocation();
+	static const std::filesystem::path &GetExeLocation();
 
 	// Checks Windows build number.
 	static bool IsAtLeastBuild(uint32_t buildNumber);

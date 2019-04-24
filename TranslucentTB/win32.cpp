@@ -41,7 +41,7 @@ std::pair<std::filesystem::path, HRESULT> win32::GetProcessFileName(HANDLE proce
 	}
 }
 
-std::filesystem::path win32::GetExeLocation()
+const std::filesystem::path &win32::GetExeLocation()
 {
 	if (m_ExeLocation.empty())
 	{
@@ -139,7 +139,8 @@ void win32::EditFile(const std::filesystem::path &file)
 
 	if (!ShellExecuteEx(&info))
 	{
-		std::thread([file, err = GetLastError()]
+		const DWORD err = GetLastError();
+		std::thread([file, err]
 		{
 			std::wostringstream str;
 			str
@@ -168,7 +169,8 @@ void win32::OpenLink(const std::wstring &link)
 
 	if (!ShellExecuteEx(&info))
 	{
-		std::thread([link, err = GetLastError()]
+		const DWORD err = GetLastError();
+		std::thread([link, err]
 		{
 			std::wstring boxbuffer =
 				L"Failed to open URL \"" + link + L"\"." +
@@ -353,7 +355,8 @@ void win32::OpenFolder(const std::filesystem::path &folder)
 
 	if (!ShellExecuteEx(&info))
 	{
-		std::thread([folder, err = GetLastError()]
+		const DWORD err = GetLastError();
+		std::thread([folder, err]
 		{
 			std::wostringstream str;
 			str

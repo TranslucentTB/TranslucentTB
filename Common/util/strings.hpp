@@ -6,7 +6,7 @@
 #include <initializer_list>
 #include <string>
 #include <string_view>
-#include <unordered_map>
+#include <unordered_set>
 
 namespace Util {
 	// Converts a string to its lowercase variant
@@ -32,13 +32,22 @@ namespace Util {
 	}
 
 	namespace impl {
-		struct string_lowercase_hash {
-			inline std::size_t operator()(std::wstring_view k) const noexcept
-			{
-				static constexpr std::hash<std::wstring> hasher;
-				return hasher(ToLower(std::wstring(k)));
-			}
-		};
+		constexpr void hash_combine(std::size_t &h, std::size_t k)
+		{
+			constexpr std::size_t m = 0xc6a4a7935bd1e995;
+			constexpr int r = 47;
+
+			k *= m;
+			k ^= k >> r;
+			k *= m;
+
+			h ^= k;
+			h *= m;
+
+			// Completely arbitrary number, to prevent 0's
+			// from hashing to 0.
+			h += 0xe6546b64;
+		}
 
 		struct string_lowercase_compare {
 			inline bool operator()(std::wstring_view l, std::wstring_view r) const noexcept
@@ -47,13 +56,26 @@ namespace Util {
 			}
 		};
 
+		struct string_lowercase_hash {
+			using transparent_key_equal = string_lowercase_compare;
+			inline std::size_t operator()(std::wstring_view k) const noexcept
+			{
+				std::size_t initial = 0;
+				for (wchar_t character : k)
+				{
+					hash_combine(initial, std::towlower(character));
+				}
+
+				return initial;
+			}
+		};
+
 		// https://en.cppreference.com/w/cpp/string/wide/iswspace
 		static constexpr std::wstring_view WHITESPACES = L" \f\n\r\t\v";
 	}
 
-	// Case-insensitive std::unordered_map with string keys.
-	template<typename T>
-	using string_view_map = std::unordered_map<std::wstring_view, T, impl::string_lowercase_hash, impl::string_lowercase_compare>;
+	// Case-insensitive string set.
+	using string_set = std::unordered_set<std::wstring, impl::string_lowercase_hash, impl::string_lowercase_compare>;
 
 	// Removes instances of a character at the beginning and end of the string.
 	constexpr std::wstring_view Trim(std::wstring_view str, std::wstring_view characters = impl::WHITESPACES)

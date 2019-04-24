@@ -4,10 +4,9 @@
 
 #include "config.hpp"
 #include "ttblog.hpp"
-#include "util/strings.hpp"
 
 std::unordered_set<std::wstring> Blacklist::s_ClassBlacklist;
-std::unordered_set<std::wstring> Blacklist::s_FileBlacklist;
+Util::string_set Blacklist::s_FileBlacklist;
 std::vector<std::wstring> Blacklist::s_TitleBlacklist;
 
 std::unordered_map<Window, bool> Blacklist::s_Cache;
@@ -83,7 +82,8 @@ bool Blacklist::IsBlacklisted(Window window)
 		// This is the fastest because we do the less string manipulation, so always try it first
 		if (!s_ClassBlacklist.empty())
 		{
-			if (s_ClassBlacklist.contains(window.classname()))
+			// TODO: Remove wstring copy when transparent comparators land
+			if (s_ClassBlacklist.contains(std::wstring(window.classname())))
 			{
 				return OutputMatchToLog(window, s_Cache[window] = true);
 			}
@@ -91,7 +91,7 @@ bool Blacklist::IsBlacklisted(Window window)
 
 		if (!s_FileBlacklist.empty())
 		{
-			if (s_FileBlacklist.contains(Util::ToLower(window.file().filename().native())))
+			if (s_FileBlacklist.contains(window.file().filename()))
 			{
 				return OutputMatchToLog(window, s_Cache[window] = true);
 			}
@@ -102,7 +102,7 @@ bool Blacklist::IsBlacklisted(Window window)
 		{
 			for (const std::wstring &value : s_TitleBlacklist)
 			{
-				if (window.title().find(value) != std::wstring::npos)
+				if (window.title().find(value) != std::wstring_view::npos)
 				{
 					return OutputMatchToLog(window, s_Cache[window] = true);
 				}
@@ -131,40 +131,6 @@ void Blacklist::HandleChangeEvent(DWORD, Window window, ...)
 void Blacklist::HandleDestroyEvent(DWORD, Window window, ...)
 {
 	s_Cache.erase(window);
-}
-
-void Blacklist::AddToContainer(std::wstring_view line, wchar_t delimiter, const std::function<void(std::wstring_view)> &inserter)
-{
-	size_t pos;
-
-	// First lets remove the key
-	if ((pos = line.find(delimiter)) != std::wstring::npos)
-	{
-		line.remove_prefix(pos + 1);
-	}
-
-	// Now iterate and add the values
-	while ((pos = line.find(delimiter)) != std::wstring::npos)
-	{
-		inserter(Util::Trim(line.substr(0, pos)));
-		line.remove_prefix(pos + 1);
-	}
-}
-
-void Blacklist::AddToVector(std::wstring_view line, std::vector<std::wstring> &vector, wchar_t delimiter)
-{
-	AddToContainer(line, delimiter, [&vector](std::wstring_view line)
-	{
-		vector.emplace_back(line);
-	});
-}
-
-void Blacklist::AddToSet(std::wstring_view line, std::unordered_set<std::wstring> &set, wchar_t delimiter)
-{
-	AddToContainer(line, delimiter, [&set](std::wstring_view line)
-	{
-		set.emplace(line);
-	});
 }
 
 bool Blacklist::OutputMatchToLog(Window window, bool isMatch)

@@ -148,7 +148,7 @@ void GetPaths()
 void ApplyStock(std::wstring_view filename)
 {
 	std::filesystem::create_directory(run.config_folder);
-	std::filesystem::copy_file(win32::GetExeLocation().remove_filename() / filename, run.config_folder / filename);
+	std::filesystem::copy_file(win32::GetExeLocation().parent_path() / filename, run.config_folder / filename);
 }
 
 bool CheckAndRunWelcome()
