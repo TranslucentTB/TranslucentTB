@@ -79,7 +79,7 @@ std::wstring_view Window::classname() const
 
 const std::filesystem::path &Window::file() const
 {
-	if (s_FilePaths.contains(m_WindowHandle))
+	if (!s_FilePaths.contains(m_WindowHandle))
 	{
 		DWORD pid;
 		GetWindowThreadProcessId(m_WindowHandle, &pid);
