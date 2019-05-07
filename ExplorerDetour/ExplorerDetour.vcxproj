@@ -19,7 +19,7 @@
     <ClCompile Include="hook.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="detourexception.h" />
+    <ClInclude Include="detourexception.hpp" />
     <ClInclude Include="detourtransaction.hpp" />
     <ClInclude Include="dlldata.hpp" />
     <ClInclude Include="hook.hpp" />

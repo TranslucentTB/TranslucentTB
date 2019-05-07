@@ -63,25 +63,28 @@ std::wstring Error::ExceptionFromHRESULT(HRESULT result)
 std::wstring Error::ExceptionFromIRestrictedErrorInfo(HRESULT hr, IRestrictedErrorInfo *info)
 {
 	HRESULT code;
-	if (SysString description, restrictedDescription, capabilitySid;
-		SUCCEEDED(info->GetErrorDetails(description.put(), &code, restrictedDescription.put(), capabilitySid.put())) &&
-		hr == code)
-	{
-		std::wostringstream buffer;
-		if (restrictedDescription)
-		{
-			buffer
-				<< L"Restricted exception from IRestrictedErrorInfo: "
-				<< Util::Trim(restrictedDescription);
-		}
-		else if (description)
-		{
-			buffer
-				<< L"Exception from IRestrictedErrorInfo: "
-				<< Util::Trim(description);
-		}
+	SysString description, restrictedDescription, capabilitySid;
 
-		return buffer.str();
+	if (SUCCEEDED(info->GetErrorDetails(description.put(), &code, restrictedDescription.put(), capabilitySid.put())))
+	{
+		if (hr == code)
+		{
+			std::wostringstream buffer;
+			if (restrictedDescription)
+			{
+				buffer
+					<< L"Restricted exception from IRestrictedErrorInfo: "
+					<< Util::Trim(restrictedDescription);
+			}
+			else if (description)
+			{
+				buffer
+					<< L"Exception from IRestrictedErrorInfo: "
+					<< Util::Trim(description);
+			}
+
+			return buffer.str();
+		}
 	}
 
 	return ExceptionFromHRESULT(hr);

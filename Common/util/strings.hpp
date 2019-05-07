@@ -23,16 +23,16 @@ namespace Util {
 	}
 
 	// Checks if two strings are the same, ignoring case
-	inline bool IgnoreCaseStringEquals(std::wstring_view l, std::wstring_view r)
+	inline bool IgnoreCaseStringEquals(std::wstring_view l, std::wstring_view r) noexcept
 	{
-		return std::equal(l.begin(), l.end(), r.begin(), r.end(), [](wchar_t a, wchar_t b) -> bool
+		return std::equal(l.begin(), l.end(), r.begin(), r.end(), [](wchar_t a, wchar_t b) noexcept
 		{
 			return std::towlower(a) == std::towlower(b);
 		});
 	}
 
 	namespace impl {
-		constexpr void hash_combine(std::size_t &h, std::size_t k)
+		constexpr void hash_combine(std::size_t &h, std::size_t k) noexcept
 		{
 			constexpr std::size_t m = 0xc6a4a7935bd1e995;
 			constexpr int r = 47;
@@ -61,7 +61,7 @@ namespace Util {
 			inline std::size_t operator()(std::wstring_view k) const noexcept
 			{
 				std::size_t initial = 0;
-				for (wchar_t character : k)
+				for (const wchar_t character : k)
 				{
 					hash_combine(initial, std::towlower(character));
 				}

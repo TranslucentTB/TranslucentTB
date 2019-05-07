@@ -6,7 +6,7 @@
 #include "constants.hpp"
 #include "dlldata.hpp"
 #include "hook.hpp"
-#include "detourexception.h"
+#include "detourexception.hpp"
 #include "detourtransaction.hpp"
 
 HINSTANCE DllData::m_hInst;

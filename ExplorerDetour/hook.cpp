@@ -6,7 +6,7 @@
 
 #include "constants.hpp"
 #include "dlldata.hpp"
-#include "detourexception.h"
+#include "detourexception.hpp"
 #include "detourtransaction.hpp"
 
 PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE Hook::SetWindowCompositionAttribute =

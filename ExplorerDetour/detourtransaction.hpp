@@ -6,7 +6,7 @@
 #include <windef.h>
 #include <winerror.h>
 
-#include "detourexception.h"
+#include "detourexception.hpp"
 
 class DetourTransaction {
 private:
