@@ -1,6 +1,4 @@
 #include "taskbarattributeworker.hpp"
-#include <wil/com.h>
-
 #include "smart/boolguard.hpp"
 #include "blacklist.hpp"
 #include "constants.hpp"
@@ -368,7 +366,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance) :
 	m_ResizeMoveHook(EVENT_OBJECT_LOCATIONCHANGE, BindHook()),
 	m_ShowHideHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, BindHook()),
 	m_CurrentStartMonitor(nullptr),
-	m_IAV(wil::CoCreateInstance<IAppVisibility>(CLSID_AppVisibility)),
+	m_IAV(wil::CoCreateInstance<AppVisibility, IAppVisibility>()),
 	m_ForegroundChangeHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, std::bind(&TaskbarAttributeWorker::OnForegroundWindowChange, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)),
 	m_MainTaskbarMonitor(nullptr),
 	m_CreateDestroyHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, std::bind(&TaskbarAttributeWorker::OnWindowCreateDestroy, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)),
