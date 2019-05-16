@@ -20,7 +20,7 @@ EventHook::EventHook(DWORD min, DWORD max, callback_t callback, DWORD idProcess,
 	}
 }
 
-EventHook::~EventHook()
+void EventHook::Unhook()
 {
 	if (m_Handle)
 	{
@@ -29,5 +29,6 @@ EventHook::~EventHook()
 		{
 			Log::OutputMessage(L"Failed to delete a Windows event hook.");
 		}
+		m_Handle = nullptr;
 	}
 }

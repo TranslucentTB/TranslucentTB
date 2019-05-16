@@ -23,12 +23,28 @@ private:
 	static void CALLBACK RawHookCallback(HWINEVENTHOOK hook, DWORD event, HWND window, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime);
 
 public:
-	inline EventHook(HWINEVENTHOOK handle) : m_Handle(handle) { }
+	constexpr EventHook(HWINEVENTHOOK handle) noexcept : m_Handle(handle) { }
+
 	inline EventHook(DWORD event, callback_t callback, DWORD idProcess = 0, DWORD idThread = 0, DWORD flags = WINEVENT_OUTOFCONTEXT) : EventHook(event, event, callback, idProcess, idThread, flags) { }
 	EventHook(DWORD min, DWORD max, callback_t callback, DWORD idProcess = 0, DWORD idThread = 0, DWORD flags = WINEVENT_OUTOFCONTEXT);
+
+	void Unhook();
 
 	inline EventHook(const EventHook &) = delete;
 	inline EventHook &operator =(const EventHook &) = delete;
 
-	~EventHook();
+	inline EventHook(EventHook &&other) noexcept : m_Handle(std::exchange(other.m_Handle, nullptr)) { }
+	inline EventHook &operator =(EventHook &&other)
+	{
+		if (this != &other)
+		{
+			Unhook();
+			m_Handle = std::exchange(other.m_Handle, nullptr);
+		}
+	}
+
+	inline ~EventHook()
+	{
+		Unhook();
+	}
 };

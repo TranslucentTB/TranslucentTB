@@ -7,6 +7,7 @@
 #include <processthreadsapi.h>
 #include <sstream>
 #include <thread>
+#include <wil/safecast.h>
 #include <WinBase.h>
 #include <winerror.h>
 #include <winnt.h>
@@ -136,7 +137,7 @@ void Log::OutputMessage(std::wstring_view message)
 		const std::wstring error = buffer.str();
 
 		DWORD bytesWritten;
-		if (!WriteFile(m_FileHandle->get(), error.c_str(), Util::CheckedNarrow<DWORD>(error.length() * sizeof(wchar_t)), &bytesWritten, NULL))
+		if (!WriteFile(m_FileHandle->get(), error.c_str(), wil::safe_cast<DWORD>(error.length() * sizeof(wchar_t)), &bytesWritten, NULL))
 		{
 			LastErrorHandle(Error::Level::Debug, L"Writing to log file failed.");
 		}

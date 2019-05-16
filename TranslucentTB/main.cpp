@@ -13,12 +13,14 @@
 #include <ShlObj.h>
 #include <winrt/base.h>
 
+// WIL
+#include <wil/filesystem.h>
+
 // Local stuff
 #include "autostart.hpp"
 #include "blacklist.hpp"
 #include "config.hpp"
 #include "constants.hpp"
-#include "folderwatcher.hpp"
 #include "resources/ids.h"
 #include "smart/autofree.hpp"
 #include "swcadef.h"
@@ -356,9 +358,7 @@ void InitializeTray(HINSTANCE hInstance)
 {
 	static MessageWindow window(TRAY_WINDOW, NAME, hInstance);
 	static TaskbarAttributeWorker worker(hInstance);
-	static FolderWatcher watcher(run.config_folder, FILE_NOTIFY_CHANGE_LAST_WRITE, window);
-
-	window.RegisterCallback(WM_FILECHANGED, LoadConfig);
+	static auto watcher = wil::make_folder_watcher(run.config_folder.c_str(), false, wil::FolderChangeEvents::LastWriteTime, LoadConfig);
 
 	window.RegisterCallback(WM_NEWTTBINSTANCE, std::bind(&ExitApp, EXITREASON::NewInstance));
 

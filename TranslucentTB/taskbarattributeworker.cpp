@@ -1,5 +1,6 @@
 #include "taskbarattributeworker.hpp"
-#include "appvisibilitysink.hpp"
+#include <wil/com.h>
+
 #include "smart/boolguard.hpp"
 #include "blacklist.hpp"
 #include "constants.hpp"
@@ -117,7 +118,7 @@ void TaskbarAttributeWorker::RefreshTaskbars()
 
 	// Older handles are invalid, so clear the map to be ready for new ones
 	m_Taskbars.clear();
-	std::vector<WindowsHook> hooks = std::move(m_Hooks); // Keep old hooks alive while we rehook to keep the DLL loaded in Explorer. They will unhook automatically at the end of this function.
+	auto hooks = std::move(m_Hooks); // Keep old hooks alive while we rehook to keep the DLL loaded in Explorer. They will unhook automatically at the end of this function.
 	m_Hooks.clear(); // Bring back m_Hooks to a known state after being moved from.
 
 	const Window main_taskbar = Window::Find(TASKBAR);
@@ -137,7 +138,7 @@ void TaskbarAttributeWorker::HookTaskbar(Window window)
 	const auto [hook, hr] = Hook::HookExplorer(window);
 	if (SUCCEEDED(hr))
 	{
-		m_Hooks.push_back(hook);
+		m_Hooks.emplace_back(hook);
 	}
 	else
 	{
@@ -367,15 +368,16 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance) :
 	m_ResizeMoveHook(EVENT_OBJECT_LOCATIONCHANGE, BindHook()),
 	m_ShowHideHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, BindHook()),
 	m_CurrentStartMonitor(nullptr),
-	m_IAV(winrt::create_instance<IAppVisibility>(CLSID_AppVisibility)),
-	m_IAVECookie(0),
+	m_IAV(wil::CoCreateInstance<IAppVisibility>(CLSID_AppVisibility)),
 	m_ForegroundChangeHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, std::bind(&TaskbarAttributeWorker::OnForegroundWindowChange, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)),
 	m_MainTaskbarMonitor(nullptr),
 	m_CreateDestroyHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, std::bind(&TaskbarAttributeWorker::OnWindowCreateDestroy, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)),
 	m_returningToStock(false)
 {
 	const auto av_sink = winrt::make<AppVisibilitySink>(std::bind(&TaskbarAttributeWorker::OnStartVisibilityChange, this, std::placeholders::_1));
-	ErrorHandle(m_IAV->Advise(av_sink.get(), &m_IAVECookie), Error::Level::Log, L"Failed to register app visibility sink.");
+
+	m_IAVECookie.associate(m_IAV.get());
+	ErrorHandle(m_IAV->Advise(av_sink.get(), m_IAVECookie.put()), Error::Level::Log, L"Failed to register app visibility sink.");
 
 	RegisterCallback(Hook::RequestAttributeRefresh, std::bind(&TaskbarAttributeWorker::OnRequestAttributeRefresh, this, std::placeholders::_1, std::placeholders::_2));
 
@@ -404,10 +406,5 @@ void TaskbarAttributeWorker::ResetState()
 
 TaskbarAttributeWorker::~TaskbarAttributeWorker()
 {
-	if (m_IAVECookie)
-	{
-		ErrorHandle(m_IAV->Unadvise(m_IAVECookie), Error::Level::Log, L"Failed to unregister app visibility sink");
-	}
-
 	ReturnToStock();
 }

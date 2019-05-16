@@ -37,12 +37,9 @@
     <ClInclude Include="blacklist.hpp" />
     <ClInclude Include="smart\boolguard.hpp" />
     <ClInclude Include="smart\clipboardcontext.hpp" />
-    <ClInclude Include="smart\sysstring.hpp" />
     <ClInclude Include="taskbarattributeworker.hpp" />
     <ClInclude Include="smart\eventhook.hpp" />
-    <ClInclude Include="folderwatcher.hpp" />
     <ClInclude Include="taskdialogs\aboutdialog.hpp" />
-    <ClInclude Include="smart\windowshook.hpp" />
     <ClInclude Include="windows\messagewindow.hpp" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="resources\ids.h" />
@@ -86,7 +83,6 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="smart\AutoFree.natvis" />
-    <Natvis Include="smart\SysString.natvis" />
     <Natvis Include="windows\Window.natvis" />
   </ItemGroup>
 </Project>

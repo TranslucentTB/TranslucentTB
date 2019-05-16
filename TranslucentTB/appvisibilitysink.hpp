@@ -2,6 +2,7 @@
 #include <functional>
 #include <ShObjIdl.h>
 #include <winrt/base.h>
+#include "wilx.hpp"
 
 class AppVisibilitySink : public winrt::implements<AppVisibilitySink, IAppVisibilityEvents> {
 private:
@@ -12,7 +13,7 @@ public:
 		m_startOpenedCallback(std::move(startOpenedCallback))
 	{ }
 
-	inline IFACEMETHODIMP LauncherVisibilityChange(BOOL currentVisibleState) override
+	IFACEMETHODIMP LauncherVisibilityChange(BOOL currentVisibleState)
 	{
 		try
 		{
@@ -25,8 +26,10 @@ public:
 		}
 	}
 
-	inline IFACEMETHODIMP AppVisibilityOnMonitorChanged(HMONITOR, MONITOR_APP_VISIBILITY, MONITOR_APP_VISIBILITY) override
+	IFACEMETHODIMP AppVisibilityOnMonitorChanged(HMONITOR, MONITOR_APP_VISIBILITY, MONITOR_APP_VISIBILITY)
 	{
 		return S_OK;
 	}
 };
+
+using app_visibility_sink_cookie = wilx::unique_com_token<&IAppVisibility::Unadvise>;

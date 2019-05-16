@@ -8,9 +8,6 @@
 // smh
 static constexpr uint16_t LONG_PATH = 33000;
 
-// Minimum build number that supports white system theme
-static constexpr uint16_t MIN_LIGHT_BUILD = 18282;
-
 #pragma endregion
 
 #pragma region App
@@ -37,9 +34,6 @@ static constexpr wchar_t WM_TASKBARCREATED[] = L"TaskbarCreated";
 
 // Message used by a new instance to close the old instance
 static constexpr wchar_t WM_NEWTTBINSTANCE[] = L"NewTTBInstance";
-
-// Message sent by FolderWatcher when a file is changed.
-static constexpr wchar_t WM_FILECHANGED[] = L"TTBFileChanged";
 
 // Event hook event when Aero Peek begins
 static constexpr uint32_t EVENT_SYSTEM_PEEKSTART = 0x21;

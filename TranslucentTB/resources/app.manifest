@@ -1,10 +1,11 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
 
-    <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1"> 
+    <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
         <application>
-            <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/>
-        </application> 
+            <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" />
+            <maxVersionTested Id="10.0.18362.0" />
+        </application>
     </compatibility>
 
     <dependency>
@@ -22,9 +23,9 @@
     </trustInfo>
 
     <application xmlns="urn:schemas-microsoft-com:asm.v3">
-        <windowsSettings xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings">
-            <ws2:dpiAwareness>PerMonitorV2, unaware</ws2:dpiAwareness>
-            <ws2:longPathAware>true</ws2:longPathAware>
+        <windowsSettings xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">
+            <dpiAwareness>PerMonitorV2</dpiAwareness>
+            <longPathAware>true</longPathAware>
         </windowsSettings>
     </application>
 

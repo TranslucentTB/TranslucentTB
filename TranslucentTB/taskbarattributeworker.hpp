@@ -5,7 +5,10 @@
 #include <utility>
 #include <vector>
 #include <winrt/base.h>
+#include <wil/com.h>
+#include <wil/resource.h>
 
+#include "appvisibilitysink.hpp"
 #include "config.hpp"
 #include "smart/eventhook.hpp"
 #include "smart/windowshook.hpp"
@@ -50,8 +53,8 @@ private:
 
 	// Start menu
 	HMONITOR m_CurrentStartMonitor;
-	winrt::com_ptr<IAppVisibility> m_IAV;
-	DWORD m_IAVECookie;
+	wil::com_ptr<IAppVisibility> m_IAV;
+	app_visibility_sink_cookie m_IAVECookie;
 	void OnStartVisibilityChange(bool state);
 	HMONITOR GetStartMenuMonitor();
 
@@ -62,7 +65,7 @@ private:
 	// Taskbar find & hook
 	HMONITOR m_MainTaskbarMonitor;
 	std::unordered_map<HMONITOR, MonitorInfo> m_Taskbars;
-	std::vector<WindowsHook> m_Hooks;
+	std::vector<wil::unique_hhook> m_Hooks;
 	EventHook m_CreateDestroyHook;
 	void OnWindowCreateDestroy(DWORD event, Window window, LONG idObject, ...);
 	void RefreshTaskbars();

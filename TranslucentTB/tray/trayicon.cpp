@@ -9,27 +9,19 @@
 
 bool TrayIcon::IsSystemLightThemeEnabled()
 {
-	static const bool isLightThemeAvailable = win32::IsAtLeastBuild(MIN_LIGHT_BUILD);
-
-	if (isLightThemeAvailable)
+	DWORD value;
+	DWORD size = sizeof(value);
+	const LSTATUS error = RegGetValue(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize)", L"SystemUsesLightTheme", RRF_RT_REG_DWORD, NULL, &value, &size);
+	switch (error)
 	{
-		DWORD value, size = sizeof(value);
-		const LSTATUS error = RegGetValue(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize)", L"SystemUsesLightTheme", RRF_RT_REG_DWORD, NULL, &value, &size);
-		switch (error)
-		{
-		case ERROR_SUCCESS:
-			return value != 0;
+	case ERROR_SUCCESS:
+		return value != 0;
 
-		case ERROR_FILE_NOT_FOUND:
-			return false;
+	case ERROR_FILE_NOT_FOUND:
+		return false;
 
-		default:
-			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Failed to query light system theme state.");
-			return false;
-		}
-	}
-	else
-	{
+	default:
+		ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Failed to query light system theme state.");
 		return false;
 	}
 }

@@ -97,9 +97,6 @@
     <ClInclude Include="appvisibilitysink.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="folderwatcher.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="taskbarattributeworker.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -142,13 +139,7 @@
     <ClInclude Include="smart\eventhook.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="smart\windowshook.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resources\ids.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="smart\sysstring.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -176,9 +167,6 @@
       <Filter>Debug Visualizer Files</Filter>
     </Natvis>
     <Natvis Include="smart\AutoFree.natvis">
-      <Filter>Debug Visualizer Files</Filter>
-    </Natvis>
-    <Natvis Include="smart\SysString.natvis">
       <Filter>Debug Visualizer Files</Filter>
     </Natvis>
   </ItemGroup>

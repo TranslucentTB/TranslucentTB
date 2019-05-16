@@ -22,6 +22,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)util\random.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\strings.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\time.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)wilx.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)CppProject.props" />

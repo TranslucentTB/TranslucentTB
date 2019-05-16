@@ -2,6 +2,7 @@
 #include "taskdialog.hpp"
 #include <array>
 #include <sstream>
+#include <wil/safecast.h>
 
 #include "constants.hpp"
 #include "../ExplorerDetour/hook.hpp"
@@ -133,7 +134,7 @@ public:
 		m_Cfg.dwFlags |= TDF_ALLOW_DIALOG_CANCELLATION | TDF_USE_COMMAND_LINKS;
 		m_Cfg.dwCommonButtons = TDCBF_CLOSE_BUTTON;
 
-		m_Cfg.cButtons = Util::CheckedNarrow<UINT>(m_Buttons.size());
+		m_Cfg.cButtons = wil::safe_cast<UINT>(m_Buttons.size());
 		m_Cfg.pButtons = m_Buttons.data();
 	}
 

@@ -7,12 +7,12 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <wil/resource.h>
 #include <winerror.h>
 #include <WinUser.h>
 
 #include "smart/autofree.hpp"
 #include "constants.hpp"
-#include "smart/sysstring.hpp"
 #include "ttblog.hpp"
 #include "util/strings.hpp"
 #include "win32.hpp"
@@ -36,15 +36,14 @@ bool Error::Handle(HRESULT error, Level level, const wchar_t *message, const wch
 
 void Error::CppWinrtHandle(const winrt::hresult_error &err, Level level, const wchar_t *message, const wchar_t *file, int line, const wchar_t *function)
 {
-	HRESULT hr = err.to_abi();
 	std::wstring error_message;
-	if (winrt::com_ptr<IRestrictedErrorInfo> info; SUCCEEDED(GetRestrictedErrorInfo(info.put())))
+	if (const auto info = err.try_as<IRestrictedErrorInfo>())
 	{
-		error_message = ExceptionFromIRestrictedErrorInfo(hr, info.get());
+		error_message = ExceptionFromIRestrictedErrorInfo(err.code(), info.get());
 	}
 	else
 	{
-		error_message = ExceptionFromHRESULT(hr);
+		error_message = ExceptionFromHRESULT(err.code());
 	}
 
 	HandleCommon(level, message, error_message, file, line, function);
@@ -63,9 +62,9 @@ std::wstring Error::ExceptionFromHRESULT(HRESULT result)
 std::wstring Error::ExceptionFromIRestrictedErrorInfo(HRESULT hr, IRestrictedErrorInfo *info)
 {
 	HRESULT code;
-	SysString description, restrictedDescription, capabilitySid;
+	wil::unique_bstr description, restrictedDescription, capabilitySid;
 
-	if (SUCCEEDED(info->GetErrorDetails(description.put(), &code, restrictedDescription.put(), capabilitySid.put())))
+	if (SUCCEEDED(info->GetErrorDetails(&description, &code, &restrictedDescription, &capabilitySid)))
 	{
 		if (hr == code)
 		{
@@ -74,13 +73,13 @@ std::wstring Error::ExceptionFromIRestrictedErrorInfo(HRESULT hr, IRestrictedErr
 			{
 				buffer
 					<< L"Restricted exception from IRestrictedErrorInfo: "
-					<< Util::Trim(restrictedDescription);
+					<< Util::Trim(restrictedDescription.get());
 			}
 			else if (description)
 			{
 				buffer
 					<< L"Exception from IRestrictedErrorInfo: "
-					<< Util::Trim(description);
+					<< Util::Trim(description.get());
 			}
 
 			return buffer.str();

@@ -14,9 +14,12 @@ public:
 	inline explicit operator bool() const { return m_Result; }
 	inline ~ClipboardContext()
 	{
-		if (m_Result && !CloseClipboard())
+		if (m_Result)
 		{
-			LastErrorHandle(Error::Level::Error, L"Failed to close clipboard.");
+			if (!CloseClipboard())
+			{
+				LastErrorHandle(Error::Level::Error, L"Failed to close clipboard.");
+			}
 		}
 	}
 
