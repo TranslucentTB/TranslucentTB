@@ -11,7 +11,6 @@
 #include "appvisibilitysink.hpp"
 #include "config.hpp"
 #include "smart/eventhook.hpp"
-#include "smart/windowshook.hpp"
 #include "windows/messagewindow.hpp"
 #include "swcadef.h"
 
