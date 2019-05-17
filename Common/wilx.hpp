@@ -1,6 +1,7 @@
 #pragma once
 #include <cstddef>
 #include <tuple>
+#include <utility>
 #include <wil/resource.h>
 
 namespace wilx {
@@ -21,7 +22,7 @@ namespace wilx {
 		using member_parent_t = typename member_function_traits<T>::parent;
 
 		template<typename T, std::size_t i>
-		using member_arg_t = typename member_function_traits<T>::arg<i>;
+		using member_arg_t = typename member_function_traits<T>::template arg<i>;
 	}
 
 	template<auto close_fn, impl::member_arg_t<decltype(close_fn), 0> invalid_token = impl::member_arg_t<decltype(close_fn), 0>()>

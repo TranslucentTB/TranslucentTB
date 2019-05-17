@@ -23,7 +23,8 @@
 #include "constants.hpp"
 #include "resources/ids.h"
 #include "smart/autofree.hpp"
-#include "swcadef.h"
+#include "undoc/swca.h"
+#include "undoc/uxtheme.h"
 #include "taskbarattributeworker.hpp"
 #include "taskdialogs/aboutdialog.hpp"
 #include "taskdialogs/welcomedialog.hpp"
@@ -492,6 +493,10 @@ void InitializeTray(HINSTANCE hInstance)
 	}
 }
 
+static const auto uxtheme = LoadLibrary(L"uxtheme.dll");
+static const auto darkmode = reinterpret_cast<PFN_ALLOW_DARK_MODE_FOR_APP>(GetProcAddress(uxtheme, MAKEINTRESOURCEA(135)));
+static const auto flush = reinterpret_cast<PFN_FLUSH_MENU_THEMES>(GetProcAddress(uxtheme, MAKEINTRESOURCEA(136)));
+
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *, _In_ int)
 {
 	win32::HardenProcess();
@@ -506,6 +511,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 	{
 		Window::Find(TRAY_WINDOW, NAME).send_message(WM_NEWTTBINSTANCE);
 	}
+
+	darkmode(true);
+	flush();
 
 	// TODO: std::filesystem::filesystem_exception handling
 

@@ -8,7 +8,7 @@
   <Import Project="..\Common\CppProject.props" />
   <ItemDefinitionGroup Label="Globals">
     <Link>
-      <AdditionalDependencies>advapi32.lib;comctl32.lib;dwmapi.lib;mincore.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>advapi32.lib;comctl32.lib;dwmapi.lib;mincore.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;user32.lib;uxtheme.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

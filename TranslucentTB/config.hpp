@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-#include "swcadef.h"
+#include "undoc/swca.h"
 
 class Config {
 public:

@@ -7,7 +7,7 @@
 #include <utility>
 #include <windef.h>
 
-#include "swcadef.h"
+#include "undoc/swca.h"
 
 #ifdef _EXPLORERDETOUR_DLL
 #define EXPLORERHOOK_EXPORT dllexport
