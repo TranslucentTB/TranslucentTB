@@ -64,12 +64,6 @@ TrayIcon::TrayIcon(MessageWindow &window, const wchar_t *iconResource, unsigned 
 	m_DpiChangedCookie = m_Window.RegisterCallback(WM_DPICHANGED, std::bind(&TrayIcon::UpdateIcon, this));
 }
 
-void TrayIcon::SetIcon(const wchar_t *iconResource)
-{
-	m_IconResource = iconResource;
-	UpdateIcon();
-}
-
 TrayIcon::~TrayIcon()
 {
 	if (!Shell_NotifyIcon(NIM_DELETE, &m_IconData))

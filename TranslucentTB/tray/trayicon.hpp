@@ -26,7 +26,11 @@ public:
 		return m_Window.RegisterCallback(m_IconData.uCallbackMessage, std::move(callback));
 	}
 
-	void SetIcon(const wchar_t *iconResource);
+	inline void SetIcon(const wchar_t *iconResource)
+	{
+		m_IconResource = iconResource;
+		UpdateIcon();
+	}
 
 	inline MessageWindow &GetWindow()
 	{
