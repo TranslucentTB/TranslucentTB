@@ -1,31 +1,38 @@
 #pragma once
 #include "../windows/messagewindow.hpp"
 #include <windef.h>
+#include <wil/resource.h>
 
 class TrayIcon {
 protected:
 	MessageWindow &m_Window;
+
+private:
+	NOTIFYICONDATA m_IconData;
+	MessageWindow::CALLBACKCOOKIE m_TaskbarCreatedCookie;
+	MessageWindow::CALLBACKCOOKIE m_DpiChangedCookie;
+	HINSTANCE m_hInstance;
+	const wchar_t *m_IconResource;
+	wil::unique_hicon m_Icon;
+	long RegisterIcon(...);
+	void LoadIcon();
+	long UpdateIcon(...);
+
+public:
+	TrayIcon(MessageWindow &window, const wchar_t *iconResource, unsigned int additionalFlags = 0, HINSTANCE hInstance = GetModuleHandle(NULL));
+
 	inline MessageWindow::CALLBACKCOOKIE RegisterTrayCallback(std::function<long(WPARAM, LPARAM)> callback)
 	{
 		return m_Window.RegisterCallback(m_IconData.uCallbackMessage, std::move(callback));
 	}
 
-private:
-	static bool IsSystemLightThemeEnabled();
+	void SetIcon(const wchar_t *iconResource);
 
-	NOTIFYICONDATA m_IconData;
-	MessageWindow::CALLBACKCOOKIE m_TaskbarCreatedCookie;
-	MessageWindow::CALLBACKCOOKIE m_SettingsChangedCookie;
-	MessageWindow::CALLBACKCOOKIE m_DpiChangedCookie;
-	HINSTANCE m_hInstance;
-	const wchar_t *m_BrightIconResource;
-	const wchar_t *m_DarkIconResource;
-	long RegisterIcon(...);
-	long UpdateIcon(bool notify = false, ...);
-	void DestroyIconHandle();
+	inline MessageWindow &GetWindow()
+	{
+		return m_Window;
+	}
 
-public:
-	TrayIcon(MessageWindow &window, const wchar_t *brightIconResource, const wchar_t *darkIconResource, unsigned int additionalFlags = 0, HINSTANCE hInstance = GetModuleHandle(NULL));
 	~TrayIcon();
 
 	inline TrayIcon(const TrayIcon &) = delete;

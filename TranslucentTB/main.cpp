@@ -21,10 +21,10 @@
 #include "blacklist.hpp"
 #include "config.hpp"
 #include "constants.hpp"
+#include "darkthememanager.hpp"
 #include "resources/ids.h"
 #include "smart/autofree.hpp"
 #include "undoc/swca.hpp"
-#include "undoc/uxtheme.hpp"
 #include "taskbarattributeworker.hpp"
 #include "taskdialogs/aboutdialog.hpp"
 #include "taskdialogs/welcomedialog.hpp"
@@ -358,6 +358,8 @@ bool IsSingleInstance()
 void InitializeTray(HINSTANCE hInstance)
 {
 	static MessageWindow window(TRAY_WINDOW, NAME, hInstance);
+	DarkThemeManager::EnableDarkModeForWindow(window);
+
 	static TaskbarAttributeWorker worker(hInstance);
 	static auto watcher = wil::make_folder_watcher(run.config_folder.c_str(), false, wil::FolderChangeEvents::LastWriteTime, LoadConfig);
 
@@ -389,7 +391,8 @@ void InitializeTray(HINSTANCE hInstance)
 
 	if (!Config::NO_TRAY)
 	{
-		static TrayContextMenu tray(window, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance);
+		static TrayContextMenu tray(window, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance);
+		DarkThemeManager::EnableDarkModeForTrayIcon(tray, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON));
 
 		tray.BindColor(ID_REGULAR_COLOR, Config::REGULAR_APPEARANCE.COLOR);
 		tray.BindEnum(Config::REGULAR_APPEARANCE.ACCENT, REGULAR_BUTTOM_MAP);
@@ -493,10 +496,6 @@ void InitializeTray(HINSTANCE hInstance)
 	}
 }
 
-static const auto uxtheme = LoadLibrary(UXTHEME_DLL);
-static const auto darkmode = reinterpret_cast<PFN_SET_PREFERRED_APP_MODE>(GetProcAddress(uxtheme, SPAM_ORDINAL));
-static const auto flush = reinterpret_cast<PFN_REFRESH_IMMERSIVE_COLOR_POLICY_STATE>(GetProcAddress(uxtheme, RICPS_ORDINAL));
-
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *, _In_ int)
 {
 	win32::HardenProcess();
@@ -512,8 +511,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 		Window::Find(TRAY_WINDOW, NAME).send_message(WM_NEWTTBINSTANCE);
 	}
 
-	darkmode(PreferredAppMode::AllowDark);
-	flush();
+	DarkThemeManager::AllowDarkModeForApp();
 
 	// TODO: std::filesystem::filesystem_exception handling
 

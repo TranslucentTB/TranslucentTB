@@ -71,6 +71,9 @@
     <ClCompile Include="smart\eventhook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="darkthememanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="win32.hpp">
@@ -140,6 +143,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resources\ids.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="darkthememanager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

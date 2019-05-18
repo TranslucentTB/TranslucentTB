@@ -8,13 +8,14 @@
   <Import Project="..\Common\CppProject.props" />
   <ItemDefinitionGroup Label="Globals">
     <Link>
-      <AdditionalDependencies>advapi32.lib;comctl32.lib;dwmapi.lib;mincore.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;user32.lib;uxtheme.lib</AdditionalDependencies>
+      <AdditionalDependencies>advapi32.lib;comctl32.lib;dwmapi.lib;mincore.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;user32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="autostart.cpp" />
     <ClCompile Include="blacklist.cpp" />
     <ClCompile Include="config.cpp" />
+    <ClCompile Include="darkthememanager.cpp" />
     <ClCompile Include="taskbarattributeworker.cpp" />
     <ClCompile Include="smart\eventhook.cpp" />
     <ClCompile Include="main.cpp" />
@@ -31,6 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="appvisibilitysink.hpp" />
+    <ClInclude Include="darkthememanager.hpp" />
     <ClInclude Include="smart\autofree.hpp" />
     <ClInclude Include="autostart.hpp" />
     <ClInclude Include="smart\autounlock.hpp" />

@@ -2,10 +2,6 @@
 #include <algorithm>
 
 #include "../ttberror.hpp"
-#include "undoc/uxtheme.hpp"
-
-static const auto uxtheme = LoadLibrary(UXTHEME_DLL);
-static const auto darkmode = reinterpret_cast<PFN_ALLOW_DARK_MODE_FOR_WINDOW>(GetProcAddress(uxtheme, ADMFW_ORDINAL));
 
 LRESULT MessageWindow::WindowProcedure(Window window, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -56,13 +52,6 @@ MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &
 	{
 		LastErrorHandle(Error::Level::Fatal, L"Failed to create message window!");
 	}
-
-	darkmode(m_WindowHandle, true);
-	BOOL dark = TRUE;
-	DwmSetWindowAttribute(m_WindowHandle, 19, &dark, sizeof(dark));
-
-	SetWindowTheme(m_WindowHandle, DARKMODE_THEME, nullptr);
-	send_message(WM_THEMECHANGED, 0, 0);
 
 	RegisterCallback(WM_DPICHANGED, [this, iconResource](...)
 	{
