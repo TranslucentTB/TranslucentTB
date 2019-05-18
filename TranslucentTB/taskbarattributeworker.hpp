@@ -12,7 +12,7 @@
 #include "config.hpp"
 #include "smart/eventhook.hpp"
 #include "windows/messagewindow.hpp"
-#include "undoc/swca.h"
+#include "undoc/swca.hpp"
 
 class TaskbarAttributeWorker : public MessageWindow {
 private:

@@ -23,8 +23,8 @@
 #include "constants.hpp"
 #include "resources/ids.h"
 #include "smart/autofree.hpp"
-#include "undoc/swca.h"
-#include "undoc/uxtheme.h"
+#include "undoc/swca.hpp"
+#include "undoc/uxtheme.hpp"
 #include "taskbarattributeworker.hpp"
 #include "taskdialogs/aboutdialog.hpp"
 #include "taskdialogs/welcomedialog.hpp"
@@ -493,9 +493,9 @@ void InitializeTray(HINSTANCE hInstance)
 	}
 }
 
-static const auto uxtheme = LoadLibrary(L"uxtheme.dll");
-static const auto darkmode = reinterpret_cast<PFN_ALLOW_DARK_MODE_FOR_APP>(GetProcAddress(uxtheme, MAKEINTRESOURCEA(135)));
-static const auto flush = reinterpret_cast<PFN_FLUSH_MENU_THEMES>(GetProcAddress(uxtheme, MAKEINTRESOURCEA(136)));
+static const auto uxtheme = LoadLibrary(UXTHEME_DLL);
+static const auto darkmode = reinterpret_cast<PFN_SET_PREFERRED_APP_MODE>(GetProcAddress(uxtheme, SPAM_ORDINAL));
+static const auto flush = reinterpret_cast<PFN_REFRESH_IMMERSIVE_COLOR_POLICY_STATE>(GetProcAddress(uxtheme, RICPS_ORDINAL));
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *, _In_ int)
 {
@@ -512,7 +512,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 		Window::Find(TRAY_WINDOW, NAME).send_message(WM_NEWTTBINSTANCE);
 	}
 
-	darkmode(true);
+	darkmode(PreferredAppMode::AllowDark);
 	flush();
 
 	// TODO: std::filesystem::filesystem_exception handling

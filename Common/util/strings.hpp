@@ -8,6 +8,9 @@
 #include <string_view>
 #include <unordered_set>
 
+#define UTIL_WIDEN_INNER(x) L##x
+#define UTIL_WIDEN(x) UTIL_WIDEN_INNER(x)
+
 namespace Util {
 	// Converts a string to its lowercase variant
 	inline void ToLowerInplace(std::wstring &data)

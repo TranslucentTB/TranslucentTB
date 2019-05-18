@@ -16,8 +16,8 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)arch.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)constants.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)undoc\swca.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)undoc\uxtheme.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)undoc\swca.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)undoc\uxtheme.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\numbers.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\others.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\random.hpp" />
