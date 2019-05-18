@@ -24,7 +24,7 @@ bool DarkThemeManager::AllowDarkModeForApp()
 	}
 }
 
-void DarkThemeManager::EnableDarkModeForWindow(MessageWindow &window)
+void DarkThemeManager::EnableDarkModeForWindow(Window window)
 {
 	if (IsDarkModeAvailable())
 	{

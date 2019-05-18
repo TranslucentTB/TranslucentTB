@@ -19,6 +19,6 @@ private:
 
 public:
 	static bool AllowDarkModeForApp();
-	static void EnableDarkModeForWindow(MessageWindow &window);
+	static void EnableDarkModeForWindow(Window window);
 	static void EnableDarkModeForTrayIcon(TrayIcon &icon, const wchar_t *darkIcon, const wchar_t *brightIcon);
 };
