@@ -13,7 +13,6 @@
 #include <WinBase.h>
 #include <winerror.h>
 #include <winnt.h>
-#include <winrt/base.h>
 
 #include "smart/autofree.hpp"
 #include "smart/autounlock.hpp"

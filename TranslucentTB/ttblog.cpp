@@ -21,7 +21,7 @@
 #include "util/time.hpp"
 #include "uwp.hpp"
 
-std::optional<winrt::file_handle> Log::m_FileHandle;
+std::optional<wil::unique_hfile> Log::m_FileHandle;
 std::filesystem::path Log::m_File;
 
 #if 0
@@ -85,7 +85,7 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 		log /= std::to_wstring(Util::GetTime().count()) + L".log";
 	}
 
-	m_FileHandle->attach(CreateFile(log.c_str(), GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL));
+	m_FileHandle->reset(CreateFile(log.c_str(), GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL));
 	if (!*m_FileHandle)
 	{
 		return { HRESULT_FROM_WIN32(GetLastError()), L"Failed to create and open log file!" };

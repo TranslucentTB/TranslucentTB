@@ -4,7 +4,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include <winrt/base.h>
 #include <wil/com.h>
 #include <wil/resource.h>
 

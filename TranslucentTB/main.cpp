@@ -330,24 +330,17 @@ long ExitApp(EXITREASON reason, ...)
 
 bool IsSingleInstance()
 {
-	static winrt::handle mutex;
+	static wil::unique_mutex mutex;
 
 	if (!mutex)
 	{
-		mutex.attach(CreateMutex(NULL, FALSE, MUTEX_GUID));
-		DWORD error = GetLastError();
-		switch (error)
+		const bool opened = mutex.try_open(MUTEX_GUID);
+		if (!opened)
 		{
-		case ERROR_ALREADY_EXISTS:
-			return false;
-
-		case ERROR_SUCCESS:
-			return true;
-
-		default:
-			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Failed to open app mutex!");
-			return true;
+			mutex.create(MUTEX_GUID);
 		}
+
+		return !opened;
 	}
 	else
 	{

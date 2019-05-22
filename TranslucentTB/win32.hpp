@@ -8,7 +8,6 @@
 #include <unordered_set>
 #include <utility>
 #include <windef.h>
-#include <winrt/base.h>
 
 #include "util/numbers.hpp"
 

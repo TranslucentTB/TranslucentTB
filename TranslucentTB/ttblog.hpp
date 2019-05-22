@@ -6,11 +6,11 @@
 #include <string_view>
 #include <utility>
 #include <windef.h>
-#include <winrt/base.h>
+#include <wil/resource.h>
 
 class Log {
 private:
-	static std::optional<winrt::file_handle> m_FileHandle;
+	static std::optional<wil::unique_hfile> m_FileHandle;
 	static std::filesystem::path m_File;
 
 	static std::pair<HRESULT, std::wstring> InitStream();

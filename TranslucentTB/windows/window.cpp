@@ -1,7 +1,8 @@
 #include "window.hpp"
 #include <optional>
 #include <ShObjIdl.h>
-#include <winrt/base.h>
+#include <wil/com.h>
+#include <wil/resource.h>
 #include <vector>
 
 #include "constants.hpp"
@@ -84,7 +85,7 @@ const std::filesystem::path &Window::file() const
 		DWORD pid;
 		GetWindowThreadProcessId(m_WindowHandle, &pid);
 
-		const winrt::handle processHandle(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid));
+		const wil::unique_process_handle processHandle(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid));
 		if (!processHandle)
 		{
 			LastErrorHandle(Error::Level::Log, L"Getting process handle of a window failed.");
@@ -107,7 +108,7 @@ const std::filesystem::path &Window::file() const
 
 bool Window::on_current_desktop() const
 {
-	static const auto desktop_manager = winrt::create_instance<IVirtualDesktopManager>(CLSID_VirtualDesktopManager);
+	static const auto desktop_manager = wil::CoCreateInstance<VirtualDesktopManager, IVirtualDesktopManager>();
 
 	BOOL on_current_desktop;
 	if (ErrorHandle(desktop_manager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop), Error::Level::Log, L"Verifying if a window is on the current virtual desktop failed."))
