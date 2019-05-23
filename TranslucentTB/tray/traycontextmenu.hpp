@@ -97,12 +97,7 @@ public:
 	{
 		auto &callbackMap = m_MenuCallbackMap[item];
 
-		unsigned short secret;
-		do
-		{
-			secret = Util::GetRandomNumber<unsigned short>();
-		}
-		while (callbackMap.contains(secret));
+		const auto secret = Util::GetSecret(callbackMap);
 
 		callbackMap[secret] = std::move(callback);
 

@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <limits>
 #include <random>
+#include <unordered_map>
 
 namespace Util {
 	namespace impl {
@@ -34,5 +35,18 @@ namespace Util {
 	{
 		std::uniform_int_distribution<T> distribution(begin, end);
 		return distribution(impl::GetRandomEngine<std::mt19937>());
+	}
+
+	template<typename K, typename V>
+	inline K GetSecret(const std::unordered_map<K, V> &map)
+	{
+		K secret;
+		do
+		{
+			secret = GetRandomNumber<K>();
+		}
+		while (map.contains(secret));
+
+		return secret;
 	}
 }
