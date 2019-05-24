@@ -36,8 +36,8 @@ void TaskbarAttributeWorker::OnWindowStateChange(bool skipCheck, DWORD, Window w
 				m_Taskbars.at(monitor).MaximisedWindows.erase(window);
 			}
 
-			if ((monitor == m_MainTaskbarMonitor && (Config::PEEK == Config::PEEK::DynamicMainMonitor || Config::PEEK == Config::PEEK::DynamicDesktopForeground)) ||
-				Config::PEEK == Config::PEEK::DynamicAnyMonitor)
+			if ((monitor == m_MainTaskbarMonitor && (m_Cfg.Peek == PeekBehavior::WindowMaximisedOnMainMonitor || m_Cfg.Peek == PeekBehavior::DesktopIsForegroundWindow)) ||
+				m_Cfg.Peek == PeekBehavior::WindowMaximisedOnAnyMonitor)
 			{
 				RefreshAeroPeekButton();
 			}
@@ -79,7 +79,7 @@ void TaskbarAttributeWorker::OnForegroundWindowChange(DWORD, Window window, LONG
 {
 	if (idObject == OBJID_WINDOW && window.valid())
 	{
-		if (Config::PEEK == Config::PEEK::DynamicDesktopForeground)
+		if (m_Cfg.Peek == PeekBehavior::DesktopIsForegroundWindow)
 		{
 			RefreshAeroPeekButton();
 		}
@@ -109,7 +109,7 @@ void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, Window window, L
 
 void TaskbarAttributeWorker::RefreshTaskbars()
 {
-	if (Config::VERBOSE)
+	if (m_Cfg.VerboseLog)
 	{
 		Log::OutputMessage(L"Refreshing taskbar handles.");
 	}
@@ -171,20 +171,20 @@ void TaskbarAttributeWorker::Poll()
 	}
 }
 
-bool TaskbarAttributeWorker::SetAttribute(Window window, Config::TASKBAR_APPEARANCE config)
+bool TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance config)
 {
 	if (SetWindowCompositionAttribute)
 	{
-		if (config.ACCENT == ACCENT_NORMAL)
+		if (config.Accent == ACCENT_NORMAL)
 		{
 			window.send_message(WM_THEMECHANGED);
 			return false;
 		}
 
 		ACCENT_POLICY policy = {
-			config.ACCENT,
+			config.Accent,
 			2,
-			(config.COLOR & 0xFF00FF00) + ((config.COLOR & 0x00FF0000) >> 16) + ((config.COLOR & 0x000000FF) << 16),
+			config.Color,
 			0
 		};
 
@@ -209,27 +209,28 @@ bool TaskbarAttributeWorker::SetAttribute(Window window, Config::TASKBAR_APPEARA
 	}
 }
 
-Config::TASKBAR_APPEARANCE TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR monitor, bool skipCheck)
+TaskbarAppearance TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR monitor, bool skipCheck)
 {
-	if (Config::START_ENABLED && m_CurrentStartMonitor == monitor)
+	if (m_Cfg.UseRegularAppearanceWhenPeeking && m_PeekActive)
 	{
-		return Config::START_APPEARANCE;
+		return m_Cfg.RegularAppearance;
 	}
 
-	if (Config::MAXIMISED_ENABLED)
+	if (m_Cfg.StartOpenedAppearance.Enabled && m_CurrentStartMonitor == monitor)
 	{
-		if (Config::MAXIMISED_REGULAR_ON_PEEK && m_PeekActive)
-		{
-			return Config::REGULAR_APPEARANCE;
-		}
-		else if ((skipCheck || m_Taskbars.contains(monitor)) &&
+		return m_Cfg.StartOpenedAppearance;
+	}
+
+	if (m_Cfg.MaximisedWindowAppearance.Enabled)
+	{
+		if ((skipCheck || m_Taskbars.contains(monitor)) &&
 			!m_Taskbars.at(monitor).MaximisedWindows.empty())
 		{
-			return Config::MAXIMISED_APPEARANCE;
+			return m_Cfg.MaximisedWindowAppearance;
 		}
 	}
 
-	return Config::REGULAR_APPEARANCE;
+	return m_Cfg.RegularAppearance;
 }
 
 bool TaskbarAttributeWorker::RefreshAttribute(HMONITOR monitor, bool skipCheck)
@@ -264,25 +265,25 @@ void TaskbarAttributeWorker::RefreshAeroPeekButton()
 {
 	const auto &taskbarInfo = m_Taskbars.at(m_MainTaskbarMonitor);
 
-	switch (Config::PEEK)
+	switch (m_Cfg.Peek)
 	{
-	case Config::PEEK::Enabled:
-	case Config::PEEK::Disabled:
-		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, Config::PEEK == Config::PEEK::Enabled);
+	case PeekBehavior::AlwaysShow:
+	case PeekBehavior::AlwaysHide:
+		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, m_Cfg.Peek == PeekBehavior::AlwaysShow);
 		break;
 
-	case Config::PEEK::DynamicMainMonitor:
+	case PeekBehavior::WindowMaximisedOnMainMonitor:
 		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, !taskbarInfo.MaximisedWindows.empty());
 		break;
 
-	case Config::PEEK::DynamicAnyMonitor:
+	case PeekBehavior::WindowMaximisedOnAnyMonitor:
 		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, std::any_of(m_Taskbars.begin(), m_Taskbars.end(), [](const auto &kvp)
 		{
 			return !kvp.second.MaximisedWindows.empty();
 		}));
 		break;
 
-	case Config::PEEK::DynamicDesktopForeground:
+	case PeekBehavior::DesktopIsForegroundWindow:
 	{
 		// The desktop window has a child window with this class. The desktop window in
 		// itself has no unique identifier however, it's just one of the many WorkerW windows.
@@ -320,8 +321,7 @@ long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, LPARAM lParam)
 		const auto taskbar = m_Taskbars.at(window.monitor()).TaskbarWindow;
 		if (taskbar == window)
 		{
-			const auto config = GetConfigForMonitor(taskbar.monitor(), true);
-			if (config.ACCENT == ACCENT_NORMAL || m_returningToStock)
+			if (m_returningToStock || GetConfigForMonitor(taskbar.monitor(), true).Accent == ACCENT_NORMAL)
 			{
 				return 0;
 			}
@@ -357,7 +357,7 @@ EventHook::callback_t TaskbarAttributeWorker::BindHook()
 	return std::bind(&TaskbarAttributeWorker::OnWindowStateChange, this, false, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 }
 
-TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance) :
+TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance, const Config &cfg) :
 	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance),
 	m_PeekActive(false),
 	m_PeekUnpeekHook(EVENT_SYSTEM_PEEKSTART, EVENT_SYSTEM_PEEKEND, std::bind(&TaskbarAttributeWorker::OnAeroPeekEnterExit, this, std::placeholders::_1)),
@@ -370,7 +370,8 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance) :
 	m_ForegroundChangeHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, std::bind(&TaskbarAttributeWorker::OnForegroundWindowChange, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)),
 	m_MainTaskbarMonitor(nullptr),
 	m_CreateDestroyHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, std::bind(&TaskbarAttributeWorker::OnWindowCreateDestroy, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)),
-	m_returningToStock(false)
+	m_returningToStock(false),
+	m_Cfg(cfg)
 {
 	const auto av_sink = winrt::make<AppVisibilitySink>(std::bind(&TaskbarAttributeWorker::OnStartVisibilityChange, this, std::placeholders::_1));
 

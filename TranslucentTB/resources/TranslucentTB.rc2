@@ -45,7 +45,6 @@ BEGIN
         POPUP "Maximised window"
         BEGIN
             MENUITEM "Enabled",                                        ID_MAXIMISED
-            MENUITEM "Regular when peeking",                           ID_MAXIMISED_PEEK
             MENUITEM "Accent Color",                                   ID_MAXIMISED_COLOR
             MENUITEM "",                                               0, MFT_SEPARATOR
             MENUITEM "Normal",                                         ID_MAXIMISED_NORMAL
@@ -96,6 +95,7 @@ BEGIN
             MENUITEM "When the main monitor desktop is active",        ID_PEEK_DYNAMIC_FOREGROUND_DESKTOP
             MENUITEM "Never",                                          ID_PEEK_HIDE
         END
+        MENUITEM "Use regular appearance when peeking",            ID_REGULAR_ON_PEEK
         POPUP "Advanced"
         BEGIN
             MENUITEM "Open log file",                                  ID_OPENLOG

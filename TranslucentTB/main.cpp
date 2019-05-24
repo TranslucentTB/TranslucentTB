@@ -92,12 +92,12 @@ static const std::unordered_map<ACCENT_STATE, uint32_t> TIMELINE_BUTTON_MAP = {
 	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,   ID_TIMELINE_FLUENT }
 };
 
-static const std::unordered_map<enum Config::PEEK, uint32_t> PEEK_BUTTON_MAP = {
-	{ Config::PEEK::Enabled,                  ID_PEEK_SHOW },
-	{ Config::PEEK::DynamicMainMonitor,       ID_PEEK_DYNAMIC_MAIN_MONITOR },
-	{ Config::PEEK::DynamicAnyMonitor,        ID_PEEK_DYNAMIC_ANY_MONITOR },
-	{ Config::PEEK::DynamicDesktopForeground, ID_PEEK_DYNAMIC_FOREGROUND_DESKTOP },
-	{ Config::PEEK::Disabled,                 ID_PEEK_HIDE }
+static const std::unordered_map<PeekBehavior, uint32_t> PEEK_BUTTON_MAP = {
+	{ PeekBehavior::AlwaysShow,                   ID_PEEK_SHOW },
+	{ PeekBehavior::WindowMaximisedOnMainMonitor, ID_PEEK_DYNAMIC_MAIN_MONITOR },
+	{ PeekBehavior::WindowMaximisedOnAnyMonitor,  ID_PEEK_DYNAMIC_ANY_MONITOR },
+	{ PeekBehavior::DesktopIsForegroundWindow,    ID_PEEK_DYNAMIC_FOREGROUND_DESKTOP },
+	{ PeekBehavior::AlwaysHide,                   ID_PEEK_HIDE }
 };
 
 #pragma endregion
@@ -178,7 +178,7 @@ bool CheckAndRunWelcome()
 
 long LoadConfig(...)
 {
-	Config::Parse(run.config_file);
+	//TODO Config::Parse(run.config_file);
 	Blacklist::Parse(run.exclude_file);
 	return 0;
 }
@@ -187,7 +187,12 @@ long LoadConfig(...)
 
 #pragma region Tray
 
-winrt::fire_and_forget RefreshMenu(TrayContextMenu::ContextMenuUpdater updater)
+void EnableAppearanceColor(TrayContextMenu::ContextMenuUpdater updater, unsigned int id, const OptionalTaskbarAppearance &appearance)
+{
+	updater.EnableItem(id, appearance.Enabled && appearance.Accent != ACCENT_NORMAL);
+}
+
+winrt::fire_and_forget RefreshMenu(const Config &cfg, TrayContextMenu::ContextMenuUpdater updater)
 {
 	// Fire off the task and do what we can do before blocking
 	const auto task = Autostart::GetStartupState();
@@ -205,13 +210,13 @@ winrt::fire_and_forget RefreshMenu(TrayContextMenu::ContextMenuUpdater updater)
 			: L"Nothing has been logged yet"
 	);
 
-	updater.EnableItem(ID_SAVESETTINGS, !Config::NO_SAVE);
+	updater.EnableItem(ID_SAVESETTINGS, !cfg.DisableSaving);
 
-	updater.EnableItem(ID_REGULAR_COLOR, Config::REGULAR_APPEARANCE.ACCENT != ACCENT_NORMAL);
-	updater.EnableItem(ID_MAXIMISED_COLOR, Config::MAXIMISED_ENABLED && Config::MAXIMISED_APPEARANCE.ACCENT != ACCENT_NORMAL);
-	updater.EnableItem(ID_START_COLOR, Config::START_ENABLED && Config::START_APPEARANCE.ACCENT != ACCENT_NORMAL);
-	updater.EnableItem(ID_CORTANA_COLOR, Config::CORTANA_ENABLED && Config::CORTANA_APPEARANCE.ACCENT != ACCENT_NORMAL);
-	updater.EnableItem(ID_TIMELINE_COLOR, Config::TIMELINE_ENABLED && Config::TIMELINE_APPEARANCE.ACCENT != ACCENT_NORMAL);
+	updater.EnableItem(ID_REGULAR_COLOR, cfg.RegularAppearance.Accent != ACCENT_NORMAL);
+	EnableAppearanceColor(updater, ID_MAXIMISED_COLOR, cfg.MaximisedWindowAppearance);
+	EnableAppearanceColor(updater, ID_START_COLOR, cfg.StartOpenedAppearance);
+	EnableAppearanceColor(updater, ID_CORTANA_COLOR, cfg.CortanaOpenedAppearance);
+	EnableAppearanceColor(updater, ID_TIMELINE_COLOR, cfg.TimelineOpenedAppearance);
 
 	// Block until it finishes
 	const auto state = co_await task;
@@ -269,12 +274,28 @@ bool IsSingleInstance()
 	}
 }
 
-void InitializeTray(HINSTANCE hInstance)
+void BindAppearance(TrayContextMenu &tray, TaskbarAppearance &appearance, unsigned int colorId, const std::unordered_map<ACCENT_STATE, uint32_t> &map)
+{
+	tray.BindColor(colorId, appearance.Color);
+	tray.BindEnum(appearance.Accent, map);
+}
+
+void BindAppearance(TrayContextMenu &tray, OptionalTaskbarAppearance &appearance, unsigned int enableId, unsigned int colorId, const std::unordered_map<ACCENT_STATE, uint32_t> &map)
+{
+	tray.BindBool(enableId, appearance.Enabled, TrayContextMenu::Toggle);
+	BindAppearance(tray, appearance, colorId, map);
+	for (const auto &[_, id] : map)
+	{
+		tray.BindBool(id, appearance.Enabled, TrayContextMenu::ControlsEnabled);
+	}
+}
+
+void InitializeTray(HINSTANCE hInstance, Config &cfg)
 {
 	static MessageWindow window(TRAY_WINDOW, NAME, hInstance);
 	DarkThemeManager::EnableDarkModeForWindow(window);
 
-	static TaskbarAttributeWorker worker(hInstance);
+	static TaskbarAttributeWorker worker(hInstance, cfg);
 	static auto watcher = wil::make_folder_watcher(run.config_folder.c_str(), false, wil::FolderChangeEvents::LastWriteTime, LoadConfig);
 
 	window.RegisterCallback(WM_NEWTTBINSTANCE, std::bind(&ExitApp, EXITREASON::NewInstance));
@@ -296,61 +317,27 @@ void InitializeTray(HINSTANCE hInstance)
 		if (wParam)
 		{
 			// The app can be closed anytime after processing this message. Save the settings.
-			Config::Save(run.config_file);
+			// TODO: Config::Save(run.config_file);
 		}
 
 		return 0;
 	});
 
 
-	if (!Config::NO_TRAY)
+	if (!cfg.HideTray)
 	{
 		static TrayContextMenu tray(window, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance);
 		DarkThemeManager::EnableDarkModeForTrayIcon(tray, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON));
 
-		tray.BindColor(ID_REGULAR_COLOR, Config::REGULAR_APPEARANCE.COLOR);
-		tray.BindEnum(Config::REGULAR_APPEARANCE.ACCENT, REGULAR_BUTTOM_MAP);
+		BindAppearance(tray, cfg.RegularAppearance, ID_REGULAR_COLOR, REGULAR_BUTTOM_MAP);
+		BindAppearance(tray, cfg.MaximisedWindowAppearance, ID_MAXIMISED, ID_MAXIMISED_COLOR, MAXIMISED_BUTTON_MAP);
+		BindAppearance(tray, cfg.StartOpenedAppearance, ID_START, ID_START_COLOR, START_BUTTON_MAP);
+		BindAppearance(tray, cfg.CortanaOpenedAppearance, ID_CORTANA, ID_CORTANA_COLOR, CORTANA_BUTTON_MAP);
+		BindAppearance(tray, cfg.TimelineOpenedAppearance, ID_TIMELINE, ID_TIMELINE_COLOR, TIMELINE_BUTTON_MAP);
 
 
-		tray.BindBool(ID_MAXIMISED, Config::MAXIMISED_ENABLED, TrayContextMenu::Toggle);
-		tray.BindBool(ID_MAXIMISED_PEEK, Config::MAXIMISED_ENABLED, TrayContextMenu::ControlsEnabled);
-		tray.BindBool(ID_MAXIMISED_PEEK, Config::MAXIMISED_REGULAR_ON_PEEK, TrayContextMenu::Toggle);
-		tray.BindColor(ID_MAXIMISED_COLOR, Config::MAXIMISED_APPEARANCE.COLOR);
-		tray.BindEnum(Config::MAXIMISED_APPEARANCE.ACCENT, MAXIMISED_BUTTON_MAP);
-		for (const auto &[_, id] : MAXIMISED_BUTTON_MAP)
-		{
-			tray.BindBool(id, Config::MAXIMISED_ENABLED, TrayContextMenu::ControlsEnabled);
-		}
-
-
-		tray.BindBool(ID_START, Config::START_ENABLED, TrayContextMenu::Toggle);
-		tray.BindColor(ID_START_COLOR, Config::START_APPEARANCE.COLOR);
-		tray.BindEnum(Config::START_APPEARANCE.ACCENT, START_BUTTON_MAP);
-		for (const auto &[_, id] : START_BUTTON_MAP)
-		{
-			tray.BindBool(id, Config::START_ENABLED, TrayContextMenu::ControlsEnabled);
-		}
-
-
-		tray.BindBool(ID_CORTANA, Config::CORTANA_ENABLED, TrayContextMenu::Toggle);
-		tray.BindColor(ID_CORTANA_COLOR, Config::CORTANA_APPEARANCE.COLOR);
-		tray.BindEnum(Config::CORTANA_APPEARANCE.ACCENT, CORTANA_BUTTON_MAP);
-		for (const auto &[_, id] : CORTANA_BUTTON_MAP)
-		{
-			tray.BindBool(id, Config::CORTANA_ENABLED, TrayContextMenu::ControlsEnabled);
-		}
-
-
-		tray.BindBool(ID_TIMELINE, Config::TIMELINE_ENABLED, TrayContextMenu::Toggle);
-		tray.BindColor(ID_TIMELINE_COLOR, Config::TIMELINE_APPEARANCE.COLOR);
-		tray.BindEnum(Config::TIMELINE_APPEARANCE.ACCENT, TIMELINE_BUTTON_MAP);
-		for (const auto &[_, id] : TIMELINE_BUTTON_MAP)
-		{
-			tray.BindBool(id, Config::TIMELINE_ENABLED, TrayContextMenu::ControlsEnabled);
-		}
-
-
-		tray.BindEnum(Config::PEEK, PEEK_BUTTON_MAP);
+		tray.BindEnum(cfg.Peek, PEEK_BUTTON_MAP);
+		tray.BindBool(ID_REGULAR_ON_PEEK, cfg.UseRegularAppearanceWhenPeeking, TrayContextMenu::Toggle);
 
 
 		tray.RegisterContextMenuCallback(ID_OPENLOG, []
@@ -358,16 +345,16 @@ void InitializeTray(HINSTANCE hInstance)
 			Log::Flush();
 			win32::EditFile(Log::file());
 		});
-		tray.BindBool(ID_VERBOSE, Config::VERBOSE, TrayContextMenu::Toggle);
+		tray.BindBool(ID_VERBOSE, cfg.VerboseLog, TrayContextMenu::Toggle);
 		tray.RegisterContextMenuCallback(ID_SAVESETTINGS, []
 		{
-			Config::Save(run.config_file);
+			// TODO Config::Save(run.config_file);
 			std::thread(std::bind(&MessageBox, Window::NullWindow, L"Settings have been saved.", NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND)).detach();
 		});
-		tray.RegisterContextMenuCallback(ID_RELOADSETTINGS, std::bind(&Config::Parse, std::ref(run.config_file)));
+		// TODO tray.RegisterContextMenuCallback(ID_RELOADSETTINGS, std::bind(&Config::Parse, std::ref(run.config_file)));
 		tray.RegisterContextMenuCallback(ID_EDITSETTINGS, []
 		{
-			Config::Save(run.config_file);
+			// TODO Config::Save(run.config_file);
 			win32::EditFile(run.config_file);
 		});
 		tray.RegisterContextMenuCallback(ID_RETURNTODEFAULTSETTINGS, []
@@ -406,7 +393,7 @@ void InitializeTray(HINSTANCE hInstance)
 		tray.RegisterContextMenuCallback(ID_EXIT, std::bind(&ExitApp, EXITREASON::UserAction));
 
 
-		tray.RegisterCustomRefresh(RefreshMenu);
+		tray.RegisterCustomRefresh(std::bind(&RefreshMenu, std::ref(cfg), std::placeholders::_1));
 	}
 }
 
@@ -440,13 +427,14 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 
 	// Parse our configuration
 	LoadConfig();
-	if (!Config::ParseCommandLine())
-	{
-		return EXIT_SUCCESS;
-	}
+	Config cfg;
+	//TODO if (!Config::ParseCommandLine())
+	//{
+	//	return EXIT_SUCCESS;
+	//}
 
 	// Initialize GUI
-	InitializeTray(hInstance);
+	InitializeTray(hInstance, cfg);
 
 	// Run the main program loop. When this method exits, TranslucentTB itself is about to exit.
 	MessageWindow::RunMessageLoop();
@@ -456,7 +444,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 	{
 		if (run.exit_reason != EXITREASON::UserActionNoSave)
 		{
-			Config::Save(run.config_file);
+			// TODO Config::Save(run.config_file);
 		}
 	}
 

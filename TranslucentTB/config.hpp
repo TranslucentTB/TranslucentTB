@@ -1,82 +1,134 @@
 #pragma once
-#include <cstdint>
-#include <filesystem>
-#include <functional>
 #include <string>
-#include <utility>
-#include <vector>
+#include <string_view>
 
 #include "undoc/swca.hpp"
 
-class Config {
-public:
-	struct TASKBAR_APPEARANCE {
-		ACCENT_STATE ACCENT;
-		COLORREF     COLOR;
-	};
+enum class PeekBehavior {
+	AlwaysHide,                   // Always hide the button
+	WindowMaximisedOnMainMonitor, // Show when a window is maximised on the main monitor
+	WindowMaximisedOnAnyMonitor,  // Show when a window is maximised on any monitor
+	DesktopIsForegroundWindow,    // Show when the desktop is the foreground window
+	AlwaysShow                    // Always show the button
+};
 
-	// Regular
-	static TASKBAR_APPEARANCE REGULAR_APPEARANCE;
+struct TaskbarAppearance {
+	ACCENT_STATE Accent;
+	COLORREF     Color;
 
-	// Maximised
-	static bool MAXIMISED_ENABLED;
-	static TASKBAR_APPEARANCE MAXIMISED_APPEARANCE;
-	static bool MAXIMISED_REGULAR_ON_PEEK;
+	template<class Writer>
+	inline void Serialize(Writer &writer) const
+	{
+		writer.String(L"accent");
+		const auto accent_str = AccentToString();
+		writer.String(accent_str.data(), accent_str.length());
 
-	// Start menu
-	static bool START_ENABLED;
-	static TASKBAR_APPEARANCE START_APPEARANCE;
+		writer.String(L"color");
+		writer.String(ColorToString());
 
-	// Cortana
-	static bool CORTANA_ENABLED;
-	static TASKBAR_APPEARANCE CORTANA_APPEARANCE;
-
-	// Timeline/Task View
-	static bool TIMELINE_ENABLED;
-	static TASKBAR_APPEARANCE TIMELINE_APPEARANCE;
-
-	// Peek
-	static enum class PEEK {
-		Disabled,                 // Hide the button
-		DynamicMainMonitor,       // Show when a window is maximised on the main monitor
-		DynamicAnyMonitor,        // Show when a window is maximised on any monitor
-		DynamicDesktopForeground, // Show when the desktop is the foreground window
-		Enabled                   // Don't hide the button
-	} PEEK;
-
-	// Advanced
-	static uint8_t SLEEP_TIME;
-	static bool NO_TRAY;
-	static bool NO_SAVE;
-	static bool NO_HOOK;
-	static bool VERBOSE;
-
-	static void Parse(const std::filesystem::path &file);
-	static bool ParseCommandLine();
-	static void Save(const std::filesystem::path &file);
+		writer.String(L"opacity");
+		writer.Uint((Color & 0xFF000000) >> 24);
+	}
 
 private:
-	using logger_t = std::function<void(std::wstring_view)>;
+	std::wstring_view AccentToString() const;
+	std::wstring ColorToString() const;
+};
 
-	static const std::wstring CLI_HELP_MSG;
-	static const std::pair<const std::wstring_view, bool &> FLAGS[9];
-	static const std::pair<const std::wstring_view, TASKBAR_APPEARANCE &> APPEARANCES[5];
+struct OptionalTaskbarAppearance : TaskbarAppearance {
+	bool Enabled;
 
-	static std::vector<std::wstring> GetArgs();
+	template <typename Writer>
+	inline void Serialize(Writer &writer) const
+	{
+		writer.String(L"enabled");
+		writer.Bool(Enabled);
 
-	static void UnknownValue(std::wstring_view key, std::wstring_view value, const std::function<void(const std::wstring &)> &logger);
-	static bool ParseAccent(std::wstring_view value, ACCENT_STATE &accent);
-	static bool ParseColor(std::wstring_view value, COLORREF &color, const logger_t &logger);
-	static bool ParseOpacity(std::wstring_view value, COLORREF &color, const logger_t &logger);
-	static bool ParseBool(std::wstring_view value, bool &setting);
-	static void ParseKeyValuePair(std::wstring_view kvp);
-	static bool ParseFlags(std::wstring_view arg, std::wstring_view value, const logger_t &logger);
-	static void ParseCliFlags(std::vector<std::wstring> &args, const logger_t &logger);
-	static bool ParseAppearances(std::wstring_view arg, std::wstring_view value, const logger_t &logger);
-	static void ParseSingleConfigOption(std::wstring_view arg, std::wstring_view value, const logger_t &logger);
+		TaskbarAppearance::Serialize(writer);
+	}
+};
 
-	static std::wstring_view GetAccentText(ACCENT_STATE accent);
-	static std::wstring GetColorText(uint32_t color);
-	static std::wstring GetOpacityText(uint32_t color);
-	static std::wstring_view GetBoolText(bool value);
+class Config {
+public:
+	// Appearances
+	TaskbarAppearance RegularAppearance;
+	OptionalTaskbarAppearance MaximisedWindowAppearance;
+	OptionalTaskbarAppearance StartOpenedAppearance;
+	OptionalTaskbarAppearance CortanaOpenedAppearance;
+	OptionalTaskbarAppearance TimelineOpenedAppearance;
+
+	// Peek
+	bool UseRegularAppearanceWhenPeeking;
+	PeekBehavior Peek;
+
+	// Advanced
+	bool HideTray;
+	bool DisableSaving;
+	bool VerboseLog;
+
+	// Default-init with default settings
+	Config() :
+		RegularAppearance { ACCENT_ENABLE_TRANSPARENTGRADIENT, 0 },
+		MaximisedWindowAppearance { ACCENT_ENABLE_BLURBEHIND, 0xaa000000, true },
+		StartOpenedAppearance { ACCENT_NORMAL, 0, true },
+		CortanaOpenedAppearance { ACCENT_NORMAL, 0, true },
+		TimelineOpenedAppearance { ACCENT_NORMAL, 0, true },
+		UseRegularAppearanceWhenPeeking(true),
+		Peek(PeekBehavior::WindowMaximisedOnMainMonitor),
+		HideTray(false),
+		DisableSaving(false),
+#ifdef _DEBUG
+		VerboseLog(true)
+#else
+		VerboseLog(False)
+#endif
+	{ }
+
+	template<class Writer>
+	inline void Serialize(Writer &writer) const
+	{
+		writer.String(L"regular_appearance");
+		writer.StartObject();
+		RegularAppearance.Serialize(writer);
+		writer.EndObject();
+
+		writer.String(L"maximised_window_appearance");
+		writer.StartObject();
+		MaximisedWindowAppearance.Serialize(writer);
+		writer.EndObject();
+
+		writer.String(L"start_opened_appearance");
+		writer.StartObject();
+		StartOpenedAppearance.Serialize(writer);
+		writer.EndObject();
+
+		writer.String(L"cortana_opened_appearance");
+		writer.StartObject();
+		CortanaOpenedAppearance.Serialize(writer);
+		writer.EndObject();
+
+		writer.String(L"timeline_opened_appearance");
+		writer.StartObject();
+		TimelineOpenedAppearance.Serialize(writer);
+		writer.EndObject();
+
+		writer.String(L"regular_appearance_when_peeking");
+		writer.Bool(UseRegularAppearanceWhenPeeking);
+
+		writer.String(L"show_peek_button");
+		const auto peek_str = PeekToString();
+		writer.String(peek_str.data(), peek_str.length());
+
+		writer.String(L"hide_tray");
+		writer.Bool(HideTray);
+
+		writer.String(L"disable_saving");
+		writer.Bool(DisableSaving);
+
+		writer.String(L"verbose");
+		writer.Bool(VerboseLog);
+	}
+
+private:
+	std::wstring_view PeekToString() const;
 };

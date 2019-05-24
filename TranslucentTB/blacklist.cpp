@@ -117,7 +117,7 @@ void Blacklist::ClearCache()
 {
 	s_Cache.clear();
 
-	if (Config::VERBOSE)
+	//TODO if (Config::VERBOSE)
 	{
 		Log::OutputMessage(L"Blacklist cache cleared.");
 	}
@@ -135,7 +135,7 @@ void Blacklist::HandleDestroyEvent(DWORD, Window window, ...)
 
 bool Blacklist::OutputMatchToLog(Window window, bool isMatch)
 {
-	if (Config::VERBOSE)
+	// TODO: if (Config::VERBOSE)
 	{
 		std::wostringstream message;
 		message << (isMatch ? L"B" : L"No b") << L"lacklist match found for window: ";

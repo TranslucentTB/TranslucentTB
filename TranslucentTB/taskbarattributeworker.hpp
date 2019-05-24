@@ -71,8 +71,8 @@ private:
 
 	// Taskbar appearance refresh
 	void Poll();
-	bool SetAttribute(Window window, Config::TASKBAR_APPEARANCE config);
-	Config::TASKBAR_APPEARANCE GetConfigForMonitor(HMONITOR monitor, bool skipCheck = false);
+	bool SetAttribute(Window window, TaskbarAppearance config);
+	TaskbarAppearance GetConfigForMonitor(HMONITOR monitor, bool skipCheck = false);
 	bool RefreshAttribute(HMONITOR monitor, bool skipCheck = false);
 	void ShowAeroPeekButton(Window taskbar, bool show);
 	void RefreshAeroPeekButton();
@@ -83,8 +83,10 @@ private:
 	void ReturnToStock();
 	EventHook::callback_t BindHook();
 
+	const Config &m_Cfg;
+
 public:
-	TaskbarAttributeWorker(HINSTANCE hInstance);
+	TaskbarAttributeWorker(HINSTANCE hInstance, const Config &cfg);
 
 	void ResetState();
 
