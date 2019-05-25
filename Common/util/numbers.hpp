@@ -149,4 +149,10 @@ namespace Util {
 
 		return impl::NumberParser<T, base>::impl(number);
 	}
+
+	constexpr uint8_t ExpandOneHexDigitByte(uint8_t byte)
+	{
+		const uint8_t firstDigit = byte & 0xF;
+		return firstDigit << 4 + firstDigit;
+	}
 }

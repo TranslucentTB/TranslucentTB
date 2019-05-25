@@ -150,9 +150,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="resources\config.cfg">
-      <Filter>Stock Configuration Files</Filter>
-    </Content>
     <Content Include="resources\dynamic-ws-exclude.csv">
       <Filter>Stock Configuration Files</Filter>
     </Content>

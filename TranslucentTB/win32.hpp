@@ -8,6 +8,7 @@
 #include <unordered_set>
 #include <utility>
 #include <windef.h>
+#include <wingdi.h>
 
 #include "util/numbers.hpp"
 
@@ -64,4 +65,13 @@ public:
 
 	// Opens a folder in the File Explorer
 	static void OpenFolder(const std::filesystem::path &folder);
+
+	static constexpr uint32_t SwapColorOrder(uint32_t color)
+	{
+		const uint8_t r = GetBValue(color);
+		const uint8_t g = GetGValue(color);
+		const uint8_t b = GetRValue(color);
+
+		return RGB(r, g, b);
+	}
 };

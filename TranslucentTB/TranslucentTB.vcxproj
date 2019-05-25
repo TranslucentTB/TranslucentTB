@@ -60,10 +60,6 @@
     <ResourceCompile Include="resources\TranslucentTB.rc2" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="resources\config.cfg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <DeploymentContent>true</DeploymentContent>
-    </Content>
     <Content Include="resources\dynamic-ws-exclude.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <DeploymentContent>true</DeploymentContent>

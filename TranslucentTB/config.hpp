@@ -1,16 +1,14 @@
 #pragma once
+#include <rapidjson/document.h>
+#include <rapidjson/encodings.h>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 
+#include "win32.hpp"
 #include "undoc/swca.hpp"
-
-enum class PeekBehavior {
-	AlwaysHide,                   // Always hide the button
-	WindowMaximisedOnMainMonitor, // Show when a window is maximised on the main monitor
-	WindowMaximisedOnAnyMonitor,  // Show when a window is maximised on any monitor
-	DesktopIsForegroundWindow,    // Show when the desktop is the foreground window
-	AlwaysShow                    // Always show the button
-};
+#include "util/colors.hpp"
+#include "util/others.hpp"
 
 struct TaskbarAppearance {
 	ACCENT_STATE Accent;
@@ -20,19 +18,20 @@ struct TaskbarAppearance {
 	inline void Serialize(Writer &writer) const
 	{
 		writer.String(L"accent");
-		const auto accent_str = AccentToString();
+		const auto accent_str = Util::FindOrDefault(s_AccentMap, Accent);
 		writer.String(accent_str.data(), accent_str.length());
 
 		writer.String(L"color");
-		writer.String(ColorToString());
+		writer.String(Util::StringFromColor(win32::SwapColorOrder(Color)));
 
 		writer.String(L"opacity");
 		writer.Uint((Color & 0xFF000000) >> 24);
 	}
 
+	void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val);
+
 private:
-	std::wstring_view AccentToString() const;
-	std::wstring ColorToString() const;
+	static const std::unordered_map<ACCENT_STATE, std::wstring_view> s_AccentMap;
 };
 
 struct OptionalTaskbarAppearance : TaskbarAppearance {
@@ -46,6 +45,16 @@ struct OptionalTaskbarAppearance : TaskbarAppearance {
 
 		TaskbarAppearance::Serialize(writer);
 	}
+
+	void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val);
+};
+
+enum class PeekBehavior {
+	AlwaysHide,                   // Always hide the button
+	WindowMaximisedOnMainMonitor, // Show when a window is maximised on the main monitor
+	WindowMaximisedOnAnyMonitor,  // Show when a window is maximised on any monitor
+	DesktopIsForegroundWindow,    // Show when the desktop is the foreground window
+	AlwaysShow                    // Always show the button
 };
 
 class Config {
@@ -58,8 +67,8 @@ public:
 	OptionalTaskbarAppearance TimelineOpenedAppearance;
 
 	// Peek
-	bool UseRegularAppearanceWhenPeeking;
 	PeekBehavior Peek;
+	bool UseRegularAppearanceWhenPeeking;
 
 	// Advanced
 	bool HideTray;
@@ -73,8 +82,8 @@ public:
 		StartOpenedAppearance { ACCENT_NORMAL, 0, true },
 		CortanaOpenedAppearance { ACCENT_NORMAL, 0, true },
 		TimelineOpenedAppearance { ACCENT_NORMAL, 0, true },
-		UseRegularAppearanceWhenPeeking(true),
 		Peek(PeekBehavior::WindowMaximisedOnMainMonitor),
+		UseRegularAppearanceWhenPeeking(true),
 		HideTray(false),
 		DisableSaving(false),
 #ifdef _DEBUG
@@ -112,12 +121,12 @@ public:
 		TimelineOpenedAppearance.Serialize(writer);
 		writer.EndObject();
 
+		writer.String(L"show_peek_button");
+		const auto peek_str = Util::FindOrDefault(s_PeekMap, Peek);
+		writer.String(peek_str.data(), peek_str.length());
+
 		writer.String(L"regular_appearance_when_peeking");
 		writer.Bool(UseRegularAppearanceWhenPeeking);
-
-		writer.String(L"show_peek_button");
-		const auto peek_str = PeekToString();
-		writer.String(peek_str.data(), peek_str.length());
 
 		writer.String(L"hide_tray");
 		writer.Bool(HideTray);
@@ -129,6 +138,8 @@ public:
 		writer.Bool(VerboseLog);
 	}
 
+	void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val);
+
 private:
-	std::wstring_view PeekToString() const;
+	static const std::unordered_map<PeekBehavior, std::wstring_view> s_PeekMap;
 };

@@ -110,3 +110,13 @@ TEST(Util_ParseNumber_BaseSixteen, ThrowsWhenInputNotANumber)
 {
 	ASSERT_THROW((Util::ParseNumber<uint32_t, 16>(L"foobar")), std::invalid_argument);
 }
+
+TEST(Util_ExpandOneHexDigitByte, ExpandsByte)
+{
+	ASSERT_EQ(Util::ExpandOneHexDigitByte(0xF), 0xFF);
+}
+
+TEST(Util_ExpandOneHexDigitByte, IgnoresSecondDigit)
+{
+	ASSERT_EQ(Util::ExpandOneHexDigitByte(0xAF), 0xFF);
+}

@@ -1,5 +1,6 @@
 // Standard API
 #include <filesystem>
+#include <fstream>
 #include <functional>
 #include <string>
 #include <string_view>
@@ -15,6 +16,13 @@
 
 // WIL
 #include <wil/filesystem.h>
+
+// RapidJSON
+#include <rapidjson/document.h>
+#include <rapidjson/encodings.h>
+#include <rapidjson/istreamwrapper.h>
+#include <rapidjson/ostreamwrapper.h>
+#include <rapidjson/prettywriter.h>
 
 // Local stuff
 #include "autostart.hpp"
@@ -176,11 +184,36 @@ bool CheckAndRunWelcome()
 	return true;
 }
 
-long LoadConfig(...)
+Config LoadConfig(const std::filesystem::path &file)
 {
-	//TODO Config::Parse(run.config_file);
-	Blacklist::Parse(run.exclude_file);
-	return 0;
+	using namespace rapidjson;
+
+	Config cfg;
+
+	std::wifstream fileStream(file);
+
+	WIStreamWrapper jsonStream(fileStream);
+	GenericDocument<UTF16LE<>> doc;
+	doc.ParseStream<kParseCommentsFlag>(jsonStream);
+
+	cfg.Deserialize(doc);
+
+	return cfg;
+}
+
+void SaveConfig(const Config &cfg, const std::filesystem::path &file)
+{
+	using namespace rapidjson;
+
+	std::wofstream fileStream(file);
+	fileStream << L"// For reference on this format, see TODO" << std::endl;
+
+	WOStreamWrapper jsonStream(fileStream);
+	PrettyWriter<WOStreamWrapper, UTF16LE<>, UTF16LE<>> writer(jsonStream);
+
+	writer.StartObject();
+	cfg.Serialize(writer);
+	writer.EndObject();
 }
 
 #pragma endregion
@@ -296,7 +329,10 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 	DarkThemeManager::EnableDarkModeForWindow(window);
 
 	static TaskbarAttributeWorker worker(hInstance, cfg);
-	static auto watcher = wil::make_folder_watcher(run.config_folder.c_str(), false, wil::FolderChangeEvents::LastWriteTime, LoadConfig);
+	static auto watcher = wil::make_folder_watcher(run.config_folder.c_str(), false, wil::FolderChangeEvents::LastWriteTime, [&cfg]
+	{
+		cfg = LoadConfig(run.config_file);
+	});
 
 	window.RegisterCallback(WM_NEWTTBINSTANCE, std::bind(&ExitApp, EXITREASON::NewInstance));
 
@@ -312,12 +348,12 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 		return TRUE;
 	});
 
-	window.RegisterCallback(WM_ENDSESSION, [](WPARAM wParam, ...)
+	window.RegisterCallback(WM_ENDSESSION, [&cfg](WPARAM wParam, ...)
 	{
 		if (wParam)
 		{
 			// The app can be closed anytime after processing this message. Save the settings.
-			// TODO: Config::Save(run.config_file);
+			SaveConfig(cfg, run.config_file);
 		}
 
 		return 0;
@@ -328,6 +364,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 	{
 		static TrayContextMenu tray(window, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance);
 		DarkThemeManager::EnableDarkModeForTrayIcon(tray, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON));
+
 
 		BindAppearance(tray, cfg.RegularAppearance, ID_REGULAR_COLOR, REGULAR_BUTTOM_MAP);
 		BindAppearance(tray, cfg.MaximisedWindowAppearance, ID_MAXIMISED, ID_MAXIMISED_COLOR, MAXIMISED_BUTTON_MAP);
@@ -346,20 +383,24 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 			win32::EditFile(Log::file());
 		});
 		tray.BindBool(ID_VERBOSE, cfg.VerboseLog, TrayContextMenu::Toggle);
-		tray.RegisterContextMenuCallback(ID_SAVESETTINGS, []
+		tray.RegisterContextMenuCallback(ID_SAVESETTINGS, [&cfg]
 		{
-			// TODO Config::Save(run.config_file);
+			SaveConfig(cfg, run.config_file);
 			std::thread(std::bind(&MessageBox, Window::NullWindow, L"Settings have been saved.", NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND)).detach();
 		});
-		// TODO tray.RegisterContextMenuCallback(ID_RELOADSETTINGS, std::bind(&Config::Parse, std::ref(run.config_file)));
-		tray.RegisterContextMenuCallback(ID_EDITSETTINGS, []
+		tray.RegisterContextMenuCallback(ID_RELOADSETTINGS, [&cfg]
 		{
-			// TODO Config::Save(run.config_file);
+			cfg = LoadConfig(run.config_file);
+		});
+		tray.RegisterContextMenuCallback(ID_EDITSETTINGS, [&cfg]
+		{
+			SaveConfig(cfg, run.config_file);
 			win32::EditFile(run.config_file);
 		});
-		tray.RegisterContextMenuCallback(ID_RETURNTODEFAULTSETTINGS, []
+		tray.RegisterContextMenuCallback(ID_RETURNTODEFAULTSETTINGS, [&cfg]
 		{
-			ApplyStock(CONFIG_FILE);
+			cfg = { };
+			SaveConfig(cfg, run.config_file);
 		});
 		tray.RegisterContextMenuCallback(ID_RELOADDYNAMICBLACKLIST, std::bind(&Blacklist::Parse, std::ref(run.exclude_file)));
 		tray.RegisterContextMenuCallback(ID_EDITDYNAMICBLACKLIST, std::bind(&win32::EditFile, std::ref(run.exclude_file)));
@@ -426,8 +467,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 	}
 
 	// Parse our configuration
-	LoadConfig();
-	Config cfg;
+	static Config cfg = LoadConfig(run.config_file);
 	//TODO if (!Config::ParseCommandLine())
 	//{
 	//	return EXIT_SUCCESS;
@@ -444,7 +484,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 	{
 		if (run.exit_reason != EXITREASON::UserActionNoSave)
 		{
-			// TODO Config::Save(run.config_file);
+			SaveConfig(cfg, run.config_file);
 		}
 	}
 
