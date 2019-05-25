@@ -1,8 +1,10 @@
 #pragma once
+#include "arch.h"
 #include <cstddef>
 #include <tuple>
 #include <utility>
 #include <wil/resource.h>
+#include <winnt.h>
 
 namespace wilx {
 	// Send help

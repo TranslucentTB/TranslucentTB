@@ -190,7 +190,7 @@ bool TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance confi
 
 		if (policy.AccentState == ACCENT_ENABLE_ACRYLICBLURBEHIND && policy.GradientColor >> 24 == 0x00)
 		{
-			// Fluent mode doesn't likes a completely 0 opacity
+			// Acrylic mode doesn't likes a completely 0 opacity
 			policy.GradientColor = (0x01 << 24) + (policy.GradientColor & 0x00FFFFFF);
 		}
 

@@ -21,7 +21,7 @@ You can see examples of the customizations you can make in the images below:
   - **Clear**: Transparent taskbar.
   - **Normal**: Regular Windows style. (as if TranslucentTB was not running)
   - **Opaque**: No transparency.
-  - **Fluent**: Windows 10 April 2018 update and up only. Will give the taskbar an appearance similar to Microsoft's Fluent Design guidelines.
+  - **Acrylic**: Will give the taskbar an appearance similar to Microsoft's Fluent Design guidelines.
 - **Dynamic** modes (these can be used together and each of them provides a taskbar state and color you can customize):
   - **Dynamic Windows**: Will change the taskbar to a different appearance if a window is currently maximised.
   - **Dynamic Start Menu**: Will change the taskbar appearance when the start menu is opened.
@@ -81,15 +81,6 @@ TranslucentTB is a team effort! It is the result of the collective efforts of ma
 - and last but not least, all of [our contributors](https://github.com/TranslucentTB/TranslucentTB/graphs/contributors)!
 
 Thanks to [@dAKirby309](https://github.com/dAKirby309) for making the icon! You can find more of his stuff on [his DeviantArt profile](https://dakirby309.deviantart.com/).
-
-The color picker used comes from [this great CodeProject article](https://www.codeproject.com/Articles/9207/An-HSV-RGBA-colour-picker).
-We've modernized it a bit, with per-monitor high DPI awareness, faster (and hardware-accelerated) drawing as well as allowing to input any valid HTML color code or [name](https://www.w3schools.com/colors/colors_names.asp).
-
-We are using a small part of libc++ in our code. See [the coroutine.h header](TranslucentTB/coroutine.h) for the license.
-
-The picture we used for the installer screenshot is by [Michael D Beckwith](https://unsplash.com/photos/M-nHIqkO4-o) from [Unsplash](https://unsplash.com/).
-
-We use [Inno Setup Dependency Installer](https://github.com/stfx/innodependencyinstaller) to install the Visual C++ redistribuable.
 
 ### Similar programs
 

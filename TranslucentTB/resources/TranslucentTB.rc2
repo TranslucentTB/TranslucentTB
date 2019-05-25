@@ -40,7 +40,7 @@ BEGIN
             MENUITEM "Clear",                                          ID_REGULAR_CLEAR
             MENUITEM "Opaque",                                         ID_REGULAR_OPAQUE
             MENUITEM "Blur",                                           ID_REGULAR_BLUR
-            MENUITEM "Fluent",                                         ID_REGULAR_FLUENT
+            MENUITEM "Acrylic",                                        ID_REGULAR_ACRYLIC
         END
         POPUP "Maximised window"
         BEGIN
@@ -51,7 +51,7 @@ BEGIN
             MENUITEM "Clear",                                          ID_MAXIMISED_CLEAR
             MENUITEM "Opaque",                                         ID_MAXIMISED_OPAQUE
             MENUITEM "Blur",                                           ID_MAXIMISED_BLUR
-            MENUITEM "Fluent",                                         ID_MAXIMISED_FLUENT
+            MENUITEM "Acrylic",                                        ID_MAXIMISED_ACRYLIC
         END
         POPUP "Start Menu opened"
         BEGIN
@@ -62,7 +62,7 @@ BEGIN
             MENUITEM "Clear",                                          ID_START_CLEAR
             MENUITEM "Opaque",                                         ID_START_OPAQUE
             MENUITEM "Blur",                                           ID_START_BLUR
-            MENUITEM "Fluent",                                         ID_START_FLUENT
+            MENUITEM "Acrylic",                                        ID_START_ACRYLIC
         END
         POPUP "Cortana/Search opened"
         BEGIN
@@ -73,7 +73,7 @@ BEGIN
             MENUITEM "Clear",                                          ID_CORTANA_CLEAR
             MENUITEM "Opaque",                                         ID_CORTANA_OPAQUE
             MENUITEM "Blur",                                           ID_CORTANA_BLUR
-            MENUITEM "Fluent",                                         ID_CORTANA_FLUENT
+            MENUITEM "Acrylic",                                        ID_CORTANA_ACRYLIC
         END
         POPUP "Timeline opened"
         BEGIN
@@ -84,7 +84,7 @@ BEGIN
             MENUITEM "Clear",                                          ID_TIMELINE_CLEAR
             MENUITEM "Opaque",                                         ID_TIMELINE_OPAQUE
             MENUITEM "Blur",                                           ID_TIMELINE_BLUR
-            MENUITEM "Fluent",                                         ID_TIMELINE_FLUENT
+            MENUITEM "Acrylic",                                        ID_TIMELINE_ACRYLIC
         END
         MENUITEM "",                                               0, MFT_SEPARATOR
         POPUP "Show Aero Peek"
