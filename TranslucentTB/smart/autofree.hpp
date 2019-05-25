@@ -79,35 +79,7 @@ protected:
 	};
 
 	template<typename T, class traits>
-	class Base : public BaseImpl<T, traits> {
-	public:
-		using BaseImpl<T, traits>::BaseImpl;
-
-		inline static Base Alloc()
-		{
-			return traits::alloc(sizeof(T));
-		}
-
-		inline T *operator ->()
-		{
-			return this->m_DataPtr;
-		}
-
-		inline const T *operator ->() const
-		{
-			return this->m_DataPtr;
-		}
-
-		inline T &operator *()
-		{
-			return *this->m_DataPtr;
-		}
-
-		inline const T &operator *() const
-		{
-			return *this->m_DataPtr;
-		}
-	};
+	class Base;
 
 	template<typename T, class traits>
 	class Base<T[], traits> : public BaseImpl<T, traits> {
@@ -130,52 +102,10 @@ protected:
 		}
 	};
 
-	template<class traits>
-	class Base<void, traits> : public BaseImpl<void, traits> {
-	public:
-		using BaseImpl<void, traits>::BaseImpl;
-	};
-
-	template<bool silent, Error::Level level = Error::Level::Log>
-	struct LocalTraits {
-		static constexpr bool needs_lock = false;
-
-		inline static void *alloc(std::size_t size)
-		{
-			return LocalAlloc(LPTR, size);
-		}
-
-		inline static void close(void *data)
-		{
-			void *result = LocalFree(data);
-			if (result && !silent)
-			{
-				LastErrorHandle(level, L"Failed to free memory.");
-			}
-		}
-	};
-
-	struct CoTaskMemTraits {
-		static constexpr bool needs_lock = false;
-
-		inline static void *alloc(std::size_t size)
-		{
-			return CoTaskMemAlloc(size);
-		}
-
-		inline static void close(void *data)
-		{
-			CoTaskMemFree(data);
-		}
-	};
-
-	template<unsigned int flags>
 	struct GlobalTraits {
-		static constexpr bool needs_lock = static_cast<bool>(flags & GMEM_MOVEABLE);
-
 		inline static void *alloc(std::size_t size)
 		{
-			return GlobalAlloc(flags, size);
+			return GlobalAlloc(GHND, size);
 		}
 
 		inline static void close(void *data)
@@ -207,21 +137,5 @@ protected:
 
 public:
 	template<typename T = void>
-	using CoTaskMem = Base<T, CoTaskMemTraits>;
-
-	template<typename T = void>
-	using Local = Base<T, LocalTraits<false>>;
-
-	template<typename T = void>
-	using DebugLocal = Base<T, LocalTraits<false, Error::Level::Debug>>;
-
-	// Only use this if you don't want to log it for a very valid reason.
-	template<typename T = void>
-	using SilentLocal = Base<T, LocalTraits<true>>;
-
-	template<typename T = void>
-	using Global = Base<T, GlobalTraits<GPTR>>;
-
-	template<typename T = void>
-	using GlobalHandle = Base<T, GlobalTraits<GHND>>;
+	using GlobalHandle = Base<T, GlobalTraits>;
 };

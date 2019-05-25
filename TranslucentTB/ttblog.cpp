@@ -13,10 +13,10 @@
 #include <winnt.h>
 #include <WinUser.h>
 
-#include "smart/autofree.hpp"
 #include "constants.hpp"
 #include "win32.hpp"
 #include "windows/window.hpp"
+#include "ttberror.hpp"
 #include "util/numbers.hpp"
 #include "util/time.hpp"
 #include "uwp.hpp"

@@ -3,7 +3,7 @@
 
 #include "autofree.hpp"
 
-template<typename T, class traits, typename = std::enable_if_t<traits::needs_lock>>
+template<typename T, class traits>
 class AutoUnlock : private AutoFree {
 private:
 	BaseImpl<T, traits> &m_smartHandle;

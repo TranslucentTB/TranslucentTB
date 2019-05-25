@@ -30,7 +30,6 @@
 #include "constants.hpp"
 #include "darkthememanager.hpp"
 #include "resources/ids.h"
-#include "smart/autofree.hpp"
 #include "undoc/swca.hpp"
 #include "taskbarattributeworker.hpp"
 #include "taskdialogs/aboutdialog.hpp"

@@ -11,20 +11,19 @@
 #include <winerror.h>
 #include <WinUser.h>
 
-#include "smart/autofree.hpp"
 #include "constants.hpp"
 #include "ttblog.hpp"
 #include "util/strings.hpp"
 #include "win32.hpp"
 #include "windows/window.hpp"
 
-const size_t Error::PREFIX_LENGTH = GetPrefixLength(_T(__FILE__));
+const size_t Error::PREFIX_LENGTH = GetPrefixLength(UTIL_WIDEN(__FILE__));
 
-bool Error::Handle(HRESULT error, Level level, const wchar_t *message, const wchar_t *file, int line, const wchar_t *function)
+bool Error::HresultHandle(HRESULT error, Level level, std::wstring_view message, std::wstring_view file, unsigned int line)
 {
 	if (FAILED(error))
 	{
-		HandleCommon(level, message, ExceptionFromHRESULT(error), file, line, function);
+		HandleCommon(level, message, ExceptionFromHRESULT(error), file, line);
 
 		return false;
 	}
@@ -34,7 +33,7 @@ bool Error::Handle(HRESULT error, Level level, const wchar_t *message, const wch
 	}
 }
 
-void Error::CppWinrtHandle(const winrt::hresult_error &err, Level level, const wchar_t *message, const wchar_t *file, int line, const wchar_t *function)
+void Error::CppWinrtHandle(const winrt::hresult_error &err, Level level, std::wstring_view message, std::wstring_view file, unsigned int line)
 {
 	std::wstring error_message;
 	if (const auto info = err.try_as<IRestrictedErrorInfo>())
@@ -46,12 +45,12 @@ void Error::CppWinrtHandle(const winrt::hresult_error &err, Level level, const w
 		error_message = ExceptionFromHRESULT(err.code());
 	}
 
-	HandleCommon(level, message, error_message, file, line, function);
+	HandleCommon(level, message, error_message, file, line);
 }
 
 std::wstring Error::ExceptionFromHRESULT(HRESULT result)
 {
-	AutoFree::SilentLocal<wchar_t[]> error;
+	wil::unique_hlocal_string error;
 	const DWORD count = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK, nullptr, result, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), reinterpret_cast<wchar_t *>(error.put()), 0, nullptr);
 	std::wostringstream stream;
 	stream << L"Exception from HRESULT: " << (count ? Util::Trim(error.get()) : L"[failed to get error message for HRESULT]") <<
@@ -89,7 +88,7 @@ std::wstring Error::ExceptionFromIRestrictedErrorInfo(HRESULT hr, IRestrictedErr
 	return ExceptionFromHRESULT(hr);
 }
 
-void Error::HandleCommon(Level level, const wchar_t *message, std::wstring_view error_message, std::wstring_view file, int line, const wchar_t *function)
+void Error::HandleCommon(Level level, std::wstring_view message, std::wstring_view error_message, std::wstring_view file, unsigned int line)
 {
 	std::wostringstream boxbuffer;
 	if (level != Level::Log && level != Level::Debug)
@@ -108,7 +107,7 @@ void Error::HandleCommon(Level level, const wchar_t *message, std::wstring_view 
 
 	std::wostringstream err;
 	err << message << L' ' << error_message <<
-		L" (" << file << L':' << line << L" at function " << function << L')';
+		L" (" << file << L':' << line << L')';
 
 	switch (level)
 	{
