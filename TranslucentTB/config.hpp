@@ -130,7 +130,7 @@ public:
 		CortanaOpenedAppearance.Serialize(writer);
 		writer.EndObject();
 
-		writer.String(TIMELINE_LEY.data(), TIMELINE_KEY.length());
+		writer.String(TIMELINE_KEY.data(), TIMELINE_KEY.length());
 		writer.StartObject();
 		TimelineOpenedAppearance.Serialize(writer);
 		writer.EndObject();
