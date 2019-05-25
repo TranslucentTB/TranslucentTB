@@ -13,10 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Stock Configuration Files">
-      <UniqueIdentifier>{8a3034e1-4c07-4ca8-a036-8cfc161a562d}</UniqueIdentifier>
-      <Extensions>cfg;csv</Extensions>
-    </Filter>
     <Filter Include="Debug Visualizer Files">
       <UniqueIdentifier>{1cd26573-fbcf-4c0e-9927-0ac8a66535e7}</UniqueIdentifier>
       <Extensions>natvis</Extensions>
@@ -148,11 +144,6 @@
     <ClInclude Include="darkthememanager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="resources\dynamic-ws-exclude.csv">
-      <Filter>Stock Configuration Files</Filter>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\TTB_black.ico">

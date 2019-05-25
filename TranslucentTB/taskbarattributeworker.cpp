@@ -1,6 +1,5 @@
 #include "taskbarattributeworker.hpp"
 #include "smart/boolguard.hpp"
-#include "blacklist.hpp"
 #include "constants.hpp"
 #include "../ExplorerDetour/hook.hpp"
 #include "ttberror.hpp"
@@ -53,7 +52,7 @@ bool TaskbarAttributeWorker::IsWindowMaximised(Window window)
 		window.state() == SW_MAXIMIZE &&
 		!window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
 		window.on_current_desktop() &&
-		!Blacklist::IsBlacklisted(window);
+		!m_Cfg.MaximisedWindowBlacklist.IsBlacklisted(window);
 }
 
 void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)

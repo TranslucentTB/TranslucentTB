@@ -60,12 +60,6 @@
     <ResourceCompile Include="resources\TranslucentTB.rc2" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="resources\dynamic-ws-exclude.csv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <DeploymentContent>true</DeploymentContent>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\ExplorerDetour\ExplorerDetour.vcxproj">
       <Project>{d0004e78-f00b-4943-b77e-9a278f8ba399}</Project>
       <DeploymentContent>true</DeploymentContent>

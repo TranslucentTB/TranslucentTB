@@ -5,6 +5,7 @@
 #include <string_view>
 #include <unordered_map>
 
+#include "blacklist.hpp"
 #include "win32.hpp"
 #include "undoc/swca.hpp"
 #include "util/colors.hpp"
@@ -62,6 +63,7 @@ public:
 	// Appearances
 	TaskbarAppearance RegularAppearance;
 	OptionalTaskbarAppearance MaximisedWindowAppearance;
+	Blacklist MaximisedWindowBlacklist;
 	OptionalTaskbarAppearance StartOpenedAppearance;
 	OptionalTaskbarAppearance CortanaOpenedAppearance;
 	OptionalTaskbarAppearance TimelineOpenedAppearance;
@@ -76,9 +78,10 @@ public:
 	bool VerboseLog;
 
 	// Default-init with default settings
-	Config() :
+	inline Config() :
 		RegularAppearance { ACCENT_ENABLE_TRANSPARENTGRADIENT, 0 },
 		MaximisedWindowAppearance { ACCENT_ENABLE_BLURBEHIND, 0xaa000000, true },
+		MaximisedWindowBlacklist(),
 		StartOpenedAppearance { ACCENT_NORMAL, 0, true },
 		CortanaOpenedAppearance { ACCENT_NORMAL, 0, true },
 		TimelineOpenedAppearance { ACCENT_NORMAL, 0, true },
@@ -104,6 +107,10 @@ public:
 		writer.String(L"maximised_window_appearance");
 		writer.StartObject();
 		MaximisedWindowAppearance.Serialize(writer);
+		writer.String(L"blacklist");
+		writer.StartObject();
+		MaximisedWindowBlacklist.Serialize(writer);
+		writer.EndObject();
 		writer.EndObject();
 
 		writer.String(L"start_opened_appearance");

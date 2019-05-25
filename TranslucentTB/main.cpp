@@ -26,7 +26,6 @@
 
 // Local stuff
 #include "autostart.hpp"
-#include "blacklist.hpp"
 #include "config.hpp"
 #include "constants.hpp"
 #include "darkthememanager.hpp"
@@ -57,7 +56,6 @@ static struct {
 	EXITREASON exit_reason = EXITREASON::UserAction;
 	std::filesystem::path config_folder;
 	std::filesystem::path config_file;
-	std::filesystem::path exclude_file;
 } run;
 
 static const std::unordered_map<ACCENT_STATE, uint32_t> REGULAR_BUTTOM_MAP = {
@@ -149,38 +147,22 @@ void GetPaths()
 	}
 	WinrtExceptionCatch(Error::Level::Fatal, L"Getting application folder paths failed!")
 
-	config_folder /= NAME;
-
 	run.config_folder = std::move(config_folder);
 	run.config_file = run.config_folder / CONFIG_FILE;
-	run.exclude_file = run.config_folder / EXCLUDE_FILE;
-}
-
-void ApplyStock(std::wstring_view filename)
-{
-	std::filesystem::create_directory(run.config_folder);
-	std::filesystem::copy_file(win32::GetExeLocation().parent_path() / filename, run.config_folder / filename);
 }
 
 bool CheckAndRunWelcome()
 {
-	if (!std::filesystem::is_directory(run.config_folder))
+	if (!std::filesystem::is_regular_file(run.config_file))
 	{
 		if (!WelcomeDialog(run.config_folder).Run())
 		{
 			return false;
 		}
+
+		SaveConfig({ }, run.config_file);
 	}
 
-	if (!std::filesystem::is_regular_file(run.config_file))
-	{
-		ApplyStock(CONFIG_FILE);
-	}
-
-	if (!std::filesystem::is_regular_file(run.exclude_file))
-	{
-		ApplyStock(EXCLUDE_FILE);
-	}
 	return true;
 }
 
@@ -402,14 +384,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 			cfg = { };
 			SaveConfig(cfg, run.config_file);
 		});
-		tray.RegisterContextMenuCallback(ID_RELOADDYNAMICBLACKLIST, std::bind(&Blacklist::Parse, std::ref(run.exclude_file)));
-		tray.RegisterContextMenuCallback(ID_EDITDYNAMICBLACKLIST, std::bind(&win32::EditFile, std::ref(run.exclude_file)));
-		tray.RegisterContextMenuCallback(ID_RETURNTODEFAULTBLACKLIST, []
-		{
-			ApplyStock(EXCLUDE_FILE);
-		});
 		tray.RegisterContextMenuCallback(ID_CLEARWINDOWCACHE, Window::ClearCache);
-		tray.RegisterContextMenuCallback(ID_CLEARBLACKLISTCACHE, Blacklist::ClearCache);
 		tray.RegisterContextMenuCallback(ID_RESETWORKER, std::bind(&TaskbarAttributeWorker::ResetState, &worker));
 		tray.RegisterContextMenuCallback(ID_ABOUT, []
 		{

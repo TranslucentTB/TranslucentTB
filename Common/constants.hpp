@@ -19,9 +19,6 @@ static constexpr uint16_t LONG_PATH = 33000;
 // Config file name
 static constexpr wchar_t CONFIG_FILE[] = L"config.cfg";
 
-// Dynamic windows exclude file name
-static constexpr wchar_t EXCLUDE_FILE[] = L"dynamic-ws-exclude.csv";
-
 // Mutex name for app uniqueness
 static constexpr wchar_t MUTEX_GUID[] = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
 

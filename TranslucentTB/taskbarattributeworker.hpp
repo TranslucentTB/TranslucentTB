@@ -47,7 +47,7 @@ private:
 	EventHook m_ShowHideHook;
 	void OnAeroPeekEnterExit(DWORD event, ...);
 	void OnWindowStateChange(bool skipCheck, DWORD, Window window, LONG idObject, ...);
-	static bool IsWindowMaximised(Window window);
+	bool IsWindowMaximised(Window window);
 
 	// Start menu
 	HMONITOR m_CurrentStartMonitor;

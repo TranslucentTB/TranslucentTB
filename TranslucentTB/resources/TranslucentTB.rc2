@@ -106,12 +106,7 @@ BEGIN
             MENUITEM "Edit settings",                                  ID_EDITSETTINGS
             MENUITEM "Return to default settings",                     ID_RETURNTODEFAULTSETTINGS
             MENUITEM "",                                               0, MFT_SEPARATOR
-            MENUITEM "Reload blacklist",                               ID_RELOADDYNAMICBLACKLIST
-            MENUITEM "Edit blacklist",                                 ID_EDITDYNAMICBLACKLIST
-            MENUITEM "Return to default blacklist",                    ID_RETURNTODEFAULTBLACKLIST
-            MENUITEM "",                                               0, MFT_SEPARATOR
             MENUITEM "Clear window cache",                             ID_CLEARWINDOWCACHE
-            MENUITEM "Clear blacklist cache",                          ID_CLEARBLACKLISTCACHE
             MENUITEM "Reset dynamic state",                            ID_RESETWORKER
             MENUITEM "",                                               0, MFT_SEPARATOR
             MENUITEM "About",                                          ID_ABOUT

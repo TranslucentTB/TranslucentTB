@@ -76,7 +76,16 @@ void Config::Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &va
 
 	if (const auto maximised = val.FindMember(L"maximised_window_appearance"); maximised != val.MemberEnd())
 	{
-		MaximisedWindowAppearance.Deserialize(maximised->value);
+		const auto &value = maximised->value;
+		MaximisedWindowAppearance.Deserialize(value);
+
+		if (value.IsObject())
+		{
+			if (const auto blacklist = value.FindMember(L"blacklist"); blacklist != value.MemberEnd())
+			{
+				MaximisedWindowBlacklist.Deserialize(blacklist->value);
+			}
+		}
 	}
 
 	if (const auto start = val.FindMember(L"start_opened_appearance"); start != val.MemberEnd())

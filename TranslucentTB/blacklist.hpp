@@ -1,70 +1,65 @@
 #pragma once
-#include <cstdint>
-#include <filesystem>
-#include <functional>
+#include <rapidjson/document.h>
+#include <rapidjson/encodings.h>
 #include <string>
-#include <string_view>
-#include <unordered_map>
 #include <unordered_set>
-#include <vector>
 
-#include "smart/eventhook.hpp"
 #include "util/strings.hpp"
 #include "windows/window.hpp"
 
+class Config;
+
 class Blacklist {
 public:
-	static void Parse(const std::filesystem::path &file);
-	static bool IsBlacklisted(Window window);
-	static void ClearCache();
+	template<class Writer>
+	inline void Serialize(Writer &writer) const
+	{
+		writer.String(L"window_class");
+		writer.StartArray();
+		for (const std::wstring &str : m_ClassBlacklist)
+		{
+			writer.String(str);
+		}
+		writer.EndArray();
+
+		writer.String(L"window_title");
+		writer.StartArray();
+		for (const std::wstring &str : m_TitleBlacklist)
+		{
+			writer.String(str);
+		}
+		writer.EndArray();
+
+		writer.String(L"process_file");
+		writer.StartArray();
+		for (const std::wstring &str : m_FileBlacklist)
+		{
+			writer.String(str);
+		}
+		writer.EndArray();
+	}
+
+	void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val);
+
+	bool IsBlacklisted(Window window) const;
 
 private:
-	static std::unordered_set<std::wstring> s_ClassBlacklist;
-	static Util::string_set s_FileBlacklist;
-	static std::vector<std::wstring> s_TitleBlacklist;
-
-	static std::unordered_map<Window, bool> s_Cache;
-
-	static const EventHook s_ChangeHook;
-	static const EventHook s_DestroyHook;
-
-	static void HandleChangeEvent(DWORD, Window window, ...);
-	static void HandleDestroyEvent(DWORD, Window window, ...);
-
-	inline static void AddToContainer(std::wstring_view line, wchar_t delimiter, const std::function<void(std::wstring_view)> &inserter)
+	template<typename T>
+	inline void StringSetFromArray(const std::wstring &name, T &set, const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val)
 	{
-		size_t pos;
-
-		// First lets remove the key
-		if ((pos = line.find(delimiter)) != std::wstring_view::npos)
+		if (const auto arr = val.FindMember(name); arr != val.MemberEnd() && arr->value.IsArray())
 		{
-			line.remove_prefix(pos + 1);
-		}
-
-		// Now iterate and add the values
-		while ((pos = line.find(delimiter)) != std::wstring_view::npos)
-		{
-			inserter(Util::Trim(line.substr(0, pos)));
-			line.remove_prefix(pos + 1);
+			for (const auto &elem : arr->value.GetArray())
+			{
+				if (elem.IsString())
+				{
+					set.emplace(elem.GetString(), elem.GetStringLength());
+				}
+			}
 		}
 	}
 
-	inline static void AddToVector(std::wstring_view line, std::vector<std::wstring> &vector, wchar_t delimiter = L',')
-	{
-		AddToContainer(line, delimiter, [&vector](std::wstring_view line)
-		{
-			vector.emplace_back(line);
-		});
-	}
-
-	template<class hash, class compare>
-	inline static void AddToSet(std::wstring_view line, std::unordered_set<std::wstring, hash, compare> &set, wchar_t delimiter = L',')
-	{
-		AddToContainer(line, delimiter, [&set](std::wstring_view line)
-		{
-			set.emplace(line);
-		});
-	}
-
-	static bool OutputMatchToLog(Window window, bool isMatch);
+	std::unordered_set<std::wstring> m_ClassBlacklist;
+	std::unordered_set<std::wstring> m_TitleBlacklist;
+	Util::string_set m_FileBlacklist;
 };
