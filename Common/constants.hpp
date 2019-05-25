@@ -19,6 +19,9 @@ static constexpr uint16_t LONG_PATH = 33000;
 // Config file name
 static constexpr wchar_t CONFIG_FILE[] = L"config.cfg";
 
+// When a file with this name is present in the app's folder, it runs in portable mode.
+static constexpr wchar_t PORTABLE_FILE[] = L"portable";
+
 // Mutex name for app uniqueness
 static constexpr wchar_t MUTEX_GUID[] = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
 

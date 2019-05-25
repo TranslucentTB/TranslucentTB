@@ -56,6 +56,7 @@ static struct {
 	EXITREASON exit_reason = EXITREASON::UserAction;
 	std::filesystem::path config_folder;
 	std::filesystem::path config_file;
+	bool is_portable = false;
 } run;
 
 static const std::unordered_map<ACCENT_STATE, uint32_t> REGULAR_BUTTOM_MAP = {
@@ -110,60 +111,24 @@ static const std::unordered_map<PeekBehavior, uint32_t> PEEK_BUTTON_MAP = {
 
 #pragma region Configuration
 
-#if 0
 void GetPaths()
 {
-	const wchar_t *appData;
-	AutoFree::CoTaskMem<wchar_t[]> appDataSafe;
-	std::wstring configFolderName;
-
-	std::wstring exeFolder_str = win32::GetExeLocation();
-	exeFolder_str.erase(exeFolder_str.find_last_of(LR"(/\)") + 1);
-
-	AutoFree::Local<wchar_t[]> portableModeFile;
-	if (ErrorHandle(PathAllocCombine(exeFolder_str.c_str(), L"portable", PATHCCH_ALLOW_LONG_PATHS, portableModeFile.put()), Error::Level::Error, L"Failed to combine executable folder and portable file!")
-		&& win32::FileExists(portableModeFile.get()))
+	const auto exeFolder = win32::GetExeLocation().parent_path();
+	if (std::filesystem::is_regular_file(exeFolder / PORTABLE_FILE))
 	{
-		appData = exeFolder_str.c_str();
-		configFolderName = L"config";
+		run.is_portable = true;
+		run.config_folder = std::move(exeFolder);
 	}
 	else
 	{
-		ErrorHandle(SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, appDataSafe.put()), Error::Level::Fatal, L"Failed to determine configuration files locations!");
-		appData = appDataSafe.get();
-		configFolderName = NAME;
-	}
-
-	GetPaths_common(appData, configFolderName);
-}
-#endif
-
-void GetPaths()
-{
-	std::filesystem::path config_folder;
-	try
-	{
-		config_folder = static_cast<std::wstring_view>(UWP::GetApplicationFolderPath(UWP::FolderType::Roaming));
-	}
-	WinrtExceptionCatch(Error::Level::Fatal, L"Getting application folder paths failed!")
-
-	run.config_folder = std::move(config_folder);
-	run.config_file = run.config_folder / CONFIG_FILE;
-}
-
-bool CheckAndRunWelcome()
-{
-	if (!std::filesystem::is_regular_file(run.config_file))
-	{
-		if (!WelcomeDialog(run.config_folder).Run())
+		try
 		{
-			return false;
+			run.config_folder = static_cast<std::wstring_view>(UWP::GetApplicationFolderPath(UWP::FolderType::Roaming));
 		}
-
-		SaveConfig({ }, run.config_file);
+		WinrtExceptionCatch(Error::Level::Fatal, L"Getting application folder paths failed!")
 	}
 
-	return true;
+	run.config_file = run.config_folder / CONFIG_FILE;
 }
 
 Config LoadConfig(const std::filesystem::path &file)
@@ -198,6 +163,21 @@ void SaveConfig(const Config &cfg, const std::filesystem::path &file)
 	writer.EndObject();
 }
 
+bool CheckAndRunWelcome()
+{
+	if (!std::filesystem::is_regular_file(run.config_file))
+	{
+		SaveConfig({ }, run.config_file);
+		if (!WelcomeDialog(run.config_file).Run())
+		{
+			std::filesystem::remove(run.config_file);
+			return false;
+		}
+	}
+
+	return true;
+}
+
 #pragma endregion
 
 #pragma region Tray
@@ -210,11 +190,19 @@ void EnableAppearanceColor(TrayContextMenu::ContextMenuUpdater updater, unsigned
 winrt::fire_and_forget RefreshMenu(const Config &cfg, TrayContextMenu::ContextMenuUpdater updater)
 {
 	// Fire off the task and do what we can do before blocking
-	const auto task = Autostart::GetStartupState();
 	updater.EnableItem(ID_AUTOSTART, false);
 	updater.CheckItem(ID_AUTOSTART, false);
-	updater.SetText(ID_AUTOSTART, L"Querying startup state...");
 
+	winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::ApplicationModel::StartupTaskState> task;
+	if (!run.is_portable)
+	{
+		task = Autostart::GetStartupState();
+		updater.SetText(ID_AUTOSTART, L"Querying startup state...");
+	}
+	else
+	{
+		updater.SetText(ID_AUTOSTART, L"Open at boot not available in portable mode");
+	}
 
 	const bool has_log = !Log::file().empty();
 	updater.EnableItem(ID_OPENLOG, has_log);
@@ -234,28 +222,31 @@ winrt::fire_and_forget RefreshMenu(const Config &cfg, TrayContextMenu::ContextMe
 	EnableAppearanceColor(updater, ID_TIMELINE_COLOR, cfg.TimelineOpenedAppearance);
 
 	// Block until it finishes
-	const auto state = co_await task;
-	updater.EnableItem(ID_AUTOSTART,
-		!(state == Autostart::StartupState::DisabledByUser || state == Autostart::StartupState::DisabledByPolicy || state == Autostart::StartupState::EnabledByPolicy));
-	updater.CheckItem(ID_AUTOSTART, state == Autostart::StartupState::Enabled || state == Autostart::StartupState::EnabledByPolicy);
-
-	std::wstring autostart_text;
-	switch (state)
+	if (!run.is_portable)
 	{
-	case Autostart::StartupState::DisabledByUser:
-		autostart_text = L"Startup has been disabled in Task Manager";
-		break;
-	case Autostart::StartupState::DisabledByPolicy:
-		autostart_text = L"Startup has been disabled in Group Policy";
-		break;
-	case Autostart::StartupState::EnabledByPolicy:
-		autostart_text = L"Startup has been enabled in Group Policy";
-		break;
-	case Autostart::StartupState::Enabled:
-	case Autostart::StartupState::Disabled:
-		autostart_text = L"Open at boot";
+		const auto state = co_await task;
+		updater.EnableItem(ID_AUTOSTART,
+			!(state == Autostart::StartupState::DisabledByUser || state == Autostart::StartupState::DisabledByPolicy || state == Autostart::StartupState::EnabledByPolicy));
+		updater.CheckItem(ID_AUTOSTART, state == Autostart::StartupState::Enabled || state == Autostart::StartupState::EnabledByPolicy);
+
+		std::wstring autostart_text;
+		switch (state)
+		{
+		case Autostart::StartupState::DisabledByUser:
+			autostart_text = L"Startup has been disabled in Task Manager";
+			break;
+		case Autostart::StartupState::DisabledByPolicy:
+			autostart_text = L"Startup has been disabled in Group Policy";
+			break;
+		case Autostart::StartupState::EnabledByPolicy:
+			autostart_text = L"Startup has been enabled in Group Policy";
+			break;
+		case Autostart::StartupState::Enabled:
+		case Autostart::StartupState::Disabled:
+			autostart_text = L"Open at boot";
+		}
+		updater.SetText(ID_AUTOSTART, std::move(autostart_text));
 	}
-	updater.SetText(ID_AUTOSTART, std::move(autostart_text));
 }
 
 long ExitApp(EXITREASON reason, ...)
@@ -390,20 +381,23 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 		{
 			std::thread([]
 			{
-				AboutDialog().Run();
+				AboutDialog(run.is_portable).Run();
 			}).detach();
 		});
 		tray.RegisterContextMenuCallback(ID_EXITWITHOUTSAVING, std::bind(&ExitApp, EXITREASON::UserActionNoSave));
 
-
-		tray.RegisterContextMenuCallback(ID_AUTOSTART, []() -> winrt::fire_and_forget
+		if (!run.is_portable)
 		{
-			co_await Autostart::SetStartupState(
-				co_await Autostart::GetStartupState() == Autostart::StartupState::Enabled
+			tray.RegisterContextMenuCallback(ID_AUTOSTART, []() -> winrt::fire_and_forget
+			{
+				co_await Autostart::SetStartupState(
+					co_await Autostart::GetStartupState() == Autostart::StartupState::Enabled
 					? Autostart::StartupState::Disabled
 					: Autostart::StartupState::Enabled
-			);
-		});
+				);
+			});
+		}
+
 		tray.RegisterContextMenuCallback(ID_TIPS, std::bind(&win32::OpenLink,
 			L"https://github.com/TranslucentTB/TranslucentTB/wiki/Tips-and-tricks-for-a-better-looking-taskbar"));
 		tray.RegisterContextMenuCallback(ID_EXIT, std::bind(&ExitApp, EXITREASON::UserAction));

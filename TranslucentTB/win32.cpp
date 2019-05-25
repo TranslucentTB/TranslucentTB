@@ -10,6 +10,7 @@
 #include <sstream>
 #include <synchapi.h>
 #include <utility>
+#include <wil/resource.h>
 #include <WinBase.h>
 #include <winerror.h>
 #include <winnt.h>
@@ -143,7 +144,7 @@ void win32::EditFile(const std::filesystem::path &file)
 		{
 			std::wostringstream str;
 			str
-				<< L"Failed to open file \"" << file << L"\".\n\n"
+				<< L"Failed to open file \"" << file.native() << L"\".\n\n"
 				<< Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(err))
 				<< L"\n\nCopy the file location to the clipboard?";
 
@@ -341,32 +342,27 @@ std::wstring_view win32::GetProcessorArchitecture()
 	}
 }
 
-void win32::OpenFolder(const std::filesystem::path &folder)
+void win32::RevealFile(const std::filesystem::path &file)
 {
-	SHELLEXECUTEINFO info = {
-		.cbSize = sizeof(info),
-		.fMask = SEE_MASK_CLASSNAME,
-		.lpVerb = L"open",
-		.lpFile = folder.c_str(),
-		.nShow = SW_SHOW,
-		.lpClass = L"folder"
-	};
+	wil::unique_itemidlist list(ILCreateFromPath(file.c_str()));
 
-	if (!ShellExecuteEx(&info))
+	if (list)
 	{
-		const DWORD err = GetLastError();
-		std::thread([folder, err]
+		const HRESULT hr = SHOpenFolderAndSelectItems(list.get(), 0, nullptr, 0);
+		if (FAILED(hr))
 		{
-			std::wostringstream str;
-			str
-				<< L"Failed to open folder \"" << folder << L"\".\n\n"
-				<< Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(err))
-				<< L"\n\nCopy the path to the clipboard?";
-
-			if (MessageBox(Window::NullWindow, str.str().c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+			std::thread([file, hr]
 			{
-				CopyToClipboard(folder.native());
-			}
-		}).detach();
+				std::wstring boxbuffer =
+					L"Failed to reveal file \"" + file.native() + L"\"." +
+					L"\n\n" + Error::ExceptionFromHRESULT(hr) +
+					L"\n\nCopy the file location to the clipboard?";
+
+				if (MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+				{
+					CopyToClipboard(file.native());
+				}
+			}).detach();
+		}
 	}
 }

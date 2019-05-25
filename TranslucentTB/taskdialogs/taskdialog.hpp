@@ -2,6 +2,7 @@
 #include "arch.h"
 #include <functional>
 #include <string>
+#include <string_view>
 #include <windef.h>
 #include <WinUser.h>
 #include <CommCtrl.h>
@@ -19,7 +20,7 @@ private:
 	static HRESULT CALLBACK CallbackProc(HWND hwnd, UINT uNotification, WPARAM wParam, LPARAM lParam, LONG_PTR dwRefData);
 protected:
 	TASKDIALOGCONFIG m_Cfg;
-	TTBTaskDialog(const std::wstring &title, const std::wstring &content, callback_t callback, Window parent);
+	TTBTaskDialog(std::wstring_view title, std::wstring &&content, callback_t callback, Window parent);
 
 	bool Run(bool &checked);
 

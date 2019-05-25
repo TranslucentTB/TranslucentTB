@@ -1,4 +1,6 @@
 #include "taskdialog.hpp"
+#include <utility>
+
 #include "constants.hpp"
 #include "../resources/ids.h"
 #include "../ttberror.hpp"
@@ -16,7 +18,7 @@ HRESULT TTBTaskDialog::CallbackProc(HWND hwnd, UINT uNotification, WPARAM wParam
 		}
 		else
 		{
-			win32::OpenFolder(link);
+			win32::RevealFile(std::move(link));
 		}
 		return S_OK;
 	}
@@ -27,9 +29,9 @@ HRESULT TTBTaskDialog::CallbackProc(HWND hwnd, UINT uNotification, WPARAM wParam
 	}
 }
 
-TTBTaskDialog::TTBTaskDialog(const std::wstring &title, const std::wstring &content, callback_t callback, Window parent) :
+TTBTaskDialog::TTBTaskDialog(std::wstring_view title, std::wstring &&content, callback_t callback, Window parent) :
 	m_Title(title),
-	m_Content(content),
+	m_Content(std::forward<std::wstring>(content)),
 	m_Callback(std::move(callback)),
 	m_Cfg { sizeof(m_Cfg) }
 {

@@ -24,28 +24,18 @@
 std::optional<wil::unique_hfile> Log::m_FileHandle;
 std::filesystem::path Log::m_File;
 
-#if 0
-std::tuple<std::wstring, HRESULT, std::wstring> Log::GetPath()
+std::filesystem::path Log::GetPath()
 {
-	std::wstring temp;
-	temp.resize(LONG_PATH);
-	int size = GetTempPath(LONG_PATH, temp.data());
-	if (!size)
+	const auto exeFolder = win32::GetExeLocation().parent_path();
+	if (std::filesystem::is_regular_file(exeFolder / PORTABLE_FILE))
 	{
-		return { { }, HRESULT_FROM_WIN32(GetLastError()), L"Failed to determine temporary folder location!" };
+		return std::filesystem::temp_directory_path();
 	}
-	temp.resize(size);
-
-	AutoFree::DebugLocal<wchar_t[]> log_folder_safe;
-	const HRESULT hr = PathAllocCombine(temp.c_str(), NAME, PATHCCH_ALLOW_LONG_PATHS, log_folder_safe.put());
-	if (FAILED(hr))
+	else
 	{
-		return { { }, hr, L"Failed to combine temporary folder location and app name!" };
+		return static_cast<std::wstring_view>(UWP::GetApplicationFolderPath(UWP::FolderType::Temporary));
 	}
-
-	return { log_folder_safe.get(), S_OK, { } };
 }
-#endif
 
 std::pair<HRESULT, std::wstring> Log::InitStream()
 {
@@ -55,23 +45,24 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 	std::filesystem::path log;
 	try
 	{
-		log = static_cast<std::wstring_view>(UWP::GetApplicationFolderPath(UWP::FolderType::Temporary));
+		log = GetPath();
+	}
+	catch (const std::filesystem::filesystem_error &err)
+	{
+		return { HRESULT_FROM_WIN32(err.code().value()), L"Failed to determine temporary folder location!" };
 	}
 	catch (const winrt::hresult_error &error)
 	{
 		return { error.code(), L"Failed to determine temporary folder location!" };
 	}
 
-	if (!std::filesystem::is_directory(log))
+	try
 	{
-		try
-		{
-			std::filesystem::create_directory(log);
-		}
-		catch (const std::filesystem::filesystem_error &err)
-		{
-			return { HRESULT_FROM_WIN32(err.code().value()), L"Creating log files directory failed!" };
-		}
+		std::filesystem::create_directory(log);
+	}
+	catch (const std::filesystem::filesystem_error &err)
+	{
+		return { HRESULT_FROM_WIN32(err.code().value()), L"Creating log files directory failed!" };
 	}
 
 	std::wstring log_filename;

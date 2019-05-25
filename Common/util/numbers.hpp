@@ -153,6 +153,6 @@ namespace Util {
 	constexpr uint8_t ExpandOneHexDigitByte(uint8_t byte)
 	{
 		const uint8_t firstDigit = byte & 0xF;
-		return firstDigit << 4 + firstDigit;
+		return (firstDigit << 4) + firstDigit;
 	}
 }

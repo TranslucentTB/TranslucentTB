@@ -40,6 +40,10 @@ namespace Util {
 		{
 			return Util::ParseNumber<uint32_t, 16>(str) & 0xFFFFFF;
 		}
+		else
+		{
+			throw std::invalid_argument("not a valid color");
+		}
 	}
 
 	inline std::wstring StringFromColor(uint32_t color)

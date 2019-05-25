@@ -69,7 +69,7 @@ public:
 	class ContextMenuUpdater {
 	private:
 		HMENU m_hMenu;
-		inline ContextMenuUpdater(HMENU hmenu) : m_hMenu(hmenu) { }
+		inline explicit ContextMenuUpdater(HMENU hmenu) : m_hMenu(hmenu) { }
 		friend class TrayContextMenu;
 
 	public:

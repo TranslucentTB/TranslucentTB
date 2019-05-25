@@ -13,6 +13,7 @@ private:
 	static std::optional<wil::unique_hfile> m_FileHandle;
 	static std::filesystem::path m_File;
 
+	static std::filesystem::path GetPath();
 	static std::pair<HRESULT, std::wstring> InitStream();
 
 public:

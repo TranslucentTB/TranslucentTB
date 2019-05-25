@@ -18,6 +18,7 @@ private:
 	static constexpr int DONATE = JOIN_DISCORD + 1;
 
 	std::array<TASKDIALOG_BUTTON, 3> m_Buttons;
+	const bool m_IsPortable;
 
 	inline HRESULT CallbackProc(Window window, unsigned int uNotification, WPARAM wParam, LPARAM)
 	{
@@ -26,7 +27,7 @@ private:
 			switch (wParam)
 			{
 			case COPY_VERSION:
-				if (win32::CopyToClipboard(BuildVersionInfo()))
+				if (win32::CopyToClipboard(BuildVersionInfo(m_IsPortable)))
 				{
 					MessageBox(window, L"Copied.", NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND);
 				}
@@ -44,7 +45,7 @@ private:
 		return S_OK;
 	}
 
-	inline std::wstring BuildVersionInfo()
+	inline static std::wstring BuildVersionInfo(bool isPortable)
 	{
 		std::wostringstream str;
 
@@ -72,16 +73,19 @@ private:
 
 		str << L"System architecture: " << win32::GetProcessorArchitecture() << std::endl;
 
-		str << L"Package version: ";
-		try
+		if (!isPortable)
 		{
-			str << UWP::GetApplicationVersion();
+			str << L"Package version: ";
+			try
+			{
+				str << UWP::GetApplicationVersion();
+			}
+			catch (const winrt::hresult_error &error)
+			{
+				str << error.message();
+			}
+			str << std::endl;
 		}
-		catch (const winrt::hresult_error &error)
-		{
-			str << error.message();
-		}
-		str << std::endl;
 
 		const auto [version, hr] = win32::GetFileVersion(win32::GetExeLocation());
 		str << L"TranslucentTB version: " << (!version.empty() ? version : Error::ExceptionFromHRESULT(hr)) << std::endl;
@@ -95,24 +99,24 @@ private:
 		return str.str();
 	}
 
-	inline std::wstring BuildAboutContent()
+	inline static std::wstring BuildAboutContent(bool isPortable)
 	{
 		std::wostringstream str;
 
 		str << L"This program is free (as in freedom) software, redistributed under the GPLv3. ";
 		str << LR"(As such, the <A HREF="https://github.com/TranslucentTB/TranslucentTB/">source code</A> is available for anyone to modify, inspect, compile, etc...)" << std::endl;
 		str << LR"(Brought to you by <A HREF="https://github.com/TranslucentTB/TranslucentTB/graphs/contributors">all its contributors</A>.)" << std::endl << std::endl;
-		str << BuildVersionInfo() << std::endl << std::endl;
+		str << BuildVersionInfo(isPortable) << std::endl << std::endl;
 		str << L"All trademarks, product names, company names, logos, service marks, copyrights and/or trade dress mentioned, displayed, cited, or otherwise indicated are the property of their respective owners.";
 
 		return str.str();
 	}
 
 public:
-	inline AboutDialog() :
+	inline AboutDialog(bool isPortable) :
 		TTBTaskDialog(
 			L"About " NAME,
-			BuildAboutContent(),
+			BuildAboutContent(isPortable),
 			std::bind(&AboutDialog::CallbackProc, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
 			Window::NullWindow
 		),
@@ -129,7 +133,8 @@ public:
 				DONATE,
 				L"Donate\nSupport us developing TranslucentTB and bringing other great features to you!"
 			}
-		}}
+		}},
+		m_IsPortable(isPortable)
 	{
 		m_Cfg.dwFlags |= TDF_ALLOW_DIALOG_CANCELLATION | TDF_USE_COMMAND_LINKS;
 		m_Cfg.dwCommonButtons = TDCBF_CLOSE_BUTTON;

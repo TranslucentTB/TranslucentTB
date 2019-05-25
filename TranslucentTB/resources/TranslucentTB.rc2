@@ -125,8 +125,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,161,0,0
- PRODUCTVERSION 5,161,0,0
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
  FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
 #ifdef _DEBUG
  FILEFLAGS VS_FF_DEBUG
@@ -141,12 +141,12 @@ BEGIN
             VALUE "Comments", "A lightweight utility that makes the Windows taskbar translucent/transparent."
             VALUE "CompanyName", "TranslucentTB Open Source Developers"
             VALUE "FileDescription", "TranslucentTB"
-            VALUE "FileVersion", "2018.1.161..-bbb"
+            VALUE "FileVersion", "1.0.0.1"
             VALUE "InternalName", "TranslucentTB.exe"
             VALUE "LegalCopyright", "Copyright © 2018 TranslucentTB Open Source Developers"
             VALUE "OriginalFilename", "TranslucentTB.exe"
             VALUE "ProductName", "TranslucentTB"
-            VALUE "ProductVersion", "2018.1.161..-bbb"
+            VALUE "ProductVersion", "1.0.0.1"
         END
     END
     BLOCK "VarFileInfo"

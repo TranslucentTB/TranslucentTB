@@ -63,8 +63,8 @@ public:
 	// Gets the current processor architecture as a string.
 	static std::wstring_view GetProcessorArchitecture();
 
-	// Opens a folder in the File Explorer
-	static void OpenFolder(const std::filesystem::path &folder);
+	// Opens a folder and highlights a file in the File Explorer.
+	static void RevealFile(const std::filesystem::path &file);
 
 	static constexpr uint32_t SwapColorOrder(uint32_t color)
 	{
