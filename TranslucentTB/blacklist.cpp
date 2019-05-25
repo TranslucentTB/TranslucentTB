@@ -9,9 +9,9 @@ void Blacklist::Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> 
 		return;
 	}
 
-	StringSetFromArray(L"window_class", m_ClassBlacklist, val);
-	StringSetFromArray(L"window_title", m_TitleBlacklist, val);
-	StringSetFromArray(L"process_file", m_FileBlacklist, val);
+	StringSetFromArray(CLASS_KEY.data(), m_ClassBlacklist, val);
+	StringSetFromArray(TITLE_KEY.data(), m_TitleBlacklist, val);
+	StringSetFromArray(FILE_KEY.data(), m_FileBlacklist, val);
 }
 
 bool Blacklist::IsBlacklisted(Window window) const
