@@ -158,7 +158,7 @@ private:
 	static const std::unordered_map<PeekBehavior, std::wstring_view> s_PeekMap;
 
 	static constexpr std::wstring_view REGULAR_KEY = L"regular_appearance";
-	static constexpr std::wstring_view MAXIMISED_KEY = L"regular_appearance";
+	static constexpr std::wstring_view MAXIMISED_KEY = L"maximised_window_appearance";
 	static constexpr std::wstring_view BLACKLIST_KEY = L"blacklist";
 	static constexpr std::wstring_view START_KEY = L"start_opened_appearance";
 	static constexpr std::wstring_view CORTANA_KEY = L"cortana_opened_appearance";
