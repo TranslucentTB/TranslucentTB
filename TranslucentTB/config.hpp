@@ -11,6 +11,9 @@
 #include "util/colors.hpp"
 #include "util/others.hpp"
 
+#pragma warning(push)
+#pragma warning(disable: 4267)
+
 struct TaskbarAppearance {
 	ACCENT_STATE Accent;
 	COLORREF     Color;
@@ -169,3 +172,5 @@ private:
 	static constexpr std::wstring_view SAVING_KEY = L"disable_saving";
 	static constexpr std::wstring_view VERBOSE_KEY = L"verbose";
 };
+
+#pragma warning(pop)
