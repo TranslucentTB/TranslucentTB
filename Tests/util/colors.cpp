@@ -33,3 +33,8 @@ TEST(Util_StringFromColor, ReturnsCorrectString)
 {
 	ASSERT_EQ(Util::StringFromColor(0xc0ffee), L"#c0ffee");
 }
+
+TEST(Util_StringFromColor, IgnoresFirstByte)
+{
+	ASSERT_EQ(Util::StringFromColor(0xdeadbeef), L"#adbeef");
+}
