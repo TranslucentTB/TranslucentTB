@@ -31,15 +31,15 @@ public:
 
 	class FindEnum;
 
-	inline static Window Find(const std::wstring &className = { }, const std::wstring &windowName = { }, Window parent = Window::NullWindow, Window childAfter = Window::NullWindow)
+	inline static Window Find(const std::wstring &className = { }, const std::wstring &windowName = { }, Window parent = Window::NullWindow, Window childAfter = Window::NullWindow) noexcept
 	{
-		return FindWindowEx(parent, childAfter, className.empty() ? NULL : className.c_str(), windowName.empty() ? NULL : windowName.c_str());
+		return FindWindowEx(parent, childAfter, className.empty() ? nullptr : className.c_str(), windowName.empty() ? nullptr : windowName.c_str());
 	}
 
 	inline static Window Create(unsigned long dwExStyle, const std::wstring &className,
 		const std::wstring &windowName, unsigned long dwStyle, int x = 0, int y = 0,
-		int nWidth = 0, int nHeight = 0, Window parent = Window::NullWindow, HMENU hMenu = NULL,
-		HINSTANCE hInstance = GetModuleHandle(NULL), void *lpParam = nullptr)
+		int nWidth = 0, int nHeight = 0, Window parent = Window::NullWindow, HMENU hMenu = nullptr,
+		HINSTANCE hInstance = GetModuleHandle(nullptr), void *lpParam = nullptr) noexcept
 	{
 		return CreateWindowEx(dwExStyle, className.c_str(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
 			parent, hMenu, hInstance, lpParam);
@@ -48,7 +48,7 @@ public:
 	inline static Window Create(unsigned long dwExStyle, const WindowClass &winClass,
 		const std::wstring &windowName, unsigned long dwStyle, int x = 0, int y = 0,
 		int nWidth = 0, int nHeight = 0, Window parent = Window::NullWindow,
-		HMENU hMenu = NULL, HINSTANCE hInstance = GetModuleHandle(NULL), void *lpParam = nullptr)
+		HMENU hMenu = NULL, HINSTANCE hInstance = GetModuleHandle(nullptr), void *lpParam = nullptr) noexcept
 	{
 		return CreateWindowEx(dwExStyle, winClass.atom(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
 			parent, hMenu, hInstance, lpParam);
@@ -64,7 +64,7 @@ public:
 		return GetDesktopWindow();
 	}
 
-	static void ClearCache();
+	static void ClearCache() noexcept;
 
 	constexpr Window(HWND handle = Window::NullWindow) noexcept : m_WindowHandle(handle) { };
 
@@ -82,34 +82,34 @@ public:
 		return result.length != 0 ? result.showCmd : SW_SHOW;
 	}
 
-	inline bool show(int state = SW_SHOW) const
+	inline bool show(int state = SW_SHOW) const noexcept
 	{
 		return ShowWindow(m_WindowHandle, state);
 	}
 
-	inline bool visible() const
+	inline bool visible() const noexcept
 	{
 		return IsWindowVisible(m_WindowHandle);
 	}
 
-	inline bool valid() const
+	inline bool valid() const noexcept
 	{
 		return IsWindow(m_WindowHandle);
 	}
 
-	inline explicit operator bool() const
+	inline explicit operator bool() const noexcept
 	{
 		return valid();
 	}
 
 	WINDOWPLACEMENT placement() const;
 
-	inline HMONITOR monitor() const
+	inline HMONITOR monitor() const noexcept
 	{
 		return MonitorFromWindow(m_WindowHandle, MONITOR_DEFAULTTONULL);
 	}
 
-	inline LRESULT send_message(unsigned int message, WPARAM wparam = 0, LPARAM lparam = 0) const
+	inline LRESULT send_message(unsigned int message, WPARAM wparam = 0, LPARAM lparam = 0) const noexcept
 	{
 		return SendMessage(m_WindowHandle, message, wparam, lparam);
 	}
@@ -119,7 +119,7 @@ public:
 		return send_message(RegisterWindowMessage(message.c_str()), wparam, lparam);
 	}
 
-	inline Window find_child(const std::wstring &className = { }, const std::wstring &windowName = { }, Window childAfter = Window::NullWindow) const
+	inline Window find_child(const std::wstring &className = { }, const std::wstring &windowName = { }, Window childAfter = Window::NullWindow) const noexcept
 	{
 		return Find(className, windowName, *this, childAfter);
 	}
@@ -167,7 +167,7 @@ namespace std {
 }
 
 // Under hash specialization because this uses it.
-inline void Window::ClearCache()
+inline void Window::ClearCache() noexcept
 {
 	s_ClassNames.clear();
 	s_FilePaths.clear();
@@ -186,7 +186,7 @@ private:
 		m_currentWindow = m_parent.find_child(*m_class, *m_name, m_currentWindow);
 	}
 
-	constexpr FindWindowIterator() :
+	constexpr FindWindowIterator() noexcept :
 		m_class(nullptr),
 		m_name(nullptr),
 		m_parent(Window::NullWindow),
@@ -232,7 +232,7 @@ private:
 	std::wstring m_class, m_name;
 	Window m_parent;
 public:
-	inline FindEnum(std::wstring className = { }, std::wstring windowName = { }, Window parent = Window::NullWindow) :
+	inline FindEnum(std::wstring className = { }, std::wstring windowName = { }, Window parent = Window::NullWindow) noexcept:
 		m_class(std::move(className)),
 		m_name(std::move(windowName)),
 		m_parent(parent)

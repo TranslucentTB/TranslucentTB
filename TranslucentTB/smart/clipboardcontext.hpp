@@ -10,8 +10,8 @@ private:
 	bool m_Result;
 
 public:
-	inline ClipboardContext(Window owner = Window::NullWindow) : m_Result(OpenClipboard(owner)) { }
-	inline explicit operator bool() const { return m_Result; }
+	inline ClipboardContext(Window owner = Window::NullWindow) noexcept : m_Result(OpenClipboard(owner)) { }
+	inline explicit operator bool() const noexcept { return m_Result; }
 	inline ~ClipboardContext()
 	{
 		if (m_Result)

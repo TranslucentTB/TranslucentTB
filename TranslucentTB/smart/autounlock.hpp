@@ -21,7 +21,7 @@ public:
 	inline ~AutoUnlock()
 	{
 		traits::unlock(m_originalHandle);
-		(void)m_smartHandle.detach();
+		static_cast<void>(m_smartHandle.detach());
 		m_smartHandle.attach(m_originalHandle);
 	}
 };

@@ -85,7 +85,7 @@ public:
 	bool VerboseLog;
 
 	// Default-init with default settings
-	inline Config() :
+	inline Config() noexcept :
 		RegularAppearance { ACCENT_ENABLE_TRANSPARENTGRADIENT, 0 },
 		MaximisedWindowAppearance { ACCENT_ENABLE_BLURBEHIND, 0xaa000000, true },
 		MaximisedWindowBlacklist(),

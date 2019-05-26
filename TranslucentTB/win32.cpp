@@ -75,7 +75,7 @@ bool win32::IsAtLeastBuild(uint32_t buildNumber)
 	}
 	else
 	{
-		DWORD error = GetLastError();
+		const DWORD error = GetLastError();
 		if (error != ERROR_OLD_WIN_VERSION)
 		{
 			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Error obtaining version info.");
@@ -276,7 +276,7 @@ std::pair<std::wstring, HRESULT> win32::GetWindowsBuild()
 	// Microsoft recommends this themselves
 	// https://docs.microsoft.com/en-us/windows/desktop/SysInfo/getting-the-system-version
 	wil::unique_cotaskmem_string system32;
-	HRESULT hr = SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, NULL, system32.put());
+	const HRESULT hr = SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, NULL, system32.put());
 	if (FAILED(hr))
 	{
 		return { { }, hr };
@@ -290,7 +290,7 @@ std::pair<std::wstring, HRESULT> win32::GetWindowsBuild()
 
 std::pair<std::wstring, HRESULT> win32::GetFileVersion(const std::filesystem::path &file)
 {
-	DWORD size = GetFileVersionInfoSize(file.c_str(), nullptr);
+	const DWORD size = GetFileVersionInfoSize(file.c_str(), nullptr);
 	if (!size)
 	{
 		return { { }, HRESULT_FROM_WIN32(GetLastError()) };
@@ -312,7 +312,7 @@ std::pair<std::wstring, HRESULT> win32::GetFileVersion(const std::filesystem::pa
 	return { { fileVersion, length - 1 }, S_OK };
 }
 
-std::wstring_view win32::GetProcessorArchitecture()
+std::wstring_view win32::GetProcessorArchitecture() noexcept
 {
 	SYSTEM_INFO info;
 	GetNativeSystemInfo(&info);

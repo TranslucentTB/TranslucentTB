@@ -22,7 +22,7 @@ private:
 public:
 	WindowClass(callback_t callback, const std::wstring &className, const wchar_t *iconResource, unsigned int style = 0, HINSTANCE hInstance = GetModuleHandle(NULL), HBRUSH brush = reinterpret_cast<HBRUSH>(COLOR_BACKGROUND), HCURSOR cursor = LoadCursor(NULL, IDC_ARROW));
 
-	inline LPCWSTR atom() const { return reinterpret_cast<LPCWSTR>(MAKELPARAM(m_Atom, 0)); }
+	inline LPCWSTR atom() const noexcept { return reinterpret_cast<LPCWSTR>(MAKELPARAM(m_Atom, 0)); }
 
 	void ChangeIcon(Window window, const wchar_t *iconResource);
 

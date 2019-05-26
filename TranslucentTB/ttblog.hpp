@@ -17,11 +17,11 @@ private:
 	static std::pair<HRESULT, std::wstring> InitStream();
 
 public:
-	inline static bool init_done()
+	inline static bool init_done() noexcept
 	{
 		return m_FileHandle.has_value();
 	}
-	inline static const std::filesystem::path &file()
+	inline static const std::filesystem::path &file() noexcept
 	{
 		return m_File;
 	}

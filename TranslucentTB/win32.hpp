@@ -46,7 +46,7 @@ public:
 	static std::pair<std::wstring, HRESULT> GetFileVersion(const std::filesystem::path &file);
 
 	// Converts a Windows-style filetime to a unix epoch,
-	inline static uint64_t FiletimeToUnixEpoch(FILETIME time)
+	inline static uint64_t FiletimeToUnixEpoch(FILETIME time) noexcept
 	{
 		auto timeStamp = Util::WordCast<uint64_t>(time);
 
@@ -61,7 +61,7 @@ public:
 	}
 
 	// Gets the current processor architecture as a string.
-	static std::wstring_view GetProcessorArchitecture();
+	static std::wstring_view GetProcessorArchitecture() noexcept;
 
 	// Opens a folder and highlights a file in the File Explorer.
 	static void RevealFile(const std::filesystem::path &file);

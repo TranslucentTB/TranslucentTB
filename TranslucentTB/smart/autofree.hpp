@@ -126,7 +126,7 @@ protected:
 		{
 			if (!GlobalUnlock(handle))
 			{
-				DWORD err = GetLastError();
+				const DWORD err = GetLastError();
 				if (err != NO_ERROR)
 				{
 					ErrorHandle(HRESULT_FROM_WIN32(err), Error::Level::Log, L"Failed to unlock memory.");
