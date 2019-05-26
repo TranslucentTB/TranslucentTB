@@ -49,7 +49,7 @@ namespace Util {
 	inline std::wstring StringFromColor(uint32_t color)
 	{
 		std::wstringstream ss;
-		ss << L'#' << std::uppercase << std::setfill(L'0') << std::hex;
+		ss << L'#' << std::setfill(L'0') << std::hex;
 		ss << std::setw(2) << ((color & 0xFF0000) >> 16);
 		ss << std::setw(2) << ((color & 0xFF00) >> 8);
 		ss << std::setw(2) << (color & 0xFF);
