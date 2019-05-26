@@ -1,7 +1,5 @@
 #include "blacklist.hpp"
 
-#include "config.hpp"
-
 void Blacklist::Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val)
 {
 	if (!val.IsObject())
