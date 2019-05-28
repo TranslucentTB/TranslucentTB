@@ -1,6 +1,7 @@
 #pragma once
 #include "arch.h"
 #include <string>
+#include <string_view>
 #include <windef.h>
 
 class DetourException {
@@ -9,7 +10,7 @@ private:
 	std::wstring m_ErrorMessage;
 
 public:
-	inline DetourException(LONG errCode, std::wstring message) : m_ErrorCode(errCode), m_ErrorMessage(std::move(message)) { }
+	inline DetourException(LONG errCode, std::wstring_view message) : m_ErrorCode(errCode), m_ErrorMessage(message) { }
 
 	inline LONG code() const
 	{

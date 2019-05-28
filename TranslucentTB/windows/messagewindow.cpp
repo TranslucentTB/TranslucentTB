@@ -19,7 +19,7 @@ LRESULT MessageWindow::WindowProcedure(Window window, unsigned int uMsg, WPARAM 
 	return DefWindowProc(window, uMsg, wParam, lParam);
 }
 
-void MessageWindow::RunMessageLoop()
+WPARAM MessageWindow::RunMessageLoop()
 {
 	MSG msg;
 	BOOL ret;
@@ -35,6 +35,8 @@ void MessageWindow::RunMessageLoop()
 			LastErrorHandle(Error::Level::Fatal, L"GetMessage failed!");
 		}
 	}
+
+	return msg.wParam;
 }
 
 MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &windowName, HINSTANCE hInstance, Window parent, const wchar_t *iconResource) :

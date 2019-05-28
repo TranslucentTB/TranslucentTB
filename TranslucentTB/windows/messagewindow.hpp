@@ -18,7 +18,7 @@ private:
 	LRESULT WindowProcedure(Window window, unsigned int uMsg, WPARAM wParam, LPARAM lParam);
 
 public:
-	static void RunMessageLoop();
+	static WPARAM RunMessageLoop();
 
 	MessageWindow(const std::wstring &className, const std::wstring &windowName, HINSTANCE hInstance = GetModuleHandle(NULL), Window parent = Window::NullWindow, const wchar_t *iconResource = MAKEINTRESOURCE(IDI_MAINICON));
 	using CALLBACKCOOKIE = unsigned long long;

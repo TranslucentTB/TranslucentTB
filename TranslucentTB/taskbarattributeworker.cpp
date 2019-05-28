@@ -49,7 +49,7 @@ bool TaskbarAttributeWorker::IsWindowMaximised(Window window)
 {
 	return
 		window.visible() &&
-		window.state() == SW_MAXIMIZE &&
+		window.state() == SW_MAXIMIZE && // todo: IsZoomed()?
 		!window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
 		window.on_current_desktop() &&
 		!m_Cfg.MaximisedWindowBlacklist.IsBlacklisted(window);
@@ -113,9 +113,13 @@ void TaskbarAttributeWorker::RefreshTaskbars()
 		Log::OutputMessage(L"Refreshing taskbar handles.");
 	}
 
-	// Older handles are invalid, so clear the map to be ready for new ones
+	// Older handles are invalid, so clear state to be ready for new ones.
 	m_Taskbars.clear();
-	auto hooks = std::move(m_Hooks); // Keep old hooks alive while we rehook to keep the DLL loaded in Explorer. They will unhook automatically at the end of this function.
+	m_NormalTaskbars.clear();
+
+	// Keep old hooks alive while we rehook to keep the DLL loaded in Explorer.
+	// They will unhook automatically at the end of this function.
+	const auto hooks = std::move(m_Hooks);
 	m_Hooks.clear(); // Bring back m_Hooks to a known state after being moved from.
 
 	const Window main_taskbar = Window::Find(TASKBAR);
@@ -145,6 +149,7 @@ void TaskbarAttributeWorker::HookTaskbar(Window window)
 
 void TaskbarAttributeWorker::Poll()
 {
+	// TODO: check if user is using areo peek here (if not possible, assume they aren't)
 	m_CurrentStartMonitor = nullptr;
 
 	BOOL start_visible;
@@ -170,14 +175,25 @@ void TaskbarAttributeWorker::Poll()
 	}
 }
 
-bool TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance config)
+void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance config)
 {
 	if (SetWindowCompositionAttribute)
 	{
 		if (config.Accent == ACCENT_NORMAL)
 		{
-			window.send_message(WM_THEMECHANGED);
-			return false;
+			// Without this guard, we get reentrancy: sending WM_THEMECHANGED causes a window's
+			// state be changed, so the notification is processed and this is called, sending
+			// again the same message, and so on.
+			if (!m_NormalTaskbars.contains(window))
+			{
+				m_NormalTaskbars.insert(window);
+				window.send_message(WM_THEMECHANGED);
+			}
+			return;
+		}
+		else
+		{
+			m_NormalTaskbars.erase(window);
 		}
 
 		ACCENT_POLICY policy = {
@@ -200,11 +216,6 @@ bool TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance confi
 		};
 
 		SetWindowCompositionAttribute(window, &data);
-		return true;
-	}
-	else
-	{
-		return false;
 	}
 }
 
@@ -232,15 +243,11 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR monitor, 
 	return m_Cfg.RegularAppearance;
 }
 
-bool TaskbarAttributeWorker::RefreshAttribute(HMONITOR monitor, bool skipCheck)
+void TaskbarAttributeWorker::RefreshAttribute(HMONITOR monitor, bool skipCheck)
 {
 	if (skipCheck || m_Taskbars.contains(monitor))
 	{
-		return SetAttribute(m_Taskbars.at(monitor).TaskbarWindow, GetConfigForMonitor(monitor, true));
-	}
-	else
-	{
-		return false;
+		SetAttribute(m_Taskbars.at(monitor).TaskbarWindow, GetConfigForMonitor(monitor, true));
 	}
 }
 
@@ -314,30 +321,24 @@ void TaskbarAttributeWorker::RefreshAeroPeekButton()
 
 long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, LPARAM lParam)
 {
-	const Window window = reinterpret_cast<HWND>(lParam);
-	if (m_Taskbars.contains(window.monitor()))
-	{
-		const auto taskbar = m_Taskbars.at(window.monitor()).TaskbarWindow;
-		if (taskbar == window)
-		{
-			if (m_returningToStock || GetConfigForMonitor(taskbar.monitor(), true).Accent == ACCENT_NORMAL)
-			{
-				return 0;
-			}
-			else
-			{
-				return RefreshAttribute(taskbar.monitor(), true);
-			}
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	else
+	if (m_returningToStock)
 	{
 		return 0;
 	}
+
+	if (const Window window = reinterpret_cast<HWND>(lParam); m_Taskbars.contains(window.monitor()))
+	{
+		if (const auto taskbar = m_Taskbars.at(window.monitor()).TaskbarWindow; taskbar == window)
+		{
+			if (const auto config = GetConfigForMonitor(taskbar.monitor(), true); config.Accent != ACCENT_NORMAL)
+			{
+				SetAttribute(taskbar, config);
+				return 1;
+			}
+		}
+	}
+
+	return 0;
 }
 
 void TaskbarAttributeWorker::ReturnToStock()
@@ -377,7 +378,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance, const Config
 	m_IAVECookie.associate(m_IAV.get());
 	ErrorHandle(m_IAV->Advise(av_sink.get(), m_IAVECookie.put()), Error::Level::Log, L"Failed to register app visibility sink.");
 
-	RegisterCallback(Hook::RequestAttributeRefresh, std::bind(&TaskbarAttributeWorker::OnRequestAttributeRefresh, this, std::placeholders::_1, std::placeholders::_2));
+	RegisterCallback(WM_TTBHOOKREQUESTREFRESH, std::bind(&TaskbarAttributeWorker::OnRequestAttributeRefresh, this, std::placeholders::_1, std::placeholders::_2));
 
 	const auto refresh_taskbars = [this](...)
 	{

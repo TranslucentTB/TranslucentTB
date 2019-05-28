@@ -1,7 +1,7 @@
 #pragma once
-#include <unordered_set>
 #include <ShObjIdl.h>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 #include <wil/com.h>
@@ -23,7 +23,6 @@ private:
 	};
 
 	// todo:
-	// dynamic peek button
 	// better aero peek support: detect current peeked to window and include in calculation
 	// support windows that are immune to peek (with some extended/dwm flag iirc)
 	// dynamic cortana and task view
@@ -36,7 +35,6 @@ private:
 	//     maybe EVENT_SYSTEM_DESKTOPSWITCH
 	// support alt-tab? EVENT_SYSTEM_SWITCH{START,END}
 	// on current desktop not working after explorer restart?
-	// explorer slows to a crawl when using normal mode. sounds like we have recursion problems
 
 	// Maximised window
 	bool m_PeekActive;
@@ -71,9 +69,10 @@ private:
 
 	// Taskbar appearance refresh
 	void Poll();
-	bool SetAttribute(Window window, TaskbarAppearance config);
+	std::unordered_set<Window> m_NormalTaskbars;
+	void SetAttribute(Window window, TaskbarAppearance config);
 	TaskbarAppearance GetConfigForMonitor(HMONITOR monitor, bool skipCheck = false);
-	bool RefreshAttribute(HMONITOR monitor, bool skipCheck = false);
+	void RefreshAttribute(HMONITOR monitor, bool skipCheck = false);
 	void ShowAeroPeekButton(Window taskbar, bool show);
 	void RefreshAeroPeekButton();
 	long OnRequestAttributeRefresh(WPARAM, LPARAM lParam);

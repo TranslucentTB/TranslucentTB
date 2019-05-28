@@ -11,14 +11,16 @@
 
 PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE Hook::SetWindowCompositionAttribute =
 	reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
+
 std::mutex Hook::s_initLock;
 Hook::InitializationState Hook::s_initState = Hook::InitializationState::NotInitialized;
+
 const HWND Hook::s_TTBMsgWnd = FindWindow(WORKER_WINDOW, WORKER_WINDOW);
-const unsigned int Hook::RequestAttributeRefresh = RegisterWindowMessage(L"TTBHook_RequestAttributeRefresh");
+const unsigned int Hook::s_RequestAttributeRefresh = RegisterWindowMessage(WM_TTBHOOKREQUESTREFRESH);
 
 BOOL Hook::SetWindowCompositionAttributeDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data)
 {
-	if (data->Attrib == WCA_ACCENT_POLICY && SendMessage(s_TTBMsgWnd, RequestAttributeRefresh, 0, reinterpret_cast<LPARAM>(hWnd)))
+	if (data->Attrib == WCA_ACCENT_POLICY && SendMessage(s_TTBMsgWnd, s_RequestAttributeRefresh, 0, reinterpret_cast<LPARAM>(hWnd)))
 	{
 		return TRUE;
 	}

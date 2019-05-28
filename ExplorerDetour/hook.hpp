@@ -29,14 +29,13 @@ private:
 	static InitializationState s_initState;
 
 	static const HWND s_TTBMsgWnd;
+	static const unsigned int s_RequestAttributeRefresh;
 	static BOOL WINAPI SetWindowCompositionAttributeDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data);
 	static LRESULT CALLBACK CallWndProc(int nCode, WPARAM wParam, LPARAM lParam);
 
 	friend BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID);
 
 public:
-	__declspec(EXPLORERHOOK_EXPORT) static const unsigned int RequestAttributeRefresh;
-
 	__declspec(EXPLORERHOOK_EXPORT) static std::pair<HHOOK, HRESULT> HookExplorer(HWND taskbar);
 
 	__declspec(EXPLORERHOOK_EXPORT) static std::tuple<uint8_t, uint8_t, uint8_t> GetDetoursVersion();

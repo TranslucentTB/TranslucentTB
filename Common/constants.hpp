@@ -35,6 +35,9 @@ static constexpr wchar_t WM_TASKBARCREATED[] = L"TaskbarCreated";
 // Message used by a new instance to close the old instance
 static constexpr wchar_t WM_NEWTTBINSTANCE[] = L"NewTTBInstance";
 
+// Send by the hook to the worker when the taskbar is trying to change its composition attribute
+static constexpr wchar_t WM_TTBHOOKREQUESTREFRESH[] = L"TTBHook_RequestAttributeRefresh";
+
 // Event hook event when Aero Peek begins
 static constexpr uint32_t EVENT_SYSTEM_PEEKSTART = 0x21;
 

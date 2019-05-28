@@ -445,20 +445,18 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 	InitializeTray(hInstance, cfg);
 
 	// Run the main program loop. When this method exits, TranslucentTB itself is about to exit.
-	MessageWindow::RunMessageLoop();
+	const auto exitCode = MessageWindow::RunMessageLoop();
 
-	// If it's a new instance, don't save or restore taskbar to default
-	if (run.exit_reason != EXITREASON::NewInstance)
+	if (run.exit_reason == EXITREASON::UserAction)
 	{
-		if (run.exit_reason != EXITREASON::UserActionNoSave)
-		{
-			SaveConfig(cfg, run.config_file);
-		}
+		SaveConfig(cfg, run.config_file);
 	}
 
-	winrt::uninit_apartment();
+	// Not uninitializing WinRT apartment here because it will cause issues
+	// with destruction of WinRT objects that have a static lifetime.
+	// Apartment gets cleaned up by system anyways when the process dies.
 
-	return EXIT_SUCCESS;
+	return exitCode;
 }
 
 #pragma endregion
