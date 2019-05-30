@@ -15,7 +15,7 @@
 
 #include "constants.hpp"
 #include "win32.hpp"
-#include "windows/window.hpp"
+#include "window.hpp"
 #include "ttberror.hpp"
 #include "util/numbers.hpp"
 #include "util/time.hpp"
@@ -85,6 +85,7 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 	DWORD bytesWritten;
 	if (!WriteFile(m_FileHandle->get(), L"\uFEFF", sizeof(wchar_t), &bytesWritten, NULL))
 	{
+		// Not fatal, but probably not a good sign.
 		LastErrorHandle(Error::Level::Debug, L"Failed to write byte-order marker.");
 	}
 
@@ -97,7 +98,7 @@ void Log::OutputMessage(std::wstring_view message)
 	if (!init_done())
 	{
 		auto [hr, err_message] = InitStream();
-		if (FAILED(hr))
+		if (!ErrorHandle(hr, Error::Level::Debug, err_message))
 		{
 			// https://stackoverflow.com/questions/50799719/reference-to-local-binding-declared-in-enclosing-function
 			std::thread([hr = hr, err = std::move(err_message)]() mutable

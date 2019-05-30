@@ -120,9 +120,6 @@
     <ClInclude Include="windows\windowclass.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\window.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="smart\autofree.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -157,9 +154,6 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="windows\Window.natvis">
-      <Filter>Debug Visualizer Files</Filter>
-    </Natvis>
     <Natvis Include="smart\AutoFree.natvis">
       <Filter>Debug Visualizer Files</Filter>
     </Natvis>

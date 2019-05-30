@@ -6,7 +6,7 @@
 #include <unordered_set>
 
 #include "util/strings.hpp"
-#include "windows/window.hpp"
+#include "window.hpp"
 
 class Config;
 

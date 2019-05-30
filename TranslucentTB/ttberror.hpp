@@ -18,8 +18,8 @@ public:
 		Debug	// Log to debug output. For use in file log implementation.
 	};
 
-	static bool HresultHandle(HRESULT error, Level level, std::wstring_view message, std::wstring_view file, unsigned int line);
-	static void CppWinrtHandle(const winrt::hresult_error &err, Level level, std::wstring_view message, std::wstring_view file, unsigned int line);
+	static bool HresultHandle(HRESULT error, Level level, std::wstring_view message, std::wstring_view location);
+	static void CppWinrtHandle(const winrt::hresult_error &err, Level level, std::wstring_view message, std::wstring_view location);
 
 	static std::wstring ExceptionFromHRESULT(HRESULT result);
 	static std::wstring ExceptionFromIRestrictedErrorInfo(HRESULT hr, IRestrictedErrorInfo *info);
@@ -33,10 +33,11 @@ private:
 		return pos != std::wstring_view::npos ? pos + 1 : 0;
 	}
 
-	static void HandleCommon(Level level, std::wstring_view message, std::wstring_view error_message, std::wstring_view file, unsigned int line);
+	static void HandleCommon(Level level, std::wstring_view message, std::wstring_view error_message, std::wstring_view location);
 };
 
-#define ErrorHandle(x, y, z) (Error::HresultHandle((x), (y), (z), UTIL_WIDEN(__FILE__), __LINE__))
+#define _ERROR_LOCATION UTIL_WIDEN(__FILE__) L":" UTIL_STRINGIFY(__LINE__) L")"
+#define ErrorHandle(x, y, z) (Error::HresultHandle((x), (y), (z), _ERROR_LOCATION))
 #define LastErrorHandle(x, y) (ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), (x), (y)))
-#define WinrtExceptionHandle(x, y, z) (Error::CppWinrtHandle((x), (y), (z), UTIL_WIDEN(__FILE__), __LINE__))
+#define WinrtExceptionHandle(x, y, z) (Error::CppWinrtHandle((x), (y), (z), _ERROR_LOCATION))
 #define WinrtExceptionCatch(x, y) catch (const winrt::hresult_error &__err) { WinrtExceptionHandle(__err, (x), (y)); }

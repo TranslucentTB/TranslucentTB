@@ -8,6 +8,7 @@
 #include <windef.h>
 
 #include "undoc/swca.hpp"
+#include "window.hpp"
 
 #ifdef _EXPLORERDETOUR_DLL
 #define EXPLORERHOOK_EXPORT dllexport
@@ -28,8 +29,7 @@ private:
 	static std::mutex s_initLock;
 	static InitializationState s_initState;
 
-	static const HWND s_TTBMsgWnd;
-	static const unsigned int s_RequestAttributeRefresh;
+	static const Window s_TTBMsgWnd;
 	static BOOL WINAPI SetWindowCompositionAttributeDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data);
 	static LRESULT CALLBACK CallWndProc(int nCode, WPARAM wParam, LPARAM lParam);
 

@@ -5,7 +5,7 @@
     <Expand>
       <Item Name="[title]" Condition="m_WindowHandle != 0">title()</Item>
       <Item Name="[class]" Condition="m_WindowHandle != 0">classname()</Item>
-      <Item Name="[file]" Condition="m_WindowHandle != 0">filename()</Item>
+      <Item Name="[file]" Condition="m_WindowHandle != 0">file()</Item>
     </Expand>
   </Type>
 </AutoVisualizer>

@@ -40,7 +40,7 @@
 #include "uwp.hpp"
 #include "win32.hpp"
 #include "windows/messagewindow.hpp"
-#include "windows/window.hpp"
+#include "window.hpp"
 #include "windows/windowclass.hpp"
 
 #pragma region Data

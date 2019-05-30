@@ -17,9 +17,6 @@ std::unordered_map<Window, std::wstring> Window::s_ClassNames;
 std::unordered_map<Window, std::filesystem::path> Window::s_FilePaths;
 std::unordered_map<Window, std::wstring> Window::s_Titles;
 
-const Window Window::BroadcastWindow = HWND_BROADCAST;
-const Window Window::MessageOnlyWindow = HWND_MESSAGE;
-
 void Window::HandleChangeEvent(DWORD, Window window, ...)
 {
 	s_Titles.erase(window);

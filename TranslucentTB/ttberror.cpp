@@ -15,15 +15,15 @@
 #include "ttblog.hpp"
 #include "util/strings.hpp"
 #include "win32.hpp"
-#include "windows/window.hpp"
+#include "window.hpp"
 
 const size_t Error::PREFIX_LENGTH = GetPrefixLength(UTIL_WIDEN(__FILE__));
 
-bool Error::HresultHandle(HRESULT error, Level level, std::wstring_view message, std::wstring_view file, unsigned int line)
+bool Error::HresultHandle(HRESULT error, Level level, std::wstring_view message, std::wstring_view location)
 {
 	if (FAILED(error))
 	{
-		HandleCommon(level, message, ExceptionFromHRESULT(error), file, line);
+		HandleCommon(level, message, ExceptionFromHRESULT(error), location);
 
 		return false;
 	}
@@ -33,7 +33,7 @@ bool Error::HresultHandle(HRESULT error, Level level, std::wstring_view message,
 	}
 }
 
-void Error::CppWinrtHandle(const winrt::hresult_error &err, Level level, std::wstring_view message, std::wstring_view file, unsigned int line)
+void Error::CppWinrtHandle(const winrt::hresult_error &err, Level level, std::wstring_view message, std::wstring_view location)
 {
 	std::wstring error_message;
 	if (const auto info = err.try_as<IRestrictedErrorInfo>())
@@ -45,7 +45,7 @@ void Error::CppWinrtHandle(const winrt::hresult_error &err, Level level, std::ws
 		error_message = ExceptionFromHRESULT(err.code());
 	}
 
-	HandleCommon(level, message, error_message, file, line);
+	HandleCommon(level, message, error_message, location);
 }
 
 std::wstring Error::ExceptionFromHRESULT(HRESULT result)
@@ -88,7 +88,7 @@ std::wstring Error::ExceptionFromIRestrictedErrorInfo(HRESULT hr, IRestrictedErr
 	return ExceptionFromHRESULT(hr);
 }
 
-void Error::HandleCommon(Level level, std::wstring_view message, std::wstring_view error_message, std::wstring_view file, unsigned int line)
+void Error::HandleCommon(Level level, std::wstring_view message, std::wstring_view error_message, std::wstring_view location)
 {
 	std::wostringstream boxbuffer;
 	if (level != Level::Log && level != Level::Debug)
@@ -103,11 +103,10 @@ void Error::HandleCommon(Level level, std::wstring_view message, std::wstring_vi
 		boxbuffer << error_message;
 	}
 
-	file.remove_prefix(PREFIX_LENGTH);
+	location.remove_prefix(PREFIX_LENGTH);
 
 	std::wostringstream err;
-	err << message << L' ' << error_message <<
-		L" (" << file << L':' << line << L')';
+	err << message << L' ' << error_message << L" (" << location;
 
 	switch (level)
 	{

@@ -2,7 +2,7 @@
 #include "arch.h"
 #include <WinUser.h>
 
-#include "../windows/window.hpp"
+#include "window.hpp"
 #include "../ttberror.hpp"
 
 class ClipboardContext {

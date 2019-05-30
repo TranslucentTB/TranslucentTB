@@ -25,8 +25,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)util\strings.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\time.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)wilx.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)window.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)CppProject.props" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)Window.natvis" />
   </ItemGroup>
 </Project>

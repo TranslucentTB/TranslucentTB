@@ -5,7 +5,7 @@
 #include <windef.h>
 #include <WinUser.h>
 
-#include "../windows/window.hpp"
+#include "window.hpp"
 
 class EventHook {
 public:

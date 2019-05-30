@@ -11,6 +11,9 @@
 #define UTIL_WIDEN_INNER(x) L##x
 #define UTIL_WIDEN(x) UTIL_WIDEN_INNER(x)
 
+#define UTIL_STRINGIFY_INNER(x) L## #x
+#define UTIL_STRINGIFY(x) UTIL_STRINGIFY_INNER(x)
+
 namespace Util {
 	// Converts a string to its lowercase variant
 	inline void ToLowerInplace(std::wstring &data)

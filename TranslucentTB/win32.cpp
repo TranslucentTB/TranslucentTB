@@ -21,7 +21,7 @@
 #include "constants.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
-#include "windows/window.hpp"
+#include "window.hpp"
 
 std::filesystem::path win32::m_ExeLocation;
 

@@ -1,16 +1,24 @@
 #pragma once
+#include "arch.h"
+#include <functional>
+#include <string>
+#include <windef.h>
+#include <winuser.h>
+
+#ifdef _TRANSLUCENTTB_EXE
 #include <dwmapi.h>
 #include <filesystem>
-#include <string>
 #include <string_view>
 #include <unordered_map>
 
-#include "windowclass.hpp"
+#include "../TranslucentTB/windows/windowclass.hpp"
 
 class EventHook; // Forward declare to avoid circular deps
+#endif
 
 class Window {
 private:
+#ifdef _TRANSLUCENTTB_EXE
 	static std::unordered_map<Window, std::wstring> s_ClassNames;
 	static std::unordered_map<Window, std::filesystem::path> s_FilePaths;
 	static std::unordered_map<Window, std::wstring> s_Titles;
@@ -20,6 +28,7 @@ private:
 
 	static void HandleChangeEvent(const DWORD, Window window, ...);
 	static void HandleDestroyEvent(const DWORD, Window window, ...);
+#endif
 
 protected:
 	HWND m_WindowHandle;
@@ -45,6 +54,7 @@ public:
 			parent, hMenu, hInstance, lpParam);
 	}
 
+#ifdef _TRANSLUCENTTB_EXE
 	inline static Window Create(unsigned long dwExStyle, const WindowClass &winClass,
 		const std::wstring &windowName, unsigned long dwStyle, int x = 0, int y = 0,
 		int nWidth = 0, int nHeight = 0, Window parent = Window::NullWindow,
@@ -53,6 +63,7 @@ public:
 		return CreateWindowEx(dwExStyle, winClass.atom(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
 			parent, hMenu, hInstance, lpParam);
 	}
+#endif
 
 	inline static Window ForegroundWindow() noexcept
 	{
@@ -64,9 +75,10 @@ public:
 		return GetDesktopWindow();
 	}
 
-	static void ClearCache() noexcept;
-
 	constexpr Window(HWND handle = Window::NullWindow) noexcept : m_WindowHandle(handle) { };
+
+#ifdef _TRANSLUCENTTB_EXE
+	static void ClearCache() noexcept;
 
 	std::wstring_view title() const;
 
@@ -76,11 +88,17 @@ public:
 
 	bool on_current_desktop() const;
 
+	WINDOWPLACEMENT placement() const;
+
 	inline unsigned int state() const
 	{
 		const WINDOWPLACEMENT result = placement();
 		return result.length != 0 ? result.showCmd : SW_SHOW;
 	}
+
+	template<typename T>
+	T get_attribute(DWMWINDOWATTRIBUTE attrib) const;
+#endif
 
 	inline bool show(int state = SW_SHOW) const noexcept
 	{
@@ -101,8 +119,6 @@ public:
 	{
 		return valid();
 	}
-
-	WINDOWPLACEMENT placement() const;
 
 	inline HMONITOR monitor() const noexcept
 	{
@@ -146,13 +162,12 @@ public:
 		return !operator==(right);
 	}
 
-	template<typename T>
-	T get_attribute(DWMWINDOWATTRIBUTE attrib) const;
-
 	friend struct std::hash<Window>;
 };
 
 inline constexpr Window Window::NullWindow = nullptr;
+inline const Window Window::BroadcastWindow = HWND_BROADCAST;
+inline const Window Window::MessageOnlyWindow = HWND_MESSAGE;
 
 // Specialize std::hash to allow the use of Window as unordered_map and unordered_set key.
 namespace std {
@@ -166,6 +181,7 @@ namespace std {
 	};
 }
 
+#ifdef _TRANSLUCENTTB_EXE
 // Under hash specialization because this uses it.
 inline void Window::ClearCache() noexcept
 {
@@ -173,6 +189,7 @@ inline void Window::ClearCache() noexcept
 	s_FilePaths.clear();
 	s_Titles.clear();
 }
+#endif
 
 // Iterator class for FindEnum
 class FindWindowIterator {

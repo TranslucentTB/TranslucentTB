@@ -1,6 +1,7 @@
 #pragma once
 #include "taskdialog.hpp"
 #include <array>
+#include <rapidjson/rapidjson.h>
 #include <sstream>
 #include <wil/safecast.h>
 
@@ -94,7 +95,9 @@ private:
 		str << L"Windows version: " << (!build.empty() ? build : Error::ExceptionFromHRESULT(hr2)) << std::endl;
 
 		const auto [major, minor, revision] = Hook::GetDetoursVersion();
-		str << L"Microsoft Detours version: " << major << L'.' << minor << L'.' << revision;
+		str << L"Microsoft Detours version: " << major << L'.' << minor << L'.' << revision << std::endl;
+
+		str << L"RapidJSON version: " << RAPIDJSON_VERSION_STRING;
 
 		return str.str();
 	}
