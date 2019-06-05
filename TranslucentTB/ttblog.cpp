@@ -8,6 +8,7 @@
 #include <sstream>
 #include <thread>
 #include <wil/safecast.h>
+#include <winrt/base.h>
 #include <WinBase.h>
 #include <winerror.h>
 #include <winnt.h>
@@ -68,7 +69,8 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 	std::wstring log_filename;
 	if (FILETIME creationTime, _, __, ___; GetProcessTimes(GetCurrentProcess(), &creationTime, &_, &__, &___))
 	{
-		log /= std::to_wstring(win32::FiletimeToUnixEpoch(creationTime)) + L".log";
+		using winrt::clock;
+		log /= std::to_wstring(clock::to_time_t(clock::from_file_time(creationTime))) + L".log";
 	}
 	else
 	{

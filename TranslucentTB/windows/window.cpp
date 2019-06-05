@@ -3,7 +3,6 @@
 #include <ShObjIdl.h>
 #include <wil/com.h>
 #include <wil/resource.h>
-#include <vector>
 
 #include "constants.hpp"
 #include "../smart/eventhook.hpp"

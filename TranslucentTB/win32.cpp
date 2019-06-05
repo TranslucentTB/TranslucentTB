@@ -344,7 +344,7 @@ std::wstring_view win32::GetProcessorArchitecture() noexcept
 
 void win32::RevealFile(const std::filesystem::path &file)
 {
-	wil::unique_itemidlist list(ILCreateFromPath(file.c_str()));
+	wil::unique_cotaskmem_ptr<ITEMIDLIST_ABSOLUTE> list(ILCreateFromPath(file.c_str()));
 
 	if (list)
 	{
