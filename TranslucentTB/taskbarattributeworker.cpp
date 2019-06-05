@@ -48,9 +48,10 @@ void TaskbarAttributeWorker::OnWindowStateChange(bool skipCheck, DWORD, Window w
 bool TaskbarAttributeWorker::IsWindowMaximised(Window window)
 {
 	return
+		window.valid() &&
 		window.visible() &&
-		window.state() == SW_MAXIMIZE && // todo: IsZoomed()?
-		!window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
+		window.maximised() &&
+		!window.cloaked() &&
 		window.on_current_desktop() &&
 		!m_Cfg.MaximisedWindowBlacklist.IsBlacklisted(window);
 }
@@ -306,7 +307,7 @@ void TaskbarAttributeWorker::RefreshAeroPeekButton()
 			if (!isDesktop)
 			{
 				const auto &mainMonInfo = m_Taskbars.at(m_MainTaskbarMonitor);
-				isDesktop = (foreground == mainMonInfo.TaskbarWindow || !foreground.visible() || foreground.get_attribute<BOOL>(DWMWA_CLOAKED)) && mainMonInfo.MaximisedWindows.empty();
+				isDesktop = (foreground == mainMonInfo.TaskbarWindow || !foreground.visible() || foreground.cloacked()) && mainMonInfo.MaximisedWindows.empty();
 			}
 		}
 

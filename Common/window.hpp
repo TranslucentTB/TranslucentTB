@@ -28,6 +28,35 @@ private:
 
 	static void HandleChangeEvent(const DWORD, Window window, ...);
 	static void HandleDestroyEvent(const DWORD, Window window, ...);
+
+	template<DWMWINDOWATTRIBUTE attrib>
+	struct attrib_return_type;
+
+	template<>
+	struct attrib_return_type<DWMWA_NCRENDERING_ENABLED> {
+		using type = BOOL;
+	};
+
+	template<>
+	struct attrib_return_type<DWMWA_CAPTION_BUTTON_BOUNDS> {
+		using type = RECT;
+	};
+
+	template<>
+	struct attrib_return_type<DWMWA_EXTENDED_FRAME_BOUNDS> {
+		using type = RECT;
+	};
+
+	template<>
+	struct attrib_return_type<DWMWA_CLOAKED> {
+		using type = DWORD;
+	};
+
+	template<DWMWINDOWATTRIBUTE attrib>
+	using attrib_return_t = typename attrib_return_type<attrib>::type;
+
+	template<DWMWINDOWATTRIBUTE attrib>
+	attrib_return_t<attrib> get_attribute() const;
 #endif
 
 protected:
@@ -88,19 +117,23 @@ public:
 
 	bool on_current_desktop() const;
 
-	WINDOWPLACEMENT placement() const;
-
-	inline unsigned int state() const
+	inline bool cloaked() const
 	{
-		const WINDOWPLACEMENT result = placement();
-		return result.length != 0 ? result.showCmd : SW_SHOW;
+		return get_attribute<DWMWA_CLOAKED>();
 	}
-
-	template<typename T>
-	T get_attribute(DWMWINDOWATTRIBUTE attrib) const;
 #endif
 
-	inline bool show(int state = SW_SHOW) const noexcept
+	inline bool maximised() const noexcept
+	{
+		return IsZoomed(m_WindowHandle);
+	}
+
+	inline bool minimised() const noexcept
+	{
+		return IsIconic(m_WindowHandle);
+	}
+
+	inline bool show(int state = SW_SHOW) noexcept
 	{
 		return ShowWindow(m_WindowHandle, state);
 	}
