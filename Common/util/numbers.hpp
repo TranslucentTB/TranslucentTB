@@ -9,19 +9,6 @@
 #include "strings.hpp"
 
 namespace Util {
-	// Converts between bit representations. Superseded in C++20 by std::bit_cast.
-	template<typename T, typename F>
-	inline T WordCast(F v) noexcept
-	{
-		static_assert(sizeof(T) == sizeof(F), "Sizes do not match.");
-		static_assert(std::is_trivially_copyable_v<T>, "T is not trivially copyable.");
-		static_assert(std::is_trivially_copyable_v<F>, "F is not trivially copyable.");
-
-		T ret;
-		std::memcpy(&ret, &v, sizeof(T));
-		return ret;
-	}
-
 	namespace impl {
 		constexpr bool IsDecimalDigit(wchar_t character)
 		{
