@@ -302,12 +302,12 @@ void TaskbarAttributeWorker::RefreshAeroPeekButton()
 			isDesktop = foreground.find_child(L"SHELLDLL_DefView").valid();
 
 			// Consider the taskbar as part of the desktop if there is no maximised window on the main monitor.
-			// Consider being on the desktop if the foreground window is cloacked or invisible and there are no maximised windows.
+			// Consider being on the desktop if the foreground window is cloaked or invisible and there are no maximised windows.
 			// Some apps such as Discord exhibit a weird behavior when being closed: the window just becomes invisible and it still is the foreground window.
 			if (!isDesktop)
 			{
 				const auto &mainMonInfo = m_Taskbars.at(m_MainTaskbarMonitor);
-				isDesktop = (foreground == mainMonInfo.TaskbarWindow || !foreground.visible() || foreground.cloacked()) && mainMonInfo.MaximisedWindows.empty();
+				isDesktop = (foreground == mainMonInfo.TaskbarWindow || !foreground.visible() || foreground.cloaked()) && mainMonInfo.MaximisedWindows.empty();
 			}
 		}
 

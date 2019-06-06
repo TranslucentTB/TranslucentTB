@@ -124,16 +124,16 @@ void Config::Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &va
 
 	if (const auto no_tray = val.FindMember(TRAY_KEY.data()); no_tray != val.MemberEnd() && no_tray->value.IsBool())
 	{
-		UseRegularAppearanceWhenPeeking = no_tray->value.GetBool();
+		HideTray = no_tray->value.GetBool();
 	}
 
 	if (const auto no_save = val.FindMember(SAVING_KEY.data()); no_save != val.MemberEnd() && no_save->value.IsBool())
 	{
-		UseRegularAppearanceWhenPeeking = no_save->value.GetBool();
+		DisableSaving = no_save->value.GetBool();
 	}
 
 	if (const auto verbose = val.FindMember(VERBOSE_KEY.data()); verbose != val.MemberEnd() && verbose->value.IsBool())
 	{
-		UseRegularAppearanceWhenPeeking = verbose->value.GetBool();
+		VerboseLog = verbose->value.GetBool();
 	}
 }
