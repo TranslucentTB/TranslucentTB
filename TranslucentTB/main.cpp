@@ -55,7 +55,6 @@ static struct {
 	EXITREASON exit_reason = EXITREASON::UserAction;
 	std::filesystem::path config_folder;
 	std::filesystem::path config_file;
-	bool is_portable = false;
 } run;
 
 static const std::unordered_map<ACCENT_STATE, uint32_t> REGULAR_BUTTOM_MAP = {
@@ -112,19 +111,17 @@ static const std::unordered_map<PeekBehavior, uint32_t> PEEK_BUTTON_MAP = {
 
 void GetPaths()
 {
-	const auto exeFolder = win32::GetExeLocation().parent_path();
-	if (std::filesystem::is_regular_file(exeFolder / PORTABLE_FILE))
-	{
-		run.is_portable = true;
-		run.config_folder = std::move(exeFolder);
-	}
-	else
+	if (UWP::HasPackageIdentity())
 	{
 		try
 		{
 			run.config_folder = static_cast<std::wstring_view>(UWP::GetApplicationFolderPath(UWP::FolderType::Roaming));
 		}
 		WinrtExceptionCatch(Error::Level::Fatal, L"Getting application folder paths failed!")
+	}
+	else
+	{
+		run.config_folder = win32::GetExeLocation().parent_path();
 	}
 
 	run.config_file = run.config_folder / CONFIG_FILE;
@@ -193,7 +190,7 @@ winrt::fire_and_forget RefreshMenu(const Config &cfg, TrayContextMenu::ContextMe
 	updater.CheckItem(ID_AUTOSTART, false);
 
 	winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::ApplicationModel::StartupTaskState> task;
-	if (!run.is_portable)
+	if (UWP::HasPackageIdentity())
 	{
 		task = Autostart::GetStartupState();
 		updater.SetText(ID_AUTOSTART, L"Querying startup state...");
@@ -221,7 +218,7 @@ winrt::fire_and_forget RefreshMenu(const Config &cfg, TrayContextMenu::ContextMe
 	EnableAppearanceColor(updater, ID_TIMELINE_COLOR, cfg.TimelineOpenedAppearance);
 
 	// Block until it finishes
-	if (!run.is_portable)
+	if (UWP::HasPackageIdentity())
 	{
 		const auto state = co_await task;
 		updater.EnableItem(ID_AUTOSTART,
@@ -315,7 +312,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 		if (lParam & ENDSESSION_CLOSEAPP)
 		{
 			// The app is being queried if it can close for an update.
-			RegisterApplicationRestart(NULL, NULL);
+			RegisterApplicationRestart(nullptr, 0);
 		}
 		return TRUE;
 	});
@@ -380,12 +377,12 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 		{
 			std::thread([]
 			{
-				AboutDialog(run.is_portable).Run();
+				AboutDialog().Run();
 			}).detach();
 		});
 		tray.RegisterContextMenuCallback(ID_EXITWITHOUTSAVING, std::bind(&ExitApp, EXITREASON::UserActionNoSave));
 
-		if (!run.is_portable)
+		if (UWP::HasPackageIdentity())
 		{
 			tray.RegisterContextMenuCallback(ID_AUTOSTART, []() -> winrt::fire_and_forget
 			{
@@ -456,7 +453,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 	// with destruction of WinRT objects that have a static lifetime.
 	// Apartment gets cleaned up by system anyways when the process dies.
 
-	return exitCode;
+	return static_cast<int>(exitCode);
 }
 
 #pragma endregion

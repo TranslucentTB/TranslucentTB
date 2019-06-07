@@ -36,7 +36,7 @@ TTBTaskDialog::TTBTaskDialog(std::wstring_view title, std::wstring &&content, ca
 	m_Cfg { sizeof(m_Cfg) }
 {
 	m_Cfg.hwndParent = parent;
-	m_Cfg.hInstance = GetModuleHandle(NULL);
+	m_Cfg.hInstance = GetModuleHandle(nullptr);
 	m_Cfg.dwFlags = TDF_ENABLE_HYPERLINKS;
 	m_Cfg.pszWindowTitle = NAME;
 	m_Cfg.pszMainIcon = MAKEINTRESOURCE(IDI_MAINICON);

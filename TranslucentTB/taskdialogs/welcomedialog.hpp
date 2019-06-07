@@ -60,7 +60,7 @@ public:
 
 		m_Cfg.pszFooter = LR"(You can read our license <A HREF="https://github.com/TranslucentTB/TranslucentTB/blob/master/LICENSE.md">here</A>.)";
 		m_Cfg.dwFlags |= TDF_USE_HICON_FOOTER;
-		LoadIconMetric(NULL, IDI_INFORMATION, LIM_SMALL, &m_Cfg.hFooterIcon);
+		LoadIconMetric(nullptr, IDI_INFORMATION, LIM_SMALL, &m_Cfg.hFooterIcon);
 	}
 
 	inline bool Run()

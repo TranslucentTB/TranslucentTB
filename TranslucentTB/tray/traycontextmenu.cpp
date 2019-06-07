@@ -19,7 +19,7 @@ long TrayContextMenu::TrayCallback(WPARAM, LPARAM lParam)
 		}
 
 		SetLastError(0);
-		unsigned int item = TrackPopupMenu(GetSubMenu(m_Menu, 0), TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, 0, m_Window, NULL);
+		unsigned int item = TrackPopupMenu(GetSubMenu(m_Menu, 0), TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, 0, m_Window, nullptr);
 		if (!item && GetLastError() != 0)
 		{
 			LastErrorHandle(Error::Level::Log, L"Failed to open context menu.");

@@ -20,7 +20,7 @@ private:
 public:
 	static WPARAM RunMessageLoop();
 
-	MessageWindow(const std::wstring &className, const std::wstring &windowName, HINSTANCE hInstance = GetModuleHandle(NULL), Window parent = Window::NullWindow, const wchar_t *iconResource = MAKEINTRESOURCE(IDI_MAINICON));
+	MessageWindow(const std::wstring &className, const std::wstring &windowName, HINSTANCE hInstance = GetModuleHandle(nullptr), Window parent = Window::NullWindow, const wchar_t *iconResource = MAKEINTRESOURCE(IDI_MAINICON));
 	using CALLBACKCOOKIE = unsigned long long;
 
 	inline CALLBACKCOOKIE RegisterCallback(unsigned int message, callback_t callback)

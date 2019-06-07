@@ -89,7 +89,7 @@ public:
 		}
 	};
 
-	TrayContextMenu(MessageWindow &window, const wchar_t *iconResource, const wchar_t *menuResource, HINSTANCE hInstance = GetModuleHandle(NULL));
+	TrayContextMenu(MessageWindow &window, const wchar_t *iconResource, const wchar_t *menuResource, HINSTANCE hInstance = GetModuleHandle(nullptr));
 
 	using MENUCALLBACKCOOKIE = unsigned long long;
 

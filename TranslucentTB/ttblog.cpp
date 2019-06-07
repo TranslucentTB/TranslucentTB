@@ -27,14 +27,13 @@ std::filesystem::path Log::m_File;
 
 std::filesystem::path Log::GetPath()
 {
-	const auto exeFolder = win32::GetExeLocation().parent_path();
-	if (std::filesystem::is_regular_file(exeFolder / PORTABLE_FILE))
+	if (UWP::HasPackageIdentity())
 	{
-		return std::filesystem::temp_directory_path();
+		return static_cast<std::wstring_view>(UWP::GetApplicationFolderPath(UWP::FolderType::Temporary));
 	}
 	else
 	{
-		return static_cast<std::wstring_view>(UWP::GetApplicationFolderPath(UWP::FolderType::Temporary));
+		return std::filesystem::temp_directory_path();
 	}
 }
 
@@ -78,14 +77,14 @@ std::pair<HRESULT, std::wstring> Log::InitStream()
 		log /= std::to_wstring(Util::GetTime().count()) + L".log";
 	}
 
-	m_FileHandle->reset(CreateFile(log.c_str(), GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL));
+	m_FileHandle->reset(CreateFile(log.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, nullptr));
 	if (!*m_FileHandle)
 	{
 		return { HRESULT_FROM_WIN32(GetLastError()), L"Failed to create and open log file!" };
 	}
 
 	DWORD bytesWritten;
-	if (!WriteFile(m_FileHandle->get(), L"\uFEFF", sizeof(wchar_t), &bytesWritten, NULL))
+	if (!WriteFile(m_FileHandle->get(), L"\uFEFF", sizeof(wchar_t), &bytesWritten, nullptr))
 	{
 		// Not fatal, but probably not a good sign.
 		LastErrorHandle(Error::Level::Debug, L"Failed to write byte-order marker.");
@@ -131,7 +130,7 @@ void Log::OutputMessage(std::wstring_view message)
 		const std::wstring error = buffer.str();
 
 		DWORD bytesWritten;
-		if (!WriteFile(m_FileHandle->get(), error.c_str(), wil::safe_cast<DWORD>(error.length() * sizeof(wchar_t)), &bytesWritten, NULL))
+		if (!WriteFile(m_FileHandle->get(), error.c_str(), wil::safe_cast<DWORD>(error.length() * sizeof(wchar_t)), &bytesWritten, nullptr))
 		{
 			LastErrorHandle(Error::Level::Debug, L"Writing to log file failed.");
 		}

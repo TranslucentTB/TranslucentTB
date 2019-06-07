@@ -276,7 +276,7 @@ std::pair<std::wstring, HRESULT> win32::GetWindowsBuild()
 	// Microsoft recommends this themselves
 	// https://docs.microsoft.com/en-us/windows/desktop/SysInfo/getting-the-system-version
 	wil::unique_cotaskmem_string system32;
-	const HRESULT hr = SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, NULL, system32.put());
+	const HRESULT hr = SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, nullptr, system32.put());
 	if (FAILED(hr))
 	{
 		return { { }, hr };

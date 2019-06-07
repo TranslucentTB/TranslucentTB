@@ -23,7 +23,7 @@ WPARAM MessageWindow::RunMessageLoop()
 {
 	MSG msg;
 	BOOL ret;
-	while ((ret = GetMessage(&msg, NULL, 0, 0)) != 0)
+	while ((ret = GetMessage(&msg, nullptr, 0, 0)) != 0)
 	{
 		if (ret != -1)
 		{

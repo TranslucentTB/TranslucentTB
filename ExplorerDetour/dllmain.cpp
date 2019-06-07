@@ -4,10 +4,11 @@
 #include <WinUser.h>
 
 #include "constants.hpp"
-#include "dlldata.hpp"
-#include "hook.hpp"
 #include "detourexception.hpp"
 #include "detourtransaction.hpp"
+#include "dlldata.hpp"
+#include "hook.hpp"
+#include "window.hpp"
 
 HINSTANCE DllData::m_hInst;
 
@@ -39,7 +40,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID)
 			catch (const DetourException &err)
 			{
 				MessageBox(
-					NULL,
+					Window::NullWindow,
 					(L"Failed to remove detour: " + err.message()).c_str(),
 					NAME L" Hook - Error",
 					MB_ICONERROR | MB_OK | MB_SETFOREGROUND

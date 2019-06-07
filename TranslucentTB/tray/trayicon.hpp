@@ -19,7 +19,7 @@ private:
 	long UpdateIcon(...);
 
 public:
-	TrayIcon(MessageWindow &window, const wchar_t *iconResource, unsigned int additionalFlags = 0, HINSTANCE hInstance = GetModuleHandle(NULL));
+	TrayIcon(MessageWindow &window, const wchar_t *iconResource, unsigned int additionalFlags = 0, HINSTANCE hInstance = GetModuleHandle(nullptr));
 
 	inline MessageWindow::CALLBACKCOOKIE RegisterTrayCallback(std::function<long(WPARAM, LPARAM)> callback)
 	{

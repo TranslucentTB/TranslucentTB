@@ -87,7 +87,7 @@ public:
 	inline static Window Create(unsigned long dwExStyle, const WindowClass &winClass,
 		const std::wstring &windowName, unsigned long dwStyle, int x = 0, int y = 0,
 		int nWidth = 0, int nHeight = 0, Window parent = Window::NullWindow,
-		HMENU hMenu = NULL, HINSTANCE hInstance = GetModuleHandle(nullptr), void *lpParam = nullptr) noexcept
+		HMENU hMenu = nullptr, HINSTANCE hInstance = GetModuleHandle(nullptr), void *lpParam = nullptr) noexcept
 	{
 		return CreateWindowEx(dwExStyle, winClass.atom(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
 			parent, hMenu, hInstance, lpParam);

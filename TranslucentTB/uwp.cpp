@@ -1,4 +1,8 @@
 #include "uwp.hpp"
+#include "arch.h"
+#include <cstdint>
+#include <ShlObj.h>
+#include <appmodel.h>
 #include <sstream>
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Storage.h>
@@ -27,4 +31,16 @@ std::wstring UWP::GetApplicationVersion()
 	std::wostringstream str;
 	str << version.Major << L'.' << version.Minor << L'.' << version.Revision << L'.' << version.Build;
 	return str.str();
+}
+
+bool UWP::HasPackageIdentity()
+{
+	static const bool has_identity = []
+	{
+		uint32_t length = 0;
+		const auto result = GetCurrentPackageFamilyName(&length, nullptr);
+		return result != APPMODEL_ERROR_NO_PACKAGE;
+	}();
+
+	return has_identity;
 }

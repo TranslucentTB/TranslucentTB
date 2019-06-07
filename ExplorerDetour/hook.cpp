@@ -47,7 +47,7 @@ LRESULT Hook::CallWndProc(int nCode, WPARAM wParam, LPARAM lParam)
 			catch (const DetourException &err)
 			{
 				MessageBox(
-					NULL,
+					Window::NullWindow,
 					(L"Failed to install detour: " + err.message()).c_str(),
 					NAME L" Hook - Error",
 					MB_ICONERROR | MB_OK | MB_SETFOREGROUND

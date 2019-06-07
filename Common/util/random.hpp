@@ -6,24 +6,20 @@
 
 namespace Util {
 	namespace impl {
-		// Correctly seeds and creates a Mersenne Twister engine.
-		template<class T>
-		inline T CreateRandomEngine()
-		{
-			int seed_data[T::state_size];
-			std::random_device r;
-
-			std::generate_n(seed_data, T::state_size, std::ref(r));
-			std::seed_seq seed(seed_data, seed_data + T::state_size);
-			return T(seed);
-		}
-
 		// Gets a static instance of a Mersenne Twister engine. Can't be put directly in
 		// GetRandomNumber because every different template instantion will get a different static variable.
 		template<class T>
 		inline T &GetRandomEngine()
 		{
-			static T rng = CreateRandomEngine<T>();
+			static T rng = []
+			{
+				std::seed_seq::result_type seed_data[T::state_size];
+				std::random_device r;
+
+				std::generate_n(seed_data, T::state_size, std::ref(r));
+				std::seed_seq seed(seed_data, seed_data + T::state_size);
+				return T(seed);
+			}();
 
 			return rng;
 		}
