@@ -159,6 +159,56 @@ void SaveConfig(const Config &cfg, const std::filesystem::path &file)
 	writer.EndObject();
 }
 
+[[noreturn]] void Restart()
+{
+	static constexpr std::wstring_view msg = L"Failed to automatically restart " NAME L" after a configuration change, you will have to restart manually.";
+
+	if (UWP::HasPackageIdentity())
+	{
+		try
+		{
+			const bool started = UWP::RelaunchApplication().get();
+			if (!started)
+			{
+				winrt::throw_hresult(E_FAIL);
+			}
+		}
+		WinrtExceptionCatch(Error::Level::Fatal, msg)
+	}
+	else
+	{
+		STARTUPINFO si = { sizeof(si) };
+		PROCESS_INFORMATION pi;
+		if (CreateProcess(win32::GetExeLocation().c_str(), nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi))
+		{
+			CloseHandle(pi.hThread);
+			CloseHandle(pi.hProcess);
+		}
+		else
+		{
+			LastErrorHandle(Error::Level::Fatal, msg);
+		}
+	}
+
+	ExitProcess(0);
+}
+
+void SetConfig(Config &current, Config &&newConfig)
+{
+	bool needsRestart = false;
+	if (current.HideTray != newConfig.HideTray)
+	{
+		needsRestart = true;
+	}
+
+	if (needsRestart)
+	{
+		Restart();
+	}
+
+	current = std::forward<Config>(newConfig);
+}
+
 bool CheckAndRunWelcome()
 {
 	if (!std::filesystem::is_regular_file(run.config_file))
@@ -195,10 +245,6 @@ winrt::fire_and_forget RefreshMenu(const Config &cfg, TrayContextMenu::ContextMe
 		task = Autostart::GetStartupState();
 		updater.SetText(ID_AUTOSTART, L"Querying startup state...");
 	}
-	else
-	{
-		updater.SetText(ID_AUTOSTART, L"Open at boot not available in portable mode");
-	}
 
 	const bool has_log = !Log::file().empty();
 	updater.EnableItem(ID_OPENLOG, has_log);
@@ -208,8 +254,6 @@ winrt::fire_and_forget RefreshMenu(const Config &cfg, TrayContextMenu::ContextMe
 			? L"Error when initializing log file"
 			: L"Nothing has been logged yet"
 	);
-
-	updater.EnableItem(ID_SAVESETTINGS, !cfg.DisableSaving);
 
 	updater.EnableItem(ID_REGULAR_COLOR, cfg.RegularAppearance.Accent != ACCENT_NORMAL);
 	EnableAppearanceColor(updater, ID_MAXIMISED_COLOR, cfg.MaximisedWindowAppearance);
@@ -300,7 +344,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 	static TaskbarAttributeWorker worker(hInstance, cfg);
 	static auto watcher = wil::make_folder_watcher(run.config_folder.c_str(), false, wil::FolderChangeEvents::LastWriteTime, [&cfg]
 	{
-		cfg = LoadConfig(run.config_file);
+		SetConfig(cfg, LoadConfig(run.config_file));
 	});
 
 	window.RegisterCallback(WM_NEWTTBINSTANCE, std::bind(&ExitApp, EXITREASON::NewInstance));
@@ -352,15 +396,6 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 			win32::EditFile(Log::file());
 		});
 		tray.BindBool(ID_VERBOSE, cfg.VerboseLog, TrayContextMenu::Toggle);
-		tray.RegisterContextMenuCallback(ID_SAVESETTINGS, [&cfg]
-		{
-			SaveConfig(cfg, run.config_file);
-			std::thread(std::bind(&MessageBox, Window::NullWindow, L"Settings have been saved.", NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND)).detach();
-		});
-		tray.RegisterContextMenuCallback(ID_RELOADSETTINGS, [&cfg]
-		{
-			cfg = LoadConfig(run.config_file);
-		});
 		tray.RegisterContextMenuCallback(ID_EDITSETTINGS, [&cfg]
 		{
 			SaveConfig(cfg, run.config_file);
@@ -368,8 +403,8 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 		});
 		tray.RegisterContextMenuCallback(ID_RETURNTODEFAULTSETTINGS, [&cfg]
 		{
-			cfg = { };
-			SaveConfig(cfg, run.config_file);
+			// Automatically reloaded by filesystem watcher.
+			SaveConfig({ }, run.config_file);
 		});
 		tray.RegisterContextMenuCallback(ID_CLEARWINDOWCACHE, Window::ClearCache);
 		tray.RegisterContextMenuCallback(ID_RESETWORKER, std::bind(&TaskbarAttributeWorker::ResetState, &worker));
@@ -392,6 +427,10 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 					: Autostart::StartupState::Enabled
 				);
 			});
+		}
+		else
+		{
+			tray.Update().RemoveItem(ID_AUTOSTART);
 		}
 
 		tray.RegisterContextMenuCallback(ID_TIPS, std::bind(&win32::OpenLink,

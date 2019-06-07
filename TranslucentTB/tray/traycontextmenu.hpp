@@ -87,6 +87,11 @@ public:
 		{
 			ChangeItemText(m_hMenu, id, std::forward<std::wstring>(new_text));
 		}
+
+		inline void RemoveItem(unsigned int id)
+		{
+			RemoveMenu(m_hMenu, id, MF_BYCOMMAND);
+		}
 	};
 
 	TrayContextMenu(MessageWindow &window, const wchar_t *iconResource, const wchar_t *menuResource, HINSTANCE hInstance = GetModuleHandle(nullptr));
@@ -147,6 +152,11 @@ public:
 	inline void RegisterCustomRefresh(std::function<void(ContextMenuUpdater)> function)
 	{
 		m_RefreshFunctions.push_back(std::bind(std::move(function), ContextMenuUpdater(m_Menu)));
+	}
+
+	inline ContextMenuUpdater Update()
+	{
+		return ContextMenuUpdater(m_Menu);
 	}
 
 	~TrayContextMenu();

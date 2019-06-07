@@ -3,19 +3,30 @@
 #include <string>
 #include <string_view>
 #include <winrt/base.h>
+#include <winrt/Windows.ApplicationModel.h>
 
-namespace UWP {
+class UWP {
+private:
+	inline static winrt::Windows::ApplicationModel::Package GetCurrentPackage()
+	{
+		static const auto package = winrt::Windows::ApplicationModel::Package::Current();
+		return package;
+	}
+
+public:
 	enum class FolderType {
 		Temporary,
 		Roaming
 	};
 
-	winrt::hstring GetApplicationFolderPath(FolderType type);
+	static winrt::hstring GetApplicationFolderPath(FolderType type);
 
-	std::wstring GetApplicationVersion();
+	static std::wstring GetApplicationVersion();
 
-	bool HasPackageIdentity();
-}
+	static bool HasPackageIdentity();
+
+	static winrt::Windows::Foundation::IAsyncOperation<bool> RelaunchApplication();
+};
 
 inline std::wostream &operator <<(std::wostream &stream, const winrt::hstring &str)
 {

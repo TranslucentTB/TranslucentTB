@@ -101,8 +101,6 @@ BEGIN
             MENUITEM "Open log file",                                  ID_OPENLOG
             MENUITEM "Verbose logging",                                ID_VERBOSE
             MENUITEM "",                                               0, MFT_SEPARATOR
-            MENUITEM "Save settings",                                  ID_SAVESETTINGS
-            MENUITEM "Reload settings",                                ID_RELOADSETTINGS
             MENUITEM "Edit settings",                                  ID_EDITSETTINGS
             MENUITEM "Return to default settings",                     ID_RETURNTODEFAULTSETTINGS
             MENUITEM "",                                               0, MFT_SEPARATOR
@@ -110,7 +108,7 @@ BEGIN
             MENUITEM "Reset dynamic state",                            ID_RESETWORKER
             MENUITEM "",                                               0, MFT_SEPARATOR
             MENUITEM "About",                                          ID_ABOUT
-            MENUITEM "Exit without saving",                            ID_EXITWITHOUTSAVING
+            MENUITEM "Exit without saving settings",                   ID_EXITWITHOUTSAVING
         END
         MENUITEM "Open at boot",                                   ID_AUTOSTART
         MENUITEM "Tips and tricks",                                ID_TIPS
