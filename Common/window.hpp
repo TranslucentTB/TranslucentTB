@@ -1,12 +1,12 @@
 #pragma once
 #include "arch.h"
+#include <dwmapi.h>
 #include <functional>
 #include <string>
 #include <windef.h>
 #include <winuser.h>
 
 #ifdef _TRANSLUCENTTB_EXE
-#include <dwmapi.h>
 #include <filesystem>
 #include <string_view>
 #include <unordered_map>
@@ -28,6 +28,7 @@ private:
 
 	static void HandleChangeEvent(const DWORD, Window window, ...);
 	static void HandleDestroyEvent(const DWORD, Window window, ...);
+#endif
 
 	template<DWMWINDOWATTRIBUTE attrib>
 	struct attrib_return_type;
@@ -56,8 +57,10 @@ private:
 	using attrib_return_t = typename attrib_return_type<attrib>::type;
 
 	template<DWMWINDOWATTRIBUTE attrib>
-	attrib_return_t<attrib> get_attribute() const;
-#endif
+	inline HRESULT get_attribute(attrib_return_t<attrib> &val) const noexcept
+	{
+		return DwmGetWindowAttribute(m_WindowHandle, attrib, &val, sizeof(val));
+	}
 
 protected:
 	HWND m_WindowHandle;
@@ -116,12 +119,13 @@ public:
 	const std::filesystem::path &file() const;
 
 	bool on_current_desktop() const;
-
-	inline bool cloaked() const
-	{
-		return get_attribute<DWMWA_CLOAKED>();
-	}
 #endif
+
+	inline bool cloaked() const noexcept
+	{
+		DWORD attr;
+		return SUCCEEDED(get_attribute<DWMWA_CLOAKED>(attr)) && attr;
+	}
 
 	inline bool maximised() const noexcept
 	{
@@ -166,6 +170,16 @@ public:
 	inline LRESULT send_message(const std::wstring &message, WPARAM wparam = 0, LPARAM lparam = 0) const
 	{
 		return send_message(RegisterWindowMessage(message.c_str()), wparam, lparam);
+	}
+
+	inline bool post_message(unsigned int message, WPARAM wparam = 0, LPARAM lparam = 0) const noexcept
+	{
+		return PostMessage(m_WindowHandle, message, wparam, lparam);
+	}
+
+	inline bool post_message(const std::wstring &message, WPARAM wparam = 0, LPARAM lparam = 0) const
+	{
+		return post_message(RegisterWindowMessage(message.c_str()), wparam, lparam);
 	}
 
 	inline Window find_child(const std::wstring &className = { }, const std::wstring &windowName = { }, Window childAfter = Window::NullWindow) const noexcept

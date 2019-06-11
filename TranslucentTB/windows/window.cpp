@@ -28,20 +28,6 @@ void Window::HandleDestroyEvent(DWORD, Window window, ...)
 	s_FilePaths.erase(window);
 }
 
-template<DWMWINDOWATTRIBUTE attrib>
-Window::attrib_return_t<attrib> Window::get_attribute() const
-{
-	attrib_return_t<attrib> attribute;
-	HRESULT status = DwmGetWindowAttribute(m_WindowHandle, attrib, &attribute, sizeof(attribute));
-	ErrorHandle(status, Error::Level::Log, L"Getting attribute of a window failed.");
-	return attribute;
-}
-
-template Window::attrib_return_t<DWMWA_NCRENDERING_ENABLED> Window::get_attribute<DWMWA_NCRENDERING_ENABLED>() const;
-template Window::attrib_return_t<DWMWA_CAPTION_BUTTON_BOUNDS> Window::get_attribute<DWMWA_CAPTION_BUTTON_BOUNDS>() const;
-template Window::attrib_return_t<DWMWA_EXTENDED_FRAME_BOUNDS> Window::get_attribute<DWMWA_EXTENDED_FRAME_BOUNDS>() const;
-template Window::attrib_return_t<DWMWA_CLOAKED> Window::get_attribute<DWMWA_CLOAKED>() const;
-
 std::wstring_view Window::title() const
 {
 	if (!s_Titles.contains(m_WindowHandle))

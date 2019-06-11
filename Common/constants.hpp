@@ -17,10 +17,7 @@ static constexpr uint16_t LONG_PATH = 33000;
 #define NAME L"TranslucentTB"
 
 // Config file name
-static constexpr wchar_t CONFIG_FILE[] = L"config.cfg";
-
-// When a file with this name is present in the app's folder, it runs in portable mode.
-static constexpr wchar_t PORTABLE_FILE[] = L"portable";
+static constexpr wchar_t CONFIG_FILE[] = L"config.json";
 
 // Mutex name for app uniqueness
 static constexpr wchar_t MUTEX_GUID[] = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
@@ -32,8 +29,8 @@ static constexpr wchar_t MUTEX_GUID[] = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
 // Message sent by explorer when the taskbar is created
 static constexpr wchar_t WM_TASKBARCREATED[] = L"TaskbarCreated";
 
-// Message used by a new instance to close the old instance
-static constexpr wchar_t WM_NEWTTBINSTANCE[] = L"NewTTBInstance";
+// Message sent to the main thread when configuration is changed
+static constexpr wchar_t WM_FILECHANGED[] = L"TTB_FileChanged";
 
 // Send by the hook to the worker when the taskbar is trying to change its composition attribute
 static constexpr wchar_t WM_TTBHOOKREQUESTREFRESH[] = L"TTBHook_RequestAttributeRefresh";

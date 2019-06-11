@@ -144,22 +144,25 @@ Config LoadConfig(const std::filesystem::path &file)
 	return cfg;
 }
 
-void SaveConfig(const Config &cfg, const std::filesystem::path &file)
+void SaveConfig(const Config &cfg, const std::filesystem::path &file, bool override = false)
 {
-	using namespace rapidjson;
+	if (override || !cfg.DisableSaving)
+	{
+		using namespace rapidjson;
 
-	std::wofstream fileStream(file);
-	fileStream << L"// For reference on this format, see TODO" << std::endl;
+		std::wofstream fileStream(file);
+		fileStream << L"// For reference on this format, see TODO" << std::endl;
 
-	WOStreamWrapper jsonStream(fileStream);
-	PrettyWriter<WOStreamWrapper, UTF16LE<>, UTF16LE<>> writer(jsonStream);
+		WOStreamWrapper jsonStream(fileStream);
+		PrettyWriter<WOStreamWrapper, UTF16LE<>, UTF16LE<>> writer(jsonStream);
 
-	writer.StartObject();
-	cfg.Serialize(writer);
-	writer.EndObject();
+		writer.StartObject();
+		cfg.Serialize(writer);
+		writer.EndObject();
+	}
 }
 
-[[noreturn]] void Restart()
+void Restart()
 {
 	static constexpr std::wstring_view msg = L"Failed to automatically restart " NAME L" after a configuration change, you will have to restart manually.";
 
@@ -173,7 +176,7 @@ void SaveConfig(const Config &cfg, const std::filesystem::path &file)
 				winrt::throw_hresult(E_FAIL);
 			}
 		}
-		WinrtExceptionCatch(Error::Level::Fatal, msg)
+		WinrtExceptionCatch(Error::Level::Error, msg)
 	}
 	else
 	{
@@ -186,11 +189,11 @@ void SaveConfig(const Config &cfg, const std::filesystem::path &file)
 		}
 		else
 		{
-			LastErrorHandle(Error::Level::Fatal, msg);
+			LastErrorHandle(Error::Level::Error, msg);
 		}
 	}
 
-	ExitProcess(0);
+	PostQuitMessage(0);
 }
 
 void SetConfig(Config &current, Config &&newConfig)
@@ -220,6 +223,9 @@ bool CheckAndRunWelcome()
 			return false;
 		}
 	}
+
+	// Remove old version config once prompt is accepted.
+	std::filesystem::remove_all(run.config_folder / NAME);
 
 	return true;
 }
@@ -289,13 +295,6 @@ winrt::fire_and_forget RefreshMenu(const Config &cfg, TrayContextMenu::ContextMe
 	}
 }
 
-long ExitApp(EXITREASON reason, ...)
-{
-	run.exit_reason = reason;
-	PostQuitMessage(0);
-	return 0;
-}
-
 #pragma endregion
 
 #pragma region Startup
@@ -342,14 +341,26 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 	DarkThemeManager::EnableDarkModeForWindow(window);
 
 	static TaskbarAttributeWorker worker(hInstance, cfg);
-	static auto watcher = wil::make_folder_watcher(run.config_folder.c_str(), false, wil::FolderChangeEvents::LastWriteTime, [&cfg]
+	static const auto watcher = wil::make_folder_watcher(run.config_folder.c_str(), false, wil::FolderChangeEvents::LastWriteTime, []
 	{
-		SetConfig(cfg, LoadConfig(run.config_file));
+		// This callback runs on another thread, so we use a message to avoid threading issues.
+		window.post_message(WM_FILECHANGED);
 	});
 
-	window.RegisterCallback(WM_NEWTTBINSTANCE, std::bind(&ExitApp, EXITREASON::NewInstance));
+	const auto save_and_exit = [&cfg](...)
+	{
+		SaveConfig(cfg, run.config_file);
+		PostQuitMessage(0);
+		return TRUE;
+	};
 
-	window.RegisterCallback(WM_CLOSE, std::bind(&ExitApp, EXITREASON::UserAction));
+	window.RegisterCallback(WM_FILECHANGED, [&cfg](...)
+	{
+		SetConfig(cfg, LoadConfig(run.config_file));
+		return TRUE;
+	});
+
+	window.RegisterCallback(WM_CLOSE, save_and_exit);
 
 	window.RegisterCallback(WM_QUERYENDSESSION, [](WPARAM, LPARAM lParam)
 	{
@@ -406,6 +417,27 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 			// Automatically reloaded by filesystem watcher.
 			SaveConfig({ }, run.config_file);
 		});
+		tray.BindBool(ID_DISABLESAVING, cfg.DisableSaving, TrayContextMenu::Toggle);
+		tray.RegisterContextMenuCallback(ID_HIDETRAY, [&cfg]
+		{
+			std::wostringstream str;
+			str << L"To hide the tray icon, " NAME L" will save the current configuration "
+				L"(even if saving settings is disabled) and restart. To see the"
+				L" tray icon again, ";
+			if (UWP::HasPackageIdentity())
+			{
+				str << L"reset " NAME " in the Settings app or ";
+			}
+			str << L"edit the configuration file at "
+				<< run.config_file.native() << L".\n\nAre you sure you want to proceed?";
+			const int result = MessageBox(Window::NullWindow, str.str().c_str(), NAME, MB_YESNO | MB_ICONWARNING | MB_SETFOREGROUND);
+			if (result == IDYES)
+			{
+				cfg.HideTray = true;
+				SaveConfig(cfg, run.config_file, true);
+				Restart();
+			}
+		});
 		tray.RegisterContextMenuCallback(ID_CLEARWINDOWCACHE, Window::ClearCache);
 		tray.RegisterContextMenuCallback(ID_RESETWORKER, std::bind(&TaskbarAttributeWorker::ResetState, &worker));
 		tray.RegisterContextMenuCallback(ID_ABOUT, []
@@ -415,7 +447,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 				AboutDialog().Run();
 			}).detach();
 		});
-		tray.RegisterContextMenuCallback(ID_EXITWITHOUTSAVING, std::bind(&ExitApp, EXITREASON::UserActionNoSave));
+		tray.RegisterContextMenuCallback(ID_EXITWITHOUTSAVING, std::bind(&PostQuitMessage, 0));
 
 		if (UWP::HasPackageIdentity())
 		{
@@ -435,7 +467,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 
 		tray.RegisterContextMenuCallback(ID_TIPS, std::bind(&win32::OpenLink,
 			L"https://github.com/TranslucentTB/TranslucentTB/wiki/Tips-and-tricks-for-a-better-looking-taskbar"));
-		tray.RegisterContextMenuCallback(ID_EXIT, std::bind(&ExitApp, EXITREASON::UserAction));
+		tray.RegisterContextMenuCallback(ID_EXIT, save_and_exit);
 
 
 		tray.RegisterCustomRefresh(std::bind(&RefreshMenu, std::ref(cfg), std::placeholders::_1));
@@ -447,14 +479,14 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 	win32::HardenProcess();
 	try
 	{
-		winrt::init_apartment(winrt::apartment_type::single_threaded);
+		winrt::init_apartment(winrt::apartment_type::multi_threaded);
 	}
 	WinrtExceptionCatch(Error::Level::Fatal, L"Initialization of Windows Runtime failed.")
 
 	// If there already is another instance running, tell it to exit
 	if (!IsSingleInstance())
 	{
-		Window::Find(TRAY_WINDOW, NAME).send_message(WM_NEWTTBINSTANCE);
+		Window::Find(TRAY_WINDOW, NAME).send_message(WM_CLOSE);
 	}
 
 	DarkThemeManager::AllowDarkModeForApp();
@@ -482,11 +514,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 
 	// Run the main program loop. When this method exits, TranslucentTB itself is about to exit.
 	const auto exitCode = MessageWindow::RunMessageLoop();
-
-	if (run.exit_reason == EXITREASON::UserAction)
-	{
-		SaveConfig(cfg, run.config_file);
-	}
 
 	// Not uninitializing WinRT apartment here because it will cause issues
 	// with destruction of WinRT objects that have a static lifetime.

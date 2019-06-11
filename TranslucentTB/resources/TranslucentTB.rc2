@@ -103,6 +103,8 @@ BEGIN
             MENUITEM "",                                               0, MFT_SEPARATOR
             MENUITEM "Edit settings",                                  ID_EDITSETTINGS
             MENUITEM "Return to default settings",                     ID_RETURNTODEFAULTSETTINGS
+            MENUITEM "Disable saving settings",                        ID_DISABLESAVING
+            MENUITEM "Hide tray icon",                                 ID_HIDETRAY
             MENUITEM "",                                               0, MFT_SEPARATOR
             MENUITEM "Clear window cache",                             ID_CLEARWINDOWCACHE
             MENUITEM "Reset dynamic state",                            ID_RESETWORKER
