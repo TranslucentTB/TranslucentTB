@@ -7,20 +7,6 @@
 #include "util/random.hpp"
 #include "../win32.hpp"
 
-long TrayIcon::RegisterIcon(...)
-{
-	if (!Shell_NotifyIcon(NIM_ADD, &m_IconData))
-	{
-		Log::OutputMessage(L"Failed to notify shell of icon addition.");
-	}
-	if (!Shell_NotifyIcon(NIM_SETVERSION, &m_IconData))
-	{
-		Log::OutputMessage(L"Failed to notify shell of icon version.");
-	}
-
-	return 0;
-}
-
 void TrayIcon::LoadIcon()
 {
 	ErrorHandle(
@@ -58,18 +44,39 @@ TrayIcon::TrayIcon(MessageWindow &window, const wchar_t *iconResource, unsigned 
 	m_IconResource(iconResource)
 {
 	LoadIcon();
-	RegisterIcon();
+	Show();
 
-	m_TaskbarCreatedCookie = m_Window.RegisterCallback(WM_TASKBARCREATED, std::bind(&TrayIcon::RegisterIcon, this));
+	m_TaskbarCreatedCookie = m_Window.RegisterCallback(WM_TASKBARCREATED, [this](...)
+	{
+		Show();
+		return 0;
+	});
 	m_DpiChangedCookie = m_Window.RegisterCallback(WM_DPICHANGED, std::bind(&TrayIcon::UpdateIcon, this));
 }
 
-TrayIcon::~TrayIcon()
+void TrayIcon::Show()
+{
+	if (!Shell_NotifyIcon(NIM_ADD, &m_IconData))
+	{
+		Log::OutputMessage(L"Failed to notify shell of icon addition.");
+	}
+	if (!Shell_NotifyIcon(NIM_SETVERSION, &m_IconData))
+	{
+		Log::OutputMessage(L"Failed to notify shell of icon version.");
+	}
+}
+
+void TrayIcon::Hide()
 {
 	if (!Shell_NotifyIcon(NIM_DELETE, &m_IconData))
 	{
 		Log::OutputMessage(L"Failed to notify shell of icon deletion.");
 	}
+}
+
+TrayIcon::~TrayIcon()
+{
+	Hide();
 	m_Window.UnregisterCallback(m_TaskbarCreatedCookie);
 	m_Window.UnregisterCallback(m_DpiChangedCookie);
 }

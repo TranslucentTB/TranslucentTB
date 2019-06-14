@@ -78,10 +78,7 @@ const std::filesystem::path &Window::file() const
 {
 	if (!s_FilePaths.contains(m_WindowHandle))
 	{
-		DWORD pid;
-		GetWindowThreadProcessId(m_WindowHandle, &pid);
-
-		const wil::unique_process_handle processHandle(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid));
+		const wil::unique_process_handle processHandle(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, process_id()));
 		if (!processHandle)
 		{
 			LastErrorHandle(Error::Level::Log, L"Getting process handle of a window failed.");

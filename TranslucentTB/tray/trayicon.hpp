@@ -14,7 +14,7 @@ private:
 	HINSTANCE m_hInstance;
 	const wchar_t *m_IconResource;
 	wil::unique_hicon m_Icon;
-	long RegisterIcon(...);
+
 	void LoadIcon();
 	long UpdateIcon(...);
 
@@ -36,6 +36,9 @@ public:
 	{
 		return m_Window;
 	}
+
+	void Show();
+	void Hide();
 
 	~TrayIcon();
 

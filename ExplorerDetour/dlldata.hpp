@@ -5,7 +5,7 @@
 class DllData {
 private:
 	static HINSTANCE m_hInst;
-	friend BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID);
+	friend BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept;
 
 public:
 	inline static HINSTANCE GetInstanceHandle()

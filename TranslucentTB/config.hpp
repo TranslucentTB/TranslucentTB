@@ -102,7 +102,7 @@ public:
 #ifdef _DEBUG
 		VerboseLog(true)
 #else
-		VerboseLog(False)
+		VerboseLog(false)
 #endif
 	{ }
 

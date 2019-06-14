@@ -26,7 +26,7 @@ winrt::hstring UWP::GetApplicationFolderPath(FolderType type)
 
 std::wstring UWP::GetApplicationVersion()
 {
-	static const auto version = GetCurrentPackage().Id().Version();
+	static const auto version = winrt::Windows::ApplicationModel::Package::Current().Id().Version();
 
 	std::wostringstream str;
 	str << version.Major << L'.' << version.Minor << L'.' << version.Revision << L'.' << version.Build;
@@ -43,10 +43,4 @@ bool UWP::HasPackageIdentity()
 	}();
 
 	return has_identity;
-}
-
-winrt::Windows::Foundation::IAsyncOperation<bool> UWP::RelaunchApplication()
-{
-	const auto entries = co_await GetCurrentPackage().GetAppListEntriesAsync();
-	co_return co_await entries.GetAt(0).LaunchAsync();
 }

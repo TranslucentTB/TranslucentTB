@@ -162,6 +162,18 @@ public:
 		return MonitorFromWindow(m_WindowHandle, MONITOR_DEFAULTTONULL);
 	}
 
+	inline DWORD thread_id() const noexcept
+	{
+		return GetWindowThreadProcessId(m_WindowHandle, nullptr);
+	}
+
+	inline DWORD process_id() const noexcept
+	{
+		DWORD pid;
+		GetWindowThreadProcessId(m_WindowHandle, &pid);
+		return pid;
+	}
+
 	inline LRESULT send_message(unsigned int message, WPARAM wparam = 0, LPARAM lparam = 0) const noexcept
 	{
 		return SendMessage(m_WindowHandle, message, wparam, lparam);

@@ -50,9 +50,10 @@ TrayContextMenu::TrayContextMenu(MessageWindow &window, const wchar_t *iconResou
 	m_TrayCallbackCookie = RegisterTrayCallback(std::bind(&TrayContextMenu::TrayCallback, this, std::placeholders::_1, std::placeholders::_2));
 	m_MenuInitCookie = m_Window.RegisterCallback(WM_INITMENU, [this](...)
 	{
-		for (const auto &refreshFunction : m_RefreshFunctions)
+		Updater updater(m_Menu);
+		for (const auto &[_, refreshFunction]: m_RefreshFunctions)
 		{
-			refreshFunction();
+			refreshFunction(updater);
 		}
 		return 0;
 	});

@@ -12,14 +12,11 @@
 PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE Hook::SetWindowCompositionAttribute =
 	reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(GetModuleHandle(L"user32.dll"), "SetWindowCompositionAttribute"));
 
-std::mutex Hook::s_initLock;
-Hook::InitializationState Hook::s_initState = Hook::InitializationState::NotInitialized;
-
-const Window Hook::s_TTBMsgWnd = Window::Find(WORKER_WINDOW, WORKER_WINDOW);
+std::atomic_flag Hook::s_IsHooked = ATOMIC_FLAG_INIT;
 
 BOOL Hook::SetWindowCompositionAttributeDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data)
 {
-	if (data->Attrib == WCA_ACCENT_POLICY && s_TTBMsgWnd.send_message(WM_TTBHOOKREQUESTREFRESH, 0, reinterpret_cast<LPARAM>(hWnd)))
+	if (data->Attrib == WCA_ACCENT_POLICY && Window::Find(WORKER_WINDOW, WORKER_WINDOW).send_message(WM_TTBHOOKREQUESTREFRESH, 0, reinterpret_cast<LPARAM>(hWnd)))
 	{
 		return TRUE;
 	}
@@ -27,42 +24,23 @@ BOOL Hook::SetWindowCompositionAttributeDetour(HWND hWnd, const WINDOWCOMPOSITIO
 	return SetWindowCompositionAttribute(hWnd, data);
 }
 
-LRESULT Hook::CallWndProc(int nCode, WPARAM wParam, LPARAM lParam)
+LRESULT Hook::CallWndProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept
 {
-	if (nCode == HC_ACTION)
+	if (nCode == HC_ACTION && !s_IsHooked.test_and_set())
 	{
-		std::lock_guard guard(s_initLock);
-		if (s_initState == InitializationState::NotInitialized)
-		{
-			try
-			{
-				DetourTransaction transaction;
+		DetourTransaction transaction;
 
-				transaction.update_current_thread();
-				transaction.attach(Hook::SetWindowCompositionAttribute, Hook::SetWindowCompositionAttributeDetour);
-				transaction.commit();
-
-				s_initState = InitializationState::InitializationDone;
-			}
-			catch (const DetourException &err)
-			{
-				MessageBox(
-					Window::NullWindow,
-					(L"Failed to install detour: " + err.message()).c_str(),
-					NAME L" Hook - Error",
-					MB_ICONERROR | MB_OK | MB_SETFOREGROUND
-				);
-				s_initState = InitializationState::InitializationFailed;
-			}
-		}
+		transaction.update_current_thread();
+		transaction.attach(Hook::SetWindowCompositionAttribute, Hook::SetWindowCompositionAttributeDetour);
+		transaction.commit();
 	}
 
 	return CallNextHookEx(nullptr, nCode, wParam, lParam);
 }
 
-std::pair<HHOOK, HRESULT> Hook::HookExplorer(HWND taskbar)
+std::pair<HHOOK, HRESULT> Hook::HookExplorer(Window taskbar)
 {
-	HHOOK hook = SetWindowsHookEx(WH_CALLWNDPROC, CallWndProc, DllData::GetInstanceHandle(), GetWindowThreadProcessId(taskbar, nullptr));
+	HHOOK hook = SetWindowsHookEx(WH_CALLWNDPROC, CallWndProc, DllData::GetInstanceHandle(), taskbar.thread_id());
 	if (!hook)
 	{
 		return { nullptr, HRESULT_FROM_WIN32(GetLastError()) };

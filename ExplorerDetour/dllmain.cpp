@@ -12,7 +12,7 @@
 
 HINSTANCE DllData::m_hInst;
 
-BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID)
+BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 {
 	switch (fdwReason)
 	{
@@ -22,32 +22,16 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID)
 		break;
 
 	case DLL_PROCESS_DETACH:
-	{
-		std::lock_guard guard(Hook::s_initLock);
-
-		if (Hook::s_initState == Hook::InitializationState::InitializationDone)
+		if (Hook::s_IsHooked.test_and_set())
 		{
-			try
-			{
-				DetourTransaction transaction;
+			DetourTransaction transaction;
 
-				transaction.update_current_thread();
-				transaction.detach(Hook::SetWindowCompositionAttribute, Hook::SetWindowCompositionAttributeDetour);
-				transaction.commit();
-
-				Hook::s_initState = Hook::InitializationState::NotInitialized;
-			}
-			catch (const DetourException &err)
-			{
-				MessageBox(
-					Window::NullWindow,
-					(L"Failed to remove detour: " + err.message()).c_str(),
-					NAME L" Hook - Error",
-					MB_ICONERROR | MB_OK | MB_SETFOREGROUND
-				);
-			}
+			transaction.update_current_thread();
+			transaction.detach(Hook::SetWindowCompositionAttribute, Hook::SetWindowCompositionAttributeDetour);
+			transaction.commit();
 		}
-	}
+		Hook::s_IsHooked.clear();
+		break;
 	}
 
 	return TRUE;
