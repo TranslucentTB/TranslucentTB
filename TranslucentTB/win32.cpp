@@ -20,7 +20,6 @@
 #include "constants.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
-#include "wilx.hpp"
 #include "window.hpp"
 
 std::filesystem::path win32::m_ExeLocation;
@@ -87,12 +86,20 @@ bool win32::IsAtLeastBuild(uint32_t buildNumber)
 
 bool win32::CopyToClipboard(std::wstring_view text)
 {
-	wilx::unique_clipboard clipboard(OpenClipboard(Window::NullWindow));
-	if (!clipboard)
+	const bool opened = OpenClipboard(Window::NullWindow);
+	if (!opened)
 	{
 		LastErrorHandle(Error::Level::Error, L"Failed to open clipboard.");
 		return false;
 	}
+
+	const auto scope_guard = wil::scope_exit([]
+	{
+		if (!CloseClipboard())
+		{
+			LastErrorHandle(Error::Level::Log, L"Failed to close clipboard.");
+		}
+	});
 
 	if (!EmptyClipboard())
 	{
