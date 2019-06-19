@@ -129,9 +129,6 @@
     <ClInclude Include="smart\boolguard.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="smart\clipboardcontext.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="smart\eventhook.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

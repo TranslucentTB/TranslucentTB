@@ -2,7 +2,6 @@
 #include <functional>
 #include <ShObjIdl.h>
 #include <winrt/base.h>
-#include "wilx.hpp"
 
 class AppVisibilitySink : public winrt::implements<AppVisibilitySink, IAppVisibilityEvents> {
 private:
@@ -31,5 +30,3 @@ public:
 		return S_OK;
 	}
 };
-
-using app_visibility_sink_cookie = wilx::unique_com_token<&IAppVisibility::Unadvise>;

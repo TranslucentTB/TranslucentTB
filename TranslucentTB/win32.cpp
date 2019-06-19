@@ -17,10 +17,10 @@
 
 #include "smart/autofree.hpp"
 #include "smart/autounlock.hpp"
-#include "smart/clipboardcontext.hpp"
 #include "constants.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
+#include "wilx.hpp"
 #include "window.hpp"
 
 std::filesystem::path win32::m_ExeLocation;
@@ -87,8 +87,8 @@ bool win32::IsAtLeastBuild(uint32_t buildNumber)
 
 bool win32::CopyToClipboard(std::wstring_view text)
 {
-	const ClipboardContext context;
-	if (!context)
+	wilx::unique_clipboard clipboard(OpenClipboard(Window::NullWindow));
+	if (!clipboard)
 	{
 		LastErrorHandle(Error::Level::Error, L"Failed to open clipboard.");
 		return false;

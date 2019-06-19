@@ -41,7 +41,6 @@
     <ClInclude Include="smart\autounlock.hpp" />
     <ClInclude Include="blacklist.hpp" />
     <ClInclude Include="smart\boolguard.hpp" />
-    <ClInclude Include="smart\clipboardcontext.hpp" />
     <ClInclude Include="taskbarattributeworker.hpp" />
     <ClInclude Include="smart\eventhook.hpp" />
     <ClInclude Include="taskdialogs\aboutdialog.hpp" />

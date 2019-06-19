@@ -411,6 +411,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 	});
 
 
+	BindBool(tray, ID_REGULAR_ON_PEEK, cfg.UseRegularAppearanceWhenPeeking);
 	BindAppearance(tray, cfg.RegularAppearance, ID_REGULAR_COLOR, REGULAR_BUTTOM_MAP);
 	BindAppearance(tray, cfg.MaximisedWindowAppearance, ID_MAXIMISED, ID_MAXIMISED_COLOR, MAXIMISED_BUTTON_MAP);
 	BindAppearance(tray, cfg.StartOpenedAppearance, ID_START, ID_START_COLOR, START_BUTTON_MAP);
@@ -419,7 +420,6 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 
 
 	BindByMap(tray, PEEK_BUTTON_MAP, cfg.Peek);
-	BindBool(tray, ID_REGULAR_ON_PEEK, cfg.UseRegularAppearanceWhenPeeking);
 
 
 	tray.RegisterContextMenuCallback(ID_OPENLOG, []

@@ -12,6 +12,7 @@
 #include "smart/eventhook.hpp"
 #include "windows/messagewindow.hpp"
 #include "undoc/swca.hpp"
+#include "wilx.hpp"
 
 class TaskbarAttributeWorker : public MessageWindow {
 private:
@@ -50,7 +51,7 @@ private:
 	// Start menu
 	HMONITOR m_CurrentStartMonitor;
 	wil::com_ptr<IAppVisibility> m_IAV;
-	app_visibility_sink_cookie m_IAVECookie;
+	wilx::unique_app_visibility_token m_IAVECookie;
 	void OnStartVisibilityChange(bool state);
 	HMONITOR GetStartMenuMonitor();
 

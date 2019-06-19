@@ -92,7 +92,7 @@ void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, Window window, L
 	{
 		if (idObject == OBJID_WINDOW && window.valid())
 		{
-			OnWindowStateChange(true, EVENT_OBJECT_CREATE, window, idObject);
+			OnWindowStateChange(true, event, window, idObject);
 			if (window.classname() == SECONDARY_TASKBAR)
 			{
 				m_Taskbars[window.monitor()] = { window };
