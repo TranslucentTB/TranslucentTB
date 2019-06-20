@@ -36,11 +36,8 @@
   <ItemGroup>
     <ClInclude Include="appvisibilitysink.hpp" />
     <ClInclude Include="darkthememanager.hpp" />
-    <ClInclude Include="smart\autofree.hpp" />
     <ClInclude Include="autostart.hpp" />
-    <ClInclude Include="smart\autounlock.hpp" />
     <ClInclude Include="blacklist.hpp" />
-    <ClInclude Include="smart\boolguard.hpp" />
     <ClInclude Include="taskbarattributeworker.hpp" />
     <ClInclude Include="smart\eventhook.hpp" />
     <ClInclude Include="taskdialogs\aboutdialog.hpp" />
@@ -73,8 +70,5 @@
     <Image Include="resources\TTB_black.ico" />
     <Image Include="resources\TTB_color.ico" />
     <Image Include="resources\TTB_white.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Natvis Include="smart\AutoFree.natvis" />
   </ItemGroup>
 </Project>

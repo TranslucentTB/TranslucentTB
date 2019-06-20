@@ -1,5 +1,4 @@
 #include "taskbarattributeworker.hpp"
-#include "smart/boolguard.hpp"
 #include "constants.hpp"
 #include "../ExplorerDetour/hook.hpp"
 #include "ttberror.hpp"
@@ -45,7 +44,7 @@ void TaskbarAttributeWorker::OnWindowStateChange(bool skipCheck, DWORD, Window w
 	}
 }
 
-bool TaskbarAttributeWorker::IsWindowMaximised(Window window)
+bool TaskbarAttributeWorker::IsWindowMaximised(Window window) const
 {
 	return
 		window.valid() &&
@@ -220,7 +219,7 @@ void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance confi
 	}
 }
 
-TaskbarAppearance TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR monitor, bool skipCheck)
+TaskbarAppearance TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR monitor, bool skipCheck) const
 {
 	if (m_Cfg.UseRegularAppearanceWhenPeeking && m_PeekActive)
 	{
@@ -322,7 +321,7 @@ void TaskbarAttributeWorker::RefreshAeroPeekButton()
 
 long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, LPARAM lParam)
 {
-	if (m_returningToStock)
+	if (m_disableAttributeRefreshReply)
 	{
 		return 0;
 	}
@@ -346,16 +345,17 @@ void TaskbarAttributeWorker::ReturnToStock()
 {
 	ShowAeroPeekButton(m_Taskbars.at(m_MainTaskbarMonitor).TaskbarWindow, true);
 
-	bool_guard guard(m_returningToStock);
+	m_disableAttributeRefreshReply = true;
+
+	const auto scope_guard = wil::scope_exit([this]
+	{
+		m_disableAttributeRefreshReply = false;
+	});
+
 	for (const auto &[_, monInf] : m_Taskbars)
 	{
 		SetAttribute(monInf.TaskbarWindow, { ACCENT_NORMAL });
 	}
-}
-
-EventHook::callback_t TaskbarAttributeWorker::BindHook()
-{
-	return std::bind(&TaskbarAttributeWorker::OnWindowStateChange, this, false, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 }
 
 TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance, const Config &cfg) :
@@ -371,7 +371,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance, const Config
 	m_ForegroundChangeHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, std::bind(&TaskbarAttributeWorker::OnForegroundWindowChange, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)),
 	m_MainTaskbarMonitor(nullptr),
 	m_CreateDestroyHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, std::bind(&TaskbarAttributeWorker::OnWindowCreateDestroy, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)),
-	m_returningToStock(false),
+	m_disableAttributeRefreshReply(false),
 	m_Cfg(cfg)
 {
 	const auto av_sink = winrt::make<AppVisibilitySink>(std::bind(&TaskbarAttributeWorker::OnStartVisibilityChange, this, std::placeholders::_1));

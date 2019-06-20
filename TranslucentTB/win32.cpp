@@ -15,8 +15,6 @@
 #include <winerror.h>
 #include <winnt.h>
 
-#include "smart/autofree.hpp"
-#include "smart/autounlock.hpp"
 #include "constants.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
@@ -107,24 +105,33 @@ bool win32::CopyToClipboard(std::wstring_view text)
 		return false;
 	}
 
-	auto data = AutoFree::GlobalHandle<wchar_t[]>::Alloc(text.length() + 1);
-	if (!data)
+	wil::unique_hglobal handle(GlobalAlloc(GMEM_MOVEABLE, sizeof(wchar_t) * (text.length() + 1)));
+	if (!handle)
 	{
 		LastErrorHandle(Error::Level::Error, L"Failed to allocate memory for the clipboard.");
 		return false;
 	}
 
+	auto string = static_cast<wchar_t *>(GlobalLock(handle.get()));
+	if (!string)
 	{
-		AutoUnlock lock(data);
-		if (!data)
-		{
-			LastErrorHandle(Error::Level::Error, L"Failed to lock memory for the clipboard.");
-			return false;
-		}
-		text.copy(data.get(), text.length());
+		LastErrorHandle(Error::Level::Error, L"Failed to lock memory for the clipboard.");
+		return false;
 	}
 
-	if (!SetClipboardData(CF_UNICODETEXT, data.detach()))
+	text.copy(string, text.length());
+	string[text.length()] = L'\0';
+
+	if (!GlobalUnlock(handle.get()))
+	{
+		if (DWORD error = GetLastError(); error != NO_ERROR)
+		{
+			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Failed to unlock memory for the clipboard.");
+			return false;
+		}
+	}
+
+	if (!SetClipboardData(CF_UNICODETEXT, handle.release()))
 	{
 		LastErrorHandle(Error::Level::Error, L"Failed to copy data to clipboard.");
 		return false;

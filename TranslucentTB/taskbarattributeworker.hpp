@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include <ShObjIdl.h>
 #include <unordered_map>
 #include <unordered_set>
@@ -27,15 +28,13 @@ private:
 	// better aero peek support: detect current peeked to window and include in calculation
 	// support windows that are immune to peek (with some extended/dwm flag iirc)
 	// dynamic cortana and task view
-	// color preview cpicker - window callback in CPicker for color change and HRESULT at the end
-	//     CPickerAsync class? closes on destroy?
-	// apply settings & blacklist changes instantly. (PropertyChanged?)
+	// apply settings & blacklist changes instantly
 	// correct virtual desktop switch detection
 	//     (currently relying on the fact that cloacking status changes)
 	//     not sure if an undocumented COM interface is any better
 	//     maybe EVENT_SYSTEM_DESKTOPSWITCH
-	// support alt-tab? EVENT_SYSTEM_SWITCH{START,END}
 	// on current desktop not working after explorer restart?
+	// close if explorer crashes twice in 30 seconds
 
 	// Maximised window
 	bool m_PeekActive;
@@ -46,14 +45,14 @@ private:
 	EventHook m_ShowHideHook;
 	void OnAeroPeekEnterExit(DWORD event, ...);
 	void OnWindowStateChange(bool skipCheck, DWORD, Window window, LONG idObject, ...);
-	bool IsWindowMaximised(Window window);
+	bool IsWindowMaximised(Window window) const;
 
 	// Start menu
 	HMONITOR m_CurrentStartMonitor;
 	wil::com_ptr<IAppVisibility> m_IAV;
 	wilx::unique_app_visibility_token m_IAVECookie;
 	void OnStartVisibilityChange(bool state);
-	HMONITOR GetStartMenuMonitor();
+	static HMONITOR GetStartMenuMonitor();
 
 	// Other
 	EventHook m_ForegroundChangeHook;
@@ -69,19 +68,23 @@ private:
 	void HookTaskbar(Window window);
 
 	// Taskbar appearance refresh
-	void Poll();
+	bool m_disableAttributeRefreshReply;
 	std::unordered_set<Window> m_NormalTaskbars;
+	void Poll();
 	void SetAttribute(Window window, TaskbarAppearance config);
-	TaskbarAppearance GetConfigForMonitor(HMONITOR monitor, bool skipCheck = false);
+	TaskbarAppearance GetConfigForMonitor(HMONITOR monitor, bool skipCheck = false) const;
 	void RefreshAttribute(HMONITOR monitor, bool skipCheck = false);
 	void ShowAeroPeekButton(Window taskbar, bool show);
 	void RefreshAeroPeekButton();
 	long OnRequestAttributeRefresh(WPARAM, LPARAM lParam);
 
 	// Other
-	bool m_returningToStock;
 	void ReturnToStock();
-	EventHook::callback_t BindHook();
+
+	inline auto BindHook()
+	{
+		return std::bind(&TaskbarAttributeWorker::OnWindowStateChange, this, false, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+	}
 
 	const Config &m_Cfg;
 

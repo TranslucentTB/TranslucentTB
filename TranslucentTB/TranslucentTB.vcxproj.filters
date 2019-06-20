@@ -120,15 +120,6 @@
     <ClInclude Include="windows\windowclass.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="smart\autofree.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="smart\autounlock.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="smart\boolguard.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="smart\eventhook.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -149,11 +140,6 @@
     <Image Include="resources\TTB_white.ico">
       <Filter>Resource Files</Filter>
     </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <Natvis Include="smart\AutoFree.natvis">
-      <Filter>Debug Visualizer Files</Filter>
-    </Natvis>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="resources\app.manifest">
