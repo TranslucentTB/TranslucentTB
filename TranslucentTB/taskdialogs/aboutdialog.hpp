@@ -40,10 +40,12 @@ private:
 			switch (wParam)
 			{
 			case COPY_VERSION:
-				if (win32::CopyToClipboard(BuildVersionInfo()))
+				try
 				{
+					UWP::CopyToClipboard(BuildVersionInfo());
 					MessageBox(window, L"Copied.", NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND);
 				}
+				WinrtExceptionCatch(Error::Level::Error, L"Failed to copy version information!")
 				return S_FALSE;
 
 			case JOIN_DISCORD:
