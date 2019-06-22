@@ -9,7 +9,7 @@
 #include "../ExplorerDetour/hook.hpp"
 #include "ttberror.hpp"
 #include "util/numbers.hpp"
-#include "uwp.hpp"
+#include "../winrt/uwp.hpp"
 #include "win32.hpp"
 
 class AboutDialog : public TTBTaskDialog {

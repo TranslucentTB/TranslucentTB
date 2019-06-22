@@ -11,10 +11,9 @@ namespace UWP {
 	};
 
 	winrt::hstring GetApplicationFolderPath(FolderType type);
-
 	std::wstring GetApplicationVersion();
-
 	bool HasPackageIdentity();
+	void CopyToClipboard(std::wstring_view str);
 };
 
 inline std::wostream &operator <<(std::wostream &stream, const winrt::hstring &str)

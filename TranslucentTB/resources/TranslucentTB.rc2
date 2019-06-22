@@ -32,16 +32,27 @@ IDR_TRAY_MENU MENUEX
 BEGIN
     POPUP ""
     BEGIN
-        POPUP "Regular"
+        POPUP "Desktop"
         BEGIN
-            MENUITEM "Use when peeking",                               ID_REGULAR_ON_PEEK
-            MENUITEM "Accent Color",                                   ID_REGULAR_COLOR
+            MENUITEM "Use when peeking",                               ID_DESKTOP_ON_PEEK
+            MENUITEM "Accent Color",                                   ID_DESKTOP_COLOR
             MENUITEM "",                                               0, MFT_SEPARATOR
-            MENUITEM "Normal",                                         ID_REGULAR_NORMAL
-            MENUITEM "Clear",                                          ID_REGULAR_CLEAR
-            MENUITEM "Opaque",                                         ID_REGULAR_OPAQUE
-            MENUITEM "Blur",                                           ID_REGULAR_BLUR
-            MENUITEM "Acrylic",                                        ID_REGULAR_ACRYLIC
+            MENUITEM "Normal",                                         ID_DESKTOP_NORMAL
+            MENUITEM "Clear",                                          ID_DESKTOP_CLEAR
+            MENUITEM "Opaque",                                         ID_DESKTOP_OPAQUE
+            MENUITEM "Blur",                                           ID_DESKTOP_BLUR
+            MENUITEM "Acrylic",                                        ID_DESKTOP_ACRYLIC
+        END
+        POPUP "Visible window"
+        BEGIN
+            MENUITEM "Enabled",                                        ID_VISIBLE
+            MENUITEM "Accent Color",                                   ID_VISIBLE_COLOR
+            MENUITEM "",                                               0, MFT_SEPARATOR
+            MENUITEM "Normal",                                         ID_VISIBLE_NORMAL
+            MENUITEM "Clear",                                          ID_VISIBLE_CLEAR
+            MENUITEM "Opaque",                                         ID_VISIBLE_OPAQUE
+            MENUITEM "Blur",                                           ID_VISIBLE_BLUR
+            MENUITEM "Acrylic",                                        ID_VISIBLE_ACRYLIC
         END
         POPUP "Maximised window"
         BEGIN

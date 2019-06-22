@@ -5,7 +5,7 @@
 #include <wil/resource.h>
 
 #include "constants.hpp"
-#include "../smart/eventhook.hpp"
+#include "../eventhook.hpp"
 #include "../ttberror.hpp"
 #include "../win32.hpp"
 

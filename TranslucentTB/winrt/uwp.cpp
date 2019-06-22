@@ -5,11 +5,16 @@
 #include <appmodel.h>
 #include <sstream>
 #include <winrt/Windows.ApplicationModel.Core.h>
+#include <winrt/Windows.ApplicationModel.DataTransfer.h>
 #include <winrt/Windows.Storage.h>
 
-winrt::hstring UWP::GetApplicationFolderPath(FolderType type)
+using namespace winrt;
+using namespace Windows::ApplicationModel;
+using namespace Windows::Storage;
+
+hstring UWP::GetApplicationFolderPath(FolderType type)
 {
-	static const auto application_data = winrt::Windows::Storage::ApplicationData::Current();
+	static const auto application_data = ApplicationData::Current();
 
 	switch (type)
 	{
@@ -26,7 +31,7 @@ winrt::hstring UWP::GetApplicationFolderPath(FolderType type)
 
 std::wstring UWP::GetApplicationVersion()
 {
-	static const auto version = winrt::Windows::ApplicationModel::Package::Current().Id().Version();
+	static const auto version = Package::Current().Id().Version();
 
 	std::wostringstream str;
 	str << version.Major << L'.' << version.Minor << L'.' << version.Revision << L'.' << version.Build;
@@ -43,4 +48,12 @@ bool UWP::HasPackageIdentity()
 	}();
 
 	return has_identity;
+}
+
+void UWP::CopyToClipboard(std::wstring_view str)
+{
+	DataTransfer::DataPackage package;
+	package.SetText(str);
+
+	DataTransfer::Clipboard::SetContent(package);
 }

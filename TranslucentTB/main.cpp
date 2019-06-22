@@ -25,8 +25,7 @@
 #include <rapidjson/prettywriter.h>
 
 // Local stuff
-#include "autostart.hpp"
-#include "config.hpp"
+#include "config/config.hpp"
 #include "constants.hpp"
 #include "darkthememanager.hpp"
 #include "resources/ids.h"
@@ -37,11 +36,12 @@
 #include "tray/traycontextmenu.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
-#include "uwp.hpp"
 #include "win32.hpp"
 #include "windows/messagewindow.hpp"
 #include "window.hpp"
 #include "windows/windowclass.hpp"
+#include "winrt/autostart.hpp"
+#include "winrt/uwp.hpp"
 
 #pragma region Data
 
@@ -57,12 +57,20 @@ static struct {
 	std::filesystem::path config_file;
 } run;
 
-static const std::unordered_map<ACCENT_STATE, uint32_t> REGULAR_BUTTOM_MAP = {
-	{ ACCENT_NORMAL,                     ID_REGULAR_NORMAL  },
-	{ ACCENT_ENABLE_TRANSPARENTGRADIENT, ID_REGULAR_CLEAR   },
-	{ ACCENT_ENABLE_GRADIENT,            ID_REGULAR_OPAQUE  },
-	{ ACCENT_ENABLE_BLURBEHIND,          ID_REGULAR_BLUR    },
-	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,   ID_REGULAR_ACRYLIC }
+static const std::unordered_map<ACCENT_STATE, uint32_t> DESKTOP_BUTTOM_MAP = {
+	{ ACCENT_NORMAL,                     ID_DESKTOP_NORMAL  },
+	{ ACCENT_ENABLE_TRANSPARENTGRADIENT, ID_DESKTOP_CLEAR   },
+	{ ACCENT_ENABLE_GRADIENT,            ID_DESKTOP_OPAQUE  },
+	{ ACCENT_ENABLE_BLURBEHIND,          ID_DESKTOP_BLUR    },
+	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,   ID_DESKTOP_ACRYLIC }
+};
+
+static const std::unordered_map<ACCENT_STATE, uint32_t> VISIBLE_BUTTOM_MAP = {
+	{ ACCENT_NORMAL,                     ID_VISIBLE_NORMAL  },
+	{ ACCENT_ENABLE_TRANSPARENTGRADIENT, ID_VISIBLE_CLEAR   },
+	{ ACCENT_ENABLE_GRADIENT,            ID_VISIBLE_OPAQUE  },
+	{ ACCENT_ENABLE_BLURBEHIND,          ID_VISIBLE_BLUR    },
+	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,   ID_VISIBLE_ACRYLIC }
 };
 
 static const std::unordered_map<ACCENT_STATE, uint32_t> MAXIMISED_BUTTON_MAP = {
@@ -293,7 +301,8 @@ winrt::fire_and_forget RefreshMenu(const Config &cfg, TrayContextMenu::Updater u
 			: L"Nothing has been logged yet"
 	);
 
-	updater.EnableItem(ID_REGULAR_COLOR, cfg.RegularAppearance.Accent != ACCENT_NORMAL);
+	updater.EnableItem(ID_DESKTOP_COLOR, cfg.DesktopAppearance.Accent != ACCENT_NORMAL);
+	EnableAppearanceColor(updater, ID_VISIBLE_COLOR, cfg.VisibleWindowAppearance);
 	EnableAppearanceColor(updater, ID_MAXIMISED_COLOR, cfg.MaximisedWindowAppearance);
 	EnableAppearanceColor(updater, ID_START_COLOR, cfg.StartOpenedAppearance);
 	EnableAppearanceColor(updater, ID_CORTANA_COLOR, cfg.CortanaOpenedAppearance);
@@ -411,8 +420,9 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 	});
 
 
-	BindBool(tray, ID_REGULAR_ON_PEEK, cfg.UseRegularAppearanceWhenPeeking);
-	BindAppearance(tray, cfg.RegularAppearance, ID_REGULAR_COLOR, REGULAR_BUTTOM_MAP);
+	BindBool(tray, ID_DESKTOP_ON_PEEK, cfg.UseRegularAppearanceWhenPeeking);
+	BindAppearance(tray, cfg.DesktopAppearance, ID_DESKTOP_COLOR, DESKTOP_BUTTOM_MAP);
+	BindAppearance(tray, cfg.VisibleWindowAppearance, ID_VISIBLE, ID_VISIBLE_COLOR, VISIBLE_BUTTOM_MAP);
 	BindAppearance(tray, cfg.MaximisedWindowAppearance, ID_MAXIMISED, ID_MAXIMISED_COLOR, MAXIMISED_BUTTON_MAP);
 	BindAppearance(tray, cfg.StartOpenedAppearance, ID_START, ID_START_COLOR, START_BUTTON_MAP);
 	BindAppearance(tray, cfg.CortanaOpenedAppearance, ID_CORTANA, ID_CORTANA_COLOR, CORTANA_BUTTON_MAP);

@@ -9,8 +9,9 @@
 #include <wil/resource.h>
 
 #include "appvisibilitysink.hpp"
-#include "config.hpp"
-#include "smart/eventhook.hpp"
+#include "config/config.hpp"
+#include "config/taskbarappearance.hpp"
+#include "eventhook.hpp"
 #include "windows/messagewindow.hpp"
 #include "undoc/swca.hpp"
 #include "wilx.hpp"
@@ -22,6 +23,7 @@ private:
 	struct MonitorInfo {
 		Window TaskbarWindow;
 		std::unordered_set<Window> MaximisedWindows;
+		std::unordered_set<Window> NormalWindows;
 	};
 
 	// todo:
@@ -45,7 +47,6 @@ private:
 	EventHook m_ShowHideHook;
 	void OnAeroPeekEnterExit(DWORD event, ...);
 	void OnWindowStateChange(bool skipCheck, DWORD, Window window, LONG idObject, ...);
-	bool IsWindowMaximised(Window window) const;
 
 	// Start menu
 	HMONITOR m_CurrentStartMonitor;
@@ -70,6 +71,7 @@ private:
 	// Taskbar appearance refresh
 	bool m_disableAttributeRefreshReply;
 	std::unordered_set<Window> m_NormalTaskbars;
+	void InsertWindow(Window window, bool skipCheck = false);
 	void Poll();
 	void SetAttribute(Window window, TaskbarAppearance config);
 	TaskbarAppearance GetConfigForMonitor(HMONITOR monitor, bool skipCheck = false) const;

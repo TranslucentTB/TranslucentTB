@@ -31,18 +31,6 @@
     <ClCompile Include="ttblog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="uwp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="config.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="blacklist.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="autostart.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="taskbarattributeworker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -64,10 +52,16 @@
     <ClCompile Include="windows\windowclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="smart\eventhook.cpp">
+    <ClCompile Include="darkthememanager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="darkthememanager.cpp">
+    <ClCompile Include="winrt\uwp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="winrt\autostart.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="eventhook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -75,22 +69,10 @@
     <ClInclude Include="win32.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="config.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ttberror.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ttblog.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="autostart.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="uwp.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="blacklist.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="appvisibilitysink.hpp">
@@ -120,13 +102,37 @@
     <ClInclude Include="windows\windowclass.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="smart\eventhook.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resources\ids.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="darkthememanager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\windowhelper.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="config\config.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="config\taskbarappearance.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="config\rapidjsonhelper.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="config\optionaltaskbarappearance.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="winrt\uwp.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="winrt\autostart.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="eventhook.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="config\windowmatchlist.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

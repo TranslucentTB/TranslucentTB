@@ -19,6 +19,7 @@
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 #include "window.hpp"
+#include "winrt/uwp.hpp"
 
 std::filesystem::path win32::m_ExeLocation;
 
@@ -82,64 +83,6 @@ bool win32::IsAtLeastBuild(uint32_t buildNumber)
 	}
 }
 
-bool win32::CopyToClipboard(std::wstring_view text)
-{
-	const bool opened = OpenClipboard(Window::NullWindow);
-	if (!opened)
-	{
-		LastErrorHandle(Error::Level::Error, L"Failed to open clipboard.");
-		return false;
-	}
-
-	const auto scope_guard = wil::scope_exit([]
-	{
-		if (!CloseClipboard())
-		{
-			LastErrorHandle(Error::Level::Log, L"Failed to close clipboard.");
-		}
-	});
-
-	if (!EmptyClipboard())
-	{
-		LastErrorHandle(Error::Level::Error, L"Failed to empty clipboard.");
-		return false;
-	}
-
-	wil::unique_hglobal handle(GlobalAlloc(GMEM_MOVEABLE, sizeof(wchar_t) * (text.length() + 1)));
-	if (!handle)
-	{
-		LastErrorHandle(Error::Level::Error, L"Failed to allocate memory for the clipboard.");
-		return false;
-	}
-
-	auto string = static_cast<wchar_t *>(GlobalLock(handle.get()));
-	if (!string)
-	{
-		LastErrorHandle(Error::Level::Error, L"Failed to lock memory for the clipboard.");
-		return false;
-	}
-
-	text.copy(string, text.length());
-	string[text.length()] = L'\0';
-
-	if (!GlobalUnlock(handle.get()))
-	{
-		if (DWORD error = GetLastError(); error != NO_ERROR)
-		{
-			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Error, L"Failed to unlock memory for the clipboard.");
-			return false;
-		}
-	}
-
-	if (!SetClipboardData(CF_UNICODETEXT, handle.release()))
-	{
-		LastErrorHandle(Error::Level::Error, L"Failed to copy data to clipboard.");
-		return false;
-	}
-
-	return true;
-}
-
 void win32::EditFile(const std::filesystem::path &file)
 {
 	SHELLEXECUTEINFO info = {
@@ -164,7 +107,11 @@ void win32::EditFile(const std::filesystem::path &file)
 
 			if (MessageBox(Window::NullWindow, str.str().c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 			{
-				CopyToClipboard(file.native());
+				try
+				{
+					UWP::CopyToClipboard(file.native());
+				}
+				WinrtExceptionCatch(Error::Level::Error, L"Failed to copy file path.")
 			}
 		}).detach();
 	}
@@ -193,7 +140,11 @@ void win32::OpenLink(const std::wstring &link)
 
 			if (MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 			{
-				CopyToClipboard(link);
+				try
+				{
+					UWP::CopyToClipboard(link);
+				}
+				WinrtExceptionCatch(Error::Level::Error, L"Failed to copy URL.")
 			}
 		}).detach();
 	}
@@ -374,7 +325,11 @@ void win32::RevealFile(const std::filesystem::path &file)
 
 				if (MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 				{
-					CopyToClipboard(file.native());
+					try
+					{
+						UWP::CopyToClipboard(file.native());
+					}
+					WinrtExceptionCatch(Error::Level::Error, L"Failed to copy file path.")
 				}
 			}).detach();
 		}

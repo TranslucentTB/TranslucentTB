@@ -15,12 +15,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="autostart.cpp" />
-    <ClCompile Include="blacklist.cpp" />
-    <ClCompile Include="config.cpp" />
+    <ClCompile Include="winrt\autostart.cpp" />
     <ClCompile Include="darkthememanager.cpp" />
     <ClCompile Include="taskbarattributeworker.cpp" />
-    <ClCompile Include="smart\eventhook.cpp" />
+    <ClCompile Include="eventhook.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="windows\messagewindow.cpp" />
     <ClCompile Include="taskdialogs\taskdialog.cpp" />
@@ -28,31 +26,35 @@
     <ClCompile Include="tray\trayicon.cpp" />
     <ClCompile Include="ttberror.cpp" />
     <ClCompile Include="ttblog.cpp" />
-    <ClCompile Include="uwp.cpp" />
+    <ClCompile Include="winrt\uwp.cpp" />
     <ClCompile Include="win32.cpp" />
     <ClCompile Include="windows\window.cpp" />
     <ClCompile Include="windows\windowclass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="appvisibilitysink.hpp" />
+    <ClInclude Include="config\optionaltaskbarappearance.hpp" />
+    <ClInclude Include="config\rapidjsonhelper.hpp" />
+    <ClInclude Include="config\taskbarappearance.hpp" />
     <ClInclude Include="darkthememanager.hpp" />
-    <ClInclude Include="autostart.hpp" />
-    <ClInclude Include="blacklist.hpp" />
+    <ClInclude Include="winrt\autostart.hpp" />
+    <ClInclude Include="config\windowmatchlist.hpp" />
     <ClInclude Include="taskbarattributeworker.hpp" />
-    <ClInclude Include="smart\eventhook.hpp" />
+    <ClInclude Include="eventhook.hpp" />
     <ClInclude Include="taskdialogs\aboutdialog.hpp" />
     <ClInclude Include="windows\messagewindow.hpp" />
-    <ClInclude Include="config.hpp" />
+    <ClInclude Include="config\config.hpp" />
     <ClInclude Include="resources\ids.h" />
     <ClInclude Include="taskdialogs\taskdialog.hpp" />
     <ClInclude Include="tray\traycontextmenu.hpp" />
     <ClInclude Include="tray\trayicon.hpp" />
     <ClInclude Include="ttberror.hpp" />
     <ClInclude Include="ttblog.hpp" />
-    <ClInclude Include="uwp.hpp" />
+    <ClInclude Include="winrt\uwp.hpp" />
     <ClInclude Include="taskdialogs\welcomedialog.hpp" />
     <ClInclude Include="win32.hpp" />
     <ClInclude Include="windows\windowclass.hpp" />
+    <ClInclude Include="windows\windowhelper.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\TranslucentTB.rc2" />

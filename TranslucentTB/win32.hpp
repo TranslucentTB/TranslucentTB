@@ -26,9 +26,6 @@ public:
 	// Checks Windows build number.
 	static bool IsAtLeastBuild(uint32_t buildNumber);
 
-	// Copies text to the clipboard.
-	static bool CopyToClipboard(std::wstring_view text);
-
 	// Opens a file in the default text editor.
 	static void EditFile(const std::filesystem::path &file);
 

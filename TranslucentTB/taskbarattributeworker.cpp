@@ -4,6 +4,7 @@
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 #include "win32.hpp"
+#include "windows/windowhelper.hpp"
 
 const PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE TaskbarAttributeWorker::SetWindowCompositionAttribute =
 	reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(GetModuleHandle(SWCA_DLL), SWCA_ORDINAL));
@@ -24,15 +25,7 @@ void TaskbarAttributeWorker::OnWindowStateChange(bool skipCheck, DWORD, Window w
 		const HMONITOR monitor = window.monitor();
 		if (m_Taskbars.contains(monitor))
 		{
-			// Note: at() is done here after the check because if not we get some weird crashes when changing DPI.
-			if (IsWindowMaximised(window))
-			{
-				m_Taskbars.at(monitor).MaximisedWindows.insert(window);
-			}
-			else
-			{
-				m_Taskbars.at(monitor).MaximisedWindows.erase(window);
-			}
+			InsertWindow(window, true);
 
 			if ((monitor == m_MainTaskbarMonitor && (m_Cfg.Peek == PeekBehavior::WindowMaximisedOnMainMonitor || m_Cfg.Peek == PeekBehavior::DesktopIsForegroundWindow)) ||
 				m_Cfg.Peek == PeekBehavior::WindowMaximisedOnAnyMonitor)
@@ -42,17 +35,6 @@ void TaskbarAttributeWorker::OnWindowStateChange(bool skipCheck, DWORD, Window w
 			RefreshAttribute(monitor, true);
 		}
 	}
-}
-
-bool TaskbarAttributeWorker::IsWindowMaximised(Window window) const
-{
-	return
-		window.valid() &&
-		window.visible() &&
-		window.maximised() &&
-		!window.cloaked() &&
-		window.on_current_desktop() &&
-		!m_Cfg.MaximisedWindowBlacklist.IsBlacklisted(window);
 }
 
 void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
@@ -147,6 +129,38 @@ void TaskbarAttributeWorker::HookTaskbar(Window window)
 	}
 }
 
+void TaskbarAttributeWorker::InsertWindow(Window window, bool skipCheck)
+{
+	const HMONITOR monitor = window.monitor();
+	if (skipCheck || m_Taskbars.contains(monitor))
+	{
+		// Note: at() is done here after the check because if not we get some weird crashes when changing DPI.
+		if ((WindowHelper::IsUserWindow(window) || m_Cfg.Whitelist.Matches(window)) && !m_Cfg.Blacklist.Matches(window))
+		{
+			if (window.maximised())
+			{
+				auto &taskInfo = m_Taskbars.at(monitor);
+				taskInfo.MaximisedWindows.insert(window);
+				taskInfo.NormalWindows.erase(window);
+
+				return;
+			}
+			else if (!window.minimised())
+			{
+				auto &taskInfo = m_Taskbars.at(monitor);
+				taskInfo.MaximisedWindows.erase(window);
+				taskInfo.NormalWindows.insert(window);
+
+				return;
+			}
+		}
+
+		auto &taskInfo = m_Taskbars.at(monitor);
+		taskInfo.MaximisedWindows.erase(window);
+		taskInfo.NormalWindows.erase(window);
+	}
+}
+
 void TaskbarAttributeWorker::Poll()
 {
 	// TODO: check if user is using areo peek here (if not possible, assume they aren't)
@@ -160,18 +174,25 @@ void TaskbarAttributeWorker::Poll()
 
 	for (const Window window : Window::FindEnum())
 	{
-		const HMONITOR monitor = window.monitor();
-		if (m_Taskbars.contains(monitor))
-		{
-			if (IsWindowMaximised(window))
-			{
-				m_Taskbars.at(monitor).MaximisedWindows.insert(window);
-			}
-			else
-			{
-				m_Taskbars.at(monitor).MaximisedWindows.erase(window);
-			}
-		}
+		InsertWindow(window);
+	}
+
+	for (const Window window : m_Taskbars[m_MainTaskbarMonitor].NormalWindows)
+	{
+		Log::OutputMessage(L"");
+		Log::OutputMessage(L"Window");
+		Log::OutputMessage(window.title());
+		Log::OutputMessage(window.classname());
+		Log::OutputMessage(window.file().native());
+	}
+
+	for (const Window window : m_Taskbars[m_MainTaskbarMonitor].MaximisedWindows)
+	{
+		Log::OutputMessage(L"");
+		Log::OutputMessage(L"Maximised Window");
+		Log::OutputMessage(window.title());
+		Log::OutputMessage(window.classname());
+		Log::OutputMessage(window.file().native());
 	}
 }
 
@@ -223,7 +244,7 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR monitor, 
 {
 	if (m_Cfg.UseRegularAppearanceWhenPeeking && m_PeekActive)
 	{
-		return m_Cfg.RegularAppearance;
+		return m_Cfg.DesktopAppearance;
 	}
 
 	if (m_Cfg.StartOpenedAppearance.Enabled && m_CurrentStartMonitor == monitor)
@@ -240,7 +261,16 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR monitor, 
 		}
 	}
 
-	return m_Cfg.RegularAppearance;
+	if (m_Cfg.VisibleWindowAppearance.Enabled)
+	{
+		if ((skipCheck || m_Taskbars.contains(monitor)) &&
+			!m_Taskbars.at(monitor).NormalWindows.empty())
+		{
+			return m_Cfg.VisibleWindowAppearance;
+		}
+	}
+
+	return m_Cfg.DesktopAppearance;
 }
 
 void TaskbarAttributeWorker::RefreshAttribute(HMONITOR monitor, bool skipCheck)
@@ -291,14 +321,10 @@ void TaskbarAttributeWorker::RefreshAeroPeekButton()
 
 	case PeekBehavior::DesktopIsForegroundWindow:
 	{
-		// The desktop window has a child window with this class. The desktop window in
-		// itself has no unique identifier however, it's just one of the many WorkerW windows.
-		const Window foreground = Window::ForegroundWindow();
 		bool isDesktop = false;
-
-		if (foreground.monitor() == m_MainTaskbarMonitor)
+		if (const Window foreground = Window::ForegroundWindow(); foreground.valid() && foreground.monitor() == m_MainTaskbarMonitor)
 		{
-			isDesktop = foreground.find_child(L"SHELLDLL_DefView").valid();
+			isDesktop = foreground == Window::ShellWindow();
 
 			// Consider the taskbar as part of the desktop if there is no maximised window on the main monitor.
 			// Consider being on the desktop if the foreground window is cloaked or invisible and there are no maximised windows.

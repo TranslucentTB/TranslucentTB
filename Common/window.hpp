@@ -107,6 +107,11 @@ public:
 		return GetDesktopWindow();
 	}
 
+	inline static Window ShellWindow() noexcept
+	{
+		return GetShellWindow();
+	}
+
 	constexpr Window(HWND handle = Window::NullWindow) noexcept : m_WindowHandle(handle) { };
 
 #ifdef _TRANSLUCENTTB_EXE
@@ -172,6 +177,37 @@ public:
 		DWORD pid;
 		GetWindowThreadProcessId(m_WindowHandle, &pid);
 		return pid;
+	}
+
+	inline RECT rect()
+	{
+		RECT result {};
+		GetWindowRect(m_WindowHandle, &result);
+		return result;
+	}
+
+	inline RECT client_rect()
+	{
+		RECT result {};
+		GetClientRect(m_WindowHandle, &result);
+		return result;
+	}
+
+	inline TITLEBARINFO titlebar_info() const noexcept
+	{
+		TITLEBARINFO info = { sizeof(info) };
+		GetTitleBarInfo(m_WindowHandle, &info);
+		return info;
+	}
+
+	inline LONG_PTR style() const noexcept
+	{
+		return GetWindowLongPtr(m_WindowHandle, GWL_STYLE);
+	}
+
+	inline LONG_PTR extended_style() const noexcept
+	{
+		return GetWindowLongPtr(m_WindowHandle, GWL_EXSTYLE);
 	}
 
 	inline LRESULT send_message(unsigned int message, WPARAM wparam = 0, LPARAM lparam = 0) const noexcept
