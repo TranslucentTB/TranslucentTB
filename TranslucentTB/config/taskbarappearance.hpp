@@ -3,6 +3,7 @@
 #include <rapidjson/encodings.h>
 #include <string_view>
 #include <unordered_map>
+#include <wil/safecast.h>
 
 #include "rapidjsonhelper.hpp"
 #include "../win32.hpp"
@@ -19,10 +20,10 @@ struct TaskbarAppearance {
 	{
 		RapidJSONHelper::Serialize(writer, Accent, ACCENT_KEY, s_AccentMap);
 
-		writer.String(COLOR_KEY.data(), COLOR_KEY.length());
+		writer.String(COLOR_KEY.data(), wil::safe_cast<rapidjson::SizeType>(COLOR_KEY.length()));
 		writer.String(Util::StringFromColor(win32::SwapColorOrder(Color)));
 
-		writer.String(OPACITY_KEY.data(), OPACITY_KEY.length());
+		writer.String(OPACITY_KEY.data(), wil::safe_cast<rapidjson::SizeType>(OPACITY_KEY.length()));
 		writer.Uint((Color & 0xFF000000) >> 24);
 	}
 

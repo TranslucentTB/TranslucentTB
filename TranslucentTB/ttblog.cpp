@@ -20,7 +20,7 @@
 #include "ttberror.hpp"
 #include "util/numbers.hpp"
 #include "util/time.hpp"
-#include "uwp.hpp"
+#include "winrt/uwp.hpp"
 
 std::optional<wil::unique_hfile> Log::m_FileHandle;
 std::filesystem::path Log::m_File;

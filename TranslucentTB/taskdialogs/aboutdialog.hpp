@@ -84,9 +84,9 @@ private:
 #else
 			L"Unknown"
 #endif
-			<< L')' << std::endl;
+			L")\n"
 
-		str << L"System architecture: " << win32::GetProcessorArchitecture() << std::endl;
+		L"System architecture: " << win32::GetProcessorArchitecture() << std::endl;
 
 		if (UWP::HasPackageIdentity())
 		{
