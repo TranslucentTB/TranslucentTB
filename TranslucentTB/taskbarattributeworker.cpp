@@ -176,24 +176,6 @@ void TaskbarAttributeWorker::Poll()
 	{
 		InsertWindow(window);
 	}
-
-	for (const Window window : m_Taskbars[m_MainTaskbarMonitor].NormalWindows)
-	{
-		Log::OutputMessage(L"");
-		Log::OutputMessage(L"Window");
-		Log::OutputMessage(window.title());
-		Log::OutputMessage(window.classname());
-		Log::OutputMessage(window.file().native());
-	}
-
-	for (const Window window : m_Taskbars[m_MainTaskbarMonitor].MaximisedWindows)
-	{
-		Log::OutputMessage(L"");
-		Log::OutputMessage(L"Maximised Window");
-		Log::OutputMessage(window.title());
-		Log::OutputMessage(window.classname());
-		Log::OutputMessage(window.file().native());
-	}
 }
 
 void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance config)
@@ -263,10 +245,13 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR monitor, 
 
 	if (m_Cfg.VisibleWindowAppearance.Enabled)
 	{
-		if ((skipCheck || m_Taskbars.contains(monitor)) &&
-			!m_Taskbars.at(monitor).NormalWindows.empty())
+		if ((skipCheck || m_Taskbars.contains(monitor)))
 		{
-			return m_Cfg.VisibleWindowAppearance;
+			const auto &monInfo = m_Taskbars.at(monitor);
+			if (!monInfo.MaximisedWindows.empty() || !monInfo.NormalWindows.empty())
+			{
+				return m_Cfg.VisibleWindowAppearance;
+			}
 		}
 	}
 
