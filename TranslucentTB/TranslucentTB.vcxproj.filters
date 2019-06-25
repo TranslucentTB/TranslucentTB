@@ -111,18 +111,6 @@
     <ClInclude Include="windows\windowhelper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="config\config.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="config\taskbarappearance.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="config\rapidjsonhelper.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="config\optionaltaskbarappearance.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="winrt\uwp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -130,9 +118,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="eventhook.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="config\windowmatchlist.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

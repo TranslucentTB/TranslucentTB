@@ -47,13 +47,4 @@ public:
 
 	// Opens a folder and highlights a file in the File Explorer.
 	static void RevealFile(const std::filesystem::path &file);
-
-	static constexpr uint32_t SwapColorOrder(uint32_t color)
-	{
-		const uint8_t r = GetBValue(color);
-		const uint8_t g = GetGValue(color);
-		const uint8_t b = GetRValue(color);
-
-		return RGB(r, g, b);
-	}
 };

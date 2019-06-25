@@ -6,8 +6,11 @@
 #include <unordered_set>
 #include <wil/safecast.h>
 
-#include "util/strings.hpp"
-#include "window.hpp"
+#include "../util/strings.hpp"
+
+#ifdef _TRANSLUCENTTB_EXE
+#include "../window.hpp"
+#endif
 
 class WindowMatchList {
 public:
@@ -31,6 +34,7 @@ public:
 		DeserializeStringSet(val, m_FileList, FILE_KEY);
 	}
 
+#ifdef _TRANSLUCENTTB_EXE
 	inline bool Matches(Window window) const
 	{
 		// This is the fastest because we do the less string manipulation, so always try it first
@@ -65,6 +69,7 @@ public:
 
 		return false;
 	}
+#endif
 
 private:
 	template<typename Writer, typename T>

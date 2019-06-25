@@ -33,17 +33,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="appvisibilitysink.hpp" />
-    <ClInclude Include="config\optionaltaskbarappearance.hpp" />
-    <ClInclude Include="config\rapidjsonhelper.hpp" />
-    <ClInclude Include="config\taskbarappearance.hpp" />
     <ClInclude Include="darkthememanager.hpp" />
     <ClInclude Include="winrt\autostart.hpp" />
-    <ClInclude Include="config\windowmatchlist.hpp" />
     <ClInclude Include="taskbarattributeworker.hpp" />
     <ClInclude Include="eventhook.hpp" />
     <ClInclude Include="taskdialogs\aboutdialog.hpp" />
     <ClInclude Include="windows\messagewindow.hpp" />
-    <ClInclude Include="config\config.hpp" />
     <ClInclude Include="resources\ids.h" />
     <ClInclude Include="taskdialogs\taskdialog.hpp" />
     <ClInclude Include="tray\traycontextmenu.hpp" />
