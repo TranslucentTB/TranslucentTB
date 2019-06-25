@@ -55,4 +55,12 @@ namespace Util {
 		ss << std::setw(2) << (color & 0xFF);
 		return ss.str();
 	}
+
+	constexpr uint32_t SwapColorEndian(uint32_t color)
+	{
+		const uint8_t left = (color & 0xFF0000) >> 16;
+		const uint8_t right = color & 0xFF;
+
+		return (color & 0xFF00) + (right << 16) + left;
+	}
 }

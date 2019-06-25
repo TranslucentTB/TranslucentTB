@@ -38,3 +38,13 @@ TEST(Util_StringFromColor, IgnoresFirstByte)
 {
 	ASSERT_EQ(Util::StringFromColor(0xdeadbeef), L"#adbeef");
 }
+
+TEST(Util_SwapColorEndian, SwapsEndianness)
+{
+	ASSERT_EQ(Util::SwapColorEndian(0xc0ffee), 0xeeffc0);
+}
+
+TEST(Util_SwapColorEndian, IgnoresFirstByte)
+{
+	ASSERT_EQ(Util::SwapColorEndian(0xdeadbeef), 0xefbead);
+}
