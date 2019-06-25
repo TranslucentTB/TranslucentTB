@@ -119,9 +119,6 @@
       <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
       <UseFullPaths>true</UseFullPaths>
     </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-    </Link>
   </ItemDefinitionGroup>
 
   <ImportGroup Label="Shared">

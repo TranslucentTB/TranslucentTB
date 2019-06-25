@@ -2,7 +2,6 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <ProjectGuid>{59F844AA-8D3C-431C-B8CC-57682915F551}</ProjectGuid>
-    <RootNamespace>TranslucentTB</RootNamespace>
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <Import Project="..\Common\CppProject.props" />
@@ -12,6 +11,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>advapi32.lib;comctl32.lib;dwmapi.lib;mincore.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;user32.lib</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
