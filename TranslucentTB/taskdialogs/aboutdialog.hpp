@@ -7,6 +7,7 @@
 
 #include "constants.hpp"
 #include "../ExplorerDetour/hook.hpp"
+#include "stringviewhelper.hpp"
 #include "ttberror.hpp"
 #include "util/numbers.hpp"
 #include "../winrt/uwp.hpp"

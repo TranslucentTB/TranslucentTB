@@ -1,5 +1,4 @@
 #pragma once
-#include <ostream>
 #include <string>
 #include <string_view>
 #include <winrt/base.h>
@@ -15,8 +14,3 @@ namespace UWP {
 	bool HasPackageIdentity();
 	void CopyToClipboard(std::wstring_view str);
 };
-
-inline std::wostream &operator <<(std::wostream &stream, const winrt::hstring &str)
-{
-	return stream << static_cast<std::wstring_view>(str);
-}
