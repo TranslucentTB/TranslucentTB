@@ -10,7 +10,7 @@ A lightweight (uses a few MB of RAM and almost no CPU) utility that makes the Wi
 
 You can see examples of the customizations you can make in the images below:
 
-![blur](https://files.charlesmilette.net/GbOX4b.png) ![transparent](https://files.charlesmilette.net/yX37Vc.png) ![acrylic](https://files.charlesmilette.net/MPaxeO.png)
+![blur](https://i.imgur.com/r4ZJjnL.png) ![transparent](https://i.imgur.com/eLGTtwp.png) ![acrylic](https://i.imgur.com/M15IPJW.png)
 
 ## Features
 
