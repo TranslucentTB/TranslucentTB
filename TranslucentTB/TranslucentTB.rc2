@@ -145,7 +145,7 @@ BEGIN
             VALUE "FileDescription", "TranslucentTB"
             VALUE "FileVersion", "1.0.0.1"
             VALUE "InternalName", "TranslucentTB.exe"
-            VALUE "LegalCopyright", "Copyright © 2018 TranslucentTB Open Source Developers"
+            VALUE "LegalCopyright", "Copyright © 2019 TranslucentTB Open Source Developers"
             VALUE "OriginalFilename", "TranslucentTB.exe"
             VALUE "ProductName", "TranslucentTB"
             VALUE "ProductVersion", "1.0.0.1"
