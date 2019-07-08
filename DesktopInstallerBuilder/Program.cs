@@ -44,7 +44,7 @@ namespace DesktopInstallerBuilder
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = GetInPath("ISCC.exe") ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Inno Setup 5", "ISCC.exe"),
+                    FileName = GetInPath("ISCC.exe") ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Inno Setup 6", "ISCC.exe"),
                     Arguments = Path.Combine(WalkParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), 4), "DesktopInstaller", "main.iss"),
                     UseShellExecute = false,
                     RedirectStandardOutput = true

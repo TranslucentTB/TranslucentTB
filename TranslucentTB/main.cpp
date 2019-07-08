@@ -330,7 +330,10 @@ void RefreshMenu(HMENU menu)
 	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, false, TrayContextMenu::ControlsEnabled);
 	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, false, TrayContextMenu::Toggle);
 	TrayContextMenu::ChangeItemText(menu, IDM_AUTOSTART, L"Querying startup state...");
-	Autostart::GetStartupState().then(std::bind(&RefreshAutostartMenu, menu, std::placeholders::_1));
+	Autostart::GetStartupState().Completed([menu](auto info, ...)
+	{
+		RefreshAutostartMenu(menu, info.GetResults());
+	});
 
 
 	static bool initial_check_done = false;
@@ -642,9 +645,9 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 		tray.RegisterContextMenuCallback(IDM_AUTOSTART, []
 		{
-			Autostart::GetStartupState().then([](const Autostart::StartupState &result)
+			Autostart::GetStartupState().Completed([](auto info, ...)
 			{
-				Autostart::SetStartupState(result == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
+				Autostart::SetStartupState(info.GetResults() == Autostart::StartupState::Enabled ? Autostart::StartupState::Disabled : Autostart::StartupState::Enabled);
 			});
 		});
 		tray.RegisterContextMenuCallback(IDM_TIPS, std::bind(&win32::OpenLink,

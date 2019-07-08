@@ -33,10 +33,10 @@ struct registry_key_traits {
 
 using registry_key = winrt::handle_type<registry_key_traits>;
 
-inline registry_key open_key(const registry_key &key, const std::wstring &subkey)
+inline registry_key open_key(HKEY key, const std::wstring &subkey)
 {
 	registry_key created_key;
-	SetLastError(RegCreateKey(key.get(), subkey.c_str(), created_key.put()));
+	SetLastError(RegCreateKey(key, subkey.c_str(), created_key.put()));
 
 	return created_key;
 }

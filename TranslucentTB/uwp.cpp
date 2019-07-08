@@ -1,13 +1,10 @@
 #include "uwp.hpp"
 #include <winrt/Windows.Storage.h>
 
-concurrency::task<const winrt::Windows::ApplicationModel::StartupTask *> UWP::GetApplicationStartupTask()
+winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::ApplicationModel::StartupTask> UWP::GetApplicationStartupTask()
 {
-	return concurrency::create_task([]() -> const winrt::Windows::ApplicationModel::StartupTask *
-	{
-		static const auto task = winrt::Windows::ApplicationModel::StartupTask::GetForCurrentPackageAsync().get().GetAt(0);
-		return &task;
-	});
+	static const auto task = (co_await winrt::Windows::ApplicationModel::StartupTask::GetForCurrentPackageAsync()).GetAt(0);
+	return task;
 }
 
 winrt::hstring UWP::GetApplicationFolderPath(const FolderType &type)

@@ -1,5 +1,4 @@
 #pragma once
-#include <ppltasks.h>
 #include <winrt/Windows.ApplicationModel.h>
 
 class Autostart {
@@ -7,6 +6,6 @@ class Autostart {
 public:
 	using StartupState = winrt::Windows::ApplicationModel::StartupTaskState;
 
-	static concurrency::task<StartupState> GetStartupState();
-	static concurrency::task<void> SetStartupState(const StartupState &state);
+	static winrt::Windows::Foundation::IAsyncOperation<StartupState> GetStartupState();
+	static winrt::Windows::Foundation::IAsyncAction SetStartupState(const StartupState &state);
 };
