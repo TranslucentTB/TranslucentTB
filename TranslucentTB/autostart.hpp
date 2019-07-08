@@ -7,5 +7,5 @@ public:
 	using StartupState = winrt::Windows::ApplicationModel::StartupTaskState;
 
 	static winrt::Windows::Foundation::IAsyncOperation<StartupState> GetStartupState();
-	static winrt::Windows::Foundation::IAsyncAction SetStartupState(const StartupState &state);
+	static winrt::Windows::Foundation::IAsyncAction SetStartupState(StartupState state);
 };

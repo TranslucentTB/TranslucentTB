@@ -43,7 +43,7 @@ winrt::Windows::Foundation::IAsyncOperation<Autostart::StartupState> Autostart::
 	}
 }
 
-winrt::Windows::Foundation::IAsyncAction Autostart::SetStartupState(const StartupState &state)
+winrt::Windows::Foundation::IAsyncAction Autostart::SetStartupState(StartupState state)
 {
 	co_await winrt::resume_background();
 
