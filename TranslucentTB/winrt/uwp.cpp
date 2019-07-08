@@ -1,9 +1,9 @@
 #include "uwp.hpp"
 #include "arch.h"
 #include <cstdint>
+#include <fmt/format.h>
 #include <ShlObj.h>
 #include <appmodel.h>
-#include <sstream>
 #include <winrt/Windows.ApplicationModel.Core.h>
 #include <winrt/Windows.ApplicationModel.DataTransfer.h>
 #include <winrt/Windows.Storage.h>
@@ -32,10 +32,8 @@ hstring UWP::GetApplicationFolderPath(FolderType type)
 std::wstring UWP::GetApplicationVersion()
 {
 	static const auto version = Package::Current().Id().Version();
-
-	std::wostringstream str;
-	str << version.Major << L'.' << version.Minor << L'.' << version.Revision << L'.' << version.Build;
-	return str.str();
+;
+	return fmt::format(L"{}.{}.{}.{}", version.Major, version.Minor, version.Revision, version.Build);
 }
 
 bool UWP::HasPackageIdentity()

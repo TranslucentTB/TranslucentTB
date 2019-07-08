@@ -40,8 +40,7 @@ public:
 		// This is the fastest because we do the less string manipulation, so always try it first
 		if (!m_ClassList.empty())
 		{
-			// TODO: Remove wstring copy when transparent comparators land
-			if (m_ClassList.contains(std::wstring(window.classname())))
+			if (m_ClassList.contains(window.classname()))
 			{
 				return true;
 			}
@@ -49,7 +48,7 @@ public:
 
 		if (!m_FileList.empty())
 		{
-			if (m_FileList.contains(window.file().filename()))
+			if (m_FileList.contains(window.file().filename().native()))
 			{
 				return true;
 			}
@@ -58,9 +57,10 @@ public:
 		// Do it last because titles can change, so it's less reliable.
 		if (!m_TitleList.empty())
 		{
+			const std::wstring title = window.title();
 			for (const std::wstring &value : m_TitleList)
 			{
-				if (window.title().find(value) != std::wstring_view::npos)
+				if (title.find(value) != std::wstring::npos)
 				{
 					return true;
 				}

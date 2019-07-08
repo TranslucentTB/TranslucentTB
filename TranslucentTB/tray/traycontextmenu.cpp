@@ -1,5 +1,4 @@
 #include "traycontextmenu.hpp"
-
 #include "../ttberror.hpp"
 #include "../ttblog.hpp"
 
@@ -10,19 +9,19 @@ long TrayContextMenu::TrayCallback(WPARAM, LPARAM lParam)
 		POINT pt;
 		if (!GetCursorPos(&pt))
 		{
-			LastErrorHandle(Error::Level::Log, L"Failed to get cursor position.");
+			LastErrorHandle(spdlog::level::info, L"Failed to get cursor position.");
 		}
 
 		if (!SetForegroundWindow(m_Window))
 		{
-			Log::OutputMessage(L"Failed to set window as foreground window.");
+			MessagePrint(spdlog::level::info, L"Failed to set window as foreground window.");
 		}
 
 		SetLastError(0);
 		unsigned int item = TrackPopupMenu(GetSubMenu(m_Menu, 0), TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, 0, m_Window, nullptr);
 		if (!item && GetLastError() != 0)
 		{
-			LastErrorHandle(Error::Level::Log, L"Failed to open context menu.");
+			LastErrorHandle(spdlog::level::warn, L"Failed to open context menu.");
 			return 0;
 		}
 
@@ -44,7 +43,7 @@ TrayContextMenu::TrayContextMenu(MessageWindow &window, const wchar_t *iconResou
 	m_Menu = LoadMenu(hInstance, menuResource);
 	if (!m_Menu)
 	{
-		LastErrorHandle(Error::Level::Fatal, L"Failed to load context menu.");
+		LastErrorHandle(spdlog::level::critical, L"Failed to load context menu.");
 	}
 
 	m_TrayCallbackCookie = RegisterTrayCallback(std::bind(&TrayContextMenu::TrayCallback, this, std::placeholders::_1, std::placeholders::_2));
@@ -65,6 +64,6 @@ TrayContextMenu::~TrayContextMenu()
 	m_Window.UnregisterCallback(m_TrayCallbackCookie);
 	if (!DestroyMenu(m_Menu))
 	{
-		LastErrorHandle(Error::Level::Log, L"Failed to destroy menu");
+		LastErrorHandle(spdlog::level::info, L"Failed to destroy context menu.");
 	}
 }

@@ -1,13 +1,13 @@
 #include "win32.hpp"
 #include "arch.h"
 #include <cstddef>
+#include <fmt/format.h>
 #include <memory>
 #include <optional>
 #include <PathCch.h>
 #include <processthreadsapi.h>
 #include <shellapi.h>
 #include <ShlObj.h>
-#include <sstream>
 #include <synchapi.h>
 #include <utility>
 #include <wil/resource.h>
@@ -51,7 +51,7 @@ const std::filesystem::path &win32::GetExeLocation()
 		}
 		else
 		{
-			ErrorHandle(hr, Error::Level::Fatal, L"Failed to determine executable location!");
+			HresultHandle(hr, spdlog::level::critical, L"Failed to determine executable location!");
 		}
 	}
 
@@ -76,7 +76,7 @@ bool win32::IsAtLeastBuild(uint32_t buildNumber)
 		const DWORD error = GetLastError();
 		if (error != ERROR_OLD_WIN_VERSION)
 		{
-			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Error obtaining version info.");
+			HresultHandle(HRESULT_FROM_WIN32(error), spdlog::level::warn, L"Error obtaining version info.");
 		}
 
 		return false;
@@ -99,19 +99,17 @@ void win32::EditFile(const std::filesystem::path &file)
 		const DWORD err = GetLastError();
 		std::thread([file, err]
 		{
-			std::wostringstream str;
-			str
-				<< L"Failed to open file \"" << file.native() << L"\".\n\n"
-				<< Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(err))
-				<< L"\n\nCopy the file location to the clipboard?";
 
-			if (MessageBox(Window::NullWindow, str.str().c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+			const std::wstring msg =
+				fmt::format(ERROR_MESSAGE L"\n\nFailed to open file \"{}\".\n\n{}\n\nCopy the file location to the clipboard?", file.native(), Error::MessageFromHRESULT(HRESULT_FROM_WIN32(err)));
+
+			if (MessageBox(Window::NullWindow, msg.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 			{
 				try
 				{
 					UWP::CopyToClipboard(file.native());
 				}
-				WinrtExceptionCatch(Error::Level::Error, L"Failed to copy file path.")
+				HresultErrorCatch(spdlog::level::err, L"Failed to copy file path.")
 			}
 		}).detach();
 	}
@@ -125,7 +123,7 @@ void win32::OpenLink(const std::wstring &link)
 		.lpVerb = L"open",
 		.lpFile = link.c_str(),
 		.nShow = SW_SHOW,
-		.lpClass = link[4] == L's' ? L"https" : L"http"
+		.lpClass = L"https" // http causes the file to be downloaded then opened, https does not
 	};
 
 	if (!ShellExecuteEx(&info))
@@ -133,18 +131,16 @@ void win32::OpenLink(const std::wstring &link)
 		const DWORD err = GetLastError();
 		std::thread([link, err]
 		{
-			std::wstring boxbuffer =
-				L"Failed to open URL \"" + link + L"\"." +
-				L"\n\n" + Error::ExceptionFromHRESULT(HRESULT_FROM_WIN32(err)) +
-				L"\n\nCopy the URL to the clipboard?";
+			const std::wstring msg =
+				fmt::format(ERROR_MESSAGE L"\n\nFailed to open URL \"{}\".\n\n{}\n\nCopy the URL to the clipboard?", link, Error::MessageFromHRESULT(HRESULT_FROM_WIN32(err)));
 
-			if (MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+			if (MessageBox(Window::NullWindow, msg.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 			{
 				try
 				{
 					UWP::CopyToClipboard(link);
 				}
-				WinrtExceptionCatch(Error::Level::Error, L"Failed to copy URL.")
+				HresultErrorCatch(spdlog::level::err, L"Failed to copy URL.")
 			}
 		}).detach();
 	}
@@ -159,12 +155,12 @@ void win32::HardenProcess()
 		aslr_policy.DisallowStrippedImages = true;
 		if (!SetProcessMitigationPolicy(ProcessASLRPolicy, &aslr_policy, sizeof(aslr_policy)))
 		{
-			LastErrorHandle(Error::Level::Log, L"Couldn't disallow stripped images.");
+			LastErrorHandle(spdlog::level::info, L"Couldn't disallow stripped images.");
 		}
 	}
 	else
 	{
-		LastErrorHandle(Error::Level::Log, L"Couldn't get current ASLR policy.");
+		LastErrorHandle(spdlog::level::info, L"Couldn't get current ASLR policy.");
 	}
 
 #ifdef _CONTROL_FLOW_GUARD
@@ -174,12 +170,12 @@ void win32::HardenProcess()
 		cfg_policy.StrictMode = true;
 		if (!SetProcessMitigationPolicy(ProcessControlFlowGuardPolicy, &cfg_policy, sizeof(cfg_policy)))
 		{
-			LastErrorHandle(Error::Level::Log, L"Couldn't enable strict Control Flow Guard.");
+			LastErrorHandle(spdlog::level::info, L"Couldn't enable strict Control Flow Guard.");
 		}
 	}
 	else
 	{
-		LastErrorHandle(Error::Level::Log, L"Couldn't get current Control Flow Guard policy.");
+		LastErrorHandle(spdlog::level::info, L"Couldn't get current Control Flow Guard policy.");
 	}
 #endif
 
@@ -189,7 +185,7 @@ void win32::HardenProcess()
 	code_policy.AllowRemoteDowngrade = false;
 	if (!SetProcessMitigationPolicy(ProcessDynamicCodePolicy, &code_policy, sizeof(code_policy)))
 	{
-		LastErrorHandle(Error::Level::Log, L"Couldn't disable dynamic code generation.");
+		LastErrorHandle(spdlog::level::info, L"Couldn't disable dynamic code generation.");
 	}
 
 	PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY handle_policy {};
@@ -197,21 +193,21 @@ void win32::HardenProcess()
 	handle_policy.HandleExceptionsPermanentlyEnabled = true;
 	if (!SetProcessMitigationPolicy(ProcessStrictHandleCheckPolicy, &handle_policy, sizeof(handle_policy)))
 	{
-		LastErrorHandle(Error::Level::Log, L"Couldn't enable strict handle checks.");
+		LastErrorHandle(spdlog::level::info, L"Couldn't enable strict handle checks.");
 	}
 
 	PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY extension_policy {};
 	extension_policy.DisableExtensionPoints = true;
 	if (!SetProcessMitigationPolicy(ProcessExtensionPointDisablePolicy, &extension_policy, sizeof(extension_policy)))
 	{
-		LastErrorHandle(Error::Level::Log, L"Couldn't disable extension point DLLs.");
+		LastErrorHandle(spdlog::level::info, L"Couldn't disable extension point DLLs.");
 	}
 
 	PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY signature_policy {};
 	signature_policy.MitigationOptIn = true;
 	if (!SetProcessMitigationPolicy(ProcessSignaturePolicy, &signature_policy, sizeof(signature_policy)))
 	{
-		LastErrorHandle(Error::Level::Log, L"Couldn't enable image signature enforcement.");
+		LastErrorHandle(spdlog::level::info, L"Couldn't enable image signature enforcement.");
 	}
 
 
@@ -227,12 +223,12 @@ void win32::HardenProcess()
 	}
 	else
 	{
-		LastErrorHandle(Error::Level::Log, L"Unable to get volume path name.");
+		LastErrorHandle(spdlog::level::info, L"Unable to get volume path name.");
 	}
 
 	if (!SetProcessMitigationPolicy(ProcessImageLoadPolicy, &load_policy, sizeof(load_policy)))
 	{
-		LastErrorHandle(Error::Level::Log, L"Couldn't set image load policy.");
+		LastErrorHandle(spdlog::level::info, L"Couldn't set image load policy.");
 	}
 }
 
@@ -318,18 +314,16 @@ void win32::RevealFile(const std::filesystem::path &file)
 		{
 			std::thread([file, hr]
 			{
-				std::wstring boxbuffer =
-					L"Failed to reveal file \"" + file.native() + L"\"." +
-					L"\n\n" + Error::ExceptionFromHRESULT(hr) +
-					L"\n\nCopy the file location to the clipboard?";
+				const std::wstring msg =
+					fmt::format(ERROR_MESSAGE L"\n\nFailed to reveal file \"{}\".\n\n{}\n\nCopy the file location to the clipboard?", file.native(), Error::MessageFromHRESULT(hr));
 
-				if (MessageBox(Window::NullWindow, boxbuffer.c_str(), NAME L" - Error", MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
+				if (MessageBox(Window::NullWindow, msg.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 				{
 					try
 					{
 						UWP::CopyToClipboard(file.native());
 					}
-					WinrtExceptionCatch(Error::Level::Error, L"Failed to copy file path.")
+					HresultErrorCatch(spdlog::level::err, L"Failed to copy file path.")
 				}
 			}).detach();
 		}

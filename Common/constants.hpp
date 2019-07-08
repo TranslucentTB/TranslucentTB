@@ -1,9 +1,13 @@
+#define UTF8_APP_NAME "TranslucentTB"
+
+#ifndef RC_INVOKED
 #pragma once
 #include <cstdint>
+#include "util/strings.hpp"
 
 #pragma region Windows
 
-// https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
+// https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#maximum-path-length-limitation
 // "Note: The maximum path of 32,767 characters is approximate."
 // smh
 static constexpr uint16_t LONG_PATH = 33000;
@@ -14,7 +18,7 @@ static constexpr uint16_t LONG_PATH = 33000;
 
 // App name
 // Using a define so when can concatenate it in strings just by putting another one near it
-#define NAME L"TranslucentTB"
+#define APP_NAME UTIL_WIDEN(UTF8_APP_NAME)
 
 // Config file name
 static constexpr wchar_t CONFIG_FILE[] = L"config.json";
@@ -34,12 +38,6 @@ static constexpr wchar_t WM_FILECHANGED[] = L"TTB_FileChanged";
 
 // Send by the hook to the worker when the taskbar is trying to change its composition attribute
 static constexpr wchar_t WM_TTBHOOKREQUESTREFRESH[] = L"TTBHook_RequestAttributeRefresh";
-
-// Event hook event when Aero Peek begins
-static constexpr uint32_t EVENT_SYSTEM_PEEKSTART = 0x21;
-
-// Event hook event when Aero Peek ends
-static constexpr uint32_t EVENT_SYSTEM_PEEKEND = 0x22;
 
 #pragma endregion
 
@@ -61,3 +59,16 @@ static constexpr wchar_t SECONDARY_TASKBAR[] = L"Shell_SecondaryTrayWnd";
 static constexpr wchar_t CORE_WINDOW[] = L"Windows.UI.Core.CoreWindow";
 
 #pragma endregion
+
+#pragma region Other
+
+// UTF-8 Byte Order Mark
+static constexpr char UTF8_BOM[] = "\xEF\xBB\xBF";
+
+// UTF-16 Byte Order Mark
+static constexpr wchar_t UTF16_BOM[] = L"\uFEFF";
+
+#pragma endregion
+#else
+#define APP_NAME UTF8_APP_NAME
+#endif // !RC_INVOKED

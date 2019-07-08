@@ -3,6 +3,7 @@
 #include "../ExplorerDetour/hook.hpp"
 #include "ttberror.hpp"
 #include "ttblog.hpp"
+#include "undoc/winuser.hpp"
 #include "win32.hpp"
 #include "windows/windowhelper.hpp"
 
@@ -14,46 +15,38 @@ void TaskbarAttributeWorker::OnAeroPeekEnterExit(DWORD event, ...)
 	m_PeekActive = event == EVENT_SYSTEM_PEEKSTART;
 	for (const auto &[monitor, _] : m_Taskbars)
 	{
-		RefreshAttribute(monitor, true);
+		RefreshAttribute(monitor);
 	}
 }
 
-void TaskbarAttributeWorker::OnWindowStateChange(bool skipCheck, DWORD, Window window, LONG idObject, ...)
+void TaskbarAttributeWorker::OnWindowStateChange(DWORD, Window window, LONG idObject, ...)
 {
-	if (skipCheck || (idObject == OBJID_WINDOW && window.valid()))
+	if (idObject == OBJID_WINDOW && window.valid())
 	{
-		const HMONITOR monitor = window.monitor();
-		if (m_Taskbars.contains(monitor))
-		{
-			InsertWindow(window, true);
+		InsertWindow(window);
 
-			if ((monitor == m_MainTaskbarMonitor && (m_Cfg.Peek == PeekBehavior::WindowMaximisedOnMainMonitor || m_Cfg.Peek == PeekBehavior::DesktopIsForegroundWindow)) ||
-				m_Cfg.Peek == PeekBehavior::WindowMaximisedOnAnyMonitor)
-			{
-				RefreshAeroPeekButton();
-			}
-			RefreshAttribute(monitor, true);
+		const HMONITOR monitor = window.monitor();
+		if ((monitor == m_MainTaskbarMonitor && (m_Cfg.Peek == PeekBehavior::WindowMaximisedOnMainMonitor || m_Cfg.Peek == PeekBehavior::DesktopIsForegroundWindow)) ||
+			m_Cfg.Peek == PeekBehavior::WindowMaximisedOnAnyMonitor)
+		{
+			RefreshAeroPeekButton();
+		}
+		RefreshAttribute(monitor);
+	}
+}
+
+void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, Window window, LONG idObject, ...)
+{
+	if (idObject == OBJID_WINDOW && window.valid())
+	{
+		if (const auto className = window.classname(); className == TASKBAR || className == SECONDARY_TASKBAR)
+		{
+			MessagePrint(spdlog::level::debug, L"A taskbar got created or destroyed, refreshing...");
+			RefreshTaskbars();
 		}
 	}
-}
 
-void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
-{
-	if (state)
-	{
-		m_CurrentStartMonitor = GetStartMenuMonitor();
-		RefreshAttribute(m_CurrentStartMonitor);
-	}
-	else
-	{
-		const HMONITOR old_start_mon = std::exchange(m_CurrentStartMonitor, nullptr);
-		RefreshAttribute(old_start_mon);
-	}
-}
-
-HMONITOR TaskbarAttributeWorker::GetStartMenuMonitor()
-{
-	return Window::ForegroundWindow().monitor();
+	OnWindowStateChange(event, window, idObject);
 }
 
 void TaskbarAttributeWorker::OnForegroundWindowChange(DWORD, Window window, LONG idObject, ...)
@@ -67,33 +60,87 @@ void TaskbarAttributeWorker::OnForegroundWindowChange(DWORD, Window window, LONG
 	}
 }
 
-void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, Window window, LONG idObject, ...)
+void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 {
-	if (event == EVENT_OBJECT_CREATE)
+	if (state)
 	{
-		if (idObject == OBJID_WINDOW && window.valid())
-		{
-			OnWindowStateChange(true, event, window, idObject);
-			if (window.classname() == SECONDARY_TASKBAR)
-			{
-				m_Taskbars[window.monitor()] = { window };
+		m_CurrentStartMonitor = GetStartMenuMonitor();
+		RefreshAttribute(m_CurrentStartMonitor);
 
-				HookTaskbar(window);
-			}
-		}
+		MessagePrint(spdlog::level::debug, fmt::format(L"Start menu opened on monitor {}", static_cast<void *>(m_CurrentStartMonitor)));
 	}
 	else
 	{
-		OnWindowStateChange(false, event, window, idObject);
+		const HMONITOR old_start_mon = std::exchange(m_CurrentStartMonitor, nullptr);
+		RefreshAttribute(old_start_mon);
+
+		MessagePrint(spdlog::level::debug, fmt::format(L"Start menu closed on monitor {}", static_cast<void *>(old_start_mon)));
+	}
+}
+
+long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, LPARAM lParam)
+{
+	if (m_disableAttributeRefreshReply)
+	{
+		return 0;
+	}
+
+	const Window window = reinterpret_cast<HWND>(lParam);
+	if (const auto iter = m_Taskbars.find(window.monitor()); iter != m_Taskbars.end() && iter->second.TaskbarWindow == window)
+	{
+		if (const auto config = GetConfigForMonitor(iter->first); config.Accent != ACCENT_NORMAL)
+		{
+			SetAttribute(iter->second.TaskbarWindow, config);
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+void TaskbarAttributeWorker::ShowAeroPeekButton(Window taskbar, bool show)
+{
+	const Window peek = taskbar.find_child(L"TrayNotifyWnd").find_child(L"TrayShowDesktopButtonWClass");
+
+	if (show)
+	{
+		SetWindowLong(peek, GWL_EXSTYLE, GetWindowLong(peek, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+	}
+	else
+	{
+		SetWindowLong(peek, GWL_EXSTYLE, GetWindowLong(peek, GWL_EXSTYLE) | WS_EX_LAYERED);
+
+		SetLayeredWindowAttributes(peek, 0, 0, LWA_ALPHA);
+	}
+}
+
+void TaskbarAttributeWorker::RefreshAeroPeekButton()
+{
+	const auto &taskbarInfo = m_Taskbars.at(m_MainTaskbarMonitor);
+
+	switch (m_Cfg.Peek)
+	{
+	case PeekBehavior::AlwaysShow:
+	case PeekBehavior::AlwaysHide:
+		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, m_Cfg.Peek == PeekBehavior::AlwaysShow);
+		break;
+
+	case PeekBehavior::WindowMaximisedOnMainMonitor:
+		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, !taskbarInfo.MaximisedWindows.empty());
+		break;
+
+	case PeekBehavior::WindowMaximisedOnAnyMonitor:
+		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, std::any_of(m_Taskbars.begin(), m_Taskbars.end(), [](const auto &kvp)
+		{
+			return !kvp.second.MaximisedWindows.empty();
+		}));
+		break;
 	}
 }
 
 void TaskbarAttributeWorker::RefreshTaskbars()
 {
-	if (m_Cfg.VerboseLog)
-	{
-		Log::OutputMessage(L"Refreshing taskbar handles.");
-	}
+	MessagePrint(spdlog::level::debug, L"Refreshing taskbar handles.");
 
 	// Older handles are invalid, so clear state to be ready for new ones.
 	m_Taskbars.clear();
@@ -125,57 +172,44 @@ void TaskbarAttributeWorker::HookTaskbar(Window window)
 	}
 	else
 	{
-		ErrorHandle(hr, Error::Level::Fatal, L"Failed to set hook.");
+		HresultHandle(hr, spdlog::level::critical, L"Failed to set hook.");
 	}
 }
 
-void TaskbarAttributeWorker::InsertWindow(Window window, bool skipCheck)
+TaskbarAppearance TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR monitor) const
 {
-	const HMONITOR monitor = window.monitor();
-	if (skipCheck || m_Taskbars.contains(monitor))
+	if (m_Cfg.UseRegularAppearanceWhenPeeking && m_PeekActive)
 	{
-		// Note: at() is done here after the check because if not we get some weird crashes when changing DPI.
-		if ((WindowHelper::IsUserWindow(window) || m_Cfg.Whitelist.Matches(window)) && !m_Cfg.Blacklist.Matches(window))
+		return m_Cfg.DesktopAppearance;
+	}
+
+	if (m_Cfg.StartOpenedAppearance.Enabled && m_CurrentStartMonitor == monitor)
+	{
+		return m_Cfg.StartOpenedAppearance;
+	}
+
+	const auto iter = m_Taskbars.find(monitor);
+
+	if (iter != m_Taskbars.end())
+	{
+		if (m_Cfg.MaximisedWindowAppearance.Enabled)
 		{
-			if (window.maximised())
+			if (!iter->second.MaximisedWindows.empty())
 			{
-				auto &taskInfo = m_Taskbars.at(monitor);
-				taskInfo.MaximisedWindows.insert(window);
-				taskInfo.NormalWindows.erase(window);
-
-				return;
-			}
-			else if (!window.minimised())
-			{
-				auto &taskInfo = m_Taskbars.at(monitor);
-				taskInfo.MaximisedWindows.erase(window);
-				taskInfo.NormalWindows.insert(window);
-
-				return;
+				return m_Cfg.MaximisedWindowAppearance;
 			}
 		}
 
-		auto &taskInfo = m_Taskbars.at(monitor);
-		taskInfo.MaximisedWindows.erase(window);
-		taskInfo.NormalWindows.erase(window);
-	}
-}
-
-void TaskbarAttributeWorker::Poll()
-{
-	// TODO: check if user is using areo peek here (if not possible, assume they aren't)
-	m_CurrentStartMonitor = nullptr;
-
-	BOOL start_visible;
-	if (ErrorHandle(m_IAV->IsLauncherVisible(&start_visible), Error::Level::Log, L"Failed to query launcher visibility state.") && start_visible)
-	{
-		m_CurrentStartMonitor = GetStartMenuMonitor();
+		if (m_Cfg.VisibleWindowAppearance.Enabled)
+		{
+			if (!iter->second.MaximisedWindows.empty() || !iter->second.NormalWindows.empty())
+			{
+				return m_Cfg.VisibleWindowAppearance;
+			}
+		}
 	}
 
-	for (const Window window : Window::FindEnum())
-	{
-		InsertWindow(window);
-	}
+	return m_Cfg.DesktopAppearance;
 }
 
 void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance config)
@@ -222,134 +256,82 @@ void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance confi
 	}
 }
 
-TaskbarAppearance TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR monitor, bool skipCheck) const
+void TaskbarAttributeWorker::RefreshAttribute(HMONITOR monitor)
 {
-	if (m_Cfg.UseRegularAppearanceWhenPeeking && m_PeekActive)
+	if (const auto iter = m_Taskbars.find(monitor); iter != m_Taskbars.end())
 	{
-		return m_Cfg.DesktopAppearance;
-	}
-
-	if (m_Cfg.StartOpenedAppearance.Enabled && m_CurrentStartMonitor == monitor)
-	{
-		return m_Cfg.StartOpenedAppearance;
-	}
-
-	if (m_Cfg.MaximisedWindowAppearance.Enabled)
-	{
-		if ((skipCheck || m_Taskbars.contains(monitor)) &&
-			!m_Taskbars.at(monitor).MaximisedWindows.empty())
-		{
-			return m_Cfg.MaximisedWindowAppearance;
-		}
-	}
-
-	if (m_Cfg.VisibleWindowAppearance.Enabled)
-	{
-		if ((skipCheck || m_Taskbars.contains(monitor)))
-		{
-			const auto &monInfo = m_Taskbars.at(monitor);
-			if (!monInfo.MaximisedWindows.empty() || !monInfo.NormalWindows.empty())
-			{
-				return m_Cfg.VisibleWindowAppearance;
-			}
-		}
-	}
-
-	return m_Cfg.DesktopAppearance;
-}
-
-void TaskbarAttributeWorker::RefreshAttribute(HMONITOR monitor, bool skipCheck)
-{
-	if (skipCheck || m_Taskbars.contains(monitor))
-	{
-		SetAttribute(m_Taskbars.at(monitor).TaskbarWindow, GetConfigForMonitor(monitor, true));
+		SetAttribute(iter->second.TaskbarWindow, GetConfigForMonitor(monitor));
 	}
 }
 
-void TaskbarAttributeWorker::ShowAeroPeekButton(Window taskbar, bool show)
+void TaskbarAttributeWorker::Poll()
 {
-	const Window peek = taskbar.find_child(L"TrayNotifyWnd").find_child(L"TrayShowDesktopButtonWClass");
+	// TODO: check if user is using areo peek here (if not possible, assume they aren't)
 
-	if (show)
+	if (BOOL start_visible; HresultHandle(m_IAV->IsLauncherVisible(&start_visible), spdlog::level::info, L"Failed to query launcher visibility state.") && start_visible)
 	{
-		SetWindowLong(peek, GWL_EXSTYLE, GetWindowLong(peek, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+		m_CurrentStartMonitor = GetStartMenuMonitor();
 	}
 	else
 	{
-		SetWindowLong(peek, GWL_EXSTYLE, GetWindowLong(peek, GWL_EXSTYLE) | WS_EX_LAYERED);
+		m_CurrentStartMonitor = nullptr;
+	}
 
-		SetLayeredWindowAttributes(peek, 0, 0, LWA_ALPHA);
+	for (const Window window : Window::FindEnum())
+	{
+		InsertWindow(window);
 	}
 }
 
-void TaskbarAttributeWorker::RefreshAeroPeekButton()
+void TaskbarAttributeWorker::InsertWindow(Window window)
 {
-	const auto &taskbarInfo = m_Taskbars.at(m_MainTaskbarMonitor);
+	const HMONITOR monitor = window.monitor();
 
-	switch (m_Cfg.Peek)
+	// Note: find() is done here after the checks because if not we get some weird crashes when changing DPI.
+	if ((WindowHelper::IsUserWindow(window) || m_Cfg.Whitelist.Matches(window)) && !m_Cfg.Blacklist.Matches(window))
 	{
-	case PeekBehavior::AlwaysShow:
-	case PeekBehavior::AlwaysHide:
-		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, m_Cfg.Peek == PeekBehavior::AlwaysShow);
-		break;
-
-	case PeekBehavior::WindowMaximisedOnMainMonitor:
-		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, !taskbarInfo.MaximisedWindows.empty());
-		break;
-
-	case PeekBehavior::WindowMaximisedOnAnyMonitor:
-		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, std::any_of(m_Taskbars.begin(), m_Taskbars.end(), [](const auto &kvp)
+		if (window.maximised())
 		{
-			return !kvp.second.MaximisedWindows.empty();
-		}));
-		break;
-
-	case PeekBehavior::DesktopIsForegroundWindow:
-	{
-		bool isDesktop = false;
-		if (const Window foreground = Window::ForegroundWindow(); foreground.valid() && foreground.monitor() == m_MainTaskbarMonitor)
-		{
-			isDesktop = foreground == Window::ShellWindow();
-
-			// Consider the taskbar as part of the desktop if there is no maximised window on the main monitor.
-			// Consider being on the desktop if the foreground window is cloaked or invisible and there are no maximised windows.
-			// Some apps such as Discord exhibit a weird behavior when being closed: the window just becomes invisible and it still is the foreground window.
-			if (!isDesktop)
+			if (const auto iter = m_Taskbars.find(monitor); iter != m_Taskbars.end())
 			{
-				const auto &mainMonInfo = m_Taskbars.at(m_MainTaskbarMonitor);
-				isDesktop = (foreground == mainMonInfo.TaskbarWindow || !foreground.visible() || foreground.cloaked()) && mainMonInfo.MaximisedWindows.empty();
+				iter->second.MaximisedWindows.insert(window);
+				iter->second.NormalWindows.erase(window);
 			}
-		}
 
-		ShowAeroPeekButton(
-			taskbarInfo.TaskbarWindow,
-			!isDesktop
-		);
-		break;
+			return;
+		}
+		else if (!window.minimised())
+		{
+			if (const auto iter = m_Taskbars.find(monitor); iter != m_Taskbars.end())
+			{
+				iter->second.MaximisedWindows.erase(window);
+				iter->second.NormalWindows.insert(window);
+			}
+
+			return;
+		}
 	}
+
+	if (const auto iter = m_Taskbars.find(monitor); iter != m_Taskbars.end())
+	{
+		iter->second.MaximisedWindows.erase(window);
+		iter->second.NormalWindows.erase(window);
 	}
 }
 
-long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, LPARAM lParam)
+void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set)
 {
-	if (m_disableAttributeRefreshReply)
+	if (!set.empty())
 	{
-		return 0;
-	}
-
-	if (const Window window = reinterpret_cast<HWND>(lParam); m_Taskbars.contains(window.monitor()))
-	{
-		if (const auto taskbar = m_Taskbars.at(window.monitor()).TaskbarWindow; taskbar == window)
+		for (const Window window : set)
 		{
-			if (const auto config = GetConfigForMonitor(taskbar.monitor(), true); config.Accent != ACCENT_NORMAL)
-			{
-				SetAttribute(taskbar, config);
-				return 1;
-			}
+			MessagePrint(spdlog::level::off, fmt::format(L"{}{} [{}] [{}] [{}]", prefix, static_cast<void *>(window.handle()), window.title(), window.classname(), window.file().filename().native()));
 		}
 	}
-
-	return 0;
+	else
+	{
+		MessagePrint(spdlog::level::off, fmt::format(L"{}[none]", prefix));
+	}
 }
 
 void TaskbarAttributeWorker::ReturnToStock()
@@ -358,37 +340,34 @@ void TaskbarAttributeWorker::ReturnToStock()
 
 	m_disableAttributeRefreshReply = true;
 
-	const auto scope_guard = wil::scope_exit([this]
-	{
-		m_disableAttributeRefreshReply = false;
-	});
-
 	for (const auto &[_, monInf] : m_Taskbars)
 	{
 		SetAttribute(monInf.TaskbarWindow, { ACCENT_NORMAL });
 	}
+
+	m_disableAttributeRefreshReply = false;
 }
 
 TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance, const Config &cfg) :
 	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance),
-	m_PeekActive(false),
 	m_PeekUnpeekHook(EVENT_SYSTEM_PEEKSTART, EVENT_SYSTEM_PEEKEND, std::bind(&TaskbarAttributeWorker::OnAeroPeekEnterExit, this, std::placeholders::_1)),
-	m_CloakUncloakHook(EVENT_OBJECT_CLOAKED, EVENT_OBJECT_UNCLOAKED, BindHook()),
-	m_MinimizeRestoreHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, BindHook()),
-	m_ResizeMoveHook(EVENT_OBJECT_LOCATIONCHANGE, BindHook()),
-	m_ShowHideHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, BindHook()),
-	m_CurrentStartMonitor(nullptr),
-	m_IAV(wil::CoCreateInstance<AppVisibility, IAppVisibility>()),
-	m_ForegroundChangeHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, std::bind(&TaskbarAttributeWorker::OnForegroundWindowChange, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)),
-	m_MainTaskbarMonitor(nullptr),
-	m_CreateDestroyHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, std::bind(&TaskbarAttributeWorker::OnWindowCreateDestroy, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)),
+	m_CloakUncloakHook(EVENT_OBJECT_CLOAKED, EVENT_OBJECT_UNCLOAKED, BindEventHook(&TaskbarAttributeWorker::OnWindowStateChange)),
+	m_MinimizeRestoreHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, BindEventHook(&TaskbarAttributeWorker::OnWindowStateChange)),
+	m_ResizeMoveHook(EVENT_OBJECT_LOCATIONCHANGE, BindEventHook(&TaskbarAttributeWorker::OnWindowStateChange)),
+	m_ShowHideHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, BindEventHook(&TaskbarAttributeWorker::OnWindowStateChange)),
+	m_CreateDestroyHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, BindEventHook(&TaskbarAttributeWorker::OnWindowCreateDestroy)),
+	m_ForegroundChangeHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, BindEventHook(&TaskbarAttributeWorker::OnForegroundWindowChange)),
+	m_PeekActive(false),
 	m_disableAttributeRefreshReply(false),
+	m_CurrentStartMonitor(nullptr),
+	m_MainTaskbarMonitor(nullptr),
+	m_IAV(wil::CoCreateInstance<AppVisibility, IAppVisibility>()),
 	m_Cfg(cfg)
 {
 	const auto av_sink = winrt::make<AppVisibilitySink>(std::bind(&TaskbarAttributeWorker::OnStartVisibilityChange, this, std::placeholders::_1));
 
 	m_IAVECookie.associate(m_IAV.get());
-	ErrorHandle(m_IAV->Advise(av_sink.get(), m_IAVECookie.put()), Error::Level::Log, L"Failed to register app visibility sink.");
+	HresultHandle(m_IAV->Advise(av_sink.get(), m_IAVECookie.put()), spdlog::level::warn, L"Failed to register app visibility sink.");
 
 	RegisterCallback(WM_TTBHOOKREQUESTREFRESH, std::bind(&TaskbarAttributeWorker::OnRequestAttributeRefresh, this, std::placeholders::_1, std::placeholders::_2));
 
@@ -404,6 +383,41 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance, const Config
 	ResetState();
 }
 
+void TaskbarAttributeWorker::DumpState()
+{
+	MessagePrint(spdlog::level::off, L"===== Begin TaskbarAttributeWorker state dump =====");
+
+	for (const auto &[monitor, info] : m_Taskbars)
+	{
+		MessagePrint(spdlog::level::off, fmt::format(L"Monitor {} [taskbar {}]:", static_cast<void *>(monitor), static_cast<void *>(info.TaskbarWindow.handle())));
+
+		MessagePrint(spdlog::level::off, L"    Maximised windows:");
+		DumpWindowSet(L"        ", info.MaximisedWindows);
+
+		MessagePrint(spdlog::level::off, L"    Normal windows:");
+		DumpWindowSet(L"        ", info.NormalWindows);
+	}
+
+	MessagePrint(spdlog::level::off, fmt::format(L"User is using Aero Peek: {}", m_PeekActive));
+	MessagePrint(spdlog::level::off, fmt::format(L"Worker handles requests from hooks: {}", !m_disableAttributeRefreshReply));
+
+	if (m_CurrentStartMonitor != nullptr)
+	{
+		MessagePrint(spdlog::level::off, fmt::format(L"Start menu is opened on monitor: {}", static_cast<void *>(m_CurrentStartMonitor)));
+	}
+	else
+	{
+		MessagePrint(spdlog::level::off, L"Start menu is opened: false");
+	}
+
+	MessagePrint(spdlog::level::off, fmt::format(L"Main taskbar is on monitor: {}", static_cast<void *>(m_MainTaskbarMonitor)));
+
+	MessagePrint(spdlog::level::off, L"Taskbars currently using normal appearance:");
+	DumpWindowSet(L"    ", m_NormalTaskbars);
+
+	MessagePrint(spdlog::level::off, L"===== End TaskbarAttributeWorker state dump =====");
+}
+
 void TaskbarAttributeWorker::ResetState()
 {
 	RefreshTaskbars();
@@ -411,7 +425,7 @@ void TaskbarAttributeWorker::ResetState()
 	RefreshAeroPeekButton();
 	for (const auto &[monitor, _] : m_Taskbars)
 	{
-		RefreshAttribute(monitor, true);
+		RefreshAttribute(monitor);
 	}
 }
 

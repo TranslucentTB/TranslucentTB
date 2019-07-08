@@ -11,14 +11,8 @@
 class EventHook {
 private:
 	using callback_t = std::function<void(DWORD, Window, LONG, LONG, DWORD, DWORD)>;
-	
-	// As function because static initialization order.
-	inline static std::unordered_map<HWINEVENTHOOK, callback_t> &GetMap()
-	{
-		static std::unordered_map<HWINEVENTHOOK, callback_t> map;
-		return map;
-	}
 
+	static std::unordered_map<HWINEVENTHOOK, callback_t> s_HookMap;
 	static void CALLBACK RawHookCallback(HWINEVENTHOOK hook, DWORD event, HWND window, LONG idObject, LONG idChild, DWORD dwEventThread, DWORD dwmsEventTime);
 
 	wil::unique_hwineventhook m_Handle;
@@ -28,6 +22,9 @@ public:
 
 	inline EventHook(DWORD event, callback_t callback, DWORD idProcess = 0, DWORD idThread = 0, DWORD flags = WINEVENT_OUTOFCONTEXT) : EventHook(event, event, std::move(callback), idProcess, idThread, flags)
 	{ }
+
+	inline EventHook(const EventHook &other) = delete;
+	inline EventHook &operator =(const EventHook &other) = delete;
 
 	inline EventHook(EventHook &&other)
 	{
@@ -40,10 +37,14 @@ public:
 		{
 			std::swap(m_Handle, other.m_Handle);
 		}
+
+		return *this;
 	}
 
 	inline ~EventHook()
 	{
-		GetMap().erase(m_Handle.get());
+		HWINEVENTHOOK oldHandle = m_Handle.get();
+		m_Handle.reset();
+		s_HookMap.erase(oldHandle);
 	}
 };

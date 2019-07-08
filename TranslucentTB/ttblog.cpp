@@ -1,146 +1,86 @@
 #include "ttblog.hpp"
-#include <ctime>
-#include <cwchar>
-#include <fileapi.h>
-#include <fstream>
-#include <PathCch.h>
-#include <processthreadsapi.h>
-#include <sstream>
-#include <thread>
-#include <wil/safecast.h>
+#include <spdlog/spdlog.h>
+#include <spdlog/logger.h>
+#include <spdlog/sinks/msvc_sink.h>
 #include <winrt/base.h>
-#include <WinBase.h>
-#include <winerror.h>
-#include <winnt.h>
-#include <WinUser.h>
 
-#include "constants.hpp"
-#include "win32.hpp"
-#include "window.hpp"
-#include "ttberror.hpp"
-#include "util/numbers.hpp"
+#include "config/config.hpp"
 #include "util/time.hpp"
 #include "winrt/uwp.hpp"
 
-std::optional<wil::unique_hfile> Log::m_FileHandle;
-std::filesystem::path Log::m_File;
+std::weak_ptr<lazy_file_sink_mt> Log::s_LogSink;
+bool Log::s_InitDone = false;
 
 std::filesystem::path Log::GetPath()
 {
+	std::filesystem::path name;
 	if (UWP::HasPackageIdentity())
 	{
-		return static_cast<std::wstring_view>(UWP::GetApplicationFolderPath(UWP::FolderType::Temporary));
+		name = static_cast<std::wstring_view>(UWP::GetApplicationFolderPath(UWP::FolderType::Temporary));
 	}
 	else
 	{
-		return std::filesystem::temp_directory_path();
-	}
-}
-
-std::pair<HRESULT, std::wstring> Log::InitStream()
-{
-	// put this here so that if we fail before creating the file, we won't try constantly doing init.
-	m_FileHandle.emplace();
-
-	std::filesystem::path log;
-	try
-	{
-		log = GetPath();
-	}
-	catch (const std::filesystem::filesystem_error &err)
-	{
-		return { HRESULT_FROM_WIN32(err.code().value()), L"Failed to determine temporary folder location!" };
-	}
-	catch (const winrt::hresult_error &error)
-	{
-		return { error.code(), L"Failed to determine temporary folder location!" };
-	}
-
-	try
-	{
-		std::filesystem::create_directory(log);
-	}
-	catch (const std::filesystem::filesystem_error &err)
-	{
-		return { HRESULT_FROM_WIN32(err.code().value()), L"Creating log files directory failed!" };
+		name = std::filesystem::temp_directory_path();
 	}
 
 	std::wstring log_filename;
 	if (FILETIME creationTime, _, __, ___; GetProcessTimes(GetCurrentProcess(), &creationTime, &_, &__, &___))
 	{
 		using winrt::clock;
-		log /= std::to_wstring(clock::to_time_t(clock::from_file_time(creationTime))) + L".log";
+		name /= std::to_wstring(clock::to_time_t(clock::from_file_time(creationTime))) + L".log";
 	}
 	else
 	{
 		// Fallback to current time
-		log /= std::to_wstring(Util::GetTime().count()) + L".log";
+		name /= std::to_wstring(Util::GetTime().count()) + L".log";
 	}
 
-	m_FileHandle->reset(CreateFile(log.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, nullptr));
-	if (!*m_FileHandle)
-	{
-		return { HRESULT_FROM_WIN32(GetLastError()), L"Failed to create and open log file!" };
-	}
-
-	DWORD bytesWritten;
-	if (!WriteFile(m_FileHandle->get(), L"\uFEFF", sizeof(wchar_t), &bytesWritten, nullptr))
-	{
-		// Not fatal, but probably not a good sign.
-		LastErrorHandle(Error::Level::Debug, L"Failed to write byte-order marker.");
-	}
-
-	m_File = std::move(log);
-	return { S_OK, { } };
+	return name;
 }
 
-void Log::OutputMessage(std::wstring_view message)
+void Log::HandleInitializationError(std::wstring exception)
 {
-	if (!init_done())
+	std::wstring message = L"Failed to determine log file path. Logs won't be available during this session.\n\n" + std::move(exception);
+
+	std::thread([msg = std::move(message)]()
 	{
-		auto [hr, err_message] = InitStream();
-		if (!ErrorHandle(hr, Error::Level::Debug, err_message))
-		{
-			// https://stackoverflow.com/questions/50799719/reference-to-local-binding-declared-in-enclosing-function
-			std::thread([hr = hr, err = std::move(err_message)]() mutable
-			{
-				std::wostringstream buffer;
-				buffer << err << L" Logs will not be available during this session.\n\n" << Error::ExceptionFromHRESULT(hr);
-
-				err += L'\n';
-				OutputDebugString(err.c_str()); // OutputDebugString is thread-safe, no issues using it here.
-
-				MessageBox(Window::NullWindow, buffer.str().c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
-			}).detach();
-		}
-	}
-
-	OutputDebugString(message.data());
-	OutputDebugString(L"\n");
-
-	if (*m_FileHandle)
-	{
-		const auto time = Util::GetTime<std::time_t>();
-
-		std::wostringstream buffer;
-		buffer << L'(' << _wctime(&time);
-		buffer.seekp(-1, std::ios_base::end); // Seek behind the newline created by _wctime
-		buffer << L") " << message << L"\r\n";
-
-		const std::wstring error = buffer.str();
-
-		DWORD bytesWritten;
-		if (!WriteFile(m_FileHandle->get(), error.c_str(), wil::safe_cast<DWORD>(error.length() * sizeof(wchar_t)), &bytesWritten, nullptr))
-		{
-			LastErrorHandle(Error::Level::Debug, L"Writing to log file failed.");
-		}
-	}
+		MessageBox(Window::NullWindow, msg.c_str(), APP_NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+	}).detach();
 }
 
-void Log::Flush()
+void Log::LogErrorHandler(const std::string &message)
 {
-	if (!FlushFileBuffers(m_FileHandle->get()))
+	const std::string err = fmt::format("An error has been encountered while logging a message.\n\n{}", message);
+	MessageBoxA(Window::NullWindow, err.c_str(), UTF8_APP_NAME " - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+}
+
+void Log::Initialize()
+{
+	auto logger = std::make_shared<spdlog::logger>("");
+	spdlog::register_logger(logger);
+
+	logger->sinks().push_back(std::make_shared<spdlog::sinks::windebug_sink_st>());
+
+	try
 	{
-		LastErrorHandle(Error::Level::Debug, L"Flusing log file buffer failed.");
+		auto file_log = std::make_shared<lazy_file_sink_mt>(GetPath());
+
+		file_log->set_level(Config{ }.LogVerbosity);
+		s_LogSink = file_log;
+
+		logger->sinks().push_back(std::move(file_log));
 	}
+	catch (const std::system_error &err)
+	{
+		HandleInitializationError(Error::MessageFromHRESULT(err.code().value()));
+	}
+	catch (const winrt::hresult_error &err)
+	{
+		HandleInitializationError(Error::MessageFromHresultError(err));
+	}
+
+	spdlog::set_default_logger(logger);
+	spdlog::set_error_handler(LogErrorHandler);
+
+	s_InitDone = true;
 }

@@ -15,6 +15,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ttblog.cpp" />
     <ClCompile Include="winrt\autostart.cpp" />
     <ClCompile Include="darkthememanager.cpp" />
     <ClCompile Include="taskbarattributeworker.cpp" />
@@ -25,7 +26,6 @@
     <ClCompile Include="tray\traycontextmenu.cpp" />
     <ClCompile Include="tray\trayicon.cpp" />
     <ClCompile Include="ttberror.cpp" />
-    <ClCompile Include="ttblog.cpp" />
     <ClCompile Include="winrt\uwp.cpp" />
     <ClCompile Include="win32.cpp" />
     <ClCompile Include="windows\window.cpp" />
@@ -34,6 +34,7 @@
   <ItemGroup>
     <ClInclude Include="appvisibilitysink.hpp" />
     <ClInclude Include="darkthememanager.hpp" />
+    <ClInclude Include="lazyfilesink.hpp" />
     <ClInclude Include="winrt\autostart.hpp" />
     <ClInclude Include="taskbarattributeworker.hpp" />
     <ClInclude Include="eventhook.hpp" />

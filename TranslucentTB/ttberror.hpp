@@ -1,6 +1,7 @@
 #pragma once
 #include "arch.h"
 #include <roerrorapi.h>
+#include <spdlog/common.h>
 #include <string>
 #include <string_view>
 #include <windef.h>
@@ -9,35 +10,40 @@
 
 #include <util/strings.hpp>
 
-class Error {
-public:
-	enum class Level {
-		Fatal,	// Show an error message to the user and immediatly exit
-		Error,	// Show an error message to the user and log
-		Log,	// Log to file and debug output
-		Debug	// Log to debug output. For use in file log implementation.
-	};
+namespace Error {
+	std::wstring MessageFromHRESULT(HRESULT result);
+	std::wstring MessageFromIRestrictedErrorInfo(IRestrictedErrorInfo *info);
+	std::wstring MessageFromHresultError(const winrt::hresult_error &err);
 
-	static bool HresultHandle(HRESULT error, Level level, std::wstring_view message, std::wstring_view location);
-	static void CppWinrtHandle(const winrt::hresult_error &err, Level level, std::wstring_view message, std::wstring_view location);
+	std::wstring FormatHRESULT(HRESULT result, std::wstring_view description);
+	std::wstring FormatIRestrictedErrorInfo(HRESULT result, BSTR description);
 
-	static std::wstring ExceptionFromHRESULT(HRESULT result);
-	static std::wstring ExceptionFromIRestrictedErrorInfo(HRESULT hr, IRestrictedErrorInfo *info);
-
-private:
-	static const size_t PREFIX_LENGTH;
-
-	static constexpr size_t GetPrefixLength(std::wstring_view filename)
-	{
-		const size_t pos = filename.find_last_of(LR"(/\)");
-		return pos != std::wstring_view::npos ? pos + 1 : 0;
-	}
-
-	static void HandleCommon(Level level, std::wstring_view message, std::wstring_view error_message, std::wstring_view location);
+	void HandleCommon(spdlog::level::level_enum level, std::wstring_view message, std::wstring_view error_message, const char *file, int line, const char *function);
 };
 
-#define _ERROR_LOCATION UTIL_WIDEN(__FILE__) L":" UTIL_STRINGIFY(__LINE__) L")"
-#define ErrorHandle(x, y, z) (Error::HresultHandle((x), (y), (z), _ERROR_LOCATION))
-#define LastErrorHandle(x, y) (ErrorHandle(HRESULT_FROM_WIN32(GetLastError()), (x), (y)))
-#define WinrtExceptionHandle(x, y, z) (Error::CppWinrtHandle((x), (y), (z), _ERROR_LOCATION))
-#define WinrtExceptionCatch(x, y) catch (const winrt::hresult_error &__err) { WinrtExceptionHandle(__err, (x), (y)); }
+#define FATAL_ERROR_MESSAGE APP_NAME L" has encountered a fatal error and cannot continue executing."
+#define ERROR_MESSAGE APP_NAME L" has encountered an error."
+
+#define FATAL_ERROR_TITLE APP_NAME L" - Fatal error"
+#define ERROR_TITLE APP_NAME L" - Error"
+
+#define __ERROR_LOCATION __FILE__, __LINE__, SPDLOG_FUNCTION
+#define MessagePrint(__level, __message) (Error::HandleCommon((__level), (__message), { }, __ERROR_LOCATION))
+
+#define HresultHandle(__hresult, __level, __message) \
+	([](HRESULT __hr) -> bool \
+	{ \
+		if (FAILED(__hr)) \
+		{ \
+			Error::HandleCommon((__level), (__message), Error::MessageFromHRESULT(__hr), __ERROR_LOCATION); \
+			return false; \
+		} \
+		else \
+		{ \
+			return true; \
+		} \
+	}((__hresult)))
+#define LastErrorHandle(__level, __message) (HresultHandle(HRESULT_FROM_WIN32(GetLastError()), (__level), (__message)))
+
+#define HresultErrorHandle(__exception, __level, __message) (Error::HandleCommon((__level), (__message), Error::MessageFromHresultError((__exception)), __ERROR_LOCATION))
+#define HresultErrorCatch(__level, __message) catch (const winrt::hresult_error &__exception) { HresultErrorHandle(__exception, (__level), (__message)); }

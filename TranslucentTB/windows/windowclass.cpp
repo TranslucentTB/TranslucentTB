@@ -13,7 +13,7 @@ LRESULT WindowClass::RawWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	ATOM atom = static_cast<ATOM>(GetClassLongPtr(hwnd, GCW_ATOM));
 	if (!atom)
 	{
-		LastErrorHandle(Error::Level::Fatal, L"Failed to get class atom!");
+		LastErrorHandle(spdlog::level::critical, L"Failed to get class atom!");
 	}
 
 	return m_CallbackMap[atom](hwnd, msg, wParam, lParam);
@@ -21,19 +21,19 @@ LRESULT WindowClass::RawWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 
 void WindowClass::LoadIcons(const wchar_t *iconResource)
 {
-	ErrorHandle(LoadIconMetric(m_ClassStruct.hInstance, iconResource, LIM_LARGE, &m_ClassStruct.hIcon), Error::Level::Log, L"Failed to load large window class icon.");
-	ErrorHandle(LoadIconMetric(m_ClassStruct.hInstance, iconResource, LIM_SMALL, &m_ClassStruct.hIconSm), Error::Level::Log, L"Failed to load small window class icon.");
+	HresultHandle(LoadIconMetric(m_ClassStruct.hInstance, iconResource, LIM_LARGE, &m_ClassStruct.hIcon), spdlog::level::warn, L"Failed to load large window class icon.");
+	HresultHandle(LoadIconMetric(m_ClassStruct.hInstance, iconResource, LIM_SMALL, &m_ClassStruct.hIconSm), spdlog::level::warn, L"Failed to load small window class icon.");
 }
 
 void WindowClass::DestroyIcons()
 {
 	if (!DestroyIcon(m_ClassStruct.hIcon))
 	{
-		LastErrorHandle(Error::Level::Log, L"Failed to destroy large window class icon.");
+		LastErrorHandle(spdlog::level::warn, L"Failed to destroy large window class icon.");
 	}
 	if (!DestroyIcon(m_ClassStruct.hIconSm))
 	{
-		LastErrorHandle(Error::Level::Log, L"Failed to destory small window class icon.");
+		LastErrorHandle(spdlog::level::warn, L"Failed to destroy small window class icon.");
 	}
 }
 
@@ -57,7 +57,7 @@ WindowClass::WindowClass(callback_t callback, const std::wstring &className, con
 	}
 	else
 	{
-		LastErrorHandle(Error::Level::Fatal, L"Failed to register window class!");
+		LastErrorHandle(spdlog::level::critical, L"Failed to register window class!");
 	}
 }
 
@@ -75,7 +75,7 @@ WindowClass::~WindowClass()
 	m_CallbackMap.erase(m_Atom);
 	if (!UnregisterClass(atom(), m_ClassStruct.hInstance))
 	{
-		LastErrorHandle(Error::Level::Log, L"Failed to unregister window class.");
+		LastErrorHandle(spdlog::level::info, L"Failed to unregister window class.");
 	}
 
 	DestroyIcons();

@@ -2,9 +2,10 @@
 #error Please edit this file manually.
 #endif
 
-#include "ids.h"
 #include <ddeml.h>
 #include <winres.h>
+#include "../../Common/constants.hpp"
+#include "ids.h"
 
 #pragma code_page(65001)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -110,14 +111,22 @@ BEGIN
         POPUP "Advanced"
         BEGIN
             MENUITEM "Open log file",                                  ID_OPENLOG
-            MENUITEM "Verbose logging",                                ID_VERBOSE
+            POPUP "Log verbosity",                                     ID_LOG
+            BEGIN
+                MENUITEM "Debug",                                          ID_LOG_DEBUG
+                MENUITEM "Information",                                    ID_LOG_INFO
+                MENUITEM "Warnings",                                       ID_LOG_WARN
+                MENUITEM "Errors",                                         ID_LOG_ERR
+                MENUITEM "",                                               0, MFT_SEPARATOR
+                MENUITEM "Off",                                            ID_LOG_OFF
+            END
             MENUITEM "",                                               0, MFT_SEPARATOR
             MENUITEM "Edit settings",                                  ID_EDITSETTINGS
             MENUITEM "Return to default settings",                     ID_RETURNTODEFAULTSETTINGS
             MENUITEM "Disable saving settings",                        ID_DISABLESAVING
             MENUITEM "Hide tray icon",                                 ID_HIDETRAY
             MENUITEM "",                                               0, MFT_SEPARATOR
-            MENUITEM "Clear window cache",                             ID_CLEARWINDOWCACHE
+            MENUITEM "Dump dynamic state to log",                      ID_DUMPWORKER
             MENUITEM "Reset dynamic state",                            ID_RESETWORKER
             MENUITEM "",                                               0, MFT_SEPARATOR
             MENUITEM "About",                                          ID_ABOUT
@@ -150,13 +159,13 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "Comments", "A lightweight utility that makes the Windows taskbar translucent/transparent."
-            VALUE "CompanyName", "TranslucentTB Open Source Developers"
-            VALUE "FileDescription", "TranslucentTB"
+            VALUE "CompanyName", APP_NAME " Open Source Developers"
+            VALUE "FileDescription", APP_NAME
             VALUE "FileVersion", "1.0.0.1"
-            VALUE "InternalName", "TranslucentTB.exe"
-            VALUE "LegalCopyright", "Copyright © 2018 TranslucentTB Open Source Developers"
-            VALUE "OriginalFilename", "TranslucentTB.exe"
-            VALUE "ProductName", "TranslucentTB"
+            VALUE "InternalName", APP_NAME ".exe"
+            VALUE "LegalCopyright", "Copyright © 2019 " APP_NAME " Open Source Developers"
+            VALUE "OriginalFilename", APP_NAME ".exe"
+            VALUE "ProductName", APP_NAME
             VALUE "ProductVersion", "1.0.0.1"
         END
     END

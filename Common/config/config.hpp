@@ -1,6 +1,7 @@
 #pragma once
 #include <rapidjson/document.h>
 #include <rapidjson/encodings.h>
+#include <spdlog/common.h>
 #include <string_view>
 #include <unordered_map>
 
@@ -36,7 +37,7 @@ public:
 	WindowMatchList Blacklist;
 	bool HideTray;
 	bool DisableSaving;
-	bool VerboseLog;
+	spdlog::level::level_enum LogVerbosity;
 
 	// Default-init with default settings
 	inline Config() noexcept :
@@ -53,9 +54,9 @@ public:
 		HideTray(false),
 		DisableSaving(false),
 #ifdef _DEBUG
-		VerboseLog(true)
+		LogVerbosity(spdlog::level::debug)
 #else
-		VerboseLog(false)
+		LogVerbosity(spdlog::level::warn)
 #endif
 	{ }
 
@@ -74,7 +75,7 @@ public:
 		RapidJSONHelper::Serialize(writer, Blacklist, BLACKLIST_KEY);
 		RapidJSONHelper::Serialize(writer, HideTray, TRAY_KEY);
 		RapidJSONHelper::Serialize(writer, DisableSaving, SAVING_KEY);
-		RapidJSONHelper::Serialize(writer, VerboseLog, VERBOSE_KEY);
+		RapidJSONHelper::Serialize(writer, LogVerbosity, LOG_KEY, s_LogMap);
 	}
 
 	void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val)
@@ -96,7 +97,7 @@ public:
 		RapidJSONHelper::Deserialize(val, Blacklist, BLACKLIST_KEY);
 		RapidJSONHelper::Deserialize(val, HideTray, TRAY_KEY);
 		RapidJSONHelper::Deserialize(val, DisableSaving, SAVING_KEY);
-		RapidJSONHelper::Deserialize(val, VerboseLog, VERBOSE_KEY);
+		RapidJSONHelper::Deserialize(val, LogVerbosity, LOG_KEY, s_LogMap);
 	}
 
 private:
@@ -106,6 +107,14 @@ private:
 		{ PeekBehavior::WindowMaximisedOnAnyMonitor,  L"when_maximised_window_on_any_monitor"  },
 		{ PeekBehavior::DesktopIsForegroundWindow,    L"when_desktop_is_foreground_window"     },
 		{ PeekBehavior::AlwaysShow,                   L"always"                                }
+	};
+
+	inline static const std::unordered_map<spdlog::level::level_enum, std::wstring_view> s_LogMap = {
+		{ spdlog::level::debug, L"debug"   },
+		{ spdlog::level::info,  L"info"    },
+		{ spdlog::level::warn,  L"warning" },
+		{ spdlog::level::err,   L"error"   },
+		{ spdlog::level::off,   L"off"     }
 	};
 
 	static constexpr std::wstring_view DESKTOP_KEY = L"desktop_appearance";
@@ -120,5 +129,5 @@ private:
 	static constexpr std::wstring_view BLACKLIST_KEY = L"blacklist";
 	static constexpr std::wstring_view TRAY_KEY = L"hide_tray";
 	static constexpr std::wstring_view SAVING_KEY = L"disable_saving";
-	static constexpr std::wstring_view VERBOSE_KEY = L"verbose";
+	static constexpr std::wstring_view LOG_KEY = L"verbosity";
 };

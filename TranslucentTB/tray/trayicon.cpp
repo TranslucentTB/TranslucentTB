@@ -9,9 +9,9 @@
 
 void TrayIcon::LoadIcon()
 {
-	ErrorHandle(
+	HresultHandle(
 		LoadIconMetric(m_hInstance, m_IconResource, LIM_SMALL, m_Icon.put()),
-		Error::Level::Log,
+		spdlog::level::warn,
 		L"Failed to load tray icon."
 	);
 
@@ -24,7 +24,7 @@ long TrayIcon::UpdateIcon(...)
 
 	if (!Shell_NotifyIcon(NIM_MODIFY, &m_IconData))
 	{
-		Log::OutputMessage(L"Failed to notify shell of icon modification.");
+		MessagePrint(spdlog::level::warn, L"Failed to notify shell of icon modification.");
 	}
 
 	return 0;
@@ -38,7 +38,7 @@ TrayIcon::TrayIcon(MessageWindow &window, const wchar_t *iconResource, unsigned 
 		.uID = LOWORD(iconResource), // todo: not use an UID
 		.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE | additionalFlags,
 		.uCallbackMessage = Util::GetRandomNumber<unsigned int>(WM_APP, 0xBFFF),
-		.szTip = NAME
+		.szTip = APP_NAME
 	},
 	m_hInstance(hInstance),
 	m_IconResource(iconResource)
@@ -58,11 +58,11 @@ void TrayIcon::Show()
 {
 	if (!Shell_NotifyIcon(NIM_ADD, &m_IconData))
 	{
-		Log::OutputMessage(L"Failed to notify shell of icon addition.");
+		MessagePrint(spdlog::level::warn, L"Failed to notify shell of icon addition.");
 	}
 	if (!Shell_NotifyIcon(NIM_SETVERSION, &m_IconData))
 	{
-		Log::OutputMessage(L"Failed to notify shell of icon version.");
+		MessagePrint(spdlog::level::warn, L"Failed to notify shell of icon version.");
 	}
 }
 
@@ -70,7 +70,7 @@ void TrayIcon::Hide()
 {
 	if (!Shell_NotifyIcon(NIM_DELETE, &m_IconData))
 	{
-		Log::OutputMessage(L"Failed to notify shell of icon deletion.");
+		MessagePrint(spdlog::level::info, L"Failed to notify shell of icon deletion.");
 	}
 }
 

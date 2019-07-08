@@ -39,6 +39,11 @@ TEST(Util_StringFromColor, IgnoresFirstByte)
 	ASSERT_EQ(Util::StringFromColor(0xdeadbeef), L"#adbeef");
 }
 
+TEST(Util_StringFromColor, PadsLeftRight)
+{
+	ASSERT_EQ(Util::StringFromColor(0x00ff00), L"#00ff00");
+}
+
 TEST(Util_SwapColorEndian, SwapsEndianness)
 {
 	ASSERT_EQ(Util::SwapColorEndian(0xc0ffee), 0xeeffc0);

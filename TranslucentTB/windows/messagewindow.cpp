@@ -32,7 +32,7 @@ WPARAM MessageWindow::RunMessageLoop()
 		}
 		else
 		{
-			LastErrorHandle(Error::Level::Fatal, L"GetMessage failed!");
+			LastErrorHandle(spdlog::level::critical, L"GetMessage failed!");
 		}
 	}
 
@@ -52,7 +52,7 @@ MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &
 
 	if (!m_WindowHandle)
 	{
-		LastErrorHandle(Error::Level::Fatal, L"Failed to create message window!");
+		LastErrorHandle(spdlog::level::critical, L"Failed to create message window!");
 	}
 
 	RegisterCallback(WM_DPICHANGED, [this, iconResource](...)
@@ -67,6 +67,6 @@ MessageWindow::~MessageWindow()
 {
 	if (!DestroyWindow(m_WindowHandle))
 	{
-		LastErrorHandle(Error::Level::Log, L"Failed to destroy message window!");
+		LastErrorHandle(spdlog::level::info, L"Failed to destroy message window!");
 	}
 }

@@ -38,7 +38,7 @@ TTBTaskDialog::TTBTaskDialog(std::wstring_view title, std::wstring &&content, ca
 	m_Cfg.hwndParent = parent;
 	m_Cfg.hInstance = GetModuleHandle(nullptr);
 	m_Cfg.dwFlags = TDF_ENABLE_HYPERLINKS;
-	m_Cfg.pszWindowTitle = NAME;
+	m_Cfg.pszWindowTitle = APP_NAME;
 	m_Cfg.pszMainIcon = MAKEINTRESOURCE(IDI_MAINICON);
 	m_Cfg.pszMainInstruction = m_Title.c_str();
 	m_Cfg.pszContent = m_Content.c_str();
@@ -52,7 +52,7 @@ bool TTBTaskDialog::Run(bool &checked)
 	HRESULT hr = TaskDialogIndirect(&m_Cfg, nullptr, nullptr, &checkedB);
 	if (FAILED(hr))
 	{
-		MessageBox(Window::NullWindow, (L"Failed to open task dialog.\n\n" + Error::ExceptionFromHRESULT(hr)).c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+		MessageBox(Window::NullWindow, (L"Failed to open task dialog.\n\n" + Error::MessageFromHRESULT(hr)).c_str(), APP_NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 		return false;
 	}
 	else

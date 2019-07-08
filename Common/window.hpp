@@ -8,28 +8,12 @@
 
 #ifdef _TRANSLUCENTTB_EXE
 #include <filesystem>
-#include <string_view>
-#include <unordered_map>
 
 #include "../TranslucentTB/windows/windowclass.hpp"
-
-class EventHook; // Forward declare to avoid circular deps
 #endif
 
 class Window {
 private:
-#ifdef _TRANSLUCENTTB_EXE
-	static std::unordered_map<Window, std::wstring> s_ClassNames;
-	static std::unordered_map<Window, std::filesystem::path> s_FilePaths;
-	static std::unordered_map<Window, std::wstring> s_Titles;
-
-	static const EventHook s_ChangeHook;
-	static const EventHook s_DestroyHook;
-
-	static void HandleChangeEvent(const DWORD, Window window, ...);
-	static void HandleDestroyEvent(const DWORD, Window window, ...);
-#endif
-
 	template<DWMWINDOWATTRIBUTE attrib>
 	struct attrib_return_type;
 
@@ -115,13 +99,11 @@ public:
 	constexpr Window(HWND handle = Window::NullWindow) noexcept : m_WindowHandle(handle) { };
 
 #ifdef _TRANSLUCENTTB_EXE
-	static void ClearCache() noexcept;
+	std::wstring title() const;
 
-	std::wstring_view title() const;
+	std::wstring classname() const;
 
-	std::wstring_view classname() const;
-
-	const std::filesystem::path &file() const;
+	std::filesystem::path file() const;
 
 	bool on_current_desktop() const;
 #endif
@@ -275,16 +257,6 @@ namespace std {
 		}
 	};
 }
-
-#ifdef _TRANSLUCENTTB_EXE
-// Under hash specialization because this uses it.
-inline void Window::ClearCache() noexcept
-{
-	s_ClassNames.clear();
-	s_FilePaths.clear();
-	s_Titles.clear();
-}
-#endif
 
 // Iterator class for FindEnum
 class FindWindowIterator {

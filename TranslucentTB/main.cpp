@@ -113,6 +113,14 @@ static const std::unordered_map<PeekBehavior, uint32_t> PEEK_BUTTON_MAP = {
 	{ PeekBehavior::AlwaysHide,                   ID_PEEK_HIDE                       }
 };
 
+static const std::unordered_map<spdlog::level::level_enum, uint32_t> LOG_BUTTON_MAP = {
+	{ spdlog::level::debug, ID_LOG_DEBUG },
+	{ spdlog::level::info,  ID_LOG_INFO  },
+	{ spdlog::level::warn,  ID_LOG_WARN  },
+	{ spdlog::level::err,   ID_LOG_ERR   },
+	{ spdlog::level::off,   ID_LOG_OFF   }
+};
+
 #pragma endregion
 
 #pragma region Configuration
@@ -125,7 +133,7 @@ void GetPaths()
 		{
 			run.config_folder = static_cast<std::wstring_view>(UWP::GetApplicationFolderPath(UWP::FolderType::Roaming));
 		}
-		WinrtExceptionCatch(Error::Level::Fatal, L"Getting application folder paths failed!")
+		HresultErrorCatch(spdlog::level::critical, L"Getting application folder paths failed!");
 	}
 	else
 	{
@@ -188,6 +196,11 @@ void SetConfig(Config &current, Config &&newConfig, TrayIcon &icon)
 		}
 	}
 
+	if (current.LogVerbosity != newConfig.LogVerbosity)
+	{
+		Log::SetLevel(newConfig.LogVerbosity);
+	}
+
 	current = std::forward<Config>(newConfig);
 }
 
@@ -204,7 +217,7 @@ bool CheckAndRunWelcome()
 	}
 
 	// Remove old version config once prompt is accepted.
-	std::filesystem::remove_all(run.config_folder / NAME);
+	std::filesystem::remove_all(run.config_folder / APP_NAME);
 
 	return true;
 }
@@ -219,22 +232,33 @@ void BindColor(TrayContextMenu &tray, unsigned int id, COLORREF &color)
 }
 
 template<class T>
-void BindByMap(TrayContextMenu &tray, const std::unordered_map<T, unsigned int> &map, T &value)
+void BindByMap(TrayContextMenu &tray, const std::unordered_map<T, unsigned int> &map, std::function<T()> getter, const std::function<void(T)> &setter)
 {
 	for (const auto &[new_value, id] : map)
 	{
-		tray.RegisterContextMenuCallback(id, [&value, &new_value]
+		tray.RegisterContextMenuCallback(id, [setter, &new_value]
 		{
-			value = new_value;
+			setter(new_value);
 		});
 	}
 
 	const auto [min_p, max_p] = std::minmax_element(map.begin(), map.end(), Util::map_value_compare<T, unsigned int>());
 
-	tray.RegisterCustomRefresh([min = min_p->second, max = max_p->second, &map, &value](TrayContextMenu::Updater updater)
+	tray.RegisterCustomRefresh([min = min_p->second, max = max_p->second, get = std::move(getter), &map](TrayContextMenu::Updater updater)
 	{
-		updater.CheckRadio(min, max, map.at(value));
+		updater.CheckRadio(min, max, map.at(get()));
 	});
+}
+
+template<class T>
+void BindByMap(TrayContextMenu &tray, const std::unordered_map<T, unsigned int> &map, T &value)
+{
+	BindByMap<T>(
+		tray,
+		map,
+		[&value] { return value; },
+		[&value](T new_value) { value = new_value; }
+	);
 }
 
 void BindBool(TrayContextMenu &tray, unsigned int item, bool &value)
@@ -292,14 +316,18 @@ winrt::fire_and_forget RefreshMenu(const Config &cfg, TrayContextMenu::Updater u
 		updater.SetText(ID_AUTOSTART, L"Querying startup state...");
 	}
 
-	const bool has_log = !Log::file().empty();
-	updater.EnableItem(ID_OPENLOG, has_log);
-	updater.SetText(ID_OPENLOG, has_log
+	
+	const auto log_state = Log::GetInitializationState();
+	updater.EnableItem(ID_OPENLOG, log_state == Log::Done);
+	updater.SetText(ID_OPENLOG, log_state == Log::Done
 		? L"Open log file"
-		: Log::init_done()
+		: log_state == Log::Failed
 			? L"Error when initializing log file"
 			: L"Nothing has been logged yet"
 	);
+
+	updater.EnableItem(ID_LOG, log_state != Log::Failed);
+	updater.CheckItem(ID_LOG, Log::GetLevel() != spdlog::level::off);
 
 	updater.EnableItem(ID_DESKTOP_COLOR, cfg.DesktopAppearance.Accent != ACCENT_NORMAL);
 	EnableAppearanceColor(updater, ID_VISIBLE_COLOR, cfg.VisibleWindowAppearance);
@@ -362,7 +390,7 @@ bool IsSingleInstance()
 
 void InitializeTray(HINSTANCE hInstance, Config &cfg)
 {
-	static MessageWindow window(TRAY_WINDOW, NAME, hInstance);
+	static MessageWindow window(TRAY_WINDOW, APP_NAME, hInstance);
 	DarkThemeManager::EnableDarkModeForWindow(window);
 
 	static TrayContextMenu tray(window, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance);
@@ -432,12 +460,13 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 	BindByMap(tray, PEEK_BUTTON_MAP, cfg.Peek);
 
 
-	tray.RegisterContextMenuCallback(ID_OPENLOG, []
+	tray.RegisterContextMenuCallback(ID_OPENLOG, Log::Open);
+	BindByMap<spdlog::level::level_enum>(tray, LOG_BUTTON_MAP, Log::GetLevel, [&cfg](spdlog::level::level_enum new_value)
 	{
-		Log::Flush();
-		win32::EditFile(Log::file());
+		Log::SetLevel(new_value);
+		cfg.LogVerbosity = new_value;
 	});
-	BindBool(tray, ID_VERBOSE, cfg.VerboseLog);
+
 	tray.RegisterContextMenuCallback(ID_EDITSETTINGS, [&cfg]
 	{
 		SaveConfig(cfg, run.config_file);
@@ -455,11 +484,11 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 		str << L"To see the tray icon again, ";
 		if (UWP::HasPackageIdentity())
 		{
-			str << L"reset " NAME " in the Settings app or ";
+			str << L"reset " APP_NAME " in the Settings app or ";
 		}
 		str << L"edit the configuration file at "
 			<< run.config_file.native() << L".\n\nAre you sure you want to proceed?";
-		const int result = MessageBox(Window::NullWindow, str.str().c_str(), NAME, MB_YESNO | MB_ICONINFORMATION | MB_SETFOREGROUND);
+		const int result = MessageBox(Window::NullWindow, str.str().c_str(), APP_NAME, MB_YESNO | MB_ICONINFORMATION | MB_SETFOREGROUND);
 		if (result == IDYES)
 		{
 			cfg.HideTray = true;
@@ -467,7 +496,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 			SaveConfig(cfg, run.config_file);
 		}
 	});
-	tray.RegisterContextMenuCallback(ID_CLEARWINDOWCACHE, Window::ClearCache);
+	tray.RegisterContextMenuCallback(ID_DUMPWORKER, std::bind(&TaskbarAttributeWorker::DumpState, &worker));
 	tray.RegisterContextMenuCallback(ID_RESETWORKER, std::bind(&TaskbarAttributeWorker::ResetState, &worker));
 	tray.RegisterContextMenuCallback(ID_ABOUT, []
 	{
@@ -494,8 +523,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 		tray.Update().RemoveItem(ID_AUTOSTART);
 	}
 
-	tray.RegisterContextMenuCallback(ID_TIPS, std::bind(&win32::OpenLink,
-		L"https://github.com/TranslucentTB/TranslucentTB/wiki/Tips-and-tricks-for-a-better-looking-taskbar"));
+	tray.RegisterContextMenuCallback(ID_TIPS, std::bind(&win32::OpenLink, L"https://" APP_NAME ".github.io/tips"));
 	tray.RegisterContextMenuCallback(ID_EXIT, save_and_exit);
 
 
@@ -504,17 +532,19 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *, _In_ int)
 {
-	win32::HardenProcess();
 	try
 	{
 		winrt::init_apartment(winrt::apartment_type::multi_threaded);
 	}
-	WinrtExceptionCatch(Error::Level::Fatal, L"Initialization of Windows Runtime failed.")
+	HresultErrorCatch(spdlog::level::critical, L"Initialization of Windows Runtime failed.");
+
+	Log::Initialize();
+	win32::HardenProcess();
 
 	// If there already is another instance running, tell it to exit
 	if (!IsSingleInstance())
 	{
-		Window::Find(TRAY_WINDOW, NAME).send_message(WM_CLOSE);
+		Window::Find(TRAY_WINDOW, APP_NAME).send_message(WM_CLOSE);
 	}
 
 	DarkThemeManager::AllowDarkModeForApp();
@@ -532,6 +562,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 
 	// Parse our configuration
 	static Config cfg = LoadConfig(run.config_file);
+	Log::SetLevel(cfg.LogVerbosity);
 	//TODO if (!Config::ParseCommandLine())
 	//{
 	//	return EXIT_SUCCESS;

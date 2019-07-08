@@ -1,30 +1,80 @@
 #pragma once
 #include "arch.h"
 #include <filesystem>
-#include <optional>
+#include <memory>
+#include <spdlog/common.h>
 #include <string>
-#include <string_view>
-#include <utility>
 #include <windef.h>
-#include <wil/resource.h>
+
+#include "lazyfilesink.hpp"
+#include "win32.hpp"
 
 class Log {
 private:
-	static std::optional<wil::unique_hfile> m_FileHandle;
-	static std::filesystem::path m_File;
+	static std::weak_ptr<lazy_file_sink_mt> s_LogSink;
+	static bool s_InitDone;
 
 	static std::filesystem::path GetPath();
-	static std::pair<HRESULT, std::wstring> InitStream();
+	static void HandleInitializationError(std::wstring exception);
+	static void LogErrorHandler(const std::string &message);
 
 public:
-	inline static bool init_done() noexcept
+	enum InitializationState {
+		Done,
+		Failed,
+		NotInitialized
+	};
+
+	static void Initialize();
+
+	inline static spdlog::level::level_enum GetLevel()
 	{
-		return m_FileHandle.has_value();
+		if (s_InitDone)
+		{
+			if (const auto sink = s_LogSink.lock(); sink && !sink->error())
+			{
+				return sink->level();
+			}
+		}
+
+		return spdlog::level::off;
 	}
-	inline static const std::filesystem::path &file() noexcept
+
+	inline static void SetLevel(spdlog::level::level_enum level)
 	{
-		return m_File;
+		if (const auto sink = s_LogSink.lock())
+		{
+			sink->set_level(level);
+		}
 	}
-	static void OutputMessage(std::wstring_view message);
-	static void Flush();
+
+	inline static InitializationState GetInitializationState()
+	{
+		if (const auto sink = s_LogSink.lock())
+		{
+			if (sink->opened())
+			{
+				return Done;
+			}
+			else if (sink->error())
+			{
+				return Failed;
+			}
+		}
+		else if (s_InitDone)
+		{
+			return Failed;
+		}
+
+		return NotInitialized;
+	}
+
+	inline static void Open()
+	{
+		if (const auto sink = s_LogSink.lock(); sink && sink->opened())
+		{
+			sink->flush();
+			win32::EditFile(sink->file());
+		}
+	}
 };

@@ -2,10 +2,10 @@
 #include <comdef.h>
 #include <exception>
 #include <functional>
-#include <iomanip>
-#include <sstream>
+#include <spdlog/spdlog.h>
 #include <string>
 #include <thread>
+#include <type_traits>
 #include <vector>
 #include <wil/resource.h>
 #include <winerror.h>
@@ -17,122 +17,130 @@
 #include "win32.hpp"
 #include "window.hpp"
 
-const size_t Error::PREFIX_LENGTH = GetPrefixLength(UTIL_WIDEN(__FILE__));
-
-bool Error::HresultHandle(HRESULT error, Level level, std::wstring_view message, std::wstring_view location)
-{
-	if (FAILED(error))
-	{
-		HandleCommon(level, message, ExceptionFromHRESULT(error), location);
-
-		return false;
-	}
-	else
-	{
-		return true;
-	}
-}
-
-void Error::CppWinrtHandle(const winrt::hresult_error &err, Level level, std::wstring_view message, std::wstring_view location)
-{
-	std::wstring error_message;
-	if (const auto info = err.try_as<IRestrictedErrorInfo>())
-	{
-		error_message = ExceptionFromIRestrictedErrorInfo(err.code(), info.get());
-	}
-	else
-	{
-		error_message = ExceptionFromHRESULT(err.code());
-	}
-
-	HandleCommon(level, message, error_message, location);
-}
-
-std::wstring Error::ExceptionFromHRESULT(HRESULT result)
+std::wstring Error::MessageFromHRESULT(HRESULT result)
 {
 	wil::unique_hlocal_string error;
-	const DWORD count = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK, nullptr, result, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), reinterpret_cast<wchar_t *>(error.put()), 0, nullptr);
-	std::wostringstream stream;
-	stream << L"Exception from HRESULT: " << (count ? Util::Trim(error.get()) : L"[failed to get error message for HRESULT]") <<
-		L" (0x" << std::setw(sizeof(HRESULT) * 2) << std::setfill(L'0') << std::hex << result << L')';
-	return stream.str();
+	const DWORD count = FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK,
+		nullptr,
+		result,
+		MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
+		reinterpret_cast<wchar_t *>(error.put()),
+		0,
+		nullptr
+	);
+
+	return FormatHRESULT(result, count
+		? Util::Trim({ error.get(), count })
+		: fmt::format(L"[failed to get message for HRESULT] {}", MessageFromHRESULT(HRESULT_FROM_WIN32(GetLastError()))));
 }
 
-std::wstring Error::ExceptionFromIRestrictedErrorInfo(HRESULT hr, IRestrictedErrorInfo *info)
+std::wstring Error::MessageFromIRestrictedErrorInfo(IRestrictedErrorInfo *info)
 {
-	HRESULT code;
-	wil::unique_bstr description, restrictedDescription, capabilitySid;
-
-	if (SUCCEEDED(info->GetErrorDetails(&description, &code, &restrictedDescription, &capabilitySid)))
+	if (info)
 	{
-		if (hr == code)
+		HRESULT hr, errorCode;
+		wil::unique_bstr description, restrictedDescription, capabilitySid;
+
+		hr = info->GetErrorDetails(&description, &errorCode, &restrictedDescription, &capabilitySid);
+		if (SUCCEEDED(hr))
 		{
-			std::wostringstream buffer;
 			if (restrictedDescription)
 			{
-				buffer
-					<< L"Restricted exception from IRestrictedErrorInfo: "
-					<< Util::Trim(restrictedDescription.get());
+				return FormatIRestrictedErrorInfo(errorCode, restrictedDescription.get());
 			}
 			else if (description)
 			{
-				buffer
-					<< L"Exception from IRestrictedErrorInfo: "
-					<< Util::Trim(description.get());
+				return FormatIRestrictedErrorInfo(errorCode, description.get());
 			}
-
-			return buffer.str();
+			else
+			{
+				return MessageFromHRESULT(errorCode);
+			}
+		}
+		else
+		{
+			return fmt::format(L"[failed to get details from IRestrictedErrorInfo] {}", MessageFromHRESULT(hr));
 		}
 	}
-
-	return ExceptionFromHRESULT(hr);
+	else
+	{
+		return L"[IRestrictedErrorInfo was null]";
+	}
 }
 
-void Error::HandleCommon(Level level, std::wstring_view message, std::wstring_view error_message, std::wstring_view location)
+std::wstring Error::MessageFromHresultError(const winrt::hresult_error &err)
 {
-	std::wostringstream boxbuffer;
-	if (level != Level::Log && level != Level::Debug)
+	if (const auto info = err.try_as<IRestrictedErrorInfo>())
 	{
-		boxbuffer << message << L"\n\n";
+		return MessageFromIRestrictedErrorInfo(info.get());
+	}
+	else
+	{
+		return MessageFromHRESULT(err.code());
+	}
+}
 
-		if (level == Level::Fatal)
+std::wstring Error::FormatHRESULT(HRESULT result, std::wstring_view description)
+{
+	return fmt::format(
+		L"{:#08x}: {}",
+		static_cast<std::make_unsigned_t<HRESULT>>(result), // needs this otherwise we get some error codes in the negatives
+		description
+	);
+}
+
+std::wstring Error::FormatIRestrictedErrorInfo(HRESULT result, BSTR description)
+{
+	return FormatHRESULT(result, Util::Trim({ description, SysStringLen(description) }));
+}
+
+void Error::HandleCommon(spdlog::level::level_enum level, std::wstring_view message, std::wstring_view error_message, const char *file, int line, const char *function)
+{
+	std::wstring msg;
+
+	if (level == spdlog::level::critical)
+	{
+		if (!error_message.empty())
 		{
-			boxbuffer << L"Program will exit.\n\n";
+			msg = fmt::format(FATAL_ERROR_MESSAGE L"\n\n{}\n\n{}", message, error_message);
+		}
+		else
+		{
+			msg = fmt::format(FATAL_ERROR_MESSAGE L"\n\n{}", message);
 		}
 
-		boxbuffer << error_message;
+		MessageBox(Window::NullWindow, msg.c_str(), FATAL_ERROR_TITLE, MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
+
+		// Calling abort() will generate a dialog box, but we already have our own.
+		// Raising a fail-fast exception skips it but also allows WER to do its job.
+		RaiseFailFastException(nullptr, nullptr, FAIL_FAST_GENERATE_EXCEPTION_ADDRESS);
 	}
-
-	location.remove_prefix(PREFIX_LENGTH);
-
-	std::wostringstream err;
-	err << message << L' ' << error_message << L" (" << location;
-
-	switch (level)
+	else if (level == spdlog::level::err)
 	{
-	case Level::Debug:
-		err << L'\n';
-		OutputDebugString(err.str().c_str());
-		break;
-	case Level::Log:
-		Log::OutputMessage(err.str());
-		break;
-	case Level::Error:
-		Log::OutputMessage(err.str());
-		std::thread([str = boxbuffer.str()]
+		if (!error_message.empty())
 		{
-			MessageBox(Window::NullWindow, str.c_str(), NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+			msg = fmt::format(ERROR_MESSAGE L"\n\n{}\n\n{}", message, error_message);
+		}
+		else
+		{
+			msg = fmt::format(ERROR_MESSAGE L"\n\n{}", message);
+		}
+
+		std::thread([error = std::move(msg)]
+		{
+			MessageBox(Window::NullWindow, error.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 		}).detach();
-		break;
-	case Level::Fatal:
-		Log::OutputMessage(err.str());
-		MessageBox(Window::NullWindow, boxbuffer.str().c_str(), NAME L" - Fatal error", MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
-		RaiseFailFastException(nullptr, nullptr, FAIL_FAST_GENERATE_EXCEPTION_ADDRESS); // Calling abort() will generate a dialog box,
-		                                                                                // but we already have our own. Raising a fail-fast
-																						// exception skips it but also allows WER to do its
-																						// job.
-		break;
-	default:
-		throw std::invalid_argument("level was not one of known values");
 	}
+
+	if (!error_message.empty())
+	{
+		msg = fmt::format(L"{} ({})", message, error_message);
+	}
+	else
+	{
+		msg = message;
+	}
+
+	spdlog::log({ file, line, function }, level, msg.c_str());
 }

@@ -1,13 +1,14 @@
 #pragma once
 #include "taskdialog.hpp"
+#include <fmt/format.h>
 #include <iterator>
 #include <rapidjson/rapidjson.h>
+#include <spdlog/version.h>
 #include <sstream>
 #include <wil/safecast.h>
 
 #include "constants.hpp"
 #include "../ExplorerDetour/hook.hpp"
-#include "stringviewhelper.hpp"
 #include "ttberror.hpp"
 #include "util/numbers.hpp"
 #include "../winrt/uwp.hpp"
@@ -30,7 +31,7 @@ private:
 		},
 		{
 			DONATE,
-			L"Donate\nSupport us developing TranslucentTB and bringing other great features to you!"
+			L"Donate\nSupport us developing " APP_NAME " and bringing other great features to you!"
 		}
 	};
 
@@ -44,9 +45,9 @@ private:
 				try
 				{
 					UWP::CopyToClipboard(BuildVersionInfo());
-					MessageBox(window, L"Copied.", NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND);
+					MessageBox(window, L"Copied.", APP_NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND);
 				}
-				WinrtExceptionCatch(Error::Level::Error, L"Failed to copy version information!")
+				HresultErrorCatch(spdlog::level::err, L"Failed to copy version information!")
 				return S_FALSE;
 
 			case JOIN_DISCORD:
@@ -54,7 +55,7 @@ private:
 				break;
 
 			case DONATE:
-				win32::OpenLink(L"https://liberapay.com/TranslucentTB");
+				win32::OpenLink(L"https://liberapay.com/" APP_NAME);
 				break;
 			}
 		}
@@ -98,42 +99,42 @@ private:
 			}
 			catch (const winrt::hresult_error &error)
 			{
-				str << error.message();
+				str << Error::MessageFromHresultError(error);
 			}
 			str << std::endl;
 		}
 
 		const auto [version, hr] = win32::GetFileVersion(win32::GetExeLocation());
-		str << L"TranslucentTB version: " << (!version.empty() ? version : Error::ExceptionFromHRESULT(hr)) << std::endl;
+		str << APP_NAME L" version: " << (!version.empty() ? version : Error::MessageFromHRESULT(hr)) << std::endl;
 
 		const auto [build, hr2] = win32::GetWindowsBuild();
-		str << L"Windows version: " << (!build.empty() ? build : Error::ExceptionFromHRESULT(hr2)) << std::endl;
+		str << L"Windows version: " << (!build.empty() ? build : Error::MessageFromHRESULT(hr2)) << std::endl;
 
 		const auto [major, minor, revision] = Hook::GetDetoursVersion();
 		str << L"Microsoft Detours version: " << major << L'.' << minor << L'.' << revision << std::endl;
 
-		str << L"RapidJSON version: " << RAPIDJSON_VERSION_STRING;
+		str << L"RapidJSON version: " << RAPIDJSON_VERSION_STRING << std::endl;
+		str << L"spdlog version: " << SPDLOG_VER_MAJOR << L'.' << SPDLOG_VER_MINOR << L'.' << SPDLOG_VER_PATCH << std::endl;
+		str << L"{fmt} version: " << std::floor(FMT_VERSION / 10000) << L'.' << std::floor(FMT_VERSION % 10000 / 100) << L'.' << (FMT_VERSION % 100);
 
 		return str.str();
 	}
 
 	inline static std::wstring BuildAboutContent()
 	{
-		std::wostringstream str;
-
-		str << L"This program is free (as in freedom) software, redistributed under the GPLv3. ";
-		str << LR"(As such, the <A HREF="https://github.com/TranslucentTB/TranslucentTB/">source code</A> is available for anyone to modify, inspect, compile, etc...)" << std::endl;
-		str << LR"(Brought to you by <A HREF="https://github.com/TranslucentTB/TranslucentTB/graphs/contributors">all its contributors</A>.)" << std::endl << std::endl;
-		str << BuildVersionInfo() << std::endl << std::endl;
-		str << L"All trademarks, product names, company names, logos, service marks, copyrights and/or trade dress mentioned, displayed, cited, or otherwise indicated are the property of their respective owners.";
-
-		return str.str();
+		return fmt::format(
+			L"This program is free (as in freedom) software, redistributed under the GPLv3. "
+			LR"(As such, the <A HREF="https://github.com/)" APP_NAME L"/" APP_NAME LR"(">source code</A> is available for anyone to modify, inspect, compile, etc...)" L"\n\n"
+			LR"(Brought to you by <A HREF="https://github.com/)" APP_NAME L"/" APP_NAME LR"(/graphs/contributors">all its contributors</A>.)" L"\n\n{}\n\n"
+			L"All trademarks, product names, company names, logos, service marks, copyrights and/or trade dress mentioned, displayed, cited, or otherwise indicated are the property of their respective owners.",
+			BuildVersionInfo()
+		);
 	}
 
 public:
 	inline AboutDialog() :
 		TTBTaskDialog(
-			L"About " NAME,
+			L"About " APP_NAME,
 			BuildAboutContent(),
 			std::bind(&AboutDialog::CallbackProc, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
 			Window::NullWindow

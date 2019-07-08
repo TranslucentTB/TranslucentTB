@@ -20,7 +20,7 @@ IAsyncOperation<StartupTaskState> Autostart::GetStartupState()
 	}
 	catch (const hresult_error &error)
 	{
-		WinrtExceptionHandle(error, Error::Level::Log, L"Getting startup task state failed.");
+		HresultErrorHandle(error, spdlog::level::warn, L"Getting startup task state failed.");
 		co_return StartupTaskState::Disabled;
 	}
 }
@@ -35,7 +35,7 @@ IAsyncAction Autostart::SetStartupState(StartupTaskState state)
 			const auto new_state = co_await task.RequestEnableAsync();
 			if (new_state != state)
 			{
-				Log::OutputMessage(L"Failed to change startup state.");
+				MessagePrint(spdlog::level::err, L"Failed to change startup state.");
 			}
 		}
 		else if (state == StartupTaskState::Disabled)
@@ -47,5 +47,5 @@ IAsyncAction Autostart::SetStartupState(StartupTaskState state)
 			throw std::invalid_argument("Can only set state to enabled or disabled");
 		}
 	}
-	WinrtExceptionCatch(Error::Level::Error, L"Changing startup task state failed!")
+	HresultErrorCatch(spdlog::level::err, L"Changing startup task state failed!")
 }

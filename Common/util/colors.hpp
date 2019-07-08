@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
+#include <fmt/format.h>
 #include <iomanip>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -48,12 +48,7 @@ namespace Util {
 
 	inline std::wstring StringFromColor(uint32_t color)
 	{
-		std::wstringstream ss;
-		ss << L'#' << std::setfill(L'0') << std::hex;
-		ss << std::setw(2) << ((color & 0xFF0000) >> 16);
-		ss << std::setw(2) << ((color & 0xFF00) >> 8);
-		ss << std::setw(2) << (color & 0xFF);
-		return ss.str();
+		return fmt::format(L"#{:06x}", color & 0xFFFFFF);
 	}
 
 	constexpr uint32_t SwapColorEndian(uint32_t color)

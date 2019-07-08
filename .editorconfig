@@ -10,7 +10,7 @@ trim_trailing_whitespace = true
 indent_style = tab
 tab_width = 4
 
-[resource.h]
+[{resource.h,Common/constants.hpp}]
 insert_final_newline = true
 
 [*.{rc,rc2}]
