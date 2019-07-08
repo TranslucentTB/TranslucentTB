@@ -1,5 +1,5 @@
 version: 'Build #{build}'
-image: Visual Studio 2019 Preview
+image: Visual Studio 2019
 configuration:
 - Release
 - Debug
