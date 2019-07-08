@@ -441,7 +441,7 @@ void SetTaskbarBlur()
 		const Window fg_window = Window::ForegroundWindow();
 		if (fg_window != Window::NullWindow && run.taskbars.count(fg_window.monitor()) != 0)
 		{
-			if (Config::CORTANA_ENABLED && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
+			if (Config::CORTANA_ENABLED && !run.start_opened && !fg_window.get_attribute<BOOL>(DWMWA_CLOAKED) &&
 				Util::IgnoreCaseStringEquals(*fg_window.filename(), L"SearchUI.exe"))
 			{
 				run.taskbars.at(fg_window.monitor()).second = &Config::CORTANA_APPEARANCE;
@@ -648,7 +648,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 			});
 		});
 		tray.RegisterContextMenuCallback(IDM_TIPS, std::bind(&win32::OpenLink,
-			L"https://github.com/TranslucentTB/TranslucentTB/wiki/Tips-and-tricks-for-a-better-looking-taskbar"));
+			L"https://TranslucentTB.github.io/tips"));
 		tray.RegisterContextMenuCallback(IDM_EXIT, std::bind(&ExitApp, EXITREASON::UserAction));
 
 
@@ -661,7 +661,7 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	win32::HardenProcess();
 	try
 	{
-		winrt::init_apartment(winrt::apartment_type::single_threaded);
+		winrt::init_apartment(winrt::apartment_type::multi_threaded);
 	}
 	catch (const winrt::hresult_error &error)
 	{
@@ -723,9 +723,8 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 	DWORD av_cookie = 0;
 	if (app_visibility)
 	{
-		// See comment on AppVisibilitySink for reason why WRL is used here
-		Microsoft::WRL::ComPtr<IAppVisibilityEvents> av_sink = Microsoft::WRL::Make<AppVisibilitySink>(run.start_opened);
-		ErrorHandle(app_visibility->Advise(av_sink.Get(), &av_cookie), Error::Level::Log, L"Failed to register app visibility sink.");
+		auto av_sink = winrt::make<AppVisibilitySink>(run.start_opened);
+		ErrorHandle(app_visibility->Advise(av_sink.get(), &av_cookie), Error::Level::Log, L"Failed to register app visibility sink.");
 	}
 
 	std::thread swca_thread([]

@@ -121,7 +121,7 @@ bool win32::IsSingleInstance()
 
 	if (!mutex)
 	{
-		mutex = CreateMutex(NULL, FALSE, ID);
+		mutex.attach(CreateMutex(NULL, FALSE, ID));
 		LRESULT error = GetLastError();
 		switch (error)
 		{
@@ -150,7 +150,7 @@ bool win32::IsDirectory(const std::wstring &directory)
 	if (attributes == INVALID_FILE_ATTRIBUTES)
 	{
 		DWORD error = GetLastError();
-		if (error != ERROR_FILE_NOT_FOUND || error != ERROR_PATH_NOT_FOUND)
+		if (error != ERROR_FILE_NOT_FOUND && error != ERROR_PATH_NOT_FOUND)
 		{
 			// This function gets called during log initialization, so avoid potential recursivity
 			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Debug, L"Failed to check if directory exists.");
@@ -169,7 +169,7 @@ bool win32::FileExists(const std::wstring &file)
 	if (attributes == INVALID_FILE_ATTRIBUTES)
 	{
 		DWORD error = GetLastError();
-		if (error != ERROR_FILE_NOT_FOUND || error != ERROR_PATH_NOT_FOUND)
+		if (error != ERROR_FILE_NOT_FOUND && error != ERROR_PATH_NOT_FOUND)
 		{
 			ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Failed to check if file exists.");
 		}
@@ -231,7 +231,7 @@ void win32::EditFile(const std::wstring &file)
 
 	if (ShellExecuteEx(&info))
 	{
-		const winrt::handle hprocess = info.hProcess;
+		const winrt::handle hprocess(info.hProcess);
 
 		if (WaitForSingleObject(hprocess.get(), INFINITE) == WAIT_FAILED)
 		{
@@ -285,7 +285,7 @@ void win32::OpenLink(const std::wstring &link)
 DWORD win32::PickColor(uint32_t &color)
 {
 	DWORD threadId;
-	const winrt::handle hThread = CreateThread(nullptr, 0, PickerThreadProc, &color, CREATE_SUSPENDED, &threadId);
+	const winrt::handle hThread(CreateThread(nullptr, 0, PickerThreadProc, &color, CREATE_SUSPENDED, &threadId));
 
 	if (hThread)
 	{
@@ -316,7 +316,7 @@ void win32::ClosePickers()
 
 		if (needs_wait)
 		{
-			const winrt::handle thread = OpenThread(SYNCHRONIZE, FALSE, tid);
+			const winrt::handle thread(OpenThread(SYNCHRONIZE, FALSE, tid));
 			if (thread)
 			{
 				WaitForSingleObject(thread.get(), INFINITE);

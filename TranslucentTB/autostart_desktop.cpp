@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <windef.h>
 #include <WinBase.h>
 #include <winerror.h>
 #include <winreg.h>
@@ -47,7 +48,7 @@ concurrency::task<void> Autostart::SetStartupState(const StartupState &state)
 {
 	return concurrency::create_task([=]
 	{
-		registry_key key = open_key(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Run)");
+		registry_key key = open_key(registry_key{ HKEY_CURRENT_USER }, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Run)");
 		if (key)
 		{
 			if (state == StartupState::Enabled)

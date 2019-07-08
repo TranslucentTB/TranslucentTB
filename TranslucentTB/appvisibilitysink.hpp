@@ -1,9 +1,8 @@
 #pragma once
 #include <ShObjIdl.h>
-#include <wrl/implements.h>
+#include <winrt/base.h>
 
-// Cannot use winrt::implements here because of https://bugs.llvm.org/show_bug.cgi?id=38490
-class AppVisibilitySink : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, IAppVisibilityEvents> {
+class AppVisibilitySink : public winrt::implements<AppVisibilitySink, IAppVisibilityEvents> {
 
 private:
 	bool &m_startOpenedRef;
