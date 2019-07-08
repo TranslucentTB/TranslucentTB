@@ -639,6 +639,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 			ApplyStock(EXCLUDE_FILE);
 			Blacklist::Parse(run.exclude_file);
 		});
+		tray.RegisterContextMenuCallback(IDM_REFRESHHANDLES, RefreshHandles);
 		tray.RegisterContextMenuCallback(IDM_CLEARBLACKLISTCACHE, Blacklist::ClearCache);
 		tray.RegisterContextMenuCallback(IDM_EXITWITHOUTSAVING, std::bind(&ExitApp, EXITREASON::UserActionNoSave));
 
