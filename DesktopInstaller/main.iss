@@ -53,7 +53,7 @@ DependenciesDir=deps
 [Code]
 function GetDefaultDirName(Param: string): string;
 begin
-	if IsAdminLoggedOn then
+	if IsAdmin then
 	begin
 		Result := ExpandConstant('{pf}\{#AppName}');
 	end
