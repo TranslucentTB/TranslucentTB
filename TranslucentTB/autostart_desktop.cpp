@@ -27,7 +27,7 @@ winrt::Windows::Foundation::IAsyncOperation<Autostart::StartupState> Autostart::
 		uint8_t status[12];
 		DWORD size = sizeof(status);
 		error = RegGetValue(HKEY_CURRENT_USER, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run)", NAME, RRF_RT_REG_BINARY, NULL, &status, &size);
-		if (error != ERROR_FILE_NOT_FOUND && ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup disable state failed.") && status[0] == 3)
+		if (error != ERROR_FILE_NOT_FOUND && ErrorHandle(HRESULT_FROM_WIN32(error), Error::Level::Log, L"Querying startup disable state failed.") && (status[0] == 3 || status[0] == 1))
 		{
 			co_return StartupState::DisabledByUser;
 		}
