@@ -51,10 +51,14 @@
     <CharacterSet>Unicode</CharacterSet>
     <Keyword>Win32Proj</Keyword>
     <PlatformToolset>v142</PlatformToolset>
-    <VCProjectVersion>15.0</VCProjectVersion>
+    <VCProjectVersion>16.0</VCProjectVersion>
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <SpectreMitigation>Spectre</SpectreMitigation>
+    <CppWinRTProjectLanguage>C++/WinRT</CppWinRTProjectLanguage>
+    <CppWinRTLibs>false</CppWinRTLibs>
+    <CppWinRTFastAbi>true</CppWinRTFastAbi>
+    <CppWinRTOptimized>true</CppWinRTOptimized>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Platform)'=='Win32'">
@@ -109,6 +113,7 @@
 
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <WarningLevel>Level3</WarningLevel>
@@ -130,6 +135,9 @@
       <!-- Windows -->
       <PreprocessorDefinitions>STRICT_TYPED_ITEMIDS;NOMINMAX;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <Link>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+    </Link>
   </ItemDefinitionGroup>
 
   <ImportGroup Label="Shared">
