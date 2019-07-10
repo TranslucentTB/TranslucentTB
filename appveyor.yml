@@ -1,4 +1,4 @@
-version: 'Build #{build}'
+version: Build #{build}
 image: Visual Studio 2019
 configuration:
 - Release
@@ -9,8 +9,12 @@ platform:
 - ARM
 - ARM64
 
+install:
+- vcpkg install --triplet %PLATFORM%-windows detours gtest rapidjson fmt spdlog
+- vcpkg install wil:%PLATFORM%-windows --head
+
 before_build:
-- ps: .\appveyor-before-build.ps1
+- ps: .\update-version.ps1
 
 build:
   parallel: true
