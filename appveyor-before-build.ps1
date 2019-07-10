@@ -4,12 +4,6 @@ Set-Location C:\tools\vcpkg
 git pull 2>&1 | ForEach-Object { "$_" }
 if ($LastExitCode -ne 0) { exit $LastExitCode }
 
-.\bootstrap-vcpkg.bat
-if ($LastExitCode -ne 0) { exit $LastExitCode }
-
-.\vcpkg.exe integrate install
-if ($LastExitCode -ne 0) { exit $LastExitCode }
-
 .\vcpkg.exe install --triplet $env:PLATFORM-windows detours gtest rapidjson fmt spdlog
 if ($LastExitCode -ne 0) { exit $LastExitCode }
 
