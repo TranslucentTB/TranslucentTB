@@ -5,7 +5,7 @@
 #include <wil/resource.h>
 
 #include "constants.hpp"
-#include "../ttberror.hpp"
+#include "../log/ttberror.hpp"
 #include "../win32.hpp"
 
 std::wstring Window::title() const

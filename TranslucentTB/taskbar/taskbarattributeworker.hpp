@@ -13,7 +13,7 @@
 #include "config/config.hpp"
 #include "config/taskbarappearance.hpp"
 #include "eventhook.hpp"
-#include "windows/messagewindow.hpp"
+#include "../windows/messagewindow.hpp"
 #include "undoc/swca.hpp"
 #include "wilx.hpp"
 

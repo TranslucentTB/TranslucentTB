@@ -1,7 +1,7 @@
 #include "messagewindow.hpp"
 #include <algorithm>
 
-#include "../ttberror.hpp"
+#include "../log/ttberror.hpp"
 
 LRESULT MessageWindow::WindowProcedure(Window window, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
 {

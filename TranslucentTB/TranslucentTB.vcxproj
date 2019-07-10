@@ -15,37 +15,37 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ttblog.cpp" />
+    <ClCompile Include="log\ttblog.cpp" />
     <ClCompile Include="uwp\autostart.cpp" />
     <ClCompile Include="darkthememanager.cpp" />
-    <ClCompile Include="taskbarattributeworker.cpp" />
-    <ClCompile Include="eventhook.cpp" />
+    <ClCompile Include="taskbar\taskbarattributeworker.cpp" />
+    <ClCompile Include="taskbar\eventhook.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="windows\messagewindow.cpp" />
     <ClCompile Include="taskdialogs\taskdialog.cpp" />
     <ClCompile Include="tray\traycontextmenu.cpp" />
     <ClCompile Include="tray\trayicon.cpp" />
-    <ClCompile Include="ttberror.cpp" />
+    <ClCompile Include="log\ttberror.cpp" />
     <ClCompile Include="uwp\uwp.cpp" />
     <ClCompile Include="win32.cpp" />
     <ClCompile Include="windows\window.cpp" />
     <ClCompile Include="windows\windowclass.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="appvisibilitysink.hpp" />
+    <ClInclude Include="taskbar\appvisibilitysink.hpp" />
     <ClInclude Include="darkthememanager.hpp" />
-    <ClInclude Include="lazyfilesink.hpp" />
+    <ClInclude Include="log\lazyfilesink.hpp" />
     <ClInclude Include="uwp\autostart.hpp" />
-    <ClInclude Include="taskbarattributeworker.hpp" />
-    <ClInclude Include="eventhook.hpp" />
+    <ClInclude Include="taskbar\taskbarattributeworker.hpp" />
+    <ClInclude Include="taskbar\eventhook.hpp" />
     <ClInclude Include="taskdialogs\aboutdialog.hpp" />
     <ClInclude Include="windows\messagewindow.hpp" />
     <ClInclude Include="resources\ids.h" />
     <ClInclude Include="taskdialogs\taskdialog.hpp" />
     <ClInclude Include="tray\traycontextmenu.hpp" />
     <ClInclude Include="tray\trayicon.hpp" />
-    <ClInclude Include="ttberror.hpp" />
-    <ClInclude Include="ttblog.hpp" />
+    <ClInclude Include="log\ttberror.hpp" />
+    <ClInclude Include="log\ttblog.hpp" />
     <ClInclude Include="uwp\uwp.hpp" />
     <ClInclude Include="taskdialogs\welcomedialog.hpp" />
     <ClInclude Include="win32.hpp" />

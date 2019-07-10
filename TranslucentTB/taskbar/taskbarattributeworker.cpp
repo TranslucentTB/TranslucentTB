@@ -1,11 +1,10 @@
 #include "taskbarattributeworker.hpp"
 #include "constants.hpp"
 #include "../ExplorerDetour/hook.hpp"
-#include "ttberror.hpp"
-#include "ttblog.hpp"
+#include "../log/ttberror.hpp"
 #include "undoc/winuser.hpp"
-#include "win32.hpp"
-#include "windows/windowhelper.hpp"
+#include "../win32.hpp"
+#include "../windows/windowhelper.hpp"
 
 const PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE TaskbarAttributeWorker::SetWindowCompositionAttribute =
 	reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(GetModuleHandle(SWCA_DLL), SWCA_ORDINAL));

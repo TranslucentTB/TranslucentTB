@@ -7,7 +7,7 @@
 #include <windef.h>
 
 #include "lazyfilesink.hpp"
-#include "win32.hpp"
+#include "../win32.hpp"
 
 class Log {
 private:

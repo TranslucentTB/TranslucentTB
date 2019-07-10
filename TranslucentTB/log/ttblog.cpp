@@ -6,7 +6,7 @@
 
 #include "config/config.hpp"
 #include "util/time.hpp"
-#include "uwp/uwp.hpp"
+#include "../uwp/uwp.hpp"
 
 std::weak_ptr<lazy_file_sink_mt> Log::s_LogSink;
 bool Log::s_InitDone = false;

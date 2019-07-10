@@ -1,6 +1,5 @@
 #include "autostart.hpp"
-#include "../ttberror.hpp"
-#include "../ttblog.hpp"
+#include "../log/ttberror.hpp"
 
 using namespace winrt;
 using namespace winrt::Windows::ApplicationModel;

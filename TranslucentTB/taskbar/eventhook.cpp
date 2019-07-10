@@ -1,5 +1,5 @@
 #include "eventhook.hpp"
-#include "ttberror.hpp"
+#include "../log/ttberror.hpp"
 
 std::unordered_map<HWINEVENTHOOK, EventHook::callback_t> EventHook::s_HookMap;
 

@@ -3,7 +3,7 @@
 
 #include "constants.hpp"
 #include "../resources/ids.h"
-#include "../ttberror.hpp"
+#include "../log/ttberror.hpp"
 #include "util/strings.hpp"
 #include "../win32.hpp"
 

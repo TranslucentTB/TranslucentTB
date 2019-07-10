@@ -25,12 +25,6 @@
     <ClCompile Include="win32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ttberror.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="taskbarattributeworker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\messagewindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -52,33 +46,27 @@
     <ClCompile Include="darkthememanager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="eventhook.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ttblog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="uwp\autostart.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="uwp\uwp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="log\ttberror.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="log\ttblog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="taskbar\taskbarattributeworker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="taskbar\eventhook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="win32.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ttberror.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ttblog.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="appvisibilitysink.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="taskbarattributeworker.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="taskdialogs\aboutdialog.hpp">
@@ -111,16 +99,28 @@
     <ClInclude Include="windows\windowhelper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="eventhook.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="lazyfilesink.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="uwp\autostart.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="uwp\uwp.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="log\ttberror.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="log\ttblog.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="log\lazyfilesink.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="taskbar\taskbarattributeworker.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="taskbar\eventhook.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="taskbar\appvisibilitysink.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

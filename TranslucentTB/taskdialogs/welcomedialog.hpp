@@ -4,7 +4,7 @@
 #include <fmt/format.h>
 
 #include "constants.hpp"
-#include "ttberror.hpp"
+#include "../log/ttberror.hpp"
 
 class WelcomeDialog : public TTBTaskDialog {
 private:

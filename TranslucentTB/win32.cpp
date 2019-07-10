@@ -16,8 +16,7 @@
 #include <winnt.h>
 
 #include "constants.hpp"
-#include "ttberror.hpp"
-#include "ttblog.hpp"
+#include "log/ttberror.hpp"
 #include "window.hpp"
 #include "uwp/uwp.hpp"
 
