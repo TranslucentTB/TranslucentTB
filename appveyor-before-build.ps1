@@ -10,13 +10,10 @@ if ($LastExitCode -ne 0) { exit $LastExitCode }
 .\vcpkg.exe integrate install
 if ($LastExitCode -ne 0) { exit $LastExitCode }
 
-.\vcpkg.exe install --triplet $env:PLATFORM-windows detours gtest rapidjson fmt
+.\vcpkg.exe install --triplet $env:PLATFORM-windows detours gtest rapidjson fmt spdlog
 if ($LastExitCode -ne 0) { exit $LastExitCode }
 
 .\vcpkg.exe install wil:$env:PLATFORM-windows --head
-if ($LastExitCode -ne 0) { exit $LastExitCode }
-
-.\vcpkg.exe install spdlog:$env:PLATFORM-windows --head
 if ($LastExitCode -ne 0) { exit $LastExitCode }
 
 Set-Location $env:APPVEYOR_BUILD_FOLDER
