@@ -12,17 +12,14 @@ IAsyncOperation<StartupTask> Autostart::GetApplicationStartupTask()
 	co_return task;
 }
 
-IAsyncOperation<StartupTaskState> Autostart::GetStartupState()
+IAsyncOperation<StartupTaskState> Autostart::GetStartupState() try
 {
-	try
-	{
-		co_return (co_await GetApplicationStartupTask()).State();
-	}
-	catch (const hresult_error &error)
-	{
-		HresultErrorHandle(error, spdlog::level::warn, L"Getting startup task state failed.");
-		co_return StartupTaskState::Disabled;
-	}
+	co_return (co_await GetApplicationStartupTask()).State();
+}
+catch (const hresult_error &error)
+{
+	HresultErrorHandle(error, spdlog::level::warn, L"Getting startup task state failed.");
+	co_return StartupTaskState::Disabled;
 }
 
 IAsyncAction Autostart::SetStartupState(StartupTaskState state)

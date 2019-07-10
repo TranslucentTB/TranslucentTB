@@ -12,17 +12,14 @@ public:
 		m_startOpenedCallback(std::move(startOpenedCallback))
 	{ }
 
-	IFACEMETHODIMP LauncherVisibilityChange(BOOL currentVisibleState) override
+	IFACEMETHODIMP LauncherVisibilityChange(BOOL currentVisibleState) override try
 	{
-		try
-		{
-			m_startOpenedCallback(currentVisibleState);
-			return S_OK;
-		}
-		catch (...)
-		{
-			return winrt::to_hresult();
-		}
+		m_startOpenedCallback(currentVisibleState);
+		return S_OK;
+	}
+	catch (...)
+	{
+		return winrt::to_hresult();
 	}
 
 	IFACEMETHODIMP AppVisibilityOnMonitorChanged(HMONITOR, MONITOR_APP_VISIBILITY, MONITOR_APP_VISIBILITY) override
