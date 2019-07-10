@@ -2,8 +2,7 @@
 #include <shellapi.h>
 
 #include "constants.hpp"
-#include "../ttberror.hpp"
-#include "../ttblog.hpp"
+#include "../log/ttberror.hpp"
 #include "util/random.hpp"
 #include "../win32.hpp"
 

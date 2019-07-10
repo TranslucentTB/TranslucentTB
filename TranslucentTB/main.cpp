@@ -14,8 +14,9 @@
 #include <ShlObj.h>
 #include <winrt/base.h>
 
-// WIL
+// WIL and C++/WinRT
 #include <wil/filesystem.h>
+#include <winrt/Windows.Foundation.h>
 
 // RapidJSON
 #include <rapidjson/document.h>

@@ -1,4 +1,6 @@
 #include "taskbarattributeworker.hpp"
+
+#include "appvisibilitysink.hpp"
 #include "constants.hpp"
 #include "../ExplorerDetour/hook.hpp"
 #include "../log/ttberror.hpp"

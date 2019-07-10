@@ -9,7 +9,6 @@
 #include <wil/com.h>
 #include <wil/resource.h>
 
-#include "appvisibilitysink.hpp"
 #include "config/config.hpp"
 #include "config/taskbarappearance.hpp"
 #include "eventhook.hpp"
