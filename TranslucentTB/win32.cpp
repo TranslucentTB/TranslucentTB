@@ -19,7 +19,7 @@
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 #include "window.hpp"
-#include "winrt/uwp.hpp"
+#include "uwp/uwp.hpp"
 
 std::filesystem::path win32::m_ExeLocation;
 

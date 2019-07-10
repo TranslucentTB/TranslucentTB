@@ -52,16 +52,16 @@
     <ClCompile Include="darkthememanager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="winrt\uwp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="winrt\autostart.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="eventhook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ttblog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="uwp\autostart.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="uwp\uwp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -111,16 +111,16 @@
     <ClInclude Include="windows\windowhelper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="winrt\uwp.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="winrt\autostart.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="eventhook.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="lazyfilesink.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="uwp\autostart.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="uwp\uwp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

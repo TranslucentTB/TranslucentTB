@@ -16,7 +16,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ttblog.cpp" />
-    <ClCompile Include="winrt\autostart.cpp" />
+    <ClCompile Include="uwp\autostart.cpp" />
     <ClCompile Include="darkthememanager.cpp" />
     <ClCompile Include="taskbarattributeworker.cpp" />
     <ClCompile Include="eventhook.cpp" />
@@ -26,7 +26,7 @@
     <ClCompile Include="tray\traycontextmenu.cpp" />
     <ClCompile Include="tray\trayicon.cpp" />
     <ClCompile Include="ttberror.cpp" />
-    <ClCompile Include="winrt\uwp.cpp" />
+    <ClCompile Include="uwp\uwp.cpp" />
     <ClCompile Include="win32.cpp" />
     <ClCompile Include="windows\window.cpp" />
     <ClCompile Include="windows\windowclass.cpp" />
@@ -35,7 +35,7 @@
     <ClInclude Include="appvisibilitysink.hpp" />
     <ClInclude Include="darkthememanager.hpp" />
     <ClInclude Include="lazyfilesink.hpp" />
-    <ClInclude Include="winrt\autostart.hpp" />
+    <ClInclude Include="uwp\autostart.hpp" />
     <ClInclude Include="taskbarattributeworker.hpp" />
     <ClInclude Include="eventhook.hpp" />
     <ClInclude Include="taskdialogs\aboutdialog.hpp" />
@@ -46,7 +46,7 @@
     <ClInclude Include="tray\trayicon.hpp" />
     <ClInclude Include="ttberror.hpp" />
     <ClInclude Include="ttblog.hpp" />
-    <ClInclude Include="winrt\uwp.hpp" />
+    <ClInclude Include="uwp\uwp.hpp" />
     <ClInclude Include="taskdialogs\welcomedialog.hpp" />
     <ClInclude Include="win32.hpp" />
     <ClInclude Include="windows\windowclass.hpp" />

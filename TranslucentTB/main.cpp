@@ -40,8 +40,8 @@
 #include "windows/messagewindow.hpp"
 #include "window.hpp"
 #include "windows/windowclass.hpp"
-#include "winrt/autostart.hpp"
-#include "winrt/uwp.hpp"
+#include "uwp/autostart.hpp"
+#include "uwp/uwp.hpp"
 
 #pragma region Data
 
