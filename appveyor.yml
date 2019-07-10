@@ -1,4 +1,4 @@
-version: Build #{build}
+version: "Build #{build}"
 image: Visual Studio 2019
 configuration:
 - Release
