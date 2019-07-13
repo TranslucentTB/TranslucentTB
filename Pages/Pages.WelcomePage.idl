@@ -1,0 +1,9 @@
+namespace TranslucentTB.Pages
+{
+    [default_interface]
+    runtimeclass WelcomePage : Windows.UI.Xaml.Controls.Page
+    {
+        WelcomePage();
+        Int32 MyProperty;
+    }
+}

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.190710.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.190710.3\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <PropertyGroup Label="Globals">
+    <MinimalCoreWin>true</MinimalCoreWin>
+    <ProjectGuid>{9875d8e1-9594-445e-a0e4-07c6027f85e0}</ProjectGuid>
+    <ProjectName>Pages</ProjectName>
+    <RootNamespace>TranslucentTB</RootNamespace>
+    <AppContainerApplication>true</AppContainerApplication>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+
+    <!-- This is magic that tells msbuild to link against the Desktop platform
+         instead of the App platform. This you definitely want, because we're not
+         building a true universal "app", we're building a desktop application
+         with xaml. Without this, we'll link against the app CRT, and the
+         unpackaged app _will not_ work. -->
+    <_NoWinAPIFamilyApp>true</_NoWinAPIFamilyApp>
+    <_VC_Target_Library_Platform>Desktop</_VC_Target_Library_Platform>
+  </PropertyGroup>
+  <Import Project="..\Common\CppProject.props" />
+  <ItemDefinitionGroup Label="Globals">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PreprocessorDefinitions>_WINRT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>Pages.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Pages.WelcomePage.cpp">
+      <DependentUpon>Pages.WelcomePage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Pages.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Pages.WelcomePage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Pages.WelcomePage.h">
+      <DependentUpon>Pages.WelcomePage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="Pages.WelcomePage.idl">
+      <DependentUpon>Pages.WelcomePage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+  </ItemGroup>
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.190710.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.190710.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.190710.3\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.190710.3\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.190710.3\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.190710.3\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  </Target>
+</Project>
