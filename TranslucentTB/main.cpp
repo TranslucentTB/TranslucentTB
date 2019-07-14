@@ -17,6 +17,7 @@
 // WIL and C++/WinRT
 #include <wil/filesystem.h>
 #include <winrt/Windows.Foundation.h>
+#include <winrt/TranslucentTB.Pages.h>
 
 // RapidJSON
 #include <rapidjson/document.h>
@@ -43,6 +44,7 @@
 #include "windows/windowclass.hpp"
 #include "uwp/autostart.hpp"
 #include "uwp/uwp.hpp"
+#include "uwp/xamlpagehost.hpp"
 
 #pragma region Data
 

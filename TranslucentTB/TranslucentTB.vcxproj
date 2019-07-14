@@ -40,6 +40,7 @@
     <ClInclude Include="taskbar\taskbarattributeworker.hpp" />
     <ClInclude Include="taskbar\eventhook.hpp" />
     <ClInclude Include="taskdialogs\aboutdialog.hpp" />
+    <ClInclude Include="uwp\xamlpagehost.hpp" />
     <ClInclude Include="windows\messagewindow.hpp" />
     <ClInclude Include="resources\ids.h" />
     <ClInclude Include="taskdialogs\taskdialog.hpp" />

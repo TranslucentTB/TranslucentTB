@@ -62,8 +62,8 @@ public:
 	}
 
 	inline static Window Create(unsigned long dwExStyle, const std::wstring &className,
-		const std::wstring &windowName, unsigned long dwStyle, int x = 0, int y = 0,
-		int nWidth = 0, int nHeight = 0, Window parent = Window::NullWindow, HMENU hMenu = nullptr,
+		const std::wstring &windowName, unsigned long dwStyle, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT,
+		int nWidth = CW_USEDEFAULT, int nHeight = CW_USEDEFAULT, Window parent = Window::NullWindow, HMENU hMenu = nullptr,
 		HINSTANCE hInstance = GetModuleHandle(nullptr), void *lpParam = nullptr) noexcept
 	{
 		return CreateWindowEx(dwExStyle, className.c_str(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
@@ -72,8 +72,8 @@ public:
 
 #ifdef _TRANSLUCENTTB_EXE
 	inline static Window Create(unsigned long dwExStyle, const WindowClass &winClass,
-		const std::wstring &windowName, unsigned long dwStyle, int x = 0, int y = 0,
-		int nWidth = 0, int nHeight = 0, Window parent = Window::NullWindow,
+		const std::wstring &windowName, unsigned long dwStyle, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT,
+		int nWidth = CW_USEDEFAULT, int nHeight = CW_USEDEFAULT, Window parent = Window::NullWindow,
 		HMENU hMenu = nullptr, HINSTANCE hInstance = GetModuleHandle(nullptr), void *lpParam = nullptr) noexcept
 	{
 		return CreateWindowEx(dwExStyle, winClass.atom(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
@@ -222,6 +222,11 @@ public:
 	constexpr HWND handle() const noexcept
 	{
 		return m_WindowHandle;
+	}
+
+	constexpr HWND *put() noexcept
+	{
+		return &m_WindowHandle;
 	}
 
 	constexpr operator HWND() const noexcept
