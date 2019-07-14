@@ -9,6 +9,7 @@
 #include <shellapi.h>
 #include <ShlObj.h>
 #include <synchapi.h>
+#include <thread>
 #include <utility>
 #include <wil/resource.h>
 #include <WinBase.h>

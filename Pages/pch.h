@@ -1,5 +1,11 @@
 #pragma once
 #include <unknwn.h>
+
+// Remove intrusive macro from Windows headers
+#ifdef GetCurrentTime
+#undef GetCurrentTime
+#endif
+
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.UI.Xaml.h>
