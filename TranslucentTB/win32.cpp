@@ -178,15 +178,6 @@ void win32::HardenProcess()
 	}
 #endif
 
-	PROCESS_MITIGATION_DYNAMIC_CODE_POLICY code_policy {};
-	code_policy.ProhibitDynamicCode = true;
-	code_policy.AllowThreadOptOut = false;
-	code_policy.AllowRemoteDowngrade = false;
-	if (!SetProcessMitigationPolicy(ProcessDynamicCodePolicy, &code_policy, sizeof(code_policy)))
-	{
-		LastErrorHandle(spdlog::level::info, L"Couldn't disable dynamic code generation.");
-	}
-
 	PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY handle_policy {};
 	handle_policy.RaiseExceptionOnInvalidHandleReference = true;
 	handle_policy.HandleExceptionsPermanentlyEnabled = true;

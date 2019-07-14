@@ -29,4 +29,8 @@
         </windowsSettings>
     </application>
 
+    <file name="Pages.dll" hashalg="SHA1">
+        <activatableClass name="TranslucentTB.Pages.WelcomePage" threadingModel="both" xmlns="urn:schemas-microsoft-com:winrt.v1"></activatableClass>
+    </file>
+
 </assembly>
