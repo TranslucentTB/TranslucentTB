@@ -24,12 +24,12 @@
         </uap:DefaultTile>
       </uap:VisualElements>
       <Extensions>
-        <uap3:Extension Category="windows.appExecutionAlias" Executable="TranslucentTB\TranslucentTB.exe" EntryPoint="Windows.FullTrustApplication">
+        <uap3:Extension Category="windows.appExecutionAlias" Executable="TranslucentTB.exe" EntryPoint="Windows.FullTrustApplication">
           <uap3:AppExecutionAlias>
             <desktop:ExecutionAlias Alias="TranslucentTB.exe" />
           </uap3:AppExecutionAlias>
         </uap3:Extension>
-        <desktop:Extension Category="windows.startupTask" Executable="TranslucentTB\TranslucentTB.exe" EntryPoint="Windows.FullTrustApplication">
+        <desktop:Extension Category="windows.startupTask" Executable="TranslucentTB.exe" EntryPoint="Windows.FullTrustApplication">
           <desktop:StartupTask TaskId="TranslucentTB" Enabled="true" DisplayName="TranslucentTB" />
         </desktop:Extension>
       </Extensions>
