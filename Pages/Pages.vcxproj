@@ -19,6 +19,7 @@
     <_NoWinAPIFamilyApp>true</_NoWinAPIFamilyApp>
     <_VC_Target_Library_Platform>Desktop</_VC_Target_Library_Platform>
     <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
+    <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
   </PropertyGroup>
   <Import Project="..\Common\CppProject.props" />
   <ItemDefinitionGroup Label="Globals">

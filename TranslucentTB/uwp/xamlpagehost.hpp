@@ -13,7 +13,6 @@ namespace xaml = winrt::Windows::UI::Xaml;
 template<typename T>
 class XamlPageHost : public MessageWindow {
 private:
-	xaml::Hosting::WindowsXamlManager m_manager;
 	xaml::Hosting::DesktopWindowXamlSource m_source;
 	xaml::Media::ScaleTransform m_scaler;
 	T m_content;
@@ -21,13 +20,10 @@ private:
 	Window m_interopWnd;
 
 public:
-	//static_assert(std::is_base_of_v<xaml::UIElement, T>, "T must be a XAML class");
-
 	// TODO: support multiple instances
 	template<typename... Args>
 	inline XamlPageHost(const std::wstring &windowName, HINSTANCE hInst, Args&&... args) :
 		MessageWindow(windowName, windowName, hInst, WS_OVERLAPPEDWINDOW),
-		m_manager(xaml::Hosting::WindowsXamlManager::InitializeForCurrentThread()),
 		// Don't construct the XAML stuff already.
 		m_scaler(nullptr),
 		m_content(nullptr)
@@ -51,16 +47,18 @@ public:
 		SetFocus(m_WindowHandle);
 	}
 
-	~XamlPageHost()
+	inline T *operator ->()
+	{
+		return &m_content;
+	}
+
+	inline ~XamlPageHost()
 	{
 		m_scaler = nullptr;
 		m_content = nullptr;
 
 		m_source.Close();
 		m_source = nullptr;
-
-		m_manager.Close();
-		m_manager = nullptr;
 	}
 
 	XamlPageHost(const XamlPageHost &) = delete;

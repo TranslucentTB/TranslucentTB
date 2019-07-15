@@ -17,6 +17,7 @@
 // WIL and C++/WinRT
 #include <wil/filesystem.h>
 #include <winrt/Windows.Foundation.h>
+#include <winrt/TranslucentTB.h>
 #include <winrt/TranslucentTB.Pages.h>
 
 // RapidJSON
@@ -535,9 +536,11 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *, _In_ int)
 {
+	winrt::TranslucentTB::App app(nullptr);
 	try
 	{
-		winrt::init_apartment(winrt::apartment_type::multi_threaded);
+		winrt::init_apartment(winrt::apartment_type::single_threaded);
+		app = { };
 	}
 	HresultErrorCatch(spdlog::level::critical, L"Initialization of Windows Runtime failed.");
 
@@ -580,7 +583,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 	// Not uninitializing WinRT apartment here because it will cause issues
 	// with destruction of WinRT objects that have a static lifetime.
 	// Apartment gets cleaned up by system anyways when the process dies.
-
 	return static_cast<int>(exitCode);
 }
 
