@@ -23,8 +23,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="App.base.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Pages.WelcomePage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml" />
   </ItemGroup>
 </Project>

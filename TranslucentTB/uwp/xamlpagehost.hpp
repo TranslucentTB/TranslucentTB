@@ -42,6 +42,8 @@ public:
 
 		m_content.RenderTransform(m_scaler);
 
+		m_source.Content(m_content);
+
 		SetWindowPos(m_WindowHandle, 0, 0, 0, 300, 300, SWP_SHOWWINDOW);
 		SetWindowPos(m_interopWnd, 0, 0, 0, 300, 300, SWP_SHOWWINDOW);
 		show();
