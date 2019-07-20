@@ -23,14 +23,15 @@
     </trustInfo>
 
     <application xmlns="urn:schemas-microsoft-com:asm.v3">
-        <windowsSettings xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">
-            <dpiAwareness>PerMonitorV2</dpiAwareness>
-            <longPathAware>true</longPathAware>
+        <windowsSettings xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings">
+            <ws2:dpiAwareness>PerMonitorV2</ws2:dpiAwareness>
+            <ws2:longPathAware>true</ws2:longPathAware>
         </windowsSettings>
     </application>
 
     <file name="Pages.dll" hashalg="SHA1" xmlns:winrt="urn:schemas-microsoft-com:winrt.v1">
         <winrt:activatableClass name="TranslucentTB.Pages.WelcomePage" threadingModel="both" />
+        <winrt:activatableClass name="TranslucentTB.Pages.FramelessPage" threadingModel="both" />
         <winrt:activatableClass name="TranslucentTB.App" threadingModel="both" />
         <winrt:activatableClass name="TranslucentTB.XamlMetaDataProvider" threadingModel="both" />
     </file>

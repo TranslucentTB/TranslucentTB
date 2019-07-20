@@ -1,12 +1,12 @@
 #pragma once
 #include "../windows/messagewindow.hpp"
 
+#include <ShellScalingApi.h>
 #include <string>
 #include <type_traits>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.UI.Xaml.h>
 #include <winrt/Windows.UI.Xaml.Hosting.h>
-#include <winrt/Windows.UI.Xaml.Media.h>
 #include <winrt/TranslucentTB.Pages.h>
 #include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
 
@@ -22,7 +22,6 @@ class XamlPageHost : public MessageWindow {
 private:
 	CenteringStrategy m_CenteringStrategy;
 	xaml::Hosting::DesktopWindowXamlSource m_source;
-	xaml::Media::ScaleTransform m_scaler;
 	T m_content;
 	int64_t m_TitleChangedToken;
 
@@ -42,9 +41,16 @@ private:
 		{
 			return 0;
 		});
+
+		RegisterCallback(WM_DPICHANGED, [this](WPARAM, LPARAM lParam)
+		{
+			PositionWindow(*reinterpret_cast<RECT *>(lParam));
+
+			return 0;
+		});
 	}
 
-	RECT CenterRectOnMouse(LONG width, LONG height, const RECT &workArea, const POINT &mouse)
+	RECT CenterRectOnMouse(LONG width, LONG height, const RECT &workArea, POINT mouse)
 	{
 		RECT temp;
 		temp.left = mouse.x - (width / 2);
@@ -118,12 +124,8 @@ private:
 		return temp;
 	}
 
-	RECT CenterWindow(LONG width, LONG height)
+	RECT CenterWindow(LONG width, LONG height, HMONITOR mon, POINT mouse)
 	{
-		POINT point;
-		winrt::check_bool(GetCursorPos(&point));
-		HMONITOR mon = MonitorFromPoint(point, MONITOR_DEFAULTTOPRIMARY);
-
 		MONITORINFO mi = { sizeof(mi) };
 		if (!GetMonitorInfo(mon, &mi))
 		{
@@ -132,7 +134,7 @@ private:
 
 		if (m_CenteringStrategy == CenteringStrategy::Mouse)
 		{
-			return CenterRectOnMouse(width, height, mi.rcWork, point);
+			return CenterRectOnMouse(width, height, mi.rcWork, mouse);
 		}
 		else
 		{
@@ -140,17 +142,31 @@ private:
 		}
 	}
 
-	// TODO: be able to use this method for dpi changes too
-	void UpdateSize()
+	RECT CalculateWindowPosition()
 	{
 		m_content.Measure(xaml::SizeHelper::FromDimensions(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()));
 
-		const winrt::Windows::Foundation::Size size = m_content.DesiredSize();
+		winrt::Windows::Foundation::Size size = m_content.DesiredSize();
 
-		auto rect = CenterWindow(size.Width, size.Height);
+		POINT point;
+		winrt::check_bool(GetCursorPos(&point));
+		HMONITOR mon = MonitorFromPoint(point, MONITOR_DEFAULTTOPRIMARY);
 
-		winrt::check_bool(SetWindowPos(m_WindowHandle, Window::NullWindow, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_SHOWWINDOW | SWP_FRAMECHANGED));
-		winrt::check_bool(SetWindowPos(m_interopWnd, Window::NullWindow, 0, 0, size.Width, size.Height, SWP_SHOWWINDOW));
+		UINT dpiX, dpiY;
+		winrt::check_hresult(GetDpiForMonitor(mon, MDT_EFFECTIVE_DPI, &dpiX, &dpiY));
+
+		const double scale = dpiX / static_cast<double>(USER_DEFAULT_SCREEN_DPI);
+
+		size.Height *= scale;
+		size.Width *= scale;
+
+		return CenterWindow(size.Width, size.Height, mon, point);
+	}
+
+	void PositionWindow(const RECT &rect, bool showWindow = false)
+	{
+		winrt::check_bool(SetWindowPos(m_WindowHandle, Window::NullWindow, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, showWindow ? SWP_SHOWWINDOW | SWP_FRAMECHANGED : 0));
+		winrt::check_bool(SetWindowPos(m_interopWnd, Window::NullWindow, 0, 0, rect.right - rect.left, rect.bottom - rect.top, showWindow ? SWP_SHOWWINDOW : 0));
 	}
 
 	void SetTitle(...)
@@ -160,7 +176,6 @@ private:
 
 public:
 	// TODO: support multiple instances
-	// TODO: dpi awareness
 	// TODO: better class name lol
 	// todo: movable window
 	template<typename... Args>
@@ -168,7 +183,6 @@ public:
 		MessageWindow(L"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", { }, hInst, WS_OVERLAPPED),
 		m_CenteringStrategy(strategy),
 		// Don't construct the XAML stuff already.
-		m_scaler(nullptr),
 		m_content(nullptr)
 	{
 		auto nativeSource = m_source.as<IDesktopWindowXamlSourceNative>();
@@ -176,13 +190,10 @@ public:
 
 		winrt::check_hresult(nativeSource->get_WindowHandle(m_interopWnd.put()));
 
-		m_scaler = { };
 		m_content = T(std::forward<Args>(args)...);
 
 		// Make sure T is a frameless page
 		WINRT_ASSERT(m_content.try_as<winrt::TranslucentTB::Pages::FramelessPage>());
-
-		m_content.RenderTransform(m_scaler);
 
 		m_source.Content(m_content);
 
@@ -195,7 +206,7 @@ public:
 
 		RegisterCallbacks();
 
-		UpdateSize();
+		PositionWindow(CalculateWindowPosition(), true);
 
 		UpdateWindow(m_WindowHandle);
 		SetFocus(m_WindowHandle);
@@ -209,7 +220,6 @@ public:
 	inline ~XamlPageHost()
 	{
 		m_content.UnregisterPropertyChangedCallback(winrt::TranslucentTB::Pages::FramelessPage::TitleProperty(), m_TitleChangedToken);
-		m_scaler = nullptr;
 		m_content = nullptr;
 
 		m_source.Close();
