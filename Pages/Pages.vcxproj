@@ -20,6 +20,7 @@
     <_VC_Target_Library_Platform>Desktop</_VC_Target_Library_Platform>
     <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
     <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
+    <_GenerateProjectPriFileDependsOn>PlaceAppXbfAtRootOfResourceTree;$(_GenerateProjectPriFileDependsOn)</_GenerateProjectPriFileDependsOn>
   </PropertyGroup>
   <Import Project="..\Common\CppProject.props" />
   <ItemDefinitionGroup Label="Globals">
@@ -36,6 +37,10 @@
   <ItemGroup>
     <ClCompile Include="App.cpp">
       <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Pages.FramelessPage.cpp">
+      <DependentUpon>Pages.FramelessPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="pch.cpp">
@@ -56,6 +61,9 @@
       <SubType>Designer</SubType>
       <FileType>Document</FileType>
     </ApplicationDefinition>
+    <Page Include="Pages.FramelessPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Pages.WelcomePage.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -64,6 +72,10 @@
     <ClInclude Include="App.base.hpp" />
     <ClInclude Include="App.h">
       <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Pages.FramelessPage.h">
+      <DependentUpon>Pages.FramelessPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="pch.h" />
@@ -75,6 +87,10 @@
   <ItemGroup>
     <Midl Include="App.idl">
       <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="Pages.FramelessPage.idl">
+      <DependentUpon>Pages.FramelessPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
     <Midl Include="Pages.WelcomePage.idl">
@@ -96,5 +112,14 @@
     <Error Condition="!Exists('..\packages\Microsoft.VCRTForwarders.140.1.0.1-rc\build\native\Microsoft.VCRTForwarders.140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.VCRTForwarders.140.1.0.1-rc\build\native\Microsoft.VCRTForwarders.140.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.0.0-preview6.4\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.0.0-preview6.4\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.0.0-preview6.4\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.0.0-preview6.4\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.targets'))" />
+  </Target>
+  <Target Name="PlaceAppXbfAtRootOfResourceTree" DependsOnTargets="GetPackagingOutputs">
+    <ItemGroup>
+      <_RelocatedAppXamlData Include="@(PackagingOutputs)" Condition="'%(Filename)' == 'App' and ('%(Extension)' == '.xaml' or '%(Extension)' == '.xbf')" />
+      <PackagingOutputs Remove="@(_RelocatedAppXamlData)" />
+      <PackagingOutputs Include="@(_RelocatedAppXamlData)">
+        <TargetPath>%(Filename)%(Extension)</TargetPath>
+      </PackagingOutputs>
+    </ItemGroup>
   </Target>
 </Project>

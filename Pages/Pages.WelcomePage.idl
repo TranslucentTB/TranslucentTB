@@ -1,9 +1,12 @@
+import "Pages.FramelessPage.idl";
+
 namespace TranslucentTB.Pages
 {
-    [default_interface]
-    runtimeclass WelcomePage : Windows.UI.Xaml.Controls.Page
-    {
-        WelcomePage();
-        Int32 MyProperty;
-    }
+	[default_interface]
+	runtimeclass WelcomePage : FramelessPage
+	{
+		WelcomePage(String configFile);
+
+		String ConfigFile { get; };
+	}
 }

@@ -4,20 +4,22 @@
 
 namespace winrt::TranslucentTB::Pages::implementation
 {
-    struct WelcomePage : WelcomePageT<WelcomePage>
-    {
-        WelcomePage();
+	struct WelcomePage : WelcomePageT<WelcomePage>
+	{
+		WelcomePage(hstring configFile);
 
-        int32_t MyProperty();
-        void MyProperty(int32_t value);
+		hstring ConfigFile();
 
-        void ClickHandler(Windows::Foundation::IInspectable const& sender, Windows::UI::Xaml::RoutedEventArgs const& args);
-    };
+		void OpenConfigFile(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+
+	private:
+		hstring m_ConfigFile;
+	};
 }
 
 namespace winrt::TranslucentTB::Pages::factory_implementation
 {
-    struct WelcomePage : WelcomePageT<WelcomePage, implementation::WelcomePage>
-    {
-    };
+	struct WelcomePage : WelcomePageT<WelcomePage, implementation::WelcomePage>
+	{
+	};
 }

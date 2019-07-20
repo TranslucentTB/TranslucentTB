@@ -17,6 +17,7 @@
 // WIL and C++/WinRT
 #include <wil/filesystem.h>
 #include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/TranslucentTB.h>
 #include <winrt/TranslucentTB.Pages.h>
 
@@ -576,6 +577,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 
 	// Initialize GUI
 	InitializeTray(hInstance, cfg);
+
+	XamlPageHost<winrt::TranslucentTB::Pages::WelcomePage> host(hInstance, CenteringStrategy::Monitor, run.config_file.native());
 
 	// Run the main program loop. When this method exits, TranslucentTB itself is about to exit.
 	const auto exitCode = MessageWindow::RunMessageLoop();

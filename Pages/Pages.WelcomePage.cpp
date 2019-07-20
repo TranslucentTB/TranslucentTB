@@ -1,32 +1,32 @@
 #include "pch.h"
 
+#include "Pages.FramelessPage.h"
 #include "Pages.WelcomePage.h"
 #if __has_include("Pages.WelcomePage.g.cpp")
 #include "Pages.WelcomePage.g.cpp"
 #endif
+
+#include "constants.hpp"
 
 using namespace winrt;
 using namespace Windows::UI::Xaml;
 
 namespace winrt::TranslucentTB::Pages::implementation
 {
-    WelcomePage::WelcomePage()
-    {
-        InitializeComponent();
-    }
+	WelcomePage::WelcomePage(hstring configFile) : m_ConfigFile(std::move(configFile))
+	{
+		InitializeComponent();
+		Title(L"Welcome to " APP_NAME L"!");
+	}
 
-    int32_t WelcomePage::MyProperty()
-    {
-        throw hresult_not_implemented();
-    }
+	hstring WelcomePage::ConfigFile()
+	{
+		return m_ConfigFile;
+	}
 
-    void WelcomePage::MyProperty(int32_t /* value */)
-    {
-        throw hresult_not_implemented();
-    }
-
-    void WelcomePage::ClickHandler(IInspectable const&, RoutedEventArgs const&)
-    {
-        Button().Content(box_value(L"Clicked"));
-    }
+	void WelcomePage::OpenConfigFile(const IInspectable &sender, const RoutedEventArgs &args)
+	{
+		// TODO: make work
+		OutputDebugString(m_ConfigFile.c_str());
+	}
 }

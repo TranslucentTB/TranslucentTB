@@ -27,6 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="Pages.WelcomePage.xaml" />
+    <Page Include="Pages.FramelessPage.xaml" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />

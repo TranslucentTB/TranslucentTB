@@ -47,4 +47,10 @@ public:
 
 	// Opens a folder and highlights a file in the File Explorer.
 	static void RevealFile(const std::filesystem::path &file);
+
+	static constexpr bool RectFitsInRect(const RECT &outer, const RECT &inner)
+	{
+		return inner.right <= outer.right && inner.left >= outer.left &&
+			outer.top <= inner.top && outer.bottom >= inner.bottom;
+	}
 };
