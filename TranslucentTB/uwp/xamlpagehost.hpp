@@ -27,7 +27,7 @@ private:
 
 	xaml::Hosting::DesktopWindowXamlSource m_source;
 	T m_content;
-	int64_t m_TitleChangedToken;
+	winrt::event_token m_TitleChangedToken;
 
 	inline static float GetDpiScale(HMONITOR mon)
 	{
@@ -192,8 +192,7 @@ public:
 		m_CenteringStrategy(strategy),
 		m_interopWnd(Window::NullWindow),
 		// Don't construct the XAML stuff already.
-		m_content(nullptr),
-		m_TitleChangedToken(0)
+		m_content(nullptr)
 	{
 		auto nativeSource = m_source.as<IDesktopWindowXamlSourceNative>();
 		winrt::check_hresult(nativeSource->AttachToWindow(m_WindowHandle));
@@ -208,7 +207,7 @@ public:
 		m_source.Content(m_content);
 
 		SetTitle();
-		m_TitleChangedToken = m_content.RegisterPropertyChangedCallback(winrt::TranslucentTB::Pages::FramelessPage::TitleProperty(), { this, &XamlPageHost::SetTitle });
+		m_TitleChangedToken.value = m_content.RegisterPropertyChangedCallback(winrt::TranslucentTB::Pages::FramelessPage::TitleProperty(), { this, &XamlPageHost::SetTitle });
 
 		// Magic that gives us shadows
 		const MARGINS margins = { 1 };
@@ -229,7 +228,7 @@ public:
 
 	inline ~XamlPageHost()
 	{
-		m_content.UnregisterPropertyChangedCallback(winrt::TranslucentTB::Pages::FramelessPage::TitleProperty(), m_TitleChangedToken);
+		m_content.UnregisterPropertyChangedCallback(winrt::TranslucentTB::Pages::FramelessPage::TitleProperty(), std::exchange(m_TitleChangedToken.value, 0));
 		m_content = nullptr;
 
 		m_source.Close();
