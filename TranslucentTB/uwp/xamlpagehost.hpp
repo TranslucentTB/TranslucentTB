@@ -1,6 +1,7 @@
 #pragma once
 #include "../windows/messagewindow.hpp"
 
+#include "arch.h"
 #include <ShellScalingApi.h>
 #include <string>
 #include <type_traits>
@@ -9,6 +10,7 @@
 #include <winrt/Windows.UI.Xaml.Hosting.h>
 #include <winrt/TranslucentTB.Pages.h>
 #include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
+#include <windowsx.h>
 
 namespace xaml = winrt::Windows::UI::Xaml;
 
@@ -21,36 +23,21 @@ template<typename T>
 class XamlPageHost : public MessageWindow {
 private:
 	CenteringStrategy m_CenteringStrategy;
+	Window m_interopWnd;
+
 	xaml::Hosting::DesktopWindowXamlSource m_source;
 	T m_content;
 	int64_t m_TitleChangedToken;
 
-	Window m_interopWnd;
-
-	void RegisterCallbacks()
+	inline static float GetDpiScale(HMONITOR mon)
 	{
-		RegisterCallback(WM_SETFOCUS, [this](...)
-		{
-			// Forward keyboard focus to the XAML island.
-			SetFocus(m_interopWnd);
+		UINT dpiX, dpiY;
+		winrt::check_hresult(GetDpiForMonitor(mon, MDT_EFFECTIVE_DPI, &dpiX, &dpiY));
 
-			return 0;
-		});
-
-		RegisterCallback(WM_NCCALCSIZE, [](...)
-		{
-			return 0;
-		});
-
-		RegisterCallback(WM_DPICHANGED, [this](WPARAM, LPARAM lParam)
-		{
-			PositionWindow(*reinterpret_cast<RECT *>(lParam));
-
-			return 0;
-		});
+		return dpiX / static_cast<float>(USER_DEFAULT_SCREEN_DPI);
 	}
 
-	RECT CenterRectOnMouse(LONG width, LONG height, const RECT &workArea, POINT mouse)
+	inline static RECT CenterRectOnMouse(LONG width, LONG height, const RECT &workArea, POINT mouse)
 	{
 		RECT temp;
 		temp.left = mouse.x - (width / 2);
@@ -104,7 +91,7 @@ private:
 		return temp;
 	}
 
-	RECT CenterRectOnMonitor(LONG width, LONG height, const RECT &workArea)
+	inline static RECT CenterRectOnMonitor(LONG width, LONG height, const RECT &workArea)
 	{
 		const auto workWidth = workArea.right - workArea.left;
 		const auto workHeight = workArea.bottom - workArea.top;
@@ -124,7 +111,37 @@ private:
 		return temp;
 	}
 
-	RECT CenterWindow(LONG width, LONG height, HMONITOR mon, POINT mouse)
+	inline void SetTitle(...)
+	{
+		SetWindowText(m_WindowHandle, m_content.Title().c_str());
+	}
+
+	inline void RegisterCallbacks()
+	{
+		RegisterCallback(WM_NCCALCSIZE, [](...)
+		{
+			return 0;
+		});
+
+		RegisterCallback(WM_SIZE, [this](WPARAM, LPARAM lParam)
+		{
+			const int x = GET_X_LPARAM(lParam);
+			const int y = GET_Y_LPARAM(lParam);
+			winrt::check_bool(SetWindowPos(m_interopWnd, Window::NullWindow, 0, 0, x, y, 0));
+
+			const float scale = GetDpiScale(monitor());
+			m_content.Arrange(xaml::RectHelper::FromCoordinatesAndDimensions(0, 0, x / scale, y / scale));
+			return 0;
+		});
+
+		RegisterCallback(WM_DPICHANGED, [this](WPARAM, LPARAM lParam)
+		{
+			PositionWindow(*reinterpret_cast<RECT *>(lParam));
+			return 0;
+		});
+	}
+
+	inline RECT CenterWindow(LONG width, LONG height, HMONITOR mon, POINT mouse)
 	{
 		MONITORINFO mi = { sizeof(mi) };
 		if (!GetMonitorInfo(mon, &mi))
@@ -152,11 +169,7 @@ private:
 		winrt::check_bool(GetCursorPos(&point));
 		HMONITOR mon = MonitorFromPoint(point, MONITOR_DEFAULTTOPRIMARY);
 
-		UINT dpiX, dpiY;
-		winrt::check_hresult(GetDpiForMonitor(mon, MDT_EFFECTIVE_DPI, &dpiX, &dpiY));
-
-		const double scale = dpiX / static_cast<double>(USER_DEFAULT_SCREEN_DPI);
-
+		const float scale = GetDpiScale(mon);
 		size.Height *= scale;
 		size.Width *= scale;
 
@@ -169,11 +182,6 @@ private:
 		winrt::check_bool(SetWindowPos(m_interopWnd, Window::NullWindow, 0, 0, rect.right - rect.left, rect.bottom - rect.top, showWindow ? SWP_SHOWWINDOW : 0));
 	}
 
-	void SetTitle(...)
-	{
-		SetWindowText(m_WindowHandle, m_content.Title().c_str());
-	}
-
 public:
 	// TODO: support multiple instances
 	// TODO: better class name lol
@@ -182,8 +190,10 @@ public:
 	inline XamlPageHost(HINSTANCE hInst, CenteringStrategy strategy, Args&&... args) :
 		MessageWindow(L"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", { }, hInst, WS_OVERLAPPED),
 		m_CenteringStrategy(strategy),
+		m_interopWnd(Window::NullWindow),
 		// Don't construct the XAML stuff already.
-		m_content(nullptr)
+		m_content(nullptr),
+		m_TitleChangedToken(0)
 	{
 		auto nativeSource = m_source.as<IDesktopWindowXamlSourceNative>();
 		winrt::check_hresult(nativeSource->AttachToWindow(m_WindowHandle));

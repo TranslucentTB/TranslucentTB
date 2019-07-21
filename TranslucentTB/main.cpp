@@ -17,7 +17,6 @@
 // WIL and C++/WinRT
 #include <wil/filesystem.h>
 #include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/TranslucentTB.h>
 #include <winrt/TranslucentTB.Pages.h>
 
