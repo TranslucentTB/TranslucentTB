@@ -24,6 +24,7 @@ class XamlPageHost : public MessageWindow {
 private:
 	CenteringStrategy m_CenteringStrategy;
 	Window m_interopWnd;
+	FILTERCOOKIE m_FilterCookie;
 
 	xaml::Hosting::DesktopWindowXamlSource m_source;
 	T m_content;
@@ -167,7 +168,7 @@ private:
 
 		POINT point;
 		winrt::check_bool(GetCursorPos(&point));
-		HMONITOR mon = MonitorFromPoint(point, MONITOR_DEFAULTTOPRIMARY);
+		const HMONITOR mon = MonitorFromPoint(point, MONITOR_DEFAULTTOPRIMARY);
 
 		const float scale = GetDpiScale(mon);
 		size.Height *= scale;
@@ -191,13 +192,21 @@ public:
 		MessageWindow(L"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", { }, hInst, WS_OVERLAPPED),
 		m_CenteringStrategy(strategy),
 		m_interopWnd(Window::NullWindow),
+		m_FilterCookie(0),
 		// Don't construct the XAML stuff already.
 		m_content(nullptr)
 	{
-		auto nativeSource = m_source.as<IDesktopWindowXamlSourceNative>();
+		auto nativeSource = m_source.as<IDesktopWindowXamlSourceNative2>();
 		winrt::check_hresult(nativeSource->AttachToWindow(m_WindowHandle));
 
 		winrt::check_hresult(nativeSource->get_WindowHandle(m_interopWnd.put()));
+
+		m_FilterCookie = RegisterThreadMessageFilter([nativeSource](const MSG &msg)
+		{
+			BOOL result;
+			winrt::check_hresult(nativeSource->PreTranslateMessage(&msg, &result));
+			return result;
+		});
 
 		m_content = T(std::forward<Args>(args)...);
 
@@ -230,6 +239,8 @@ public:
 	{
 		m_content.UnregisterPropertyChangedCallback(winrt::TranslucentTB::Pages::FramelessPage::TitleProperty(), std::exchange(m_TitleChangedToken.value, 0));
 		m_content = nullptr;
+
+		UnregisterThreadMessageFilter(std::exchange(m_FilterCookie, 0));
 
 		m_source.Close();
 		m_source = nullptr;

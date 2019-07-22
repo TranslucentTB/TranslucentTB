@@ -3,6 +3,8 @@
 
 #include "../log/ttberror.hpp"
 
+thread_local std::unordered_map<unsigned int, MessageWindow::filter_t> MessageWindow::s_FilterMap;
+
 LRESULT MessageWindow::WindowProcedure(Window window, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const auto &callbackMap = m_CallbackMap[uMsg];
@@ -27,6 +29,17 @@ WPARAM MessageWindow::RunMessageLoop()
 	{
 		if (ret != -1)
 		{
+			if (!s_FilterMap.empty())
+			{
+				for (const auto &[_, filter] : s_FilterMap)
+				{
+					if (filter(msg))
+					{
+						continue;
+					}
+				}
+			}
+
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
