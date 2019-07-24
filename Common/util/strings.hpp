@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <cwctype>
 #include <functional>
 #include <initializer_list>
@@ -38,6 +39,12 @@ namespace Util {
 	}
 
 	namespace impl {
+		constexpr std::size_t rotl(std::size_t original, uint8_t bits) noexcept
+		{
+			return (original << bits) | (original >> (32 - bits));
+		}
+
+#ifdef _WIN64
 		constexpr void hash_combine(std::size_t &h, std::size_t k) noexcept
 		{
 			constexpr std::size_t m = 0xc6a4a7935bd1e995;
@@ -54,6 +61,21 @@ namespace Util {
 			// from hashing to 0.
 			h += 0xe6546b64;
 		}
+#else
+		constexpr void hash_combine(std::size_t &h, std::size_t k) noexcept
+		{
+			constexpr size_t c1 = 0xcc9e2d51;
+			constexpr size_t c2 = 0x1b873593;
+
+			k *= c1;
+			k = rotl(k, 15);
+			k *= c2;
+
+			h ^= k;
+			h = rotl(h, 13);
+			h = h * 5 + 0xe6546b64;
+		}
+#endif
 
 		struct string_lowercase_compare {
 			inline bool operator()(std::wstring_view l, std::wstring_view r) const noexcept
