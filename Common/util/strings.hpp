@@ -64,8 +64,8 @@ namespace Util {
 #else
 		constexpr void hash_combine(std::size_t &h, std::size_t k) noexcept
 		{
-			constexpr size_t c1 = 0xcc9e2d51;
-			constexpr size_t c2 = 0x1b873593;
+			constexpr std::size_t c1 = 0xcc9e2d51;
+			constexpr std::size_t c2 = 0x1b873593;
 
 			k *= c1;
 			k = rotl(k, 15);
@@ -108,11 +108,11 @@ namespace Util {
 	// Removes instances of a character at the beginning and end of the string.
 	constexpr std::wstring_view Trim(std::wstring_view str, std::wstring_view characters = impl::WHITESPACES)
 	{
-		const size_t first = str.find_first_not_of(characters);
+		const std::size_t first = str.find_first_not_of(characters);
 
 		if (first != std::wstring_view::npos)
 		{
-			const size_t last = str.find_last_not_of(characters);
+			const std::size_t last = str.find_last_not_of(characters);
 			return str.substr(first, last - first + 1);
 		}
 		else
@@ -124,13 +124,13 @@ namespace Util {
 	// Removes instances of a character at the beginning and end of the string.
 	constexpr void TrimInplace(std::wstring_view &str, std::wstring_view characters = impl::WHITESPACES)
 	{
-		const size_t first = str.find_first_not_of(characters);
+		const std::size_t first = str.find_first_not_of(characters);
 
 		if (first != std::wstring_view::npos)
 		{
 			str.remove_prefix(first);
 
-			const size_t last = str.find_last_not_of(characters);
+			const std::size_t last = str.find_last_not_of(characters);
 			str.remove_suffix(str.length() - last - 1);
 		}
 		else
@@ -142,11 +142,11 @@ namespace Util {
 	// Removes instances of a character at the beginning and end of the string.
 	inline void TrimInplace(std::wstring &str, std::wstring_view characters = impl::WHITESPACES)
 	{
-		const size_t first = str.find_first_not_of(characters);
+		const std::size_t first = str.find_first_not_of(characters);
 
 		if (first != std::wstring::npos)
 		{
-			const size_t last = str.find_last_not_of(characters);
+			const std::size_t last = str.find_last_not_of(characters);
 			str.erase(last + 1);
 			str.erase(0, first);
 		}
