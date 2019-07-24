@@ -5,14 +5,15 @@
 #include <ShellScalingApi.h>
 #include <string>
 #include <type_traits>
+#include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
+#include <windowsx.h>
+
+#include "undefgetcurrenttime.h"
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.UI.Xaml.h>
 #include <winrt/Windows.UI.Xaml.Hosting.h>
 #include <winrt/TranslucentTB.Pages.h>
-#include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
-#include <windowsx.h>
-
-namespace xaml = winrt::Windows::UI::Xaml;
+#include "redefgetcurrenttime.h"
 
 enum class CenteringStrategy {
 	Mouse,
@@ -26,7 +27,7 @@ private:
 	Window m_interopWnd;
 	FILTERCOOKIE m_FilterCookie;
 
-	xaml::Hosting::DesktopWindowXamlSource m_source;
+	winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource m_source;
 	T m_content;
 	winrt::event_token m_TitleChangedToken;
 
@@ -136,7 +137,7 @@ private:
 			winrt::check_bool(SetWindowPos(m_interopWnd, Window::NullWindow, 0, 0, x, y, 0));
 
 			const float scale = GetDpiScale(monitor());
-			m_content.Arrange(xaml::RectHelper::FromCoordinatesAndDimensions(0, 0, x / scale, y / scale));
+			m_content.Arrange(winrt::Windows::UI::Xaml::RectHelper::FromCoordinatesAndDimensions(0, 0, x / scale, y / scale));
 			return 0;
 		});
 
@@ -145,6 +146,14 @@ private:
 			PositionWindow(*reinterpret_cast<RECT *>(lParam));
 			return 0;
 		});
+
+		// TODO: this causes the first element to be tab-navigated to when initially opening the window
+		//RegisterCallback(WM_SETFOCUS, [this](...)
+		//{
+		//	SetFocus(m_interopWnd);
+		//
+		//	return 0;
+		//});
 	}
 
 	inline RECT CenterWindow(LONG width, LONG height, HMONITOR mon, POINT mouse)
@@ -167,7 +176,7 @@ private:
 
 	RECT CalculateWindowPosition()
 	{
-		m_content.Measure(xaml::SizeHelper::FromDimensions(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()));
+		m_content.Measure(winrt::Windows::UI::Xaml::SizeHelper::FromDimensions(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()));
 
 		winrt::Windows::Foundation::Size size = m_content.DesiredSize();
 
@@ -179,7 +188,7 @@ private:
 		size.Height *= scale;
 		size.Width *= scale;
 
-		return CenterWindow(size.Width, size.Height, mon, point);
+		return CenterWindow(static_cast<LONG>(std::round(size.Width)), static_cast<LONG>(std::round(size.Height)), mon, point);
 	}
 
 	void PositionWindow(const RECT &rect, bool showWindow = false)

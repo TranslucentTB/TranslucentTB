@@ -2,9 +2,7 @@
 #include <unknwn.h>
 
 // Remove intrusive macro from Windows headers
-#ifdef GetCurrentTime
-#undef GetCurrentTime
-#endif
+#include "undefgetcurrenttime.h"
 
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
@@ -19,3 +17,5 @@
 #include <winrt/Microsoft.Toolkit.Win32.UI.XamlHost.h>
 #include <winrt/TranslucentTB.h>
 #include <winrt/TranslucentTB.Pages.h>
+
+#include "redefgetcurrenttime.h"
