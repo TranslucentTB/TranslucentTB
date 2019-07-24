@@ -129,7 +129,7 @@
       <PreprocessorDefinitions>FMT_HEADER_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
       <!-- spdlog -->
-      <PreprocessorDefinitions>FMT_USE_STD_STRING_VIEW;SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE;SPDLOG_DISABLE_DEFAULT_LOGGER;SPDLOG_FMT_EXTERNAL;SPDLOG_NO_NAME;SPDLOG_NO_THREAD_ID;SPDLOG_NO_TLS;SPDLOG_WCHAR_TO_UTF8_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE;SPDLOG_DISABLE_DEFAULT_LOGGER;SPDLOG_FMT_EXTERNAL;SPDLOG_NO_NAME;SPDLOG_NO_THREAD_ID;SPDLOG_NO_TLS;SPDLOG_WCHAR_TO_UTF8_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
       <!-- RapidJSON -->
       <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -137,9 +137,6 @@
       <!-- Windows -->
       <PreprocessorDefinitions>STRICT_TYPED_ITEMIDS;NOMINMAX;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <Link>
-      <AppContainer>false</AppContainer>
-    </Link>
   </ItemDefinitionGroup>
 
   <ImportGroup Label="Shared">

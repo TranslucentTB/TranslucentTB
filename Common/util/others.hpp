@@ -9,7 +9,7 @@ namespace Util {
 	struct map_value_compare {
 		constexpr bool operator()(const std::pair<K, V> &a, const std::pair<K, V> &b) const noexcept
 		{
-			static constexpr Compare comparer;
+			constexpr Compare comparer;
 			return comparer(a.second, b.second);
 		}
 	};

@@ -142,5 +142,5 @@ void Error::HandleCommon(spdlog::level::level_enum level, std::wstring_view mess
 		msg = message;
 	}
 
-	spdlog::log({ file, line, function }, level, msg.c_str());
+	spdlog::log({ file, line, function }, level, msg);
 }

@@ -30,12 +30,17 @@ private:
 	T m_content;
 	winrt::event_token m_TitleChangedToken;
 
-	inline static float GetDpiScale(HMONITOR mon)
+	inline static UINT GetDpi(HMONITOR mon)
 	{
 		UINT dpiX, dpiY;
 		winrt::check_hresult(GetDpiForMonitor(mon, MDT_EFFECTIVE_DPI, &dpiX, &dpiY));
 
-		return dpiX / static_cast<float>(USER_DEFAULT_SCREEN_DPI);
+		return dpiX;
+	}
+
+	inline static float GetDpiScale(HMONITOR mon)
+	{
+		return GetDpi(mon) / static_cast<float>(USER_DEFAULT_SCREEN_DPI);
 	}
 
 	inline static RECT CenterRectOnMouse(LONG width, LONG height, const RECT &workArea, POINT mouse)
