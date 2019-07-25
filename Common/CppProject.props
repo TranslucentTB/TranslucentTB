@@ -50,6 +50,8 @@
   <PropertyGroup Label="Globals">
     <CharacterSet>Unicode</CharacterSet>
     <Keyword>Win32Proj</Keyword>
+    <RootNamespace>TranslucentTB</RootNamespace>
+    <DefaultLanguage>en-US</DefaultLanguage>
     <PlatformToolset>v142</PlatformToolset>
     <VCProjectVersion>16.0</VCProjectVersion>
     <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
@@ -60,7 +62,6 @@
     <CppWinRTLibs>false</CppWinRTLibs>
     <CppWinRTFastAbi>true</CppWinRTFastAbi>
     <CppWinRTOptimized>true</CppWinRTOptimized>
-    <DefaultLanguage>en-US</DefaultLanguage>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Platform)'=='Win32'">

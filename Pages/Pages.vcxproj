@@ -3,22 +3,24 @@
   <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="..\packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.0.0-preview6.4\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.props" Condition="Exists('..\packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.0.0-preview6.4\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.props')" />
   <PropertyGroup Label="Globals">
-    <MinimalCoreWin>true</MinimalCoreWin>
     <ProjectGuid>{9875d8e1-9594-445e-a0e4-07c6027f85e0}</ProjectGuid>
     <ProjectName>Pages</ProjectName>
-    <RootNamespace>TranslucentTB</RootNamespace>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+
+    <!-- Compile as a UWP project for the XAML compiler to compile the pages. -->
+    <MinimalCoreWin>true</MinimalCoreWin>
     <AppContainerApplication>true</AppContainerApplication>
     <ApplicationType>Windows Store</ApplicationType>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <!-- This is magic that tells msbuild to link against the Desktop platform
-         instead of the App platform. This you definitely want, because we're not
-         building a true universal "app", we're building a desktop application
-         with xaml. Without this, we'll link against the app CRT, and the
-         unpackaged app _will not_ work. -->
+
+    <!-- But link against the desktop CRT, we're not making a true UWP app. -->
     <_NoWinAPIFamilyApp>true</_NoWinAPIFamilyApp>
     <_VC_Target_Library_Platform>Desktop</_VC_Target_Library_Platform>
+
+    <!-- Don't store outputs in a subfolder otherwise the main program can't find them. -->
     <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
+
+    <!-- Disable embedded XBF (even if the naming suggests otherwise) so that our XAML is in the final resources.pri. -->
     <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
     <_GenerateProjectPriFileDependsOn>PlaceAppXbfAtRootOfResourceTree;$(_GenerateProjectPriFileDependsOn)</_GenerateProjectPriFileDependsOn>
   </PropertyGroup>
