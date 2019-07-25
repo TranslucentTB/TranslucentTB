@@ -65,13 +65,16 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Platform)'=='Win32'">
-    <OutDir>$(SolutionDir)x86\$(Configuration)\</OutDir>
-    <IntDir>x86\$(Configuration)\</IntDir>
+    <RealPlatform>x86</RealPlatform>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Platform)'!='Win32'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <RealPlatform>$(Platform)</RealPlatform>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)$(RealPlatform)\$(Configuration)\</OutDir>
+    <IntDir>$(RealPlatform)\$(Configuration)\</IntDir>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
