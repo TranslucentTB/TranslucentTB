@@ -12,6 +12,8 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>advapi32.lib;comctl32.lib;dwmapi.lib;mincore.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)'=='Release'">fmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)'=='Debug'">fmtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
