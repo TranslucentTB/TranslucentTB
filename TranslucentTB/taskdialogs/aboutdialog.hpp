@@ -95,7 +95,7 @@ private:
 			str << L"Package version: ";
 			try
 			{
-				str << UWP::GetApplicationVersion();
+				str << UWP::GetApplicationVersion().ToString();
 			}
 			catch (const winrt::hresult_error &error)
 			{
@@ -105,10 +105,10 @@ private:
 		}
 
 		const auto [version, hr] = win32::GetFileVersion(win32::GetExeLocation());
-		str << APP_NAME L" version: " << (!version.empty() ? version : Error::MessageFromHRESULT(hr)) << std::endl;
+		str << APP_NAME L" version: " << (SUCCEEDED(hr) ? version : Error::MessageFromHRESULT(hr)) << std::endl;
 
 		const auto [build, hr2] = win32::GetWindowsBuild();
-		str << L"Windows version: " << (!build.empty() ? build : Error::MessageFromHRESULT(hr2)) << std::endl;
+		str << L"Windows version: " << (SUCCEEDED(hr2) ? build : Error::MessageFromHRESULT(hr2)) << std::endl;
 
 		const auto [major, minor, revision] = Hook::GetDetoursVersion();
 		str << L"Microsoft Detours version: " << major << L'.' << minor << L'.' << revision << std::endl;

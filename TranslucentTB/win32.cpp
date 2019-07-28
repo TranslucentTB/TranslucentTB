@@ -1,8 +1,6 @@
 #include "win32.hpp"
 #include "arch.h"
-#include <cstddef>
 #include <fmt/format.h>
-#include <memory>
 #include <optional>
 #include <PathCch.h>
 #include <processthreadsapi.h>
@@ -10,7 +8,6 @@
 #include <ShlObj.h>
 #include <synchapi.h>
 #include <thread>
-#include <utility>
 #include <wil/resource.h>
 #include <WinBase.h>
 #include <winerror.h>
@@ -22,6 +19,23 @@
 #include "uwp/uwp.hpp"
 
 std::filesystem::path win32::m_ExeLocation;
+
+std::pair<std::unique_ptr<std::byte[]>, HRESULT> win32::LoadFileVersionInfo(const std::filesystem::path& file, DWORD flags)
+{
+	const DWORD size = GetFileVersionInfoSizeEx(flags, file.c_str(), nullptr);
+	if (!size)
+	{
+		return { nullptr, HRESULT_FROM_WIN32(GetLastError()) };
+	}
+
+	auto data = std::make_unique<std::byte[]>(size);
+	if (!GetFileVersionInfoEx(flags, file.c_str(), 0, size, data.get()))
+	{
+		return { nullptr, HRESULT_FROM_WIN32(GetLastError()) };
+	}
+
+	return { std::move(data), S_OK };
+}
 
 std::pair<std::filesystem::path, HRESULT> win32::GetProcessFileName(HANDLE process)
 {
@@ -233,24 +247,26 @@ std::pair<std::wstring, HRESULT> win32::GetWindowsBuild()
 		return { { }, hr };
 	}
 
-	std::filesystem::path kernel32 = system32.get();
-	kernel32 /= L"kernel32.dll";
+	std::filesystem::path user32 = system32.get();
+	user32 /= L"user32.dll";
 
-	return GetFileVersion(kernel32);
+	const auto [version, hr2] = GetFixedFileVersion(user32);
+	if (SUCCEEDED(hr2))
+	{
+		return { version.ToString(), S_OK };
+	}
+	else
+	{
+		return { { }, hr2 };
+	}
 }
 
 std::pair<std::wstring, HRESULT> win32::GetFileVersion(const std::filesystem::path &file)
 {
-	const DWORD size = GetFileVersionInfoSize(file.c_str(), nullptr);
-	if (!size)
+	const auto [data, hr] = LoadFileVersionInfo(file);
+	if (FAILED(hr))
 	{
-		return { { }, HRESULT_FROM_WIN32(GetLastError()) };
-	}
-
-	auto data = std::make_unique<std::byte[]>(size);
-	if (!GetFileVersionInfo(file.c_str(), 0, size, data.get()))
-	{
-		return { { }, HRESULT_FROM_WIN32(GetLastError()) };
+		return { { }, hr };
 	}
 
 	wchar_t *fileVersion;
@@ -261,6 +277,24 @@ std::pair<std::wstring, HRESULT> win32::GetFileVersion(const std::filesystem::pa
 	}
 
 	return { { fileVersion, length - 1 }, S_OK };
+}
+
+std::pair<Version, HRESULT> win32::GetFixedFileVersion(const std::filesystem::path& file)
+{
+	const auto [data, hr] = LoadFileVersionInfo(file, FILE_VER_GET_NEUTRAL);
+	if (FAILED(hr))
+	{
+		return { { }, hr };
+	}
+
+	VS_FIXEDFILEINFO* fixedFileInfo;
+	unsigned int length;
+	if (!VerQueryValue(data.get(), L"\\", reinterpret_cast<void**>(&fixedFileInfo), &length))
+	{
+		return { { }, HRESULT_FROM_WIN32(GetLastError()) };
+	}
+
+	return { Version::FromHighLow(fixedFileInfo->dwProductVersionMS, fixedFileInfo->dwProductVersionLS), S_OK };
 }
 
 std::wstring_view win32::GetProcessorArchitecture() noexcept

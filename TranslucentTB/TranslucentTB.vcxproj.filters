@@ -122,6 +122,9 @@
     <ClInclude Include="uwp\xamlpagehost.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="version.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\TTB_black.ico">

@@ -3,6 +3,8 @@
 #include <string_view>
 #include <winrt/base.h>
 
+#include "../version.hpp"
+
 namespace UWP {
 	enum class FolderType {
 		Temporary,
@@ -10,7 +12,7 @@ namespace UWP {
 	};
 
 	winrt::hstring GetApplicationFolderPath(FolderType type);
-	std::wstring GetApplicationVersion();
+	Version GetApplicationVersion();
 	bool HasPackageIdentity();
 	void CopyToClipboard(std::wstring_view str);
 };

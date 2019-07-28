@@ -29,11 +29,11 @@ hstring UWP::GetApplicationFolderPath(FolderType type)
 	}
 }
 
-std::wstring UWP::GetApplicationVersion()
+Version UWP::GetApplicationVersion()
 {
 	static const auto version = Package::Current().Id().Version();
-;
-	return fmt::format(fmt(L"{}.{}.{}.{}"), version.Major, version.Minor, version.Revision, version.Build);
+
+	return Version::FromPackageVersion(version);
 }
 
 bool UWP::HasPackageIdentity()

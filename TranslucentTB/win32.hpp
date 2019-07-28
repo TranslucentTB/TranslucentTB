@@ -1,7 +1,9 @@
 #pragma once
 #include "arch.h"
+#include <cstddef>
 #include <cstdint>
 #include <filesystem>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -11,10 +13,13 @@
 #include <wingdi.h>
 
 #include "util/numbers.hpp"
+#include "version.hpp"
 
 class win32 {
 private:
 	static std::filesystem::path m_ExeLocation;
+
+	static std::pair<std::unique_ptr<std::byte[]>, HRESULT> LoadFileVersionInfo(const std::filesystem::path& file, DWORD flags = 0);
 
 public:
 	// Gets location of the file of a process
@@ -41,6 +46,9 @@ public:
 
 	// Gets the FileVersion of a PE binary.
 	static std::pair<std::wstring, HRESULT> GetFileVersion(const std::filesystem::path &file);
+
+	// Gets the language-neutral FileVersion.
+	static std::pair<Version, HRESULT> GetFixedFileVersion(const std::filesystem::path& file);
 
 	// Gets the current processor architecture as a string.
 	static std::wstring_view GetProcessorArchitecture() noexcept;
