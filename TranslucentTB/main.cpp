@@ -1,5 +1,6 @@
 // Standard API
 #include <chrono>
+#include <mutex>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -43,6 +44,7 @@ enum class EXITREASON {
 
 static struct {
 	EXITREASON exit_reason = EXITREASON::UserAction;
+	std::mutex taskbars_mutex;
 	Window main_taskbar;
 	std::unordered_map<HMONITOR, std::pair<Window, const Config::TASKBAR_APPEARANCE *>> taskbars;
 	bool should_show_peek = true;
@@ -254,6 +256,8 @@ void RefreshHandles()
 		Log::OutputMessage(L"Refreshing taskbar handles.");
 	}
 
+	std::lock_guard guard(run.taskbars_mutex);
+
 	// Older handles are invalid, so clear the map to be ready for new ones
 	run.taskbars.clear();
 
@@ -424,6 +428,7 @@ void SetTaskbarBlur()
 {
 	static uint8_t counter = 10;
 
+	std::lock_guard guard(run.taskbars_mutex);
 	if (counter >= 10)	// Change this if you want to change the time it takes for the program to update.
 	{					// 1 = Config::SLEEP_TIME; we use 10 (assuming the default configuration value of 10),
 						// because the difference is less noticeable and it has no large impact on CPU.
