@@ -99,7 +99,6 @@ void win32::EditFile(const std::filesystem::path &file)
 		const DWORD err = GetLastError();
 		std::thread([file, err]
 		{
-
 			const std::wstring msg =
 				fmt::format(ERROR_MESSAGE L"\n\nFailed to open file \"{}\".\n\n{}\n\nCopy the file location to the clipboard?", file.native(), Error::MessageFromHRESULT(HRESULT_FROM_WIN32(err)));
 
