@@ -70,7 +70,7 @@ private:
 				std::thread([err]()
 				{
 					const std::wstring msg =
-						fmt::format(APP_NAME L" tried to log a message but the log file could not be created. Logs won't be available during this session.\n\n{}", Error::MessageFromHRESULT(err));
+						fmt::format(fmt(APP_NAME L" tried to log a message but the log file could not be created. Logs won't be available during this session.\n\n{}"), Error::MessageFromHRESULT(err));
 
 					MessageBox(Window::NullWindow, msg.c_str(), APP_NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 				}).detach();

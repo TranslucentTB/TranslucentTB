@@ -33,7 +33,7 @@ std::wstring UWP::GetApplicationVersion()
 {
 	static const auto version = Package::Current().Id().Version();
 ;
-	return fmt::format(L"{}.{}.{}.{}", version.Major, version.Minor, version.Revision, version.Build);
+	return fmt::format(fmt(L"{}.{}.{}.{}"), version.Major, version.Minor, version.Revision, version.Build);
 }
 
 bool UWP::HasPackageIdentity()

@@ -48,7 +48,7 @@ namespace Util {
 
 	inline std::wstring StringFromColor(uint32_t color)
 	{
-		return fmt::format(L"#{:06x}", color & 0xFFFFFF);
+		return fmt::format(fmt(L"#{:06x}"), color & 0xFFFFFF);
 	}
 
 	constexpr uint32_t SwapColorEndian(uint32_t color)

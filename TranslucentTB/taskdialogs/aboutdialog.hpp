@@ -123,10 +123,10 @@ private:
 	inline static std::wstring BuildAboutContent()
 	{
 		return fmt::format(
-			L"This program is free (as in freedom) software, redistributed under the GPLv3. "
+			fmt(L"This program is free (as in freedom) software, redistributed under the GPLv3. "
 			LR"(As such, the <A HREF="https://github.com/)" APP_NAME L"/" APP_NAME LR"(">source code</A> is available for anyone to modify, inspect, compile, etc...)" L"\n\n"
 			LR"(Brought to you by <A HREF="https://github.com/)" APP_NAME L"/" APP_NAME LR"(/graphs/contributors">all its contributors</A>.)" L"\n\n{}\n\n"
-			L"All trademarks, product names, company names, logos, service marks, copyrights and/or trade dress mentioned, displayed, cited, or otherwise indicated are the property of their respective owners.",
+			L"All trademarks, product names, company names, logos, service marks, copyrights and/or trade dress mentioned, displayed, cited, or otherwise indicated are the property of their respective owners."),
 			BuildVersionInfo()
 		);
 	}

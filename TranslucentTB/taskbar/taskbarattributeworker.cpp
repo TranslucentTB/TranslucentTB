@@ -68,14 +68,14 @@ void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 		m_CurrentStartMonitor = GetStartMenuMonitor();
 		RefreshAttribute(m_CurrentStartMonitor);
 
-		MessagePrint(spdlog::level::debug, fmt::format(L"Start menu opened on monitor {}", static_cast<void *>(m_CurrentStartMonitor)));
+		MessagePrint(spdlog::level::debug, fmt::format(fmt(L"Start menu opened on monitor {}"), static_cast<void *>(m_CurrentStartMonitor)));
 	}
 	else
 	{
 		const HMONITOR old_start_mon = std::exchange(m_CurrentStartMonitor, nullptr);
 		RefreshAttribute(old_start_mon);
 
-		MessagePrint(spdlog::level::debug, fmt::format(L"Start menu closed on monitor {}", static_cast<void *>(old_start_mon)));
+		MessagePrint(spdlog::level::debug, fmt::format(fmt(L"Start menu closed on monitor {}"), static_cast<void *>(old_start_mon)));
 	}
 }
 
@@ -326,12 +326,12 @@ void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::
 	{
 		for (const Window window : set)
 		{
-			MessagePrint(spdlog::level::off, fmt::format(L"{}{} [{}] [{}] [{}]", prefix, static_cast<void *>(window.handle()), window.title(), window.classname(), window.file().filename().native()));
+			MessagePrint(spdlog::level::off, fmt::format(fmt(L"{}{} [{}] [{}] [{}]"), prefix, static_cast<void *>(window.handle()), window.title(), window.classname(), window.file().filename().native()));
 		}
 	}
 	else
 	{
-		MessagePrint(spdlog::level::off, fmt::format(L"{}[none]", prefix));
+		MessagePrint(spdlog::level::off, fmt::format(fmt(L"{}[none]"), prefix));
 	}
 }
 
@@ -390,7 +390,7 @@ void TaskbarAttributeWorker::DumpState()
 
 	for (const auto &[monitor, info] : m_Taskbars)
 	{
-		MessagePrint(spdlog::level::off, fmt::format(L"Monitor {} [taskbar {}]:", static_cast<void *>(monitor), static_cast<void *>(info.TaskbarWindow.handle())));
+		MessagePrint(spdlog::level::off, fmt::format(fmt(L"Monitor {} [taskbar {}]:"), static_cast<void *>(monitor), static_cast<void *>(info.TaskbarWindow.handle())));
 
 		MessagePrint(spdlog::level::off, L"    Maximised windows:");
 		DumpWindowSet(L"        ", info.MaximisedWindows);
@@ -399,19 +399,19 @@ void TaskbarAttributeWorker::DumpState()
 		DumpWindowSet(L"        ", info.NormalWindows);
 	}
 
-	MessagePrint(spdlog::level::off, fmt::format(L"User is using Aero Peek: {}", m_PeekActive));
-	MessagePrint(spdlog::level::off, fmt::format(L"Worker handles requests from hooks: {}", !m_disableAttributeRefreshReply));
+	MessagePrint(spdlog::level::off, fmt::format(fmt(L"User is using Aero Peek: {}"), m_PeekActive));
+	MessagePrint(spdlog::level::off, fmt::format(fmt(L"Worker handles requests from hooks: {}"), !m_disableAttributeRefreshReply));
 
 	if (m_CurrentStartMonitor != nullptr)
 	{
-		MessagePrint(spdlog::level::off, fmt::format(L"Start menu is opened on monitor: {}", static_cast<void *>(m_CurrentStartMonitor)));
+		MessagePrint(spdlog::level::off, fmt::format(fmt(L"Start menu is opened on monitor: {}"), static_cast<void *>(m_CurrentStartMonitor)));
 	}
 	else
 	{
 		MessagePrint(spdlog::level::off, L"Start menu is opened: false");
 	}
 
-	MessagePrint(spdlog::level::off, fmt::format(L"Main taskbar is on monitor: {}", static_cast<void *>(m_MainTaskbarMonitor)));
+	MessagePrint(spdlog::level::off, fmt::format(fmt(L"Main taskbar is on monitor: {}"), static_cast<void *>(m_MainTaskbarMonitor)));
 
 	MessagePrint(spdlog::level::off, L"Taskbars currently using normal appearance:");
 	DumpWindowSet(L"    ", m_NormalTaskbars);

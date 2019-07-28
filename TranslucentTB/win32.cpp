@@ -100,7 +100,7 @@ void win32::EditFile(const std::filesystem::path &file)
 		std::thread([file, err]
 		{
 			const std::wstring msg =
-				fmt::format(ERROR_MESSAGE L"\n\nFailed to open file \"{}\".\n\n{}\n\nCopy the file location to the clipboard?", file.native(), Error::MessageFromHRESULT(HRESULT_FROM_WIN32(err)));
+				fmt::format(fmt(ERROR_MESSAGE L"\n\nFailed to open file \"{}\".\n\n{}\n\nCopy the file location to the clipboard?"), file.native(), Error::MessageFromHRESULT(HRESULT_FROM_WIN32(err)));
 
 			if (MessageBox(Window::NullWindow, msg.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 			{
@@ -131,7 +131,7 @@ void win32::OpenLink(const std::wstring &link)
 		std::thread([link, err]
 		{
 			const std::wstring msg =
-				fmt::format(ERROR_MESSAGE L"\n\nFailed to open URL \"{}\".\n\n{}\n\nCopy the URL to the clipboard?", link, Error::MessageFromHRESULT(HRESULT_FROM_WIN32(err)));
+				fmt::format(fmt(ERROR_MESSAGE L"\n\nFailed to open URL \"{}\".\n\n{}\n\nCopy the URL to the clipboard?"), link, Error::MessageFromHRESULT(HRESULT_FROM_WIN32(err)));
 
 			if (MessageBox(Window::NullWindow, msg.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 			{
@@ -305,7 +305,7 @@ void win32::RevealFile(const std::filesystem::path &file)
 			std::thread([file, hr]
 			{
 				const std::wstring msg =
-					fmt::format(ERROR_MESSAGE L"\n\nFailed to reveal file \"{}\".\n\n{}\n\nCopy the file location to the clipboard?", file.native(), Error::MessageFromHRESULT(hr));
+					fmt::format(fmt(ERROR_MESSAGE L"\n\nFailed to reveal file \"{}\".\n\n{}\n\nCopy the file location to the clipboard?"), file.native(), Error::MessageFromHRESULT(hr));
 
 				if (MessageBox(Window::NullWindow, msg.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_YESNO | MB_SETFOREGROUND) == IDYES)
 				{

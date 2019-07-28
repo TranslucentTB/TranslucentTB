@@ -50,7 +50,7 @@ void Log::HandleInitializationError(std::wstring exception)
 
 void Log::LogErrorHandler(const std::string &message)
 {
-	const std::string err = fmt::format("An error has been encountered while logging a message.\n\n{}", message);
+	const std::string err = fmt::format(fmt("An error has been encountered while logging a message.\n\n{}"), message);
 	MessageBoxA(Window::NullWindow, err.c_str(), UTF8_APP_NAME " - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 }
 

@@ -32,7 +32,7 @@ std::wstring Error::MessageFromHRESULT(HRESULT result)
 
 	return FormatHRESULT(result, count
 		? Util::Trim({ error.get(), count })
-		: fmt::format(L"[failed to get message for HRESULT] {}", MessageFromHRESULT(HRESULT_FROM_WIN32(GetLastError()))));
+		: fmt::format(fmt(L"[failed to get message for HRESULT] {}"), MessageFromHRESULT(HRESULT_FROM_WIN32(GetLastError()))));
 }
 
 std::wstring Error::MessageFromIRestrictedErrorInfo(IRestrictedErrorInfo *info)
@@ -60,7 +60,7 @@ std::wstring Error::MessageFromIRestrictedErrorInfo(IRestrictedErrorInfo *info)
 		}
 		else
 		{
-			return fmt::format(L"[failed to get details from IRestrictedErrorInfo] {}", MessageFromHRESULT(hr));
+			return fmt::format(fmt(L"[failed to get details from IRestrictedErrorInfo] {}"), MessageFromHRESULT(hr));
 		}
 	}
 	else
@@ -84,7 +84,7 @@ std::wstring Error::MessageFromHresultError(const winrt::hresult_error &err)
 std::wstring Error::FormatHRESULT(HRESULT result, std::wstring_view description)
 {
 	return fmt::format(
-		L"{:#08x}: {}",
+		fmt(L"{:#08x}: {}"),
 		static_cast<std::make_unsigned_t<HRESULT>>(result), // needs this otherwise we get some error codes in the negatives
 		description
 	);
@@ -103,11 +103,11 @@ void Error::HandleCommon(spdlog::level::level_enum level, std::wstring_view mess
 	{
 		if (!error_message.empty())
 		{
-			msg = fmt::format(FATAL_ERROR_MESSAGE L"\n\n{}\n\n{}", message, error_message);
+			msg = fmt::format(fmt(FATAL_ERROR_MESSAGE L"\n\n{}\n\n{}"), message, error_message);
 		}
 		else
 		{
-			msg = fmt::format(FATAL_ERROR_MESSAGE L"\n\n{}", message);
+			msg = fmt::format(fmt(FATAL_ERROR_MESSAGE L"\n\n{}"), message);
 		}
 
 		MessageBox(Window::NullWindow, msg.c_str(), FATAL_ERROR_TITLE, MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
@@ -120,11 +120,11 @@ void Error::HandleCommon(spdlog::level::level_enum level, std::wstring_view mess
 	{
 		if (!error_message.empty())
 		{
-			msg = fmt::format(ERROR_MESSAGE L"\n\n{}\n\n{}", message, error_message);
+			msg = fmt::format(fmt(ERROR_MESSAGE L"\n\n{}\n\n{}"), message, error_message);
 		}
 		else
 		{
-			msg = fmt::format(ERROR_MESSAGE L"\n\n{}", message);
+			msg = fmt::format(fmt(ERROR_MESSAGE L"\n\n{}"), message);
 		}
 
 		std::thread([error = std::move(msg)]
@@ -135,7 +135,7 @@ void Error::HandleCommon(spdlog::level::level_enum level, std::wstring_view mess
 
 	if (!error_message.empty())
 	{
-		msg = fmt::format(L"{} ({})", message, error_message);
+		msg = fmt::format(fmt(L"{} ({})"), message, error_message);
 	}
 	else
 	{

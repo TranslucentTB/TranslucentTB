@@ -33,10 +33,10 @@ private:
 	inline std::wstring BuildWelcomeContent(const std::filesystem::path &configLocation)
 	{
 		return fmt::format(
-			LR"(All the settings for the application can be edited from the tray icon. If you want to edit the raw configuration file (in JSON), take a look at <A HREF="{0}">{0}</A>. )"
+			fmt(LR"(All the settings for the application can be edited from the tray icon. If you want to edit the raw configuration file (in JSON), take a look at <A HREF="{0}">{0}</A>. )"
 			L"All changes are automatically reloaded. If you prefer a command line, run " APP_NAME L" with the --help command line argument to get more info.\n\n"
 			L"If you appreciate " APP_NAME LR"( you are more than welcome to <A HREF="https://liberapay.com/)" APP_NAME LR"(">donate</A>.)" L"\n\n"
-			L"You must agree to our license, the GPLv3, before using " APP_NAME L". We will only ask this once. Check the box and press OK to continue.",
+			L"You must agree to our license, the GPLv3, before using " APP_NAME L". We will only ask this once. Check the box and press OK to continue."),
 			configLocation.native()
 		);
 	}
