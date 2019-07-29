@@ -11,6 +11,7 @@
 #include <wil/resource.h>
 #include <wil/safecast.h>
 
+#include "appinfo.hpp"
 #include "constants.hpp"
 #include "window.hpp"
 #include "ttberror.hpp"
@@ -72,7 +73,7 @@ private:
 					const std::wstring msg =
 						fmt::format(fmt(APP_NAME L" tried to log a message but the log file could not be created. Logs won't be available during this session.\n\n{}"), Error::MessageFromHRESULT(err));
 
-					MessageBox(Window::NullWindow, msg.c_str(), APP_NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+					MessageBox(Window::NullWindow, msg.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 				}).detach();
 			}
 

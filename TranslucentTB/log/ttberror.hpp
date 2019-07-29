@@ -8,7 +8,8 @@
 #include <winerror.h>
 #include <winrt/base.h>
 
-#include <util/strings.hpp>
+#include "appinfo.hpp"
+#include "util/strings.hpp"
 
 namespace Error {
 	std::wstring MessageFromHRESULT(HRESULT result);
@@ -25,7 +26,8 @@ namespace Error {
 #define ERROR_MESSAGE APP_NAME L" has encountered an error."
 
 #define FATAL_ERROR_TITLE APP_NAME L" - Fatal error"
-#define ERROR_TITLE APP_NAME L" - Error"
+#define UTF8_ERROR_TITLE UTF8_APP_NAME " - Error"
+#define ERROR_TITLE UTIL_WIDEN(UTF8_ERROR_TITLE)
 
 #define __ERROR_LOCATION __FILE__, __LINE__, SPDLOG_FUNCTION
 #define MessagePrint(__level, __message) (Error::HandleCommon((__level), (__message), { }, __ERROR_LOCATION))

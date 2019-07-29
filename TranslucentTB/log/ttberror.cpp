@@ -11,7 +11,6 @@
 #include <winerror.h>
 #include <WinUser.h>
 
-#include "constants.hpp"
 #include "ttblog.hpp"
 #include "util/strings.hpp"
 #include "../win32.hpp"

@@ -5,7 +5,7 @@
 #include "App.g.cpp"
 #endif
 
-#include "constants.hpp"
+#include "appinfo.hpp"
 
 using namespace winrt;
 using namespace Windows::UI::Xaml;

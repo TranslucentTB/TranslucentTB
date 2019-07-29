@@ -4,7 +4,6 @@
 #include <wil/com.h>
 #include <wil/resource.h>
 
-#include "constants.hpp"
 #include "../log/ttberror.hpp"
 #include "../win32.hpp"
 

@@ -7,7 +7,7 @@
 #include <sstream>
 #include <wil/safecast.h>
 
-#include "constants.hpp"
+#include "appinfo.hpp"
 #include "../ExplorerDetour/hook.hpp"
 #include "../log/ttberror.hpp"
 #include "util/numbers.hpp"
@@ -104,8 +104,7 @@ private:
 			str << std::endl;
 		}
 
-		const auto [version, hr] = win32::GetFileVersion(win32::GetExeLocation());
-		str << APP_NAME L" version: " << (SUCCEEDED(hr) ? version : Error::MessageFromHRESULT(hr)) << std::endl;
+		str << APP_NAME L" version: " APP_VERSION << std::endl;
 
 		const auto [build, hr2] = win32::GetWindowsBuild();
 		str << L"Windows version: " << (SUCCEEDED(hr2) ? build : Error::MessageFromHRESULT(hr2)) << std::endl;

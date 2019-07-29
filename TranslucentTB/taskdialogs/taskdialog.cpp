@@ -1,7 +1,7 @@
 #include "taskdialog.hpp"
 #include <utility>
 
-#include "constants.hpp"
+#include "appinfo.hpp"
 #include "../resources/ids.h"
 #include "../log/ttberror.hpp"
 #include "util/strings.hpp"
@@ -52,7 +52,7 @@ bool TTBTaskDialog::Run(bool &checked)
 	HRESULT hr = TaskDialogIndirect(&m_Cfg, nullptr, nullptr, &checkedB);
 	if (FAILED(hr))
 	{
-		MessageBox(Window::NullWindow, (L"Failed to open task dialog.\n\n" + Error::MessageFromHRESULT(hr)).c_str(), APP_NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+		MessageBox(Window::NullWindow, (L"Failed to open task dialog.\n\n" + Error::MessageFromHRESULT(hr)).c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 		return false;
 	}
 	else

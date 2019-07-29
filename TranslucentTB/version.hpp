@@ -6,8 +6,7 @@
 #include <windef.h>
 #include <winrt/Windows.ApplicationModel.h>
 
-struct Version
-{
+struct Version {
 	uint16_t Major;
 	uint16_t Minor;
 	uint16_t Build;

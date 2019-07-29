@@ -1,9 +1,5 @@
-#define UTF8_APP_NAME "TranslucentTB"
-
-#ifndef RC_INVOKED
 #pragma once
 #include <cstdint>
-#include "util/strings.hpp"
 
 #pragma region Windows
 
@@ -15,10 +11,6 @@ static constexpr uint16_t LONG_PATH = 33000;
 #pragma endregion
 
 #pragma region App
-
-// App name
-// Using a define so when can concatenate it in strings just by putting another one near it
-#define APP_NAME UTIL_WIDEN(UTF8_APP_NAME)
 
 // Config file name
 static constexpr wchar_t CONFIG_FILE[] = L"config.json";
@@ -69,6 +61,3 @@ static constexpr char UTF8_BOM[] = "\xEF\xBB\xBF";
 static constexpr wchar_t UTF16_BOM[] = L"\uFEFF";
 
 #pragma endregion
-#else
-#define APP_NAME UTF8_APP_NAME
-#endif // !RC_INVOKED

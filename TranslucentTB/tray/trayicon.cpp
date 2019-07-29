@@ -1,6 +1,7 @@
 #include "trayicon.hpp"
 #include <shellapi.h>
 
+#include "appinfo.hpp"
 #include "constants.hpp"
 #include "../log/ttberror.hpp"
 #include "util/random.hpp"

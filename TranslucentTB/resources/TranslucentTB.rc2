@@ -4,7 +4,7 @@
 
 #include <ddeml.h>
 #include <winres.h>
-#include "../../Common/constants.hpp"
+#include "../../Common/appinfo.hpp"
 #include "ids.h"
 
 #pragma code_page(65001)
@@ -145,8 +145,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION APP_VERSION_FIXED
+ PRODUCTVERSION APP_VERSION_FIXED
  FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
 #ifdef _DEBUG
  FILEFLAGS VS_FF_DEBUG
@@ -156,21 +156,25 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
+        BLOCK "000004B0"
+        BEGIN
+            VALUE "FileDescription", APP_NAME
+            VALUE "FileVersion", APP_VERSION
+            VALUE "InternalName", APP_NAME ".exe"
+            VALUE "OriginalFilename", APP_NAME ".exe"
+            VALUE "ProductName", APP_NAME
+            VALUE "ProductVersion", APP_VERSION
+        END
         BLOCK "040904b0"
         BEGIN
             VALUE "Comments", "A lightweight utility that makes the Windows taskbar translucent/transparent."
             VALUE "CompanyName", APP_NAME " Open Source Developers"
-            VALUE "FileDescription", APP_NAME
-            VALUE "FileVersion", "1.0.0.1"
-            VALUE "InternalName", APP_NAME ".exe"
-            VALUE "LegalCopyright", "Copyright © 2019 " APP_NAME " Open Source Developers"
-            VALUE "OriginalFilename", APP_NAME ".exe"
-            VALUE "ProductName", APP_NAME
-            VALUE "ProductVersion", "1.0.0.1"
+            VALUE "LegalCopyright", "Copyright © " APP_COPYRIGHT_YEAR " " APP_NAME " Open Source Developers"
         END
     END
     BLOCK "VarFileInfo"
     BEGIN
+        VALUE "Translation", 0x0000, CP_WINUNICODE
         VALUE "Translation", 0x0409, CP_WINUNICODE
     END
 END

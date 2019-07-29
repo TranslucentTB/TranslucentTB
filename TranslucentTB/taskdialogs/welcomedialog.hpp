@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <fmt/format.h>
 
-#include "constants.hpp"
+#include "appinfo.hpp"
 #include "../log/ttberror.hpp"
 
 class WelcomeDialog : public TTBTaskDialog {

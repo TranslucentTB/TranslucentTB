@@ -44,10 +44,7 @@ public:
 	// Gets the current Windows build identifier.
 	static std::pair<std::wstring, HRESULT> GetWindowsBuild();
 
-	// Gets the FileVersion of a PE binary.
-	static std::pair<std::wstring, HRESULT> GetFileVersion(const std::filesystem::path &file);
-
-	// Gets the language-neutral FileVersion.
+	// Gets the language-neutral FileVersion of a PE binary.
 	static std::pair<Version, HRESULT> GetFixedFileVersion(const std::filesystem::path& file);
 
 	// Gets the current processor architecture as a string.

@@ -28,6 +28,7 @@
 #include <rapidjson/prettywriter.h>
 
 // Local stuff
+#include "appinfo.hpp"
 #include "config/config.hpp"
 #include "constants.hpp"
 #include "darkthememanager.hpp"

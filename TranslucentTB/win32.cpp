@@ -261,25 +261,7 @@ std::pair<std::wstring, HRESULT> win32::GetWindowsBuild()
 	}
 }
 
-std::pair<std::wstring, HRESULT> win32::GetFileVersion(const std::filesystem::path &file)
-{
-	const auto [data, hr] = LoadFileVersionInfo(file);
-	if (FAILED(hr))
-	{
-		return { { }, hr };
-	}
-
-	wchar_t *fileVersion;
-	unsigned int length;
-	if (!VerQueryValue(data.get(), LR"(\StringFileInfo\040904b0\FileVersion)", reinterpret_cast<void **>(&fileVersion), &length))
-	{
-		return { { }, HRESULT_FROM_WIN32(GetLastError()) };
-	}
-
-	return { { fileVersion, length - 1 }, S_OK };
-}
-
-std::pair<Version, HRESULT> win32::GetFixedFileVersion(const std::filesystem::path& file)
+std::pair<Version, HRESULT> win32::GetFixedFileVersion(const std::filesystem::path &file)
 {
 	const auto [data, hr] = LoadFileVersionInfo(file, FILE_VER_GET_NEUTRAL);
 	if (FAILED(hr))
@@ -287,9 +269,9 @@ std::pair<Version, HRESULT> win32::GetFixedFileVersion(const std::filesystem::pa
 		return { { }, hr };
 	}
 
-	VS_FIXEDFILEINFO* fixedFileInfo;
+	VS_FIXEDFILEINFO *fixedFileInfo;
 	unsigned int length;
-	if (!VerQueryValue(data.get(), L"\\", reinterpret_cast<void**>(&fixedFileInfo), &length))
+	if (!VerQueryValue(data.get(), L"\\", reinterpret_cast<void **>(&fixedFileInfo), &length))
 	{
 		return { { }, HRESULT_FROM_WIN32(GetLastError()) };
 	}

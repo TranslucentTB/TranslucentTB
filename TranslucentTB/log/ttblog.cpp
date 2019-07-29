@@ -4,6 +4,7 @@
 #include <spdlog/sinks/msvc_sink.h>
 #include <winrt/base.h>
 
+#include "appinfo.hpp"
 #include "config/config.hpp"
 #include "util/time.hpp"
 #include "../uwp/uwp.hpp"
@@ -44,14 +45,14 @@ void Log::HandleInitializationError(std::wstring exception)
 
 	std::thread([msg = std::move(message)]()
 	{
-		MessageBox(Window::NullWindow, msg.c_str(), APP_NAME L" - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+		MessageBox(Window::NullWindow, msg.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 	}).detach();
 }
 
 void Log::LogErrorHandler(const std::string &message)
 {
 	const std::string err = fmt::format(fmt("An error has been encountered while logging a message.\n\n{}"), message);
-	MessageBoxA(Window::NullWindow, err.c_str(), UTF8_APP_NAME " - Error", MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+	MessageBoxA(Window::NullWindow, err.c_str(), UTF8_ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 }
 
 void Log::Initialize()
