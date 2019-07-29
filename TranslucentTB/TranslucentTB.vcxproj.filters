@@ -127,27 +127,28 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="resources\TTB_black.ico">
+    <Image Include="resources\TranslucentTB.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="resources\TTB_color.ico">
+    <Image Include="resources\TranslucentTB.black.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="resources\TTB_white.ico">
+    <Image Include="resources\TranslucentTB.white.ico">
       <Filter>Resource Files</Filter>
     </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <Manifest Include="resources\app.manifest">
-      <Filter>Resource Files</Filter>
-    </Manifest>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\TranslucentTB.rc2">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+    <ResourceCompile Include="resources\language\TranslucentTB.en.rc2">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="resources\TranslucentTB.manifest">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -1,0 +1,164 @@
+#pragma code_page(65001)
+
+#ifdef APSTUDIO_INVOKED
+#error Please edit this file manually.
+#endif
+
+#include <ddeml.h>
+#include <winres.h>
+#include "../../../Common/appinfo.hpp"
+#include "../ids.h"
+
+LANGUAGE LANG_ENGLISH, SUBLANG_NEUTRAL
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION APP_VERSION_FIXED
+	PRODUCTVERSION APP_VERSION_FIXED
+	FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+	FILEFLAGS VS_FF_DEBUG
+#endif
+	FILEOS VOS_NT_WINDOWS32
+	FILETYPE VFT_APP
+{
+	BLOCK "StringFileInfo"
+	{
+		BLOCK "000904b0"
+		{
+			VALUE "FileDescription", APP_NAME
+			VALUE "FileVersion", APP_VERSION
+			VALUE "InternalName", APP_NAME ".exe"
+			VALUE "OriginalFilename", APP_NAME ".exe"
+			VALUE "ProductName", APP_NAME
+			VALUE "ProductVersion", APP_VERSION
+			VALUE "Comments", "A lightweight utility that makes the Windows taskbar translucent/transparent."
+			VALUE "CompanyName", APP_NAME " Open Source Developers"
+			VALUE "LegalCopyright", "Copyright © " APP_COPYRIGHT_YEAR " " APP_NAME " Open Source Developers"
+		}
+	}
+	BLOCK "VarFileInfo"
+	{
+		VALUE "Translation", 0x0009, CP_WINUNICODE
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_TRAY_MENU MENUEX
+{
+	POPUP ""
+	{
+		POPUP "Desktop"
+		{
+			MENUITEM "Use when peeking",                               ID_DESKTOP_ON_PEEK
+			MENUITEM "Accent Color",                                   ID_DESKTOP_COLOR
+			MENUITEM "",                                               0, MFT_SEPARATOR
+			MENUITEM "Normal",                                         ID_DESKTOP_NORMAL
+			MENUITEM "Clear",                                          ID_DESKTOP_CLEAR
+			MENUITEM "Opaque",                                         ID_DESKTOP_OPAQUE
+			MENUITEM "Blur",                                           ID_DESKTOP_BLUR
+			MENUITEM "Acrylic",                                        ID_DESKTOP_ACRYLIC
+		}
+		POPUP "Visible window"
+		{
+			MENUITEM "Enabled",                                        ID_VISIBLE
+			MENUITEM "Accent Color",                                   ID_VISIBLE_COLOR
+			MENUITEM "",                                               0, MFT_SEPARATOR
+			MENUITEM "Normal",                                         ID_VISIBLE_NORMAL
+			MENUITEM "Clear",                                          ID_VISIBLE_CLEAR
+			MENUITEM "Opaque",                                         ID_VISIBLE_OPAQUE
+			MENUITEM "Blur",                                           ID_VISIBLE_BLUR
+			MENUITEM "Acrylic",                                        ID_VISIBLE_ACRYLIC
+		}
+		POPUP "Maximised window"
+		{
+			MENUITEM "Enabled",                                        ID_MAXIMISED
+			MENUITEM "Accent Color",                                   ID_MAXIMISED_COLOR
+			MENUITEM "",                                               0, MFT_SEPARATOR
+			MENUITEM "Normal",                                         ID_MAXIMISED_NORMAL
+			MENUITEM "Clear",                                          ID_MAXIMISED_CLEAR
+			MENUITEM "Opaque",                                         ID_MAXIMISED_OPAQUE
+			MENUITEM "Blur",                                           ID_MAXIMISED_BLUR
+			MENUITEM "Acrylic",                                        ID_MAXIMISED_ACRYLIC
+		}
+		POPUP "Start Menu opened"
+		{
+			MENUITEM "Enabled",                                        ID_START
+			MENUITEM "Accent Color",                                   ID_START_COLOR
+			MENUITEM "",                                               0, MFT_SEPARATOR
+			MENUITEM "Normal",                                         ID_START_NORMAL
+			MENUITEM "Clear",                                          ID_START_CLEAR
+			MENUITEM "Opaque",                                         ID_START_OPAQUE
+			MENUITEM "Blur",                                           ID_START_BLUR
+			MENUITEM "Acrylic",                                        ID_START_ACRYLIC
+		}
+		POPUP "Cortana/Search opened"
+		{
+			MENUITEM "Enabled",                                        ID_CORTANA
+			MENUITEM "Accent Color",                                   ID_CORTANA_COLOR
+			MENUITEM "",                                               0, MFT_SEPARATOR
+			MENUITEM "Normal",                                         ID_CORTANA_NORMAL
+			MENUITEM "Clear",                                          ID_CORTANA_CLEAR
+			MENUITEM "Opaque",                                         ID_CORTANA_OPAQUE
+			MENUITEM "Blur",                                           ID_CORTANA_BLUR
+			MENUITEM "Acrylic",                                        ID_CORTANA_ACRYLIC
+		}
+		POPUP "Timeline opened"
+		{
+			MENUITEM "Enabled",                                        ID_TIMELINE
+			MENUITEM "Accent Color",                                   ID_TIMELINE_COLOR
+			MENUITEM "",                                               0, MFT_SEPARATOR
+			MENUITEM "Normal",                                         ID_TIMELINE_NORMAL
+			MENUITEM "Clear",                                          ID_TIMELINE_CLEAR
+			MENUITEM "Opaque",                                         ID_TIMELINE_OPAQUE
+			MENUITEM "Blur",                                           ID_TIMELINE_BLUR
+			MENUITEM "Acrylic",                                        ID_TIMELINE_ACRYLIC
+		}
+		MENUITEM "",                                               0, MFT_SEPARATOR
+		POPUP "Show Aero Peek"
+		{
+			MENUITEM "Always",                                         ID_PEEK_SHOW
+			MENUITEM "When a window is maximised on the main monitor", ID_PEEK_DYNAMIC_MAIN_MONITOR
+			MENUITEM "When a window is maximised on any monitor",      ID_PEEK_DYNAMIC_ANY_MONITOR
+			MENUITEM "When the main monitor desktop is active",        ID_PEEK_DYNAMIC_FOREGROUND_DESKTOP
+			MENUITEM "Never",                                          ID_PEEK_HIDE
+		}
+		POPUP "Advanced"
+		{
+			MENUITEM "Open log file",                                  ID_OPENLOG
+			POPUP "Log verbosity",                                     ID_LOG
+			{
+				MENUITEM "Debug",                                          ID_LOG_DEBUG
+				MENUITEM "Information",                                    ID_LOG_INFO
+				MENUITEM "Warnings",                                       ID_LOG_WARN
+				MENUITEM "Errors",                                         ID_LOG_ERR
+				MENUITEM "",                                               0, MFT_SEPARATOR
+				MENUITEM "Off",                                            ID_LOG_OFF
+			}
+			MENUITEM "",                                               0, MFT_SEPARATOR
+			MENUITEM "Edit settings",                                  ID_EDITSETTINGS
+			MENUITEM "Return to default settings",                     ID_RETURNTODEFAULTSETTINGS
+			MENUITEM "Disable saving settings",                        ID_DISABLESAVING
+			MENUITEM "Hide tray icon",                                 ID_HIDETRAY
+			MENUITEM "",                                               0, MFT_SEPARATOR
+			MENUITEM "Dump dynamic state to log",                      ID_DUMPWORKER
+			MENUITEM "Reset dynamic state",                            ID_RESETWORKER
+			MENUITEM "",                                               0, MFT_SEPARATOR
+			MENUITEM "About",                                          ID_ABOUT
+			MENUITEM "Exit without saving settings",                   ID_EXITWITHOUTSAVING
+		}
+		MENUITEM "Open at boot",                                   ID_AUTOSTART
+		MENUITEM "Tips and tricks",                                ID_TIPS
+		MENUITEM "Exit",                                           ID_EXIT
+	}
+}

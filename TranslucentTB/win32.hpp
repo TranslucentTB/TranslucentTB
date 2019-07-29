@@ -17,7 +17,7 @@
 
 class win32 {
 private:
-	static std::filesystem::path m_ExeLocation;
+	static std::filesystem::path s_ExeLocation;
 
 	static std::pair<std::unique_ptr<std::byte[]>, HRESULT> LoadFileVersionInfo(const std::filesystem::path& file, DWORD flags = 0);
 

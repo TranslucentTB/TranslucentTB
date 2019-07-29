@@ -65,7 +65,8 @@ private:
 
 		if ((rightDoesntFits && leftDoesntFits) || (bottomDoesntFits && topDoesntFits))
 		{
-			// Doesn't fits in the monitor work area (lol wat)	
+			// Doesn't fits in the monitor work area (lol wat)
+			// TODO: throwing might not be a good idea here
 			throw winrt::hresult_out_of_bounds();
 		}
 

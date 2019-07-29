@@ -18,7 +18,7 @@
 #include "window.hpp"
 #include "uwp/uwp.hpp"
 
-std::filesystem::path win32::m_ExeLocation;
+std::filesystem::path win32::s_ExeLocation;
 
 std::pair<std::unique_ptr<std::byte[]>, HRESULT> win32::LoadFileVersionInfo(const std::filesystem::path& file, DWORD flags)
 {
@@ -55,13 +55,13 @@ std::pair<std::filesystem::path, HRESULT> win32::GetProcessFileName(HANDLE proce
 
 const std::filesystem::path &win32::GetExeLocation()
 {
-	if (m_ExeLocation.empty())
+	if (s_ExeLocation.empty())
 	{
 		const auto [loc, hr] = GetProcessFileName(GetCurrentProcess());
 
 		if (SUCCEEDED(hr))
 		{
-			m_ExeLocation = std::move(loc);
+			s_ExeLocation = std::move(loc);
 		}
 		else
 		{
@@ -69,7 +69,7 @@ const std::filesystem::path &win32::GetExeLocation()
 		}
 	}
 
-	return m_ExeLocation;
+	return s_ExeLocation;
 }
 
 bool win32::IsAtLeastBuild(uint32_t buildNumber)
