@@ -44,7 +44,7 @@ VS_VERSION_INFO VERSIONINFO
 	}
 	BLOCK "VarFileInfo"
 	{
-		VALUE "Translation", 0x0009, CP_WINUNICODE
+		VALUE "Translation", LANG_ENGLISH, CP_WINUNICODE
 	}
 }
 

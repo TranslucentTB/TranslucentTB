@@ -63,6 +63,7 @@
   <ItemGroup>
     <ResourceCompile Include="resources\TranslucentTB.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.en.rc2" />
+    <ResourceCompile Include="resources\language\TranslucentTB.fr.rc2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExplorerDetour\ExplorerDetour.vcxproj">
