@@ -1,6 +1,5 @@
 #include "ttblog.hpp"
 #include <chrono>
-#include <ctime>
 #include <spdlog/spdlog.h>
 #include <spdlog/logger.h>
 #include <spdlog/sinks/msvc_sink.h>
@@ -12,6 +11,21 @@
 
 std::weak_ptr<lazy_file_sink_mt> Log::s_LogSink;
 bool Log::s_InitDone = false;
+
+std::time_t Log::GetProcessCreationTime()
+{
+	if (FILETIME creationTime, exitTime, kernelTime, userTime; GetProcessTimes(GetCurrentProcess(), &creationTime, &exitTime, &kernelTime, &userTime))
+	{
+		using winrt::clock;
+		return clock::to_time_t(clock::from_file_time(creationTime));
+	}
+	else
+	{
+		// Fallback to current time
+		using std::chrono::system_clock;
+		return system_clock::to_time_t(system_clock::now());
+	}
+}
 
 std::filesystem::path Log::GetPath()
 {
@@ -25,20 +39,7 @@ std::filesystem::path Log::GetPath()
 		name = std::filesystem::temp_directory_path();
 	}
 
-	std::time_t time;
-	if (FILETIME creationTime, exitTime, kernelTime, userTime; GetProcessTimes(GetCurrentProcess(), &creationTime, &exitTime, &kernelTime, &userTime))
-	{
-		using winrt::clock;
-		time = clock::to_time_t(clock::from_file_time(creationTime));
-	}
-	else
-	{
-		// Fallback to current time
-		using std::chrono::system_clock;
-		time = system_clock::to_time_t(system_clock::now());
-	}
-
-	return name / fmt::format(fmt(L"{}.log"), time);
+	return name / fmt::format(fmt(L"{}.log"), GetProcessCreationTime());
 }
 
 void Log::HandleInitializationError(std::wstring exception)

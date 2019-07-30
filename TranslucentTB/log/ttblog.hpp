@@ -1,5 +1,6 @@
 #pragma once
 #include "arch.h"
+#include <ctime>
 #include <filesystem>
 #include <memory>
 #include <spdlog/common.h>
@@ -14,6 +15,7 @@ private:
 	static std::weak_ptr<lazy_file_sink_mt> s_LogSink;
 	static bool s_InitDone;
 
+	static std::time_t GetProcessCreationTime();
 	static std::filesystem::path GetPath();
 	static void HandleInitializationError(std::wstring exception);
 	static void LogErrorHandler(const std::string &message);
