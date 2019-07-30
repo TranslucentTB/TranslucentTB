@@ -24,19 +24,19 @@ std::filesystem::path Log::GetPath()
 		name = std::filesystem::temp_directory_path();
 	}
 
-	std::wstring log_filename;
-	if (FILETIME creationTime, _, __, ___; GetProcessTimes(GetCurrentProcess(), &creationTime, &_, &__, &___))
+	std::time_t time;
+	if (FILETIME creationTime, exitTime, kernelTime, userTime; GetProcessTimes(GetCurrentProcess(), &creationTime, &exitTime, &kernelTime, &userTime))
 	{
 		using winrt::clock;
-		name /= std::to_wstring(clock::to_time_t(clock::from_file_time(creationTime))) + L".log";
+		time = clock::to_time_t(clock::from_file_time(creationTime));
 	}
 	else
 	{
 		// Fallback to current time
-		name /= std::to_wstring(Util::GetTime().count()) + L".log";
+		time = Util::GetTime<std::time_t>();
 	}
 
-	return name;
+	return name / fmt::format(fmt(L"{}.log"), time);
 }
 
 void Log::HandleInitializationError(std::wstring exception)
