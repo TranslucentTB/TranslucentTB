@@ -1,4 +1,6 @@
 #include "ttblog.hpp"
+#include <chrono>
+#include <ctime>
 #include <spdlog/spdlog.h>
 #include <spdlog/logger.h>
 #include <spdlog/sinks/msvc_sink.h>
@@ -6,7 +8,6 @@
 
 #include "appinfo.hpp"
 #include "config/config.hpp"
-#include "util/time.hpp"
 #include "../uwp/uwp.hpp"
 
 std::weak_ptr<lazy_file_sink_mt> Log::s_LogSink;
@@ -33,7 +34,8 @@ std::filesystem::path Log::GetPath()
 	else
 	{
 		// Fallback to current time
-		time = Util::GetTime<std::time_t>();
+		using std::chrono::system_clock;
+		time = system_clock::to_time_t(system_clock::now());
 	}
 
 	return name / fmt::format(fmt(L"{}.log"), time);
