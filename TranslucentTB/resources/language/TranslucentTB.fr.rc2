@@ -27,24 +27,24 @@ VS_VERSION_INFO VERSIONINFO
 	FILEOS VOS_NT_WINDOWS32
 	FILETYPE VFT_APP
 {
-	BLOCK "StringFileInfo"
+	BLOCK L"StringFileInfo"
 	{
-		BLOCK "000c04b0"
+		BLOCK L"000c04b0"
 		{
-			VALUE "FileDescription", APP_NAME
-			VALUE "FileVersion", APP_VERSION
-			VALUE "InternalName", APP_NAME ".exe"
-			VALUE "OriginalFilename", APP_NAME ".exe"
-			VALUE "ProductName", APP_NAME
-			VALUE "ProductVersion", APP_VERSION
-			VALUE "Comments", "Un outil léger qui rend la barre des tâches transparente/translucente."
-			VALUE "CompanyName", "Développeurs Open Source " APP_NAME
-			VALUE "LegalCopyright", "Copyright © " APP_COPYRIGHT_YEAR " Développeurs Open Source " APP_NAME
+			VALUE L"FileDescription", APP_NAME
+			VALUE L"FileVersion", APP_VERSION
+			VALUE L"InternalName", APP_NAME L".exe"
+			VALUE L"OriginalFilename", APP_NAME L".exe"
+			VALUE L"ProductName", APP_NAME
+			VALUE L"ProductVersion", APP_VERSION
+			VALUE L"Comments", L"Un outil léger qui rend la barre des tâches transparente/translucente."
+			VALUE L"CompanyName", L"Développeurs Open Source " APP_NAME
+			VALUE L"LegalCopyright", L"Copyright © " APP_COPYRIGHT_YEAR L" Développeurs Open Source " APP_NAME
 		}
 	}
-	BLOCK "VarFileInfo"
+	BLOCK L"VarFileInfo"
 	{
-		VALUE "Translation", LANG_FRENCH, CP_WINUNICODE
+		VALUE L"Translation", LANG_FRENCH, CP_WINUNICODE
 	}
 }
 
@@ -56,109 +56,109 @@ VS_VERSION_INFO VERSIONINFO
 
 IDR_TRAY_MENU MENUEX
 {
-	POPUP ""
+	POPUP L""
 	{
-		POPUP "Bureau"
+		POPUP L"Bureau"
 		{
-			MENUITEM "Utiliser cette apparence quand Aero Peek est actif",          ID_DESKTOP_ON_PEEK
-			MENUITEM "Couleur",                                                     ID_DESKTOP_COLOR
-			MENUITEM "",                                                            0, MFT_SEPARATOR
-			MENUITEM "Normal",                                                      ID_DESKTOP_NORMAL
-			MENUITEM "Transparent",                                                 ID_DESKTOP_CLEAR
-			MENUITEM "Opaque",                                                      ID_DESKTOP_OPAQUE
-			MENUITEM "Flou",                                                        ID_DESKTOP_BLUR
-			MENUITEM "Acrylique",                                                   ID_DESKTOP_ACRYLIC
+			MENUITEM L"Utiliser cette apparence quand Aero Peek est actif",          ID_DESKTOP_ON_PEEK
+			MENUITEM L"Couleur",                                                     ID_DESKTOP_COLOR
+			MENUITEM L"",                                                            0, MFT_SEPARATOR
+			MENUITEM L"Normal",                                                      ID_DESKTOP_NORMAL
+			MENUITEM L"Transparent",                                                 ID_DESKTOP_CLEAR
+			MENUITEM L"Opaque",                                                      ID_DESKTOP_OPAQUE
+			MENUITEM L"Flou",                                                        ID_DESKTOP_BLUR
+			MENUITEM L"Acrylique",                                                   ID_DESKTOP_ACRYLIC
 		}
-		POPUP "Fenêtre visible"
+		POPUP L"Fenêtre visible"
 		{
-			MENUITEM "Activé",                                                      ID_VISIBLE
-			MENUITEM "Couleur",                                                     ID_VISIBLE_COLOR
-			MENUITEM "",                                                            0, MFT_SEPARATOR
-			MENUITEM "Normal",                                                      ID_VISIBLE_NORMAL
-			MENUITEM "Transparent",                                                 ID_VISIBLE_CLEAR
-			MENUITEM "Opaque",                                                      ID_VISIBLE_OPAQUE
-			MENUITEM "Flou",                                                        ID_VISIBLE_BLUR
-			MENUITEM "Acrylique",                                                   ID_VISIBLE_ACRYLIC
+			MENUITEM L"Activé",                                                      ID_VISIBLE
+			MENUITEM L"Couleur",                                                     ID_VISIBLE_COLOR
+			MENUITEM L"",                                                            0, MFT_SEPARATOR
+			MENUITEM L"Normal",                                                      ID_VISIBLE_NORMAL
+			MENUITEM L"Transparent",                                                 ID_VISIBLE_CLEAR
+			MENUITEM L"Opaque",                                                      ID_VISIBLE_OPAQUE
+			MENUITEM L"Flou",                                                        ID_VISIBLE_BLUR
+			MENUITEM L"Acrylique",                                                   ID_VISIBLE_ACRYLIC
 		}
-		POPUP "Fenêtre maximisée"
+		POPUP L"Fenêtre maximisée"
 		{
-			MENUITEM "Activé",                                                      ID_MAXIMISED
-			MENUITEM "Couleur",                                                     ID_MAXIMISED_COLOR
-			MENUITEM "",                                                            0, MFT_SEPARATOR
-			MENUITEM "Normal",                                                      ID_MAXIMISED_NORMAL
-			MENUITEM "Transparent",                                                 ID_MAXIMISED_CLEAR
-			MENUITEM "Opaque",                                                      ID_MAXIMISED_OPAQUE
-			MENUITEM "Flou",                                                        ID_MAXIMISED_BLUR
-			MENUITEM "Acrylique",                                                   ID_MAXIMISED_ACRYLIC
+			MENUITEM L"Activé",                                                      ID_MAXIMISED
+			MENUITEM L"Couleur",                                                     ID_MAXIMISED_COLOR
+			MENUITEM L"",                                                            0, MFT_SEPARATOR
+			MENUITEM L"Normal",                                                      ID_MAXIMISED_NORMAL
+			MENUITEM L"Transparent",                                                 ID_MAXIMISED_CLEAR
+			MENUITEM L"Opaque",                                                      ID_MAXIMISED_OPAQUE
+			MENUITEM L"Flou",                                                        ID_MAXIMISED_BLUR
+			MENUITEM L"Acrylique",                                                   ID_MAXIMISED_ACRYLIC
 		}
-		POPUP "Menu Démarrer ouvert"
+		POPUP L"Menu Démarrer ouvert"
 		{
-			MENUITEM "Activé",                                                      ID_START
-			MENUITEM "Couleur",                                                     ID_START_COLOR
-			MENUITEM "",                                                            0, MFT_SEPARATOR
-			MENUITEM "Normal",                                                      ID_START_NORMAL
-			MENUITEM "Transparent",                                                 ID_START_CLEAR
-			MENUITEM "Opaque",                                                      ID_START_OPAQUE
-			MENUITEM "Flou",                                                        ID_START_BLUR
-			MENUITEM "Acrylique",                                                   ID_START_ACRYLIC
+			MENUITEM L"Activé",                                                      ID_START
+			MENUITEM L"Couleur",                                                     ID_START_COLOR
+			MENUITEM L"",                                                            0, MFT_SEPARATOR
+			MENUITEM L"Normal",                                                      ID_START_NORMAL
+			MENUITEM L"Transparent",                                                 ID_START_CLEAR
+			MENUITEM L"Opaque",                                                      ID_START_OPAQUE
+			MENUITEM L"Flou",                                                        ID_START_BLUR
+			MENUITEM L"Acrylique",                                                   ID_START_ACRYLIC
 		}
-		POPUP "Cortana/Recherche ouverte"
+		POPUP L"Cortana/Recherche ouverte"
 		{
-			MENUITEM "Activé",                                                      ID_CORTANA
-			MENUITEM "Couleur",                                                     ID_CORTANA_COLOR
-			MENUITEM "",                                                            0, MFT_SEPARATOR
-			MENUITEM "Normal",                                                      ID_CORTANA_NORMAL
-			MENUITEM "Transparent",                                                 ID_CORTANA_CLEAR
-			MENUITEM "Opaque",                                                      ID_CORTANA_OPAQUE
-			MENUITEM "Flou",                                                        ID_CORTANA_BLUR
-			MENUITEM "Acrylique",                                                   ID_CORTANA_ACRYLIC
+			MENUITEM L"Activé",                                                      ID_CORTANA
+			MENUITEM L"Couleur",                                                     ID_CORTANA_COLOR
+			MENUITEM L"",                                                            0, MFT_SEPARATOR
+			MENUITEM L"Normal",                                                      ID_CORTANA_NORMAL
+			MENUITEM L"Transparent",                                                 ID_CORTANA_CLEAR
+			MENUITEM L"Opaque",                                                      ID_CORTANA_OPAQUE
+			MENUITEM L"Flou",                                                        ID_CORTANA_BLUR
+			MENUITEM L"Acrylique",                                                   ID_CORTANA_ACRYLIC
 		}
-		POPUP "Timeline ouverte"
+		POPUP L"Timeline ouverte"
 		{
-			MENUITEM "Activé",                                                      ID_TIMELINE
-			MENUITEM "Couleur",                                                     ID_TIMELINE_COLOR
-			MENUITEM "",                                                            0, MFT_SEPARATOR
-			MENUITEM "Normal",                                                      ID_TIMELINE_NORMAL
-			MENUITEM "Transparent",                                                 ID_TIMELINE_CLEAR
-			MENUITEM "Opaque",                                                      ID_TIMELINE_OPAQUE
-			MENUITEM "Flou",                                                        ID_TIMELINE_BLUR
-			MENUITEM "Acrylique",                                                   ID_TIMELINE_ACRYLIC
+			MENUITEM L"Activé",                                                      ID_TIMELINE
+			MENUITEM L"Couleur",                                                     ID_TIMELINE_COLOR
+			MENUITEM L"",                                                            0, MFT_SEPARATOR
+			MENUITEM L"Normal",                                                      ID_TIMELINE_NORMAL
+			MENUITEM L"Transparent",                                                 ID_TIMELINE_CLEAR
+			MENUITEM L"Opaque",                                                      ID_TIMELINE_OPAQUE
+			MENUITEM L"Flou",                                                        ID_TIMELINE_BLUR
+			MENUITEM L"Acrylique",                                                   ID_TIMELINE_ACRYLIC
 		}
-		MENUITEM "",                                                            0, MFT_SEPARATOR
-		POPUP "Afficher le boutton Aero Peek"
+		MENUITEM L"",                                                            0, MFT_SEPARATOR
+		POPUP L"Afficher le boutton Aero Peek"
 		{
-			MENUITEM "Toujours",                                                    ID_PEEK_SHOW
-			MENUITEM "Quand une fenêtre est maximisée sur le moniteur principal",   ID_PEEK_DYNAMIC_MAIN_MONITOR
-			MENUITEM "Quand une fenêtre est maximisée sur n'importe quel moniteur", ID_PEEK_DYNAMIC_ANY_MONITOR
-			MENUITEM "Quand le bureau est le fenêtre active",                       ID_PEEK_DYNAMIC_FOREGROUND_DESKTOP
-			MENUITEM "Jamais",                                                      ID_PEEK_HIDE
+			MENUITEM L"Toujours",                                                    ID_PEEK_SHOW
+			MENUITEM L"Quand une fenêtre est maximisée sur le moniteur principal",   ID_PEEK_DYNAMIC_MAIN_MONITOR
+			MENUITEM L"Quand une fenêtre est maximisée sur n'importe quel moniteur", ID_PEEK_DYNAMIC_ANY_MONITOR
+			MENUITEM L"Quand le bureau est le fenêtre active",                       ID_PEEK_DYNAMIC_FOREGROUND_DESKTOP
+			MENUITEM L"Jamais",                                                      ID_PEEK_HIDE
 		}
-		POPUP "Avancé"
+		POPUP L"Avancé"
 		{
-			MENUITEM "Ouvrir le fichier journal",                               ID_OPENLOG
-			POPUP "Verbosité du journal",                                       ID_LOG
+			MENUITEM L"Ouvrir le fichier journal",                               ID_OPENLOG
+			POPUP L"Verbosité du journal",                                       ID_LOG
 			{
-				MENUITEM "Debug",                                                   ID_LOG_DEBUG
-				MENUITEM "Information",                                             ID_LOG_INFO
-				MENUITEM "Avertissements",                                          ID_LOG_WARN
-				MENUITEM "Erreurs",                                                 ID_LOG_ERR
-				MENUITEM "",                                                        0, MFT_SEPARATOR
-				MENUITEM "Désactivé",                                               ID_LOG_OFF
+				MENUITEM L"Debug",                                                   ID_LOG_DEBUG
+				MENUITEM L"Information",                                             ID_LOG_INFO
+				MENUITEM L"Avertissements",                                          ID_LOG_WARN
+				MENUITEM L"Erreurs",                                                 ID_LOG_ERR
+				MENUITEM L"",                                                        0, MFT_SEPARATOR
+				MENUITEM L"Désactivé",                                               ID_LOG_OFF
 			}
-			MENUITEM "",                                                        0, MFT_SEPARATOR
-			MENUITEM "Modifier les paramètres",                                     ID_EDITSETTINGS
-			MENUITEM "Retourner aux paramètres par défaut",                         ID_RETURNTODEFAULTSETTINGS
-			MENUITEM "Désactiver la sauvegarde des paramètres",                     ID_DISABLESAVING
-			MENUITEM "Cacher l'icòne de la barre des tâches",                       ID_HIDETRAY
-			MENUITEM "",                                                            0, MFT_SEPARATOR
-			MENUITEM "Afficher l'état dynamique actuel dans le journal",            ID_DUMPWORKER
-			MENUITEM "Réinitializer l'état dynamique",                              ID_RESETWORKER
-			MENUITEM "",                                                            0, MFT_SEPARATOR
-			MENUITEM "À propos",                                                    ID_ABOUT
-			MENUITEM "Quitter sans sauvegarder les paramètres",                     ID_EXITWITHOUTSAVING
+			MENUITEM L"",                                                        0, MFT_SEPARATOR
+			MENUITEM L"Modifier les paramètres",                                     ID_EDITSETTINGS
+			MENUITEM L"Retourner aux paramètres par défaut",                         ID_RETURNTODEFAULTSETTINGS
+			MENUITEM L"Désactiver la sauvegarde des paramètres",                     ID_DISABLESAVING
+			MENUITEM L"Cacher l'icòne de la barre des tâches",                       ID_HIDETRAY
+			MENUITEM L"",                                                            0, MFT_SEPARATOR
+			MENUITEM L"Afficher l'état dynamique actuel dans le journal",            ID_DUMPWORKER
+			MENUITEM L"Réinitializer l'état dynamique",                              ID_RESETWORKER
+			MENUITEM L"",                                                            0, MFT_SEPARATOR
+			MENUITEM L"À propos",                                                    ID_ABOUT
+			MENUITEM L"Quitter sans sauvegarder les paramètres",                     ID_EXITWITHOUTSAVING
 		}
-		MENUITEM "Ouvrir au démarrage",                                         ID_AUTOSTART
-		MENUITEM "Trucs et astuces (en anglais seulement)",                     ID_TIPS
-		MENUITEM "Quitter",                                                     ID_EXIT
+		MENUITEM L"Ouvrir au démarrage",                                         ID_AUTOSTART
+		MENUITEM L"Trucs et astuces (en anglais seulement)",                     ID_TIPS
+		MENUITEM L"Quitter",                                                     ID_EXIT
 	}
 }
