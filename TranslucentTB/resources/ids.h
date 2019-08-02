@@ -69,3 +69,11 @@
 #define ID_AUTOSTART                       40063
 #define ID_TIPS                            40064
 #define ID_EXIT                            40065
+#define IDS_OPENLOG_NORMAL                 60001
+#define IDS_OPENLOG_ERROR                  60002
+#define IDS_OPENLOG_EMPTY                  60003
+#define IDS_AUTOSTART_QUERYING             60004
+#define IDS_AUTOSTART_NORMAL               60005
+#define IDS_AUTOSTART_DISABLED_TASKMGR     60006
+#define IDS_AUTOSTART_DISABLED_GPEDIT      60007
+#define IDS_AUTOSTART_ENABLED_GPEDIT       60008

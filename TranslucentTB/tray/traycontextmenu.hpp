@@ -4,6 +4,7 @@
 #include <utility>
 #include <windef.h>
 
+#include "../localization.hpp"
 #include "trayicon.hpp"
 #include "util/others.hpp"
 #include "util/random.hpp"
@@ -36,10 +37,11 @@ public:
 			CheckMenuRadioItem(m_hMenu, first, last, id, MF_BYCOMMAND);
 		}
 
-		inline void SetText(unsigned int id, std::wstring &&new_text)
+		inline void SetText(unsigned int id, uint16_t new_text_resource)
 		{
 			MENUITEMINFO item_info = { sizeof(item_info), MIIM_STRING };
 
+			std::wstring new_text(Localization::LoadLocalizedString(new_text_resource));
 			item_info.dwTypeData = new_text.data();
 			SetMenuItemInfo(m_hMenu, id, false, &item_info);
 		}

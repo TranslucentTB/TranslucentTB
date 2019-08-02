@@ -138,7 +138,7 @@ IDR_TRAY_MENU MENUEX
 			MENUITEM L"Ouvrir le fichier journal",                               ID_OPENLOG
 			POPUP L"Verbosité du journal",                                       ID_LOG
 			{
-				MENUITEM L"Debug",                                                   ID_LOG_DEBUG
+				MENUITEM L"Débogage",                                                ID_LOG_DEBUG
 				MENUITEM L"Information",                                             ID_LOG_INFO
 				MENUITEM L"Avertissements",                                          ID_LOG_WARN
 				MENUITEM L"Erreurs",                                                 ID_LOG_ERR
@@ -161,4 +161,22 @@ IDR_TRAY_MENU MENUEX
 		MENUITEM L"Trucs et astuces (en anglais seulement)",                     ID_TIPS
 		MENUITEM L"Quitter",                                                     ID_EXIT
 	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Strings
+//
+
+STRINGTABLE
+{
+	IDS_OPENLOG_NORMAL             L"Ouvrir le fichier journal"
+	IDS_OPENLOG_ERROR              L"Une erreur est survenue lors de l'initialization du fichier journal"
+	IDS_OPENLOG_EMPTY              L"Le fichier journal est vide"
+	IDS_AUTOSTART_QUERYING         L"Vérification de l'état du démarrage automatique..."
+	IDS_AUTOSTART_NORMAL           L"Ouvrir au démarrage"
+	IDS_AUTOSTART_DISABLED_TASKMGR L"Le démarrage automatique a été désactivé dans le Gestionnaire des Tâches"
+	IDS_AUTOSTART_DISABLED_GPEDIT  L"Le démarrage automatique a été désactivé par la stratégie de groupe"
+	IDS_AUTOSTART_ENABLED_GPEDIT   L"Le démarrage automatique a été activé par la stratégie de groupe"
 }

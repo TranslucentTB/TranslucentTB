@@ -21,6 +21,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="localization.cpp" />
     <ClCompile Include="log\ttblog.cpp" />
     <ClCompile Include="uwp\autostart.cpp" />
     <ClCompile Include="darkthememanager.cpp" />
@@ -38,6 +39,7 @@
     <ClCompile Include="windows\windowclass.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="localization.hpp" />
     <ClInclude Include="taskbar\appvisibilitysink.hpp" />
     <ClInclude Include="darkthememanager.hpp" />
     <ClInclude Include="log\lazyfilesink.hpp" />

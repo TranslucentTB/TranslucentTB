@@ -162,3 +162,21 @@ IDR_TRAY_MENU MENUEX
 		MENUITEM L"Exit",                                           ID_EXIT
 	}
 }
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Strings
+//
+
+STRINGTABLE
+{
+	IDS_OPENLOG_NORMAL             L"Open log file"
+	IDS_OPENLOG_ERROR              L"Error when initializing log file"
+	IDS_OPENLOG_EMPTY              L"Nothing has been logged yet"
+	IDS_AUTOSTART_QUERYING         L"Querying startup state..."
+	IDS_AUTOSTART_NORMAL           L"Open at boot"
+	IDS_AUTOSTART_DISABLED_TASKMGR L"Startup has been disabled in Task Manager"
+	IDS_AUTOSTART_DISABLED_GPEDIT  L"Startup has been disabled by Group Policy"
+	IDS_AUTOSTART_ENABLED_GPEDIT   L"Startup has been enabled by Group Policy"
+}

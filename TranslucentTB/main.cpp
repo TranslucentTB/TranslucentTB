@@ -318,17 +318,17 @@ winrt::fire_and_forget RefreshMenu(const Config &cfg, TrayContextMenu::Updater u
 	if (UWP::HasPackageIdentity())
 	{
 		task = Autostart::GetStartupState();
-		updater.SetText(ID_AUTOSTART, L"Querying startup state...");
+		updater.SetText(ID_AUTOSTART, IDS_AUTOSTART_QUERYING);
 	}
 
 	
 	const auto log_state = Log::GetInitializationState();
 	updater.EnableItem(ID_OPENLOG, log_state == Log::Done);
 	updater.SetText(ID_OPENLOG, log_state == Log::Done
-		? L"Open log file"
+		? IDS_OPENLOG_NORMAL
 		: log_state == Log::Failed
-			? L"Error when initializing log file"
-			: L"Nothing has been logged yet"
+			? IDS_OPENLOG_ERROR
+			: IDS_OPENLOG_EMPTY
 	);
 
 	updater.EnableItem(ID_LOG, log_state != Log::Failed);
@@ -349,23 +349,23 @@ winrt::fire_and_forget RefreshMenu(const Config &cfg, TrayContextMenu::Updater u
 			!(state == Autostart::StartupState::DisabledByUser || state == Autostart::StartupState::DisabledByPolicy || state == Autostart::StartupState::EnabledByPolicy));
 		updater.CheckItem(ID_AUTOSTART, state == Autostart::StartupState::Enabled || state == Autostart::StartupState::EnabledByPolicy);
 
-		std::wstring autostart_text;
+		uint16_t autostart_text;
 		switch (state)
 		{
 		case Autostart::StartupState::DisabledByUser:
-			autostart_text = L"Startup has been disabled in Task Manager";
+			autostart_text = IDS_AUTOSTART_DISABLED_TASKMGR;
 			break;
 		case Autostart::StartupState::DisabledByPolicy:
-			autostart_text = L"Startup has been disabled in Group Policy";
+			autostart_text = IDS_AUTOSTART_DISABLED_GPEDIT;
 			break;
 		case Autostart::StartupState::EnabledByPolicy:
-			autostart_text = L"Startup has been enabled in Group Policy";
+			autostart_text = IDS_AUTOSTART_ENABLED_GPEDIT;
 			break;
 		case Autostart::StartupState::Enabled:
 		case Autostart::StartupState::Disabled:
-			autostart_text = L"Open at boot";
+			autostart_text = IDS_AUTOSTART_NORMAL;
 		}
-		updater.SetText(ID_AUTOSTART, std::move(autostart_text));
+		updater.SetText(ID_AUTOSTART, autostart_text);
 	}
 }
 

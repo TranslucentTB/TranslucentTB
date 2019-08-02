@@ -60,6 +60,9 @@
     <ClCompile Include="taskbar\eventhook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="localization.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="win32.hpp">
@@ -123,6 +126,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="version.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="localization.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
