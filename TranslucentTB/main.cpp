@@ -237,13 +237,13 @@ void BindColor(TrayContextMenu &tray, unsigned int id, COLORREF &color)
 }
 
 template<class T>
-void BindByMap(TrayContextMenu &tray, const std::unordered_map<T, unsigned int> &map, std::function<T()> getter, const std::function<void(T)> &setter)
+void BindByMap(TrayContextMenu &tray, const std::unordered_map<T, unsigned int> &map, std::type_identity_t<std::function<T()>> getter, std::type_identity_t<std::function<void(T)>> setter)
 {
 	for (const auto &[new_value, id] : map)
 	{
-		tray.RegisterContextMenuCallback(id, [setter, &new_value]
+		tray.RegisterContextMenuCallback(id, [&new_value, set = std::move(setter)]
 		{
-			setter(new_value);
+			set(new_value);
 		});
 	}
 
@@ -258,7 +258,7 @@ void BindByMap(TrayContextMenu &tray, const std::unordered_map<T, unsigned int> 
 template<class T>
 void BindByMap(TrayContextMenu &tray, const std::unordered_map<T, unsigned int> &map, T &value)
 {
-	BindByMap<T>(
+	BindByMap(
 		tray,
 		map,
 		[&value] { return value; },
@@ -466,7 +466,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 
 
 	tray.RegisterContextMenuCallback(ID_OPENLOG, Log::Open);
-	BindByMap<spdlog::level::level_enum>(tray, LOG_BUTTON_MAP, Log::GetLevel, [&cfg](spdlog::level::level_enum new_value)
+	BindByMap(tray, LOG_BUTTON_MAP, Log::GetLevel, [&cfg](spdlog::level::level_enum new_value)
 	{
 		Log::SetLevel(new_value);
 		cfg.LogVerbosity = new_value;
