@@ -30,7 +30,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="windows\messagewindow.cpp" />
     <ClCompile Include="taskdialogs\taskdialog.cpp" />
-    <ClCompile Include="tray\traycontextmenu.cpp" />
+    <ClCompile Include="tray\contextmenu.cpp" />
     <ClCompile Include="tray\trayicon.cpp" />
     <ClCompile Include="log\ttberror.cpp" />
     <ClCompile Include="uwp\uwp.cpp" />
@@ -52,7 +52,7 @@
     <ClInclude Include="windows\messagewindow.hpp" />
     <ClInclude Include="resources\ids.h" />
     <ClInclude Include="taskdialogs\taskdialog.hpp" />
-    <ClInclude Include="tray\traycontextmenu.hpp" />
+    <ClInclude Include="tray\contextmenu.hpp" />
     <ClInclude Include="tray\trayicon.hpp" />
     <ClInclude Include="log\ttberror.hpp" />
     <ClInclude Include="log\ttblog.hpp" />

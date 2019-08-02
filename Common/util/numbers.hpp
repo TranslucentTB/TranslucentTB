@@ -43,7 +43,7 @@ namespace Util {
 			}
 		}
 
-		template<typename T, uint8_t base>
+		template<typename T, uint8_t base, typename enable = void>
 		struct NumberParser;
 
 		template<typename T>
@@ -90,9 +90,7 @@ namespace Util {
 		};
 
 		template<typename T>
-		struct NumberParser<T, 16> {
-			static_assert (std::is_unsigned_v<T>, "T must be unsigned to parse in base 16");
-
+		struct NumberParser<T, 16, std::enable_if_t<std::is_unsigned_v<T>>> {
 			static constexpr T impl(std::wstring_view number)
 			{
 				if (number.length() > 2 && number[0] == L'0' && (number[1] == L'x' || number[1] == L'X'))
@@ -129,11 +127,9 @@ namespace Util {
 
 	// Apparently no wide string to number parser accepted an explicit ending to the string
 	// so here I am. Also C locales sucks.
-	template<typename T = int32_t, uint8_t base = 10>
+	template<typename T = int32_t, uint8_t base = 10, typename = std::enable_if_t<std::is_integral_v<T>>>
 	constexpr T ParseNumber(std::wstring_view number)
 	{
-		static_assert(std::is_integral_v<T>, "T must be an integral type");
-
 		return impl::NumberParser<T, base>::impl(number);
 	}
 

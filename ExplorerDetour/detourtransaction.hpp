@@ -10,6 +10,9 @@
 
 class DetourTransaction {
 private:
+	template<typename T>
+	static constexpr bool is_function_pointer = std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>;
+
 	static constexpr std::wstring_view PENDING_TRANSACTION_EXISTS = L"A pending transaction already exists.";
 	static constexpr std::wstring_view NO_PENDING_TRANSACTION = L"No pending transaction exists.";
 	static constexpr std::wstring_view FUNCTION_TOO_SMALL = L"The function referenced is too small to be detoured.";
@@ -67,11 +70,9 @@ public:
 		update_thread(GetCurrentThread());
 	}
 
-	template<typename T>
-	inline void attach(T& function, std::add_const_t<T> detour)
+	template<typename T, typename = std::enable_if_t<is_function_pointer<T>>>
+	inline void attach(T& function, std::type_identity_t<T> detour)
 	{
-		static_assert(std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>, "T is not a function pointer");
-
 		const LONG result = DetourAttach(reinterpret_cast<void **>(&function), reinterpret_cast<void *>(detour));
 		if (result != NO_ERROR)
 		{
@@ -95,11 +96,9 @@ public:
 		}
 	}
 
-	template<typename T>
-	inline void detach(T &function, std::add_const_t<T> detour)
+	template<typename T, typename = std::enable_if_t<is_function_pointer<T>>>
+	inline void detach(T &function, std::type_identity_t<T> detour)
 	{
-		static_assert(std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>, "T is not a function pointer");
-
 		const LONG result = DetourDetach(reinterpret_cast<void **>(&function), reinterpret_cast<void *>(detour));
 		if (result != NO_ERROR)
 		{

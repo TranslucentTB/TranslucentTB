@@ -5,13 +5,13 @@
 #include <windef.h>
 
 #include "../localization.hpp"
-#include "trayicon.hpp"
+#include "../windows/messagewindow.hpp"
 #include "util/others.hpp"
 #include "util/random.hpp"
 #include "../log/ttberror.hpp"
 #include "../win32.hpp"
 
-class TrayContextMenu : public TrayIcon {
+class ContextMenu {
 public:
 	using MENUCALLBACKCOOKIE = unsigned long long;
 	using MENUREFRESHCOOKIE = unsigned int;
@@ -20,7 +20,7 @@ public:
 	private:
 		HMENU m_hMenu;
 		inline explicit Updater(HMENU hmenu) : m_hMenu(hmenu) { }
-		friend class TrayContextMenu;
+		friend class ContextMenu;
 
 	public:
 		inline void CheckItem(unsigned int id, bool state)
@@ -76,9 +76,8 @@ public:
 private:
 	using callback_t = std::function<void()>;
 	using updater_t = std::function<void(Updater)>;
-	
-	long TrayCallback(WPARAM, LPARAM);
 
+	MessageWindow &m_Window;
 	HMENU m_Menu;
 	MessageWindow::CALLBACKCOOKIE m_TrayCallbackCookie;
 	MessageWindow::CALLBACKCOOKIE m_MenuInitCookie;
@@ -86,9 +85,15 @@ private:
 	std::unordered_map<unsigned int, updater_t> m_RefreshFunctions;
 
 public:
-	TrayContextMenu(MessageWindow &window, const wchar_t *iconResource, const wchar_t *menuResource, HINSTANCE hInstance = GetModuleHandle(nullptr));
+	ContextMenu(MessageWindow &window, const wchar_t *menuResource, HINSTANCE hInstance = GetModuleHandle(nullptr));
 
-	inline MENUCALLBACKCOOKIE RegisterContextMenuCallback(unsigned int item, callback_t callback)
+	// Technically safe to copy but most certainly a bug.
+	inline ContextMenu(const ContextMenu &other) = delete;
+	inline ContextMenu &operator =(const ContextMenu &other) = delete;
+
+	void ShowAtCursor();
+
+	inline MENUCALLBACKCOOKIE RegisterCallback(unsigned int item, callback_t callback)
 	{
 		auto &callbackMap = m_MenuCallbackMap[item];
 
@@ -99,7 +104,7 @@ public:
 		return (static_cast<MENUCALLBACKCOOKIE>(secret) << 32) + item;
 	}
 
-	inline void UnregisterContextMenuCallback(MENUCALLBACKCOOKIE cookie)
+	inline void UnregisterCallback(MENUCALLBACKCOOKIE cookie)
 	{
 		unsigned int item = cookie & 0xFFFFFFFF;
 		unsigned short secret = (cookie >> 32) & 0xFFFF;
@@ -124,5 +129,5 @@ public:
 		return Updater(m_Menu);
 	}
 
-	~TrayContextMenu();
+	~ContextMenu();
 };

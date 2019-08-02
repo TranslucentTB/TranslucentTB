@@ -22,15 +22,18 @@ long TrayIcon::UpdateIcon(...)
 {
 	LoadIcon();
 
-	if (!Shell_NotifyIcon(NIM_MODIFY, &m_IconData))
+	if (m_Show)
 	{
-		MessagePrint(spdlog::level::warn, L"Failed to notify shell of icon modification.");
+		if (!Shell_NotifyIcon(NIM_MODIFY, &m_IconData))
+		{
+			MessagePrint(spdlog::level::warn, L"Failed to notify shell of icon modification.");
+		}
 	}
 
 	return 0;
 }
 
-TrayIcon::TrayIcon(MessageWindow &window, const wchar_t *iconResource, unsigned int additionalFlags, HINSTANCE hInstance) :
+TrayIcon::TrayIcon(MessageWindow &window, const wchar_t *iconResource, bool hide, HINSTANCE hInstance, unsigned int additionalFlags) :
 	m_Window(window),
 	m_IconData {
 		.cbSize = sizeof(m_IconData),
@@ -41,14 +44,22 @@ TrayIcon::TrayIcon(MessageWindow &window, const wchar_t *iconResource, unsigned 
 		.szTip = APP_NAME
 	},
 	m_hInstance(hInstance),
-	m_IconResource(iconResource)
+	m_IconResource(iconResource),
+	m_Show(!hide)
 {
 	LoadIcon();
-	Show();
+	if (m_Show)
+	{
+		Show();
+	}
 
 	m_TaskbarCreatedCookie = m_Window.RegisterCallback(WM_TASKBARCREATED, [this](...)
 	{
-		Show();
+		if (m_Show)
+		{
+			Show();
+		}
+
 		return 0;
 	});
 	m_DpiChangedCookie = m_Window.RegisterCallback(WM_DPICHANGED, std::bind(&TrayIcon::UpdateIcon, this));
@@ -59,11 +70,15 @@ void TrayIcon::Show()
 	if (!Shell_NotifyIcon(NIM_ADD, &m_IconData))
 	{
 		MessagePrint(spdlog::level::warn, L"Failed to notify shell of icon addition.");
+		return;
 	}
 	if (!Shell_NotifyIcon(NIM_SETVERSION, &m_IconData))
 	{
 		MessagePrint(spdlog::level::warn, L"Failed to notify shell of icon version.");
+		return;
 	}
+
+	m_Show = true;
 }
 
 void TrayIcon::Hide()
@@ -72,11 +87,17 @@ void TrayIcon::Hide()
 	{
 		MessagePrint(spdlog::level::info, L"Failed to notify shell of icon deletion.");
 	}
+
+	m_Show = false;
 }
 
 TrayIcon::~TrayIcon()
 {
-	Hide();
+	if (m_Show)
+	{
+		Hide();
+	}
+
 	m_Window.UnregisterCallback(m_TaskbarCreatedCookie);
 	m_Window.UnregisterCallback(m_DpiChangedCookie);
 }

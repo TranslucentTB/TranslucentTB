@@ -31,7 +31,7 @@ HRESULT TTBTaskDialog::CallbackProc(HWND hwnd, UINT uNotification, WPARAM wParam
 
 TTBTaskDialog::TTBTaskDialog(std::wstring_view title, std::wstring &&content, callback_t callback, Window parent) :
 	m_Title(title),
-	m_Content(std::forward<std::wstring>(content)),
+	m_Content(std::move(content)),
 	m_Callback(std::move(callback)),
 	m_Cfg { sizeof(m_Cfg) }
 {

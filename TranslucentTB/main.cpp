@@ -37,7 +37,8 @@
 #include "taskbar/taskbarattributeworker.hpp"
 #include "taskdialogs/aboutdialog.hpp"
 #include "taskdialogs/welcomedialog.hpp"
-#include "tray/traycontextmenu.hpp"
+#include "tray/contextmenu.hpp"
+#include "tray/trayicon.hpp"
 #include "log/ttberror.hpp"
 #include "log/ttblog.hpp"
 #include "win32.hpp"
@@ -206,7 +207,7 @@ void SetConfig(Config &current, Config &&newConfig, TrayIcon &icon)
 		Log::SetLevel(newConfig.LogVerbosity);
 	}
 
-	current = std::forward<Config>(newConfig);
+	current = std::move(newConfig);
 }
 
 bool CheckAndRunWelcome()
@@ -231,17 +232,17 @@ bool CheckAndRunWelcome()
 
 #pragma region Tray
 
-void BindColor(TrayContextMenu &tray, unsigned int id, COLORREF &color)
+void BindColor(ContextMenu &menu, unsigned int id, COLORREF &color)
 {
 	// TODO: no-op
 }
 
 template<class T>
-void BindByMap(TrayContextMenu &tray, const std::unordered_map<T, unsigned int> &map, std::type_identity_t<std::function<T()>> getter, std::type_identity_t<std::function<void(T)>> setter)
+void BindByMap(ContextMenu &menu, const std::unordered_map<T, unsigned int> &map, std::type_identity_t<std::function<T()>> getter, std::type_identity_t<std::function<void(T)>> setter)
 {
 	for (const auto &[new_value, id] : map)
 	{
-		tray.RegisterContextMenuCallback(id, [&new_value, set = std::move(setter)]
+		menu.RegisterCallback(id, [&new_value, set = std::move(setter)]
 		{
 			set(new_value);
 		});
@@ -249,66 +250,66 @@ void BindByMap(TrayContextMenu &tray, const std::unordered_map<T, unsigned int> 
 
 	const auto [min_p, max_p] = std::minmax_element(map.begin(), map.end(), Util::map_value_compare<T, unsigned int>());
 
-	tray.RegisterCustomRefresh([min = min_p->second, max = max_p->second, get = std::move(getter), &map](TrayContextMenu::Updater updater)
+	menu.RegisterCustomRefresh([min = min_p->second, max = max_p->second, get = std::move(getter), &map](ContextMenu::Updater updater)
 	{
 		updater.CheckRadio(min, max, map.at(get()));
 	});
 }
 
 template<class T>
-void BindByMap(TrayContextMenu &tray, const std::unordered_map<T, unsigned int> &map, T &value)
+void BindByMap(ContextMenu &menu, const std::unordered_map<T, unsigned int> &map, T &value)
 {
 	BindByMap(
-		tray,
+		menu,
 		map,
 		[&value] { return value; },
 		[&value](T new_value) { value = new_value; }
 	);
 }
 
-void BindBool(TrayContextMenu &tray, unsigned int item, bool &value)
+void BindBool(ContextMenu &menu, unsigned int item, bool &value)
 {
-	tray.RegisterContextMenuCallback(item, [&value]
+	menu.RegisterCallback(item, [&value]
 	{
 		value = !value;
 	});
 
-	tray.RegisterCustomRefresh([item, &value](TrayContextMenu::Updater updater)
+	menu.RegisterCustomRefresh([item, &value](ContextMenu::Updater updater)
 	{
 		updater.CheckItem(item, value);
 	});
 }
 
-void BindBoolToEnabled(TrayContextMenu &tray, unsigned int item, bool &value)
+void BindBoolToEnabled(ContextMenu &menu, unsigned int item, bool &value)
 {
-	tray.RegisterCustomRefresh([item, &value](TrayContextMenu::Updater updater)
+	menu.RegisterCustomRefresh([item, &value](ContextMenu::Updater updater)
 	{
 		updater.EnableItem(item, value);
 	});
 }
 
-void BindAppearance(TrayContextMenu &tray, TaskbarAppearance &appearance, unsigned int colorId, const std::unordered_map<ACCENT_STATE, uint32_t> &map)
+void BindAppearance(ContextMenu &menu, TaskbarAppearance &appearance, unsigned int colorId, const std::unordered_map<ACCENT_STATE, uint32_t> &map)
 {
-	BindColor(tray, colorId, appearance.Color);
-	BindByMap(tray, map, appearance.Accent);
+	BindColor(menu, colorId, appearance.Color);
+	BindByMap(menu, map, appearance.Accent);
 }
 
-void BindAppearance(TrayContextMenu &tray, OptionalTaskbarAppearance &appearance, unsigned int enableId, unsigned int colorId, const std::unordered_map<ACCENT_STATE, uint32_t> &map)
+void BindAppearance(ContextMenu &menu, OptionalTaskbarAppearance &appearance, unsigned int enableId, unsigned int colorId, const std::unordered_map<ACCENT_STATE, uint32_t> &map)
 {
-	BindBool(tray, enableId, appearance.Enabled);
-	BindAppearance(tray, appearance, colorId, map);
+	BindBool(menu, enableId, appearance.Enabled);
+	BindAppearance(menu, appearance, colorId, map);
 	for (const auto &[_, id] : map)
 	{
-		BindBoolToEnabled(tray, id, appearance.Enabled);
+		BindBoolToEnabled(menu, id, appearance.Enabled);
 	}
 }
 
-void EnableAppearanceColor(TrayContextMenu::Updater updater, unsigned int id, const OptionalTaskbarAppearance &appearance)
+void EnableAppearanceColor(ContextMenu::Updater updater, unsigned int id, const OptionalTaskbarAppearance &appearance)
 {
 	updater.EnableItem(id, appearance.Enabled && appearance.Accent != ACCENT_NORMAL);
 }
 
-winrt::fire_and_forget RefreshMenu(const Config &cfg, TrayContextMenu::Updater updater)
+winrt::fire_and_forget RefreshMenu(const Config &cfg, ContextMenu::Updater updater)
 {
 	// Fire off the task and do what we can do before blocking
 	updater.EnableItem(ID_AUTOSTART, false);
@@ -398,13 +399,8 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 	static MessageWindow window(TRAY_WINDOW, APP_NAME, hInstance);
 	DarkThemeManager::EnableDarkModeForWindow(window);
 
-	static TrayContextMenu tray(window, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance);
+	static TrayIcon tray(window, MAKEINTRESOURCE(IDI_TRAYWHITEICON), cfg.HideTray, hInstance);
 	DarkThemeManager::EnableDarkModeForTrayIcon(tray, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON));
-
-	if (cfg.HideTray)
-	{
-		tray.Hide();
-	}
 
 	static TaskbarAttributeWorker worker(hInstance, cfg);
 	static const auto watcher = wil::make_folder_change_reader(run.config_folder.c_str(), false, wil::FolderChangeEvents::All, [](wil::FolderChangeEvent, std::wstring_view file)
@@ -453,37 +449,49 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 	});
 
 
-	BindBool(tray, ID_DESKTOP_ON_PEEK, cfg.UseRegularAppearanceWhenPeeking);
-	BindAppearance(tray, cfg.DesktopAppearance, ID_DESKTOP_COLOR, DESKTOP_BUTTOM_MAP);
-	BindAppearance(tray, cfg.VisibleWindowAppearance, ID_VISIBLE, ID_VISIBLE_COLOR, VISIBLE_BUTTOM_MAP);
-	BindAppearance(tray, cfg.MaximisedWindowAppearance, ID_MAXIMISED, ID_MAXIMISED_COLOR, MAXIMISED_BUTTON_MAP);
-	BindAppearance(tray, cfg.StartOpenedAppearance, ID_START, ID_START_COLOR, START_BUTTON_MAP);
-	BindAppearance(tray, cfg.CortanaOpenedAppearance, ID_CORTANA, ID_CORTANA_COLOR, CORTANA_BUTTON_MAP);
-	BindAppearance(tray, cfg.TimelineOpenedAppearance, ID_TIMELINE, ID_TIMELINE_COLOR, TIMELINE_BUTTON_MAP);
+	static ContextMenu menu(window, MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance);
+	tray.RegisterTrayCallback([](WPARAM, LPARAM lParam)
+	{
+		if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
+		{
+			menu.ShowAtCursor();
+		}
+
+		return 0;
+	});
 
 
-	BindByMap(tray, PEEK_BUTTON_MAP, cfg.Peek);
+	BindBool(menu, ID_DESKTOP_ON_PEEK, cfg.UseRegularAppearanceWhenPeeking);
+	BindAppearance(menu, cfg.DesktopAppearance, ID_DESKTOP_COLOR, DESKTOP_BUTTOM_MAP);
+	BindAppearance(menu, cfg.VisibleWindowAppearance, ID_VISIBLE, ID_VISIBLE_COLOR, VISIBLE_BUTTOM_MAP);
+	BindAppearance(menu, cfg.MaximisedWindowAppearance, ID_MAXIMISED, ID_MAXIMISED_COLOR, MAXIMISED_BUTTON_MAP);
+	BindAppearance(menu, cfg.StartOpenedAppearance, ID_START, ID_START_COLOR, START_BUTTON_MAP);
+	BindAppearance(menu, cfg.CortanaOpenedAppearance, ID_CORTANA, ID_CORTANA_COLOR, CORTANA_BUTTON_MAP);
+	BindAppearance(menu, cfg.TimelineOpenedAppearance, ID_TIMELINE, ID_TIMELINE_COLOR, TIMELINE_BUTTON_MAP);
 
 
-	tray.RegisterContextMenuCallback(ID_OPENLOG, Log::Open);
-	BindByMap(tray, LOG_BUTTON_MAP, Log::GetLevel, [&cfg](spdlog::level::level_enum new_value)
+	BindByMap(menu, PEEK_BUTTON_MAP, cfg.Peek);
+
+
+	menu.RegisterCallback(ID_OPENLOG, Log::Open);
+	BindByMap(menu, LOG_BUTTON_MAP, Log::GetLevel, [&cfg](spdlog::level::level_enum new_value)
 	{
 		Log::SetLevel(new_value);
 		cfg.LogVerbosity = new_value;
 	});
 
-	tray.RegisterContextMenuCallback(ID_EDITSETTINGS, [&cfg]
+	menu.RegisterCallback(ID_EDITSETTINGS, [&cfg]
 	{
 		SaveConfig(cfg, run.config_file);
 		win32::EditFile(run.config_file);
 	});
-	tray.RegisterContextMenuCallback(ID_RETURNTODEFAULTSETTINGS, [&cfg]
+	menu.RegisterCallback(ID_RETURNTODEFAULTSETTINGS, [&cfg]
 	{
 		// Automatically reloaded by filesystem watcher.
 		SaveConfig({ }, run.config_file);
 	});
-	BindBool(tray, ID_DISABLESAVING, cfg.DisableSaving);
-	tray.RegisterContextMenuCallback(ID_HIDETRAY, [&cfg]
+	BindBool(menu, ID_DISABLESAVING, cfg.DisableSaving);
+	menu.RegisterCallback(ID_HIDETRAY, [&cfg]
 	{
 		std::wostringstream str;
 		str << L"To see the tray icon again, ";
@@ -501,20 +509,20 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 			SaveConfig(cfg, run.config_file);
 		}
 	});
-	tray.RegisterContextMenuCallback(ID_DUMPWORKER, std::bind(&TaskbarAttributeWorker::DumpState, &worker));
-	tray.RegisterContextMenuCallback(ID_RESETWORKER, std::bind(&TaskbarAttributeWorker::ResetState, &worker));
-	tray.RegisterContextMenuCallback(ID_ABOUT, []
+	menu.RegisterCallback(ID_DUMPWORKER, std::bind(&TaskbarAttributeWorker::DumpState, &worker));
+	menu.RegisterCallback(ID_RESETWORKER, std::bind(&TaskbarAttributeWorker::ResetState, &worker));
+	menu.RegisterCallback(ID_ABOUT, []
 	{
 		std::thread([]
 		{
 			AboutDialog().Run();
 		}).detach();
 	});
-	tray.RegisterContextMenuCallback(ID_EXITWITHOUTSAVING, std::bind(&PostQuitMessage, 0));
+	menu.RegisterCallback(ID_EXITWITHOUTSAVING, std::bind(&PostQuitMessage, 0));
 
 	if (UWP::HasPackageIdentity())
 	{
-		tray.RegisterContextMenuCallback(ID_AUTOSTART, []() -> winrt::fire_and_forget
+		menu.RegisterCallback(ID_AUTOSTART, []() -> winrt::fire_and_forget
 		{
 			co_await Autostart::SetStartupState(
 				co_await Autostart::GetStartupState() == Autostart::StartupState::Enabled
@@ -525,14 +533,14 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 	}
 	else
 	{
-		tray.Update().RemoveItem(ID_AUTOSTART);
+		menu.Update().RemoveItem(ID_AUTOSTART);
 	}
 
-	tray.RegisterContextMenuCallback(ID_TIPS, std::bind(&win32::OpenLink, L"https://" APP_NAME ".github.io/tips"));
-	tray.RegisterContextMenuCallback(ID_EXIT, save_and_exit);
+	menu.RegisterCallback(ID_TIPS, std::bind(&win32::OpenLink, L"https://" APP_NAME ".github.io/tips"));
+	menu.RegisterCallback(ID_EXIT, save_and_exit);
 
 
-	tray.RegisterCustomRefresh(std::bind(&RefreshMenu, std::ref(cfg), std::placeholders::_1));
+	menu.RegisterCustomRefresh(std::bind(&RefreshMenu, std::ref(cfg), std::placeholders::_1));
 }
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *, _In_ int)

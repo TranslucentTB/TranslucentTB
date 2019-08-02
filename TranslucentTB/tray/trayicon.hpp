@@ -14,12 +14,13 @@ private:
 	HINSTANCE m_hInstance;
 	const wchar_t *m_IconResource;
 	wil::unique_hicon m_Icon;
+	bool m_Show;
 
 	void LoadIcon();
 	long UpdateIcon(...);
 
 public:
-	TrayIcon(MessageWindow &window, const wchar_t *iconResource, unsigned int additionalFlags = 0, HINSTANCE hInstance = GetModuleHandle(nullptr));
+	TrayIcon(MessageWindow &window, const wchar_t *iconResource, bool hide = false, HINSTANCE hInstance = GetModuleHandle(nullptr), unsigned int additionalFlags = 0);
 
 	inline MessageWindow::CALLBACKCOOKIE RegisterTrayCallback(std::function<long(WPARAM, LPARAM)> callback)
 	{
