@@ -8,7 +8,7 @@ trim_trailing_whitespace = true
 indent_style = tab
 tab_width = 4
 
-[*.{config,filters,props,vcxitems,vcxproj,wapproj}]
+[*.{appxmanifest,config,filters,props,vcxitems,vcxproj,wapproj}]
 insert_final_newline = false
 
 [*.{appxmanifest,config,filters,manifest,md,natvis,props,vcxitems,vcxproj,wapproj,yml}]
