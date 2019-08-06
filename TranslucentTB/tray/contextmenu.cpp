@@ -3,7 +3,7 @@
 
 ContextMenu::ContextMenu(MessageWindow &window, const wchar_t *menuResource, HINSTANCE hInstance) : m_Window(window)
 {
-	m_Menu = LoadMenu(hInstance, menuResource);
+	m_Menu.reset(LoadMenu(hInstance, menuResource));
 	if (!m_Menu)
 	{
 		LastErrorHandle(spdlog::level::critical, L"Failed to load context menu.");
@@ -11,7 +11,7 @@ ContextMenu::ContextMenu(MessageWindow &window, const wchar_t *menuResource, HIN
 
 	m_MenuInitCookie = m_Window.RegisterCallback(WM_INITMENU, [this](...)
 	{
-		Updater updater(m_Menu);
+		Updater updater(m_Menu.get());
 		for (const auto &[_, refreshFunction]: m_RefreshFunctions)
 		{
 			refreshFunction(updater);
@@ -34,7 +34,7 @@ void ContextMenu::ShowAtCursor()
 	}
 
 	SetLastError(0);
-	unsigned int item = TrackPopupMenu(GetSubMenu(m_Menu, 0), TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, 0, m_Window, nullptr);
+	unsigned int item = TrackPopupMenu(GetSubMenu(m_Menu.get(), 0), TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, 0, m_Window, nullptr);
 	if (!item && GetLastError() != 0)
 	{
 		LastErrorHandle(spdlog::level::warn, L"Failed to open context menu.");
@@ -54,8 +54,4 @@ void ContextMenu::ShowAtCursor()
 ContextMenu::~ContextMenu()
 {
 	m_Window.UnregisterCallback(m_MenuInitCookie);
-	if (!DestroyMenu(m_Menu))
-	{
-		LastErrorHandle(spdlog::level::info, L"Failed to destroy context menu.");
-	}
 }

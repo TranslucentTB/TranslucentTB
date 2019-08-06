@@ -3,6 +3,7 @@
 #include <string>
 #include <utility>
 #include <windef.h>
+#include <wil/resource.h>
 
 #include "../localization.hpp"
 #include "../windows/messagewindow.hpp"
@@ -78,7 +79,7 @@ private:
 	using updater_t = std::function<void(Updater)>;
 
 	MessageWindow &m_Window;
-	HMENU m_Menu;
+	wil::unique_hmenu m_Menu;
 	MessageWindow::CALLBACKCOOKIE m_TrayCallbackCookie;
 	MessageWindow::CALLBACKCOOKIE m_MenuInitCookie;
 	std::unordered_map<unsigned int, std::unordered_map<unsigned short, callback_t>> m_MenuCallbackMap;
@@ -87,7 +88,6 @@ private:
 public:
 	ContextMenu(MessageWindow &window, const wchar_t *menuResource, HINSTANCE hInstance = GetModuleHandle(nullptr));
 
-	// Technically safe to copy but most certainly a bug.
 	inline ContextMenu(const ContextMenu &other) = delete;
 	inline ContextMenu &operator =(const ContextMenu &other) = delete;
 
@@ -126,7 +126,7 @@ public:
 
 	inline Updater Update()
 	{
-		return Updater(m_Menu);
+		return Updater(m_Menu.get());
 	}
 
 	~ContextMenu();
