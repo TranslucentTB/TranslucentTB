@@ -70,11 +70,11 @@ private:
 			throw winrt::hresult_out_of_bounds();
 		}
 
-		// Offset the rect so that it is completely in the work area	
+		// Offset the rect so that it is completely in the work area
 		int x_offset = 0;
 		if (rightDoesntFits)
 		{
-			x_offset = workArea.right - temp.right; // Negative offset	
+			x_offset = workArea.right - temp.right; // Negative offset
 		}
 		else if (leftDoesntFits)
 		{
@@ -84,7 +84,7 @@ private:
 		int y_offset = 0;
 		if (bottomDoesntFits)
 		{
-			y_offset = workArea.bottom - temp.bottom; // Negative offset	
+			y_offset = workArea.bottom - temp.bottom; // Negative offset
 		}
 		else if (topDoesntFits)
 		{

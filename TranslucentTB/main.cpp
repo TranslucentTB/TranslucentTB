@@ -322,7 +322,6 @@ winrt::fire_and_forget RefreshMenu(const Config &cfg, ContextMenu::Updater updat
 		updater.SetText(ID_AUTOSTART, IDS_AUTOSTART_QUERYING);
 	}
 
-	
 	const auto log_state = Log::GetInitializationState();
 	updater.EnableItem(ID_OPENLOG, log_state == Log::Done);
 	updater.SetText(ID_OPENLOG, log_state == Log::Done

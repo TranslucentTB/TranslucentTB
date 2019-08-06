@@ -7,3 +7,14 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 indent_style = tab
 tab_width = 4
+
+[*.{config,filters,props,vcxitems,vcxproj,wapproj}]
+insert_final_newline = false
+
+[*.{appxmanifest,config,filters,manifest,md,natvis,props,vcxitems,vcxproj,wapproj,yml}]
+indent_style = spaces
+indent_width = 2
+
+[*.xaml]
+indent_style = spaces
+indent_width = 4

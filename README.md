@@ -1,4 +1,4 @@
-﻿# TranslucentTB
+# TranslucentTB
 
 [![Build status](https://ci.appveyor.com/api/projects/status/9yym3vr6s5gc7vk3/branch/master?svg=true)](https://ci.appveyor.com/project/sylveon/translucenttb/branch/master)
 [![CodeFactor](https://www.codefactor.io/repository/github/translucenttb/translucenttb/badge/master)](https://www.codefactor.io/repository/github/translucenttb/translucenttb/overview/master)

@@ -10,7 +10,7 @@ using namespace Windows::UI::Xaml;
 
 namespace winrt::TranslucentTB::Pages::implementation
 {
-	DependencyProperty FramelessPage::s_TitleProperty = 
+	DependencyProperty FramelessPage::s_TitleProperty =
 		DependencyProperty::Register(
 			L"Title",
 			xaml_typename<hstring>(),

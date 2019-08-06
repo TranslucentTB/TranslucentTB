@@ -60,14 +60,14 @@ When contributing, please respect the style used by the codebase. Quick rundown:
   if (condition) {
       statement;
   }
-  
+
   // Bad!
   if (condition) statement;
-  
+
   // Bad!
   if (condition)
       statement;
-  
+
   // Good!
   if (condition)
   {
@@ -81,11 +81,11 @@ When contributing, please respect the style used by the codebase. Quick rundown:
   class Foo {
       // content
   };
-  
+
   struct Bar {
       // content
   };
-  
+
   namespace Baz {
       // content
   }
