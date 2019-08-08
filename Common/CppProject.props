@@ -61,6 +61,7 @@
     <CppWinRTLibs>false</CppWinRTLibs>
     <CppWinRTFastAbi>true</CppWinRTFastAbi>
     <CppWinRTOptimized>true</CppWinRTOptimized>
+    <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Platform)'=='Win32'">

@@ -155,9 +155,9 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <Manifest Include="resources\TranslucentTB.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="resources\TranslucentTB.manifest" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
