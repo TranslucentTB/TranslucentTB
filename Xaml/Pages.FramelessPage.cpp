@@ -8,13 +8,13 @@
 using namespace winrt;
 using namespace Windows::UI::Xaml;
 
-namespace winrt::TranslucentTB::Pages::implementation
+namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	DependencyProperty FramelessPage::s_TitleProperty =
 		DependencyProperty::Register(
 			L"Title",
 			xaml_typename<hstring>(),
-			xaml_typename<TranslucentTB::Pages::FramelessPage>(),
+			xaml_typename<TranslucentTB::Xaml::Pages::FramelessPage>(),
 			{ box_value(L"") }
 		);
 
@@ -22,7 +22,7 @@ namespace winrt::TranslucentTB::Pages::implementation
 		DependencyProperty::Register(
 			L"UserContent",
 			xaml_typename<UIElement>(),
-			xaml_typename<TranslucentTB::Pages::FramelessPage>(),
+			xaml_typename<TranslucentTB::Xaml::Pages::FramelessPage>(),
 			{ nullptr }
 	);
 

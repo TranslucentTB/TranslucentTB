@@ -11,7 +11,7 @@
 using namespace winrt;
 using namespace Windows::UI::Xaml;
 
-namespace winrt::TranslucentTB::Pages::implementation
+namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	WelcomePage::WelcomePage(hstring configFile) : m_ConfigFile(std::move(configFile))
 	{

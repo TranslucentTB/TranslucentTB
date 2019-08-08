@@ -17,8 +17,8 @@
 // WIL and C++/WinRT
 #include <wil/filesystem.h>
 #include <winrt/Windows.Foundation.h>
-#include <winrt/TranslucentTB.h>
-#include <winrt/TranslucentTB.Pages.h>
+#include <winrt/TranslucentTB.Xaml.h>
+#include <winrt/TranslucentTB.Xaml.Pages.h>
 
 // RapidJSON
 #include <rapidjson/document.h>
@@ -544,7 +544,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *, _In_ int)
 {
-	winrt::TranslucentTB::App app(nullptr);
+	winrt::TranslucentTB::Xaml::App app(nullptr);
 	try
 	{
 		winrt::init_apartment(winrt::apartment_type::single_threaded);
@@ -585,7 +585,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 	// Initialize GUI
 	InitializeTray(hInstance, cfg);
 
-	XamlPageHost<winrt::TranslucentTB::Pages::WelcomePage> host(hInstance, CenteringStrategy::Monitor, run.config_file.native());
+	XamlPageHost<winrt::TranslucentTB::Xaml::Pages::WelcomePage> host(hInstance, CenteringStrategy::Monitor, run.config_file.native());
 
 	// Run the main program loop. When this method exits, TranslucentTB itself is about to exit.
 	const auto exitCode = MessageWindow::RunMessageLoop();

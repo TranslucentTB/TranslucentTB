@@ -3,7 +3,7 @@
 #include "App.g.h"
 #include "App.base.hpp"
 
-namespace winrt::TranslucentTB::implementation
+namespace winrt::TranslucentTB::Xaml::implementation
 {
 	struct App : AppT2<App>
 	{
@@ -11,7 +11,7 @@ namespace winrt::TranslucentTB::implementation
 	};
 }
 
-namespace winrt::TranslucentTB::factory_implementation
+namespace winrt::TranslucentTB::Xaml::factory_implementation
 {
 	struct App : AppT<App, implementation::App>
 	{

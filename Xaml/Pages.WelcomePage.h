@@ -2,7 +2,7 @@
 
 #include "Pages.WelcomePage.g.h"
 
-namespace winrt::TranslucentTB::Pages::implementation
+namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	struct WelcomePage : WelcomePageT<WelcomePage>
 	{
@@ -17,7 +17,7 @@ namespace winrt::TranslucentTB::Pages::implementation
 	};
 }
 
-namespace winrt::TranslucentTB::Pages::factory_implementation
+namespace winrt::TranslucentTB::Xaml::Pages::factory_implementation
 {
 	struct WelcomePage : WelcomePageT<WelcomePage, implementation::WelcomePage>
 	{

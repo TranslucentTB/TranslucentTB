@@ -1,6 +1,6 @@
 import "Pages.FramelessPage.idl";
 
-namespace TranslucentTB.Pages
+namespace TranslucentTB.Xaml.Pages
 {
 	[default_interface]
 	runtimeclass WelcomePage : FramelessPage

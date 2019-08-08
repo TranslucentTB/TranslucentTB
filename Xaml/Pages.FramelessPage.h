@@ -2,7 +2,7 @@
 
 #include "Pages.FramelessPage.g.h"
 
-namespace winrt::TranslucentTB::Pages::implementation
+namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	struct FramelessPage : FramelessPageT<FramelessPage>
 	{
@@ -23,7 +23,7 @@ namespace winrt::TranslucentTB::Pages::implementation
 	};
 }
 
-namespace winrt::TranslucentTB::Pages::factory_implementation
+namespace winrt::TranslucentTB::Xaml::Pages::factory_implementation
 {
 	struct FramelessPage : FramelessPageT<FramelessPage, implementation::FramelessPage>
 	{

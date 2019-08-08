@@ -50,7 +50,6 @@
   <PropertyGroup Label="Globals">
     <CharacterSet>Unicode</CharacterSet>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>TranslucentTB</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
     <PlatformToolset>v142</PlatformToolset>
     <VCProjectVersion>16.0</VCProjectVersion>

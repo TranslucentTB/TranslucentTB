@@ -72,7 +72,7 @@
       <Project>{d0004e78-f00b-4943-b77e-9a278f8ba399}</Project>
       <DeploymentContent>true</DeploymentContent>
     </ProjectReference>
-    <ProjectReference Include="..\Pages\Pages.vcxproj">
+    <ProjectReference Include="..\Xaml\Xaml.vcxproj">
       <Project>{9875d8e1-9594-445e-a0e4-07c6027f85e0}</Project>
       <DeploymentContent>true</DeploymentContent>
     </ProjectReference>

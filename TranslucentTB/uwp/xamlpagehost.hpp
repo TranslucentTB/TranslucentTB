@@ -226,7 +226,7 @@ public:
 		m_content = T(std::forward<Args>(args)...);
 
 		// Make sure T is a frameless page
-		WINRT_ASSERT(m_content.try_as<winrt::TranslucentTB::Pages::FramelessPage>());
+		WINRT_ASSERT(m_content.try_as<winrt::TranslucentTB::Xaml::Pages::FramelessPage>());
 
 		m_source.Content(m_content);
 

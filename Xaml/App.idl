@@ -1,4 +1,4 @@
-namespace TranslucentTB
+namespace TranslucentTB.Xaml
 {
 	[default_interface]
 	runtimeclass App : Microsoft.Toolkit.Win32.UI.XamlHost.XamlApplication
