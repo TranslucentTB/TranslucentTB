@@ -231,7 +231,7 @@ public:
 		m_source.Content(m_content);
 
 		SetTitle();
-		m_TitleChangedToken.value = m_content.RegisterPropertyChangedCallback(winrt::TranslucentTB::Pages::FramelessPage::TitleProperty(), { this, &XamlPageHost::SetTitle });
+		m_TitleChangedToken.value = m_content.RegisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), { this, &XamlPageHost::SetTitle });
 
 		// Magic that gives us shadows
 		const MARGINS margins = { 1 };
@@ -252,7 +252,7 @@ public:
 
 	inline ~XamlPageHost()
 	{
-		m_content.UnregisterPropertyChangedCallback(winrt::TranslucentTB::Pages::FramelessPage::TitleProperty(), std::exchange(m_TitleChangedToken.value, 0));
+		m_content.UnregisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), std::exchange(m_TitleChangedToken.value, 0));
 		m_content = nullptr;
 
 		UnregisterThreadMessageFilter(std::exchange(m_FilterCookie, 0));
