@@ -29,11 +29,11 @@
     </windowsSettings>
   </application>
 
-  <file name="Pages.dll" hashalg="SHA1" xmlns:winrt="urn:schemas-microsoft-com:winrt.v1">
-    <winrt:activatableClass name="TranslucentTB.Pages.WelcomePage" threadingModel="both" />
-    <winrt:activatableClass name="TranslucentTB.Pages.FramelessPage" threadingModel="both" />
-    <winrt:activatableClass name="TranslucentTB.App" threadingModel="both" />
-    <winrt:activatableClass name="TranslucentTB.XamlMetaDataProvider" threadingModel="both" />
+  <file name="Xaml.dll" hashalg="SHA1" xmlns:winrt="urn:schemas-microsoft-com:winrt.v1">
+    <winrt:activatableClass name="TranslucentTB.Xaml.Pages.WelcomePage" threadingModel="both" />
+    <winrt:activatableClass name="TranslucentTB.Xaml.Pages.FramelessPage" threadingModel="both" />
+    <winrt:activatableClass name="TranslucentTB.Xaml.App" threadingModel="both" />
+    <winrt:activatableClass name="TranslucentTB.Xaml.XamlMetaDataProvider" threadingModel="both" />
   </file>
 
   <file name="Microsoft.Toolkit.Win32.UI.XamlHost.dll" hashalg="SHA1">
