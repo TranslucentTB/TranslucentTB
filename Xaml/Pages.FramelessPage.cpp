@@ -1,5 +1,7 @@
 #include "pch.h"
 
+#include "util/strings.hpp"
+
 #include "Pages.FramelessPage.h"
 #if __has_include("Pages.FramelessPage.g.cpp")
 #include "Pages.FramelessPage.g.cpp"
@@ -12,17 +14,17 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	DependencyProperty FramelessPage::s_TitleProperty =
 		DependencyProperty::Register(
-			L"Title",
+			UTIL_STRINGIFY(Title),
 			xaml_typename<hstring>(),
-			xaml_typename<TranslucentTB::Xaml::Pages::FramelessPage>(),
+			xaml_typename<class_type>(),
 			{ box_value(L"") }
 		);
 
 	DependencyProperty FramelessPage::s_UserContentProperty =
 		DependencyProperty::Register(
-			L"UserContent",
+			UTIL_STRINGIFY(UserContent),
 			xaml_typename<UIElement>(),
-			xaml_typename<TranslucentTB::Xaml::Pages::FramelessPage>(),
+			xaml_typename<class_type>(),
 			{ nullptr }
 	);
 

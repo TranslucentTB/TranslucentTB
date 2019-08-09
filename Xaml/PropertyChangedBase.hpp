@@ -27,7 +27,7 @@ protected:
 		{
 			value = new_value;
 			name.remove_prefix(name.find_last_of(L':') + 1);
-			m_propertyChanged(*static_cast<T*>(this), winrt::Windows::UI::Xaml::Data::PropertyChangedEventArgs(name));
+			m_propertyChanged(*static_cast<T *>(this), winrt::Windows::UI::Xaml::Data::PropertyChangedEventArgs(name));
 		}
 	}
 
