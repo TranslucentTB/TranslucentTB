@@ -16,6 +16,7 @@
 #include <winrt/Windows.UI.Xaml.Navigation.h>
 #include <winrt/Microsoft.Toolkit.Win32.UI.XamlHost.h>
 #include <winrt/TranslucentTB.Xaml.h>
+#include <winrt/TranslucentTB.Xaml.Models.h>
 #include <winrt/TranslucentTB.Xaml.Pages.h>
 
 #include "redefgetcurrenttime.h"

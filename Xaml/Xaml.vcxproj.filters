@@ -28,8 +28,12 @@
   <ItemGroup>
     <Page Include="Pages.WelcomePage.xaml" />
     <Page Include="Pages.FramelessPage.xaml" />
+    <Page Include="BoundResources.xaml" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="Models.ActionItem.idl" />
   </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-﻿<host:XamlApplication
+<host:XamlApplication
     x:Class="TranslucentTB.Xaml.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,7 +9,26 @@
     mc:Ignorable="d">
 
     <host:XamlApplication.Resources>
-        <x:String x:Key="AppName">TranslucentTB</x:String>
+        <ResourceDictionary>
+            <x:String x:Key="AppName">TranslucentTB</x:String>
+
+            <Style x:Key="ActionsListViewStyle" TargetType="ListView">
+                <Setter Property="SelectionMode" Value="None" />
+                <Setter Property="IsItemClickEnabled" Value="True" />
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Padding" Value="0,0,12,0"/>
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ItemTemplate" Value="{StaticResource ActionsListViewTemplate}" />
+            </Style>
+
+            <ResourceDictionary.MergedDictionaries>
+                <local:BoundResources />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </host:XamlApplication.Resources>
 
 </host:XamlApplication>

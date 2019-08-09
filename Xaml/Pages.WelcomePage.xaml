@@ -1,24 +1,24 @@
-﻿<local:FramelessPage
+<local:FramelessPage
     x:Class="TranslucentTB.Xaml.Pages.WelcomePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:TranslucentTB.Xaml.Pages"
+    xmlns:models="using:TranslucentTB.Xaml.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource SystemControlAcrylicWindowBrush}" Width="500" Height="400">
 
-    <RichTextBlock TextWrapping="Wrap" IsTextSelectionEnabled="False">
-        <Paragraph>
-            All the settings for the application can be edited from the icon in the taskbar's tray.
-            If you want to edit the configuration file yourself, you can do so by
-            <Hyperlink Click="OpenConfigFile">
-                opening it in a text editor
-                <ToolTipService.ToolTip>
-                    <ToolTip Content="{x:Bind ConfigFile, Mode = OneTime}" />
-                </ToolTipService.ToolTip>
-            </Hyperlink>,
-            it will automatically be reloaded when you save it.
-        </Paragraph>
-    </RichTextBlock>
+    <StackPanel Orientation="Vertical" Spacing="15">
+        <RichTextBlock TextWrapping="Wrap" IsTextSelectionEnabled="False">
+            <Paragraph>
+                TODO: Rewrite this
+            </Paragraph>
+        </RichTextBlock>
+
+        <ListView Style="{StaticResource ActionsListViewStyle}" HorizontalAlignment="Stretch" ItemClick="ForwardActionClick">
+            <models:ActionItem Name="Display the configuration file's location in File Explorer" Description="TODO" Icon="&#xE197;" Click="RevealConfigFile" />
+            <models:ActionItem Name="Open the configuration file in the default text editor" Description="You can always do this by clicking 'Advanced > Edit settings' in the tray context menu" Icon="&#xE1A5;" />
+        </ListView>
+    </StackPanel>
 </local:FramelessPage>

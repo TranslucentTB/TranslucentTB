@@ -1,0 +1,15 @@
+namespace TranslucentTB.Xaml.Models
+{
+	[default_interface]
+	runtimeclass ActionItem : Windows.UI.Xaml.Data.INotifyPropertyChanged
+	{
+		ActionItem();
+
+		String Name;
+		String Description;
+		String Icon;
+		event Windows.UI.Xaml.RoutedEventHandler Click;
+
+		void ForwardClick(Object sender, Windows.UI.Xaml.RoutedEventArgs args);
+	}
+}

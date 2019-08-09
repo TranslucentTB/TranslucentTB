@@ -8,9 +8,8 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		WelcomePage(hstring configFile);
 
-		hstring ConfigFile();
-
-		void OpenConfigFile(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+		void ForwardActionClick(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::Controls::ItemClickEventArgs &args);
+		fire_and_forget RevealConfigFile(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
 
 	private:
 		hstring m_ConfigFile;

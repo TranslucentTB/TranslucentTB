@@ -32,11 +32,16 @@
       <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
       <ModuleDefinitionFile>Xaml.def</ModuleDefinitionFile>
       <AppContainer>false</AppContainer>
+      <AdditionalDependencies>shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp">
       <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="BoundResources.cpp">
+      <DependentUpon>BoundResources.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="Pages.FramelessPage.cpp">
@@ -51,6 +56,10 @@
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="Models.ActionItem.cpp">
+      <DependentUpon>Models.ActionItem.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -61,6 +70,9 @@
       <SubType>Designer</SubType>
       <FileType>Document</FileType>
     </ApplicationDefinition>
+    <Page Include="BoundResources.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Pages.FramelessPage.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -74,6 +86,10 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="BoundResources.h">
+      <DependentUpon>BoundResources.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="Pages.FramelessPage.h">
       <DependentUpon>Pages.FramelessPage.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -83,10 +99,18 @@
       <DependentUpon>Pages.WelcomePage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="Models.ActionItem.h">
+      <DependentUpon>Models.ActionItem.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl">
       <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="BoundResources.idl">
+      <DependentUpon>BoundResources.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
     <Midl Include="Pages.FramelessPage.idl">
@@ -96,6 +120,9 @@
     <Midl Include="Pages.WelcomePage.idl">
       <DependentUpon>Pages.WelcomePage.xaml</DependentUpon>
       <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="Models.ActionItem.idl">
+      <SubType>Designer</SubType>
     </Midl>
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets">

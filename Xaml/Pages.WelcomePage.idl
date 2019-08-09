@@ -6,7 +6,5 @@ namespace TranslucentTB.Xaml.Pages
 	runtimeclass WelcomePage : FramelessPage
 	{
 		WelcomePage(String configFile);
-
-		String ConfigFile { get; };
 	}
 }
