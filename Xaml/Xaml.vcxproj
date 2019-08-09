@@ -103,6 +103,7 @@
       <DependentUpon>Models.ActionItem.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="PropertyChangedBase.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl">

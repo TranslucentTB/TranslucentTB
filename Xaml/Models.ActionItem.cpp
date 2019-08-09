@@ -1,12 +1,9 @@
 #include "pch.h"
-#include "util/strings.hpp"
 
 #include "Models.ActionItem.h"
 #if __has_include("Models.ActionItem.g.cpp")
 #include "Models.ActionItem.g.cpp"
 #endif
-
-#define PROP_NAME UTIL_WIDEN(__FUNCTION__)
 
 using namespace winrt;
 using namespace Windows::UI::Xaml;
@@ -41,16 +38,6 @@ namespace winrt::TranslucentTB::Xaml::Models::implementation
 	void ActionItem::Icon(const hstring &value)
 	{
 		compare_assign(m_icon, value, PROP_NAME);
-	}
-
-	event_token ActionItem::PropertyChanged(const Windows::UI::Xaml::Data::PropertyChangedEventHandler &value)
-	{
-		return m_propertyChanged.add(value);
-	}
-
-	void ActionItem::PropertyChanged(const event_token &token)
-	{
-		m_propertyChanged.remove(token);
 	}
 
 	event_token ActionItem::Click(const Windows::UI::Xaml::RoutedEventHandler &value)

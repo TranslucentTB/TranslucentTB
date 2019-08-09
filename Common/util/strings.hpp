@@ -43,11 +43,6 @@ namespace Util {
 	}
 
 	namespace impl {
-		constexpr std::size_t rotl(std::size_t original, uint8_t bits) noexcept
-		{
-			return (original << bits) | (original >> (32 - bits));
-		}
-
 #ifdef _WIN64
 		constexpr void hash_combine(std::size_t &h, std::size_t k) noexcept
 		{
@@ -66,6 +61,11 @@ namespace Util {
 			h += 0xe6546b64;
 		}
 #else
+		constexpr std::size_t rotl(std::size_t original, uint8_t bits) noexcept
+		{
+			return (original << bits) | (original >> (32 - bits));
+		}
+
 		constexpr void hash_combine(std::size_t &h, std::size_t k) noexcept
 		{
 			constexpr std::size_t c1 = 0xcc9e2d51;
