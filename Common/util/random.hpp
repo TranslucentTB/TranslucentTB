@@ -1,38 +1,57 @@
 #pragma once
 #include <algorithm>
+#include <cstdint>
 #include <limits>
 #include <random>
 #include <unordered_map>
+#include <utility>
 
 namespace Util {
-	namespace impl {
-		// Gets a static instance of a Mersenne Twister engine. Can't be put directly in
-		// GetRandomNumber because every different template instantion will get a different static variable.
-		template<class T>
-		inline T &GetRandomEngine()
+	// Correct, allocation-free, on-the-fly generated seed sequence.
+	template<typename T>
+	class seed_generator {
+	private:
+		T m_Rng;
+
+	public:
+		template<typename... Args>
+		inline seed_generator(Args &&...args) : m_Rng(std::forward<Args>(args)...)
+		{ }
+
+		template<typename Iterator>
+		inline void generate(Iterator first, Iterator last)
 		{
-			static T rng = []
+			std::uniform_int_distribution<std::uint32_t> dist;
+			std::generate(first, last, [this, &dist]
 			{
-				std::seed_seq::result_type seed_data[T::state_size];
-				std::random_device r;
-
-				std::generate_n(seed_data, T::state_size, std::ref(r));
-				std::seed_seq seed(seed_data, seed_data + T::state_size);
-				return T(seed);
-			}();
-
-			return rng;
+				return dist(m_Rng);
+			});
 		}
+
+	};
+
+	// Gets a static instance of a certain engine, correctly seeded from std::random_device.
+	template<class T>
+	inline T &GetRandomEngine()
+	{
+		static T rng = []
+		{
+			seed_generator<std::random_device> gen;
+			return T(gen);
+		}();
+
+		return rng;
 	}
 
-	// Gets a random number from an distribution of numbers.
+	// Gets a random number from an distribution of numbers, using a Mersenne Twister engine.
 	template<typename T = int>
 	inline T GetRandomNumber(T begin = std::numeric_limits<T>::min(), T end = std::numeric_limits<T>::max())
 	{
 		std::uniform_int_distribution<T> distribution(begin, end);
-		return distribution(impl::GetRandomEngine<std::mt19937>());
+		return distribution(GetRandomEngine<std::mt19937>());
 	}
 
+	// Gets a key which does not exist in the map yet.
 	template<typename K, typename V>
 	inline K GetSecret(const std::unordered_map<K, V> &map)
 	{

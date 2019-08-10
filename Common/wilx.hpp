@@ -47,15 +47,11 @@ namespace wilx {
 
 #endif // _WILX_
 
-#if defined(__shobjidl_core_h__) && !defined(_WILX_SHOBJIDL_CORE_)
-#define _WILX_SHOBJIDL_CORE_
+#if defined(__IAppVisibility_INTERFACE_DEFINED__) && !defined(CINTERFACE) && !defined(_WILX_IAV_)
+#define _WILX_IAV_
 
 namespace wilx {
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) && !defined(CINTERFACE)
-#ifdef __IAppVisibility_INTERFACE_DEFINED__
 	using unique_app_visibility_token = unique_com_token<&IAppVisibility::Unadvise>;
-#endif // __IAppVisibility_INTERFACE_DEFINED__
-#endif
 }
 
-#endif // _WILX_SHOBJIDL_CORE_
+#endif
