@@ -10,6 +10,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 		void ForwardActionClick(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::Controls::ItemClickEventArgs &args);
 		fire_and_forget RevealConfigFile(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+		void EditConfigFile(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
 
 	private:
 		hstring m_ConfigFile;

@@ -17,8 +17,8 @@
         </RichTextBlock>
 
         <ListView Style="{StaticResource ActionsListViewStyle}" HorizontalAlignment="Stretch" ItemClick="ForwardActionClick">
-            <models:ActionItem Name="Display the configuration file's location in File Explorer" Description="TODO" Icon="&#xE197;" Click="RevealConfigFile" />
-            <models:ActionItem Name="Open the configuration file in the default text editor" Description="You can always do this by clicking 'Advanced > Edit settings' in the tray context menu" Icon="&#xE1A5;" />
+            <models:ActionItem Name="Display the configuration file's location in File Explorer" Description="Take note of this path if you want it because it won't be shown later" Icon="&#xE197;" Click="RevealConfigFile" />
+            <models:ActionItem Name="Open the configuration file in the default text editor" Description="You can always do this by clicking 'Advanced > Edit settings' in the tray context menu" Icon="&#xE1A5;" Click="EditConfigFile" />
         </ListView>
     </StackPanel>
 </local:FramelessPage>

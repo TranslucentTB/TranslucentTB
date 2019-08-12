@@ -48,7 +48,6 @@
     <ClInclude Include="taskbar\eventhook.hpp" />
     <ClInclude Include="taskdialogs\aboutdialog.hpp" />
     <ClInclude Include="uwp\xamlpagehost.hpp" />
-    <ClInclude Include="version.hpp" />
     <ClInclude Include="windows\messagewindow.hpp" />
     <ClInclude Include="resources\ids.h" />
     <ClInclude Include="taskdialogs\taskdialog.hpp" />
@@ -58,7 +57,6 @@
     <ClInclude Include="log\ttblog.hpp" />
     <ClInclude Include="uwp\uwp.hpp" />
     <ClInclude Include="taskdialogs\welcomedialog.hpp" />
-    <ClInclude Include="win32.hpp" />
     <ClInclude Include="windows\windowclass.hpp" />
     <ClInclude Include="windows\windowhelper.hpp" />
   </ItemGroup>

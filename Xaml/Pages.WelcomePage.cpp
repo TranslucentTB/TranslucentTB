@@ -10,6 +10,7 @@
 #endif
 
 #include "appinfo.hpp"
+#include "win32.hpp"
 
 using namespace winrt;
 using namespace Windows::UI::Xaml;
@@ -29,10 +30,15 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 	fire_and_forget WelcomePage::RevealConfigFile(const IInspectable &sender, const RoutedEventArgs &args)
 	{
-		const wil::unique_cotaskmem_ptr<ITEMIDLIST_ABSOLUTE> list(ILCreateFromPath(m_ConfigFile.c_str()));
+		const std::filesystem::path file = static_cast<std::wstring_view>(m_ConfigFile);
 
 		co_await winrt::resume_background();
 
-		winrt::check_hresult(SHOpenFolderAndSelectItems(list.get(), 0, nullptr, 0));
+		winrt::check_hresult(win32::RevealFile(file));
+	}
+
+	void WelcomePage::EditConfigFile(const IInspectable &sender, const RoutedEventArgs &args)
+	{
+		winrt::check_hresult(win32::EditFile(static_cast<std::wstring_view>(m_ConfigFile)));
 	}
 }

@@ -3,7 +3,7 @@
 #include <string_view>
 #include <winrt/base.h>
 
-#include "../version.hpp"
+#include "version.hpp"
 
 namespace UWP {
 	enum class FolderType {

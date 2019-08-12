@@ -65,9 +65,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="win32.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="taskdialogs\aboutdialog.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -120,9 +117,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="uwp\xamlpagehost.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="version.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="localization.hpp">

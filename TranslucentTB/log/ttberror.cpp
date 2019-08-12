@@ -13,7 +13,7 @@
 
 #include "ttblog.hpp"
 #include "util/strings.hpp"
-#include "../win32.hpp"
+#include "win32.hpp"
 #include "window.hpp"
 
 std::wstring Error::MessageFromHRESULT(HRESULT result)

@@ -10,7 +10,7 @@
 #include "util/others.hpp"
 #include "util/random.hpp"
 #include "../log/ttberror.hpp"
-#include "../win32.hpp"
+#include "win32.hpp"
 
 class ContextMenu {
 public:

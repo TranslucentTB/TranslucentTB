@@ -5,7 +5,7 @@
 #include "../resources/ids.h"
 #include "../log/ttberror.hpp"
 #include "util/strings.hpp"
-#include "../win32.hpp"
+#include "win32.hpp"
 
 HRESULT TTBTaskDialog::CallbackProc(HWND hwnd, UINT uNotification, WPARAM wParam, LPARAM lParam, LONG_PTR dwRefData)
 {
