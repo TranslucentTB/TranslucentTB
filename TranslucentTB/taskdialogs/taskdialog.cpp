@@ -12,6 +12,7 @@ HRESULT TTBTaskDialog::CallbackProc(HWND hwnd, UINT uNotification, WPARAM wParam
 	if (uNotification == TDN_HYPERLINK_CLICKED)
 	{
 		std::wstring link = reinterpret_cast<const wchar_t *>(lParam);
+		// TODO: update (or not since taskdialogs are going away lul)
 		if (Util::StringBeginsWithOneOf(link, { L"http://", L"https://" }))
 		{
 			win32::OpenLink(link);

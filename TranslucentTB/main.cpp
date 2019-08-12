@@ -149,6 +149,7 @@ void GetPaths()
 	run.config_file = run.config_folder / CONFIG_FILE;
 }
 
+// TODO: use native winapi file functions.
 Config LoadConfig(const std::filesystem::path &file)
 {
 	using namespace rapidjson;
@@ -482,6 +483,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 	menu.RegisterCallback(ID_EDITSETTINGS, [&cfg]
 	{
 		SaveConfig(cfg, run.config_file);
+		// TODO: update
 		win32::EditFile(run.config_file);
 	});
 	menu.RegisterCallback(ID_RETURNTODEFAULTSETTINGS, [&cfg]
@@ -492,6 +494,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 	BindBool(menu, ID_DISABLESAVING, cfg.DisableSaving);
 	menu.RegisterCallback(ID_HIDETRAY, [&cfg]
 	{
+		// TODO: remove string stream
 		std::wostringstream str;
 		str << L"To see the tray icon again, ";
 		if (UWP::HasPackageIdentity())
@@ -535,6 +538,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 		menu.Update().RemoveItem(ID_AUTOSTART);
 	}
 
+	// TODO: update
 	menu.RegisterCallback(ID_TIPS, std::bind(&win32::OpenLink, L"https://" APP_NAME ".github.io/tips"));
 	menu.RegisterCallback(ID_EXIT, save_and_exit);
 

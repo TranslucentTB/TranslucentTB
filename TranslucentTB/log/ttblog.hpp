@@ -76,6 +76,7 @@ public:
 		if (const auto sink = s_LogSink.lock(); sink && sink->opened())
 		{
 			sink->flush();
+			// TODO: update
 			win32::EditFile(sink->file());
 		}
 	}

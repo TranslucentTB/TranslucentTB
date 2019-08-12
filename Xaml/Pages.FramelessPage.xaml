@@ -7,8 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" Background="{ThemeResource SystemControlAcrylicWindowBrush}">
 
-    <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="15">
-        <TextBlock Style="{StaticResource TitleTextBlockStyle}" Text="{x:Bind Title, Mode = OneWay}" />
-        <ContentPresenter Content="{x:Bind UserContent, Mode = OneWay}" />
+    <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="15,10,15,15">
+        <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" Text="{x:Bind Title, Mode = OneWay}" />
+        <ContentPresenter Content="{x:Bind UserContent, Mode = OneWay}" Margin="0,5,0,0" />
     </StackPanel>
 </Page>

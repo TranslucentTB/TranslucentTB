@@ -50,6 +50,7 @@ private:
 				HresultErrorCatch(spdlog::level::err, L"Failed to copy version information!")
 				return S_FALSE;
 
+			// TODO: update (or not since taskdialogs are going away lul)
 			case JOIN_DISCORD:
 				win32::OpenLink(L"https://discord.gg/w95DGTK");
 				break;
@@ -64,6 +65,7 @@ private:
 
 	inline static std::wstring BuildVersionInfo()
 	{
+		// TODO: remove stream (or not since task dialogs are going away)
 		std::wostringstream str;
 
 		str << L"Build configuration: "
