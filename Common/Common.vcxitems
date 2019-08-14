@@ -28,6 +28,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)undoc\uxtheme.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)undoc\winuser.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\colors.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\concepts.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\numbers.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\others.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\random.hpp" />

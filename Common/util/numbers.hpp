@@ -1,4 +1,5 @@
 #pragma once
+#include <concepts>
 #include <cstdint>
 #include <cstring>
 #include <limits>
@@ -25,7 +26,7 @@ namespace Util {
 			return character >= L'a' && character <= L'f';
 		}
 
-		template<typename T>
+		template<std::Integral T>
 		constexpr T pow(uint8_t base, std::size_t exponent)
 		{
 			if (exponent == 0)
@@ -43,10 +44,10 @@ namespace Util {
 			}
 		}
 
-		template<typename T, uint8_t base, typename enable = void>
+		template<std::Integral T, uint8_t base>
 		struct NumberParser;
 
-		template<typename T>
+		template<std::Integral T>
 		struct NumberParser<T, 10> {
 			static constexpr T impl(std::wstring_view number)
 			{
@@ -89,8 +90,8 @@ namespace Util {
 			}
 		};
 
-		template<typename T>
-		struct NumberParser<T, 16, std::enable_if_t<std::is_unsigned_v<T>>> {
+		template<std::UnsignedIntegral T>
+		struct NumberParser<T, 16> {
 			static constexpr T impl(std::wstring_view number)
 			{
 				if (number.length() > 2 && number[0] == L'0' && (number[1] == L'x' || number[1] == L'X'))
@@ -127,7 +128,7 @@ namespace Util {
 
 	// Apparently no wide string to number parser accepted an explicit ending to the string
 	// so here I am. Also C locales sucks.
-	template<typename T = int32_t, uint8_t base = 10, typename = std::enable_if_t<std::is_integral_v<T>>>
+	template<std::Integral T = int32_t, uint8_t base = 10>
 	constexpr T ParseNumber(std::wstring_view number)
 	{
 		return impl::NumberParser<T, base>::impl(number);

@@ -10,11 +10,13 @@
 #ifndef RC_INVOKED
 
 #include <algorithm>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <cwctype>
 #include <functional>
 #include <initializer_list>
+#include <iterator>
 #include <string>
 #include <string_view>
 #include <unordered_set>
@@ -82,6 +84,7 @@ namespace Util {
 #endif
 
 		struct string_lowercase_compare {
+			using is_transparent = void;
 			inline bool operator()(std::wstring_view l, std::wstring_view r) const noexcept
 			{
 				return IgnoreCaseStringEquals(l, r);
@@ -107,7 +110,7 @@ namespace Util {
 	}
 
 	// Case-insensitive string set.
-	using string_set = std::unordered_set<std::wstring, impl::string_lowercase_hash, impl::string_lowercase_compare>;
+	using string_set = std::unordered_set<std::wstring, impl::string_lowercase_hash>;
 
 	// Removes instances of a character at the beginning and end of the string.
 	constexpr std::wstring_view Trim(std::wstring_view str, std::wstring_view characters = impl::WHITESPACES)
@@ -161,18 +164,13 @@ namespace Util {
 	}
 
 	// Checks if a string begins with any of the strings in the second parameter.
-	// T must be iteratable using a range-for with a type convertible to std::wstring_view.
-	// For example std::vector<std::wstring> works, as well as IVectorView<winrt::hstring>.
 	template<class T = std::initializer_list<std::wstring_view>>
+		requires std::ConvertibleTo</*std::iter_value_t*/typename std::iterator_traits<typename T::const_iterator>::value_type, std::wstring_view>
 	constexpr bool StringBeginsWithOneOf(std::wstring_view string, const T &strings_to_test)
 	{
-		for (const auto &string_to_test : strings_to_test)
+		for (auto &&string_to_test : strings_to_test)
 		{
-			if (!string.starts_with(string_to_test))
-			{
-				continue;
-			}
-			else
+			if (string.starts_with(string_to_test))
 			{
 				return true;
 			}

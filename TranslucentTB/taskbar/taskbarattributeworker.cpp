@@ -5,7 +5,7 @@
 #include "../ExplorerDetour/hook.hpp"
 #include "../log/ttberror.hpp"
 #include "undoc/winuser.hpp"
-#include "../win32.hpp"
+#include "win32.hpp"
 #include "../windows/windowhelper.hpp"
 
 const PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE TaskbarAttributeWorker::SetWindowCompositionAttribute =

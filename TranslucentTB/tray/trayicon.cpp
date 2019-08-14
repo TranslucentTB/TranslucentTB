@@ -5,7 +5,7 @@
 #include "constants.hpp"
 #include "../log/ttberror.hpp"
 #include "util/random.hpp"
-#include "../win32.hpp"
+#include "win32.hpp"
 
 void TrayIcon::LoadIcon()
 {
