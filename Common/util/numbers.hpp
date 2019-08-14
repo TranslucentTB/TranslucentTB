@@ -27,21 +27,9 @@ namespace Util {
 		}
 
 		template<std::Integral T>
-		constexpr T pow(uint8_t base, std::size_t exponent)
+		constexpr T pow(T base, std::size_t exponent)
 		{
-			if (exponent == 0)
-			{
-				return 1;
-			}
-			else
-			{
-				T result = base;
-				for (std::size_t i = exponent - 1; i > 0; i--)
-				{
-					result *= base;
-				}
-				return result;
-			}
+			return exponent > 0 ? base * pow(base, exponent - 1) : static_cast<T>(1);
 		}
 
 		template<std::Integral T, uint8_t base>
@@ -102,7 +90,7 @@ namespace Util {
 				T result {};
 				for (std::size_t i = 0; i < number.length(); i++)
 				{
-					const T power = 1 << ((number.length() - i - 1) * 4);
+					const T power = static_cast<T>(1) << ((number.length() - i - 1) * 4);
 					if (impl::IsDecimalDigit(number[i]))
 					{
 						result += (number[i] - L'0') * power;
@@ -131,7 +119,7 @@ namespace Util {
 	template<std::Integral T = int32_t, uint8_t base = 10>
 	constexpr T ParseNumber(std::wstring_view number)
 	{
-		return impl::NumberParser<T, base>::impl(number);
+		return impl::NumberParser<T, base>::impl(Trim(number));
 	}
 
 	constexpr uint8_t ExpandOneHexDigitByte(uint8_t byte)

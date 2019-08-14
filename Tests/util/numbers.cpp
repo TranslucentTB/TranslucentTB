@@ -66,6 +66,11 @@ TEST(Util_ParseNumber_Unsigned_BaseTen, ReturnsCorrectValueWhenInputPositive)
 	ASSERT_EQ((Util::ParseNumber<uint32_t, 10>(L"1000")), 1000);
 }
 
+TEST(Util_ParseNumber_Unsigned_BaseTen, HandlesVeryLargeNumber)
+{
+	ASSERT_EQ((Util::ParseNumber<uint64_t, 10>(L"18446744073709551610")), 18446744073709551610);
+}
+
 TEST(Util_ParseNumber_Signed_BaseTen, ReturnsCorrectValueWhenInputNegative)
 {
 	ASSERT_EQ((Util::ParseNumber<int32_t, 10>(L"-1000")), -1000);
@@ -74,6 +79,11 @@ TEST(Util_ParseNumber_Signed_BaseTen, ReturnsCorrectValueWhenInputNegative)
 TEST(Util_ParseNumber_Signed_BaseTen, ReturnsCorrectValueWhenInputPositive)
 {
 	ASSERT_EQ((Util::ParseNumber<int32_t, 10>(L"1000")), 1000);
+}
+
+TEST(Util_ParseNumber_Signed_BaseTen, HandlesVeryLargeNegativeNumber)
+{
+	ASSERT_EQ((Util::ParseNumber<int64_t, 10>(L"-9223372036854775800")), -9223372036854775800);
 }
 
 TEST(Util_ParseNumber_BaseTen, ThrowsWhenInputNotANumber)
@@ -106,9 +116,19 @@ TEST(Util_ParseNumber_BaseSixteen, ReturnsCorrectValueWhenUpperCasePrefixed)
 	ASSERT_EQ((Util::ParseNumber<uint8_t, 16>(L"0XFF")), 255);
 }
 
+TEST(Util_ParseNumber_BaseSixteen, HandlesVeryLargeNumber)
+{
+	ASSERT_EQ((Util::ParseNumber<uint64_t, 16>(L"0xFFFFFFFFFFFFFFFF")), 0xFFFFFFFFFFFFFFFF);
+}
+
 TEST(Util_ParseNumber_BaseSixteen, ThrowsWhenInputNotANumber)
 {
 	ASSERT_THROW((Util::ParseNumber<uint32_t, 16>(L"foobar")), std::invalid_argument);
+}
+
+TEST(Util_ParseNumber, TrimsInput)
+{
+	ASSERT_EQ(Util::ParseNumber(L" \t \n 10  \r "), 10);
 }
 
 TEST(Util_ExpandOneHexDigitByte, ExpandsByte)
