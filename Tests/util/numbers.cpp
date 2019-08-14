@@ -46,14 +46,24 @@ TEST(Util_IsLowerHexDigit, ReturnsTrueWhenLowerCaseDigit)
 	ASSERT_THAT(Util::impl::IsLowerHexDigit(L'f'), IsTrue());
 }
 
-TEST(Util_pow, ReturnsOneWhenPowerIsZero)
+TEST(Util_abs_Unsigned, ReturnsSame)
 {
-	ASSERT_EQ(Util::impl::pow<uint64_t>(164, 0), 1);
+	ASSERT_EQ(Util::impl::abs<uint8_t>(240), 240);
 }
 
-TEST(Util_pow, ReturnsCorrectPowerOfTen)
+TEST(Util_abs_Signed, ThrowsWhenMinimumValue)
 {
-	ASSERT_EQ(Util::impl::pow<uint64_t>(10, 6), 1000000);
+	ASSERT_THROW(Util::impl::abs<int8_t>(-128), std::out_of_range);
+}
+
+TEST(Util_abs_Signed, ReturnsSameWhenPositive)
+{
+	ASSERT_EQ(Util::impl::abs<int8_t>(110), 110);
+}
+
+TEST(Util_abs_Signed, ReturnsAbsoluteWhenNegative)
+{
+	ASSERT_EQ(Util::impl::abs<int8_t>(-110), 110);
 }
 
 TEST(Util_ParseNumber_Unsigned_BaseTen, ThrowsWhenInputNegative)
@@ -61,9 +71,9 @@ TEST(Util_ParseNumber_Unsigned_BaseTen, ThrowsWhenInputNegative)
 	ASSERT_THROW(Util::ParseNumber<uint32_t>(L"-10"), std::out_of_range);
 }
 
-TEST(Util_ParseNumber_Unsigned_BaseTen, ThrowsOnTooManyDigits)
+TEST(Util_ParseNumber_Unsigned_BaseTen, ThrowsOnOverflow)
 {
-	ASSERT_THROW(Util::ParseNumber<int8_t>(L"1000"), std::out_of_range);
+	ASSERT_THROW(Util::ParseNumber<int8_t>(L"256"), std::out_of_range);
 }
 
 TEST(Util_ParseNumber_Unsigned_BaseTen, ReturnsCorrectValue)
@@ -86,9 +96,14 @@ TEST(Util_ParseNumber_Unsigned_BaseTen, HandlesMinimumValue)
 	ASSERT_EQ(Util::ParseNumber<uint8_t>(L"0"), 0);
 }
 
-TEST(Util_ParseNumber_Signed_BaseTen, ThrowsOnTooManyDigits)
+TEST(Util_ParseNumber_Signed_BaseTen, ThrowsOnOverflow)
 {
-	ASSERT_THROW(Util::ParseNumber<int8_t>(L"-1000"), std::out_of_range);
+	ASSERT_THROW(Util::ParseNumber<int8_t>(L"128"), std::out_of_range);
+}
+
+TEST(Util_ParseNumber_Signed_BaseTen, ThrowsOnUnderflow)
+{
+	ASSERT_THROW(Util::ParseNumber<int8_t>(L"-129"), std::out_of_range);
 }
 
 TEST(Util_ParseNumber_Signed_BaseTen, ReturnsCorrectValueWhenInputNegative)
@@ -136,7 +151,7 @@ TEST(Util_ParseNumber_BaseSixteen, ThrowsWhenInputNotANumber)
 	ASSERT_THROW((Util::ParseNumber<uint32_t, 16>(L"foobar")), std::invalid_argument);
 }
 
-TEST(Util_ParseNumber_BaseSixteen, ThrowsOnTooManyDigits)
+TEST(Util_ParseNumber_BaseSixteen, ThrowsOnOverflow)
 {
 	ASSERT_THROW((Util::ParseNumber<uint8_t, 16>(L"100")), std::out_of_range);
 }

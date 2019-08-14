@@ -26,10 +26,21 @@ namespace Util {
 			return character >= L'a' && character <= L'f';
 		}
 
-		template<std::Integral T>
-		constexpr T pow(T base, std::size_t exponent)
+		template<std::SignedIntegral T>
+		constexpr T abs(T num)
 		{
-			return exponent > 0 ? base * pow(base, exponent - 1) : static_cast<T>(1);
+			if (num == std::numeric_limits<T>::min())
+			{
+				throw std::out_of_range("Cannot get absolute value of minimum number");
+			}
+
+			return num >= 0 ? num : -num;
+		}
+
+		template<std::UnsignedIntegral T>
+		constexpr T abs(T num)
+		{
+			return num;
 		}
 
 		template<std::Integral T, uint8_t base>
@@ -53,33 +64,44 @@ namespace Util {
 					}
 				}
 
-				if (number.length() > std::numeric_limits<T>::digits10 + 1)
-				{
-					throw std::out_of_range("Number being converted is guaranteed to be off-limits");
-				}
+				constexpr T max = std::numeric_limits<T>::max();
+				constexpr T maxmthresh = max / 10;
+				constexpr wchar_t maxdthresh = (max % 10) + L'0';
+
+				constexpr T min = std::numeric_limits<T>::min();
+				constexpr T minmthresh = min / 10;
+				constexpr wchar_t mindthresh = static_cast<wchar_t>(abs(min % 10)) + L'0';
 
 				T result {};
-				for (std::size_t i = 0; i < number.length(); i++)
+				for (wchar_t digit : number)
 				{
-					if (impl::IsDecimalDigit(number[i]))
+					if (result > maxmthresh || (result == maxmthresh && digit > maxdthresh) || (isNegative && (result < minmthresh || (result == minmthresh && digit > mindthresh))))
 					{
-						const T power = impl::pow<T>(10, number.length() - i - 1);
-						result += (number[i] - L'0') * power;
-					}
+            			throw std::out_of_range("Number being converted is off-limits");
+        			}
 					else
 					{
-						throw std::invalid_argument("Not a number");
-					}
+						if (impl::IsDecimalDigit(digit))
+						{
+							result *= 10;
+							const T intDigit = static_cast<T>(digit - L'0');
+							if (isNegative)
+							{
+								result -= intDigit;
+							}
+							else
+							{
+								result += intDigit;
+							}
+						}
+						else
+						{
+							throw std::invalid_argument("Not a number");
+						}
+        			}
 				}
 
-				if constexpr (std::is_signed_v<T>)
-				{
-					return isNegative ? -result : result;
-				}
-				else
-				{
-					return result;
-				}
+				return result;
 			}
 		};
 
