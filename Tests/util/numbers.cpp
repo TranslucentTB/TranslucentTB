@@ -121,6 +121,11 @@ TEST(Util_ParseNumber_Signed_BaseTen, HandlesMinimumValue)
 	ASSERT_EQ(Util::ParseNumber<int8_t>(L"-128"), -128);
 }
 
+TEST(Util_ParseNumber_Signed_BaseTen, HandlesOneDigit)
+{
+	ASSERT_EQ(Util::ParseNumber<int8_t>(L"1"), 1);
+}
+
 TEST(Util_ParseNumber_BaseTen, ThrowsWhenInputNotANumber)
 {
 	ASSERT_THROW(Util::ParseNumber<int32_t>(L"foobar"), std::invalid_argument);
@@ -174,6 +179,11 @@ TEST(Util_ParseNumber_BaseSixteen, HandlesMaximumValue)
 TEST(Util_ParseNumber_BaseSixteen, HandlesMinimumValue)
 {
 	ASSERT_EQ((Util::ParseNumber<uint64_t, 16>(L"0x0")), 0);
+}
+
+TEST(Util_ParseNumber_BaseSixteen, HandlesOneDigit)
+{
+	ASSERT_EQ((Util::ParseNumber<uint8_t, 16>(L"A")), 0xA);
 }
 
 TEST(Util_ParseNumber, TrimsInput)
