@@ -16,7 +16,7 @@ namespace Util {
 			return character >= L'0' && character <= L'9';
 		}
 
-		constexpr bool IsCapitalHexDigit(wchar_t character)
+		constexpr bool IsUpperHexDigit(wchar_t character)
 		{
 			return character >= L'A' && character <= L'F';
 		}
@@ -53,6 +53,11 @@ namespace Util {
 					}
 				}
 
+				if (number.length() > std::numeric_limits<T>::digits10 + 1)
+				{
+					throw std::out_of_range("Number being converted is guaranteed to be off-limits");
+				}
+
 				T result {};
 				for (std::size_t i = 0; i < number.length(); i++)
 				{
@@ -87,6 +92,11 @@ namespace Util {
 					number.remove_prefix(2);
 				}
 
+				if (number.length() > std::numeric_limits<T>::digits / 4)
+				{
+					throw std::out_of_range("Number being converted is off-limits");
+				}
+
 				T result {};
 				for (std::size_t i = 0; i < number.length(); i++)
 				{
@@ -95,7 +105,7 @@ namespace Util {
 					{
 						result += (number[i] - L'0') * power;
 					}
-					else if (impl::IsCapitalHexDigit(number[i]))
+					else if (impl::IsUpperHexDigit(number[i]))
 					{
 						result += (number[i] - L'A' + 10) * power;
 					}
