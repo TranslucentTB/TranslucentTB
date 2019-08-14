@@ -10,8 +10,8 @@ using namespace Windows::UI::Xaml;
 
 namespace winrt::TranslucentTB::Xaml::implementation
 {
-    BoundResources::BoundResources()
-    {
-        InitializeComponent();
-    }
+	BoundResources::BoundResources()
+	{
+		InitializeComponent();
+	}
 }

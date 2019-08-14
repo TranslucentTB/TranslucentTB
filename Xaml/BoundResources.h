@@ -4,15 +4,15 @@
 
 namespace winrt::TranslucentTB::Xaml::implementation
 {
-    struct BoundResources : BoundResourcesT<BoundResources>
-    {
-        BoundResources();
-    };
+	struct BoundResources : BoundResourcesT<BoundResources>
+	{
+		BoundResources();
+	};
 }
 
 namespace winrt::TranslucentTB::Xaml::factory_implementation
 {
-    struct BoundResources : BoundResourcesT<BoundResources, implementation::BoundResources>
-    {
-    };
+	struct BoundResources : BoundResourcesT<BoundResources, implementation::BoundResources>
+	{
+	};
 }
