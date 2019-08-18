@@ -73,12 +73,12 @@ namespace Util {
 				constexpr wchar_t mindthresh = static_cast<wchar_t>(abs(min % 10)) + L'0';
 
 				T result {};
-				for (wchar_t digit : number)
+				for (const wchar_t digit : number)
 				{
 					if (result > maxmthresh || (result == maxmthresh && digit > maxdthresh) || (isNegative && (result < minmthresh || (result == minmthresh && digit > mindthresh))))
 					{
-            			throw std::out_of_range("Number being converted is off-limits");
-        			}
+						throw std::out_of_range("Number being converted is off-limits");
+					}
 					else
 					{
 						if (impl::IsDecimalDigit(digit))
@@ -98,7 +98,7 @@ namespace Util {
 						{
 							throw std::invalid_argument("Not a number");
 						}
-        			}
+					}
 				}
 
 				return result;

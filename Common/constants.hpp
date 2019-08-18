@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <string_view>
 
 #pragma region Windows
 
@@ -13,7 +14,7 @@ static constexpr uint16_t LONG_PATH = 33000;
 #pragma region App
 
 // Config file name
-static constexpr wchar_t CONFIG_FILE[] = L"config.json";
+static constexpr std::wstring_view CONFIG_FILE = L"config.json";
 
 // Mutex name for app uniqueness
 static constexpr wchar_t MUTEX_GUID[] = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
@@ -55,7 +56,7 @@ static constexpr wchar_t CORE_WINDOW[] = L"Windows.UI.Core.CoreWindow";
 #pragma region Other
 
 // UTF-8 Byte Order Mark
-static constexpr char UTF8_BOM[] = "\xEF\xBB\xBF";
+static constexpr std::string_view UTF8_BOM = "\xEF\xBB\xBF";
 
 // UTF-16 Byte Order Mark
 static constexpr wchar_t UTF16_BOM[] = L"\uFEFF";

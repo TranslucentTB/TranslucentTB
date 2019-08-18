@@ -22,20 +22,19 @@ namespace Util {
 		template<typename Iterator>
 		inline void generate(Iterator first, Iterator last)
 		{
-			std::uniform_int_distribution<std::uint32_t> dist;
+			std::uniform_int_distribution<uint32_t> dist;
 			std::generate(first, last, [this, &dist]
 			{
 				return dist(m_Rng);
 			});
 		}
-
 	};
 
 	// Gets a static instance of a certain engine, correctly seeded from std::random_device.
 	template<class T>
 	inline T &GetRandomEngine()
 	{
-		static T rng = []
+		static thread_local T rng = []
 		{
 			seed_generator<std::random_device> gen;
 			return T(gen);

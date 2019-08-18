@@ -9,7 +9,7 @@ const std::filesystem::path &win32::GetExeLocation()
 {
 	if (s_ExeLocation.empty())
 	{
-		const auto [loc, hr] = GetProcessFileName(GetCurrentProcess());
+		auto [loc, hr] = GetProcessFileName(GetCurrentProcess());
 
 		if (SUCCEEDED(hr))
 		{
@@ -85,9 +85,11 @@ void win32::HardenProcess()
 	load_policy.PreferSystem32Images = true;
 
 	// https://devblogs.microsoft.com/oldnewthing/?p=93556
-	std::vector<wchar_t> volumePath(LONG_PATH);
+	std::wstring volumePath;
+	volumePath.resize(LONG_PATH);
 	if (GetVolumePathName(GetExeLocation().c_str(), volumePath.data(), LONG_PATH))
 	{
+		volumePath.resize(wcslen(volumePath.c_str()));
 		load_policy.NoRemoteImages = GetDriveType(volumePath.data()) != DRIVE_REMOTE;
 	}
 	else
