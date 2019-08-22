@@ -10,8 +10,6 @@
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
       <PreprocessorDefinitions>_TRANSLUCENTTB_EXE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <!-- spdlog -->
-      <PreprocessorDefinitions>SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE;SPDLOG_DISABLE_DEFAULT_LOGGER;SPDLOG_FMT_EXTERNAL;SPDLOG_NO_NAME;SPDLOG_NO_THREAD_ID;SPDLOG_NO_TLS;SPDLOG_WCHAR_TO_UTF8_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>advapi32.lib;comctl32.lib;dwmapi.lib;mincore.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;user32.lib</AdditionalDependencies>
@@ -22,7 +20,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="localization.cpp" />
-    <ClCompile Include="log\ttblog.cpp" />
     <ClCompile Include="uwp\autostart.cpp" />
     <ClCompile Include="darkthememanager.cpp" />
     <ClCompile Include="taskbar\taskbarattributeworker.cpp" />
@@ -32,7 +29,6 @@
     <ClCompile Include="taskdialogs\taskdialog.cpp" />
     <ClCompile Include="tray\contextmenu.cpp" />
     <ClCompile Include="tray\trayicon.cpp" />
-    <ClCompile Include="log\ttberror.cpp" />
     <ClCompile Include="uwp\uwp.cpp" />
     <ClCompile Include="win32.cpp" />
     <ClCompile Include="windows\window.cpp" />
@@ -42,7 +38,6 @@
     <ClInclude Include="localization.hpp" />
     <ClInclude Include="taskbar\appvisibilitysink.hpp" />
     <ClInclude Include="darkthememanager.hpp" />
-    <ClInclude Include="log\lazyfilesink.hpp" />
     <ClInclude Include="uwp\autostart.hpp" />
     <ClInclude Include="taskbar\taskbarattributeworker.hpp" />
     <ClInclude Include="taskbar\eventhook.hpp" />
@@ -53,8 +48,6 @@
     <ClInclude Include="taskdialogs\taskdialog.hpp" />
     <ClInclude Include="tray\contextmenu.hpp" />
     <ClInclude Include="tray\trayicon.hpp" />
-    <ClInclude Include="log\ttberror.hpp" />
-    <ClInclude Include="log\ttblog.hpp" />
     <ClInclude Include="uwp\uwp.hpp" />
     <ClInclude Include="taskdialogs\welcomedialog.hpp" />
     <ClInclude Include="windows\windowclass.hpp" />
@@ -68,6 +61,10 @@
   <ItemGroup>
     <ProjectReference Include="..\ExplorerDetour\ExplorerDetour.vcxproj">
       <Project>{d0004e78-f00b-4943-b77e-9a278f8ba399}</Project>
+      <DeploymentContent>true</DeploymentContent>
+    </ProjectReference>
+    <ProjectReference Include="..\ProgramLog\ProgramLog.vcxproj">
+      <Project>{62cd9de0-af10-40f0-b72c-7a7b5bbba3c7}</Project>
       <DeploymentContent>true</DeploymentContent>
     </ProjectReference>
     <ProjectReference Include="..\Xaml\Xaml.vcxproj">

@@ -1,7 +1,7 @@
 #include "win32.hpp"
 #include <processthreadsapi.h>
 
-#include "log/ttberror.hpp"
+#include "../ProgramLog/error.hpp"
 
 std::filesystem::path win32::s_ExeLocation;
 
@@ -85,9 +85,11 @@ void win32::HardenProcess()
 	load_policy.PreferSystem32Images = true;
 
 	// https://devblogs.microsoft.com/oldnewthing/?p=93556
+	static constexpr DWORD length = wil::max_extended_path_length + 1;
+
 	std::wstring volumePath;
-	volumePath.resize(LONG_PATH);
-	if (GetVolumePathName(GetExeLocation().c_str(), volumePath.data(), LONG_PATH))
+	volumePath.resize(length);
+	if (GetVolumePathName(GetExeLocation().c_str(), volumePath.data(), length))
 	{
 		volumePath.resize(wcslen(volumePath.c_str()));
 		load_policy.NoRemoteImages = GetDriveType(volumePath.data()) != DRIVE_REMOTE;

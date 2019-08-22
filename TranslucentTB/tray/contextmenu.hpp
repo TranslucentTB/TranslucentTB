@@ -9,7 +9,7 @@
 #include "../windows/messagewindow.hpp"
 #include "util/others.hpp"
 #include "util/random.hpp"
-#include "../log/ttberror.hpp"
+#include "../../ProgramLog/error.hpp"
 #include "win32.hpp"
 
 class ContextMenu {

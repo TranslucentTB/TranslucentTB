@@ -1,26 +1,27 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{D0004E78-F00B-4943-B77E-9A278F8BA399}</ProjectGuid>
+    <ProjectGuid>{62CD9DE0-AF10-40F0-B72C-7A7B5BBBA3C7}</ProjectGuid>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <Import Project="..\Common\CppProject.props" />
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
-      <PreprocessorDefinitions>EXPLORERDETOUR_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PROGRAMLOG_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>detours.lib;user32.lib</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="hook.cpp" />
+    <ClCompile Include="error.cpp" />
+    <ClCompile Include="log.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="detourexception.hpp" />
-    <ClInclude Include="detourtransaction.hpp" />
-    <ClInclude Include="hook.hpp" />
+    <ClInclude Include="api.h" />
+    <ClInclude Include="error.hpp" />
+    <ClInclude Include="lazyfilesink.hpp" />
+    <ClInclude Include="log.hpp" />
   </ItemGroup>
 </Project>

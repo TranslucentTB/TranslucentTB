@@ -10,10 +10,10 @@
 #include "undoc/swca.hpp"
 #include "window.hpp"
 
-#ifdef _EXPLORERDETOUR_DLL
-#define EXPLORERHOOK_EXPORT dllexport
+#ifdef EXPLORERDETOUR_EXPORTS
+#define EXPLORERDETOUR_API __declspec(dllexport)
 #else
-#define EXPLORERHOOK_EXPORT dllimport
+#define EXPLORERDETOUR_API __declspec(dllimport)
 #endif
 
 class Hook {
@@ -24,13 +24,11 @@ private:
 	static BOOL WINAPI SetWindowCompositionAttributeDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data);
 	static LRESULT CALLBACK CallWndProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
 
-#ifdef _EXPLORERDETOUR_DLL
+#ifdef EXPLORERDETOUR_EXPORTS
 	friend BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept;
 #endif
 
 public:
-	__declspec(EXPLORERHOOK_EXPORT) static std::pair<HHOOK, HRESULT> HookExplorer(Window taskbar);
-	__declspec(EXPLORERHOOK_EXPORT) static std::tuple<uint8_t, uint8_t, uint8_t> GetDetoursVersion();
+	EXPLORERDETOUR_API static std::pair<HHOOK, HRESULT> HookExplorer(Window taskbar);
+	EXPLORERDETOUR_API static std::tuple<uint8_t, uint8_t, uint8_t> GetDetoursVersion();
 };
-
-#undef EXPLORERHOOK_EXPORT

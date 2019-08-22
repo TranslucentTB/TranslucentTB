@@ -45,12 +45,6 @@
     <ClCompile Include="uwp\uwp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="log\ttberror.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="log\ttblog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="taskbar\taskbarattributeworker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -96,15 +90,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="uwp\uwp.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="log\ttberror.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="log\ttblog.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="log\lazyfilesink.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="taskbar\taskbarattributeworker.hpp">

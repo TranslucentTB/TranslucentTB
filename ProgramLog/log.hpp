@@ -7,36 +7,31 @@
 #include <string>
 #include <windef.h>
 
+#include "api.h"
 #include "lazyfilesink.hpp"
 #include "win32.hpp"
 
 class Log {
 private:
-	static std::weak_ptr<lazy_file_sink_mt> s_LogSink;
-	static bool s_InitDone;
+	PROGRAMLOG_API static std::weak_ptr<lazy_file_sink_mt> s_LogSink;
 
 	static std::time_t GetProcessCreationTime();
 	static std::filesystem::path GetPath();
 	static void HandleInitializationError(std::wstring exception);
 	static void LogErrorHandler(const std::string &message);
+	static void Initialize();
+
+#ifdef PROGRAMLOG_EXPORTS
+	friend BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept;
+#endif
 
 public:
-	enum InitializationState {
-		Done,
-		Failed,
-		NotInitialized
-	};
-
-	static void Initialize();
 
 	inline static spdlog::level::level_enum GetLevel()
 	{
-		if (s_InitDone)
+		if (const auto sink = s_LogSink.lock(); sink && sink->opened())
 		{
-			if (const auto sink = s_LogSink.lock(); sink && !sink->error())
-			{
-				return sink->level();
-			}
+			return sink->level();
 		}
 
 		return spdlog::level::off;
@@ -50,28 +45,28 @@ public:
 		}
 	}
 
-	inline static InitializationState GetInitializationState()
+	enum Status {
+		Ok,
+		NothingLogged,
+		FailedOpening,
+		FailedInitializing
+	};
+
+	inline static Status GetStatus()
 	{
 		if (const auto sink = s_LogSink.lock())
 		{
-			if (sink->opened())
-			{
-				return Done;
-			}
-			else if (sink->error())
-			{
-				return Failed;
-			}
-		}
-		else if (s_InitDone)
-		{
-			return Failed;
+			return sink->opened()
+				? Ok
+				: sink->tried()
+					? FailedOpening
+					: NothingLogged;
 		}
 
-		return NotInitialized;
+		return FailedInitializing;
 	}
 
-	inline static void Open()
+	inline static void ViewFile()
 	{
 		if (const auto sink = s_LogSink.lock(); sink && sink->opened())
 		{

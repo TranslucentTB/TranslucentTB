@@ -3,7 +3,7 @@
 #include "appvisibilitysink.hpp"
 #include "constants.hpp"
 #include "../ExplorerDetour/hook.hpp"
-#include "../log/ttberror.hpp"
+#include "../../ProgramLog/error.hpp"
 #include "undoc/winuser.hpp"
 #include "win32.hpp"
 #include "../windows/windowhelper.hpp"

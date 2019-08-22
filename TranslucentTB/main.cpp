@@ -39,8 +39,8 @@
 #include "taskdialogs/welcomedialog.hpp"
 #include "tray/contextmenu.hpp"
 #include "tray/trayicon.hpp"
-#include "log/ttberror.hpp"
-#include "log/ttblog.hpp"
+#include "../ProgramLog/error.hpp"
+#include "../ProgramLog/log.hpp"
 #include "win32.hpp"
 #include "windows/messagewindow.hpp"
 #include "window.hpp"
@@ -323,16 +323,16 @@ winrt::fire_and_forget RefreshMenu(const Config &cfg, ContextMenu::Updater updat
 		updater.SetText(ID_AUTOSTART, IDS_AUTOSTART_QUERYING);
 	}
 
-	const auto log_state = Log::GetInitializationState();
-	updater.EnableItem(ID_OPENLOG, log_state == Log::Done);
-	updater.SetText(ID_OPENLOG, log_state == Log::Done
+	const auto status = Log::GetStatus();
+	updater.EnableItem(ID_OPENLOG, status == Log::Ok);
+	updater.SetText(ID_OPENLOG, status == Log::Ok
 		? IDS_OPENLOG_NORMAL
-		: log_state == Log::Failed
-			? IDS_OPENLOG_ERROR
-			: IDS_OPENLOG_EMPTY
+		: status == Log::NothingLogged
+			? IDS_OPENLOG_EMPTY
+			: IDS_OPENLOG_ERROR
 	);
 
-	updater.EnableItem(ID_LOG, log_state != Log::Failed);
+	updater.EnableItem(ID_LOG, status == Log::Ok || status == Log::NothingLogged);
 	updater.CheckItem(ID_LOG, Log::GetLevel() != spdlog::level::off);
 
 	updater.EnableItem(ID_DESKTOP_COLOR, cfg.DesktopAppearance.Accent != ACCENT_NORMAL);
@@ -473,7 +473,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 	BindByMap(menu, PEEK_BUTTON_MAP, cfg.Peek);
 
 
-	menu.RegisterCallback(ID_OPENLOG, Log::Open);
+	menu.RegisterCallback(ID_OPENLOG, Log::ViewFile);
 	BindByMap(menu, LOG_BUTTON_MAP, Log::GetLevel, [&cfg](spdlog::level::level_enum new_value)
 	{
 		Log::SetLevel(new_value);
@@ -556,7 +556,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 	}
 	HresultErrorCatch(spdlog::level::critical, L"Initialization of Windows Runtime failed.");
 
-	Log::Initialize();
 	win32::HardenProcess();
 
 	// If there already is another instance running, tell it to exit

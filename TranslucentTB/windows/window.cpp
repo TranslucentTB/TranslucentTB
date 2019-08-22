@@ -4,7 +4,7 @@
 #include <wil/com.h>
 #include <wil/resource.h>
 
-#include "../log/ttberror.hpp"
+#include "../../ProgramLog/error.hpp"
 #include "win32.hpp"
 
 std::wstring Window::title() const

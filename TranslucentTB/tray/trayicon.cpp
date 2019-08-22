@@ -3,7 +3,7 @@
 
 #include "appinfo.hpp"
 #include "constants.hpp"
-#include "../log/ttberror.hpp"
+#include "../../ProgramLog/error.hpp"
 #include "util/random.hpp"
 #include "win32.hpp"
 

@@ -14,7 +14,7 @@
 #include "appinfo.hpp"
 #include "constants.hpp"
 #include "window.hpp"
-#include "ttberror.hpp"
+#include "error.hpp"
 
 template<typename Mutex>
 class lazy_file_sink final : public spdlog::sinks::base_sink<Mutex> {
@@ -23,7 +23,7 @@ public:
 
 	const std::filesystem::path &file() const noexcept { return m_File; }
 	bool opened() const noexcept { return bool(m_Handle); }
-	bool error() const noexcept { return m_Tried && !m_Handle; }
+	bool tried() const noexcept { return m_Tried; }
 
 protected:
 	void sink_it_(const spdlog::details::log_msg &msg) override
@@ -66,7 +66,7 @@ private:
 			}
 			else
 			{
-				HRESULT err = HRESULT_FROM_WIN32(GetLastError());
+				const HRESULT err = HRESULT_FROM_WIN32(GetLastError());
 				LastErrorHandle(spdlog::level::trace, L"Failed to create log file.");
 				std::thread([err]()
 				{

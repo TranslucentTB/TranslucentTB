@@ -1,4 +1,4 @@
-#include "ttberror.hpp"
+#include "error.hpp"
 #include <comdef.h>
 #include <exception>
 #include <functional>
@@ -9,9 +9,7 @@
 #include <vector>
 #include <wil/resource.h>
 #include <winerror.h>
-#include <WinUser.h>
 
-#include "ttblog.hpp"
 #include "util/strings.hpp"
 #include "win32.hpp"
 #include "window.hpp"
@@ -94,52 +92,7 @@ std::wstring Error::FormatIRestrictedErrorInfo(HRESULT result, BSTR description)
 	return FormatHRESULT(result, Util::Trim({ description, SysStringLen(description) }));
 }
 
-void Error::HandleCommon(spdlog::level::level_enum level, std::wstring_view message, std::wstring_view error_message, const char *file, int line, const char *function)
+void Error::Log(std::wstring_view msg, spdlog::level::level_enum level, const char* file, int line, const char* function)
 {
-	std::wstring msg;
-
-	if (level == spdlog::level::critical)
-	{
-		if (!error_message.empty())
-		{
-			msg = fmt::format(fmt(FATAL_ERROR_MESSAGE L"\n\n{}\n\n{}"), message, error_message);
-		}
-		else
-		{
-			msg = fmt::format(fmt(FATAL_ERROR_MESSAGE L"\n\n{}"), message);
-		}
-
-		MessageBox(Window::NullWindow, msg.c_str(), FATAL_ERROR_TITLE, MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
-
-		// Calling abort() will generate a dialog box, but we already have our own.
-		// Raising a fail-fast exception skips it but also allows WER to do its job.
-		RaiseFailFastException(nullptr, nullptr, FAIL_FAST_GENERATE_EXCEPTION_ADDRESS);
-	}
-	else if (level == spdlog::level::err)
-	{
-		if (!error_message.empty())
-		{
-			msg = fmt::format(fmt(ERROR_MESSAGE L"\n\n{}\n\n{}"), message, error_message);
-		}
-		else
-		{
-			msg = fmt::format(fmt(ERROR_MESSAGE L"\n\n{}"), message);
-		}
-
-		std::thread([error = std::move(msg)]
-		{
-			MessageBox(Window::NullWindow, error.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
-		}).detach();
-	}
-
-	if (!error_message.empty())
-	{
-		msg = fmt::format(fmt(L"{} ({})"), message, error_message);
-	}
-	else
-	{
-		msg = message;
-	}
-
 	spdlog::log({ file, line, function }, level, msg);
 }

@@ -1,4 +1,4 @@
-#include "ttblog.hpp"
+#include "log.hpp"
 #include <chrono>
 #include <spdlog/spdlog.h>
 #include <spdlog/logger.h>
@@ -7,10 +7,9 @@
 
 #include "appinfo.hpp"
 #include "config/config.hpp"
-#include "../uwp/uwp.hpp"
+//#include "../uwp/uwp.hpp"
 
 std::weak_ptr<lazy_file_sink_mt> Log::s_LogSink;
-bool Log::s_InitDone = false;
 
 std::time_t Log::GetProcessCreationTime()
 {
@@ -30,11 +29,11 @@ std::time_t Log::GetProcessCreationTime()
 std::filesystem::path Log::GetPath()
 {
 	std::filesystem::path name;
-	if (UWP::HasPackageIdentity())
+	/*if (UWP::HasPackageIdentity())
 	{
 		name = static_cast<std::wstring_view>(UWP::GetApplicationFolderPath(UWP::FolderType::Temporary));
 	}
-	else
+	else*/
 	{
 		name = std::filesystem::temp_directory_path();
 	}
@@ -65,14 +64,15 @@ void Log::Initialize()
 
 	logger->sinks().push_back(std::make_shared<spdlog::sinks::windebug_sink_st>());
 
+	std::shared_ptr<lazy_file_sink_mt> file_log;
 	try
 	{
-		auto file_log = std::make_shared<lazy_file_sink_mt>(GetPath());
+		file_log = std::make_shared<lazy_file_sink_mt>(GetPath());
 
+		// default verbosity
 		file_log->set_level(Config{ }.LogVerbosity);
-		s_LogSink = file_log;
 
-		logger->sinks().push_back(std::move(file_log));
+		logger->sinks().push_back(file_log);
 	}
 	catch (const std::system_error &err)
 	{
@@ -86,5 +86,5 @@ void Log::Initialize()
 	spdlog::set_default_logger(logger);
 	spdlog::set_error_handler(LogErrorHandler);
 
-	s_InitDone = true;
+	s_LogSink = file_log;
 }

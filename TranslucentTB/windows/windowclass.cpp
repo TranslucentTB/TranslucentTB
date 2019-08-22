@@ -3,7 +3,7 @@
 #include <WinBase.h>
 #include <winerror.h>
 
-#include "../log/ttberror.hpp"
+#include "../../ProgramLog/error.hpp"
 #include "window.hpp"
 
 std::unordered_map<ATOM, WindowClass::callback_t> WindowClass::m_CallbackMap;

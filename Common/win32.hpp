@@ -14,6 +14,7 @@
 #include <sysinfoapi.h>
 #include <utility>
 #include <wil/resource.h>
+#include <wil/win32_helpers.h>
 #include <winerror.h>
 #include <wingdi.h>
 #include <winver.h>
@@ -57,7 +58,7 @@ public:
 	// Gets location of the file of a process
 	inline static std::pair<std::filesystem::path, HRESULT> GetProcessFileName(HANDLE process)
 	{
-		DWORD exeLocation_size = LONG_PATH;
+		DWORD exeLocation_size = wil::max_extended_path_length + 1;
 
 		std::wstring exeLocation;
 		exeLocation.resize(exeLocation_size);

@@ -9,7 +9,7 @@
 
 #include "appinfo.hpp"
 #include "../ExplorerDetour/hook.hpp"
-#include "../log/ttberror.hpp"
+#include "../../ProgramLog/error.hpp"
 #include "util/numbers.hpp"
 #include "../uwp/uwp.hpp"
 #include "win32.hpp"

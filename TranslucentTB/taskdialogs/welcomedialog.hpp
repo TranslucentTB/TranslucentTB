@@ -4,7 +4,7 @@
 #include <fmt/format.h>
 
 #include "appinfo.hpp"
-#include "../log/ttberror.hpp"
+#include "../../ProgramLog/error.hpp"
 
 class WelcomeDialog : public TTBTaskDialog {
 private:

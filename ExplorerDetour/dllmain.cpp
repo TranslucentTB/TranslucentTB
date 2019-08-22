@@ -5,11 +5,8 @@
 
 #include "detourexception.hpp"
 #include "detourtransaction.hpp"
-#include "dlldata.hpp"
 #include "hook.hpp"
 #include "window.hpp"
-
-HINSTANCE DllData::m_hInst;
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 {
@@ -17,7 +14,6 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 	{
 	case DLL_PROCESS_ATTACH:
 		DisableThreadLibraryCalls(hinstDLL);
-		DllData::m_hInst = hinstDLL;
 		break;
 
 	case DLL_PROCESS_DETACH:

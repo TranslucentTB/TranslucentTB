@@ -3,7 +3,7 @@
 
 #include "appinfo.hpp"
 #include "../resources/ids.h"
-#include "../log/ttberror.hpp"
+#include "../../ProgramLog/error.hpp"
 #include "util/strings.hpp"
 #include "win32.hpp"
 

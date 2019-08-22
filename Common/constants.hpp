@@ -2,15 +2,6 @@
 #include <cstdint>
 #include <string_view>
 
-#pragma region Windows
-
-// https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#maximum-path-length-limitation
-// "Note: The maximum path of 32,767 characters is approximate."
-// smh
-static constexpr uint16_t LONG_PATH = 33000;
-
-#pragma endregion
-
 #pragma region App
 
 // Config file name

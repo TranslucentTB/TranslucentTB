@@ -2,7 +2,7 @@
 #include <WinBase.h>
 #include <WinUser.h>
 
-#include "log/ttberror.hpp"
+#include "../ProgramLog/error.hpp"
 
 std::wstring_view Localization::LoadLocalizedString(uint16_t resource, WORD lang, HINSTANCE hInst)
 {

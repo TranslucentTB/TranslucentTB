@@ -1,7 +1,7 @@
 #include "messagewindow.hpp"
 #include <algorithm>
 
-#include "../log/ttberror.hpp"
+#include "../../ProgramLog/error.hpp"
 
 thread_local std::unordered_map<unsigned int, MessageWindow::filter_t> MessageWindow::s_FilterMap;
 

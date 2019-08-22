@@ -2,7 +2,7 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
 
-#include "../log/ttberror.hpp"
+#include "../../ProgramLog/error.hpp"
 
 using namespace winrt;
 using namespace winrt::Windows::ApplicationModel;

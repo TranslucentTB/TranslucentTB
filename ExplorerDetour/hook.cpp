@@ -1,11 +1,11 @@
 #include "hook.hpp"
 #include <WinBase.h>
 #include <detours.h>
+#include <wil/win32_helpers.h>
 #include <winerror.h>
 #include <WinUser.h>
 
 #include "constants.hpp"
-#include "dlldata.hpp"
 #include "detourexception.hpp"
 #include "detourtransaction.hpp"
 
@@ -40,7 +40,7 @@ LRESULT Hook::CallWndProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept
 
 std::pair<HHOOK, HRESULT> Hook::HookExplorer(Window taskbar)
 {
-	HHOOK hook = SetWindowsHookEx(WH_CALLWNDPROC, CallWndProc, DllData::GetInstanceHandle(), taskbar.thread_id());
+	HHOOK hook = SetWindowsHookEx(WH_CALLWNDPROC, CallWndProc, wil::GetModuleInstanceHandle(), taskbar.thread_id());
 	if (!hook)
 	{
 		return { nullptr, HRESULT_FROM_WIN32(GetLastError()) };

@@ -1,5 +1,5 @@
 #include "contextmenu.hpp"
-#include "../log/ttberror.hpp"
+#include "../../ProgramLog/error.hpp"
 
 ContextMenu::ContextMenu(MessageWindow &window, const wchar_t *menuResource, HINSTANCE hInstance) : m_Window(window)
 {
