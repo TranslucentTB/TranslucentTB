@@ -59,8 +59,11 @@ void Log::LogErrorHandler(const std::string &message)
 
 void Log::Initialize()
 {
+	spdlog::flush_on(spdlog::level::off);
+	spdlog::set_error_handler(LogErrorHandler);
+
 	auto logger = std::make_shared<spdlog::logger>("");
-	spdlog::register_logger(logger);
+	spdlog::initialize_logger(logger);
 
 	logger->sinks().push_back(std::make_shared<spdlog::sinks::windebug_sink_st>());
 
@@ -83,8 +86,7 @@ void Log::Initialize()
 		HandleInitializationError(Error::MessageFromHresultError(err));
 	}
 
-	spdlog::set_default_logger(logger);
-	spdlog::set_error_handler(LogErrorHandler);
+	spdlog::set_default_logger(std::move(logger));
 
 	s_LogSink = file_log;
 }

@@ -142,6 +142,9 @@
       <!-- spdlog -->
       <PreprocessorDefinitions>SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE;SPDLOG_DISABLE_DEFAULT_LOGGER;SPDLOG_FMT_EXTERNAL;SPDLOG_NO_NAME;SPDLOG_NO_THREAD_ID;SPDLOG_NO_TLS;SPDLOG_WCHAR_TO_UTF8_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
+      <!-- wil -->
+      <PreprocessorDefinitions>RESULT_SUPPRESS_STATIC_INITIALIZERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+
       <!-- Windows -->
       <PreprocessorDefinitions>STRICT_TYPED_ITEMIDS;NOMINMAX;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
