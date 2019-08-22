@@ -92,7 +92,7 @@ std::wstring Error::FormatIRestrictedErrorInfo(HRESULT result, BSTR description)
 	return FormatHRESULT(result, Util::Trim({ description, SysStringLen(description) }));
 }
 
-void Error::Log(std::wstring_view msg, spdlog::level::level_enum level, const char* file, int line, const char* function)
+void Error::Log(std::wstring_view msg, spdlog::level::level_enum level, const char *file, int line, const char *function)
 {
 	spdlog::log({ file, line, function }, level, msg);
 }

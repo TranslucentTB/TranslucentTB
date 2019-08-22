@@ -46,7 +46,7 @@ namespace RapidJSONHelper {
 	}
 
 	template<class T>
-	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> & val, T &member, std::wstring_view key, const std::unordered_map<T, std::wstring_view> &map)
+	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val, T &member, std::wstring_view key, const std::unordered_map<T, std::wstring_view> &map)
 	{
 		if (!val.IsObject())
 		{

@@ -16,7 +16,7 @@ private:
 	static std::unordered_map<ATOM, callback_t> m_CallbackMap;
 	static LRESULT CALLBACK RawWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-	void LoadIcons(const wchar_t* iconResource);
+	void LoadIcons(const wchar_t *iconResource);
 	void DestroyIcons();
 
 public:

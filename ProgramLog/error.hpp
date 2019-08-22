@@ -32,7 +32,7 @@ namespace Error {
 	PROGRAMLOG_API std::wstring FormatIRestrictedErrorInfo(HRESULT result, BSTR description);
 
 	// Needs to be in DLL because spdlog log registry is per-module.
-	PROGRAMLOG_API void Log(std::wstring_view msg, spdlog::level::level_enum level, const char* file, int line, const char* function);
+	PROGRAMLOG_API void Log(std::wstring_view msg, spdlog::level::level_enum level, const char *file, int line, const char *function);
 
 	template<spdlog::level::level_enum level>
 	inline void Handle(std::wstring_view message, std::wstring_view error_message, const char *file, int line, const char *function)
