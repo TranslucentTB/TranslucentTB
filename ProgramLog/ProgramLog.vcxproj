@@ -10,6 +10,9 @@
       <PreprocessorDefinitions>PROGRAMLOG_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>runtimeobject.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)'=='Release'">fmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)'=='Debug'">fmtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>

@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/logger.h>
 #include <spdlog/sinks/msvc_sink.h>
+#include <wil/resource.h>
 #include <winrt/base.h>
 
 #include "appinfo.hpp"
@@ -43,12 +44,23 @@ std::filesystem::path Log::GetPath()
 
 void Log::HandleInitializationError(std::wstring exception)
 {
-	std::wstring message = L"Failed to determine log file path. Logs won't be available during this session.\n\n" + std::move(exception);
+	auto message = std::make_unique<std::wstring>(L"Failed to determine log file path. Logs won't be available during this session.\n\n" + std::move(exception));
 
-	std::thread([msg = std::move(message)]()
+	// DO NOT USE std::thread HERE
+	// std::thread as per standard needs to block until the code starts executing.
+	// This will cause a deadlock, because we are in DllMain and a thread cannot
+	// start executing until all DLL_THREAD_ATTACH routines run, which the system
+	// cannot do until our DllMain returns.
+	// We're creating a thread because it is said we should never call a user32.dll
+	// function while DllMain is running, even on another thread, so the "only runs
+	// after DllMain" behavior of that thread is actually benefitial.
+	wil::unique_handle thread(CreateThread(nullptr, 0, [](void *param) -> DWORD
 	{
-		MessageBox(Window::NullWindow, msg.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
-	}).detach();
+		std::unique_ptr<std::wstring> msg(static_cast<std::wstring *>(param));
+
+		MessageBox(Window::NullWindow, msg->c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+		return 0;
+	}, message.release(), 0, nullptr));
 }
 
 void Log::LogErrorHandler(const std::string &message)

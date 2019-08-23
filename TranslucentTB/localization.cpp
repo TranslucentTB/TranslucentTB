@@ -20,7 +20,7 @@ std::wstring_view Localization::LoadLocalizedString(uint16_t resource, WORD lang
 		return FAILED_LOADING_RESOURCE;
 	}
 
-	const wchar_t *str = reinterpret_cast<const wchar_t *>(LockResource(res));
+	auto str = static_cast<const wchar_t *>(LockResource(res));
 	if (!str)
 	{
 		LastErrorHandle(spdlog::level::warn, L"Failed to lock string resource.");
