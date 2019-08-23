@@ -566,7 +566,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 
 	DarkThemeManager::AllowDarkModeForApp();
 
-	// TODO: std::filesystem::filesystem_exception handling
+	// TODO: std::system_error and hresult_error handling
 
 	// Get configuration file paths
 	GetPaths();

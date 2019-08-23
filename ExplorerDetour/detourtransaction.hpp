@@ -1,8 +1,11 @@
 #pragma once
 #include "arch.h"
-#include <detours.h>
 #include <processthreadsapi.h>
+#include <detours.h>
+#include <TlHelp32.h>
 #include <type_traits>
+#include <vector>
+#include <wil/resource.h>
 #include <windef.h>
 #include <winerror.h>
 
@@ -20,8 +23,12 @@ private:
 	static constexpr std::wstring_view NULL_POINTER = L"The ppPointer parameter is null or points to a null pointer.";
 	static constexpr std::wstring_view FUNCTION_TAMPERED = L"Target function was changed by third party between steps of the transaction.";
 	static constexpr std::wstring_view UNKNOWN_ERROR = L"Unknown error";
+	static constexpr std::wstring_view CREATE_SNAPSHOT_FAILED = L"CreateToolhelp32Snapshot failed.";
+	static constexpr std::wstring_view BEGIN_THREAD_ENUM_FAILED = L"Thread32First failed.";
+	static constexpr std::wstring_view OPEN_THREAD_FAILED = L"OpenThread failed.";
 
 	bool m_IsTransacting;
+	std::vector<wil::unique_handle> m_Threads;
 
 public:
 	inline DetourTransaction() : m_IsTransacting(false)
@@ -47,11 +54,12 @@ public:
 	inline DetourTransaction(const DetourTransaction &) = delete;
 	inline DetourTransaction &operator =(const DetourTransaction &) = delete;
 
-	inline void update_thread(HANDLE hThread)
+	inline void update_thread(wil::unique_handle hThread)
 	{
-		const LONG result = DetourUpdateThread(hThread);
+		const LONG result = DetourUpdateThread(hThread.get());
 		if (result != NO_ERROR)
 		{
+			hThread.reset();
 			if (result == ERROR_NOT_ENOUGH_MEMORY)
 			{
 				throw DetourException(result, OUT_OF_MEMORY_IDENTITY);
@@ -61,11 +69,40 @@ public:
 				throw DetourException(result, UNKNOWN_ERROR);
 			}
 		}
+		else
+		{
+			m_Threads.push_back(std::move(hThread));
+		}
 	}
 
-	inline void update_current_thread()
+	inline void update_all_threads()
 	{
-		update_thread(GetCurrentThread());
+		DWORD pid = GetCurrentProcessId();
+		wil::unique_handle snapshot(CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, pid));
+		if (!snapshot)
+		{
+			throw DetourException(GetLastError(), CREATE_SNAPSHOT_FAILED);
+		}
+
+		THREADENTRY32 thread = { sizeof(thread) };
+		if (!Thread32First(snapshot.get(), &thread))
+		{
+			throw DetourException(GetLastError(), BEGIN_THREAD_ENUM_FAILED);
+		}
+
+		do
+		{
+			if (thread.th32OwnerProcessID == pid)
+			{
+				wil::unique_handle threadHandle(OpenThread(THREAD_SUSPEND_RESUME, false, thread.th32ThreadID));
+				if (!threadHandle)
+				{
+					throw DetourException(GetLastError(), OPEN_THREAD_FAILED);
+				}
+				update_thread(std::move(threadHandle));
+			}
+		}
+		while (Thread32Next(snapshot.get(), &thread));
 	}
 
 	template<Util::FunctionPointer T>

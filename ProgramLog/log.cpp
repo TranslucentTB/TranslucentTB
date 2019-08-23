@@ -30,7 +30,7 @@ std::time_t Log::GetProcessCreationTime()
 std::filesystem::path Log::GetPath()
 {
 	std::filesystem::path name;
-	/*if (UWP::HasPackageIdentity())
+	/*TODO test this case if (UWP::HasPackageIdentity())
 	{
 		name = static_cast<std::wstring_view>(UWP::GetApplicationFolderPath(UWP::FolderType::Temporary));
 	}

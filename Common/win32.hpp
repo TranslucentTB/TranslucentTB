@@ -73,6 +73,27 @@ public:
 		}
 	}
 
+	inline static std::pair<std::filesystem::path, HRESULT> GetModulePath(HMODULE mod)
+	{
+		const DWORD size = GetModuleFileName(mod, nullptr, 0);
+		if (!size)
+		{
+			return { { }, HRESULT_FROM_WIN32(GetLastError()) };
+		}
+
+		std::wstring location;
+		location.reserve(size);
+		if (DWORD used = GetModuleFileName(mod, location.data(), size))
+		{
+			location.resize(used);
+			return { std::move(location), S_OK };
+		}
+		else
+		{
+			return { { }, HRESULT_FROM_WIN32(GetLastError()) };
+		}
+	}
+
 	// Checks Windows build number.
 	inline static bool IsAtLeastBuild(uint32_t buildNumber)
 	{

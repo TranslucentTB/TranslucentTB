@@ -15,21 +15,21 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="hook.cpp">
+    <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dllmain.cpp">
+    <ClCompile Include="detour.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="hook.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="detourtransaction.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="detourexception.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="detour.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
