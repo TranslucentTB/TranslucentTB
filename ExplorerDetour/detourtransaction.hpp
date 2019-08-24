@@ -77,7 +77,7 @@ public:
 
 	inline void update_all_threads()
 	{
-		DWORD pid = GetCurrentProcessId();
+		const DWORD pid = GetCurrentProcessId();
 		wil::unique_handle snapshot(CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, pid));
 		if (!snapshot)
 		{
@@ -90,11 +90,12 @@ public:
 			throw DetourException(GetLastError(), BEGIN_THREAD_ENUM_FAILED);
 		}
 
+		const DWORD tid = GetCurrentThreadId();
 		do
 		{
-			if (thread.th32OwnerProcessID == pid)
+			if (thread.th32OwnerProcessID == pid && thread.th32ThreadID != tid)
 			{
-				wil::unique_handle threadHandle(OpenThread(THREAD_SUSPEND_RESUME, false, thread.th32ThreadID));
+				wil::unique_handle threadHandle(OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME, false, thread.th32ThreadID));
 				if (!threadHandle)
 				{
 					throw DetourException(GetLastError(), OPEN_THREAD_FAILED);

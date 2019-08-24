@@ -1,9 +1,11 @@
 #include "arch.h"
+#include <debugapi.h>
 #include <libloaderapi.h>
 #include <windef.h>
 #include <process.h>
 
 #include "detour.hpp"
+#include "detourexception.hpp"
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 {
@@ -12,7 +14,15 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 	case DLL_PROCESS_ATTACH:
 	{
 		DisableThreadLibraryCalls(hinstDLL);
-		Detour::Install();
+		try
+		{
+			Detour::Install();
+		}
+		catch (const DetourException &err)
+		{
+			OutputDebugString(err.message().c_str());
+			return FALSE;
+		}
 		break;
 	}
 

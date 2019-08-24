@@ -12,12 +12,12 @@ private:
 public:
 	inline DetourException(LONG errCode, std::wstring_view message) : m_ErrorCode(errCode), m_ErrorMessage(message) { }
 
-	inline LONG code() const
+	inline LONG code() const noexcept
 	{
 		return m_ErrorCode;
 	}
 
-	inline const std::wstring &message() const
+	inline const std::wstring &message() const noexcept
 	{
 		return m_ErrorMessage;
 	}
