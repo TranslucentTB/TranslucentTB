@@ -1,11 +1,8 @@
 #include "arch.h"
-#include <debugapi.h>
 #include <libloaderapi.h>
 #include <windef.h>
-#include <process.h>
 
-#include "detour.hpp"
-#include "detourexception.hpp"
+#include "explorerdetour.hpp"
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 {
@@ -14,24 +11,25 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 	case DLL_PROCESS_ATTACH:
 	{
 		DisableThreadLibraryCalls(hinstDLL);
-		try
+
+		// Are we in Explorer?
+		if (ExplorerDetour::IsInExplorer())
 		{
-			Detour::Install();
-		}
-		catch (const DetourException &err)
-		{
-			OutputDebugString(err.message().c_str());
-			return FALSE;
+			// Install the hook, fail otherwise.
+			if (!ExplorerDetour::Install())
+			{
+				return false;
+			}
 		}
 		break;
 	}
 
 	case DLL_PROCESS_DETACH:
 	{
-		Detour::Uninstall();
+		ExplorerDetour::Uninstall();
 		break;
 	}
 	}
 
-	return TRUE;
+	return true;
 }

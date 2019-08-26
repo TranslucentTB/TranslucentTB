@@ -18,7 +18,7 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="detour.cpp">
+    <ClCompile Include="explorerdetour.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,7 +29,7 @@
     <ClInclude Include="detourexception.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="detour.hpp">
+    <ClInclude Include="explorerdetour.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

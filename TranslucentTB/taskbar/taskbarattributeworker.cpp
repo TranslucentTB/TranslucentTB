@@ -2,7 +2,7 @@
 
 #include "appvisibilitysink.hpp"
 #include "constants.hpp"
-#include "../ExplorerDetour/hook.hpp"
+#include "../ExplorerDetour/explorerdetour.hpp"
 #include "../../ProgramLog/error.hpp"
 #include "undoc/winuser.hpp"
 #include "win32.hpp"
@@ -166,14 +166,14 @@ void TaskbarAttributeWorker::RefreshTaskbars()
 
 void TaskbarAttributeWorker::HookTaskbar(Window window)
 {
-	const auto [hook, hr] = Hook::HookExplorer(window);
-	if (SUCCEEDED(hr))
+	auto hook = ExplorerDetour::Inject(window);
+	if (hook)
 	{
-		m_Hooks.emplace_back(hook);
+		m_Hooks.push_back(std::move(hook));
 	}
 	else
 	{
-		HresultHandle(hr, spdlog::level::critical, L"Failed to set hook.");
+		LastErrorHandle(spdlog::level::critical, L"Failed to set hook.");
 	}
 }
 

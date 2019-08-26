@@ -16,11 +16,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="detour.cpp" />
+    <ClCompile Include="explorerdetour.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="detourexception.hpp" />
     <ClInclude Include="detourtransaction.hpp" />
-    <ClInclude Include="detour.hpp" />
+    <ClInclude Include="explorerdetour.hpp" />
   </ItemGroup>
 </Project>
