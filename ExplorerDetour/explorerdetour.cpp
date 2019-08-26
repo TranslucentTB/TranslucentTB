@@ -82,7 +82,7 @@ bool ExplorerDetour::Install() noexcept
 			transaction.attach(s_SetWindowCompositionAttribute, SetWindowCompositionAttributeDetour);
 			transaction.commit();
 		}
-		catch (const DetourException &)
+		catch (...)
 		{
 			return false;
 		}
@@ -104,11 +104,6 @@ void ExplorerDetour::Uninstall()
 		transaction.commit();
 
 		s_DetourInstalled = false;
-	}
-
-	if (!s_WorkerWindow.empty())
-	{
-		s_WorkerWindow = { };
 	}
 }
 
