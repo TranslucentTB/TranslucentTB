@@ -11,10 +11,16 @@ std::wstring Window::title() const
 {
 	std::wstring windowTitle;
 
-	const int titleSize = GetWindowTextLength(m_WindowHandle) + 1; // For the null terminator
-	windowTitle.resize(titleSize);
+	const int titleSize = GetWindowTextLength(m_WindowHandle);
+	if (!titleSize)
+	{
+		LastErrorHandle(spdlog::level::info, L"Getting size of title of a window failed.");
+		return windowTitle;
+	}
 
-	const int copiedChars = GetWindowText(m_WindowHandle, windowTitle.data(), titleSize);
+	// For the null terminator
+	windowTitle.resize(titleSize + 1);
+	const int copiedChars = GetWindowText(m_WindowHandle, windowTitle.data(), titleSize + 1);
 	if (!copiedChars)
 	{
 		LastErrorHandle(spdlog::level::info, L"Getting title of a window failed.");

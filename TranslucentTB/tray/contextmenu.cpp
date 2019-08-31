@@ -33,9 +33,9 @@ void ContextMenu::ShowAtCursor()
 		MessagePrint(spdlog::level::info, L"Failed to set window as foreground window.");
 	}
 
-	SetLastError(0);
-	unsigned int item = TrackPopupMenu(GetSubMenu(m_Menu.get(), 0), TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, 0, m_Window, nullptr);
-	if (!item && GetLastError() != 0)
+	SetLastError(NO_ERROR);
+	const unsigned int item = TrackPopupMenu(GetSubMenu(m_Menu.get(), 0), TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, 0, m_Window, nullptr);
+	if (!item && GetLastError() != NO_ERROR)
 	{
 		LastErrorHandle(spdlog::level::warn, L"Failed to open context menu.");
 		return;

@@ -10,7 +10,6 @@
 #ifndef RC_INVOKED
 
 #include <algorithm>
-#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <cwctype>
@@ -165,18 +164,12 @@ namespace Util {
 
 	// Checks if a string begins with any of the strings in the second parameter.
 	template<class T = std::initializer_list<std::wstring_view>>
-		requires std::ConvertibleTo</*std::iter_value_t*/typename std::iterator_traits<typename T::const_iterator>::value_type, std::wstring_view>
-	constexpr bool StringBeginsWithOneOf(std::wstring_view string, const T &strings_to_test)
+	constexpr bool StringBeginsWithOneOf(std::wstring_view string, const T &strings_to_test) noexcept
 	{
-		for (auto &&string_to_test : strings_to_test)
+		return std::any_of(std::cbegin(strings_to_test), std::cend(strings_to_test), [string](const auto &a) noexcept -> bool
 		{
-			if (string.starts_with(string_to_test))
-			{
-				return true;
-			}
-		}
-
-		return false;
+			return string.starts_with(a);
+		});
 	}
 
 	// Removes a string at the beginning of another string.
