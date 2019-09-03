@@ -123,7 +123,7 @@ wil::unique_hhook ExplorerDetour::Inject(Window window) noexcept
 			return nullptr;
 		}
 
-		const uint32_t content = 0xDEADBEEF;
+		static constexpr uint32_t content = 0xDEADBEEF;
 		if (!DetourCopyPayloadToProcess(proc.get(), EXPLORERDETOUR_PAYLOAD, &content, sizeof(content)))
 		{
 			return nullptr;
