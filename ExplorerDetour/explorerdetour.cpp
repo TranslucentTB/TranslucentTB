@@ -108,7 +108,8 @@ void ExplorerDetour::Uninstall()
 
 wil::unique_hhook ExplorerDetour::Inject(Window window) noexcept
 {
-	wil::unique_process_handle proc(OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_VM_READ, false, window.process_id()));
+	const DWORD pid = window.process_id();
+	wil::unique_process_handle proc(OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, pid));
 	if (!proc)
 	{
 		return nullptr;
@@ -116,6 +117,12 @@ wil::unique_hhook ExplorerDetour::Inject(Window window) noexcept
 
 	if (!DetourFindRemotePayload(proc.get(), EXPLORERDETOUR_PAYLOAD, nullptr))
 	{
+		proc.reset(OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_WRITE, false, pid));
+		if (!proc)
+		{
+			return nullptr;
+		}
+
 		const uint32_t content = 0xDEADBEEF;
 		if (!DetourCopyPayloadToProcess(proc.get(), EXPLORERDETOUR_PAYLOAD, &content, sizeof(content)))
 		{
