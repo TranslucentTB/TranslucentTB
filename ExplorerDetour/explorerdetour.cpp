@@ -34,8 +34,7 @@ LRESULT CALLBACK ExplorerDetour::CallWndProc(int nCode, WPARAM wParam, LPARAM lP
 
 bool ExplorerDetour::IsInExplorer() noexcept
 {
-	DWORD size;
-	return DetourFindPayloadEx(EXPLORERDETOUR_PAYLOAD, &size);
+	return DetourFindPayloadEx(EXPLORERDETOUR_PAYLOAD, nullptr);
 }
 
 bool ExplorerDetour::Install() noexcept
@@ -109,20 +108,22 @@ void ExplorerDetour::Uninstall()
 
 wil::unique_hhook ExplorerDetour::Inject(Window window) noexcept
 {
-	wil::unique_process_handle proc(OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_WRITE, false, window.process_id()));
+	wil::unique_process_handle proc(OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_VM_READ, false, window.process_id()));
 	if (!proc)
 	{
 		return nullptr;
 	}
 
-	uint32_t content = 0xDEADBEEF;
-	if (!DetourCopyPayloadToProcess(proc.get(), EXPLORERDETOUR_PAYLOAD, &content, sizeof(content)))
+	if (!DetourFindRemotePayload(proc.get(), EXPLORERDETOUR_PAYLOAD, nullptr))
 	{
-		return nullptr;
+		const uint32_t content = 0xDEADBEEF;
+		if (!DetourCopyPayloadToProcess(proc.get(), EXPLORERDETOUR_PAYLOAD, &content, sizeof(content)))
+		{
+			return nullptr;
+		}
 	}
 
 	proc.reset();
 
-	wil::unique_hhook ret(SetWindowsHookEx(WH_CALLWNDPROC, CallWndProc, wil::GetModuleInstanceHandle(), window.thread_id()));
-	return ret;
+	return wil::unique_hhook(SetWindowsHookEx(WH_CALLWNDPROC, CallWndProc, wil::GetModuleInstanceHandle(), window.thread_id()));
 }
