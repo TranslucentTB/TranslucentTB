@@ -49,7 +49,4 @@ static constexpr wchar_t CORE_WINDOW[] = L"Windows.UI.Core.CoreWindow";
 // UTF-8 Byte Order Mark
 static constexpr std::string_view UTF8_BOM = "\xEF\xBB\xBF";
 
-// UTF-16 Byte Order Mark
-static constexpr wchar_t UTF16_BOM[] = L"\uFEFF";
-
 #pragma endregion

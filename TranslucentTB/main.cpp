@@ -16,6 +16,7 @@
 
 // WIL and C++/WinRT
 #include <wil/filesystem.h>
+#include <wil/resource.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/TranslucentTB.Xaml.h>
 #include <winrt/TranslucentTB.Xaml.Pages.h>
@@ -23,8 +24,9 @@
 // RapidJSON
 #include <rapidjson/document.h>
 #include <rapidjson/encodings.h>
-#include <rapidjson/istreamwrapper.h>
-#include <rapidjson/ostreamwrapper.h>
+#include <rapidjson/encodedstream.h>
+#include <rapidjson/filereadstream.h>
+#include <rapidjson/filewritestream.h>
 #include <rapidjson/prettywriter.h>
 
 // Local stuff
@@ -149,23 +151,28 @@ void GetPaths()
 	run.config_file = run.config_folder / CONFIG_FILE;
 }
 
-// TODO: use native winapi file functions.
 Config LoadConfig(const std::filesystem::path &file)
 {
-	using namespace rapidjson;
-
 	Config cfg;
 
 	// This check is so that if the file gets deleted for whatever reason while the app is running, default configuration gets restored immediatly.
 	if (std::filesystem::is_regular_file(file))
 	{
-		std::wifstream fileStream(file);
+		if (wil::unique_file pfile; _wfopen_s(pfile.put(), run.config_file.c_str(), L"rb") == 0)
+		{
+			using namespace rapidjson;
 
-		WIStreamWrapper jsonStream(fileStream);
-		GenericDocument<UTF16LE<>> doc;
-		doc.ParseStream<kParseCommentsFlag>(jsonStream);
+			char buffer[256];
+			FileReadStream filestream(pfile.get(), buffer, std::size(buffer));
 
-		cfg.Deserialize(doc);
+			AutoUTFInputStream<uint32_t, FileReadStream> in(filestream);
+
+			GenericDocument<UTF16LE<>> doc;
+			doc.ParseStream<kParseCommentsFlag, AutoUTF<uint32_t>>(in);
+
+			// TODO: error reporting.
+			cfg.Deserialize(doc);
+		}
 	}
 
 	return cfg;
@@ -175,17 +182,22 @@ void SaveConfig(const Config &cfg, const std::filesystem::path &file, bool overr
 {
 	if (override || !cfg.DisableSaving)
 	{
-		using namespace rapidjson;
+		if (wil::unique_file file; _wfopen_s(file.put(), run.config_file.c_str(), L"wb") == 0)
+		{
+			using namespace rapidjson;
 
-		std::wofstream fileStream(file);
-		fileStream << L"// For reference on this format, see TODO" << std::endl;
+			char buffer[256];
+			FileWriteStream filestream(file.get(), buffer, std::size(buffer));
 
-		WOStreamWrapper jsonStream(fileStream);
-		PrettyWriter<WOStreamWrapper, UTF16LE<>, UTF16LE<>> writer(jsonStream);
+			typedef EncodedOutputStream<UTF16LE<>, FileWriteStream> OutputStream;
+			OutputStream out(filestream, true);
 
-		writer.StartObject();
-		cfg.Serialize(writer);
-		writer.EndObject();
+			PrettyWriter<OutputStream, UTF16LE<>, UTF16LE<>> writer(out);
+
+			writer.StartObject();
+			cfg.Serialize(writer);
+			writer.EndObject();
+		}
 	}
 }
 
@@ -565,8 +577,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 	}
 
 	DarkThemeManager::AllowDarkModeForApp();
-
-	// TODO: std::system_error and hresult_error handling
 
 	// Get configuration file paths
 	GetPaths();

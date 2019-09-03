@@ -116,7 +116,7 @@ public:
 			.lpVerb = L"open",
 			.lpFile = file.c_str(),
 			.nShow = SW_SHOW,
-			.lpClass = L"txtfile"
+			.lpClass = L".txt"
 		};
 
 		return ShellExec(info);

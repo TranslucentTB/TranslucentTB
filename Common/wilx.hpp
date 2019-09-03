@@ -45,6 +45,9 @@ namespace wilx {
 
 	template</*Util::FunctionPointer*/ auto close_fn>
 	using unique_any = wil::unique_any<impl::arg_t<decltype(close_fn), 0>, decltype(close_fn), close_fn>;
+
+	template</*Util::FunctionPointer*/ auto delete_fn>
+	using function_deleter = wil::function_deleter<decltype(delete_fn), delete_fn>;
 }
 
 #endif // _WILX_
