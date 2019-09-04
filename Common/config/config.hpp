@@ -8,7 +8,7 @@
 #include "optionaltaskbarappearance.hpp"
 #include "rapidjsonhelper.hpp"
 #include "taskbarappearance.hpp"
-#include "windowmatchlist.hpp"
+#include "windowfilter.hpp"
 
 enum class PeekBehavior {
 	AlwaysHide,                   // Always hide the button
@@ -33,8 +33,8 @@ public:
 	bool UseRegularAppearanceWhenPeeking;
 
 	// Advanced
-	WindowMatchList Whitelist;
-	WindowMatchList Blacklist;
+	WindowFilter Whitelist;
+	WindowFilter Blacklist;
 	bool HideTray;
 	bool DisableSaving;
 	spdlog::level::level_enum LogVerbosity;

@@ -38,20 +38,14 @@ public:
 	inline bool IsFiltered(Window window) const
 	{
 		// This is the fastest because we do the less string manipulation, so always try it first
-		if (!m_ClassList.empty())
+		if (!m_ClassList.empty() && m_ClassList.contains(window.classname()))
 		{
-			if (m_ClassList.contains(window.classname()))
-			{
-				return true;
-			}
+			return true;
 		}
 
-		if (!m_FileList.empty())
+		if (!m_FileList.empty() && m_FileList.contains(window.file().filename().native()))
 		{
-			if (m_FileList.contains(window.file().filename().native()))
-			{
-				return true;
-			}
+			return true;
 		}
 
 		// Do it last because titles can change, so it's less reliable.
