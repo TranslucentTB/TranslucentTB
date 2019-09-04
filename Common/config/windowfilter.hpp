@@ -12,7 +12,7 @@
 #include "../window.hpp"
 #endif
 
-class WindowMatchList {
+class WindowFilter {
 public:
 	template<class Writer>
 	inline void Serialize(Writer &writer) const
@@ -35,7 +35,7 @@ public:
 	}
 
 #ifdef _TRANSLUCENTTB_EXE
-	inline bool Matches(Window window) const
+	inline bool IsFiltered(Window window) const
 	{
 		// This is the fastest because we do the less string manipulation, so always try it first
 		if (!m_ClassList.empty())

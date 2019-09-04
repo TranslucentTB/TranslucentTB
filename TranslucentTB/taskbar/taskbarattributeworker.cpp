@@ -289,7 +289,7 @@ void TaskbarAttributeWorker::InsertWindow(Window window)
 	const HMONITOR monitor = window.monitor();
 
 	// Note: find() is done here after the checks because if not we get some weird crashes when changing DPI.
-	if ((WindowHelper::IsUserWindow(window) || m_Cfg.Whitelist.Matches(window)) && !m_Cfg.Blacklist.Matches(window))
+	if ((WindowHelper::IsUserWindow(window) || m_Cfg.Whitelist.IsFiltered(window)) && !m_Cfg.Blacklist.IsFiltered(window))
 	{
 		if (window.maximised())
 		{

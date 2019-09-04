@@ -20,7 +20,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)config\optionaltaskbarappearance.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config\rapidjsonhelper.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config\taskbarappearance.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)config\windowmatchlist.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)config\windowfilter.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)constants.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)redefgetcurrenttime.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)undefgetcurrenttime.h" />

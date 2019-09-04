@@ -83,7 +83,7 @@ public:
 
 		std::wstring location;
 		location.reserve(size);
-		if (DWORD used = GetModuleFileName(mod, location.data(), size))
+		if (const DWORD used = GetModuleFileName(mod, location.data(), size))
 		{
 			location.resize(used);
 			return { std::move(location), S_OK };

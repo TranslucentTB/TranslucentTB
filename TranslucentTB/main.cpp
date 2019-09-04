@@ -1,4 +1,5 @@
 // Standard API
+#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <functional>
@@ -168,9 +169,10 @@ Config LoadConfig(const std::filesystem::path &file)
 			AutoUTFInputStream<uint32_t, FileReadStream> in(filestream);
 
 			GenericDocument<UTF16LE<>> doc;
+			// TODO: ParseResult
 			doc.ParseStream<kParseCommentsFlag, AutoUTF<uint32_t>>(in);
 
-			// TODO: error reporting.
+			// TODO: exception throwing & catching
 			cfg.Deserialize(doc);
 		}
 	}
