@@ -12,6 +12,7 @@
 #include "../../ProgramLog/error.hpp"
 #include "util/numbers.hpp"
 #include "../uwp/uwp.hpp"
+#include "uwp.hpp"
 #include "win32.hpp"
 
 class AboutDialog : public TTBTaskDialog {

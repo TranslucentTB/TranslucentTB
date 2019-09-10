@@ -9,7 +9,7 @@
 
 namespace Util {
 	// Correct, allocation-free, on-the-fly generated seed sequence.
-	template<std::UniformRandomBitGenerator T>
+	template<std::uniform_random_bit_generator T>
 	class seed_generator {
 	private:
 		T m_Rng;
@@ -44,7 +44,7 @@ namespace Util {
 	}
 
 	// Gets a random number from an distribution of numbers, using a Mersenne Twister engine.
-	template<std::Integral T = int>
+	template<std::integral T = int>
 	inline T GetRandomNumber(T begin = std::numeric_limits<T>::min(), T end = std::numeric_limits<T>::max())
 	{
 		std::uniform_int_distribution<T> distribution(begin, end);
@@ -52,7 +52,7 @@ namespace Util {
 	}
 
 	// Gets a key which does not exist in the map yet.
-	template<std::Integral K, typename V>
+	template<std::integral K, typename V>
 	inline K GetSecret(const std::unordered_map<K, V> &map)
 	{
 		K secret;

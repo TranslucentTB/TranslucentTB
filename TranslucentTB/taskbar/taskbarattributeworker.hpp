@@ -34,6 +34,8 @@ private:
 	// rework peek button hiding
 	// handle title change
 
+	// USE ITERATORS TO AVOID RELOOKING UP THINGS CONSTANTLY
+
 	// Hooks
 	EventHook m_PeekUnpeekHook;
 	EventHook m_CloakUncloakHook;

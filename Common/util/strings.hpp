@@ -165,7 +165,7 @@ namespace Util {
 
 	// Checks if a string begins with any of the strings in the second parameter.
 	template<class T = std::initializer_list<std::wstring_view>>
-		requires std::ConvertibleTo</*std::iter_value_t*/typename std::iterator_traits<typename T::const_iterator>::value_type, std::wstring_view>
+		requires std::convertible_to</*std::iter_value_t*/typename std::iterator_traits<typename T::const_iterator>::value_type, std::wstring_view>
 	constexpr bool StringBeginsWithOneOf(std::wstring_view string, const T &strings_to_test)
 	{
 		for (auto &&string_to_test : strings_to_test)

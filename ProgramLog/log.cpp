@@ -4,11 +4,11 @@
 #include <spdlog/logger.h>
 #include <spdlog/sinks/msvc_sink.h>
 #include <wil/resource.h>
-#include <winrt/base.h>
+#include <winrt/Windows.Storage.h>
 
 #include "appinfo.hpp"
 #include "config/config.hpp"
-//#include "../uwp/uwp.hpp"
+#include "uwp.hpp"
 
 std::weak_ptr<lazy_file_sink_mt> Log::s_LogSink;
 
@@ -27,40 +27,24 @@ std::time_t Log::GetProcessCreationTime()
 	}
 }
 
-std::filesystem::path Log::GetPath()
+std::filesystem::path Log::GetPath() try
 {
-	std::filesystem::path name;
-	/*TODO test this case if (UWP::HasPackageIdentity())
+	std::filesystem::path path;
+	if (UWP::HasPackageIdentity())
 	{
-		name = static_cast<std::wstring_view>(UWP::GetApplicationFolderPath(UWP::FolderType::Temporary));
+		using namespace winrt::Windows::Storage;
+		path = std::wstring_view(ApplicationData::Current().TemporaryFolder().Path());
 	}
-	else*/
+	else
 	{
-		name = std::filesystem::temp_directory_path();
+		path = std::filesystem::temp_directory_path();
 	}
 
-	return name / fmt::format(fmt(L"{}.log"), GetProcessCreationTime());
+	return path / fmt::format(fmt(L"{}.log"), GetProcessCreationTime());
 }
-
-void Log::HandleInitializationError(std::wstring exception)
+catch (const std::system_error &err)
 {
-	auto message = std::make_unique<std::wstring>(L"Failed to determine log file path. Logs won't be available during this session.\n\n" + std::move(exception));
-
-	// DO NOT USE std::thread HERE
-	// std::thread as per standard needs to block until the code starts executing.
-	// This will cause a deadlock, because we are in DllMain and a thread cannot
-	// start executing until all DLL_THREAD_ATTACH routines run, which the system
-	// cannot do until our DllMain returns.
-	// We're creating a thread because it is said we should never call a user32.dll
-	// function while DllMain is running, even on another thread, so the "only runs
-	// after DllMain" behavior of that thread is actually benefitial.
-	wil::unique_handle thread(CreateThread(nullptr, 0, [](void *param) -> DWORD
-	{
-		std::unique_ptr<std::wstring> msg(static_cast<std::wstring *>(param));
-
-		MessageBox(Window::NullWindow, msg->c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
-		return 0;
-	}, message.release(), 0, nullptr));
+	winrt::throw_hresult(err.code().value());
 }
 
 void Log::LogErrorHandler(const std::string &message)
@@ -79,24 +63,9 @@ void Log::Initialize()
 
 	logger->sinks().push_back(std::make_shared<spdlog::sinks::windebug_sink_st>());
 
-	std::shared_ptr<lazy_file_sink_mt> file_log;
-	try
-	{
-		file_log = std::make_shared<lazy_file_sink_mt>(GetPath());
-
-		// default verbosity
-		file_log->set_level(Config{ }.LogVerbosity);
-
-		logger->sinks().push_back(file_log);
-	}
-	catch (const std::system_error &err)
-	{
-		HandleInitializationError(Error::MessageFromHRESULT(err.code().value()));
-	}
-	catch (const winrt::hresult_error &err)
-	{
-		HandleInitializationError(Error::MessageFromHresultError(err));
-	}
+	const auto file_log = std::make_shared<lazy_file_sink_mt>(GetPath);
+	file_log->set_level(Config{ }.LogVerbosity);
+	logger->sinks().push_back(file_log);
 
 	spdlog::set_default_logger(std::move(logger));
 

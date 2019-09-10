@@ -18,7 +18,9 @@
 // WIL and C++/WinRT
 #include <wil/filesystem.h>
 #include <wil/resource.h>
+#include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Storage.h>
 #include <winrt/TranslucentTB.Xaml.h>
 #include <winrt/TranslucentTB.Xaml.Pages.h>
 
@@ -48,8 +50,8 @@
 #include "windows/messagewindow.hpp"
 #include "window.hpp"
 #include "windows/windowclass.hpp"
+#include "uwp.hpp"
 #include "uwp/autostart.hpp"
-#include "uwp/uwp.hpp"
 #include "uwp/xamlpagehost.hpp"
 
 #pragma region Data
@@ -140,7 +142,8 @@ void GetPaths()
 	{
 		try
 		{
-			run.config_folder = static_cast<std::wstring_view>(UWP::GetApplicationFolderPath(UWP::FolderType::Roaming));
+			using namespace winrt::Windows::Storage;
+			run.config_folder = std::wstring_view(ApplicationData::Current().RoamingFolder().Path());
 		}
 		HresultErrorCatch(spdlog::level::critical, L"Getting application folder paths failed!");
 	}
@@ -330,7 +333,8 @@ winrt::fire_and_forget RefreshMenu(const Config &cfg, ContextMenu::Updater updat
 	updater.EnableItem(ID_AUTOSTART, false);
 	updater.CheckItem(ID_AUTOSTART, false);
 
-	winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::ApplicationModel::StartupTaskState> task;
+	using namespace winrt::Windows;
+	Foundation::IAsyncOperation<ApplicationModel::StartupTaskState> task;
 	if (UWP::HasPackageIdentity())
 	{
 		task = Autostart::GetStartupState();

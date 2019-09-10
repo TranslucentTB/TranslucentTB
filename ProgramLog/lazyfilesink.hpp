@@ -8,8 +8,11 @@
 #include <spdlog/sinks/base_sink.h>
 #include <string_view>
 #include <thread>
+#include <type_traits>
+#include <utility>
 #include <wil/resource.h>
 #include <wil/safecast.h>
+#include <winrt/base.h>
 
 #include "appinfo.hpp"
 #include "constants.hpp"
@@ -18,8 +21,9 @@
 
 template<typename Mutex>
 class lazy_file_sink final : public spdlog::sinks::base_sink<Mutex> {
+	using path_getter_t = std::add_pointer_t<std::filesystem::path()>;
 public:
-	explicit lazy_file_sink(std::filesystem::path file) : m_Tried(false), m_File(std::move(file)) { }
+	explicit lazy_file_sink(path_getter_t getter) : m_PathGetter(getter), m_Tried(false) { }
 
 	const std::filesystem::path &file() const noexcept { return m_File; }
 	bool opened() const noexcept { return bool(m_Handle); }
@@ -51,14 +55,27 @@ protected:
 	}
 
 private:
+	path_getter_t m_PathGetter;
 	bool m_Tried;
 	wil::unique_hfile m_Handle;
 	std::filesystem::path m_File;
 
 	void open()
 	{
-		if (!m_Tried && !m_Handle)
+		if (!std::exchange(m_Tried, true))
 		{
+			try
+			{
+				m_File = m_PathGetter();
+			}
+			catch (const winrt::hresult_error &err)
+			{
+				HresultErrorHandle(err, spdlog::level::trace, L"Failed to get log file path.");
+				handle_open_error(Error::MessageFromHresultError(err));
+
+				return;
+			}
+
 			m_Handle.reset(CreateFile(m_File.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, nullptr));
 			if (m_Handle)
 			{
@@ -66,19 +83,22 @@ private:
 			}
 			else
 			{
-				const HRESULT err = HRESULT_FROM_WIN32(GetLastError());
-				LastErrorHandle(spdlog::level::trace, L"Failed to create log file.");
-				std::thread([err]()
-				{
-					const std::wstring msg =
-						fmt::format(fmt(APP_NAME L" tried to log a message but the log file could not be created. Logs won't be available during this session.\n\n{}"), Error::MessageFromHRESULT(err));
-
-					MessageBox(Window::NullWindow, msg.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
-				}).detach();
+				const HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+				HresultHandle(hr, spdlog::level::trace, L"Failed to create log file.");
+				handle_open_error(Error::MessageFromHRESULT(hr));
 			}
-
-			m_Tried = true;
 		}
+	}
+
+	void handle_open_error(std::wstring err)
+	{
+		std::thread([errStr = std::move(err)]
+		{
+			const std::wstring msg =
+				fmt::format(fmt(L"Failed to create log file. Logs won't be available during this session.\n\n{}"), errStr);
+
+			MessageBox(Window::NullWindow, msg.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+		}).detach();
 	}
 
 	template<typename T>

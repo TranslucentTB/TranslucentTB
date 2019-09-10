@@ -288,12 +288,14 @@ void TaskbarAttributeWorker::InsertWindow(Window window)
 {
 	const HMONITOR monitor = window.monitor();
 
+	const auto hash = m_Taskbars.hash_function()(monitor);
+
 	// Note: find() is done here after the checks because if not we get some weird crashes when changing DPI.
 	if ((WindowHelper::IsUserWindow(window) || m_Cfg.Whitelist.IsFiltered(window)) && !m_Cfg.Blacklist.IsFiltered(window))
 	{
 		if (window.maximised())
 		{
-			if (const auto iter = m_Taskbars.find(monitor); iter != m_Taskbars.end())
+			if (const auto iter = m_Taskbars.find(monitor/*, hash*/); iter != m_Taskbars.end())
 			{
 				iter->second.MaximisedWindows.insert(window);
 				iter->second.NormalWindows.erase(window);
@@ -303,7 +305,7 @@ void TaskbarAttributeWorker::InsertWindow(Window window)
 		}
 		else if (!window.minimised())
 		{
-			if (const auto iter = m_Taskbars.find(monitor); iter != m_Taskbars.end())
+			if (const auto iter = m_Taskbars.find(monitor/*, hash*/); iter != m_Taskbars.end())
 			{
 				iter->second.MaximisedWindows.erase(window);
 				iter->second.NormalWindows.insert(window);
@@ -313,7 +315,7 @@ void TaskbarAttributeWorker::InsertWindow(Window window)
 		}
 	}
 
-	if (const auto iter = m_Taskbars.find(monitor); iter != m_Taskbars.end())
+	if (const auto iter = m_Taskbars.find(monitor/*, hash*/); iter != m_Taskbars.end())
 	{
 		iter->second.MaximisedWindows.erase(window);
 		iter->second.NormalWindows.erase(window);

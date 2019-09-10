@@ -17,7 +17,6 @@ private:
 
 	static std::time_t GetProcessCreationTime();
 	static std::filesystem::path GetPath();
-	static void HandleInitializationError(std::wstring exception);
 	static void LogErrorHandler(const std::string &message);
 	static void Initialize();
 
