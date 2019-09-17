@@ -27,7 +27,7 @@ std::time_t Log::GetProcessCreationTime()
 	}
 }
 
-std::filesystem::path Log::GetPath() try
+std::filesystem::path Log::GetPath()
 {
 	std::filesystem::path path;
 	if (UWP::HasPackageIdentity())
@@ -41,10 +41,6 @@ std::filesystem::path Log::GetPath() try
 	}
 
 	return path / fmt::format(fmt(L"{}.log"), GetProcessCreationTime());
-}
-catch (const std::system_error &err)
-{
-	winrt::throw_hresult(err.code().value());
 }
 
 void Log::LogErrorHandler(const std::string &message)

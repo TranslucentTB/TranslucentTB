@@ -1,7 +1,7 @@
 // Standard API
+#include <cerrno>
 #include <cstdio>
 #include <filesystem>
-#include <fstream>
 #include <functional>
 #include <string>
 #include <string_view>
@@ -157,12 +157,12 @@ void GetPaths()
 
 Config LoadConfig(const std::filesystem::path &file)
 {
-	Config cfg;
-
 	// This check is so that if the file gets deleted for whatever reason while the app is running, default configuration gets restored immediatly.
 	if (std::filesystem::is_regular_file(file))
 	{
-		if (wil::unique_file pfile; _wfopen_s(pfile.put(), run.config_file.c_str(), L"rb") == 0)
+		wil::unique_file pfile;
+		const errno_t err = _wfopen_s(pfile.put(), file.c_str(), L"rb");
+		if (err == 0)
 		{
 			using namespace rapidjson;
 
@@ -175,26 +175,34 @@ Config LoadConfig(const std::filesystem::path &file)
 			// TODO: ParseResult
 			doc.ParseStream<kParseCommentsFlag, AutoUTF<uint32_t>>(in);
 
+			Config cfg;
 			// TODO: exception throwing & catching
 			cfg.Deserialize(doc);
+			return cfg;
+		}
+		else
+		{
+			ErrnoTHandle(err, spdlog::level::err, L"Failed to load configuration!");
 		}
 	}
 
-	return cfg;
+	return { };
 }
 
 void SaveConfig(const Config &cfg, const std::filesystem::path &file, bool override = false)
 {
 	if (override || !cfg.DisableSaving)
 	{
-		if (wil::unique_file file; _wfopen_s(file.put(), run.config_file.c_str(), L"wb") == 0)
+		wil::unique_file pfile;
+		const errno_t err = _wfopen_s(pfile.put(), file.c_str(), L"wb");
+		if (err == 0)
 		{
 			using namespace rapidjson;
 
 			char buffer[256];
-			FileWriteStream filestream(file.get(), buffer, std::size(buffer));
+			FileWriteStream filestream(pfile.get(), buffer, std::size(buffer));
 
-			typedef EncodedOutputStream<UTF16LE<>, FileWriteStream> OutputStream;
+			using OutputStream = EncodedOutputStream<UTF16LE<>, FileWriteStream>;
 			OutputStream out(filestream, true);
 
 			PrettyWriter<OutputStream, UTF16LE<>, UTF16LE<>> writer(out);
@@ -202,6 +210,10 @@ void SaveConfig(const Config &cfg, const std::filesystem::path &file, bool overr
 			writer.StartObject();
 			cfg.Serialize(writer);
 			writer.EndObject();
+		}
+		else
+		{
+			ErrnoTHandle(err, spdlog::level::err, L"Failed to save configuration!");
 		}
 	}
 }

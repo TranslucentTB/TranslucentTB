@@ -1,10 +1,12 @@
 #pragma once
 #include "arch.h"
+#include <cerrno>
 #include <fmt/format.h>
 #include <roerrorapi.h>
 #include <spdlog/common.h>
 #include <string>
 #include <string_view>
+#include <system_error>
 #include <thread>
 #include <windef.h>
 #include <winerror.h>
@@ -27,6 +29,8 @@ namespace Error {
 	PROGRAMLOG_API std::wstring MessageFromHRESULT(HRESULT result);
 	PROGRAMLOG_API std::wstring MessageFromIRestrictedErrorInfo(IRestrictedErrorInfo *info);
 	PROGRAMLOG_API std::wstring MessageFromHresultError(const winrt::hresult_error &err);
+	PROGRAMLOG_API std::wstring MessageFromErrno(errno_t err);
+	PROGRAMLOG_API std::wstring MessageFromStdSystemError(const std::system_error &err);
 
 	PROGRAMLOG_API std::wstring FormatHRESULT(HRESULT result, std::wstring_view description);
 	PROGRAMLOG_API std::wstring FormatIRestrictedErrorInfo(HRESULT result, BSTR description);
@@ -113,6 +117,10 @@ namespace Error {
 
 #define HresultHandle(__hresult, __level, __message) (Error::MacroCommon<(__level)>((__hresult), (__message), __ERROR_LOCATION))
 #define LastErrorHandle(__level, __message) (HresultHandle(HRESULT_FROM_WIN32(GetLastError()), (__level), (__message)))
+#define ErrnoTHandle(__err, __level, __message) (Error::Handle<(__level)>((__message), Error::MessageFromErrno((__err)), __ERROR_LOCATION))
 
 #define HresultErrorHandle(__exception, __level, __message) (Error::Handle<(__level)>((__message), Error::MessageFromHresultError((__exception)), __ERROR_LOCATION))
 #define HresultErrorCatch(__level, __message) catch (const winrt::hresult_error &__exception) { HresultErrorHandle(__exception, (__level), (__message)); }
+
+#define StdSystemErrorHandle(__exception, __level, __message) (Error::Handle<(__level)>((__message), Error::MessageFromStdSystemError((__exception)), __ERROR_LOCATION))
+#define StdSystemErrorCatch(__level, __message) catch (const std::system_error &__exception) { StdSystemErrorHandle(__exception, (__level), (__message)); }

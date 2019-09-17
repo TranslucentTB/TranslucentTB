@@ -26,7 +26,7 @@ public:
 	explicit lazy_file_sink(path_getter_t getter) : m_PathGetter(getter), m_Tried(false) { }
 
 	const std::filesystem::path &file() const noexcept { return m_File; }
-	bool opened() const noexcept { return bool(m_Handle); }
+	bool opened() const noexcept { return m_Handle.is_valid(); }
 	bool tried() const noexcept { return m_Tried; }
 
 protected:
@@ -72,6 +72,13 @@ private:
 			{
 				HresultErrorHandle(err, spdlog::level::trace, L"Failed to get log file path.");
 				handle_open_error(Error::MessageFromHresultError(err));
+
+				return;
+			}
+			catch (const std::filesystem::filesystem_error &err)
+			{
+				StdSystemErrorHandle(err, spdlog::level::trace, L"Failed to get log file path.");
+				handle_open_error(Error::MessageFromStdSystemError(err));
 
 				return;
 			}
