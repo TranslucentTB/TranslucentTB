@@ -172,13 +172,17 @@ Config LoadConfig(const std::filesystem::path &file)
 			AutoUTFInputStream<uint32_t, FileReadStream> in(filestream);
 
 			GenericDocument<UTF16LE<>> doc;
-			// TODO: ParseResult
-			doc.ParseStream<kParseCommentsFlag, AutoUTF<uint32_t>>(in);
-
-			Config cfg;
-			// TODO: exception throwing & catching
-			cfg.Deserialize(doc);
-			return cfg;
+			if (ParseResult result = doc.ParseStream<kParseCommentsFlag, AutoUTF<uint32_t>>(in))
+			{
+				Config cfg;
+				// TODO: exception throwing & catching
+				cfg.Deserialize(doc);
+				return cfg;
+			}
+			else
+			{
+				ParseErrorCodeHandle(result.Code(), spdlog::level::err, L"Failed to parse configuration!");
+			}
 		}
 		else
 		{

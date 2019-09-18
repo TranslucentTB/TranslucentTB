@@ -2,6 +2,8 @@
 #include "arch.h"
 #include <cerrno>
 #include <fmt/format.h>
+#include "util/strings.hpp"
+#include <rapidjson/error/en.h>
 #include <roerrorapi.h>
 #include <spdlog/common.h>
 #include <string>
@@ -15,7 +17,6 @@
 
 #include "api.h"
 #include "appinfo.hpp"
-#include "util/strings.hpp"
 #include "window.hpp"
 
 #define FATAL_ERROR_MESSAGE APP_NAME L" has encountered a fatal error and cannot continue executing."
@@ -118,6 +119,7 @@ namespace Error {
 #define HresultHandle(__hresult, __level, __message) (Error::MacroCommon<(__level)>((__hresult), (__message), __ERROR_LOCATION))
 #define LastErrorHandle(__level, __message) (HresultHandle(HRESULT_FROM_WIN32(GetLastError()), (__level), (__message)))
 #define ErrnoTHandle(__err, __level, __message) (Error::Handle<(__level)>((__message), Error::MessageFromErrno((__err)), __ERROR_LOCATION))
+#define ParseErrorCodeHandle(__code, __level, __message) (Error::Handle<(__level)>((__message), rapidjson::GetParseError_En((__code)), __ERROR_LOCATION))
 
 #define HresultErrorHandle(__exception, __level, __message) (Error::Handle<(__level)>((__message), Error::MessageFromHresultError((__exception)), __ERROR_LOCATION))
 #define HresultErrorCatch(__level, __message) catch (const winrt::hresult_error &__exception) { HresultErrorHandle(__exception, (__level), (__message)); }
