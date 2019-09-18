@@ -1,10 +1,20 @@
 #pragma once
+#include <cerrno>
+#include <cstdio>
+#include <filesystem>
 #include <rapidjson/document.h>
+#include <rapidjson/encodedstream.h>
 #include <rapidjson/encodings.h>
+#include <rapidjson/error/error.h>
+#include <rapidjson/filereadstream.h>
+#include <rapidjson/filewritestream.h>
+#include <rapidjson/prettywriter.h>
 #include <spdlog/common.h>
 #include <string_view>
 #include <unordered_map>
+#include <wil/resource.h>
 
+#include "../../ProgramLog/error.hpp"
 #include "optionaltaskbarappearance.hpp"
 #include "rapidjsonhelper.hpp"
 #include "taskbarappearance.hpp"
@@ -78,7 +88,7 @@ public:
 		RapidJSONHelper::Serialize(writer, LogVerbosity, LOG_KEY, s_LogMap);
 	}
 
-	void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val)
+	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val)
 	{
 		if (!val.IsObject())
 		{
@@ -98,6 +108,73 @@ public:
 		RapidJSONHelper::Deserialize(val, HideTray, TRAY_KEY);
 		RapidJSONHelper::Deserialize(val, DisableSaving, SAVING_KEY);
 		RapidJSONHelper::Deserialize(val, LogVerbosity, LOG_KEY, s_LogMap);
+	}
+
+	inline void Save(const std::filesystem::path& file, bool ignoreDisabledSaving = false)
+	{
+		if (ignoreDisabledSaving || !DisableSaving)
+		{
+			wil::unique_file pfile;
+			const errno_t err = _wfopen_s(pfile.put(), file.c_str(), L"wb");
+			if (err == 0)
+			{
+				using namespace rapidjson;
+
+				char buffer[256];
+				FileWriteStream filestream(pfile.get(), buffer, std::size(buffer));
+
+				using OutputStream = EncodedOutputStream<UTF16LE<>, FileWriteStream>;
+				OutputStream out(filestream, true);
+
+				PrettyWriter<OutputStream, UTF16LE<>, UTF16LE<>> writer(out);
+
+				writer.StartObject();
+				Serialize(writer);
+				writer.EndObject();
+			}
+			else
+			{
+				ErrnoTHandle(err, spdlog::level::err, L"Failed to save configuration!");
+			}
+		}
+	}
+
+	inline static Config Load(const std::filesystem::path &file)
+	{
+		// This check is so that if the file gets deleted for whatever reason while the app is running, default configuration gets restored immediatly.
+		if (std::filesystem::is_regular_file(file))
+		{
+			wil::unique_file pfile;
+			const errno_t err = _wfopen_s(pfile.put(), file.c_str(), L"rb");
+			if (err == 0)
+			{
+				using namespace rapidjson;
+
+				char buffer[256];
+				FileReadStream filestream(pfile.get(), buffer, std::size(buffer));
+
+				AutoUTFInputStream<uint32_t, FileReadStream> in(filestream);
+
+				GenericDocument<UTF16LE<>> doc;
+				if (ParseResult result = doc.ParseStream<kParseCommentsFlag, AutoUTF<uint32_t>>(in))
+				{
+					Config cfg;
+					// TODO: exception throwing & catching
+					cfg.Deserialize(doc);
+					return cfg;
+				}
+				else
+				{
+					ParseErrorCodeHandle(result.Code(), spdlog::level::err, L"Failed to parse configuration!");
+				}
+			}
+			else
+			{
+				ErrnoTHandle(err, spdlog::level::err, L"Failed to load configuration!");
+			}
+		}
+
+		return { };
 	}
 
 private:

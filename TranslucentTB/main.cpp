@@ -1,6 +1,4 @@
 // Standard API
-#include <cerrno>
-#include <cstdio>
 #include <filesystem>
 #include <functional>
 #include <string>
@@ -23,14 +21,6 @@
 #include <winrt/Windows.Storage.h>
 #include <winrt/TranslucentTB.Xaml.h>
 #include <winrt/TranslucentTB.Xaml.Pages.h>
-
-// RapidJSON
-#include <rapidjson/document.h>
-#include <rapidjson/encodings.h>
-#include <rapidjson/encodedstream.h>
-#include <rapidjson/filereadstream.h>
-#include <rapidjson/filewritestream.h>
-#include <rapidjson/prettywriter.h>
 
 // Local stuff
 #include "appinfo.hpp"
@@ -155,73 +145,6 @@ void GetPaths()
 	run.config_file = run.config_folder / CONFIG_FILE;
 }
 
-Config LoadConfig(const std::filesystem::path &file)
-{
-	// This check is so that if the file gets deleted for whatever reason while the app is running, default configuration gets restored immediatly.
-	if (std::filesystem::is_regular_file(file))
-	{
-		wil::unique_file pfile;
-		const errno_t err = _wfopen_s(pfile.put(), file.c_str(), L"rb");
-		if (err == 0)
-		{
-			using namespace rapidjson;
-
-			char buffer[256];
-			FileReadStream filestream(pfile.get(), buffer, std::size(buffer));
-
-			AutoUTFInputStream<uint32_t, FileReadStream> in(filestream);
-
-			GenericDocument<UTF16LE<>> doc;
-			if (ParseResult result = doc.ParseStream<kParseCommentsFlag, AutoUTF<uint32_t>>(in))
-			{
-				Config cfg;
-				// TODO: exception throwing & catching
-				cfg.Deserialize(doc);
-				return cfg;
-			}
-			else
-			{
-				ParseErrorCodeHandle(result.Code(), spdlog::level::err, L"Failed to parse configuration!");
-			}
-		}
-		else
-		{
-			ErrnoTHandle(err, spdlog::level::err, L"Failed to load configuration!");
-		}
-	}
-
-	return { };
-}
-
-void SaveConfig(const Config &cfg, const std::filesystem::path &file, bool override = false)
-{
-	if (override || !cfg.DisableSaving)
-	{
-		wil::unique_file pfile;
-		const errno_t err = _wfopen_s(pfile.put(), file.c_str(), L"wb");
-		if (err == 0)
-		{
-			using namespace rapidjson;
-
-			char buffer[256];
-			FileWriteStream filestream(pfile.get(), buffer, std::size(buffer));
-
-			using OutputStream = EncodedOutputStream<UTF16LE<>, FileWriteStream>;
-			OutputStream out(filestream, true);
-
-			PrettyWriter<OutputStream, UTF16LE<>, UTF16LE<>> writer(out);
-
-			writer.StartObject();
-			cfg.Serialize(writer);
-			writer.EndObject();
-		}
-		else
-		{
-			ErrnoTHandle(err, spdlog::level::err, L"Failed to save configuration!");
-		}
-	}
-}
-
 void SetConfig(Config &current, Config &&newConfig, TrayIcon &icon)
 {
 	if (current.HideTray != newConfig.HideTray)
@@ -248,7 +171,7 @@ bool CheckAndRunWelcome()
 {
 	if (!std::filesystem::is_regular_file(run.config_file))
 	{
-		SaveConfig({ }, run.config_file);
+		Config{ }.Save(run.config_file);
 		if (!WelcomeDialog(run.config_file).Run())
 		{
 			std::filesystem::remove(run.config_file);
@@ -448,14 +371,14 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 
 	const auto save_and_exit = [&cfg](...)
 	{
-		SaveConfig(cfg, run.config_file);
+		cfg.Save(run.config_file);
 		PostQuitMessage(0);
 		return TRUE;
 	};
 
 	window.RegisterCallback(WM_FILECHANGED, [&cfg](...)
 	{
-		SetConfig(cfg, LoadConfig(run.config_file), tray);
+		SetConfig(cfg, Config::Load(run.config_file), tray);
 		return TRUE;
 	});
 
@@ -476,7 +399,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 		if (wParam)
 		{
 			// The app can be closed anytime after processing this message. Save the settings.
-			SaveConfig(cfg, run.config_file);
+			cfg.Save(run.config_file);
 		}
 
 		return 0;
@@ -516,14 +439,14 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 
 	menu.RegisterCallback(ID_EDITSETTINGS, [&cfg]
 	{
-		SaveConfig(cfg, run.config_file);
+		cfg.Save(run.config_file);
 		// TODO: update
 		win32::EditFile(run.config_file);
 	});
 	menu.RegisterCallback(ID_RETURNTODEFAULTSETTINGS, [&cfg]
 	{
 		// Automatically reloaded by filesystem watcher.
-		SaveConfig({ }, run.config_file);
+		Config{ }.Save(run.config_file);
 	});
 	BindBool(menu, ID_DISABLESAVING, cfg.DisableSaving);
 	menu.RegisterCallback(ID_HIDETRAY, [&cfg]
@@ -542,7 +465,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 		{
 			cfg.HideTray = true;
 			tray.Hide();
-			SaveConfig(cfg, run.config_file);
+			cfg.Save(run.config_file);
 		}
 	});
 	menu.RegisterCallback(ID_DUMPWORKER, std::bind(&TaskbarAttributeWorker::DumpState, &worker));
@@ -610,7 +533,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 	}
 
 	// Parse our configuration
-	static Config cfg = LoadConfig(run.config_file);
+	static Config cfg = Config::Load(run.config_file);
 	Log::SetLevel(cfg.LogVerbosity);
 	//TODO if (!Config::ParseCommandLine())
 	//{
