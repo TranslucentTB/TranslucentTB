@@ -110,7 +110,7 @@ public:
 		RapidJSONHelper::Deserialize(val, LogVerbosity, LOG_KEY, s_LogMap);
 	}
 
-	inline void Save(const std::filesystem::path& file, bool ignoreDisabledSaving = false)
+	inline void Save(const std::filesystem::path &file, bool ignoreDisabledSaving = false)
 	{
 		if (ignoreDisabledSaving || !DisableSaving)
 		{
