@@ -199,9 +199,9 @@ void BindByMap(ContextMenu &menu, const std::unordered_map<T, unsigned int> &map
 {
 	for (const auto &[new_value, id] : map)
 	{
-		menu.RegisterCallback(id, [&new_value, set = std::move(setter)]
+		menu.RegisterCallback(id, [&new_value, setter]
 		{
-			set(new_value);
+			setter(new_value);
 		});
 	}
 
