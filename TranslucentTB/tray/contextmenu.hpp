@@ -109,7 +109,10 @@ public:
 		unsigned int item = cookie & 0xFFFFFFFF;
 		unsigned short secret = (cookie >> 32) & 0xFFFF;
 
-		m_MenuCallbackMap[item].erase(secret);
+		if (const auto iter = m_MenuCallbackMap.find(item); iter != m_MenuCallbackMap.end())
+		{
+			iter->second.erase(secret);
+		}
 	}
 
 	inline MENUREFRESHCOOKIE RegisterCustomRefresh(updater_t function)

@@ -64,7 +64,10 @@ public:
 		unsigned int message = cookie & 0xFFFFFFFF;
 		unsigned short secret = (cookie >> 32) & 0xFFFF;
 
-		m_CallbackMap[message].erase(secret);
+		if (const auto iter = m_CallbackMap.find(message); iter != m_CallbackMap.end())
+		{
+			iter->second.erase(secret);
+		}
 	}
 
 	~MessageWindow();

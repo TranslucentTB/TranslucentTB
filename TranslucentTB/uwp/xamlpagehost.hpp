@@ -15,6 +15,8 @@
 #include <winrt/TranslucentTB.Xaml.Pages.h>
 #include "redefgetcurrenttime.h"
 
+#include "win32.hpp"
+
 enum class CenteringStrategy {
 	Mouse,
 	Monitor

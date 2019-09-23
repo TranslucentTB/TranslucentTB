@@ -16,7 +16,7 @@ LRESULT WindowClass::RawWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		LastErrorHandle(spdlog::level::critical, L"Failed to get class atom!");
 	}
 
-	return m_CallbackMap[atom](hwnd, msg, wParam, lParam);
+	return m_CallbackMap.at(atom)(hwnd, msg, wParam, lParam);
 }
 
 void WindowClass::LoadIcons(const wchar_t *iconResource)

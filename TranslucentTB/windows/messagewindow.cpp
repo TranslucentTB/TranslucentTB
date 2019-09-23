@@ -7,11 +7,10 @@ thread_local std::unordered_map<unsigned int, MessageWindow::filter_t> MessageWi
 
 LRESULT MessageWindow::WindowProcedure(Window window, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
 {
-	const auto &callbackMap = m_CallbackMap[uMsg];
-	if (!callbackMap.empty())
+	if (const auto iter = m_CallbackMap.find(uMsg); iter != m_CallbackMap.end() && !iter->second.empty())
 	{
 		long result = 0;
-		for (const auto &[_, callback] : callbackMap)
+		for (const auto &[_, callback] : iter->second)
 		{
 			result = std::max(callback(wParam, lParam), result);
 		}

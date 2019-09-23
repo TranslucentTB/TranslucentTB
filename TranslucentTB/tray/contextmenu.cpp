@@ -35,13 +35,17 @@ void ContextMenu::ShowAtCursor()
 
 	SetLastError(NO_ERROR);
 	const unsigned int item = TrackPopupMenu(GetSubMenu(m_Menu.get(), 0), TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, 0, m_Window, nullptr);
-	if (!item && GetLastError() != NO_ERROR)
+	if (!item)
 	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to open context menu.");
+		if (GetLastError() != NO_ERROR)
+		{
+			LastErrorHandle(spdlog::level::warn, L"Failed to open context menu.");
+		}
+
 		return;
 	}
 
-	const auto &callbackMap = m_MenuCallbackMap[item];
+	const auto &callbackMap = m_MenuCallbackMap.at(item);
 	if (!callbackMap.empty())
 	{
 		for (const auto &[_, callback] : callbackMap)
