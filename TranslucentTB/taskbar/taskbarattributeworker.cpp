@@ -1,6 +1,5 @@
 #include "taskbarattributeworker.hpp"
 
-#include "appvisibilitysink.hpp"
 #include "constants.hpp"
 #include "../ExplorerDetour/explorerdetour.hpp"
 #include "../../ProgramLog/error.hpp"
@@ -14,9 +13,9 @@ const PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE TaskbarAttributeWorker::SetWindowComp
 void TaskbarAttributeWorker::OnAeroPeekEnterExit(DWORD event, ...)
 {
 	m_PeekActive = event == EVENT_SYSTEM_PEEKSTART;
-	for (const auto &[monitor, _] : m_Taskbars)
+	for (auto iter = m_Taskbars.begin(); iter != m_Taskbars.end(); ++iter)
 	{
-		RefreshAttribute(monitor);
+		RefreshAttribute(iter);
 	}
 }
 
@@ -24,15 +23,20 @@ void TaskbarAttributeWorker::OnWindowStateChange(DWORD, Window window, LONG idOb
 {
 	if (idObject == OBJID_WINDOW && window.valid())
 	{
-		InsertWindow(window);
+		const auto iter = InsertWindow(window);
 
-		const HMONITOR monitor = window.monitor();
-		if ((monitor == m_MainTaskbarMonitor && (m_Cfg.Peek == PeekBehavior::WindowMaximisedOnMainMonitor || m_Cfg.Peek == PeekBehavior::DesktopIsForegroundWindow)) ||
-			m_Cfg.Peek == PeekBehavior::WindowMaximisedOnAnyMonitor)
+		if (iter != m_Taskbars.end())
 		{
-			RefreshAeroPeekButton();
+			// RefreshAttribute done before because RefreshAeroPeekButton triggers
+			// Windows internal message loop, see comment in InsertWindow.
+			RefreshAttribute(iter);
+
+			if ((iter->first == m_MainTaskbarMonitor && (m_Cfg.Peek == PeekBehavior::WindowMaximisedOnMainMonitor || m_Cfg.Peek == PeekBehavior::DesktopIsForegroundWindow)) ||
+				m_Cfg.Peek == PeekBehavior::WindowMaximisedOnAnyMonitor)
+			{
+				RefreshAeroPeekButton();
+			}
 		}
-		RefreshAttribute(monitor);
 	}
 }
 
@@ -63,20 +67,17 @@ void TaskbarAttributeWorker::OnForegroundWindowChange(DWORD, Window window, LONG
 
 void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 {
-	if (state)
-	{
-		m_CurrentStartMonitor = GetStartMenuMonitor();
-		RefreshAttribute(m_CurrentStartMonitor);
+	const HMONITOR mon = state
+		? m_CurrentStartMonitor = GetStartMenuMonitor()
+		: std::exchange(m_CurrentStartMonitor, nullptr);
 
-		MessagePrint(spdlog::level::debug, fmt::format(fmt(L"Start menu opened on monitor {}"), static_cast<void *>(m_CurrentStartMonitor)));
-	}
-	else
+	if (const auto iter = m_Taskbars.find(mon); iter != m_Taskbars.end())
 	{
-		const HMONITOR old_start_mon = std::exchange(m_CurrentStartMonitor, nullptr);
-		RefreshAttribute(old_start_mon);
-
-		MessagePrint(spdlog::level::debug, fmt::format(fmt(L"Start menu closed on monitor {}"), static_cast<void *>(old_start_mon)));
+		RefreshAttribute(iter);
 	}
+
+	const std::wstring_view msg = state ? L"Start menu opened on monitor {}" : L"Start menu closed on monitor {}";
+	MessagePrint(spdlog::level::debug, fmt::format(msg, static_cast<void *>(mon)));
 }
 
 long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, LPARAM lParam)
@@ -89,7 +90,7 @@ long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, LPARAM lParam)
 	const Window window = reinterpret_cast<HWND>(lParam);
 	if (const auto iter = m_Taskbars.find(window.monitor()); iter != m_Taskbars.end() && iter->second.TaskbarWindow == window)
 	{
-		if (const auto config = GetConfigForMonitor(iter->first); config.Accent != ACCENT_NORMAL)
+		if (const auto config = GetConfig(iter); config.Accent != ACCENT_NORMAL)
 		{
 			SetAttribute(iter->second.TaskbarWindow, config);
 			return 1;
@@ -139,74 +140,31 @@ void TaskbarAttributeWorker::RefreshAeroPeekButton()
 	}
 }
 
-void TaskbarAttributeWorker::RefreshTaskbars()
-{
-	MessagePrint(spdlog::level::debug, L"Refreshing taskbar handles.");
-
-	// Older handles are invalid, so clear state to be ready for new ones.
-	m_Taskbars.clear();
-	m_NormalTaskbars.clear();
-
-	// Keep old hooks alive while we rehook to keep the DLL loaded in Explorer.
-	// They will unhook automatically at the end of this function.
-	const auto hooks = std::move(m_Hooks);
-	m_Hooks.clear(); // Bring back m_Hooks to a known state after being moved from.
-
-	const Window main_taskbar = Window::Find(TASKBAR);
-	m_MainTaskbarMonitor = main_taskbar.monitor();
-	m_Taskbars[m_MainTaskbarMonitor] = { main_taskbar };
-	HookTaskbar(main_taskbar);
-
-	for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))
-	{
-		m_Taskbars[secondtaskbar.monitor()] = { secondtaskbar };
-		HookTaskbar(secondtaskbar);
-	}
-}
-
-void TaskbarAttributeWorker::HookTaskbar(Window window)
-{
-	auto hook = ExplorerDetour::Inject(window);
-	if (hook)
-	{
-		m_Hooks.push_back(std::move(hook));
-	}
-	else
-	{
-		LastErrorHandle(spdlog::level::critical, L"Failed to set hook.");
-	}
-}
-
-TaskbarAppearance TaskbarAttributeWorker::GetConfigForMonitor(HMONITOR monitor) const
+TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) const
 {
 	if (m_Cfg.UseRegularAppearanceWhenPeeking && m_PeekActive)
 	{
 		return m_Cfg.DesktopAppearance;
 	}
 
-	if (m_Cfg.StartOpenedAppearance.Enabled && m_CurrentStartMonitor == monitor)
+	if (m_Cfg.StartOpenedAppearance.Enabled && m_CurrentStartMonitor == taskbar->first)
 	{
 		return m_Cfg.StartOpenedAppearance;
 	}
 
-	const auto iter = m_Taskbars.find(monitor);
-
-	if (iter != m_Taskbars.end())
+	if (m_Cfg.MaximisedWindowAppearance.Enabled)
 	{
-		if (m_Cfg.MaximisedWindowAppearance.Enabled)
+		if (!taskbar->second.MaximisedWindows.empty())
 		{
-			if (!iter->second.MaximisedWindows.empty())
-			{
-				return m_Cfg.MaximisedWindowAppearance;
-			}
+			return m_Cfg.MaximisedWindowAppearance;
 		}
+	}
 
-		if (m_Cfg.VisibleWindowAppearance.Enabled)
+	if (m_Cfg.VisibleWindowAppearance.Enabled)
+	{
+		if (!taskbar->second.MaximisedWindows.empty() || !taskbar->second.NormalWindows.empty())
 		{
-			if (!iter->second.MaximisedWindows.empty() || !iter->second.NormalWindows.empty())
-			{
-				return m_Cfg.VisibleWindowAppearance;
-			}
+			return m_Cfg.VisibleWindowAppearance;
 		}
 	}
 
@@ -257,12 +215,9 @@ void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance confi
 	}
 }
 
-void TaskbarAttributeWorker::RefreshAttribute(HMONITOR monitor)
+void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
 {
-	if (const auto iter = m_Taskbars.find(monitor); iter != m_Taskbars.end())
-	{
-		SetAttribute(iter->second.TaskbarWindow, GetConfigForMonitor(monitor));
-	}
+	SetAttribute(taskbar->second.TaskbarWindow, GetConfig(taskbar));
 }
 
 void TaskbarAttributeWorker::Poll()
@@ -284,42 +239,75 @@ void TaskbarAttributeWorker::Poll()
 	}
 }
 
-void TaskbarAttributeWorker::InsertWindow(Window window)
+void TaskbarAttributeWorker::RefreshTaskbars()
 {
-	const HMONITOR monitor = window.monitor();
+	MessagePrint(spdlog::level::debug, L"Refreshing taskbar handles.");
 
-	const auto hash = m_Taskbars.hash_function()(monitor);
+	// Older handles are invalid, so clear state to be ready for new ones.
+	m_Taskbars.clear();
+	m_NormalTaskbars.clear();
 
-	// Note: find() is done here after the checks because if not we get some weird crashes when changing DPI.
-	if ((WindowHelper::IsUserWindow(window) || m_Cfg.Whitelist.IsFiltered(window)) && !m_Cfg.Blacklist.IsFiltered(window))
+	// Keep old hooks alive while we rehook to keep the DLL loaded in Explorer.
+	// They will unhook automatically at the end of this function.
+	const auto hooks = std::move(m_Hooks);
+	m_Hooks.clear(); // Bring back m_Hooks to a known state after being moved from.
+
+	const Window main_taskbar = Window::Find(TASKBAR);
+	InsertTaskbar(m_MainTaskbarMonitor = main_taskbar.monitor(), main_taskbar);
+
+	for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))
 	{
-		if (window.maximised())
-		{
-			if (const auto iter = m_Taskbars.find(monitor/*, hash*/); iter != m_Taskbars.end())
-			{
-				iter->second.MaximisedWindows.insert(window);
-				iter->second.NormalWindows.erase(window);
-			}
+		InsertTaskbar(secondtaskbar.monitor(), secondtaskbar);
+	}
+}
 
-			return;
+void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
+{
+	m_Taskbars.insert_or_assign(mon, MonitorInfo{ window });
+
+	auto hook = ExplorerDetour::Inject(window);
+	if (hook)
+	{
+		m_Hooks.push_back(std::move(hook));
+	}
+	else
+	{
+		LastErrorHandle(spdlog::level::critical, L"Failed to set hook.");
+	}
+}
+
+TaskbarAttributeWorker::taskbar_iterator TaskbarAttributeWorker::InsertWindow(Window window)
+{
+	// Note: find() is done here after the checks because
+	// some methods (most notably Window::on_current_desktop)
+	// will trigger a Windows internal message loop,
+	// which pumps messages to the worker. When the DPI is
+	// changing, it means m_Taskbars is cleared while we still
+	// have an iterator to it. Acquiring the iterator after the
+	// call to on_current_desktop resolves this issue.
+	bool windowMatches = (m_Cfg.Whitelist.IsFiltered(window) || WindowHelper::IsUserWindow(window)) && !m_Cfg.Blacklist.IsFiltered(window);
+
+	const auto iter = m_Taskbars.find(window.monitor());
+	if (iter != m_Taskbars.end())
+	{
+		if (windowMatches && window.maximised())
+		{
+			iter->second.MaximisedWindows.insert(window);
+			iter->second.NormalWindows.erase(window);
 		}
-		else if (!window.minimised())
+		else if (windowMatches && !window.minimised())
 		{
-			if (const auto iter = m_Taskbars.find(monitor/*, hash*/); iter != m_Taskbars.end())
-			{
-				iter->second.MaximisedWindows.erase(window);
-				iter->second.NormalWindows.insert(window);
-			}
-
-			return;
+			iter->second.MaximisedWindows.erase(window);
+			iter->second.NormalWindows.insert(window);
+		}
+		else
+		{
+			iter->second.MaximisedWindows.erase(window);
+			iter->second.NormalWindows.erase(window);
 		}
 	}
 
-	if (const auto iter = m_Taskbars.find(monitor/*, hash*/); iter != m_Taskbars.end())
-	{
-		iter->second.MaximisedWindows.erase(window);
-		iter->second.NormalWindows.erase(window);
-	}
+	return iter;
 }
 
 void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set)
@@ -353,6 +341,10 @@ void TaskbarAttributeWorker::ReturnToStock()
 
 TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance, const Config &cfg) :
 	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance),
+	m_PeekActive(false),
+	m_disableAttributeRefreshReply(false),
+	m_CurrentStartMonitor(nullptr),
+	m_MainTaskbarMonitor(nullptr),
 	m_PeekUnpeekHook(EVENT_SYSTEM_PEEKSTART, EVENT_SYSTEM_PEEKEND, std::bind(&TaskbarAttributeWorker::OnAeroPeekEnterExit, this, std::placeholders::_1)),
 	m_CloakUncloakHook(EVENT_OBJECT_CLOAKED, EVENT_OBJECT_UNCLOAKED, BindEventHook(&TaskbarAttributeWorker::OnWindowStateChange)),
 	m_MinimizeRestoreHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, BindEventHook(&TaskbarAttributeWorker::OnWindowStateChange)),
@@ -360,14 +352,13 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance, const Config
 	m_ShowHideHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, BindEventHook(&TaskbarAttributeWorker::OnWindowStateChange)),
 	m_CreateDestroyHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, BindEventHook(&TaskbarAttributeWorker::OnWindowCreateDestroy)),
 	m_ForegroundChangeHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, BindEventHook(&TaskbarAttributeWorker::OnForegroundWindowChange)),
-	m_PeekActive(false),
-	m_disableAttributeRefreshReply(false),
-	m_CurrentStartMonitor(nullptr),
-	m_MainTaskbarMonitor(nullptr),
+	m_TitleChangeHook(EVENT_OBJECT_NAMECHANGE, EVENT_OBJECT_NAMECHANGE, BindEventHook(&TaskbarAttributeWorker::OnWindowStateChange)),
 	m_IAV(wil::CoCreateInstance<AppVisibility, IAppVisibility>()),
 	m_Cfg(cfg)
 {
-	const auto av_sink = winrt::make<AppVisibilitySink>(std::bind(&TaskbarAttributeWorker::OnStartVisibilityChange, this, std::placeholders::_1));
+	const auto av_sink = winrt::make_self<AppVisibilitySink>();
+
+	m_AVSinkRevoker = av_sink->StartOpened(winrt::auto_revoke, { this, &TaskbarAttributeWorker::OnStartVisibilityChange });
 
 	m_IAVECookie.associate(m_IAV.get());
 	HresultHandle(m_IAV->Advise(av_sink.get(), m_IAVECookie.put()), spdlog::level::warn, L"Failed to register app visibility sink.");
@@ -426,9 +417,9 @@ void TaskbarAttributeWorker::ResetState()
 	RefreshTaskbars();
 	Poll();
 	RefreshAeroPeekButton();
-	for (const auto &[monitor, _] : m_Taskbars)
+	for (auto iter = m_Taskbars.begin(); iter != m_Taskbars.end(); ++iter)
 	{
-		RefreshAttribute(monitor);
+		RefreshAttribute(iter);
 	}
 }
 

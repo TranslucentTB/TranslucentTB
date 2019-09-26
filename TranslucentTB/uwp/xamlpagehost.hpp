@@ -15,6 +15,7 @@
 #include <winrt/TranslucentTB.Xaml.Pages.h>
 #include "redefgetcurrenttime.h"
 
+#include "util/strings.hpp"
 #include "win32.hpp"
 
 enum class CenteringStrategy {
@@ -32,6 +33,26 @@ private:
 	winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource m_source;
 	T m_content;
 	winrt::event_token m_TitleChangedToken;
+
+	static constexpr std::wstring_view ExtractTypename()
+	{
+		constexpr std::wstring_view prefix = L"XamlPageHost<struct winrt::";
+		constexpr std::wstring_view suffix = L">::ExtractTypename";
+
+		std::wstring_view funcsig = UTIL_WIDEN(__FUNCSIG__);
+		funcsig.remove_prefix(funcsig.find(prefix) + prefix.length());
+		funcsig.remove_suffix(funcsig.length() - funcsig.rfind(suffix));
+
+		return funcsig;
+	}
+
+	inline static const std::wstring &GetClassName()
+	{
+		static constexpr std::wstring_view type_name = ExtractTypename();
+		static const std::wstring class_name(type_name);
+
+		return class_name;
+	}
 
 	inline static UINT GetDpi(HMONITOR mon)
 	{
@@ -196,17 +217,16 @@ private:
 
 	void PositionWindow(const RECT &rect, bool showWindow = false)
 	{
-		winrt::check_bool(SetWindowPos(m_WindowHandle, Window::NullWindow, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, showWindow ? SWP_SHOWWINDOW | SWP_FRAMECHANGED : 0));
 		winrt::check_bool(SetWindowPos(m_interopWnd, Window::NullWindow, 0, 0, rect.right - rect.left, rect.bottom - rect.top, showWindow ? SWP_SHOWWINDOW : 0));
+		winrt::check_bool(SetWindowPos(m_WindowHandle, Window::NullWindow, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, showWindow ? SWP_SHOWWINDOW | SWP_FRAMECHANGED : 0));
 	}
 
 public:
 	// TODO: support multiple instances
-	// TODO: better class name lol
 	// todo: movable window
 	template<typename... Args>
 	inline XamlPageHost(HINSTANCE hInst, CenteringStrategy strategy, Args&&... args) :
-		MessageWindow(L"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", { }, hInst, WS_OVERLAPPED),
+		MessageWindow(GetClassName(), { }, hInst, WS_OVERLAPPED),
 		m_CenteringStrategy(strategy),
 		m_interopWnd(Window::NullWindow),
 		m_FilterCookie(0),

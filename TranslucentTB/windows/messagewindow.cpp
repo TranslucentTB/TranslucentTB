@@ -60,7 +60,7 @@ MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &
 		hInstance
 	)
 {
-	m_WindowHandle = Window::Create(0, m_WindowClass, windowName, style, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, parent, 0, hInstance, this);
+	m_WindowHandle = Window::Create(0, m_WindowClass.atom(), windowName, style, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, parent, 0, hInstance, this);
 
 	if (!m_WindowHandle)
 	{

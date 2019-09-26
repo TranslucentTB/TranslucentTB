@@ -61,25 +61,14 @@ public:
 		return FindWindowEx(parent, childAfter, className.empty() ? nullptr : className.c_str(), windowName.empty() ? nullptr : windowName.c_str());
 	}
 
-	inline static Window Create(unsigned long dwExStyle, const std::wstring &className,
-		const std::wstring &windowName, unsigned long dwStyle, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT,
-		int nWidth = CW_USEDEFAULT, int nHeight = CW_USEDEFAULT, Window parent = Window::NullWindow, HMENU hMenu = nullptr,
-		HINSTANCE hInstance = GetModuleHandle(nullptr), void *lpParam = nullptr) noexcept
-	{
-		return CreateWindowEx(dwExStyle, className.c_str(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
-			parent, hMenu, hInstance, lpParam);
-	}
-
-#ifdef _TRANSLUCENTTB_EXE
-	inline static Window Create(unsigned long dwExStyle, const WindowClass &winClass,
+	inline static Window Create(unsigned long dwExStyle, LPCWSTR winClass,
 		const std::wstring &windowName, unsigned long dwStyle, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT,
 		int nWidth = CW_USEDEFAULT, int nHeight = CW_USEDEFAULT, Window parent = Window::NullWindow,
 		HMENU hMenu = nullptr, HINSTANCE hInstance = GetModuleHandle(nullptr), void *lpParam = nullptr) noexcept
 	{
-		return CreateWindowEx(dwExStyle, winClass.atom(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
+		return CreateWindowEx(dwExStyle, winClass, windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
 			parent, hMenu, hInstance, lpParam);
 	}
-#endif
 
 	inline static Window ForegroundWindow() noexcept
 	{

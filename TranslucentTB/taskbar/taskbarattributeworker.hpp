@@ -9,6 +9,7 @@
 #include <wil/com.h>
 #include <wil/resource.h>
 
+#include "appvisibilitysink.hpp"
 #include "config/config.hpp"
 #include "config/taskbarappearance.hpp"
 #include "eventhook.hpp"
@@ -31,21 +32,9 @@ private:
 	// dynamic cortana and task view
 	// apply settings & blacklist changes instantly
 	// close if explorer crashes twice in 30 seconds
-	// rework peek button hiding
-	// handle title change
-
-	// USE ITERATORS TO AVOID RELOOKING UP THINGS CONSTANTLY
-
-	// Hooks
-	EventHook m_PeekUnpeekHook;
-	EventHook m_CloakUncloakHook;
-	EventHook m_MinimizeRestoreHook;
-	EventHook m_ResizeMoveHook;
-	EventHook m_ShowHideHook;
-	EventHook m_CreateDestroyHook;
-	EventHook m_ForegroundChangeHook;
-	wilx::unique_app_visibility_token m_IAVECookie;
-	std::vector<wil::unique_hhook> m_Hooks;
+	// rework peek button hiding - allow to interact when not visible, use normalwindow info
+	//     to add support to show when windows are displayed but not maximised
+	// make sure opening start while already opened on other monitor works
 
 	// State
 	bool m_PeekActive;
@@ -55,9 +44,27 @@ private:
 	std::unordered_map<HMONITOR, MonitorInfo> m_Taskbars;
 	std::unordered_set<Window> m_NormalTaskbars;
 
-	// Other
+	// Hooks
+	EventHook m_PeekUnpeekHook;
+	EventHook m_CloakUncloakHook;
+	EventHook m_MinimizeRestoreHook;
+	EventHook m_ResizeMoveHook;
+	EventHook m_ShowHideHook;
+	EventHook m_CreateDestroyHook;
+	EventHook m_ForegroundChangeHook;
+	EventHook m_TitleChangeHook;
+	std::vector<wil::unique_hhook> m_Hooks;
+
+	// IAppVisibility
 	wil::com_ptr<IAppVisibility> m_IAV;
+	wilx::unique_app_visibility_token m_IAVECookie;
+	AppVisibilitySink::StartOpened_revoker m_AVSinkRevoker;
+
+	// Config
 	const Config &m_Cfg;
+
+	// Type aliases
+	using taskbar_iterator = decltype(m_Taskbars)::const_iterator;
 
 	// Callbacks
 	void OnAeroPeekEnterExit(DWORD event, ...);
@@ -71,18 +78,18 @@ private:
 	void ShowAeroPeekButton(Window taskbar, bool show);
 	void RefreshAeroPeekButton();
 
-	// Hooks
-	void RefreshTaskbars();
-	void HookTaskbar(Window window);
-
 	// Config
-	TaskbarAppearance GetConfigForMonitor(HMONITOR monitor) const;
+	TaskbarAppearance GetConfig(taskbar_iterator taskbar) const;
+
+	// Attribute
 	void SetAttribute(Window window, TaskbarAppearance config);
-	void RefreshAttribute(HMONITOR monitor);
+	void RefreshAttribute(taskbar_iterator taskbar);
 
 	// State
 	void Poll();
-	void InsertWindow(Window window);
+	void RefreshTaskbars();
+	void InsertTaskbar(HMONITOR mon, Window window);
+	taskbar_iterator InsertWindow(Window window);
 
 	// Other
 	static void DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set);
