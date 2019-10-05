@@ -109,13 +109,15 @@
     </Link>
   </ItemDefinitionGroup>
 
-  <ItemDefinitionGroup Condition="'$(Platform)'=='x64'">
+  <!-- Windows 10 requires SSE2 on any x86 processor, see https://docs.microsoft.com/windows-hardware/manufacture/desktop/paenxsse2-support-requirement-guide-for-windows-8 -->
+  <ItemDefinitionGroup Condition="'$(Platform)'=='Win32' Or '$(Platform)'=='x64'">
     <ClCompile>
       <PreprocessorDefinitions>RAPIDJSON_SSE2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
 
-  <ItemDefinitionGroup Condition="'$(Platform)'=='ARM64'">
+  <!-- Windows requires NEON on any ARM processor, see https://docs.microsoft.com/cpp/build/overview-of-arm-abi-conventions -->
+  <ItemDefinitionGroup Condition="'$(Platform)'=='ARM' Or $(Platform)'=='ARM64'">
     <ClCompile>
       <PreprocessorDefinitions>RAPIDJSON_NEON;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
