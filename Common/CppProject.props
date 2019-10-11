@@ -117,7 +117,7 @@
   </ItemDefinitionGroup>
 
   <!-- Windows requires NEON on any ARM processor, see https://docs.microsoft.com/cpp/build/overview-of-arm-abi-conventions -->
-  <ItemDefinitionGroup Condition="'$(Platform)'=='ARM' Or $(Platform)'=='ARM64'">
+  <ItemDefinitionGroup Condition="'$(Platform)'=='ARM' Or '$(Platform)'=='ARM64'">
     <ClCompile>
       <PreprocessorDefinitions>RAPIDJSON_NEON;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
