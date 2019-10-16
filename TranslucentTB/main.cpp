@@ -533,7 +533,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 	}
 
 	// Parse our configuration
-	auto cfg = Config::Load(run.config_file);
+	// This needs to be static for other various static things depending on it
+	static auto cfg = Config::Load(run.config_file);
 	Log::SetLevel(cfg.LogVerbosity);
 	//TODO if (!Config::ParseCommandLine())
 	//{
