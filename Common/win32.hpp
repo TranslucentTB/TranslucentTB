@@ -142,7 +142,7 @@ public:
 	inline static std::pair<std::wstring, HRESULT> GetWindowsBuild()
 	{
 		// Microsoft recommends this themselves
-		// https://docs.microsoft.com/en-us/windows/desktop/SysInfo/getting-the-system-version
+		// https://docs.microsoft.com/windows/desktop/SysInfo/getting-the-system-version
 		wil::unique_cotaskmem_string system32;
 		const HRESULT hr = SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, nullptr, system32.put());
 		if (FAILED(hr))
