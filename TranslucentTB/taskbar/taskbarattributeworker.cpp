@@ -13,9 +13,12 @@ const PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE TaskbarAttributeWorker::SetWindowComp
 void TaskbarAttributeWorker::OnAeroPeekEnterExit(DWORD event, ...)
 {
 	m_PeekActive = event == EVENT_SYSTEM_PEEKSTART;
-	for (auto iter = m_Taskbars.begin(); iter != m_Taskbars.end(); ++iter)
+	if (m_Cfg.UseRegularAppearanceWhenPeeking)
 	{
-		RefreshAttribute(iter);
+		for (auto iter = m_Taskbars.begin(); iter != m_Taskbars.end(); ++iter)
+		{
+			RefreshAttribute(iter);
+		}
 	}
 }
 

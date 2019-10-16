@@ -39,38 +39,30 @@ namespace Error {
 	// Needs to be in DLL because spdlog log registry is per-module.
 	PROGRAMLOG_API void Log(std::wstring_view msg, spdlog::level::level_enum level, const char *file, int line, const char *function);
 
-	template<spdlog::level::level_enum level>
-	inline void Handle(std::wstring_view message, std::wstring_view error_message, const char *file, int line, const char *function)
+	inline std::wstring GetLogMessage(std::wstring_view message, std::wstring_view error_message, std::wstring_view err_message_fmt = L"{} ({})", std::wstring_view message_fmt = L"{}")
 	{
-		std::wstring msg;
 		if (!error_message.empty())
 		{
-			msg = fmt::format(fmt(L"{} ({})"), message, error_message);
+			return fmt::format(err_message_fmt, message, error_message);
 		}
 		else
 		{
-			msg = message;
+			return fmt::format(message_fmt, message);
 		}
+	}
 
-		Log(msg, level, file, line, function);
+	template<spdlog::level::level_enum level>
+	inline void Handle(std::wstring_view message, std::wstring_view error_message, const char *file, int line, const char *function)
+	{
+		Log(GetLogMessage(message, error_message), level, file, line, function);
 	}
 
 	template<>
 	inline void Handle<spdlog::level::err>(std::wstring_view message, std::wstring_view error_message, const char* file, int line, const char* function)
 	{
-		std::wstring msg;
-		if (!error_message.empty())
-		{
-			msg = fmt::format(fmt(ERROR_MESSAGE L"\n\n{}\n\n{}"), message, error_message);
-		}
-		else
-		{
-			msg = fmt::format(fmt(ERROR_MESSAGE L"\n\n{}"), message);
-		}
+		Log(GetLogMessage(message, error_message), spdlog::level::err, file, line, function);
 
-		Log(msg, spdlog::level::err, file, line, function);
-
-		std::thread([error = std::move(msg)]
+		std::thread([error = GetLogMessage(message, error_message, ERROR_MESSAGE L"\n\n{}\n\n{}", ERROR_MESSAGE L"\n\n{}")]
 		{
 			MessageBox(Window::NullWindow, error.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
 		}).detach();
@@ -79,18 +71,9 @@ namespace Error {
 	template<>
 	[[noreturn]] inline void Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, const char *file, int line, const char *function)
 	{
-		std::wstring msg;
-		if (!error_message.empty())
-		{
-			msg = fmt::format(fmt(FATAL_ERROR_MESSAGE L"\n\n{}\n\n{}"), message, error_message);
-		}
-		else
-		{
-			msg = fmt::format(fmt(FATAL_ERROR_MESSAGE L"\n\n{}"), message);
-		}
+		Log(GetLogMessage(message, error_message), spdlog::level::critical, file, line, function);
 
-		Log(msg, spdlog::level::critical, file, line, function);
-
+		const std::wstring msg = GetLogMessage(message, error_message, FATAL_ERROR_MESSAGE L"\n\n{}\n\n{}", FATAL_ERROR_MESSAGE L"\n\n{}");
 		MessageBox(Window::NullWindow, msg.c_str(), FATAL_ERROR_TITLE, MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
 
 		// Calling abort() will generate a dialog box, but we already have our own.

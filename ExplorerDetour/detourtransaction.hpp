@@ -78,7 +78,7 @@ public:
 	inline void update_all_threads()
 	{
 		const DWORD pid = GetCurrentProcessId();
-		wil::unique_handle snapshot(CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, pid));
+		wil::unique_tool_help_snapshot snapshot(CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, pid));
 		if (!snapshot)
 		{
 			throw DetourException(GetLastError(), CREATE_SNAPSHOT_FAILED);

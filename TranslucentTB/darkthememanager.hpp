@@ -14,7 +14,7 @@ private:
 
 	inline static bool IsDarkModeAvailable()
 	{
-		return SetPreferredAppMode && AllowDarkModeForWindow && ShouldSystemUseDarkMode;
+		return uxtheme && SetPreferredAppMode && AllowDarkModeForWindow && ShouldSystemUseDarkMode;
 	}
 
 public:

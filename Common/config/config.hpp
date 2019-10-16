@@ -1,24 +1,30 @@
 #pragma once
-#include <cerrno>
-#include <cstdio>
-#include <filesystem>
 #include <rapidjson/document.h>
-#include <rapidjson/encodedstream.h>
 #include <rapidjson/encodings.h>
-#include <rapidjson/error/error.h>
-#include <rapidjson/filereadstream.h>
-#include <rapidjson/filewritestream.h>
-#include <rapidjson/prettywriter.h>
 #include <spdlog/common.h>
 #include <string_view>
 #include <unordered_map>
-#include <wil/resource.h>
 
-#include "../../ProgramLog/error.hpp"
 #include "optionaltaskbarappearance.hpp"
 #include "rapidjsonhelper.hpp"
 #include "taskbarappearance.hpp"
 #include "windowfilter.hpp"
+
+
+#ifdef _TRANSLUCENTTB_EXE
+#include <cerrno>
+#include <cstdio>
+#include <filesystem>
+#include <rapidjson/encodedstream.h>
+#include <rapidjson/error/error.h>
+#include <rapidjson/filereadstream.h>
+#include <rapidjson/filewritestream.h>
+#include <rapidjson/prettywriter.h>
+#include <wil/resource.h>
+
+#include "../../ProgramLog/error.hpp"
+#endif
+
 
 enum class PeekBehavior {
 	AlwaysHide,                   // Always hide the button
@@ -110,6 +116,7 @@ public:
 		RapidJSONHelper::Deserialize(val, LogVerbosity, LOG_KEY, s_LogMap);
 	}
 
+#ifdef _TRANSLUCENTTB_EXE
 	inline void Save(const std::filesystem::path &file, bool ignoreDisabledSaving = false)
 	{
 		if (ignoreDisabledSaving || !DisableSaving)
@@ -176,6 +183,7 @@ public:
 
 		return { };
 	}
+#endif
 
 private:
 	inline static const std::unordered_map<PeekBehavior, std::wstring_view> s_PeekMap = {
