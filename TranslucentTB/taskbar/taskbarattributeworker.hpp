@@ -94,6 +94,7 @@ private:
 	// Other
 	static void DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set);
 	void ReturnToStock();
+	bool IsStartMenuOpened();
 
 	inline static HMONITOR GetStartMenuMonitor()
 	{

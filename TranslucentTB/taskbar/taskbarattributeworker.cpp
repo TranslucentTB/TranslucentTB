@@ -226,8 +226,7 @@ void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
 void TaskbarAttributeWorker::Poll()
 {
 	// TODO: check if user is using areo peek here (if not possible, assume they aren't)
-
-	if (BOOL start_visible; HresultHandle(m_IAV->IsLauncherVisible(&start_visible), spdlog::level::info, L"Failed to query launcher visibility state.") && start_visible)
+	if (IsStartMenuOpened())
 	{
 		m_CurrentStartMonitor = GetStartMenuMonitor();
 	}
@@ -342,6 +341,21 @@ void TaskbarAttributeWorker::ReturnToStock()
 	m_disableAttributeRefreshReply = false;
 }
 
+bool TaskbarAttributeWorker::IsStartMenuOpened()
+{
+	BOOL start_visible;
+	const HRESULT hr = m_IAV->IsLauncherVisible(&start_visible);
+	if (SUCCEEDED(hr))
+	{
+		return start_visible;
+	}
+	else
+	{
+		HresultHandle(hr, spdlog::level::info, L"Failed to query launcher visibility state.");
+		return false;
+	}
+}
+
 TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance, const Config &cfg) :
 	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance),
 	m_PeekActive(false),
@@ -364,7 +378,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance, const Config
 	m_AVSinkRevoker = av_sink->StartOpened(winrt::auto_revoke, { this, &TaskbarAttributeWorker::OnStartVisibilityChange });
 
 	m_IAVECookie.associate(m_IAV.get());
-	HresultHandle(m_IAV->Advise(av_sink.get(), m_IAVECookie.put()), spdlog::level::warn, L"Failed to register app visibility sink.");
+	HresultVerify(m_IAV->Advise(av_sink.get(), m_IAVECookie.put()), spdlog::level::warn, L"Failed to register app visibility sink.");
 
 	RegisterCallback(WM_TTBHOOKREQUESTREFRESH, std::bind(&TaskbarAttributeWorker::OnRequestAttributeRefresh, this, std::placeholders::_1, std::placeholders::_2));
 

@@ -1,5 +1,5 @@
-#ifndef _WILX_
-#define _WILX_
+#ifndef WILX_HPP
+#define WILX_HPP
 
 #include "arch.h"
 #include <cstddef>
@@ -50,10 +50,10 @@ namespace wilx {
 	using function_deleter = wil::function_deleter<decltype(delete_fn), delete_fn>;
 }
 
-#endif // _WILX_
+#endif // WILX_HPP
 
-#if defined(__IAppVisibility_INTERFACE_DEFINED__) && !defined(CINTERFACE) && !defined(_WILX_IAV_)
-#define _WILX_IAV_
+#if defined(__IAppVisibility_INTERFACE_DEFINED__) && !defined(CINTERFACE) && !defined(WILX_IAV)
+#define WILX_IAV
 
 namespace wilx {
 	using unique_app_visibility_token = unique_com_token<&IAppVisibility::Unadvise>;

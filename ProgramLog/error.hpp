@@ -74,6 +74,7 @@ namespace Error {
 		Log(GetLogMessage(message, error_message), spdlog::level::critical, file, line, function);
 
 		const std::wstring msg = GetLogMessage(message, error_message, FATAL_ERROR_MESSAGE L"\n\n{}\n\n{}", FATAL_ERROR_MESSAGE L"\n\n{}");
+		// TODO: this allows normal message loop to run, potentially bad. consider kick off a thread and block.
 		MessageBox(Window::NullWindow, msg.c_str(), FATAL_ERROR_TITLE, MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
 
 		// Calling abort() will generate a dialog box, but we already have our own.
@@ -82,30 +83,26 @@ namespace Error {
 	}
 
 	template<spdlog::level::level_enum level>
-	inline bool MacroCommon(HRESULT hr, std::wstring_view message, const char *file, int line, const char *function)
+	inline void VerifyHr(HRESULT hr, std::wstring_view message, const char *file, int line, const char *function)
 	{
-		if (SUCCEEDED(hr))
-		{
-			return true;
-		}
-		else
+		if (FAILED(hr))
 		{
 			Handle<level>(message, MessageFromHRESULT(hr), file, line, function);
-			return false;
 		}
 	}
 };
 
-#define __ERROR_LOCATION __FILE__, __LINE__, SPDLOG_FUNCTION
-#define MessagePrint(__level, __message) (Error::Handle<(__level)>((__message), { }, __ERROR_LOCATION))
+#define PROGRAMLOG_ERROR_LOCATION __FILE__, __LINE__, SPDLOG_FUNCTION
+#define MessagePrint(level_, message_) (Error::Handle<(level_)>((message_), { }, PROGRAMLOG_ERROR_LOCATION))
 
-#define HresultHandle(__hresult, __level, __message) (Error::MacroCommon<(__level)>((__hresult), (__message), __ERROR_LOCATION))
-#define LastErrorHandle(__level, __message) (HresultHandle(HRESULT_FROM_WIN32(GetLastError()), (__level), (__message)))
-#define ErrnoTHandle(__err, __level, __message) (Error::Handle<(__level)>((__message), Error::MessageFromErrno((__err)), __ERROR_LOCATION))
-#define ParseErrorCodeHandle(__code, __level, __message) (Error::Handle<(__level)>((__message), rapidjson::GetParseError_En((__code)), __ERROR_LOCATION))
+#define HresultVerify(hresult_, level_, message_) (Error::VerifyHr<(level_)>((hresult_), (message_), PROGRAMLOG_ERROR_LOCATION))
+#define HresultHandle(hresult_, level_, message_) (Error::Handle<(level_)>((message_), Error::MessageFromHRESULT((hresult_)), PROGRAMLOG_ERROR_LOCATION))
+#define LastErrorHandle(level_, message_) (HresultHandle(HRESULT_FROM_WIN32(GetLastError()), (level_), (message_)))
+#define ErrnoTHandle(err_, level_, message_) (Error::Handle<(level_)>((message_), Error::MessageFromErrno((err_)), PROGRAMLOG_ERROR_LOCATION))
+#define ParseErrorCodeHandle(code_, level_, message_) (Error::Handle<(level_)>((message_), rapidjson::GetParseError_En((code_)), PROGRAMLOG_ERROR_LOCATION))
 
-#define HresultErrorHandle(__exception, __level, __message) (Error::Handle<(__level)>((__message), Error::MessageFromHresultError((__exception)), __ERROR_LOCATION))
-#define HresultErrorCatch(__level, __message) catch (const winrt::hresult_error &__exception) { HresultErrorHandle(__exception, (__level), (__message)); }
+#define HresultErrorHandle(exception_, level_, message_) (Error::Handle<(level_)>((message_), Error::MessageFromHresultError((exception_)), PROGRAMLOG_ERROR_LOCATION))
+#define HresultErrorCatch(level_, message_) catch (const winrt::hresult_error &exception_) { HresultErrorHandle(exception_, (level_), (message_)); }
 
-#define StdSystemErrorHandle(__exception, __level, __message) (Error::Handle<(__level)>((__message), Error::MessageFromStdSystemError((__exception)), __ERROR_LOCATION))
-#define StdSystemErrorCatch(__level, __message) catch (const std::system_error &__exception) { StdSystemErrorHandle(__exception, (__level), (__message)); }
+#define StdSystemErrorHandle(exception_, level_, message_) (Error::Handle<(level_)>((message_), Error::MessageFromStdSystemError((exception_)), PROGRAMLOG_ERROR_LOCATION))
+#define StdSystemErrorCatch(level_, message_) catch (const std::system_error &exception_) { StdSystemErrorHandle(exception_, (level_), (message_)); }

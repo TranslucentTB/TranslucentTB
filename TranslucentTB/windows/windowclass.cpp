@@ -21,8 +21,8 @@ LRESULT WindowClass::RawWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 
 void WindowClass::LoadIcons(const wchar_t *iconResource)
 {
-	HresultHandle(LoadIconMetric(m_ClassStruct.hInstance, iconResource, LIM_LARGE, &m_ClassStruct.hIcon), spdlog::level::warn, L"Failed to load large window class icon.");
-	HresultHandle(LoadIconMetric(m_ClassStruct.hInstance, iconResource, LIM_SMALL, &m_ClassStruct.hIconSm), spdlog::level::warn, L"Failed to load small window class icon.");
+	HresultVerify(LoadIconMetric(m_ClassStruct.hInstance, iconResource, LIM_LARGE, &m_ClassStruct.hIcon), spdlog::level::warn, L"Failed to load large window class icon.");
+	HresultVerify(LoadIconMetric(m_ClassStruct.hInstance, iconResource, LIM_SMALL, &m_ClassStruct.hIconSm), spdlog::level::warn, L"Failed to load small window class icon.");
 }
 
 void WindowClass::DestroyIcons()
@@ -66,8 +66,17 @@ void WindowClass::ChangeIcon(Window window, const wchar_t *iconResource)
 	DestroyIcons();
 	LoadIcons(iconResource);
 
-	SetClassLongPtr(window, GCLP_HICON, reinterpret_cast<LONG_PTR>(m_ClassStruct.hIcon));
-	SetClassLongPtr(window, GCLP_HICONSM, reinterpret_cast<LONG_PTR>(m_ClassStruct.hIconSm));
+	SetLastError(NO_ERROR);
+	if (!SetClassLongPtr(window, GCLP_HICON, reinterpret_cast<LONG_PTR>(m_ClassStruct.hIcon)) && GetLastError() != NO_ERROR)
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to change large window class icon.");
+	}
+
+	SetLastError(NO_ERROR);
+	if (!SetClassLongPtr(window, GCLP_HICONSM, reinterpret_cast<LONG_PTR>(m_ClassStruct.hIconSm)) && GetLastError() != NO_ERROR)
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to change small window class icon.");
+	}
 }
 
 WindowClass::~WindowClass()

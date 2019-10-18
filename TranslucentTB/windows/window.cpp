@@ -66,12 +66,14 @@ bool Window::on_current_desktop() const
 	static const auto desktop_manager = wil::CoCreateInstance<VirtualDesktopManager, IVirtualDesktopManager>();
 
 	BOOL on_current_desktop;
-	if (HresultHandle(desktop_manager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop), spdlog::level::info, L"Verifying if a window is on the current virtual desktop failed."))
+	const HRESULT hr = desktop_manager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop);
+	if (SUCCEEDED(hr))
 	{
 		return on_current_desktop;
 	}
 	else
 	{
+		HresultHandle(hr, spdlog::level::info, L"Verifying if a window is on the current virtual desktop failed.");
 		return true;
 	}
 }

@@ -9,7 +9,7 @@
 
 void TrayIcon::LoadIcon()
 {
-	HresultHandle(
+	HresultVerify(
 		LoadIconMetric(m_hInstance, m_IconResource, LIM_SMALL, m_Icon.put()),
 		spdlog::level::warn,
 		L"Failed to load tray icon."
