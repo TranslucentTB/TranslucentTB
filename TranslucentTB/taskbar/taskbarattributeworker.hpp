@@ -107,7 +107,7 @@ private:
 	}
 
 public:
-	TaskbarAttributeWorker(HINSTANCE hInstance, const Config &cfg);
+	TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance);
 
 	void DumpState();
 	void ResetState();

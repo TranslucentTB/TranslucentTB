@@ -356,7 +356,7 @@ bool TaskbarAttributeWorker::IsStartMenuOpened()
 	}
 }
 
-TaskbarAttributeWorker::TaskbarAttributeWorker(HINSTANCE hInstance, const Config &cfg) :
+TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance) :
 	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance),
 	m_PeekActive(false),
 	m_disableAttributeRefreshReply(false),

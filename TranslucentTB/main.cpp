@@ -46,16 +46,10 @@
 
 #pragma region Data
 
-enum class EXITREASON {
-	NewInstance,	 // New instance told us to exit
-	UserAction,		 // Triggered by the user
-	UserActionNoSave // Triggered by the user, but doesn't saves config
-};
-
 static struct {
-	EXITREASON exit_reason = EXITREASON::UserAction;
 	std::filesystem::path config_folder;
 	std::filesystem::path config_file;
+	winrt::TranslucentTB::Xaml::App app = nullptr;
 } run;
 
 static const std::unordered_map<ACCENT_STATE, uint32_t> DESKTOP_BUTTOM_MAP = {
@@ -331,44 +325,39 @@ winrt::fire_and_forget RefreshMenu(const Config &cfg, ContextMenu::Updater updat
 
 #pragma region Startup
 
-bool IsSingleInstance()
+void InitializeWindowsRuntime()
 {
-	static wil::unique_mutex mutex;
-
-	if (!mutex)
+	try
 	{
-		const bool opened = mutex.try_open(MUTEX_GUID);
-		if (!opened)
-		{
-			mutex.create(MUTEX_GUID);
-		}
+		winrt::init_apartment(winrt::apartment_type::single_threaded);
+	}
+	HresultErrorCatch(spdlog::level::critical, L"Initialization of Windows Runtime failed.");
+}
 
-		return !opened;
+bool OpenOrCreateMutex(wil::unique_mutex &mutex, const wchar_t *name)
+{
+	if (mutex.try_open(name))
+	{
+		return false;
 	}
 	else
 	{
+		mutex.create(name);
 		return true;
 	}
 }
 
-void InitializeTray(HINSTANCE hInstance, Config &cfg)
+void EnableDarkMode(Window window, TrayIcon &icon)
 {
-	static MessageWindow window(TRAY_WINDOW, APP_NAME, hInstance);
-	DarkThemeManager::EnableDarkModeForWindow(window);
-
-	static TrayIcon tray(window, MAKEINTRESOURCE(IDI_TRAYWHITEICON), cfg.HideTray, hInstance);
-	DarkThemeManager::EnableDarkModeForTrayIcon(tray, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON));
-
-	static TaskbarAttributeWorker worker(hInstance, cfg);
-	static const auto watcher = wil::make_folder_change_reader(run.config_folder.c_str(), false, wil::FolderChangeEvents::All, [](wil::FolderChangeEvent, std::wstring_view file)
+	if (DarkThemeManager::AllowDarkModeForApp())
 	{
-		if (file.empty() || Util::IgnoreCaseStringEquals(file, CONFIG_FILE))
-		{
-			// This callback runs on another thread, so we use a message to avoid threading issues.
-			window.post_message(WM_FILECHANGED);
-		}
-	});
+		DarkThemeManager::EnableDarkModeForWindow(window);
+		DarkThemeManager::EnableDarkModeForTrayIcon(icon, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON));
+	}
+}
 
+void BindEvents(Config &cfg, MessageWindow &window, TrayIcon &tray, ContextMenu &menu, TaskbarAttributeWorker &worker)
+{
 	const auto save_and_exit = [&cfg](...)
 	{
 		cfg.Save(run.config_file);
@@ -376,7 +365,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 		return TRUE;
 	};
 
-	window.RegisterCallback(WM_FILECHANGED, [&cfg](...)
+	window.RegisterCallback(WM_FILECHANGED, [&cfg, &tray](...)
 	{
 		SetConfig(cfg, Config::Load(run.config_file), tray);
 		return TRUE;
@@ -405,9 +394,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 		return 0;
 	});
 
-
-	static ContextMenu menu(window, MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance);
-	tray.RegisterTrayCallback([](WPARAM, LPARAM lParam)
+	tray.RegisterTrayCallback([&menu](WPARAM, LPARAM lParam)
 	{
 		if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
 		{
@@ -449,7 +436,7 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 		Config{ }.Save(run.config_file);
 	});
 	BindBool(menu, ID_DISABLESAVING, cfg.DisableSaving);
-	menu.RegisterCallback(ID_HIDETRAY, [&cfg]
+	menu.RegisterCallback(ID_HIDETRAY, [&cfg, &tray]
 	{
 		// TODO: remove string stream
 		std::wostringstream str;
@@ -503,25 +490,30 @@ void InitializeTray(HINSTANCE hInstance, Config &cfg)
 	menu.RegisterCustomRefresh(std::bind(&RefreshMenu, std::ref(cfg), std::placeholders::_1));
 }
 
+wil::unique_folder_change_reader MakeWatcher(Window window)
+{
+	return wil::make_folder_change_reader(run.config_folder.c_str(), false, wil::FolderChangeEvents::All, [window](wil::FolderChangeEvent, std::wstring_view file)
+	{
+		if (file.empty() || Util::IgnoreCaseStringEquals(file, CONFIG_FILE))
+		{
+			// This callback runs on another thread, so we use a message to avoid threading issues.
+			window.post_message(WM_FILECHANGED);
+		}
+	});
+}
+
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *, _In_ int)
 {
-	winrt::TranslucentTB::Xaml::App app(nullptr);
-	try
-	{
-		winrt::init_apartment(winrt::apartment_type::single_threaded);
-		app = { };
-	}
-	HresultErrorCatch(spdlog::level::critical, L"Initialization of Windows Runtime failed.");
-
 	win32::HardenProcess();
 
-	// If there already is another instance running, tell it to exit
-	if (!IsSingleInstance())
+	wil::unique_mutex mutex;
+	if (!OpenOrCreateMutex(mutex, MUTEX_GUID))
 	{
+		// If there already is another instance running, tell it to exit
 		Window::Find(TRAY_WINDOW, APP_NAME).send_message(WM_CLOSE);
 	}
 
-	DarkThemeManager::AllowDarkModeForApp();
+	InitializeWindowsRuntime();
 
 	// Get configuration file paths
 	GetPaths();
@@ -533,18 +525,19 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 	}
 
 	// Parse our configuration
-	// This needs to be static for other various static things depending on it
-	static auto cfg = Config::Load(run.config_file);
+	auto cfg = Config::Load(run.config_file);
 	Log::SetLevel(cfg.LogVerbosity);
-	//TODO if (!Config::ParseCommandLine())
-	//{
-	//	return EXIT_SUCCESS;
-	//}
 
 	// Initialize GUI
-	InitializeTray(hInstance, cfg);
+	MessageWindow window(TRAY_WINDOW, APP_NAME, hInstance);
+	TrayIcon tray(window, MAKEINTRESOURCE(IDI_TRAYWHITEICON), cfg.HideTray, hInstance);
+	ContextMenu menu(window, MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance);
+	TaskbarAttributeWorker worker(cfg, hInstance);
 
-	XamlPageHost<winrt::TranslucentTB::Xaml::Pages::WelcomePage> host(hInstance, CenteringStrategy::Monitor, run.config_file.native());
+	EnableDarkMode(window, tray);
+	BindEvents(cfg, window, tray, menu, worker);
+
+	const auto watcher = MakeWatcher(window);
 
 	// Run the main program loop. When this method exits, TranslucentTB itself is about to exit.
 	const auto exitCode = MessageWindow::RunMessageLoop();
