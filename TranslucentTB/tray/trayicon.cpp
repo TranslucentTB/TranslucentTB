@@ -33,13 +33,13 @@ long TrayIcon::UpdateIcon(...)
 	return 0;
 }
 
-TrayIcon::TrayIcon(MessageWindow &window, const wchar_t *iconResource, bool hide, HINSTANCE hInstance, unsigned int additionalFlags) :
+TrayIcon::TrayIcon(MessageWindow &window, const wchar_t *iconResource, bool hide, HINSTANCE hInstance) :
 	m_Window(window),
 	m_IconData {
 		.cbSize = sizeof(m_IconData),
 		.hWnd = m_Window,
 		.uID = LOWORD(iconResource), // todo: not use an UID
-		.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE | additionalFlags,
+		.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE,
 		.uCallbackMessage = Util::GetRandomNumber<unsigned int>(WM_APP, 0xBFFF),
 		.szTip = APP_NAME
 	},

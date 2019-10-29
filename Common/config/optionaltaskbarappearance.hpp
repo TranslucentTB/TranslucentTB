@@ -1,4 +1,5 @@
 #pragma once
+#include "../util/null_terminated_string_view.hpp"
 #include "rapidjsonhelper.hpp"
 #include "taskbarappearance.hpp"
 
@@ -24,5 +25,5 @@ struct OptionalTaskbarAppearance : TaskbarAppearance {
 	}
 
 private:
-	static constexpr std::wstring_view ENABLED_KEY = L"enabled";
+	static constexpr Util::null_terminated_wstring_view ENABLED_KEY = L"enabled";
 };

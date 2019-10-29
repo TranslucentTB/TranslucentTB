@@ -46,7 +46,7 @@ private:
 				try
 				{
 					UWP::CopyToClipboard(BuildVersionInfo());
-					MessageBox(window, L"Copied.", APP_NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND);
+					MessageBoxEx(window, L"Copied.", APP_NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 				}
 				HresultErrorCatch(spdlog::level::err, L"Failed to copy version information!")
 				return S_FALSE;

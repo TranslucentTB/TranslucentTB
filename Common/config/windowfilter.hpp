@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <wil/safecast.h>
 
+#include "../util/null_terminated_string_view.hpp"
 #include "../util/strings.hpp"
 
 #ifdef _TRANSLUCENTTB_EXE
@@ -79,9 +80,9 @@ private:
 	}
 
 	template<typename T>
-	inline static void DeserializeStringSet(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val, T &set, std::wstring_view key)
+	inline static void DeserializeStringSet(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val, T &set, Util::null_terminated_wstring_view key)
 	{
-		if (const auto arr = val.FindMember(key.data()); arr != val.MemberEnd() && arr->value.IsArray())
+		if (const auto arr = val.FindMember(key.c_str()); arr != val.MemberEnd() && arr->value.IsArray())
 		{
 			for (const auto &elem : arr->value.GetArray())
 			{
@@ -97,7 +98,7 @@ private:
 	std::unordered_set<std::wstring> m_TitleList;
 	Util::string_set m_FileList;
 
-	static constexpr std::wstring_view CLASS_KEY = L"window_class";
-	static constexpr std::wstring_view TITLE_KEY = L"window_title";
-	static constexpr std::wstring_view FILE_KEY = L"process_file";
+	static constexpr Util::null_terminated_wstring_view CLASS_KEY = L"window_class";
+	static constexpr Util::null_terminated_wstring_view TITLE_KEY = L"window_title";
+	static constexpr Util::null_terminated_wstring_view FILE_KEY = L"process_file";
 };

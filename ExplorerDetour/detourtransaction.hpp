@@ -14,18 +14,18 @@
 
 class DetourTransaction {
 private:
-	static constexpr std::wstring_view PENDING_TRANSACTION_EXISTS = L"A pending transaction already exists.";
-	static constexpr std::wstring_view NO_PENDING_TRANSACTION = L"No pending transaction exists.";
-	static constexpr std::wstring_view FUNCTION_TOO_SMALL = L"The function referenced is too small to be detoured.";
-	static constexpr std::wstring_view FUNCTION_TOO_SMALL_DETACH = L"The function to be detached was too small to be detoured.";
-	static constexpr std::wstring_view OUT_OF_MEMORY = L"Not enough memory exists to complete the operation.";
-	static constexpr std::wstring_view OUT_OF_MEMORY_IDENTITY = L"Not enough memory to record identity of thread.";
-	static constexpr std::wstring_view NULL_POINTER = L"The ppPointer parameter is null or points to a null pointer.";
-	static constexpr std::wstring_view FUNCTION_TAMPERED = L"Target function was changed by third party between steps of the transaction.";
-	static constexpr std::wstring_view UNKNOWN_ERROR = L"Unknown error";
-	static constexpr std::wstring_view CREATE_SNAPSHOT_FAILED = L"CreateToolhelp32Snapshot failed.";
-	static constexpr std::wstring_view BEGIN_THREAD_ENUM_FAILED = L"Thread32First failed.";
-	static constexpr std::wstring_view OPEN_THREAD_FAILED = L"OpenThread failed.";
+	static constexpr Util::null_terminated_wstring_view PENDING_TRANSACTION_EXISTS = L"A pending transaction already exists.";
+	static constexpr Util::null_terminated_wstring_view NO_PENDING_TRANSACTION = L"No pending transaction exists.";
+	static constexpr Util::null_terminated_wstring_view FUNCTION_TOO_SMALL = L"The function referenced is too small to be detoured.";
+	static constexpr Util::null_terminated_wstring_view FUNCTION_TOO_SMALL_DETACH = L"The function to be detached was too small to be detoured.";
+	static constexpr Util::null_terminated_wstring_view OUT_OF_MEMORY = L"Not enough memory exists to complete the operation.";
+	static constexpr Util::null_terminated_wstring_view OUT_OF_MEMORY_IDENTITY = L"Not enough memory to record identity of thread.";
+	static constexpr Util::null_terminated_wstring_view NULL_POINTER = L"The ppPointer parameter is null or points to a null pointer.";
+	static constexpr Util::null_terminated_wstring_view FUNCTION_TAMPERED = L"Target function was changed by third party between steps of the transaction.";
+	static constexpr Util::null_terminated_wstring_view UNKNOWN_ERROR = L"Unknown error";
+	static constexpr Util::null_terminated_wstring_view CREATE_SNAPSHOT_FAILED = L"CreateToolhelp32Snapshot failed.";
+	static constexpr Util::null_terminated_wstring_view BEGIN_THREAD_ENUM_FAILED = L"Thread32First failed.";
+	static constexpr Util::null_terminated_wstring_view OPEN_THREAD_FAILED = L"OpenThread failed.";
 
 	bool m_IsTransacting;
 	std::vector<wil::unique_handle> m_Threads;

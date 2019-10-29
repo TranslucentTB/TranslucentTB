@@ -51,7 +51,7 @@ WPARAM MessageWindow::RunMessageLoop()
 	return msg.wParam;
 }
 
-MessageWindow::MessageWindow(const std::wstring &className, const std::wstring &windowName, HINSTANCE hInstance, unsigned long style, Window parent, const wchar_t *iconResource) :
+MessageWindow::MessageWindow(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName, HINSTANCE hInstance, unsigned long style, Window parent, const wchar_t *iconResource) :
 	m_WindowClass(
 		std::bind(&MessageWindow::WindowProcedure, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
 		className,

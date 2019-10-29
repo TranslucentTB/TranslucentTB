@@ -1,23 +1,23 @@
 #pragma once
 #include "arch.h"
-#include <string>
-#include <string_view>
 #include <windef.h>
+
+#include "util/null_terminated_string_view.hpp"
 
 class DetourException {
 private:
 	LONG m_ErrorCode;
-	std::wstring m_ErrorMessage;
+	Util::null_terminated_wstring_view m_ErrorMessage;
 
 public:
-	inline DetourException(LONG errCode, std::wstring_view message) : m_ErrorCode(errCode), m_ErrorMessage(message) { }
+	constexpr DetourException(LONG errCode, Util::null_terminated_wstring_view message) noexcept : m_ErrorCode(errCode), m_ErrorMessage(message) { }
 
-	inline LONG code() const noexcept
+	constexpr LONG code() const noexcept
 	{
 		return m_ErrorCode;
 	}
 
-	inline const std::wstring &message() const noexcept
+	constexpr Util::null_terminated_wstring_view message() const noexcept
 	{
 		return m_ErrorMessage;
 	}

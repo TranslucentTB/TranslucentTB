@@ -20,6 +20,7 @@
 #include <winver.h>
 
 #include "constants.hpp"
+#include "util/null_terminated_string_view.hpp"
 #include "version.hpp"
 
 class win32
@@ -124,7 +125,7 @@ public:
 
 	// Opens a link in the default browser.
 	// NOTE: doesn't attempts to validate the link, make sure it's correct.
-	inline static HRESULT OpenLink(const std::wstring &link)
+	inline static HRESULT OpenLink(Util::null_terminated_wstring_view link)
 	{
 		SHELLEXECUTEINFO info = {
 			.cbSize = sizeof(info),
@@ -184,7 +185,7 @@ public:
 	}
 
 	// Gets the current processor architecture as a string.
-	inline static std::wstring_view GetProcessorArchitecture() noexcept
+	inline static Util::null_terminated_wstring_view GetProcessorArchitecture() noexcept
 	{
 		SYSTEM_INFO info;
 		GetNativeSystemInfo(&info);

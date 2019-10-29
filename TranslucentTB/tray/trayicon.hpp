@@ -4,10 +4,8 @@
 #include <wil/resource.h>
 
 class TrayIcon {
-protected:
-	MessageWindow &m_Window;
-
 private:
+	MessageWindow &m_Window;
 	NOTIFYICONDATA m_IconData;
 	MessageWindow::CALLBACKCOOKIE m_TaskbarCreatedCookie;
 	MessageWindow::CALLBACKCOOKIE m_DpiChangedCookie;
@@ -20,7 +18,7 @@ private:
 	long UpdateIcon(...);
 
 public:
-	TrayIcon(MessageWindow &window, const wchar_t *iconResource, bool hide = false, HINSTANCE hInstance = GetModuleHandle(nullptr), unsigned int additionalFlags = 0);
+	TrayIcon(MessageWindow &window, const wchar_t *iconResource, bool hide = false, HINSTANCE hInstance = GetModuleHandle(nullptr));
 
 	inline MessageWindow::CALLBACKCOOKIE RegisterTrayCallback(std::function<long(WPARAM, LPARAM)> callback)
 	{

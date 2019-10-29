@@ -3,15 +3,14 @@
 #include <unordered_map>
 
 #include "../resources/ids.h"
+#include "util/null_terminated_string_view.hpp"
 #include "util/random.hpp"
 #include "window.hpp"
 #include "windowclass.hpp"
 
 class MessageWindow : public Window {
-protected:
-	using callback_t = std::function<long(WPARAM, LPARAM)>;
-
 private:
+	using callback_t = std::function<long(WPARAM, LPARAM)>;
 	using filter_t = std::function<bool(const MSG &msg)>;
 
 	static thread_local std::unordered_map<unsigned int, filter_t> s_FilterMap;
@@ -40,7 +39,7 @@ public:
 
 	static WPARAM RunMessageLoop();
 
-	MessageWindow(const std::wstring &className, const std::wstring &windowName, HINSTANCE hInstance = GetModuleHandle(nullptr), unsigned long style = 0, Window parent = Window::NullWindow, const wchar_t *iconResource = MAKEINTRESOURCE(IDI_MAINICON));
+	MessageWindow(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName, HINSTANCE hInstance = GetModuleHandle(nullptr), unsigned long style = 0, Window parent = Window::NullWindow, const wchar_t *iconResource = MAKEINTRESOURCE(IDI_MAINICON));
 	using CALLBACKCOOKIE = unsigned long long;
 
 	inline CALLBACKCOOKIE RegisterCallback(unsigned int message, callback_t callback)
@@ -54,7 +53,7 @@ public:
 		return (static_cast<CALLBACKCOOKIE>(secret) << 32) + message;
 	}
 
-	inline CALLBACKCOOKIE RegisterCallback(const std::wstring &message, callback_t callback)
+	inline CALLBACKCOOKIE RegisterCallback(Util::null_terminated_wstring_view message, callback_t callback)
 	{
 		return RegisterCallback(RegisterWindowMessage(message.c_str()), std::move(callback));
 	}

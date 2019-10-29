@@ -10,6 +10,7 @@
 #include "rapidjsonhelper.hpp"
 #include "../undoc/swca.hpp"
 #include "../util/colors.hpp"
+#include "../util/null_terminated_string_view.hpp"
 #include "../util/others.hpp"
 
 struct TaskbarAppearance {
@@ -64,7 +65,7 @@ private:
 		{ ACCENT_ENABLE_ACRYLICBLURBEHIND,   L"acrylic" }
 	};
 
-	static constexpr std::wstring_view ACCENT_KEY = L"accent";
-	static constexpr std::wstring_view COLOR_KEY = L"color";
-	static constexpr std::wstring_view OPACITY_KEY = L"opacity";
+	static constexpr Util::null_terminated_wstring_view ACCENT_KEY = L"accent";
+	static constexpr Util::null_terminated_wstring_view COLOR_KEY = L"color";
+	static constexpr Util::null_terminated_wstring_view OPACITY_KEY = L"opacity";
 };

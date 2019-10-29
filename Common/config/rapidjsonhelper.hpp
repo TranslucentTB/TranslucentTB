@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <wil/safecast.h>
 
+#include "../util/null_terminated_string_view.hpp"
 #include "../util/others.hpp"
 
 namespace RapidJSONHelper {
@@ -32,28 +33,28 @@ namespace RapidJSONHelper {
 		writer.EndObject();
 	}
 
-	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val, bool &value, std::wstring_view key)
+	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val, bool &value, Util::null_terminated_wstring_view key)
 	{
 		if (!val.IsObject())
 		{
 			return;
 		}
 
-		if (const auto member = val.FindMember(key.data()); member != val.MemberEnd() && member->value.IsBool())
+		if (const auto member = val.FindMember(key.c_str()); member != val.MemberEnd() && member->value.IsBool())
 		{
 			value = member->value.GetBool();
 		}
 	}
 
 	template<class T>
-	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val, T &member, std::wstring_view key, const std::unordered_map<T, std::wstring_view> &map)
+	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val, T &member, Util::null_terminated_wstring_view key, const std::unordered_map<T, std::wstring_view> &map)
 	{
 		if (!val.IsObject())
 		{
 			return;
 		}
 
-		if (const auto value = val.FindMember(key.data()); value != val.MemberEnd() && value->value.IsString())
+		if (const auto value = val.FindMember(key.c_str()); value != val.MemberEnd() && value->value.IsString())
 		{
 			if (const auto iter = Util::FindValue(map, { value->value.GetString(), value->value.GetStringLength() }); iter != map.end())
 			{
@@ -63,14 +64,14 @@ namespace RapidJSONHelper {
 	}
 
 	template<class T>
-	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val, T &member, std::wstring_view key)
+	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val, T &member, Util::null_terminated_wstring_view key)
 	{
 		if (!val.IsObject())
 		{
 			return;
 		}
 
-		if (const auto value = val.FindMember(key.data()); value != val.MemberEnd())
+		if (const auto value = val.FindMember(key.c_str()); value != val.MemberEnd())
 		{
 			member.Deserialize(value->value);
 		}

@@ -447,7 +447,7 @@ void BindEvents(Config &cfg, MessageWindow &window, TrayIcon &tray, ContextMenu 
 		}
 		str << L"edit the configuration file at "
 			<< run.config_file.native() << L".\n\nAre you sure you want to proceed?";
-		const int result = MessageBox(Window::NullWindow, str.str().c_str(), APP_NAME, MB_YESNO | MB_ICONINFORMATION | MB_SETFOREGROUND);
+		const int result = MessageBoxEx(Window::NullWindow, str.str().c_str(), APP_NAME, MB_YESNO | MB_ICONINFORMATION | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 		if (result == IDYES)
 		{
 			cfg.HideTray = true;

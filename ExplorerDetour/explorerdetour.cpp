@@ -9,14 +9,13 @@
 #include "detourtransaction.hpp"
 
 PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE ExplorerDetour::s_SetWindowCompositionAttribute;
-std::wstring ExplorerDetour::s_WorkerWindow;
 UINT ExplorerDetour::s_RequestAttribute;
 bool ExplorerDetour::s_DetourInstalled;
 
 BOOL WINAPI ExplorerDetour::SetWindowCompositionAttributeDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data) noexcept
 {
 	if (data->Attrib == WCA_ACCENT_POLICY &&
-		Window::Find(s_WorkerWindow, s_WorkerWindow).send_message(s_RequestAttribute, 0, reinterpret_cast<LPARAM>(hWnd)))
+		Window::Find(WORKER_WINDOW, WORKER_WINDOW).send_message(s_RequestAttribute, 0, reinterpret_cast<LPARAM>(hWnd)))
 	{
 		return true;
 	}
@@ -45,18 +44,6 @@ bool ExplorerDetour::Install() noexcept
 			= reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(GetModuleHandle(SWCA_DLL), SWCA_ORDINAL));
 
 		if (!s_SetWindowCompositionAttribute)
-		{
-			return false;
-		}
-	}
-
-	if (s_WorkerWindow.empty())
-	{
-		try
-		{
-			s_WorkerWindow = WORKER_WINDOW;
-		}
-		catch (...)
 		{
 			return false;
 		}

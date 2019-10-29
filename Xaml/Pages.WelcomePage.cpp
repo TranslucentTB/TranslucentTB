@@ -30,7 +30,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 	fire_and_forget WelcomePage::RevealConfigFile(const IInspectable &sender, const RoutedEventArgs &args)
 	{
-		const std::filesystem::path file = static_cast<std::wstring_view>(m_ConfigFile);
+		const std::filesystem::path file = std::wstring_view(m_ConfigFile);
 
 		co_await winrt::resume_background();
 
@@ -39,6 +39,6 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 	void WelcomePage::EditConfigFile(const IInspectable &sender, const RoutedEventArgs &args)
 	{
-		winrt::check_hresult(win32::EditFile(static_cast<std::wstring_view>(m_ConfigFile)));
+		winrt::check_hresult(win32::EditFile(std::wstring_view(m_ConfigFile)));
 	}
 }

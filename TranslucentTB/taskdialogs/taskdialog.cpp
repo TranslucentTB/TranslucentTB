@@ -4,6 +4,7 @@
 #include "appinfo.hpp"
 #include "../resources/ids.h"
 #include "../../ProgramLog/error.hpp"
+#include "util/null_terminated_string_view.hpp"
 #include "util/strings.hpp"
 #include "win32.hpp"
 
@@ -11,7 +12,7 @@ HRESULT TTBTaskDialog::CallbackProc(HWND hwnd, UINT uNotification, WPARAM wParam
 {
 	if (uNotification == TDN_HYPERLINK_CLICKED)
 	{
-		std::wstring link = reinterpret_cast<const wchar_t *>(lParam);
+		Util::null_terminated_wstring_view link = reinterpret_cast<const wchar_t *>(lParam);
 		// TODO: update (or not since taskdialogs are going away lul)
 		if (Util::StringBeginsWithOneOf(link, { L"http://", L"https://" }))
 		{
@@ -19,7 +20,7 @@ HRESULT TTBTaskDialog::CallbackProc(HWND hwnd, UINT uNotification, WPARAM wParam
 		}
 		else
 		{
-			win32::RevealFile(std::move(link));
+			win32::RevealFile(std::wstring(link));
 		}
 		return S_OK;
 	}
@@ -53,7 +54,7 @@ bool TTBTaskDialog::Run(bool &checked)
 	HRESULT hr = TaskDialogIndirect(&m_Cfg, nullptr, nullptr, &checkedB);
 	if (FAILED(hr))
 	{
-		MessageBox(Window::NullWindow, (L"Failed to open task dialog.\n\n" + Error::MessageFromHRESULT(hr)).c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+		MessageBoxEx(Window::NullWindow, (L"Failed to open task dialog.\n\n" + Error::MessageFromHRESULT(hr)).c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 		return false;
 	}
 	else

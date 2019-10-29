@@ -6,6 +6,8 @@
 #include <windef.h>
 #include <winuser.h>
 
+#include "util/null_terminated_string_view.hpp"
+
 #ifdef _TRANSLUCENTTB_EXE
 #include <filesystem>
 
@@ -56,13 +58,13 @@ public:
 
 	class FindEnum;
 
-	inline static Window Find(const std::wstring &className = { }, const std::wstring &windowName = { }, Window parent = Window::NullWindow, Window childAfter = Window::NullWindow) noexcept
+	inline static Window Find(Util::null_terminated_wstring_view className = { }, Util::null_terminated_wstring_view windowName = { }, Window parent = Window::NullWindow, Window childAfter = Window::NullWindow) noexcept
 	{
 		return FindWindowEx(parent, childAfter, className.empty() ? nullptr : className.c_str(), windowName.empty() ? nullptr : windowName.c_str());
 	}
 
 	inline static Window Create(unsigned long dwExStyle, LPCWSTR winClass,
-		const std::wstring &windowName, unsigned long dwStyle, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT,
+		Util::null_terminated_wstring_view windowName, unsigned long dwStyle, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT,
 		int nWidth = CW_USEDEFAULT, int nHeight = CW_USEDEFAULT, Window parent = Window::NullWindow,
 		HMENU hMenu = nullptr, HINSTANCE hInstance = GetModuleHandle(nullptr), void *lpParam = nullptr) noexcept
 	{
@@ -186,7 +188,7 @@ public:
 		return SendMessage(m_WindowHandle, message, wparam, lparam);
 	}
 
-	inline LRESULT send_message(const std::wstring &message, WPARAM wparam = 0, LPARAM lparam = 0) const
+	inline LRESULT send_message(Util::null_terminated_wstring_view message, WPARAM wparam = 0, LPARAM lparam = 0) const
 	{
 		return send_message(RegisterWindowMessage(message.c_str()), wparam, lparam);
 	}
@@ -196,12 +198,12 @@ public:
 		return PostMessage(m_WindowHandle, message, wparam, lparam);
 	}
 
-	inline bool post_message(const std::wstring &message, WPARAM wparam = 0, LPARAM lparam = 0) const
+	inline bool post_message(Util::null_terminated_wstring_view message, WPARAM wparam = 0, LPARAM lparam = 0) const
 	{
 		return post_message(RegisterWindowMessage(message.c_str()), wparam, lparam);
 	}
 
-	inline Window find_child(const std::wstring &className = { }, const std::wstring &windowName = { }, Window childAfter = Window::NullWindow) const noexcept
+	inline Window find_child(Util::null_terminated_wstring_view className = { }, Util::null_terminated_wstring_view windowName = { }, Window childAfter = Window::NullWindow) const noexcept
 	{
 		return Find(className, windowName, *this, childAfter);
 	}
@@ -255,27 +257,20 @@ namespace std {
 // Iterator class for FindEnum
 class FindWindowIterator {
 private:
-	const std::wstring *m_class;
-	const std::wstring *m_name;
+	Util::null_terminated_wstring_view m_class, m_name;
 	Window m_parent, m_currentWindow;
 
 	inline void MoveNext()
 	{
-		m_currentWindow = m_parent.find_child(*m_class, *m_name, m_currentWindow);
+		m_currentWindow = m_parent.find_child(m_class, m_name, m_currentWindow);
 	}
 
-	constexpr FindWindowIterator() noexcept :
-		m_class(nullptr),
-		m_name(nullptr),
-		m_parent(Window::NullWindow),
-		m_currentWindow(Window::NullWindow)
-	{ }
+	constexpr FindWindowIterator() noexcept { }
 
-	inline FindWindowIterator(const std::wstring *className, const std::wstring *windowName, Window parent) :
+	inline FindWindowIterator(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName, Window parent) :
 		m_class(className),
 		m_name(windowName),
-		m_parent(parent),
-		m_currentWindow(Window::NullWindow)
+		m_parent(parent)
 	{
 		MoveNext();
 	}
@@ -318,7 +313,7 @@ public:
 
 	inline FindWindowIterator begin() const
 	{
-		return { &m_class, &m_name, m_parent };
+		return { m_class, m_name, m_parent };
 	}
 
 	constexpr FindWindowIterator end() const

@@ -104,7 +104,7 @@ private:
 			const std::wstring msg =
 				fmt::format(fmt(L"Failed to create log file. Logs won't be available during this session.\n\n{}"), errStr);
 
-			MessageBox(Window::NullWindow, msg.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+			MessageBoxEx(Window::NullWindow, msg.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 		}).detach();
 	}
 

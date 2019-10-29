@@ -64,7 +64,7 @@ namespace Error {
 
 		std::thread([error = GetLogMessage(message, error_message, ERROR_MESSAGE L"\n\n{}\n\n{}", ERROR_MESSAGE L"\n\n{}")]
 		{
-			MessageBox(Window::NullWindow, error.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND);
+			MessageBoxEx(Window::NullWindow, error.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 		}).detach();
 	}
 
@@ -75,7 +75,7 @@ namespace Error {
 
 		const std::wstring msg = GetLogMessage(message, error_message, FATAL_ERROR_MESSAGE L"\n\n{}\n\n{}", FATAL_ERROR_MESSAGE L"\n\n{}");
 		// TODO: this allows normal message loop to run, potentially bad. consider kick off a thread and block.
-		MessageBox(Window::NullWindow, msg.c_str(), FATAL_ERROR_TITLE, MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST);
+		MessageBoxEx(Window::NullWindow, msg.c_str(), FATAL_ERROR_TITLE, MB_ICONERROR | MB_OK | MB_SETFOREGROUND | MB_TOPMOST, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 
 		// Calling abort() will generate a dialog box, but we already have our own.
 		// Raising a fail-fast exception skips it but also allows WER to do its job.

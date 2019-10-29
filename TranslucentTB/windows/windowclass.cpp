@@ -21,36 +21,28 @@ LRESULT WindowClass::RawWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 
 void WindowClass::LoadIcons(const wchar_t *iconResource)
 {
-	HresultVerify(LoadIconMetric(m_ClassStruct.hInstance, iconResource, LIM_LARGE, &m_ClassStruct.hIcon), spdlog::level::warn, L"Failed to load large window class icon.");
-	HresultVerify(LoadIconMetric(m_ClassStruct.hInstance, iconResource, LIM_SMALL, &m_ClassStruct.hIconSm), spdlog::level::warn, L"Failed to load small window class icon.");
+	HresultVerify(LoadIconMetric(m_hInstance, iconResource, LIM_LARGE, m_hIcon.put()), spdlog::level::warn, L"Failed to load large window class icon.");
+	HresultVerify(LoadIconMetric(m_hInstance, iconResource, LIM_SMALL, m_hIconSmall.put()), spdlog::level::warn, L"Failed to load small window class icon.");
 }
 
-void WindowClass::DestroyIcons()
-{
-	if (!DestroyIcon(m_ClassStruct.hIcon))
-	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to destroy large window class icon.");
-	}
-	if (!DestroyIcon(m_ClassStruct.hIconSm))
-	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to destroy small window class icon.");
-	}
-}
-
-WindowClass::WindowClass(callback_t callback, const std::wstring &className, const wchar_t *iconResource, unsigned int style, HINSTANCE hInstance, HBRUSH brush, HCURSOR cursor) :
-	m_ClassStruct {
-		.cbSize = sizeof(m_ClassStruct),
-		.style = style,
-		.lpfnWndProc = RawWindowProcedure,
-		.hInstance = hInstance,
-		.hCursor = cursor,
-		.hbrBackground = brush,
-		.lpszClassName = className.c_str()
-	}
+WindowClass::WindowClass(callback_t callback, Util::null_terminated_wstring_view className, const wchar_t *iconResource, unsigned int style, HINSTANCE hInstance, HBRUSH brush, HCURSOR cursor) :
+	m_hInstance(hInstance)
 {
 	LoadIcons(iconResource);
 
-	m_Atom = RegisterClassEx(&m_ClassStruct);
+	WNDCLASSEX classStruct = {
+		.cbSize = sizeof(classStruct),
+		.style = style,
+		.lpfnWndProc = RawWindowProcedure,
+		.hInstance = hInstance,
+		.hIcon = m_hIcon.get(),
+		.hCursor = cursor,
+		.hbrBackground = brush,
+		.lpszClassName = className.c_str(),
+		.hIconSm = m_hIconSmall.get()
+	};
+
+	m_Atom = RegisterClassEx(&classStruct);
 	if (m_Atom)
 	{
 		m_CallbackMap[m_Atom] = std::move(callback);
@@ -63,17 +55,16 @@ WindowClass::WindowClass(callback_t callback, const std::wstring &className, con
 
 void WindowClass::ChangeIcon(Window window, const wchar_t *iconResource)
 {
-	DestroyIcons();
 	LoadIcons(iconResource);
 
 	SetLastError(NO_ERROR);
-	if (!SetClassLongPtr(window, GCLP_HICON, reinterpret_cast<LONG_PTR>(m_ClassStruct.hIcon)) && GetLastError() != NO_ERROR)
+	if (!SetClassLongPtr(window, GCLP_HICON, reinterpret_cast<LONG_PTR>(m_hIcon.get())) && GetLastError() != NO_ERROR)
 	{
 		LastErrorHandle(spdlog::level::warn, L"Failed to change large window class icon.");
 	}
 
 	SetLastError(NO_ERROR);
-	if (!SetClassLongPtr(window, GCLP_HICONSM, reinterpret_cast<LONG_PTR>(m_ClassStruct.hIconSm)) && GetLastError() != NO_ERROR)
+	if (!SetClassLongPtr(window, GCLP_HICONSM, reinterpret_cast<LONG_PTR>(m_hIconSmall.get())) && GetLastError() != NO_ERROR)
 	{
 		LastErrorHandle(spdlog::level::warn, L"Failed to change small window class icon.");
 	}
@@ -82,10 +73,8 @@ void WindowClass::ChangeIcon(Window window, const wchar_t *iconResource)
 WindowClass::~WindowClass()
 {
 	m_CallbackMap.erase(m_Atom);
-	if (!UnregisterClass(atom(), m_ClassStruct.hInstance))
+	if (!UnregisterClass(atom(), m_hInstance))
 	{
 		LastErrorHandle(spdlog::level::info, L"Failed to unregister window class.");
 	}
-
-	DestroyIcons();
 }
