@@ -8,7 +8,7 @@
 #include "detourexception.hpp"
 #include "detourtransaction.hpp"
 
-PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE ExplorerDetour::s_SetWindowCompositionAttribute;
+PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE ExplorerDetour::SetWindowCompositionAttribute;
 UINT ExplorerDetour::s_RequestAttribute;
 bool ExplorerDetour::s_DetourInstalled;
 
@@ -21,7 +21,7 @@ BOOL WINAPI ExplorerDetour::SetWindowCompositionAttributeDetour(HWND hWnd, const
 	}
 	else
 	{
-		return s_SetWindowCompositionAttribute(hWnd, data);
+		return SetWindowCompositionAttribute(hWnd, data);
 	}
 }
 
@@ -38,12 +38,12 @@ bool ExplorerDetour::IsInExplorer() noexcept
 
 bool ExplorerDetour::Install() noexcept
 {
-	if (!s_SetWindowCompositionAttribute)
+	if (!SetWindowCompositionAttribute)
 	{
-		s_SetWindowCompositionAttribute
+		SetWindowCompositionAttribute
 			= reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(GetModuleHandle(SWCA_DLL), SWCA_ORDINAL));
 
-		if (!s_SetWindowCompositionAttribute)
+		if (!SetWindowCompositionAttribute)
 		{
 			return false;
 		}
@@ -65,7 +65,7 @@ bool ExplorerDetour::Install() noexcept
 			DetourTransaction transaction;
 
 			transaction.update_all_threads();
-			transaction.attach(s_SetWindowCompositionAttribute, SetWindowCompositionAttributeDetour);
+			transaction.attach(SetWindowCompositionAttribute, SetWindowCompositionAttributeDetour);
 			transaction.commit();
 		}
 		catch (...)
@@ -86,7 +86,7 @@ void ExplorerDetour::Uninstall()
 		DetourTransaction transaction;
 
 		transaction.update_all_threads();
-		transaction.detach(s_SetWindowCompositionAttribute, SetWindowCompositionAttributeDetour);
+		transaction.detach(SetWindowCompositionAttribute, SetWindowCompositionAttributeDetour);
 		transaction.commit();
 
 		s_DetourInstalled = false;
