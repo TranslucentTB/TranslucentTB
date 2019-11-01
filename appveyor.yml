@@ -1,5 +1,5 @@
 version: "Build #{build}"
-image: Visual Studio 2019
+image: Visual Studio 2019 Preview
 configuration:
 - Release
 - Debug
@@ -10,8 +10,8 @@ platform:
 - ARM64
 
 install:
-- vcpkg install --triplet %PLATFORM%-windows detours gtest rapidjson fmt spdlog
-- vcpkg install wil:%PLATFORM%-windows --head
+- vcpkg install --triplet %PLATFORM%-windows --head rapidjson wil
+- vcpkg install --triplet %PLATFORM%-windows detours gtest spdlog fmt
 
 before_build:
 - ps: .\update-version.ps1
@@ -25,9 +25,6 @@ test_script:
 
 after_test:
 - ps: Invoke-WebRequest -Uri "https://ci.appveyor.com/api/testresults/junit/$env:APPVEYOR_JOB_ID" -Method Put -Infile tests.xml
-
-cache:
-- C:\tools\vcpkg\installed
 
 artifacts:
 - path: $(PLATFORM)\$(CONFIGURATION)
