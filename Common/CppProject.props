@@ -137,7 +137,7 @@
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/await /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <UseFullPaths>true</UseFullPaths>
 
       <!-- {fmt} -->
