@@ -10,8 +10,6 @@
 
 #ifdef _TRANSLUCENTTB_EXE
 #include <filesystem>
-
-#include "../TranslucentTB/windows/windowclass.hpp"
 #endif
 
 class Window {
@@ -205,10 +203,10 @@ public:
 
 	inline Window find_child(Util::null_terminated_wstring_view className = { }, Util::null_terminated_wstring_view windowName = { }, Window childAfter = Window::NullWindow) const noexcept
 	{
-		return Find(className, windowName, *this, childAfter);
+		return Find(className, windowName, m_WindowHandle, childAfter);
 	}
 
-	FindEnum find_childs(std::wstring className = { }, std::wstring windowName = { }) const;
+	constexpr FindEnum find_childs(Util::null_terminated_wstring_view className = { }, Util::null_terminated_wstring_view windowName = { }) const noexcept;
 
 	constexpr HWND handle() const noexcept
 	{
@@ -260,14 +258,14 @@ private:
 	Util::null_terminated_wstring_view m_class, m_name;
 	Window m_parent, m_currentWindow;
 
-	inline void MoveNext()
+	inline void MoveNext() noexcept
 	{
 		m_currentWindow = m_parent.find_child(m_class, m_name, m_currentWindow);
 	}
 
 	constexpr FindWindowIterator() noexcept { }
 
-	inline FindWindowIterator(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName, Window parent) :
+	inline FindWindowIterator(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName, Window parent) noexcept :
 		m_class(className),
 		m_name(windowName),
 		m_parent(parent)
@@ -278,23 +276,23 @@ private:
 	friend class Window::FindEnum;
 
 public:
-	inline FindWindowIterator &operator ++()
+	inline FindWindowIterator &operator ++() noexcept
 	{
 		MoveNext();
 		return *this;
 	}
 
-	constexpr bool operator ==(const FindWindowIterator &right) const
+	constexpr bool operator ==(const FindWindowIterator &right) const noexcept
 	{
 		return m_currentWindow == right.m_currentWindow;
 	}
 
-	constexpr bool operator !=(const FindWindowIterator &right) const
+	constexpr bool operator !=(const FindWindowIterator &right) const noexcept
 	{
 		return !operator==(right);
 	}
 
-	constexpr Window operator *() const
+	constexpr Window operator *() const noexcept
 	{
 		return m_currentWindow;
 	}
@@ -302,27 +300,27 @@ public:
 
 class Window::FindEnum {
 private:
-	std::wstring m_class, m_name;
+	Util::null_terminated_wstring_view m_class, m_name;
 	Window m_parent;
 public:
-	inline FindEnum(std::wstring className = { }, std::wstring windowName = { }, Window parent = Window::NullWindow) noexcept:
-		m_class(std::move(className)),
-		m_name(std::move(windowName)),
+	constexpr FindEnum(Util::null_terminated_wstring_view className = { }, Util::null_terminated_wstring_view windowName = { }, Window parent = Window::NullWindow) noexcept :
+		m_class(className),
+		m_name(windowName),
 		m_parent(parent)
 	{ }
 
-	inline FindWindowIterator begin() const
+	inline FindWindowIterator begin() const noexcept
 	{
 		return { m_class, m_name, m_parent };
 	}
 
-	constexpr FindWindowIterator end() const
+	constexpr FindWindowIterator end() const noexcept
 	{
 		return { };
 	}
 };
 
-inline Window::FindEnum Window::find_childs(std::wstring className, std::wstring windowName) const
+constexpr Window::FindEnum Window::find_childs(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName) const noexcept
 {
-	return FindEnum(std::move(className), std::move(windowName), *this);
+	return FindEnum(className, windowName, m_WindowHandle);
 }
