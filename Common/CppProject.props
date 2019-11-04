@@ -160,7 +160,7 @@
   </ItemDefinitionGroup>
 
   <Target Name="EnableWinRTLeanAndMean" Condition="'@(ClCompile)' != ''">
-    <ItemGroup Condition="('@(Page)' == '' And '@(ApplicationDefinition)' == '')">
+    <ItemGroup Condition="'@(Page)' == '' And '@(ApplicationDefinition)' == ''">
       <ClCompile>
         <PreprocessorDefinitions>WINRT_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       </ClCompile>
