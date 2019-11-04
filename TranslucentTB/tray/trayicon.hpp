@@ -1,5 +1,6 @@
 #pragma once
 #include "../windows/messagewindow.hpp"
+#include <shellapi.h>
 #include <windef.h>
 #include <wil/resource.h>
 
