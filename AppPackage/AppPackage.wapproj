@@ -49,7 +49,6 @@
     <PackageCertificateKeyFile>DevelopmentKey.pfx</PackageCertificateKeyFile>
     <EntryPointProjectUniqueName>..\TranslucentTB\TranslucentTB.vcxproj</EntryPointProjectUniqueName>
     <DebuggerType>NativeOnly</DebuggerType>
-    <_GenerateProjectPriFileDependsOn>MergePriFiles;$(_GenerateProjectPriFileDependsOn)</_GenerateProjectPriFileDependsOn>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -109,12 +108,6 @@
       <_FilteredNonWapProjProjectOutput Include="@(_TemporaryFilteredWapProjOutput)">
         <SourceProject></SourceProject>
       </_FilteredNonWapProjProjectOutput>
-    </ItemGroup>
-  </Target>
-  <Target Name="MergePriFiles" DependsOnTargets="_ConvertItems">
-    <ItemGroup>
-      <_PriFile Include="@(_NonWapProjProjectOutput)" Condition="'%(Extension)' == '.pri'" />
-      <AppxPackagePayload Remove="@(AppxPackagePayload)" Condition="'%(Extension)' == '.pri'" />
     </ItemGroup>
   </Target>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />

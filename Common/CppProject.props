@@ -62,6 +62,7 @@
     <CppWinRTFastAbi>true</CppWinRTFastAbi>
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
+    <ComputeCompileInputsTargets>$(ComputeCompileInputsTargets);EnableWinRTLeanAndMean</ComputeCompileInputsTargets>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Platform)'=='Win32'">
@@ -154,9 +155,17 @@
       <PreprocessorDefinitions>RESULT_SUPPRESS_STATIC_INITIALIZERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
       <!-- Windows -->
-      <PreprocessorDefinitions>STRICT_TYPED_ITEMIDS;NOMINMAX;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STRICT_TYPED_ITEMIDS;NOMINMAX;_WINDOWS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
+
+  <Target Name="EnableWinRTLeanAndMean" Condition="'@(ClCompile)' != ''">
+    <ItemGroup Condition="('@(Page)' == '' And '@(ApplicationDefinition)' == '')">
+      <ClCompile>
+        <PreprocessorDefinitions>WINRT_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      </ClCompile>
+    </ItemGroup>
+  </Target>
 
   <ImportGroup Label="Shared">
     <Import Project="Common.vcxitems" Label="Shared" />
