@@ -36,7 +36,7 @@ protected:
 
 		if (m_Handle)
 		{
-			fmt::memory_buffer formatted;
+			spdlog::memory_buf_t formatted;
 			this->formatter_->format(msg, formatted);
 
 			write(formatted);

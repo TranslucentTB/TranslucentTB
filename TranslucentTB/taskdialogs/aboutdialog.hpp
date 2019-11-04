@@ -1,6 +1,6 @@
 #pragma once
 #include "taskdialog.hpp"
-#include <detours.h>
+#include <detours/detours.h>
 #include <fmt/format.h>
 #include <iterator>
 #include <rapidjson/rapidjson.h>

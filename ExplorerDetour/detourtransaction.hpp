@@ -1,7 +1,7 @@
 #pragma once
 #include "arch.h"
 #include <processthreadsapi.h>
-#include <detours.h>
+#include <detours/detours.h>
 #include <TlHelp32.h>
 #include <type_traits>
 #include <vector>

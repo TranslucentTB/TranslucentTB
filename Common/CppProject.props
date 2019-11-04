@@ -139,6 +139,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/await /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <UseFullPaths>true</UseFullPaths>
+      <DisableSpecificWarnings>4275</DisableSpecificWarnings>
 
       <!-- {fmt} -->
       <PreprocessorDefinitions>FMT_STRING_ALIAS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
