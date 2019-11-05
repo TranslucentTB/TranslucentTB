@@ -56,7 +56,7 @@ std::filesystem::path Window::file() const
 	}
 
 	auto [loc, hr] = win32::GetProcessFileName(processHandle.get());
-	HresultHandle(hr, spdlog::level::info, L"Getting file name of a window failed.");
+	HresultVerify(hr, spdlog::level::info, L"Getting file name of a window failed.");
 
 	return loc;
 }

@@ -47,7 +47,7 @@ namespace Util {
 #ifdef _WIN64
 		constexpr void hash_combine(std::size_t &h, std::size_t k) noexcept
 		{
-			constexpr std::size_t m = 0xc6a4a7935bd1e995;
+			constexpr std::size_t m = 0xC6A4A7935BD1E995;
 			constexpr int r = 47;
 
 			k *= m;
@@ -59,7 +59,7 @@ namespace Util {
 
 			// Completely arbitrary number, to prevent 0's
 			// from hashing to 0.
-			h += 0xe6546b64;
+			h += 0xE6546B64;
 		}
 #else
 		constexpr std::size_t rotl(std::size_t original, uint8_t bits) noexcept
@@ -69,8 +69,8 @@ namespace Util {
 
 		constexpr void hash_combine(std::size_t &h, std::size_t k) noexcept
 		{
-			constexpr std::size_t c1 = 0xcc9e2d51;
-			constexpr std::size_t c2 = 0x1b873593;
+			constexpr std::size_t c1 = 0xCC9E2D51;
+			constexpr std::size_t c2 = 0x1B873593;
 
 			k *= c1;
 			k = rotl(k, 15);
@@ -78,7 +78,7 @@ namespace Util {
 
 			h ^= k;
 			h = rotl(h, 13);
-			h = h * 5 + 0xe6546b64;
+			h = h * 5 + 0xE6546B64;
 		}
 #endif
 

@@ -6,50 +6,55 @@ using namespace testing;
 
 TEST(Util_ColorFromString, Parses3DigitColor)
 {
-	ASSERT_EQ(Util::ColorFromString(L"#faf"), 0xFFAAFF);
+	ASSERT_EQ(Util::ColorFromString(L"#FAF"), 0xFFAAFF);
 }
 
 TEST(Util_ColorFromString, Parses6DigitColor)
 {
-	ASSERT_EQ(Util::ColorFromString(L"#c0ffee"), 0xc0ffee);
+	ASSERT_EQ(Util::ColorFromString(L"#C0FFEE"), 0xC0FFEE);
 }
 
 TEST(Util_ColorFromString, TrimsInput)
 {
-	ASSERT_EQ(Util::ColorFromString(L"   #ffffff \t \n"), 0xFFFFFF);
+	ASSERT_EQ(Util::ColorFromString(L"   #FFFFFF \t \n"), 0xFFFFFF);
 }
 
 TEST(Util_ColorFromString, ThrowsWhenColorDoesntStartsWithPrefix)
 {
-	ASSERT_THROW(Util::ColorFromString(L"ffffff"), std::invalid_argument);
+	ASSERT_THROW(Util::ColorFromString(L"FFFFFF"), std::invalid_argument);
 }
 
 TEST(Util_ColorFromString, ThrowsWhenColorIsNot3Or6Characters)
 {
-	ASSERT_THROW(Util::ColorFromString(L"#fffffff"), std::invalid_argument);
+	ASSERT_THROW(Util::ColorFromString(L"#FFFFFFF"), std::invalid_argument);
 }
 
 TEST(Util_StringFromColor, ReturnsCorrectString)
 {
-	ASSERT_EQ(Util::StringFromColor(0xc0ffee), L"#c0ffee");
+	ASSERT_EQ(Util::StringFromColor(0xC0FFEE), L"#C0FFEE");
 }
 
 TEST(Util_StringFromColor, IgnoresFirstByte)
 {
-	ASSERT_EQ(Util::StringFromColor(0xdeadbeef), L"#adbeef");
+	ASSERT_EQ(Util::StringFromColor(0xDEADBEEF), L"#ADBEEF");
 }
 
 TEST(Util_StringFromColor, PadsLeftRight)
 {
-	ASSERT_EQ(Util::StringFromColor(0x00ff00), L"#00ff00");
+	ASSERT_EQ(Util::StringFromColor(0x00FF00), L"#00FF00");
+}
+
+TEST(Util_StringFromColor, BlackColor)
+{
+	ASSERT_EQ(Util::StringFromColor(0x000000), L"#000000");
 }
 
 TEST(Util_SwapColorEndian, SwapsEndianness)
 {
-	ASSERT_EQ(Util::SwapColorEndian(0xc0ffee), 0xeeffc0);
+	ASSERT_EQ(Util::SwapColorEndian(0xC0FFEE), 0xEEFFC0);
 }
 
 TEST(Util_SwapColorEndian, IgnoresFirstByte)
 {
-	ASSERT_EQ(Util::SwapColorEndian(0xdeadbeef), 0xefbead);
+	ASSERT_EQ(Util::SwapColorEndian(0xDEADBEEF), 0xEFBEAD);
 }

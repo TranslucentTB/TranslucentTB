@@ -60,7 +60,7 @@ public:
 	inline Config() noexcept :
 		DesktopAppearance { ACCENT_ENABLE_TRANSPARENTGRADIENT, 0 },
 		VisibleWindowAppearance { ACCENT_ENABLE_TRANSPARENTGRADIENT, 0, false },
-		MaximisedWindowAppearance { ACCENT_ENABLE_BLURBEHIND, 0xaa000000, true },
+		MaximisedWindowAppearance { ACCENT_ENABLE_BLURBEHIND, 0xAA000000, true },
 		StartOpenedAppearance { ACCENT_NORMAL, 0, true },
 		CortanaOpenedAppearance { ACCENT_NORMAL, 0, true },
 		TimelineOpenedAppearance { ACCENT_NORMAL, 0, true },

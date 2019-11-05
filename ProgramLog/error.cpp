@@ -116,7 +116,7 @@ PROGRAMLOG_API std::wstring Error::MessageFromStdSystemError(const std::system_e
 std::wstring Error::FormatHRESULT(HRESULT result, std::wstring_view description)
 {
 	return fmt::format(
-		fmt(L"{:#08x}: {}"),
+		fmt(L"0x{:08X}: {}"),
 		static_cast<std::make_unsigned_t<HRESULT>>(result), // needs this otherwise we get some error codes in the negatives
 		description
 	);

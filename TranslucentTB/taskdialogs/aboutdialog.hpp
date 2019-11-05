@@ -112,9 +112,9 @@ private:
 		const auto [build, hr2] = win32::GetWindowsBuild();
 		str << L"Windows version: " << (SUCCEEDED(hr2) ? build : Error::MessageFromHRESULT(hr2)) << std::endl;
 
-		const uint8_t major = (DETOURS_VERSION & 0xf0000) >> 16;
-		const uint8_t minor = (DETOURS_VERSION & 0xf00) >> 8;
-		const uint8_t revision = DETOURS_VERSION & 0xf;
+		const uint8_t major = (DETOURS_VERSION & 0xF0000) >> 16;
+		const uint8_t minor = (DETOURS_VERSION & 0xF00) >> 8;
+		const uint8_t revision = DETOURS_VERSION & 0xF;
 		str << L"Microsoft Detours version: " << major << L'.' << minor << L'.' << revision << std::endl;
 
 		str << L"RapidJSON version: " << RAPIDJSON_VERSION_STRING << std::endl;
