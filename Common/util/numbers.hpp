@@ -26,7 +26,7 @@ namespace Util {
 			return character >= L'a' && character <= L'f';
 		}
 
-		template<class T>
+		template<std::signed_integral T>
 		constexpr T abs(T num)
 		{
 			if (num == std::numeric_limits<T>::min())
@@ -37,17 +37,16 @@ namespace Util {
 			return num >= 0 ? num : -num;
 		}
 
-		/*
-		template<class T>
+		template<std::unsigned_integral T>
 		constexpr T abs(T num)
 		{
 			return num;
-		}*/
+		}
 
-		template<class T, uint8_t base>
+		template<std::integral T, uint8_t base>
 		struct NumberParser;
 
-		template<class T>
+		template<std::integral T>
 		struct NumberParser<T, 10> {
 			static constexpr T impl(std::wstring_view number)
 			{
@@ -106,7 +105,7 @@ namespace Util {
 			}
 		};
 
-		template<class T>
+		template<std::unsigned_integral T>
 		struct NumberParser<T, 16> {
 			static constexpr T impl(std::wstring_view number)
 			{
@@ -149,7 +148,7 @@ namespace Util {
 
 	// Apparently no wide string to number parser accepted an explicit ending to the string
 	// so here I am. Also C locales sucks.
-	template<class T = int32_t, uint8_t base = 10>
+	template<std::integral T = int32_t, uint8_t base = 10>
 	constexpr T ParseNumber(std::wstring_view number)
 	{
 		return impl::NumberParser<T, base>::impl(Trim(number));

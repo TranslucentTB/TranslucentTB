@@ -106,7 +106,7 @@ public:
 		while (Thread32Next(snapshot.get(), &thread));
 	}
 
-	template<class T>
+	template<Util::function_pointer T>
 	inline void attach(T &function, std::type_identity_t<T> detour)
 	{
 		const LONG result = DetourAttach(reinterpret_cast<void **>(&function), reinterpret_cast<void *>(detour));
@@ -132,7 +132,7 @@ public:
 		}
 	}
 
-	template<class T>
+	template<Util::function_pointer T>
 	inline void detach(T &function, std::type_identity_t<T> detour)
 	{
 		const LONG result = DetourDetach(reinterpret_cast<void **>(&function), reinterpret_cast<void *>(detour));
