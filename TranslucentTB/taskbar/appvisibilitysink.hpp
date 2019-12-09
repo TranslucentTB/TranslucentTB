@@ -1,5 +1,5 @@
 #pragma once
-#include <functional>
+#include "arch.h"
 #include <ShObjIdl.h>
 #include <winrt/base.h>
 

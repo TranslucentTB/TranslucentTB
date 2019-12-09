@@ -1,27 +1,43 @@
 #pragma once
 #include "arch.h"
-#include <functional>
 #include <string>
 #include <string_view>
 #include <windef.h>
 #include <WinUser.h>
 #include <CommCtrl.h>
 
+#include "appinfo.hpp"
+#include "../resources/ids.h"
 #include "window.hpp"
 
 class TTBTaskDialog {
 private:
-	using callback_t = std::function<HRESULT(Window, unsigned int, WPARAM, LPARAM)>;
-
 	std::wstring m_Title;
 	std::wstring m_Content;
-	callback_t m_Callback;
 
-	static HRESULT CALLBACK CallbackProc(HWND hwnd, UINT uNotification, WPARAM wParam, LPARAM lParam, LONG_PTR dwRefData);
+	static HRESULT CALLBACK RawCallbackProc(HWND hwnd, UINT uNotification, WPARAM wParam, LPARAM lParam, LONG_PTR dwRefData);
+
 protected:
 	TASKDIALOGCONFIG m_Cfg;
-	TTBTaskDialog(std::wstring_view title, std::wstring &&content, callback_t callback, Window parent);
 
+	inline TTBTaskDialog(std::wstring title, std::wstring content, Window parent, HINSTANCE hInst) :
+		m_Title(std::move(title)),
+		m_Content(std::move(content)),
+		m_Cfg {
+			.cbSize = sizeof(m_Cfg),
+			.hwndParent = parent,
+			.hInstance = hInst,
+			.dwFlags = TDF_ENABLE_HYPERLINKS,
+			.pszWindowTitle = APP_NAME,
+			.pszMainIcon = MAKEINTRESOURCE(IDI_MAINICON),
+			.pszMainInstruction = m_Title.c_str(),
+			.pszContent = m_Content.c_str(),
+			.pfCallback = RawCallbackProc,
+			.lpCallbackData = reinterpret_cast<LONG_PTR>(this)
+		}
+	{ }
+
+	virtual HRESULT CallbackProc(Window, UINT, WPARAM, LPARAM) = 0;
 	bool Run(bool &checked);
 
 public:

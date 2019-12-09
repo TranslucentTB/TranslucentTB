@@ -1,193 +1,20 @@
-// Standard API
-#include <filesystem>
-#include <functional>
-#include <string>
-#include <string_view>
-#include <thread>
-#include <unordered_map>
-
-// Windows API
 #include "arch.h"
-#include <PathCch.h>
+#include <filesystem>
 #include <sal.h>
-#include <ShlObj.h>
-#include <winrt/base.h>
-
-// WIL and C++/WinRT
-#include <wil/filesystem.h>
 #include <wil/resource.h>
-#include <winrt/Windows.ApplicationModel.h>
-#include <winrt/Windows.Foundation.h>
+#include <Unknwn.h>
+#include <winrt/base.h>
 #include <winrt/Windows.Storage.h>
-#include <winrt/TranslucentTB.Xaml.h>
-#include <winrt/TranslucentTB.Xaml.Pages.h>
 
-// Local stuff
-#include "appinfo.hpp"
-#include "config/config.hpp"
 #include "constants.hpp"
-#include "darkthememanager.hpp"
-#include "resources/ids.h"
-#include "undoc/swca.hpp"
-#include "taskbar/taskbarattributeworker.hpp"
-#include "taskdialogs/aboutdialog.hpp"
-#include "taskdialogs/welcomedialog.hpp"
-#include "tray/contextmenu.hpp"
-#include "tray/trayicon.hpp"
 #include "../ProgramLog/error.hpp"
-#include "../ProgramLog/log.hpp"
-#include "win32.hpp"
-#include "windows/messagewindow.hpp"
-#include "window.hpp"
-#include "windows/windowclass.hpp"
+#include "mainappwindow.hpp"
 #include "uwp.hpp"
-#include "uwp/autostart.hpp"
-#include "uwp/xamlpagehost.hpp"
+#include "taskdialogs/welcomedialog.hpp"
+#include "win32.hpp"
+#include "windows/windowclass.hpp"
 
-#pragma region Data
-
-static struct {
-	std::filesystem::path config_folder;
-	std::filesystem::path config_file;
-	winrt::TranslucentTB::Xaml::App app = nullptr;
-} run;
-
-static const std::unordered_map<ACCENT_STATE, uint32_t> DESKTOP_BUTTOM_MAP = {
-	{ ACCENT_NORMAL,                     ID_DESKTOP_NORMAL  },
-	{ ACCENT_ENABLE_TRANSPARENTGRADIENT, ID_DESKTOP_CLEAR   },
-	{ ACCENT_ENABLE_GRADIENT,            ID_DESKTOP_OPAQUE  },
-	{ ACCENT_ENABLE_BLURBEHIND,          ID_DESKTOP_BLUR    },
-	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,   ID_DESKTOP_ACRYLIC }
-};
-
-static const std::unordered_map<ACCENT_STATE, uint32_t> VISIBLE_BUTTOM_MAP = {
-	{ ACCENT_NORMAL,                     ID_VISIBLE_NORMAL  },
-	{ ACCENT_ENABLE_TRANSPARENTGRADIENT, ID_VISIBLE_CLEAR   },
-	{ ACCENT_ENABLE_GRADIENT,            ID_VISIBLE_OPAQUE  },
-	{ ACCENT_ENABLE_BLURBEHIND,          ID_VISIBLE_BLUR    },
-	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,   ID_VISIBLE_ACRYLIC }
-};
-
-static const std::unordered_map<ACCENT_STATE, uint32_t> MAXIMISED_BUTTON_MAP = {
-	{ ACCENT_NORMAL,                     ID_MAXIMISED_NORMAL  },
-	{ ACCENT_ENABLE_TRANSPARENTGRADIENT, ID_MAXIMISED_CLEAR   },
-	{ ACCENT_ENABLE_GRADIENT,            ID_MAXIMISED_OPAQUE  },
-	{ ACCENT_ENABLE_BLURBEHIND,          ID_MAXIMISED_BLUR    },
-	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,   ID_MAXIMISED_ACRYLIC }
-};
-
-static const std::unordered_map<ACCENT_STATE, uint32_t> START_BUTTON_MAP = {
-	{ ACCENT_NORMAL,                     ID_START_NORMAL  },
-	{ ACCENT_ENABLE_TRANSPARENTGRADIENT, ID_START_CLEAR   },
-	{ ACCENT_ENABLE_GRADIENT,            ID_START_OPAQUE  },
-	{ ACCENT_ENABLE_BLURBEHIND,          ID_START_BLUR    },
-	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,   ID_START_ACRYLIC }
-};
-
-static const std::unordered_map<ACCENT_STATE, uint32_t> CORTANA_BUTTON_MAP = {
-	{ ACCENT_NORMAL,                     ID_CORTANA_NORMAL  },
-	{ ACCENT_ENABLE_TRANSPARENTGRADIENT, ID_CORTANA_CLEAR   },
-	{ ACCENT_ENABLE_GRADIENT,            ID_CORTANA_OPAQUE  },
-	{ ACCENT_ENABLE_BLURBEHIND,          ID_CORTANA_BLUR    },
-	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,   ID_CORTANA_ACRYLIC }
-};
-
-static const std::unordered_map<ACCENT_STATE, uint32_t> TIMELINE_BUTTON_MAP = {
-	{ ACCENT_NORMAL,                     ID_TIMELINE_NORMAL  },
-	{ ACCENT_ENABLE_TRANSPARENTGRADIENT, ID_TIMELINE_CLEAR   },
-	{ ACCENT_ENABLE_GRADIENT,            ID_TIMELINE_OPAQUE  },
-	{ ACCENT_ENABLE_BLURBEHIND,          ID_TIMELINE_BLUR    },
-	{ ACCENT_ENABLE_ACRYLICBLURBEHIND,   ID_TIMELINE_ACRYLIC }
-};
-
-static const std::unordered_map<PeekBehavior, uint32_t> PEEK_BUTTON_MAP = {
-	{ PeekBehavior::AlwaysShow,                   ID_PEEK_SHOW                       },
-	{ PeekBehavior::WindowMaximisedOnMainMonitor, ID_PEEK_DYNAMIC_MAIN_MONITOR       },
-	{ PeekBehavior::WindowMaximisedOnAnyMonitor,  ID_PEEK_DYNAMIC_ANY_MONITOR        },
-	{ PeekBehavior::DesktopIsForegroundWindow,    ID_PEEK_DYNAMIC_FOREGROUND_DESKTOP },
-	{ PeekBehavior::AlwaysHide,                   ID_PEEK_HIDE                       }
-};
-
-static const std::unordered_map<spdlog::level::level_enum, uint32_t> LOG_BUTTON_MAP = {
-	{ spdlog::level::debug, ID_LOG_DEBUG },
-	{ spdlog::level::info,  ID_LOG_INFO  },
-	{ spdlog::level::warn,  ID_LOG_WARN  },
-	{ spdlog::level::err,   ID_LOG_ERR   },
-	{ spdlog::level::off,   ID_LOG_OFF   }
-};
-
-#pragma endregion
-
-#pragma region Configuration
-
-void GetPaths()
-{
-	if (UWP::HasPackageIdentity())
-	{
-		try
-		{
-			using namespace winrt::Windows::Storage;
-			run.config_folder = std::wstring_view(ApplicationData::Current().RoamingFolder().Path());
-		}
-		HresultErrorCatch(spdlog::level::critical, L"Getting application folder paths failed!");
-	}
-	else
-	{
-		run.config_folder = win32::GetExeLocation().parent_path();
-	}
-
-	run.config_file = run.config_folder / CONFIG_FILE;
-}
-
-void SetConfig(Config &current, Config &&newConfig, TrayIcon &icon)
-{
-	if (current.HideTray != newConfig.HideTray)
-	{
-		if (newConfig.HideTray)
-		{
-			icon.Hide();
-		}
-		else
-		{
-			icon.Show();
-		}
-	}
-
-	if (current.LogVerbosity != newConfig.LogVerbosity)
-	{
-		Log::SetLevel(newConfig.LogVerbosity);
-	}
-
-	current = std::move(newConfig);
-}
-
-bool CheckAndRunWelcome()
-{
-	if (!std::filesystem::is_regular_file(run.config_file))
-	{
-		Config{ }.Save(run.config_file);
-		if (!WelcomeDialog(run.config_file).Run())
-		{
-			std::filesystem::remove(run.config_file);
-			return false;
-		}
-	}
-
-	// Remove old version config once prompt is accepted.
-	std::filesystem::remove_all(run.config_folder / APP_NAME);
-
-	return true;
-}
-
-#pragma endregion
-
-#pragma region Tray
-
-void BindColor(ContextMenu &menu, unsigned int id, COLORREF &color)
-{
-	// TODO: no-op
-}
-
+/*
 template<class T>
 void BindByMap(ContextMenu &menu, const std::unordered_map<T, unsigned int> &map, std::type_identity_t<std::function<T()>> getter, std::type_identity_t<std::function<void(T)>> setter)
 {
@@ -321,121 +148,8 @@ winrt::fire_and_forget RefreshMenu(const Config &cfg, ContextMenu::Updater updat
 	}
 }
 
-#pragma endregion
-
-#pragma region Startup
-
-void InitializeWindowsRuntime()
+void BindEvents(Config &cfg, TrayIcon &tray, ContextMenu &menu, TaskbarAttributeWorker &worker)
 {
-	try
-	{
-		winrt::init_apartment(winrt::apartment_type::single_threaded);
-	}
-	HresultErrorCatch(spdlog::level::critical, L"Initialization of Windows Runtime failed.");
-}
-
-bool OpenOrCreateMutex(wil::unique_mutex &mutex, const wchar_t *name)
-{
-	if (mutex.try_open(name))
-	{
-		return false;
-	}
-	else
-	{
-		mutex.create(name);
-		return true;
-	}
-}
-
-void EnableDarkMode(Window window, TrayIcon &icon)
-{
-	if (DarkThemeManager::AllowDarkModeForApp())
-	{
-		DarkThemeManager::EnableDarkModeForWindow(window);
-		DarkThemeManager::EnableDarkModeForTrayIcon(icon, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON));
-	}
-}
-
-void BindEvents(Config &cfg, MessageWindow &window, TrayIcon &tray, ContextMenu &menu, TaskbarAttributeWorker &worker)
-{
-	const auto save_and_exit = [&cfg](...)
-	{
-		cfg.Save(run.config_file);
-		PostQuitMessage(0);
-		return TRUE;
-	};
-
-	window.RegisterCallback(WM_FILECHANGED, [&cfg, &tray](...)
-	{
-		SetConfig(cfg, Config::Load(run.config_file), tray);
-		return TRUE;
-	});
-
-	window.RegisterCallback(WM_CLOSE, save_and_exit);
-
-	window.RegisterCallback(WM_QUERYENDSESSION, [](WPARAM, LPARAM lParam)
-	{
-		if (lParam & ENDSESSION_CLOSEAPP)
-		{
-			// The app is being queried if it can close for an update.
-			RegisterApplicationRestart(nullptr, 0);
-		}
-		return TRUE;
-	});
-
-	window.RegisterCallback(WM_ENDSESSION, [&cfg](WPARAM wParam, ...)
-	{
-		if (wParam)
-		{
-			// The app can be closed anytime after processing this message. Save the settings.
-			cfg.Save(run.config_file);
-		}
-
-		return 0;
-	});
-
-	tray.RegisterTrayCallback([&menu](WPARAM, LPARAM lParam)
-	{
-		if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
-		{
-			menu.ShowAtCursor();
-		}
-
-		return 0;
-	});
-
-
-	BindBool(menu, ID_DESKTOP_ON_PEEK, cfg.UseRegularAppearanceWhenPeeking);
-	BindAppearance(menu, cfg.DesktopAppearance, ID_DESKTOP_COLOR, DESKTOP_BUTTOM_MAP);
-	BindAppearance(menu, cfg.VisibleWindowAppearance, ID_VISIBLE, ID_VISIBLE_COLOR, VISIBLE_BUTTOM_MAP);
-	BindAppearance(menu, cfg.MaximisedWindowAppearance, ID_MAXIMISED, ID_MAXIMISED_COLOR, MAXIMISED_BUTTON_MAP);
-	BindAppearance(menu, cfg.StartOpenedAppearance, ID_START, ID_START_COLOR, START_BUTTON_MAP);
-	BindAppearance(menu, cfg.CortanaOpenedAppearance, ID_CORTANA, ID_CORTANA_COLOR, CORTANA_BUTTON_MAP);
-	BindAppearance(menu, cfg.TimelineOpenedAppearance, ID_TIMELINE, ID_TIMELINE_COLOR, TIMELINE_BUTTON_MAP);
-
-
-	BindByMap(menu, PEEK_BUTTON_MAP, cfg.Peek);
-
-
-	menu.RegisterCallback(ID_OPENLOG, Log::ViewFile);
-	BindByMap(menu, LOG_BUTTON_MAP, Log::GetLevel, [&cfg](spdlog::level::level_enum new_value)
-	{
-		Log::SetLevel(new_value);
-		cfg.LogVerbosity = new_value;
-	});
-
-	menu.RegisterCallback(ID_EDITSETTINGS, [&cfg]
-	{
-		cfg.Save(run.config_file);
-		// TODO: update
-		win32::EditFile(run.config_file);
-	});
-	menu.RegisterCallback(ID_RETURNTODEFAULTSETTINGS, [&cfg]
-	{
-		// Automatically reloaded by filesystem watcher.
-		Config{ }.Save(run.config_file);
-	});
-	BindBool(menu, ID_DISABLESAVING, cfg.DisableSaving);
 	menu.RegisterCallback(ID_HIDETRAY, [&cfg, &tray]
 	{
 		// TODO: remove string stream
@@ -455,51 +169,71 @@ void BindEvents(Config &cfg, MessageWindow &window, TrayIcon &tray, ContextMenu 
 			cfg.Save(run.config_file);
 		}
 	});
-	menu.RegisterCallback(ID_DUMPWORKER, std::bind(&TaskbarAttributeWorker::DumpState, &worker));
-	menu.RegisterCallback(ID_RESETWORKER, std::bind(&TaskbarAttributeWorker::ResetState, &worker));
-	menu.RegisterCallback(ID_ABOUT, []
-	{
-		std::thread([]
-		{
-			AboutDialog().Run();
-		}).detach();
-	});
-	menu.RegisterCallback(ID_EXITWITHOUTSAVING, std::bind(&PostQuitMessage, 0));
-
-	if (UWP::HasPackageIdentity())
-	{
-		menu.RegisterCallback(ID_AUTOSTART, []() -> winrt::fire_and_forget
-		{
-			co_await Autostart::SetStartupState(
-				co_await Autostart::GetStartupState() == Autostart::StartupState::Enabled
-					? Autostart::StartupState::Disabled
-					: Autostart::StartupState::Enabled
-			);
-		});
-	}
-	else
-	{
-		menu.Update().RemoveItem(ID_AUTOSTART);
-	}
-
-	// TODO: update
-	menu.RegisterCallback(ID_TIPS, std::bind(&win32::OpenLink, L"https://" APP_NAME ".github.io/tips"));
-	menu.RegisterCallback(ID_EXIT, save_and_exit);
 
 
 	menu.RegisterCustomRefresh(std::bind(&RefreshMenu, std::ref(cfg), std::placeholders::_1));
 }
+*/
 
-wil::unique_folder_change_reader MakeWatcher(Window window)
+bool OpenOrCreateMutex(wil::unique_mutex& mutex, const wchar_t* name)
 {
-	return wil::make_folder_change_reader(run.config_folder.c_str(), false, wil::FolderChangeEvents::All, [window](wil::FolderChangeEvent, std::wstring_view file)
+	if (mutex.try_open(name))
 	{
-		if (file.empty() || Util::IgnoreCaseStringEquals(file, CONFIG_FILE))
+		return false;
+	}
+	else
+	{
+		mutex.create(name);
+		return true;
+	}
+}
+
+void InitializeWindowsRuntime()
+{
+	try
+	{
+		winrt::init_apartment(winrt::apartment_type::single_threaded);
+	}
+	HresultErrorCatch(spdlog::level::critical, L"Initialization of Windows Runtime failed.");
+}
+
+std::filesystem::path GetConfigFileLocation(bool hasPackageIdentity)
+{
+	std::filesystem::path config_folder;
+	if (hasPackageIdentity)
+	{
+		try
 		{
-			// This callback runs on another thread, so we use a message to avoid threading issues.
-			window.post_message(WM_FILECHANGED);
+			using namespace winrt::Windows::Storage;
+			config_folder = std::wstring_view(ApplicationData::Current().RoamingFolder().Path());
 		}
-	});
+		HresultErrorCatch(spdlog::level::critical, L"Getting application folder paths failed!");
+	}
+	else
+	{
+		config_folder = win32::GetExeLocation().parent_path();
+	}
+
+	config_folder /= CONFIG_FILE;
+	return config_folder;
+}
+
+bool CheckAndRunWelcome(const std::filesystem::path& config_file, HINSTANCE hInst)
+{
+	if (!std::filesystem::is_regular_file(config_file))
+	{
+		Config{ }.Save(config_file);
+		if (!WelcomeDialog(config_file, hInst).Run())
+		{
+			std::filesystem::remove(config_file);
+			return false;
+		}
+	}
+
+	// Remove old version config once prompt is accepted.
+	std::filesystem::remove_all(config_file.parent_path() / APP_NAME);
+
+	return true;
 }
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *, _In_ int)
@@ -510,42 +244,28 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *
 	if (!OpenOrCreateMutex(mutex, MUTEX_GUID))
 	{
 		// If there already is another instance running, tell it to exit
-		Window::Find(TRAY_WINDOW, APP_NAME).send_message(WM_CLOSE);
+		MainAppWindow::CloseRemote();
 	}
 
 	InitializeWindowsRuntime();
 
-	// Get configuration file paths
-	GetPaths();
+	const bool hasPackageIdentity = UWP::HasPackageIdentity();
+	auto config_file = GetConfigFileLocation(hasPackageIdentity);
 
 	// If the configuration files don't exist, restore the files and show welcome to the users
-	if (!CheckAndRunWelcome())
+	if (!CheckAndRunWelcome(config_file, hInstance))
 	{
 		return EXIT_FAILURE;
 	}
 
-	// Parse our configuration
-	auto cfg = Config::Load(run.config_file);
-	Log::SetLevel(cfg.LogVerbosity);
-
 	// Initialize GUI
-	MessageWindow window(TRAY_WINDOW, APP_NAME, hInstance);
-	TrayIcon tray(window, MAKEINTRESOURCE(IDI_TRAYWHITEICON), cfg.HideTray, hInstance);
-	ContextMenu menu(window, MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance);
-	TaskbarAttributeWorker worker(cfg, hInstance);
-
-	EnableDarkMode(window, tray);
-	BindEvents(cfg, window, tray, menu, worker);
-
-	const auto watcher = MakeWatcher(window);
+	MainAppWindow window(std::move(config_file), hasPackageIdentity, hInstance);
 
 	// Run the main program loop. When this method exits, TranslucentTB itself is about to exit.
-	const auto exitCode = MessageWindow::RunMessageLoop();
-
+	return static_cast<int>(window.Run());
 	// Not uninitializing WinRT apartment here because it will cause issues
 	// with destruction of WinRT objects that have a static lifetime.
 	// Apartment gets cleaned up by system anyways when the process dies.
-	return static_cast<int>(exitCode);
 }
 
 #pragma endregion

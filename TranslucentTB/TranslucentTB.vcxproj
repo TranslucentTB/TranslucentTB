@@ -19,12 +19,50 @@
       <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory);C:\Projects\member_thunk\include</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory);C:\Projects\member_thunk\include</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory);C:\Projects\member_thunk\include</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory);C:\Projects\member_thunk\include</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory);C:\Projects\member_thunk\include</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory);C:\Projects\member_thunk\include</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory);C:\Projects\member_thunk\include</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory);C:\Projects\member_thunk\include</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="localization.cpp" />
-    <ClCompile Include="uwp\autostart.cpp" />
-    <ClCompile Include="darkthememanager.cpp" />
+    <ClCompile Include="mainappwindow.cpp" />
     <ClCompile Include="taskbar\taskbarattributeworker.cpp" />
-    <ClCompile Include="taskbar\eventhook.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="windows\messagewindow.cpp" />
     <ClCompile Include="taskdialogs\taskdialog.cpp" />
@@ -37,11 +75,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="localization.hpp" />
+    <ClInclude Include="mainappwindow.hpp" />
     <ClInclude Include="taskbar\appvisibilitysink.hpp" />
-    <ClInclude Include="darkthememanager.hpp" />
-    <ClInclude Include="uwp\autostart.hpp" />
+    <ClInclude Include="tray\traycontextmenu.hpp" />
     <ClInclude Include="taskbar\taskbarattributeworker.hpp" />
-    <ClInclude Include="taskbar\eventhook.hpp" />
     <ClInclude Include="taskdialogs\aboutdialog.hpp" />
     <ClInclude Include="uwp\xamlpagehost.hpp" />
     <ClInclude Include="windows\messagewindow.hpp" />

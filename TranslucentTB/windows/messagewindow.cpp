@@ -1,84 +1,75 @@
 #include "messagewindow.hpp"
-#include <algorithm>
+#include <member_thunk/member_thunk.hpp>
 
+#include "../mainappwindow.hpp"
 #include "../../ProgramLog/error.hpp"
 
-thread_local std::unordered_map<unsigned int, MessageWindow::filter_t> MessageWindow::s_FilterMap;
+// TODO: use function local statics
+const wil::unique_hmodule MessageWindow::uxtheme(LoadLibraryEx(UXTHEME_DLL, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
 
-LRESULT MessageWindow::WindowProcedure(Window window, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
+const PFN_ALLOW_DARK_MODE_FOR_WINDOW MessageWindow::AllowDarkModeForWindow =
+	reinterpret_cast<PFN_ALLOW_DARK_MODE_FOR_WINDOW>(GetProcAddress(uxtheme.get(), ADMFW_ORDINAL));
+
+const PFN_SHOULD_SYSTEM_USE_DARK_MODE MessageWindow::ShouldSystemUseDarkMode =
+	reinterpret_cast<PFN_SHOULD_SYSTEM_USE_DARK_MODE>(GetProcAddress(uxtheme.get(), SSUDM_ORDINAL));
+
+// Static initialization order reeee
+const PFN_SET_PREFERRED_APP_MODE MainAppWindow::SetPreferredAppMode =
+	reinterpret_cast<PFN_SET_PREFERRED_APP_MODE>(GetProcAddress(MessageWindow::uxtheme.get(), SPAM_ORDINAL));
+
+void MessageWindow::DeleteThisAPC(ULONG_PTR that)
 {
-	if (const auto iter = m_CallbackMap.find(uMsg); iter != m_CallbackMap.end() && !iter->second.empty())
-	{
-		long result = 0;
-		for (const auto &[_, callback] : iter->second)
-		{
-			result = std::max(callback(wParam, lParam), result);
-		}
-		return result;
-	}
-
-	return DefWindowProc(window, uMsg, wParam, lParam);
+	delete reinterpret_cast<MessageWindow *>(that);
 }
 
-WPARAM MessageWindow::RunMessageLoop()
+void MessageWindow::Destroy()
 {
-	MSG msg;
-	BOOL ret;
-	while ((ret = GetMessage(&msg, nullptr, 0, 0)) != 0)
+	if (m_WindowHandle != Window::NullWindow)
 	{
-		if (ret != -1)
+		if (!DestroyWindow(m_WindowHandle))
 		{
-			if (!s_FilterMap.empty())
-			{
-				for (const auto &[_, filter] : s_FilterMap)
-				{
-					if (filter(msg))
-					{
-						continue;
-					}
-				}
-			}
-
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-		else
-		{
-			LastErrorHandle(spdlog::level::critical, L"GetMessage failed!");
+			LastErrorHandle(spdlog::level::info, L"Failed to destroy message window!");
 		}
 	}
+}
 
-	return msg.wParam;
+void MessageWindow::HeapDeletePostNcDestroy()
+{
+	m_WindowHandle = Window::NullWindow;
+
+	if (!QueueUserAPC(DeleteThisAPC, GetCurrentThread(), reinterpret_cast<ULONG_PTR>(this)))
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to queue class deletion, memory will leak.");
+	}
 }
 
 MessageWindow::MessageWindow(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName, HINSTANCE hInstance, unsigned long style, Window parent, const wchar_t *iconResource) :
-	m_WindowClass(
-		std::bind(&MessageWindow::WindowProcedure, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-		className,
-		iconResource,
-		0,
-		hInstance
-	)
+	m_WindowClass(DefWindowProc, className, iconResource, hInstance),
+	m_IconResource(iconResource)
 {
-	m_WindowHandle = Window::Create(0, m_WindowClass.atom(), windowName, style, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, parent, 0, hInstance, this);
+	m_WindowHandle = Window::Create(0, m_WindowClass, windowName, style, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, parent);
 
 	if (!m_WindowHandle)
 	{
 		LastErrorHandle(spdlog::level::critical, L"Failed to create message window!");
 	}
 
-	RegisterCallback(WM_DPICHANGED, [this, iconResource](...)
-	{
-		m_WindowClass.ChangeIcon(*this, iconResource);
+	m_ProcedureThunk = member_thunk::make<WNDPROC>(this, &MessageWindow::MessageHandler);
 
-		return 0;
-	});
+	SetLastError(NO_ERROR);
+	LONG_PTR val = SetWindowLongPtr(m_WindowHandle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(m_ProcedureThunk->get_thunked_function()));
+	if (!val && GetLastError() != NO_ERROR)
+	{
+		LastErrorHandle(spdlog::level::critical, L"Failed to update window procedure!");
+	}
+
+	if (DarkModeAvailable())
+	{
+		AllowDarkModeForWindow(m_WindowHandle, true);
+	}
 }
 
 MessageWindow::~MessageWindow()
 {
-	if (!DestroyWindow(m_WindowHandle))
-	{
-		LastErrorHandle(spdlog::level::info, L"Failed to destroy message window!");
-	}
+	Destroy();
 }

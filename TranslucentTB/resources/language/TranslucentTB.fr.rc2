@@ -64,8 +64,8 @@ IDR_TRAY_MENU MENUEX
 			MENUITEM L"Couleur",                                                     ID_DESKTOP_COLOR
 			MENUITEM L"",                                                            0, MFT_SEPARATOR
 			MENUITEM L"Normal",                                                      ID_DESKTOP_NORMAL
-			MENUITEM L"Transparent",                                                 ID_DESKTOP_CLEAR
 			MENUITEM L"Opaque",                                                      ID_DESKTOP_OPAQUE
+			MENUITEM L"Transparent",                                                 ID_DESKTOP_CLEAR
 			MENUITEM L"Flou",                                                        ID_DESKTOP_BLUR
 			MENUITEM L"Acrylique",                                                   ID_DESKTOP_ACRYLIC
 		}
@@ -75,8 +75,8 @@ IDR_TRAY_MENU MENUEX
 			MENUITEM L"Couleur",                                                     ID_VISIBLE_COLOR
 			MENUITEM L"",                                                            0, MFT_SEPARATOR
 			MENUITEM L"Normal",                                                      ID_VISIBLE_NORMAL
-			MENUITEM L"Transparent",                                                 ID_VISIBLE_CLEAR
 			MENUITEM L"Opaque",                                                      ID_VISIBLE_OPAQUE
+			MENUITEM L"Transparent",                                                 ID_VISIBLE_CLEAR
 			MENUITEM L"Flou",                                                        ID_VISIBLE_BLUR
 			MENUITEM L"Acrylique",                                                   ID_VISIBLE_ACRYLIC
 		}
@@ -86,8 +86,8 @@ IDR_TRAY_MENU MENUEX
 			MENUITEM L"Couleur",                                                     ID_MAXIMISED_COLOR
 			MENUITEM L"",                                                            0, MFT_SEPARATOR
 			MENUITEM L"Normal",                                                      ID_MAXIMISED_NORMAL
-			MENUITEM L"Transparent",                                                 ID_MAXIMISED_CLEAR
 			MENUITEM L"Opaque",                                                      ID_MAXIMISED_OPAQUE
+			MENUITEM L"Transparent",                                                 ID_MAXIMISED_CLEAR
 			MENUITEM L"Flou",                                                        ID_MAXIMISED_BLUR
 			MENUITEM L"Acrylique",                                                   ID_MAXIMISED_ACRYLIC
 		}
@@ -97,8 +97,8 @@ IDR_TRAY_MENU MENUEX
 			MENUITEM L"Couleur",                                                     ID_START_COLOR
 			MENUITEM L"",                                                            0, MFT_SEPARATOR
 			MENUITEM L"Normal",                                                      ID_START_NORMAL
-			MENUITEM L"Transparent",                                                 ID_START_CLEAR
 			MENUITEM L"Opaque",                                                      ID_START_OPAQUE
+			MENUITEM L"Transparent",                                                 ID_START_CLEAR
 			MENUITEM L"Flou",                                                        ID_START_BLUR
 			MENUITEM L"Acrylique",                                                   ID_START_ACRYLIC
 		}
@@ -108,8 +108,8 @@ IDR_TRAY_MENU MENUEX
 			MENUITEM L"Couleur",                                                     ID_CORTANA_COLOR
 			MENUITEM L"",                                                            0, MFT_SEPARATOR
 			MENUITEM L"Normal",                                                      ID_CORTANA_NORMAL
-			MENUITEM L"Transparent",                                                 ID_CORTANA_CLEAR
 			MENUITEM L"Opaque",                                                      ID_CORTANA_OPAQUE
+			MENUITEM L"Transparent",                                                 ID_CORTANA_CLEAR
 			MENUITEM L"Flou",                                                        ID_CORTANA_BLUR
 			MENUITEM L"Acrylique",                                                   ID_CORTANA_ACRYLIC
 		}
@@ -119,8 +119,8 @@ IDR_TRAY_MENU MENUEX
 			MENUITEM L"Couleur",                                                     ID_TIMELINE_COLOR
 			MENUITEM L"",                                                            0, MFT_SEPARATOR
 			MENUITEM L"Normal",                                                      ID_TIMELINE_NORMAL
-			MENUITEM L"Transparent",                                                 ID_TIMELINE_CLEAR
 			MENUITEM L"Opaque",                                                      ID_TIMELINE_OPAQUE
+			MENUITEM L"Transparent",                                                 ID_TIMELINE_CLEAR
 			MENUITEM L"Flou",                                                        ID_TIMELINE_BLUR
 			MENUITEM L"Acrylique",                                                   ID_TIMELINE_ACRYLIC
 		}

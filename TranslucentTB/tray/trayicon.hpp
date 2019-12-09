@@ -4,38 +4,37 @@
 #include <windef.h>
 #include <wil/resource.h>
 
-class TrayIcon {
+class TrayIcon : public MessageWindow {
 private:
-	MessageWindow &m_Window;
 	NOTIFYICONDATA m_IconData;
-	MessageWindow::CALLBACKCOOKIE m_TaskbarCreatedCookie;
-	MessageWindow::CALLBACKCOOKIE m_DpiChangedCookie;
-	HINSTANCE m_hInstance;
-	const wchar_t *m_IconResource;
+
+	const wchar_t *m_whiteIconResource;
+	const wchar_t *m_darkIconResource;
 	wil::unique_hicon m_Icon;
+
 	bool m_Show;
 
-	void LoadIcon();
-	long UpdateIcon(...);
+	UINT m_TaskbarCreatedMessage;
+
+	void LoadThemedIcon();
+	bool Notify(DWORD message, bool ignoreError = false);
+
+protected:
+	static constexpr UINT TRAY_CALLBACK = 0xBEEF;
+
+	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+
+	inline void ReturnFocus()
+	{
+		// Focus may have been automatically returned if the tray icon pops up a context menu.
+		// Ignore error in this case.
+		Notify(NIM_SETFOCUS, true);
+	}
 
 public:
-	TrayIcon(MessageWindow &window, const wchar_t *iconResource, bool hide = false, HINSTANCE hInstance = GetModuleHandle(nullptr));
-
-	inline MessageWindow::CALLBACKCOOKIE RegisterTrayCallback(std::function<long(WPARAM, LPARAM)> callback)
-	{
-		return m_Window.RegisterCallback(m_IconData.uCallbackMessage, std::move(callback));
-	}
-
-	inline void SetIcon(const wchar_t *iconResource)
-	{
-		m_IconResource = iconResource;
-		UpdateIcon();
-	}
-
-	inline MessageWindow &GetWindow()
-	{
-		return m_Window;
-	}
+	TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view className,
+		Util::null_terminated_wstring_view windowName, const wchar_t *whiteIconResource,
+		const wchar_t *darkIconResource, HINSTANCE hInstance);
 
 	void Show();
 	void Hide();

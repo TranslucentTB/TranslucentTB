@@ -1,4 +1,5 @@
 #include "taskbarattributeworker.hpp"
+#include <member_thunk/member_thunk.hpp>
 
 #include "constants.hpp"
 #include "../ExplorerDetour/explorerdetour.hpp"
@@ -10,10 +11,10 @@
 const PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE TaskbarAttributeWorker::SetWindowCompositionAttribute =
 	reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(GetModuleHandle(SWCA_DLL), SWCA_ORDINAL));
 
-void TaskbarAttributeWorker::OnAeroPeekEnterExit(DWORD event, ...)
+void TaskbarAttributeWorker::OnAeroPeekEnterExit(DWORD event, HWND, LONG, LONG, DWORD, DWORD)
 {
 	m_PeekActive = event == EVENT_SYSTEM_PEEKSTART;
-	if (m_Cfg.UseRegularAppearanceWhenPeeking)
+	if (m_Config.UseRegularAppearanceWhenPeeking)
 	{
 		for (auto iter = m_Taskbars.begin(); iter != m_Taskbars.end(); ++iter)
 		{
@@ -22,9 +23,9 @@ void TaskbarAttributeWorker::OnAeroPeekEnterExit(DWORD event, ...)
 	}
 }
 
-void TaskbarAttributeWorker::OnWindowStateChange(DWORD, Window window, LONG idObject, ...)
+void TaskbarAttributeWorker::OnWindowStateChange(DWORD, HWND hwnd, LONG idObject, LONG, DWORD, DWORD)
 {
-	if (idObject == OBJID_WINDOW && window.valid())
+	if (Window window(hwnd); idObject == OBJID_WINDOW && window.valid())
 	{
 		const auto iter = InsertWindow(window);
 
@@ -34,8 +35,8 @@ void TaskbarAttributeWorker::OnWindowStateChange(DWORD, Window window, LONG idOb
 			// Windows internal message loop, see comment in InsertWindow.
 			RefreshAttribute(iter);
 
-			if ((iter->first == m_MainTaskbarMonitor && (m_Cfg.Peek == PeekBehavior::WindowMaximisedOnMainMonitor || m_Cfg.Peek == PeekBehavior::DesktopIsForegroundWindow)) ||
-				m_Cfg.Peek == PeekBehavior::WindowMaximisedOnAnyMonitor)
+			if ((iter->first == m_MainTaskbarMonitor && (m_Config.Peek == PeekBehavior::WindowMaximisedOnMainMonitor || m_Config.Peek == PeekBehavior::DesktopIsForegroundWindow)) ||
+				m_Config.Peek == PeekBehavior::WindowMaximisedOnAnyMonitor)
 			{
 				RefreshAeroPeekButton();
 			}
@@ -43,9 +44,9 @@ void TaskbarAttributeWorker::OnWindowStateChange(DWORD, Window window, LONG idOb
 	}
 }
 
-void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, Window window, LONG idObject, ...)
+void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD idEventThread, DWORD dwmsEventTime)
 {
-	if (idObject == OBJID_WINDOW && window.valid())
+	if (Window window(hwnd); idObject == OBJID_WINDOW && window.valid())
 	{
 		if (const auto className = window.classname(); className == TASKBAR || className == SECONDARY_TASKBAR)
 		{
@@ -54,14 +55,14 @@ void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, Window window, L
 		}
 	}
 
-	OnWindowStateChange(event, window, idObject);
+	OnWindowStateChange(event, hwnd, idObject, idChild, idEventThread, dwmsEventTime);
 }
 
-void TaskbarAttributeWorker::OnForegroundWindowChange(DWORD, Window window, LONG idObject, ...)
+void TaskbarAttributeWorker::OnForegroundWindowChange(DWORD, HWND hwnd, LONG idObject, LONG, DWORD, DWORD)
 {
-	if (idObject == OBJID_WINDOW && window.valid())
+	if (Window window(hwnd); idObject == OBJID_WINDOW && window.valid())
 	{
-		if (m_Cfg.Peek == PeekBehavior::DesktopIsForegroundWindow)
+		if (m_Config.Peek == PeekBehavior::DesktopIsForegroundWindow)
 		{
 			RefreshAeroPeekButton();
 		}
@@ -83,13 +84,8 @@ void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 	MessagePrint(spdlog::level::debug, fmt::format(msg, static_cast<void *>(mon)));
 }
 
-long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, LPARAM lParam)
+LRESULT TaskbarAttributeWorker::OnRequestAttributeRefresh(LPARAM lParam)
 {
-	if (m_disableAttributeRefreshReply)
-	{
-		return 0;
-	}
-
 	const Window window = reinterpret_cast<HWND>(lParam);
 	if (const auto iter = m_Taskbars.find(window.monitor()); iter != m_Taskbars.end() && iter->second.TaskbarWindow == window)
 	{
@@ -101,6 +97,30 @@ long TaskbarAttributeWorker::OnRequestAttributeRefresh(WPARAM, LPARAM lParam)
 	}
 
 	return 0;
+}
+
+LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	if (uMsg == m_TaskbarCreatedMessage || uMsg == WM_DISPLAYCHANGE)
+	{
+		ResetState();
+		return 0;
+	}
+	else if (uMsg == m_RefreshRequestedMessage)
+	{
+		if (!m_disableAttributeRefreshReply)
+		{
+			return OnRequestAttributeRefresh(lParam);
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return MessageWindow::MessageHandler(uMsg, wParam, lParam);
+	}
 }
 
 void TaskbarAttributeWorker::ShowAeroPeekButton(Window taskbar, bool show)
@@ -123,11 +143,11 @@ void TaskbarAttributeWorker::RefreshAeroPeekButton()
 {
 	const auto &taskbarInfo = m_Taskbars.at(m_MainTaskbarMonitor);
 
-	switch (m_Cfg.Peek)
+	switch (m_Config.Peek)
 	{
 	case PeekBehavior::AlwaysShow:
 	case PeekBehavior::AlwaysHide:
-		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, m_Cfg.Peek == PeekBehavior::AlwaysShow);
+		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, m_Config.Peek == PeekBehavior::AlwaysShow);
 		break;
 
 	case PeekBehavior::WindowMaximisedOnMainMonitor:
@@ -145,33 +165,33 @@ void TaskbarAttributeWorker::RefreshAeroPeekButton()
 
 TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) const
 {
-	if (m_Cfg.UseRegularAppearanceWhenPeeking && m_PeekActive)
+	if (m_Config.UseRegularAppearanceWhenPeeking && m_PeekActive)
 	{
-		return m_Cfg.DesktopAppearance;
+		return m_Config.DesktopAppearance;
 	}
 
-	if (m_Cfg.StartOpenedAppearance.Enabled && m_CurrentStartMonitor == taskbar->first)
+	if (m_Config.StartOpenedAppearance.Enabled && m_CurrentStartMonitor == taskbar->first)
 	{
-		return m_Cfg.StartOpenedAppearance;
+		return m_Config.StartOpenedAppearance;
 	}
 
-	if (m_Cfg.MaximisedWindowAppearance.Enabled)
+	if (m_Config.MaximisedWindowAppearance.Enabled)
 	{
 		if (!taskbar->second.MaximisedWindows.empty())
 		{
-			return m_Cfg.MaximisedWindowAppearance;
+			return m_Config.MaximisedWindowAppearance;
 		}
 	}
 
-	if (m_Cfg.VisibleWindowAppearance.Enabled)
+	if (m_Config.VisibleWindowAppearance.Enabled)
 	{
 		if (!taskbar->second.MaximisedWindows.empty() || !taskbar->second.NormalWindows.empty())
 		{
-			return m_Cfg.VisibleWindowAppearance;
+			return m_Config.VisibleWindowAppearance;
 		}
 	}
 
-	return m_Cfg.DesktopAppearance;
+	return m_Config.DesktopAppearance;
 }
 
 void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance config)
@@ -287,7 +307,7 @@ TaskbarAttributeWorker::taskbar_iterator TaskbarAttributeWorker::InsertWindow(Wi
 	// changing, it means m_Taskbars is cleared while we still
 	// have an iterator to it. Acquiring the iterator after the
 	// call to on_current_desktop resolves this issue.
-	bool windowMatches = (m_Cfg.Whitelist.IsFiltered(window) || WindowHelper::IsUserWindow(window)) && !m_Cfg.Blacklist.IsFiltered(window);
+	bool windowMatches = (m_Config.Whitelist.IsFiltered(window) || WindowHelper::IsUserWindow(window)) && !m_Config.Blacklist.IsFiltered(window);
 
 	const auto iter = m_Taskbars.find(window.monitor());
 	if (iter != m_Taskbars.end())
@@ -327,6 +347,21 @@ void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::
 	}
 }
 
+TaskbarAttributeWorker::hook_thunk TaskbarAttributeWorker::CreateThunk(void(TaskbarAttributeWorker::* proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD))
+{
+	return member_thunk::make<WINEVENTPROC>(this, proc);
+}
+
+wil::unique_hwineventhook TaskbarAttributeWorker::CreateHook(DWORD eventMin, DWORD eventMax, const hook_thunk &thunk)
+{
+	wil::unique_hwineventhook hook(SetWinEventHook(eventMin, eventMax, nullptr, thunk->get_thunked_function(), 0, 0, WINEVENT_OUTOFCONTEXT));
+	if (!hook)
+	{
+		MessagePrint(spdlog::level::warn, L"Failed to create a Windows event hook.");
+	}
+	return hook;
+}
+
 void TaskbarAttributeWorker::ReturnToStock()
 {
 	ShowAeroPeekButton(m_Taskbars.at(m_MainTaskbarMonitor).TaskbarWindow, true);
@@ -362,36 +397,54 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_disableAttributeRefreshReply(false),
 	m_CurrentStartMonitor(nullptr),
 	m_MainTaskbarMonitor(nullptr),
-	m_PeekUnpeekHook(EVENT_SYSTEM_PEEKSTART, EVENT_SYSTEM_PEEKEND, std::bind(&TaskbarAttributeWorker::OnAeroPeekEnterExit, this, std::placeholders::_1)),
-	m_CloakUncloakHook(EVENT_OBJECT_CLOAKED, EVENT_OBJECT_UNCLOAKED, BindEventHook(&TaskbarAttributeWorker::OnWindowStateChange)),
-	m_MinimizeRestoreHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, BindEventHook(&TaskbarAttributeWorker::OnWindowStateChange)),
-	m_ResizeMoveHook(EVENT_OBJECT_LOCATIONCHANGE, BindEventHook(&TaskbarAttributeWorker::OnWindowStateChange)),
-	m_ShowHideHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, BindEventHook(&TaskbarAttributeWorker::OnWindowStateChange)),
-	m_CreateDestroyHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, BindEventHook(&TaskbarAttributeWorker::OnWindowCreateDestroy)),
-	m_ForegroundChangeHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, BindEventHook(&TaskbarAttributeWorker::OnForegroundWindowChange)),
-	m_TitleChangeHook(EVENT_OBJECT_NAMECHANGE, EVENT_OBJECT_NAMECHANGE, BindEventHook(&TaskbarAttributeWorker::OnWindowStateChange)),
-	m_IAV(wil::CoCreateInstance<AppVisibility, IAppVisibility>()),
-	m_Cfg(cfg)
+	m_Config(cfg),
+	m_AeroPeekEnterExitThunk(CreateThunk(&TaskbarAttributeWorker::OnAeroPeekEnterExit)),
+	m_WindowStateChangeThunk(CreateThunk(&TaskbarAttributeWorker::OnWindowStateChange)),
+	m_WindowCreateDestroyThunk(CreateThunk(&TaskbarAttributeWorker::OnWindowCreateDestroy)),
+	m_ForegroundWindowChangeThunk(CreateThunk(&TaskbarAttributeWorker::OnForegroundWindowChange)),
+	m_PeekUnpeekHook(CreateHook(EVENT_SYSTEM_PEEKSTART, EVENT_SYSTEM_PEEKEND, m_AeroPeekEnterExitThunk)),
+	m_CloakUncloakHook(CreateHook(EVENT_OBJECT_CLOAKED, EVENT_OBJECT_UNCLOAKED, m_WindowStateChangeThunk)),
+	m_MinimizeRestoreHook(CreateHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, m_WindowStateChangeThunk)),
+	m_ResizeMoveHook(CreateHook(EVENT_OBJECT_LOCATIONCHANGE, m_WindowStateChangeThunk)),
+	m_ShowHideHook(CreateHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, m_WindowStateChangeThunk)),
+	m_CreateDestroyHook(CreateHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, m_WindowCreateDestroyThunk)),
+	m_ForegroundChangeHook(CreateHook(EVENT_SYSTEM_FOREGROUND, m_ForegroundWindowChangeThunk)),
+	m_TitleChangeHook(CreateHook(EVENT_OBJECT_NAMECHANGE, m_WindowStateChangeThunk))
 {
-	const auto av_sink = winrt::make_self<AppVisibilitySink>();
-
-	m_AVSinkRevoker = av_sink->StartOpened(winrt::auto_revoke, { this, &TaskbarAttributeWorker::OnStartVisibilityChange });
-
-	m_IAVECookie.associate(m_IAV.get());
-	HresultVerify(m_IAV->Advise(av_sink.get(), m_IAVECookie.put()), spdlog::level::warn, L"Failed to register app visibility sink.");
-
-	RegisterCallback(WM_TTBHOOKREQUESTREFRESH, std::bind(&TaskbarAttributeWorker::OnRequestAttributeRefresh, this, std::placeholders::_1, std::placeholders::_2));
-
-	const auto refresh_taskbars = [this](...)
+	try
 	{
-		ResetState();
-		return 0;
-	};
+		m_IAV = wil::CoCreateInstance<IAppVisibility>(CLSID_AppVisibility);
+		const auto av_sink = winrt::make_self<AppVisibilitySink>();
 
-	RegisterCallback(WM_DISPLAYCHANGE, refresh_taskbars);
-	RegisterCallback(WM_TASKBARCREATED, refresh_taskbars);
+		m_AVSinkRevoker = av_sink->StartOpened(winrt::auto_revoke, { this, &TaskbarAttributeWorker::OnStartVisibilityChange });
+
+		m_IAVECookie.associate(m_IAV.get());
+		HresultVerify(m_IAV->Advise(av_sink.get(), m_IAVECookie.put()), spdlog::level::warn, L"Failed to register app visibility sink.");
+	}
+	ResultExceptionCatch(spdlog::level::warn, L"Failed to create app visibility instance.");
+
+	m_TaskbarCreatedMessage = RegisterWindowMessage(WM_TASKBARCREATED);
+	if (!m_TaskbarCreatedMessage)
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to register taskbar created message.");
+	}
+
+	m_RefreshRequestedMessage = RegisterWindowMessage(WM_TTBHOOKREQUESTREFRESH);
+	if (!m_RefreshRequestedMessage)
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to register hook refresh request message.");
+	}
 
 	ResetState();
+}
+
+void TaskbarAttributeWorker::ConfigurationChanged()
+{
+	RefreshAeroPeekButton();
+	for (auto iter = m_Taskbars.begin(); iter != m_Taskbars.end(); ++iter)
+	{
+		RefreshAttribute(iter);
+	}
 }
 
 void TaskbarAttributeWorker::DumpState()
@@ -433,11 +486,7 @@ void TaskbarAttributeWorker::ResetState()
 {
 	RefreshTaskbars();
 	Poll();
-	RefreshAeroPeekButton();
-	for (auto iter = m_Taskbars.begin(); iter != m_Taskbars.end(); ++iter)
-	{
-		RefreshAttribute(iter);
-	}
+	ConfigurationChanged();
 }
 
 TaskbarAttributeWorker::~TaskbarAttributeWorker()

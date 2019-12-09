@@ -36,7 +36,9 @@ private:
 		}
 	};
 
-	inline HRESULT CallbackProc(Window window, unsigned int uNotification, WPARAM wParam, LPARAM)
+	bool m_HasPackageIdentity;
+
+	inline HRESULT CallbackProc(Window window, UINT uNotification, WPARAM wParam, LPARAM) override
 	{
 		if (uNotification == TDN_BUTTON_CLICKED)
 		{
@@ -45,13 +47,14 @@ private:
 			case COPY_VERSION:
 				try
 				{
-					UWP::CopyToClipboard(BuildVersionInfo());
+					UWP::CopyToClipboard(BuildVersionInfo(m_HasPackageIdentity));
 					MessageBoxEx(window, L"Copied.", APP_NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 				}
 				HresultErrorCatch(spdlog::level::err, L"Failed to copy version information!")
 				return S_FALSE;
 
 			// TODO: update (or not since taskdialogs are going away lul)
+			// TODO: same as taskdialog
 			case JOIN_DISCORD:
 				win32::OpenLink(L"https://discord.gg/w95DGTK");
 				break;
@@ -61,10 +64,11 @@ private:
 				break;
 			}
 		}
+
 		return S_OK;
 	}
 
-	inline static std::wstring BuildVersionInfo()
+	inline static std::wstring BuildVersionInfo(bool hasPackageIdentity)
 	{
 		// TODO: remove stream (or not since task dialogs are going away)
 		std::wostringstream str;
@@ -93,7 +97,7 @@ private:
 
 		L"System architecture: " << win32::GetProcessorArchitecture() << std::endl;
 
-		if (UWP::HasPackageIdentity())
+		if (hasPackageIdentity)
 		{
 			str << L"Package version: ";
 			try
@@ -124,25 +128,21 @@ private:
 		return str.str();
 	}
 
-	inline static std::wstring BuildAboutContent()
+	inline static std::wstring BuildAboutContent(bool hasPackageIdentity)
 	{
 		return fmt::format(
 			fmt(L"This program is free (as in freedom) software, redistributed under the GPLv3. "
 			LR"(As such, the <A HREF="https://github.com/)" APP_NAME L"/" APP_NAME LR"(">source code</A> is available for anyone to modify, inspect, compile, etc...)" L"\n\n"
 			LR"(Brought to you by <A HREF="https://github.com/)" APP_NAME L"/" APP_NAME LR"(/graphs/contributors">all its contributors</A>.)" L"\n\n{}\n\n"
 			L"All trademarks, product names, company names, logos, service marks, copyrights and/or trade dress mentioned, displayed, cited, or otherwise indicated are the property of their respective owners."),
-			BuildVersionInfo()
+			BuildVersionInfo(hasPackageIdentity)
 		);
 	}
 
 public:
-	inline AboutDialog() :
-		TTBTaskDialog(
-			L"About " APP_NAME,
-			BuildAboutContent(),
-			std::bind(&AboutDialog::CallbackProc, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-			Window::NullWindow
-		)
+	inline AboutDialog(bool hasPackageIdentity, HINSTANCE hInst) :
+		TTBTaskDialog(L"About " APP_NAME, BuildAboutContent(hasPackageIdentity), Window::NullWindow, hInst),
+		m_HasPackageIdentity(hasPackageIdentity)
 	{
 		m_Cfg.dwFlags |= TDF_ALLOW_DIALOG_CANCELLATION | TDF_USE_COMMAND_LINKS;
 		m_Cfg.dwCommonButtons = TDCBF_CLOSE_BUTTON;

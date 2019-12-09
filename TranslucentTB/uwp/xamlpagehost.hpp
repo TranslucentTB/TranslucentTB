@@ -23,12 +23,11 @@ enum class CenteringStrategy {
 	Monitor
 };
 
+// TODO: base xaml page host to avoid lots of template duplication
 template<typename T>
 class XamlPageHost : public MessageWindow {
 private:
-	CenteringStrategy m_CenteringStrategy;
 	Window m_interopWnd;
-	FILTERCOOKIE m_FilterCookie;
 
 	winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource m_source;
 	T m_content;
@@ -147,14 +146,14 @@ private:
 		SetWindowText(m_WindowHandle, m_content.Title().c_str());
 	}
 
-	inline void RegisterCallbacks()
+	inline LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override
 	{
-		RegisterCallback(WM_NCCALCSIZE, [](...)
+		switch (uMsg)
 		{
+		case WM_NCCALCSIZE:
 			return 0;
-		});
 
-		RegisterCallback(WM_SIZE, [this](WPARAM, LPARAM lParam)
+		case WM_SIZE:
 		{
 			const int x = GET_X_LPARAM(lParam);
 			const int y = GET_Y_LPARAM(lParam);
@@ -163,24 +162,26 @@ private:
 			const float scale = GetDpiScale(monitor());
 			m_content.Arrange(winrt::Windows::UI::Xaml::RectHelper::FromCoordinatesAndDimensions(0, 0, x / scale, y / scale));
 			return 0;
-		});
+		}
 
-		RegisterCallback(WM_DPICHANGED, [this](WPARAM, LPARAM lParam)
-		{
-			PositionWindow(*reinterpret_cast<RECT *>(lParam));
-			return 0;
-		});
+		case WM_DPICHANGED:
+			PositionWindow(*reinterpret_cast<RECT*>(lParam));
+			break;
 
 		// TODO: this causes the first element to be tab-navigated to when initially opening the window
-		//RegisterCallback(WM_SETFOCUS, [this](...)
-		//{
+		//case WM_SETFOCUS:
 		//	SetFocus(m_interopWnd);
-		//
 		//	return 0;
-		//});
+
+		case WM_NCDESTROY:
+			HeapDeletePostNcDestroy();
+			return 0;
+		}
+
+		return MessageWindow::MessageHandler(uMsg, wParam, lParam);
 	}
 
-	inline RECT CenterWindow(LONG width, LONG height, HMONITOR mon, POINT mouse)
+	inline RECT CenterWindow(CenteringStrategy strategy, LONG width, LONG height, HMONITOR mon, POINT mouse)
 	{
 		MONITORINFO mi = { sizeof(mi) };
 		if (!GetMonitorInfo(mon, &mi))
@@ -188,7 +189,7 @@ private:
 			throw winrt::hresult_error(E_FAIL);
 		}
 
-		if (m_CenteringStrategy == CenteringStrategy::Mouse)
+		if (strategy == CenteringStrategy::Mouse)
 		{
 			return CenterRectOnMouse(width, height, mi.rcWork, mouse);
 		}
@@ -198,7 +199,7 @@ private:
 		}
 	}
 
-	RECT CalculateWindowPosition()
+	RECT CalculateWindowPosition(CenteringStrategy strategy)
 	{
 		m_content.Measure(winrt::Windows::UI::Xaml::SizeHelper::FromDimensions(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()));
 
@@ -212,7 +213,7 @@ private:
 		size.Height *= scale;
 		size.Width *= scale;
 
-		return CenterWindow(static_cast<LONG>(std::round(size.Width)), static_cast<LONG>(std::round(size.Height)), mon, point);
+		return CenterWindow(strategy, static_cast<LONG>(std::round(size.Width)), static_cast<LONG>(std::round(size.Height)), mon, point);
 	}
 
 	void PositionWindow(const RECT &rect, bool showWindow = false)
@@ -227,9 +228,6 @@ public:
 	template<typename... Args>
 	inline XamlPageHost(HINSTANCE hInst, CenteringStrategy strategy, Args&&... args) :
 		MessageWindow(GetClassName(), { }, hInst, WS_OVERLAPPED),
-		m_CenteringStrategy(strategy),
-		m_interopWnd(Window::NullWindow),
-		m_FilterCookie(0),
 		// Don't construct the XAML stuff already.
 		m_content(nullptr)
 	{
@@ -238,12 +236,12 @@ public:
 
 		winrt::check_hresult(nativeSource->get_WindowHandle(m_interopWnd.put()));
 
-		m_FilterCookie = RegisterThreadMessageFilter([nativeSource](const MSG &msg)
+		/*TODO: m_FilterCookie = RegisterThreadMessageFilter([nativeSource](const MSG &msg)
 		{
 			BOOL result;
 			winrt::check_hresult(nativeSource->PreTranslateMessage(&msg, &result));
 			return result;
-		});
+		});*/
 
 		m_content = T(std::forward<Args>(args)...);
 
@@ -259,9 +257,7 @@ public:
 		const MARGINS margins = { 1 };
 		DwmExtendFrameIntoClientArea(m_WindowHandle, &margins);
 
-		RegisterCallbacks();
-
-		PositionWindow(CalculateWindowPosition(), true);
+		PositionWindow(CalculateWindowPosition(strategy), true);
 
 		UpdateWindow(m_WindowHandle);
 		SetFocus(m_WindowHandle);
@@ -276,8 +272,6 @@ public:
 	{
 		m_content.UnregisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), std::exchange(m_TitleChangedToken.value, 0));
 		m_content = nullptr;
-
-		UnregisterThreadMessageFilter(std::exchange(m_FilterCookie, 0));
 
 		m_source.Close();
 		m_source = nullptr;

@@ -14,6 +14,7 @@
 #include <winerror.h>
 #include <WinUser.h>
 #include <winrt/base.h>
+#include <wil/result_macros.h>
 
 #include "api.h"
 #include "appinfo.hpp"
@@ -106,3 +107,6 @@ namespace Error {
 
 #define StdSystemErrorHandle(exception_, level_, message_) (Error::Handle<(level_)>((message_), Error::MessageFromStdSystemError((exception_)), PROGRAMLOG_ERROR_LOCATION))
 #define StdSystemErrorCatch(level_, message_) catch (const std::system_error &exception_) { StdSystemErrorHandle(exception_, (level_), (message_)); }
+
+#define ResultExceptionHandle(exception_, level_, message_) (Error::Handle<(level_)>((message_), Error::MessageFromHRESULT((exception_).GetErrorCode()), PROGRAMLOG_ERROR_LOCATION))
+#define ResultExceptionCatch(level_, message_) catch (const wil::ResultException &exception_) { ResultExceptionHandle(exception_, (level_), (message_)); }

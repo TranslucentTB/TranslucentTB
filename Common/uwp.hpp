@@ -11,17 +11,12 @@
 namespace UWP {
 	inline bool HasPackageIdentity() noexcept
 	{
-		static const bool has_identity = []() noexcept
-		{
-			UINT32 length = 0;
-			const LONG result = GetCurrentPackageFamilyName(&length, nullptr);
-			return result != APPMODEL_ERROR_NO_PACKAGE;
-		}();
-
-		return has_identity;
+		UINT32 length = 0;
+		const LONG result = GetCurrentPackageFamilyName(&length, nullptr);
+		return result != APPMODEL_ERROR_NO_PACKAGE;
 	}
 
-	void CopyToClipboard(std::wstring_view str)
+	inline void CopyToClipboard(std::wstring_view str)
 	{
 		using namespace winrt::Windows::ApplicationModel::DataTransfer;
 

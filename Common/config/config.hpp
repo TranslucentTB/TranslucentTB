@@ -28,11 +28,11 @@
 
 
 enum class PeekBehavior {
-	AlwaysHide,                   // Always hide the button
-	WindowMaximisedOnMainMonitor, // Show when a window is maximised on the main monitor
-	WindowMaximisedOnAnyMonitor,  // Show when a window is maximised on any monitor
-	DesktopIsForegroundWindow,    // Show when the desktop is the foreground window
-	AlwaysShow                    // Always show the button
+	AlwaysShow = 0,                   // Always show the button
+	WindowMaximisedOnMainMonitor = 1, // Show when a window is maximised on the main monitor
+	WindowMaximisedOnAnyMonitor = 2,  // Show when a window is maximised on any monitor
+	DesktopIsForegroundWindow = 3,    // Show when the desktop is the foreground window
+	AlwaysHide = 4                    // Always hide the button
 };
 
 class Config {

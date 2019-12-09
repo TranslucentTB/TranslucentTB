@@ -6,34 +6,21 @@
 #include "../../ProgramLog/error.hpp"
 #include "window.hpp"
 
-std::unordered_map<ATOM, WindowClass::callback_t> WindowClass::m_CallbackMap;
-
-LRESULT WindowClass::RawWindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	ATOM atom = static_cast<ATOM>(GetClassLongPtr(hwnd, GCW_ATOM));
-	if (!atom)
-	{
-		LastErrorHandle(spdlog::level::critical, L"Failed to get class atom!");
-	}
-
-	return m_CallbackMap.at(atom)(hwnd, msg, wParam, lParam);
-}
-
 void WindowClass::LoadIcons(const wchar_t *iconResource)
 {
 	HresultVerify(LoadIconMetric(m_hInstance, iconResource, LIM_LARGE, m_hIcon.put()), spdlog::level::warn, L"Failed to load large window class icon.");
 	HresultVerify(LoadIconMetric(m_hInstance, iconResource, LIM_SMALL, m_hIconSmall.put()), spdlog::level::warn, L"Failed to load small window class icon.");
 }
 
-WindowClass::WindowClass(callback_t callback, Util::null_terminated_wstring_view className, const wchar_t *iconResource, unsigned int style, HINSTANCE hInstance, HBRUSH brush, HCURSOR cursor) :
+WindowClass::WindowClass(WNDPROC procedure, Util::null_terminated_wstring_view className, const wchar_t *iconResource, HINSTANCE hInstance, unsigned int style, HBRUSH brush, HCURSOR cursor) :
 	m_hInstance(hInstance)
 {
 	LoadIcons(iconResource);
 
-	WNDCLASSEX classStruct = {
+	const WNDCLASSEX classStruct = {
 		.cbSize = sizeof(classStruct),
 		.style = style,
-		.lpfnWndProc = RawWindowProcedure,
+		.lpfnWndProc = procedure,
 		.hInstance = hInstance,
 		.hIcon = m_hIcon.get(),
 		.hCursor = cursor,
@@ -43,11 +30,7 @@ WindowClass::WindowClass(callback_t callback, Util::null_terminated_wstring_view
 	};
 
 	m_Atom = RegisterClassEx(&classStruct);
-	if (m_Atom)
-	{
-		m_CallbackMap[m_Atom] = std::move(callback);
-	}
-	else
+	if (!m_Atom)
 	{
 		LastErrorHandle(spdlog::level::critical, L"Failed to register window class!");
 	}
@@ -72,9 +55,11 @@ void WindowClass::ChangeIcon(Window window, const wchar_t *iconResource)
 
 WindowClass::~WindowClass()
 {
-	m_CallbackMap.erase(m_Atom);
-	if (!UnregisterClass(atom(), m_hInstance))
+	if (m_Atom != 0)
 	{
-		LastErrorHandle(spdlog::level::info, L"Failed to unregister window class.");
+		if (!UnregisterClass(atom(), m_hInstance))
+		{
+			LastErrorHandle(spdlog::level::info, L"Failed to unregister window class.");
+		}
 	}
 }

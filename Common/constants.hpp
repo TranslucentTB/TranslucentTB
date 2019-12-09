@@ -1,5 +1,7 @@
 #pragma once
+#include "arch.h"
 #include <cstdint>
+#include <guiddef.h>
 #include <string_view>
 
 #pragma region App
@@ -9,6 +11,9 @@ static constexpr std::wstring_view CONFIG_FILE = L"config.json";
 
 // Mutex name for app uniqueness
 static constexpr wchar_t MUTEX_GUID[] = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
+
+// Tray icon GUID
+static constexpr GUID TRAY_GUID = { 0x974A6DD7, 0x6BBD, 0x4B9A, { 0x9F, 0x11, 0xA8, 0xED, 0x62, 0x44, 0x2A, 0x55 } };
 
 #pragma endregion
 

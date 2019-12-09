@@ -32,7 +32,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)util\null_terminated_string_view.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\numbers.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\others.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)util\random.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\strings.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)uwp.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)version.hpp" />

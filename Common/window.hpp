@@ -10,6 +10,8 @@
 
 #ifdef _TRANSLUCENTTB_EXE
 #include <filesystem>
+
+#include "../TranslucentTB/windows/windowclass.hpp"
 #endif
 
 class Window {
@@ -50,9 +52,9 @@ protected:
 	HWND m_WindowHandle;
 
 public:
-	static const Window NullWindow;
-	static const Window BroadcastWindow;
-	static const Window MessageOnlyWindow;
+	static constexpr HWND NullWindow = nullptr;
+	inline static const HWND BroadcastWindow = HWND_BROADCAST;
+	inline static const HWND MessageOnlyWindow = HWND_MESSAGE;
 
 	class FindEnum;
 
@@ -61,14 +63,24 @@ public:
 		return FindWindowEx(parent, childAfter, className.empty() ? nullptr : className.c_str(), windowName.empty() ? nullptr : windowName.c_str());
 	}
 
-	inline static Window Create(unsigned long dwExStyle, LPCWSTR winClass,
+	inline static Window Create(unsigned long dwExStyle, LPCWSTR winClass, HINSTANCE hInstance,
 		Util::null_terminated_wstring_view windowName, unsigned long dwStyle, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT,
 		int nWidth = CW_USEDEFAULT, int nHeight = CW_USEDEFAULT, Window parent = Window::NullWindow,
-		HMENU hMenu = nullptr, HINSTANCE hInstance = GetModuleHandle(nullptr), void *lpParam = nullptr) noexcept
+		HMENU hMenu = nullptr, void *lpParam = nullptr) noexcept
 	{
 		return CreateWindowEx(dwExStyle, winClass, windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
 			parent, hMenu, hInstance, lpParam);
 	}
+
+#ifdef _TRANSLUCENTTB_EXE
+	inline static Window Create(unsigned long dwExStyle, const WindowClass &winClass,
+		Util::null_terminated_wstring_view windowName, unsigned long dwStyle, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT,
+		int nWidth = CW_USEDEFAULT, int nHeight = CW_USEDEFAULT, Window parent = Window::NullWindow,
+		HMENU hMenu = nullptr, void* lpParam = nullptr) noexcept
+	{
+		return Create(dwExStyle, winClass.atom(), winClass.hinstance(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight, parent, hMenu, lpParam);
+	}
+#endif
 
 	inline static Window ForegroundWindow() noexcept
 	{
@@ -85,7 +97,7 @@ public:
 		return GetShellWindow();
 	}
 
-	constexpr Window(HWND handle = Window::NullWindow) noexcept : m_WindowHandle(handle) { };
+	constexpr Window(HWND handle = Window::NullWindow) noexcept : m_WindowHandle(handle) { }
 
 #ifdef _TRANSLUCENTTB_EXE
 	std::wstring title() const;
@@ -235,10 +247,6 @@ public:
 
 	friend struct std::hash<Window>;
 };
-
-inline constexpr Window Window::NullWindow = nullptr;
-inline const Window Window::BroadcastWindow = HWND_BROADCAST;
-inline const Window Window::MessageOnlyWindow = HWND_MESSAGE;
 
 // Specialize std::hash to allow the use of Window as unordered_map and unordered_set key.
 namespace std {

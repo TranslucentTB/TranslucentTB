@@ -4,100 +4,135 @@
 #include "appinfo.hpp"
 #include "constants.hpp"
 #include "../../ProgramLog/error.hpp"
-#include "util/random.hpp"
-#include "win32.hpp"
 
-void TrayIcon::LoadIcon()
+void TrayIcon::LoadThemedIcon()
 {
-	HresultVerify(
-		LoadIconMetric(m_hInstance, m_IconResource, LIM_SMALL, m_Icon.put()),
-		spdlog::level::warn,
-		L"Failed to load tray icon."
-	);
+	const wchar_t *icon = m_whiteIconResource;
+	if (DarkModeAvailable() && !ShouldSystemUseDarkMode())
+	{
+		icon = m_darkIconResource;
+	}
 
-	m_IconData.hIcon = m_Icon.get();
+	if (HRESULT hr = LoadIconMetric(hinstance(), icon, LIM_SMALL, m_Icon.put()); SUCCEEDED(hr))
+	{
+		m_IconData.uFlags |= NIF_ICON;
+		m_IconData.hIcon = m_Icon.get();
+	}
+	else
+	{
+		m_IconData.uFlags &= ~NIF_ICON;
+		m_Icon.reset();
+		HresultHandle(hr, spdlog::level::warn, L"Failed to load tray icon.");
+	}
 }
 
-long TrayIcon::UpdateIcon(...)
+bool TrayIcon::Notify(DWORD message, bool ignoreError)
 {
-	LoadIcon();
-
-	if (m_Show)
+	if (Shell_NotifyIcon(message, &m_IconData))
 	{
-		if (!Shell_NotifyIcon(NIM_MODIFY, &m_IconData))
+		return true;
+	}
+	else
+	{
+		if (!ignoreError)
 		{
-			MessagePrint(spdlog::level::warn, L"Failed to notify shell of icon modification.");
+			LastErrorHandle(spdlog::level::warn, L"Failed to notify shell.");
 		}
-	}
 
-	return 0;
+		return false;
+	}
 }
 
-TrayIcon::TrayIcon(MessageWindow &window, const wchar_t *iconResource, bool hide, HINSTANCE hInstance) :
-	m_Window(window),
-	m_IconData {
-		.cbSize = sizeof(m_IconData),
-		.hWnd = m_Window,
-		.uID = LOWORD(iconResource), // todo: not use an UID
-		.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE,
-		.uCallbackMessage = Util::GetRandomNumber<unsigned int>(WM_APP, 0xBFFF),
-		.szTip = APP_NAME
-	},
-	m_hInstance(hInstance),
-	m_IconResource(iconResource),
-	m_Show(!hide)
+LRESULT TrayIcon::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	LoadIcon();
-	if (m_Show)
+	switch (uMsg)
 	{
-		Show();
-	}
-
-	m_TaskbarCreatedCookie = m_Window.RegisterCallback(WM_TASKBARCREATED, [this](...)
-	{
+	case WM_DPICHANGED:
+	case WM_SETTINGCHANGE:
 		if (m_Show)
 		{
-			Show();
+			LoadThemedIcon();
+			Notify(NIM_MODIFY);
 		}
+		break;
+	default:
+		if (uMsg == m_TaskbarCreatedMessage)
+		{
+			if (m_Show)
+			{
+				m_Show = false;
+				Show();
+			}
+			
+			return 0;
+		}
+	}
 
-		return 0;
-	});
-	m_DpiChangedCookie = m_Window.RegisterCallback(WM_DPICHANGED, std::bind(&TrayIcon::UpdateIcon, this));
+	return MessageWindow::MessageHandler(uMsg, wParam, lParam);
+}
+
+TrayIcon::TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view className,
+	Util::null_terminated_wstring_view windowName, const wchar_t *whiteIconResource,
+	const wchar_t *darkIconResource, HINSTANCE hInstance) :
+	MessageWindow(className, windowName, hInstance),
+	m_IconData {
+		.cbSize = sizeof(m_IconData),
+		.hWnd = m_WindowHandle,
+		.uFlags = NIF_TIP | NIF_MESSAGE | NIF_GUID,
+		.uCallbackMessage = TRAY_CALLBACK,
+		.uVersion = NOTIFYICON_VERSION_4,
+		.guidItem = iconId
+	},
+	m_whiteIconResource(whiteIconResource),
+	m_darkIconResource(darkIconResource),
+	m_Show(false),
+	m_TaskbarCreatedMessage(RegisterWindowMessage(WM_TASKBARCREATED))
+{
+	if (!m_TaskbarCreatedMessage)
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to register taskbar created message.");
+	}
+
+	if (const errno_t err = wcscpy_s(m_IconData.szTip, windowName.c_str()))
+	{
+		ErrnoTHandle(err, spdlog::level::warn, L"Failed to copy tray icon tooltip text.");
+		m_IconData.uFlags &= ~NIF_TIP;
+	}
+
+	// Clear icon from a previous instance that didn't cleanly exit.
+	// Errors if instance cleanly exited, so avoid logging it.
+	Notify(NIM_DELETE, true);
 }
 
 void TrayIcon::Show()
 {
-	if (!Shell_NotifyIcon(NIM_ADD, &m_IconData))
+	if (!m_Show)
 	{
-		MessagePrint(spdlog::level::warn, L"Failed to notify shell of icon addition.");
-		return;
-	}
-	if (!Shell_NotifyIcon(NIM_SETVERSION, &m_IconData))
-	{
-		MessagePrint(spdlog::level::warn, L"Failed to notify shell of icon version.");
-		return;
-	}
+		if (!m_Icon)
+		{
+			LoadThemedIcon();
+		}
 
-	m_Show = true;
+		if (Notify(NIM_ADD) && Notify(NIM_SETVERSION))
+		{
+			m_Show = true;
+		}
+	}
 }
 
 void TrayIcon::Hide()
 {
-	if (!Shell_NotifyIcon(NIM_DELETE, &m_IconData))
+	if (m_Show)
 	{
-		MessagePrint(spdlog::level::info, L"Failed to notify shell of icon deletion.");
+		if (Notify(NIM_DELETE))
+		{
+			m_Icon.reset();
+			m_Show = false;
+		}
 	}
-
-	m_Show = false;
 }
 
 TrayIcon::~TrayIcon()
 {
-	if (m_Show)
-	{
-		Hide();
-	}
-
-	m_Window.UnregisterCallback(m_TaskbarCreatedCookie);
-	m_Window.UnregisterCallback(m_DpiChangedCookie);
+	Hide();
 }

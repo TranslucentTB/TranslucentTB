@@ -36,25 +36,19 @@
     <ClCompile Include="windows\windowclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="darkthememanager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="uwp\autostart.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="uwp\uwp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="taskbar\taskbarattributeworker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="taskbar\eventhook.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="localization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="tray\contextmenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mainappwindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -80,22 +74,13 @@
     <ClInclude Include="resources\ids.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="darkthememanager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="windows\windowhelper.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="uwp\autostart.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="uwp\uwp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="taskbar\taskbarattributeworker.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="taskbar\eventhook.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="taskbar\appvisibilitysink.hpp">
@@ -108,6 +93,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tray\contextmenu.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tray\traycontextmenu.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mainappwindow.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -134,11 +125,11 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <Manifest Include="resources\TranslucentTB.manifest">
       <Filter>Resource Files</Filter>
     </Manifest>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

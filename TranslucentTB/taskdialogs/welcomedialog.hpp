@@ -2,13 +2,16 @@
 #include "taskdialog.hpp"
 #include <filesystem>
 #include <fmt/format.h>
+#include <wil/resource.h>
 
 #include "appinfo.hpp"
 #include "../../ProgramLog/error.hpp"
 
 class WelcomeDialog : public TTBTaskDialog {
 private:
-	inline HRESULT CallbackProc(Window window, unsigned int uNotification, WPARAM wParam, LPARAM)
+	wil::unique_hicon m_FooterIcon;
+
+	inline HRESULT CallbackProc(Window window, UINT uNotification, WPARAM wParam, LPARAM) override
 	{
 		switch (uNotification)
 		{
@@ -42,33 +45,22 @@ private:
 	}
 
 public:
-	inline WelcomeDialog(const std::filesystem::path &configLocation) :
-		TTBTaskDialog(
-			L"Welcome to " APP_NAME L"!",
-			BuildWelcomeContent(configLocation),
-			std::bind(&WelcomeDialog::CallbackProc, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-			Window::NullWindow
-		)
+	inline WelcomeDialog(const std::filesystem::path &configLocation, HINSTANCE hInst) :
+		TTBTaskDialog(L"Welcome to " APP_NAME L"!", BuildWelcomeContent(configLocation), Window::NullWindow, hInst)
 	{
 		m_Cfg.pszVerificationText = L"I agree to the terms of the GPLv3.";
 		m_Cfg.dwCommonButtons = TDCBF_OK_BUTTON | TDCBF_CANCEL_BUTTON;
 
 		m_Cfg.pszFooter = LR"(You can read our license <A HREF="https://github.com/)" APP_NAME L"/" APP_NAME LR"(/blob/master/LICENSE.md">here</A>.)";
 		m_Cfg.dwFlags |= TDF_USE_HICON_FOOTER;
-		LoadIconMetric(nullptr, IDI_INFORMATION, LIM_SMALL, &m_Cfg.hFooterIcon);
+
+		LoadIconMetric(nullptr, IDI_INFORMATION, LIM_SMALL, m_FooterIcon.put());
+		m_Cfg.hFooterIcon = m_FooterIcon.get();
 	}
 
 	inline bool Run()
 	{
 		bool confirm = false;
 		return TTBTaskDialog::Run(confirm) && confirm;
-	}
-
-	inline ~WelcomeDialog()
-	{
-		if (m_Cfg.hFooterIcon && !DestroyIcon(m_Cfg.hFooterIcon))
-		{
-			LastErrorHandle(spdlog::level::info, L"Failed to destroy dialog icon.");
-		}
 	}
 };

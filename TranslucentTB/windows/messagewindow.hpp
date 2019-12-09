@@ -1,75 +1,60 @@
 #pragma once
-#include <functional>
-#include <unordered_map>
+#include "arch.h"
+#include <member_thunk/common.hpp>
+#include <windef.h>
+#include <wil/resource.h>
 
 #include "../resources/ids.h"
+#include "undoc/uxtheme.hpp"
 #include "util/null_terminated_string_view.hpp"
-#include "util/random.hpp"
 #include "window.hpp"
 #include "windowclass.hpp"
 
 class MessageWindow : public Window {
+protected:
+	static const wil::unique_hmodule uxtheme;
+
 private:
-	using callback_t = std::function<long(WPARAM, LPARAM)>;
-	using filter_t = std::function<bool(const MSG &msg)>;
+	static const PFN_ALLOW_DARK_MODE_FOR_WINDOW AllowDarkModeForWindow;
+	static void NTAPI DeleteThisAPC(ULONG_PTR that);
 
-	static thread_local std::unordered_map<unsigned int, filter_t> s_FilterMap;
-
-	std::unordered_map<unsigned int, std::unordered_map<unsigned short, callback_t>> m_CallbackMap;
+	// Order important: the thunk needs to be destroyed after the window class
+	std::unique_ptr<member_thunk::thunk<WNDPROC>> m_ProcedureThunk;
 	WindowClass m_WindowClass;
+	const wchar_t *m_IconResource;
 
-	LRESULT WindowProcedure(Window window, unsigned int uMsg, WPARAM wParam, LPARAM lParam);
+	void Destroy();
+
+protected:
+	static const PFN_SHOULD_SYSTEM_USE_DARK_MODE ShouldSystemUseDarkMode;
+	void HeapDeletePostNcDestroy();
+
+	inline HINSTANCE hinstance() const noexcept
+	{
+		return m_WindowClass.hinstance();
+	}
+
+	inline static bool DarkModeAvailable() noexcept
+	{
+		return uxtheme && AllowDarkModeForWindow && ShouldSystemUseDarkMode;
+	}
+
+	inline virtual LRESULT CALLBACK MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
+	{
+		switch (uMsg)
+		{
+		case WM_DPICHANGED:
+			m_WindowClass.ChangeIcon(m_WindowHandle, m_IconResource);
+			break;
+		}
+
+		return DefWindowProc(m_WindowHandle, uMsg, wParam, lParam);
+	}
+
+	MessageWindow(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName, HINSTANCE hInstance, unsigned long style = 0, Window parent = Window::NullWindow, const wchar_t *iconResource = MAKEINTRESOURCE(IDI_MAINICON));
 
 public:
-	using FILTERCOOKIE = unsigned int;
-
-	static FILTERCOOKIE RegisterThreadMessageFilter(filter_t filter)
-	{
-		const auto secret = Util::GetSecret(s_FilterMap);
-
-		s_FilterMap[secret] = std::move(filter);
-
-		return secret;
-	}
-
-	static void UnregisterThreadMessageFilter(FILTERCOOKIE cookie)
-	{
-		s_FilterMap.erase(cookie);
-	}
-
-	static WPARAM RunMessageLoop();
-
-	MessageWindow(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName, HINSTANCE hInstance = GetModuleHandle(nullptr), unsigned long style = 0, Window parent = Window::NullWindow, const wchar_t *iconResource = MAKEINTRESOURCE(IDI_MAINICON));
-	using CALLBACKCOOKIE = unsigned long long;
-
-	inline CALLBACKCOOKIE RegisterCallback(unsigned int message, callback_t callback)
-	{
-		auto &callbackMap = m_CallbackMap[message];
-
-		const auto secret = Util::GetSecret(callbackMap);
-
-		callbackMap[secret] = std::move(callback);
-
-		return (static_cast<CALLBACKCOOKIE>(secret) << 32) + message;
-	}
-
-	inline CALLBACKCOOKIE RegisterCallback(Util::null_terminated_wstring_view message, callback_t callback)
-	{
-		return RegisterCallback(RegisterWindowMessage(message.c_str()), std::move(callback));
-	}
-
-	inline void UnregisterCallback(CALLBACKCOOKIE cookie)
-	{
-		unsigned int message = cookie & 0xFFFFFFFF;
-		unsigned short secret = (cookie >> 32) & 0xFFFF;
-
-		if (const auto iter = m_CallbackMap.find(message); iter != m_CallbackMap.end())
-		{
-			iter->second.erase(secret);
-		}
-	}
-
-	~MessageWindow();
+	virtual ~MessageWindow();
 
 	inline MessageWindow(const MessageWindow &) = delete;
 	inline MessageWindow &operator =(const MessageWindow &) = delete;
