@@ -54,7 +54,11 @@ MessageWindow::MessageWindow(Util::null_terminated_wstring_view className, Util:
 		LastErrorHandle(spdlog::level::critical, L"Failed to create message window!");
 	}
 
-	m_ProcedureThunk = member_thunk::make<WNDPROC>(this, &MessageWindow::MessageHandler);
+	try
+	{
+		m_ProcedureThunk = member_thunk::make(this, &MessageWindow::MessageHandler);
+	}
+	StdSystemErrorCatch(spdlog::level::critical, L"Failed to create window member thunk");
 
 	SetLastError(NO_ERROR);
 	LONG_PTR val = SetWindowLongPtr(m_WindowHandle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(m_ProcedureThunk->get_thunked_function()));

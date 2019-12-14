@@ -347,10 +347,11 @@ void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::
 	}
 }
 
-TaskbarAttributeWorker::hook_thunk TaskbarAttributeWorker::CreateThunk(void(TaskbarAttributeWorker::* proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD))
+TaskbarAttributeWorker::hook_thunk TaskbarAttributeWorker::CreateThunk(void(TaskbarAttributeWorker:: *proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD)) try
 {
-	return member_thunk::make<WINEVENTPROC>(this, proc);
+	return member_thunk::make(this, proc);
 }
+StdSystemErrorCatch(spdlog::level::critical, L"Failed to create worker member thunk!");
 
 wil::unique_hwineventhook TaskbarAttributeWorker::CreateHook(DWORD eventMin, DWORD eventMax, const hook_thunk &thunk)
 {

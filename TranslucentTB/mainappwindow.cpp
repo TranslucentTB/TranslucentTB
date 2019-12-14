@@ -120,7 +120,7 @@ void MainAppWindow::ClickHandler(unsigned int id)
 	else
 	{
 		const uint8_t item = id & 0xFF;
-		switch (item) // TODO: 0x3, 0x6
+		switch (item)
 		{
 		case 0x0:
 			Save();
@@ -132,6 +132,9 @@ void MainAppWindow::ClickHandler(unsigned int id)
 			break;
 		case 0x2:
 			InvertBool(m_Config.DisableSaving);
+			break;
+		case 0x3:
+			HideTrayHandler();
 			break;
 		case 0x4:
 			m_Worker.DumpState();
@@ -209,6 +212,30 @@ void MainAppWindow::LogMenuHandler(uint8_t offset)
 	{
 		m_Config.LogVerbosity = spdlog::level::off;
 		VerbosityChanged();
+	}
+}
+
+void MainAppWindow::HideTrayHandler()
+{
+	auto str = fmt::format(
+		fmt(L"To see the tray icon again, {}edit the configuration file at {}.\n\n"
+		L"Are you sure you want to proceed?"),
+		m_HasPackageIdentity ? L"reset " APP_NAME " in the Settings app or " : L"",
+		m_ConfigPath.native()
+	);
+
+	if (MessageBoxEx(
+			Window::NullWindow,
+			str.c_str(),
+			APP_NAME,
+			MB_YESNO | MB_ICONINFORMATION | MB_SETFOREGROUND,
+			MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL)
+		) == IDYES)
+	{
+		m_Config.HideTray = true;
+		TrayIconChanged();
+
+		m_Config.Save(m_ConfigPath);
 	}
 }
 

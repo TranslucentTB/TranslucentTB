@@ -36,6 +36,7 @@ private:
 	OptionalTaskbarAppearance &OptionalAppearanceForGroup(uint8_t group_id);
 	void AppearanceMenuHandler(uint8_t offset, TaskbarAppearance &appearance, bool &b);
 	void LogMenuHandler(uint8_t offset);
+	void HideTrayHandler();
 	void AutostartMenuHandler();
 
 	void Exit(bool save);

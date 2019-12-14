@@ -97,7 +97,7 @@ std::wstring Error::MessageFromErrno(errno_t err)
 	return fmt::format(fmt(L"{}: {}"), err, str);
 }
 
-PROGRAMLOG_API std::wstring Error::MessageFromStdSystemError(const std::system_error &err)
+std::wstring Error::MessageFromStdSystemError(const std::system_error &err)
 {
 	if (err.code().category() == std::system_category())
 	{

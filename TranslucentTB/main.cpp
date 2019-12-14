@@ -147,32 +147,6 @@ winrt::fire_and_forget RefreshMenu(const Config &cfg, ContextMenu::Updater updat
 		updater.SetText(ID_AUTOSTART, autostart_text);
 	}
 }
-
-void BindEvents(Config &cfg, TrayIcon &tray, ContextMenu &menu, TaskbarAttributeWorker &worker)
-{
-	menu.RegisterCallback(ID_HIDETRAY, [&cfg, &tray]
-	{
-		// TODO: remove string stream
-		std::wostringstream str;
-		str << L"To see the tray icon again, ";
-		if (UWP::HasPackageIdentity())
-		{
-			str << L"reset " APP_NAME " in the Settings app or ";
-		}
-		str << L"edit the configuration file at "
-			<< run.config_file.native() << L".\n\nAre you sure you want to proceed?";
-		const int result = MessageBoxEx(Window::NullWindow, str.str().c_str(), APP_NAME, MB_YESNO | MB_ICONINFORMATION | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
-		if (result == IDYES)
-		{
-			cfg.HideTray = true;
-			tray.Hide();
-			cfg.Save(run.config_file);
-		}
-	});
-
-
-	menu.RegisterCustomRefresh(std::bind(&RefreshMenu, std::ref(cfg), std::placeholders::_1));
-}
 */
 
 bool OpenOrCreateMutex(wil::unique_mutex& mutex, const wchar_t* name)
@@ -188,14 +162,11 @@ bool OpenOrCreateMutex(wil::unique_mutex& mutex, const wchar_t* name)
 	}
 }
 
-void InitializeWindowsRuntime()
+void InitializeWindowsRuntime() try
 {
-	try
-	{
-		winrt::init_apartment(winrt::apartment_type::single_threaded);
-	}
-	HresultErrorCatch(spdlog::level::critical, L"Initialization of Windows Runtime failed.");
+	winrt::init_apartment(winrt::apartment_type::single_threaded);
 }
+HresultErrorCatch(spdlog::level::critical, L"Initialization of Windows Runtime failed.");
 
 std::filesystem::path GetConfigFileLocation(bool hasPackageIdentity)
 {
