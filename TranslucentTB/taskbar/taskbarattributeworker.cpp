@@ -60,12 +60,10 @@ void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG 
 
 void TaskbarAttributeWorker::OnForegroundWindowChange(DWORD, HWND hwnd, LONG idObject, LONG, DWORD, DWORD)
 {
-	if (Window window(hwnd); idObject == OBJID_WINDOW && window.valid())
+	if (Window window(hwnd); idObject == OBJID_WINDOW && window.valid() &&
+		m_Config.Peek == PeekBehavior::DesktopIsForegroundWindow)
 	{
-		if (m_Config.Peek == PeekBehavior::DesktopIsForegroundWindow)
-		{
-			RefreshAeroPeekButton();
-		}
+		RefreshAeroPeekButton();
 	}
 }
 
@@ -81,7 +79,10 @@ void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 	}
 
 	const std::wstring_view msg = state ? L"Start menu opened on monitor {}" : L"Start menu closed on monitor {}";
-	MessagePrint(spdlog::level::debug, fmt::format(msg, static_cast<void *>(mon)));
+	fmt::basic_memory_buffer<wchar_t, 50> buf;
+	fmt::format_to(buf, msg, static_cast<void*>(mon));
+
+	MessagePrint(spdlog::level::debug, std::wstring_view(buf.data(), buf.size()));
 }
 
 LRESULT TaskbarAttributeWorker::OnRequestAttributeRefresh(LPARAM lParam)
