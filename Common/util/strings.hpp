@@ -58,13 +58,15 @@ namespace Util {
 			using transparent_key_equal = string_lowercase_compare;
 			inline std::size_t operator()(std::wstring_view k) const noexcept
 			{
-				std::size_t initial = 0;
-				for (const wchar_t character : k)
+				std::size_t hash = INITIAL_HASH_VALUE;
+				for (wchar_t character : k)
 				{
-					HashCombine(initial, std::towlower(character));
+					character = std::towlower(character);
+					HashByte(hash, static_cast<uint8_t>((character & 0xFF00) >> 8));
+					HashByte(hash, character & 0xFF);
 				}
 
-				return initial;
+				return hash;
 			}
 		};
 
