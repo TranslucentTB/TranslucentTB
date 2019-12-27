@@ -7,7 +7,6 @@
 #include <spdlog/details/null_mutex.h>
 #include <spdlog/sinks/base_sink.h>
 #include <string_view>
-#include <thread>
 #include <type_traits>
 #include <utility>
 #include <wil/resource.h>
@@ -101,13 +100,9 @@ private:
 
 	void handle_open_error(std::wstring err)
 	{
-		std::thread([errStr = std::move(err)]
-		{
-			const std::wstring msg =
-				fmt::format(fmt(L"Failed to create log file. Logs won't be available during this session.\n\n{}"), errStr);
-
-			MessageBoxEx(Window::NullWindow, msg.c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
-		}).detach();
+		fmt::wmemory_buffer buf;
+		fmt::format_to(buf, fmt(L"Failed to create log file. Logs won't be available during this session.\n\n{}"), err);
+		Error::CreateMessageBoxThread(buf, ERROR_TITLE, MB_ICONWARNING);
 	}
 
 	template<typename T>

@@ -1,7 +1,11 @@
 #pragma once
+#include "arch.h"
 #include <fmt/format.h>
 #include <spdlog/common.h>
 #include <string_view>
+#include <winbase.h>
+#include <windef.h>
+#include <wil/resource.h>
 
 #include "../api.h"
 #include "appinfo.hpp"
@@ -22,8 +26,6 @@ namespace Error {
 
 		PROGRAMLOG_API void GetLogMessage(fmt::wmemory_buffer &out, std::wstring_view message, std::wstring_view error_message, std::wstring_view err_message_fmt = L"{} ({})", std::wstring_view message_fmt = L"{}");
 
-		void *CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type);
-
 		template<spdlog::level::level_enum level>
 		inline void Handle(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function)
 		{
@@ -38,6 +40,8 @@ namespace Error {
 		template<>
 		[[noreturn]] PROGRAMLOG_API void Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function);
 	}
+
+	wil::unique_handle CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type);
 
 	template<spdlog::level::level_enum level>
 	struct HandleImpl {
