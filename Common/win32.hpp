@@ -43,7 +43,7 @@ private:
 		return { std::move(data), S_OK };
 	}
 
-	inline static HRESULT ShellExec(SHELLEXECUTEINFO &info)
+	inline static HRESULT ShellExec(SHELLEXECUTEINFO &info) noexcept
 	{
 		if (ShellExecuteEx(&info))
 		{
@@ -96,7 +96,7 @@ public:
 	}
 
 	// Checks Windows build number.
-	inline static bool IsAtLeastBuild(uint32_t buildNumber)
+	inline static bool IsAtLeastBuild(uint32_t buildNumber) noexcept
 	{
 		OSVERSIONINFOEX versionInfo = { sizeof(versionInfo), 10, 0, buildNumber };
 
@@ -109,7 +109,7 @@ public:
 	}
 
 	// Opens a file in the default text editor.
-	inline static HRESULT EditFile(const std::filesystem::path &file)
+	inline static HRESULT EditFile(const std::filesystem::path &file) noexcept
 	{
 		SHELLEXECUTEINFO info = {
 			.cbSize = sizeof(info),
@@ -125,7 +125,7 @@ public:
 
 	// Opens a link in the default browser.
 	// NOTE: doesn't attempts to validate the link, make sure it's correct.
-	inline static HRESULT OpenLink(Util::null_terminated_wstring_view link)
+	inline static HRESULT OpenLink(Util::null_terminated_wstring_view link) noexcept
 	{
 		SHELLEXECUTEINFO info = {
 			.cbSize = sizeof(info),
@@ -216,7 +216,7 @@ public:
 	}
 
 	// Opens a folder and highlights a file in the File Explorer.
-	inline static HRESULT RevealFile(const std::filesystem::path &file)
+	inline static HRESULT RevealFile(const std::filesystem::path &file) noexcept
 	{
 		wil::unique_cotaskmem_ptr<ITEMIDLIST_ABSOLUTE> list(ILCreateFromPath(file.c_str()));
 

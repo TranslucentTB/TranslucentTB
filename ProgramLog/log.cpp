@@ -12,7 +12,7 @@
 
 std::weak_ptr<lazy_file_sink_mt> Log::s_LogSink;
 
-std::time_t Log::GetProcessCreationTime()
+std::time_t Log::GetProcessCreationTime() noexcept
 {
 	if (FILETIME creationTime, exitTime, kernelTime, userTime; GetProcessTimes(GetCurrentProcess(), &creationTime, &exitTime, &kernelTime, &userTime))
 	{

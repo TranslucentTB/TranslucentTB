@@ -162,14 +162,14 @@ public:
 		return pid;
 	}
 
-	inline RECT rect()
+	inline RECT rect() noexcept
 	{
 		RECT result {};
 		GetWindowRect(m_WindowHandle, &result);
 		return result;
 	}
 
-	inline RECT client_rect()
+	inline RECT client_rect() noexcept
 	{
 		RECT result {};
 		GetClientRect(m_WindowHandle, &result);
@@ -198,7 +198,7 @@ public:
 		return SendMessage(m_WindowHandle, message, wparam, lparam);
 	}
 
-	inline LRESULT send_message(Util::null_terminated_wstring_view message, WPARAM wparam = 0, LPARAM lparam = 0) const
+	inline LRESULT send_message(Util::null_terminated_wstring_view message, WPARAM wparam = 0, LPARAM lparam = 0) const noexcept
 	{
 		return send_message(RegisterWindowMessage(message.c_str()), wparam, lparam);
 	}
@@ -208,7 +208,7 @@ public:
 		return PostMessage(m_WindowHandle, message, wparam, lparam);
 	}
 
-	inline bool post_message(Util::null_terminated_wstring_view message, WPARAM wparam = 0, LPARAM lparam = 0) const
+	inline bool post_message(Util::null_terminated_wstring_view message, WPARAM wparam = 0, LPARAM lparam = 0) const noexcept
 	{
 		return post_message(RegisterWindowMessage(message.c_str()), wparam, lparam);
 	}

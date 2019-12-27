@@ -15,7 +15,7 @@ class Log {
 private:
 	PROGRAMLOG_API static std::weak_ptr<lazy_file_sink_mt> s_LogSink;
 
-	static std::time_t GetProcessCreationTime();
+	static std::time_t GetProcessCreationTime() noexcept;
 	static std::filesystem::path GetPath();
 	static void LogErrorHandler(const std::string &message);
 	static void Initialize();
@@ -51,7 +51,7 @@ public:
 		FailedInitializing
 	};
 
-	inline static Status GetStatus()
+	inline static Status GetStatus() noexcept
 	{
 		if (const auto sink = s_LogSink.lock())
 		{
