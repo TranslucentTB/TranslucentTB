@@ -6,7 +6,6 @@
 #include <rapidjson/rapidjson.h>
 #include <spdlog/version.h>
 #include <sstream>
-#include <wil/safecast.h>
 
 #include "appinfo.hpp"
 #include "../../ProgramLog/error/win32.hpp"
@@ -147,7 +146,7 @@ public:
 		m_Cfg.dwFlags |= TDF_ALLOW_DIALOG_CANCELLATION | TDF_USE_COMMAND_LINKS;
 		m_Cfg.dwCommonButtons = TDCBF_CLOSE_BUTTON;
 
-		m_Cfg.cButtons = wil::safe_cast<UINT>(std::size(s_Buttons));
+		m_Cfg.cButtons = static_cast<UINT>(std::size(s_Buttons));
 		m_Cfg.pButtons = s_Buttons;
 	}
 
