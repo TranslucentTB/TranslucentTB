@@ -4,7 +4,6 @@
 #include <string>
 #include <string_view>
 #include <unordered_set>
-#include <wil/safecast.h>
 
 #include "../util/null_terminated_string_view.hpp"
 #include "../util/strings.hpp"
@@ -70,7 +69,7 @@ private:
 	template<typename Writer, typename T>
 	inline static void SerializeStringSet(Writer &writer, const T &set, std::wstring_view key)
 	{
-		writer.String(key.data(), wil::safe_cast<rapidjson::SizeType>(key.length()));
+		writer.String(key.data(), static_cast<rapidjson::SizeType>(key.length()));
 		writer.StartArray();
 		for (const std::wstring &str : set)
 		{

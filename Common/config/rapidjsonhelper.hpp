@@ -5,7 +5,7 @@
 #include <unordered_map>
 
 #include "../util/null_terminated_string_view.hpp"
-#include "../util/others.hpp"
+#include "../util/map.hpp"
 
 namespace RapidJSONHelper {
 	template<class Writer>

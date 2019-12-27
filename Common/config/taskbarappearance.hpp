@@ -4,14 +4,12 @@
 #include <rapidjson/encodings.h>
 #include <string_view>
 #include <unordered_map>
-#include <wil/safecast.h>
 #include <windef.h>
 
 #include "rapidjsonhelper.hpp"
 #include "../undoc/swca.hpp"
 #include "../util/colors.hpp"
 #include "../util/null_terminated_string_view.hpp"
-#include "../util/others.hpp"
 
 struct TaskbarAppearance {
 	ACCENT_STATE Accent;
@@ -22,10 +20,10 @@ struct TaskbarAppearance {
 	{
 		RapidJSONHelper::Serialize(writer, Accent, ACCENT_KEY, s_AccentMap);
 
-		writer.String(COLOR_KEY.data(), wil::safe_cast<rapidjson::SizeType>(COLOR_KEY.length()));
+		writer.String(COLOR_KEY.data(), static_cast<rapidjson::SizeType>(COLOR_KEY.length()));
 		writer.String(Util::StringFromColor(Util::SwapColorEndian(Color)));
 
-		writer.String(OPACITY_KEY.data(), wil::safe_cast<rapidjson::SizeType>(OPACITY_KEY.length()));
+		writer.String(OPACITY_KEY.data(), static_cast<rapidjson::SizeType>(OPACITY_KEY.length()));
 		writer.Uint((Color & 0xFF000000) >> 24);
 	}
 
