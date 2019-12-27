@@ -78,7 +78,7 @@ public:
 		int nWidth = CW_USEDEFAULT, int nHeight = CW_USEDEFAULT, Window parent = Window::NullWindow,
 		HMENU hMenu = nullptr, void* lpParam = nullptr) noexcept
 	{
-		return Create(dwExStyle, winClass.atom(), winClass.hinstance(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight, parent, hMenu, lpParam);
+		return Create(dwExStyle, winClass.atom(), winClass.hinstance(), windowName, dwStyle, x, y, nWidth, nHeight, parent, hMenu, lpParam);
 	}
 #endif
 

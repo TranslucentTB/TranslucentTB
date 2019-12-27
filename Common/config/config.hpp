@@ -23,6 +23,7 @@
 #include <rapidjson/prettywriter.h>
 #include <wil/resource.h>
 
+#include "../appinfo.hpp"
 #include "../../ProgramLog/error/rapidjson.hpp"
 #include "../../ProgramLog/error/std.hpp"
 #endif
@@ -134,6 +135,12 @@ public:
 
 				using OutputStream = EncodedOutputStream<UTF16LE<>, FileWriteStream>;
 				OutputStream out(filestream, true);
+
+				static constexpr std::wstring_view comment = L"// See https://" APP_NAME L".github.io/config for more info\n";
+				for (const wchar_t c : comment)
+				{
+					out.Put(c);
+				}
 
 				PrettyWriter<OutputStream, UTF16LE<>, UTF16LE<>> writer(out);
 

@@ -280,7 +280,7 @@ void MainAppWindow::AutostartMenuHandler() try
 		break;
 
 	default:
-		MessagePrint(spdlog::level::err, L"Cannot change startup state because it is locked by external factors.");
+		MessagePrint(spdlog::level::err, L"Cannot change startup state because it is locked by external factors (for example Task Manager or Group Policy).");
 		break;
 	}
 }

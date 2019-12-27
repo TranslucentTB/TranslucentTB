@@ -10,10 +10,11 @@
 #endif
 
 #include "appinfo.hpp"
+#include "../ProgramLog/error/win32.hpp"
 #include "win32.hpp"
 
 using namespace winrt;
-using namespace Windows::UI::Xaml;
+using namespace winrt::Windows::UI::Xaml;
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
@@ -28,17 +29,19 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		args.ClickedItem().as<Models::ActionItem>().ForwardClick(sender, args);
 	}
 
-	fire_and_forget WelcomePage::RevealConfigFile(const IInspectable &sender, const RoutedEventArgs &args)
+	void WelcomePage::OpenLiberapayLink(const IInspectable &sender, const RoutedEventArgs &args)
 	{
-		const std::filesystem::path file = std::wstring_view(m_ConfigFile);
+		HresultVerify(win32::OpenLink(L"https://liberapay.com/" APP_NAME), spdlog::level::err, L"Failed to open browser");
+	}
 
-		co_await winrt::resume_background();
-
-		winrt::check_hresult(win32::RevealFile(file));
+	void WelcomePage::OpenDiscordLink(const IInspectable &sender, const RoutedEventArgs &args)
+	{
+		// TODO: try directly opening an installed discord client?
+		HresultVerify(win32::OpenLink(L"https://discord.gg/w95DGTK"), spdlog::level::err, L"Failed to open browser");
 	}
 
 	void WelcomePage::EditConfigFile(const IInspectable &sender, const RoutedEventArgs &args)
 	{
-		winrt::check_hresult(win32::EditFile(std::wstring_view(m_ConfigFile)));
+		HresultVerify(win32::EditFile(std::wstring_view(m_ConfigFile)), spdlog::level::err, L"Failed to open text editor");
 	}
 }
