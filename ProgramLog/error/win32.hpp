@@ -1,6 +1,6 @@
 #pragma once
 #include "arch.h"
-#include <roerrorapi.h>
+#include <restrictederrorinfo.h>
 #include <windef.h>
 #include <winerror.h>
 #include <winrt/base.h>

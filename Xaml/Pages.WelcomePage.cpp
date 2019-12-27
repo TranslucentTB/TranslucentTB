@@ -14,7 +14,7 @@
 #include "win32.hpp"
 
 using namespace winrt;
-using namespace winrt::Windows::UI::Xaml;
+using namespace Windows::UI::Xaml;
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
