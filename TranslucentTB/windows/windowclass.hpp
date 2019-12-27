@@ -33,7 +33,7 @@ public:
 	inline WindowClass &operator =(const WindowClass &) = delete;
 
 	inline WindowClass(WindowClass &&other) noexcept :
-		m_Atom(std::exchange(other.m_Atom, 0)),
+		m_Atom(std::exchange(other.m_Atom, static_cast<ATOM>(0))),
 		m_hInstance(std::exchange(other.m_hInstance, nullptr)),
 		m_hIconSmall(std::move(other.m_hIconSmall)),
 		m_hIcon(std::move(other.m_hIcon))

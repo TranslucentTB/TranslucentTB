@@ -78,7 +78,7 @@ TEST(Util_ParseNumber_Unsigned_BaseTen, ThrowsOnOverflow)
 
 TEST(Util_ParseNumber_Unsigned_BaseTen, ReturnsCorrectValue)
 {
-	ASSERT_EQ(Util::ParseNumber<uint32_t>(L"1000"), 1000);
+	ASSERT_EQ(Util::ParseNumber<uint32_t>(L"1000"), static_cast<uint32_t>(1000));
 }
 
 TEST(Util_ParseNumber_Unsigned_BaseTen, HandlesVeryLargeNumber)

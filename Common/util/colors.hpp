@@ -53,7 +53,7 @@ namespace Util {
 
 	constexpr uint32_t SwapColorEndian(uint32_t color)
 	{
-		const uint8_t left = (color & 0xFF0000) >> 16;
+		const uint8_t left = static_cast<uint8_t>((color & 0xFF0000) >> 16);
 		const uint8_t right = color & 0xFF;
 
 		return (color & 0xFF00) + (right << 16) + left;

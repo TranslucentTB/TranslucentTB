@@ -6,17 +6,17 @@ using namespace testing;
 
 TEST(Util_ColorFromString, Parses3DigitColor)
 {
-	ASSERT_EQ(Util::ColorFromString(L"#FAF"), 0xFFAAFF);
+	ASSERT_EQ(Util::ColorFromString(L"#FAF"), static_cast<uint32_t>(0xFFAAFF));
 }
 
 TEST(Util_ColorFromString, Parses6DigitColor)
 {
-	ASSERT_EQ(Util::ColorFromString(L"#C0FFEE"), 0xC0FFEE);
+	ASSERT_EQ(Util::ColorFromString(L"#C0FFEE"), static_cast<uint32_t>(0xC0FFEE));
 }
 
 TEST(Util_ColorFromString, TrimsInput)
 {
-	ASSERT_EQ(Util::ColorFromString(L"   #FFFFFF \t \n"), 0xFFFFFF);
+	ASSERT_EQ(Util::ColorFromString(L"   #FFFFFF \t \n"), static_cast<uint32_t>(0xFFFFFF));
 }
 
 TEST(Util_ColorFromString, ThrowsWhenColorDoesntStartsWithPrefix)
@@ -51,10 +51,10 @@ TEST(Util_StringFromColor, BlackColor)
 
 TEST(Util_SwapColorEndian, SwapsEndianness)
 {
-	ASSERT_EQ(Util::SwapColorEndian(0xC0FFEE), 0xEEFFC0);
+	ASSERT_EQ(Util::SwapColorEndian(0xC0FFEE), static_cast<uint32_t>(0xEEFFC0));
 }
 
 TEST(Util_SwapColorEndian, IgnoresFirstByte)
 {
-	ASSERT_EQ(Util::SwapColorEndian(0xDEADBEEF), 0xEFBEAD);
+	ASSERT_EQ(Util::SwapColorEndian(0xDEADBEEF), static_cast<uint32_t>(0xEFBEAD));
 }

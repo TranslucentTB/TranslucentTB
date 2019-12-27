@@ -125,15 +125,15 @@ namespace Util {
 					const T power = static_cast<T>(1) << ((number.length() - i - 1) * 4);
 					if (impl::IsDecimalDigit(number[i]))
 					{
-						result += (number[i] - L'0') * power;
+						result += static_cast<T>(number[i] - L'0') * power;
 					}
 					else if (impl::IsUpperHexDigit(number[i]))
 					{
-						result += (number[i] - L'A' + 10) * power;
+						result += static_cast<T>(number[i] - L'A' + 10) * power;
 					}
 					else if (impl::IsLowerHexDigit(number[i]))
 					{
-						result += (number[i] - L'a' + 10) * power;
+						result += static_cast<T>(number[i] - L'a' + 10) * power;
 					}
 					else
 					{

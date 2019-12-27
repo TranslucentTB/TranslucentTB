@@ -29,18 +29,18 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		args.ClickedItem().as<Models::ActionItem>().ForwardClick(sender, args);
 	}
 
-	void WelcomePage::OpenLiberapayLink(const IInspectable &sender, const RoutedEventArgs &args)
+	void WelcomePage::OpenLiberapayLink(const IInspectable &, const RoutedEventArgs &)
 	{
 		HresultVerify(win32::OpenLink(L"https://liberapay.com/" APP_NAME), spdlog::level::err, L"Failed to open browser");
 	}
 
-	void WelcomePage::OpenDiscordLink(const IInspectable &sender, const RoutedEventArgs &args)
+	void WelcomePage::OpenDiscordLink(const IInspectable &, const RoutedEventArgs &)
 	{
 		// TODO: try directly opening an installed discord client?
 		HresultVerify(win32::OpenLink(L"https://discord.gg/w95DGTK"), spdlog::level::err, L"Failed to open browser");
 	}
 
-	void WelcomePage::EditConfigFile(const IInspectable &sender, const RoutedEventArgs &args)
+	void WelcomePage::EditConfigFile(const IInspectable &, const RoutedEventArgs &)
 	{
 		HresultVerify(win32::EditFile(std::wstring_view(m_ConfigFile)), spdlog::level::err, L"Failed to open text editor");
 	}
