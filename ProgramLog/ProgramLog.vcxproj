@@ -11,7 +11,7 @@
       <PreprocessorDefinitions>PROGRAMLOG_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>runtimeobject.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>ole32.lib;oleaut32.lib;runtimeobject.lib;user32.lib</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Configuration)'=='Release'">fmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Configuration)'=='Debug'">fmtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
@@ -19,12 +19,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="error.cpp" />
+    <ClCompile Include="error\error.cpp" />
+    <ClCompile Include="error\std.cpp" />
+    <ClCompile Include="error\win32.cpp" />
     <ClCompile Include="log.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="api.h" />
-    <ClInclude Include="error.hpp" />
+    <ClInclude Include="error\error.hpp" />
+    <ClInclude Include="error\rapidjson.hpp" />
+    <ClInclude Include="error\std.hpp" />
+    <ClInclude Include="error\win32.hpp" />
     <ClInclude Include="lazyfilesink.hpp" />
     <ClInclude Include="log.hpp" />
   </ItemGroup>

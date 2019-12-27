@@ -2,7 +2,7 @@
 #include <member_thunk/member_thunk.hpp>
 
 #include "../mainappwindow.hpp"
-#include "../../ProgramLog/error.hpp"
+#include "../../ProgramLog/error/win32.hpp"
 
 // TODO: use function local statics
 const wil::unique_hmodule MessageWindow::uxtheme(LoadLibraryEx(UXTHEME_DLL, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));

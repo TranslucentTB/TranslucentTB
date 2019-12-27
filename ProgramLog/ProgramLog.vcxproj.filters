@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="error.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="log.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -27,15 +24,33 @@
     <ClInclude Include="api.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="error\error.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="error\win32.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="error\std.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="error\rapidjson.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="error.cpp">
+    <ClCompile Include="log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="log.cpp">
+    <ClCompile Include="error\error.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="error\win32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="error\std.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

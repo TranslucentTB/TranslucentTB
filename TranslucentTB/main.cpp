@@ -7,7 +7,7 @@
 #include <winrt/Windows.Storage.h>
 
 #include "constants.hpp"
-#include "../ProgramLog/error.hpp"
+#include "../ProgramLog/error/win32.hpp"
 #include "mainappwindow.hpp"
 #include "uwp.hpp"
 #include "taskdialogs/welcomedialog.hpp"

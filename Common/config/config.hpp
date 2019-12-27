@@ -23,7 +23,8 @@
 #include <rapidjson/prettywriter.h>
 #include <wil/resource.h>
 
-#include "../../ProgramLog/error.hpp"
+#include "../../ProgramLog/error/rapidjson.hpp"
+#include "../../ProgramLog/error/std.hpp"
 #endif
 
 

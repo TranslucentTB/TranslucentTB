@@ -9,7 +9,7 @@
 #include <wil/safecast.h>
 
 #include "appinfo.hpp"
-#include "../../ProgramLog/error.hpp"
+#include "../../ProgramLog/error/win32.hpp"
 #include "util/numbers.hpp"
 #include "../uwp/uwp.hpp"
 #include "uwp.hpp"

@@ -3,7 +3,7 @@
 
 #include "constants.hpp"
 #include "../ExplorerDetour/explorerdetour.hpp"
-#include "../../ProgramLog/error.hpp"
+#include "../../ProgramLog/error/win32.hpp"
 #include "undoc/winuser.hpp"
 #include "win32.hpp"
 #include "../windows/windowhelper.hpp"
@@ -78,7 +78,9 @@ void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 		RefreshAttribute(iter);
 	}
 
-	const std::wstring_view msg = state ? L"Start menu opened on monitor {}" : L"Start menu closed on monitor {}";
+	const std::wstring_view msg = state
+		? L"Start menu opened on monitor {}"
+		: L"Start menu closed on monitor {}";
 	fmt::basic_memory_buffer<wchar_t, 50> buf;
 	fmt::format_to(buf, msg, static_cast<void*>(mon));
 

@@ -5,6 +5,7 @@
 #include "taskdialogs/aboutdialog.hpp"
 #include "constants.hpp"
 #include "../ProgramLog/log.hpp"
+#include "../ProgramLog/error/win32.hpp"
 
 void MainAppWindow::SetupFolderWatch()
 {
@@ -375,6 +376,10 @@ WPARAM MainAppWindow::Run()
 					return msg.wParam;
 				}
 			}
+		}
+		else if (result == WAIT_IO_COMPLETION)
+		{
+			continue;
 		}
 		else if (result == WAIT_FAILED)
 		{

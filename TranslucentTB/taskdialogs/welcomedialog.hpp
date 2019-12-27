@@ -5,7 +5,7 @@
 #include <wil/resource.h>
 
 #include "appinfo.hpp"
-#include "../../ProgramLog/error.hpp"
+#include "../../ProgramLog/error/win32.hpp"
 
 class WelcomeDialog : public TTBTaskDialog {
 private:
@@ -54,7 +54,7 @@ public:
 		m_Cfg.pszFooter = LR"(You can read our license <A HREF="https://github.com/)" APP_NAME L"/" APP_NAME LR"(/blob/master/LICENSE.md">here</A>.)";
 		m_Cfg.dwFlags |= TDF_USE_HICON_FOOTER;
 
-		LoadIconMetric(nullptr, IDI_INFORMATION, LIM_SMALL, m_FooterIcon.put());
+		HresultVerify(LoadIconMetric(nullptr, IDI_INFORMATION, LIM_SMALL, m_FooterIcon.put()), spdlog::level::warn, L"Failed to load information icon");
 		m_Cfg.hFooterIcon = m_FooterIcon.get();
 	}
 

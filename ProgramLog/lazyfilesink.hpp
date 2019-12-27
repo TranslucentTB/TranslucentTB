@@ -17,7 +17,9 @@
 #include "appinfo.hpp"
 #include "constants.hpp"
 #include "window.hpp"
-#include "error.hpp"
+#include "error/error.hpp"
+#include "error/std.hpp"
+#include "error/win32.hpp"
 
 template<typename Mutex>
 class lazy_file_sink final : public spdlog::sinks::base_sink<Mutex> {

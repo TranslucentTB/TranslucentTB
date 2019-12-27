@@ -1,7 +1,7 @@
 #include "taskdialog.hpp"
 #include <utility>
 
-#include "../../ProgramLog/error.hpp"
+#include "../../ProgramLog/error/win32.hpp"
 #include "util/null_terminated_string_view.hpp"
 #include "util/strings.hpp"
 #include "win32.hpp"

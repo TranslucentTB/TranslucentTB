@@ -1,7 +1,7 @@
 #include "win32.hpp"
 #include <processthreadsapi.h>
 
-#include "../ProgramLog/error.hpp"
+#include "../ProgramLog/error/win32.hpp"
 
 std::filesystem::path win32::s_ExeLocation;
 

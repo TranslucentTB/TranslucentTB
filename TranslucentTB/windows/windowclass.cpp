@@ -3,7 +3,7 @@
 #include <WinBase.h>
 #include <winerror.h>
 
-#include "../../ProgramLog/error.hpp"
+#include "../../ProgramLog/error/win32.hpp"
 #include "window.hpp"
 
 void WindowClass::LoadIcons(const wchar_t *iconResource)
