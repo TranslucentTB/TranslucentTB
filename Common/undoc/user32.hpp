@@ -77,6 +77,3 @@ struct WINDOWCOMPOSITIONATTRIBDATA {	// Options for [Get/Set]WindowCompositionAt
 };
 
 typedef BOOL (WINAPI* PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE)(HWND, const WINDOWCOMPOSITIONATTRIBDATA *);
-
-static constexpr wchar_t SWCA_DLL[] = L"user32.dll";
-static constexpr char SWCA_ORDINAL[] = "SetWindowCompositionAttribute"; // Exported by name

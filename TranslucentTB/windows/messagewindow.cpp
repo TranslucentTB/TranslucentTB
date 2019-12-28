@@ -1,21 +1,9 @@
 #include "messagewindow.hpp"
 #include <member_thunk/member_thunk.hpp>
 
-#include "../mainappwindow.hpp"
+#include "undoc/dynamicloader.hpp"
 #include "../../ProgramLog/error/win32.hpp"
-
-// TODO: use function local statics
-const wil::unique_hmodule MessageWindow::uxtheme(LoadLibraryEx(UXTHEME_DLL, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
-
-const PFN_ALLOW_DARK_MODE_FOR_WINDOW MessageWindow::AllowDarkModeForWindow =
-	reinterpret_cast<PFN_ALLOW_DARK_MODE_FOR_WINDOW>(GetProcAddress(uxtheme.get(), ADMFW_ORDINAL));
-
-const PFN_SHOULD_SYSTEM_USE_DARK_MODE MessageWindow::ShouldSystemUseDarkMode =
-	reinterpret_cast<PFN_SHOULD_SYSTEM_USE_DARK_MODE>(GetProcAddress(uxtheme.get(), SSUDM_ORDINAL));
-
-// Static initialization order reeee
-const PFN_SET_PREFERRED_APP_MODE MainAppWindow::SetPreferredAppMode =
-	reinterpret_cast<PFN_SET_PREFERRED_APP_MODE>(GetProcAddress(MessageWindow::uxtheme.get(), SPAM_ORDINAL));
+#include "../../ProgramLog/error/std.hpp"
 
 void MessageWindow::DeleteThisAPC(ULONG_PTR that)
 {
@@ -67,9 +55,12 @@ MessageWindow::MessageWindow(Util::null_terminated_wstring_view className, Util:
 		LastErrorHandle(spdlog::level::critical, L"Failed to update window procedure!");
 	}
 
-	if (DarkModeAvailable())
+	if (DynamicLoader::uxtheme())
 	{
-		AllowDarkModeForWindow(m_WindowHandle, true);
+		if (const auto admfm = DynamicLoader::AllowDarkModeForWindow())
+		{
+			admfm(m_WindowHandle, true);
+		}
 	}
 }
 

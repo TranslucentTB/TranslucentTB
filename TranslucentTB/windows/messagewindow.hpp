@@ -2,20 +2,14 @@
 #include "arch.h"
 #include <member_thunk/common.hpp>
 #include <windef.h>
-#include <wil/resource.h>
 
 #include "../resources/ids.h"
-#include "undoc/uxtheme.hpp"
 #include "util/null_terminated_string_view.hpp"
 #include "window.hpp"
 #include "windowclass.hpp"
 
 class MessageWindow : public Window {
-protected:
-	static const wil::unique_hmodule uxtheme;
-
 private:
-	static const PFN_ALLOW_DARK_MODE_FOR_WINDOW AllowDarkModeForWindow;
 	static void NTAPI DeleteThisAPC(ULONG_PTR that);
 
 	// Order important: the thunk needs to be destroyed after the window class
@@ -26,17 +20,11 @@ private:
 	void Destroy();
 
 protected:
-	static const PFN_SHOULD_SYSTEM_USE_DARK_MODE ShouldSystemUseDarkMode;
 	void HeapDeletePostNcDestroy();
 
 	inline HINSTANCE hinstance() const noexcept
 	{
 		return m_WindowClass.hinstance();
-	}
-
-	inline static bool DarkModeAvailable() noexcept
-	{
-		return uxtheme && AllowDarkModeForWindow && ShouldSystemUseDarkMode;
 	}
 
 	inline virtual LRESULT CALLBACK MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)

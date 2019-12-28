@@ -16,13 +16,11 @@
 #include "config/config.hpp"
 #include "config/taskbarappearance.hpp"
 #include "../windows/messagewindow.hpp"
-#include "undoc/swca.hpp"
+#include "undoc/user32.hpp"
 #include "wilx.hpp"
 
 class TaskbarAttributeWorker : public MessageWindow {
 private:
-	static const PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SetWindowCompositionAttribute;
-
 	struct MonitorInfo {
 		Window TaskbarWindow;
 		std::unordered_set<Window> MaximisedWindows;
@@ -37,6 +35,9 @@ private:
 	//     to add support to show when windows are displayed but not maximised
 	// make sure opening start while already opened on other monitor works
 	// hook for what windowhelper checks
+
+	// The magic function that does the thing
+	const PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SetWindowCompositionAttribute;
 
 	// State
 	bool m_PeekActive;

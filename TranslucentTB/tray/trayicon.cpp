@@ -3,15 +3,19 @@
 
 #include "appinfo.hpp"
 #include "constants.hpp"
+#include "undoc/dynamicloader.hpp"
 #include "../../ProgramLog/error/std.hpp"
 #include "../../ProgramLog/error/win32.hpp"
 
 void TrayIcon::LoadThemedIcon()
 {
 	const wchar_t *icon = m_whiteIconResource;
-	if (DarkModeAvailable() && !ShouldSystemUseDarkMode())
+	if (DynamicLoader::uxtheme())
 	{
-		icon = m_darkIconResource;
+		if (const auto ssudm = DynamicLoader::ShouldSystemUseDarkMode(); ssudm && !ssudm())
+		{
+			icon = m_darkIconResource;
+		}
 	}
 
 	if (HRESULT hr = LoadIconMetric(hinstance(), icon, LIM_SMALL, m_Icon.put()); SUCCEEDED(hr))

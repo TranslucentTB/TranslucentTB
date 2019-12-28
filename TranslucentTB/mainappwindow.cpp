@@ -4,6 +4,7 @@
 
 #include "taskdialogs/aboutdialog.hpp"
 #include "constants.hpp"
+#include "undoc/dynamicloader.hpp"
 #include "../ProgramLog/log.hpp"
 #include "../ProgramLog/error/win32.hpp"
 
@@ -346,9 +347,12 @@ MainAppWindow::MainAppWindow(std::filesystem::path configPath, bool hasPackageId
 		RemoveItem(ID_AUTOSTART);
 	}
 
-	if (DarkModeAvailable() && SetPreferredAppMode)
+	if (DynamicLoader::uxtheme())
 	{
-		SetPreferredAppMode(PreferredAppMode::AllowDark);
+		if (const auto spam = DynamicLoader::SetPreferredAppMode())
+		{
+			spam(PreferredAppMode::AllowDark);
+		}
 	}
 
 	// Shows the tray icon if not disabled

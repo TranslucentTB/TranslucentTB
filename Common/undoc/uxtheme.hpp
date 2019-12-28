@@ -1,7 +1,6 @@
 #pragma once
 #include "../arch.h"
 #include <windef.h>
-#include <winuser.h>
 
 // Enum           : PreferredAppMode, Type: int
 // Data           :   constant 0x0, Constant, Type: int, Default
@@ -20,8 +19,3 @@ enum class PreferredAppMode : INT {
 typedef PreferredAppMode(WINAPI* PFN_SET_PREFERRED_APP_MODE)(PreferredAppMode appMode);
 typedef BOOL(WINAPI* PFN_ALLOW_DARK_MODE_FOR_WINDOW)(HWND window, bool allow);
 typedef BOOL(WINAPI* PFN_SHOULD_SYSTEM_USE_DARK_MODE)();
-
-static constexpr wchar_t UXTHEME_DLL[] = L"uxtheme.dll";
-#define SPAM_ORDINAL MAKEINTRESOURCEA(135)
-#define ADMFW_ORDINAL MAKEINTRESOURCEA(133)
-#define SSUDM_ORDINAL MAKEINTRESOURCEA(138)

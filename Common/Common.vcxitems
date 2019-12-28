@@ -22,9 +22,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)config\taskbarappearance.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config\windowfilter.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)constants.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)undoc\dynamicloader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)redefgetcurrenttime.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)undefgetcurrenttime.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)undoc\swca.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)undoc\user32.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)undoc\uxtheme.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)undoc\winuser.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\colors.hpp" />

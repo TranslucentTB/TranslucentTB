@@ -11,8 +11,6 @@
 
 class MainAppWindow final : public TrayContextMenu {
 private:
-	static const PFN_SET_PREFERRED_APP_MODE SetPreferredAppMode;
-
 	std::filesystem::path m_ConfigPath;
 	Config m_Config;
 

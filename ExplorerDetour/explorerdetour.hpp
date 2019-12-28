@@ -6,7 +6,7 @@
 #include <wil/resource.h>
 
 #include "window.hpp"
-#include "undoc/swca.hpp"
+#include "undoc/user32.hpp"
 
 #ifdef EXPLORERDETOUR_EXPORTS
 #define EXPLORERDETOUR_API __declspec(dllexport)

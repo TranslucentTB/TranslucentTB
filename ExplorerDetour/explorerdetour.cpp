@@ -1,12 +1,12 @@
 #include "explorerdetour.hpp"
 #include <cstdint>
-#include <libloaderapi.h>
 #include <wil/win32_helpers.h>
 #include <WinUser.h>
 
 #include "constants.hpp"
 #include "detourexception.hpp"
 #include "detourtransaction.hpp"
+#include "undoc/dynamicloader.hpp"
 
 PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE ExplorerDetour::SetWindowCompositionAttribute;
 UINT ExplorerDetour::s_RequestAttribute;
@@ -40,10 +40,15 @@ bool ExplorerDetour::Install() noexcept
 {
 	if (!SetWindowCompositionAttribute)
 	{
-		SetWindowCompositionAttribute
-			= reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(GetModuleHandle(SWCA_DLL), SWCA_ORDINAL));
-
-		if (!SetWindowCompositionAttribute)
+		if (DynamicLoader::user32())
+		{
+			SetWindowCompositionAttribute = DynamicLoader::SetWindowCompositionAttribute();
+			if (!SetWindowCompositionAttribute)
+			{
+				return false;
+			}
+		}
+		else
 		{
 			return false;
 		}

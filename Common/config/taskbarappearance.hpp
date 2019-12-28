@@ -7,7 +7,7 @@
 #include <windef.h>
 
 #include "rapidjsonhelper.hpp"
-#include "../undoc/swca.hpp"
+#include "../undoc/user32.hpp"
 #include "../util/colors.hpp"
 #include "../util/null_terminated_string_view.hpp"
 

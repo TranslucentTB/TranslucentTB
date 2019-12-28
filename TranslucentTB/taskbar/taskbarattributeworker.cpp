@@ -4,13 +4,11 @@
 #include "constants.hpp"
 #include "../ExplorerDetour/explorerdetour.hpp"
 #include "../../ProgramLog/error/win32.hpp"
+#include "undoc/dynamicloader.hpp"
 #include "undoc/winuser.hpp"
 #include "util/fmt.hpp"
 #include "win32.hpp"
 #include "../windows/windowhelper.hpp"
-
-const PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE TaskbarAttributeWorker::SetWindowCompositionAttribute =
-	reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(GetModuleHandle(SWCA_DLL), SWCA_ORDINAL));
 
 void TaskbarAttributeWorker::OnAeroPeekEnterExit(DWORD event, HWND, LONG, LONG, DWORD, DWORD)
 {
@@ -200,46 +198,43 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 
 void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance config)
 {
-	if (SetWindowCompositionAttribute)
+	if (config.Accent == ACCENT_NORMAL)
 	{
-		if (config.Accent == ACCENT_NORMAL)
+		// Without this guard, we get reentrancy: sending WM_THEMECHANGED causes a window's
+		// state be changed, so the notification is processed and this is called, sending
+		// again the same message, and so on.
+		if (!m_NormalTaskbars.contains(window))
 		{
-			// Without this guard, we get reentrancy: sending WM_THEMECHANGED causes a window's
-			// state be changed, so the notification is processed and this is called, sending
-			// again the same message, and so on.
-			if (!m_NormalTaskbars.contains(window))
-			{
-				m_NormalTaskbars.insert(window);
-				window.send_message(WM_THEMECHANGED);
-			}
-			return;
+			m_NormalTaskbars.insert(window);
+			window.send_message(WM_THEMECHANGED);
 		}
-		else
-		{
-			m_NormalTaskbars.erase(window);
-		}
-
-		ACCENT_POLICY policy = {
-			config.Accent,
-			2,
-			config.Color,
-			0
-		};
-
-		if (policy.AccentState == ACCENT_ENABLE_ACRYLICBLURBEHIND && policy.GradientColor >> 24 == 0x00)
-		{
-			// Acrylic mode doesn't likes a completely 0 opacity
-			policy.GradientColor = (0x01 << 24) + (policy.GradientColor & 0x00FFFFFF);
-		}
-
-		const WINDOWCOMPOSITIONATTRIBDATA data = {
-			WCA_ACCENT_POLICY,
-			&policy,
-			sizeof(policy)
-		};
-
-		SetWindowCompositionAttribute(window, &data);
+		return;
 	}
+	else
+	{
+		m_NormalTaskbars.erase(window);
+	}
+
+	ACCENT_POLICY policy = {
+		config.Accent,
+		2,
+		config.Color,
+		0
+	};
+
+	if (policy.AccentState == ACCENT_ENABLE_ACRYLICBLURBEHIND && policy.GradientColor >> 24 == 0x00)
+	{
+		// Acrylic mode doesn't likes a completely 0 opacity
+		policy.GradientColor = (0x01 << 24) + (policy.GradientColor & 0x00FFFFFF);
+	}
+
+	const WINDOWCOMPOSITIONATTRIBDATA data = {
+		WCA_ACCENT_POLICY,
+		&policy,
+		sizeof(policy)
+	};
+
+	SetWindowCompositionAttribute(window, &data);
 }
 
 void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
@@ -402,6 +397,7 @@ bool TaskbarAttributeWorker::IsStartMenuOpened()
 
 TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance) :
 	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance),
+	SetWindowCompositionAttribute(DynamicLoader::SetWindowCompositionAttribute()),
 	m_PeekActive(false),
 	m_disableAttributeRefreshReply(false),
 	m_CurrentStartMonitor(nullptr),

@@ -52,11 +52,9 @@ namespace wilx {
 
 #endif // WILX_HPP
 
+namespace wilx {
 #if defined(__IAppVisibility_INTERFACE_DEFINED__) && !defined(CINTERFACE) && !defined(WILX_IAV)
 #define WILX_IAV
-
-namespace wilx {
 	using unique_app_visibility_token = unique_com_token<&IAppVisibility::Unadvise>;
-}
-
 #endif
+}
