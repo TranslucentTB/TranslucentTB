@@ -26,7 +26,11 @@ namespace Util {
 			return character >= L'a' && character <= L'f';
 		}
 
+#ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
 		template<std::signed_integral T>
+#else
+		template<typename T, std::enable_if_t<std::is_signed_v<T>, int> = 0>
+#endif
 		constexpr T abs(T num)
 		{
 			if (num == std::numeric_limits<T>::min())
@@ -37,16 +41,28 @@ namespace Util {
 			return num >= 0 ? num : -num;
 		}
 
+#ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
 		template<std::unsigned_integral T>
+#else
+		template<typename T, std::enable_if_t<std::is_unsigned_v<T>, int> = 0>
+#endif
 		constexpr T abs(T num)
 		{
 			return num;
 		}
 
+#ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
 		template<std::integral T, uint8_t base>
+#else
+		template<typename T, uint8_t base>
+#endif
 		struct NumberParser;
 
+#ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
 		template<std::integral T>
+#else
+		template<typename T>
+#endif
 		struct NumberParser<T, 10> {
 			static constexpr T impl(std::wstring_view number)
 			{
@@ -105,7 +121,11 @@ namespace Util {
 			}
 		};
 
+#ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
 		template<std::unsigned_integral T>
+#else
+		template<typename T>
+#endif
 		struct NumberParser<T, 16> {
 			static constexpr T impl(std::wstring_view number)
 			{
@@ -148,7 +168,11 @@ namespace Util {
 
 	// Apparently no wide string to number parser accepted an explicit ending to the string
 	// so here I am. Also C locales sucks.
+#ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
 	template<std::integral T = int32_t, uint8_t base = 10>
+#else
+	template<typename T = int32_t, uint8_t base = 10>
+#endif
 	constexpr T ParseNumber(std::wstring_view number)
 	{
 		return impl::NumberParser<T, base>::impl(Trim(number));
