@@ -86,7 +86,48 @@ LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void MainAppWindow::RefreshMenu()
 {
-	// TODO
+	AppearanceMenuRefresh(4, m_Config.DesktopAppearance, m_Config.UseRegularAppearanceWhenPeeking, false);
+	AppearanceMenuRefresh(5, m_Config.VisibleWindowAppearance);
+	AppearanceMenuRefresh(6, m_Config.MaximisedWindowAppearance);
+	AppearanceMenuRefresh(7, m_Config.StartOpenedAppearance);
+	AppearanceMenuRefresh(8, m_Config.CortanaOpenedAppearance);
+	AppearanceMenuRefresh(9, m_Config.TimelineOpenedAppearance);
+}
+
+void MainAppWindow::AppearanceMenuRefresh(uint8_t groupId, TaskbarAppearance &appearance, bool &b, bool controlsEnabled)
+{
+	const uint16_t group = 0x9C00 + (groupId << 4);
+	CheckItem(group + 0, b);
+
+	if (controlsEnabled && !b)
+	{
+		EnableItem(group + 1, false);
+	}
+	else
+	{
+		EnableItem(group + 1, appearance.Accent != ACCENT_NORMAL);
+	}
+
+	if (controlsEnabled)
+	{
+		EnableItem(group + 2, b);
+		EnableItem(group + 3, b);
+		EnableItem(group + 4, b);
+		EnableItem(group + 5, b);
+		EnableItem(group + 6, b);
+	}
+
+	uint32_t radio_to_check;
+	if (appearance.Accent == ACCENT_NORMAL)
+	{
+		radio_to_check = 2;
+	}
+	else
+	{
+		radio_to_check = appearance.Accent + 2;
+	}
+
+	CheckRadio(group + 2, group + 6, group + radio_to_check);
 }
 
 void MainAppWindow::ClickHandler(unsigned int id)

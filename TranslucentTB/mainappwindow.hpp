@@ -29,8 +29,14 @@ private:
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	void RefreshMenu() override;
-	void ClickHandler(unsigned int id) override;
+	void AppearanceMenuRefresh(uint8_t groupId, TaskbarAppearance &appearance, bool &b, bool controlsEnabled);
 
+	inline void AppearanceMenuRefresh(uint8_t groupId, OptionalTaskbarAppearance &appearance)
+	{
+		AppearanceMenuRefresh(groupId, appearance, appearance.Enabled, true);
+	}
+
+	void ClickHandler(unsigned int id) override;
 	OptionalTaskbarAppearance &OptionalAppearanceForGroup(uint8_t group_id);
 	void AppearanceMenuHandler(uint8_t offset, TaskbarAppearance &appearance, bool &b);
 	void LogMenuHandler(uint8_t offset);
