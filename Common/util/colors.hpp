@@ -12,7 +12,7 @@
 namespace Util {
 	inline uint32_t ColorFromString(std::wstring_view str)
 	{
-		Util::TrimInplace(str);
+		TrimInplace(str);
 
 		if (str.starts_with(L'#'))
 		{
@@ -24,25 +24,25 @@ namespace Util {
 		}
 		else
 		{
-			throw std::invalid_argument("not a valid color");
+			throw std::invalid_argument("Not a valid color");
 		}
 
 		if (str.length() == 3)
 		{
-			const auto col = Util::ParseNumber<uint16_t, 16>(str) & 0xFFF;
-			const uint32_t r = Util::ExpandOneHexDigitByte((col & 0xF00) >> 8);
-			const uint32_t g = Util::ExpandOneHexDigitByte((col & 0xF0) >> 4);
-			const uint32_t b = Util::ExpandOneHexDigitByte(col & 0xF);
+			const auto col = ParseHexNumber<uint16_t>(str) & 0xFFF;
+			const uint32_t r = ExpandOneHexDigitByte((col & 0xF00) >> 8);
+			const uint32_t g = ExpandOneHexDigitByte((col & 0xF0) >> 4);
+			const uint32_t b = ExpandOneHexDigitByte(col & 0xF);
 
 			return (r << 16) + (g << 8) + b;
 		}
 		else if (str.length() == 6)
 		{
-			return Util::ParseNumber<uint32_t, 16>(str) & 0xFFFFFF;
+			return ParseHexNumber(str) & 0xFFFFFF;
 		}
 		else
 		{
-			throw std::invalid_argument("not a valid color");
+			throw std::invalid_argument("Not a valid color");
 		}
 	}
 

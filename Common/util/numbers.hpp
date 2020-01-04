@@ -1,11 +1,10 @@
 #pragma once
 #include <concepts>
+#include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <limits>
 #include <stdexcept>
 #include <string_view>
-#include <type_traits>
 
 #include "strings.hpp"
 
@@ -25,157 +24,52 @@ namespace Util {
 		{
 			return character >= L'a' && character <= L'f';
 		}
-
-#ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
-		template<std::signed_integral T>
-#else
-		template<typename T, std::enable_if_t<std::is_signed_v<T>, int> = 0>
-#endif
-		constexpr T abs(T num)
-		{
-			if (num == std::numeric_limits<T>::min())
-			{
-				throw std::out_of_range("Cannot get absolute value of minimum number");
-			}
-
-			return num >= 0 ? num : -num;
-		}
-
-#ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
-		template<std::unsigned_integral T>
-#else
-		template<typename T, std::enable_if_t<std::is_unsigned_v<T>, int> = 0>
-#endif
-		constexpr T abs(T num)
-		{
-			return num;
-		}
-
-#ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
-		template<std::integral T, uint8_t base>
-#else
-		template<typename T, uint8_t base>
-#endif
-		struct NumberParser;
-
-#ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
-		template<std::integral T>
-#else
-		template<typename T>
-#endif
-		struct NumberParser<T, 10> {
-			static constexpr T impl(std::wstring_view number)
-			{
-				bool isNegative = false;
-				if (number.length() > 1 && number[0] == L'-')
-				{
-					if constexpr (std::is_signed_v<T>)
-					{
-						number.remove_prefix(1);
-						isNegative = true;
-					}
-					else
-					{
-						throw std::out_of_range("Cannot convert a negative number to a unsigned integer");
-					}
-				}
-
-				constexpr T max = std::numeric_limits<T>::max();
-				constexpr T maxmthresh = max / 10;
-				constexpr wchar_t maxdthresh = (max % 10) + L'0';
-
-				constexpr T min = std::numeric_limits<T>::min();
-				constexpr T minmthresh = min / 10;
-				constexpr wchar_t mindthresh = static_cast<wchar_t>(abs(min % 10)) + L'0';
-
-				T result {};
-				for (const wchar_t digit : number)
-				{
-					if (result > maxmthresh || (result == maxmthresh && digit > maxdthresh) || (isNegative && (result < minmthresh || (result == minmthresh && digit > mindthresh))))
-					{
-						throw std::out_of_range("Number being converted is off-limits");
-					}
-					else
-					{
-						if (impl::IsDecimalDigit(digit))
-						{
-							result *= 10;
-							const T intDigit = static_cast<T>(digit - L'0');
-							if (isNegative)
-							{
-								result -= intDigit;
-							}
-							else
-							{
-								result += intDigit;
-							}
-						}
-						else
-						{
-							throw std::invalid_argument("Not a number");
-						}
-					}
-				}
-
-				return result;
-			}
-		};
-
-#ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
-		template<std::unsigned_integral T>
-#else
-		template<typename T>
-#endif
-		struct NumberParser<T, 16> {
-			static constexpr T impl(std::wstring_view number)
-			{
-				if (number.length() > 2 && number[0] == L'0' && (number[1] == L'x' || number[1] == L'X'))
-				{
-					number.remove_prefix(2);
-				}
-
-				if (number.length() > std::numeric_limits<T>::digits / 4)
-				{
-					throw std::out_of_range("Number being converted is off-limits");
-				}
-
-				T result {};
-				for (std::size_t i = 0; i < number.length(); i++)
-				{
-					const T power = static_cast<T>(1) << ((number.length() - i - 1) * 4);
-					if (impl::IsDecimalDigit(number[i]))
-					{
-						result += static_cast<T>(number[i] - L'0') * power;
-					}
-					else if (impl::IsUpperHexDigit(number[i]))
-					{
-						result += static_cast<T>(number[i] - L'A' + 10) * power;
-					}
-					else if (impl::IsLowerHexDigit(number[i]))
-					{
-						result += static_cast<T>(number[i] - L'a' + 10) * power;
-					}
-					else
-					{
-						throw std::invalid_argument("Not a number");
-					}
-				}
-
-				return result;
-			}
-		};
 	}
 
 	// Apparently no wide string to number parser accepted an explicit ending to the string
 	// so here I am. Also C locales sucks.
 #ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
-	template<std::integral T = int32_t, uint8_t base = 10>
+	template<std::unsigned_integral T = uint32_t>
 #else
-	template<typename T = int32_t, uint8_t base = 10>
+	template<typename T = uint32_t>
 #endif
-	constexpr T ParseNumber(std::wstring_view number)
+	constexpr T ParseHexNumber(std::wstring_view number)
 	{
-		return impl::NumberParser<T, base>::impl(Trim(number));
+		TrimInplace(number);
+
+		if (number.length() > 2 && number[0] == L'0' && (number[1] == L'x' || number[1] == L'X'))
+		{
+			number.remove_prefix(2);
+		}
+
+		if (number.length() > std::numeric_limits<T>::digits / 4)
+		{
+			throw std::out_of_range("Number being converted is off-limits");
+		}
+
+		T result { };
+		for (std::size_t i = 0; i < number.length(); i++)
+		{
+			const T power = static_cast<T>(1) << ((number.length() - i - 1) * 4);
+			if (impl::IsDecimalDigit(number[i]))
+			{
+				result += static_cast<T>(number[i] - L'0') * power;
+			}
+			else if (impl::IsUpperHexDigit(number[i]))
+			{
+				result += static_cast<T>(number[i] - L'A' + 10) * power;
+			}
+			else if (impl::IsLowerHexDigit(number[i]))
+			{
+				result += static_cast<T>(number[i] - L'a' + 10) * power;
+			}
+			else
+			{
+				throw std::invalid_argument("Not a number");
+			}
+		}
+
+		return result;
 	}
 
 	constexpr uint8_t ExpandOneHexDigitByte(uint8_t byte)

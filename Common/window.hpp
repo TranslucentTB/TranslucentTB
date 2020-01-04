@@ -164,14 +164,14 @@ public:
 
 	inline RECT rect() noexcept
 	{
-		RECT result {};
+		RECT result { };
 		GetWindowRect(m_WindowHandle, &result);
 		return result;
 	}
 
 	inline RECT client_rect() noexcept
 	{
-		RECT result {};
+		RECT result { };
 		GetClientRect(m_WindowHandle, &result);
 		return result;
 	}

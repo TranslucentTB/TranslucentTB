@@ -193,7 +193,7 @@ bool CheckAndRunWelcome(const std::filesystem::path& config_file, HINSTANCE hIns
 {
 	if (!std::filesystem::is_regular_file(config_file))
 	{
-		Config{ }.Save(config_file);
+		Config { }.Save(config_file);
 		if (!WelcomeDialog(config_file, hInst).Run())
 		{
 			std::filesystem::remove(config_file);
@@ -207,7 +207,7 @@ bool CheckAndRunWelcome(const std::filesystem::path& config_file, HINSTANCE hIns
 	return true;
 }
 
-int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ wchar_t *, _In_ int)
+_Use_decl_annotations_ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 {
 	win32::HardenProcess();
 

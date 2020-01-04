@@ -29,7 +29,7 @@ std::wstring Error::MessageFromHRESULT(HRESULT result)
 		nullptr,
 		result,
 		MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
-		reinterpret_cast<wchar_t*>(error.put()),
+		reinterpret_cast<wchar_t *>(error.put()),
 		0,
 		nullptr
 	);

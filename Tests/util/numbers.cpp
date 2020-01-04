@@ -46,164 +46,64 @@ TEST(Util_IsLowerHexDigit, ReturnsTrueWhenLowerCaseDigit)
 	ASSERT_THAT(Util::impl::IsLowerHexDigit(L'f'), IsTrue());
 }
 
-TEST(Util_abs_Unsigned, ReturnsSame)
+TEST(Util_ParseHexNumber, ThrowsWhenInputNotANumber)
 {
-	ASSERT_EQ(Util::impl::abs<uint8_t>(240), 240);
+	ASSERT_THROW(Util::ParseHexNumber(L"foobar"), std::invalid_argument);
 }
 
-TEST(Util_abs_Signed, ThrowsWhenMinimumValue)
+TEST(Util_ParseHexNumber, ThrowsOnOverflow)
 {
-	ASSERT_THROW(Util::impl::abs<int8_t>(-128), std::out_of_range);
+	ASSERT_THROW(Util::ParseHexNumber<uint8_t>(L"100"), std::out_of_range);
 }
 
-TEST(Util_abs_Signed, ReturnsSameWhenPositive)
+TEST(Util_ParseHexNumber, ReturnsCorrectValueWhenLowerCaseDigits)
 {
-	ASSERT_EQ(Util::impl::abs<int8_t>(110), 110);
+	ASSERT_EQ(Util::ParseHexNumber<uint8_t>(L"af"), 0xAF);
 }
 
-TEST(Util_abs_Signed, ReturnsAbsoluteWhenNegative)
+TEST(Util_ParseHexNumber, ReturnsCorrectValueWhenUpperCaseDigits)
 {
-	ASSERT_EQ(Util::impl::abs<int8_t>(-110), 110);
+	ASSERT_EQ(Util::ParseHexNumber<uint8_t>(L"AF"), 0xAF);
 }
 
-TEST(Util_ParseNumber_Unsigned_BaseTen, ThrowsWhenInputNegative)
+TEST(Util_ParseHexNumber, ReturnsCorrectValueWhenMixedCaseDigits)
 {
-	ASSERT_THROW(Util::ParseNumber<uint32_t>(L"-10"), std::out_of_range);
+	ASSERT_EQ(Util::ParseHexNumber<uint8_t>(L"aF"), 0xAF);
 }
 
-TEST(Util_ParseNumber_Unsigned_BaseTen, ThrowsOnOverflow)
+TEST(Util_ParseHexNumber, ReturnsCorrectValueWhenLowerCasePrefixed)
 {
-	ASSERT_THROW(Util::ParseNumber<int8_t>(L"256"), std::out_of_range);
+	ASSERT_EQ(Util::ParseHexNumber<uint8_t>(L"0xAF"), 0xAF);
 }
 
-TEST(Util_ParseNumber_Unsigned_BaseTen, ReturnsCorrectValue)
+TEST(Util_ParseHexNumber, ReturnsCorrectValueWhenUpperCasePrefixed)
 {
-	ASSERT_EQ(Util::ParseNumber<uint32_t>(L"1000"), static_cast<uint32_t>(1000));
+	ASSERT_EQ(Util::ParseHexNumber<uint8_t>(L"0XAF"), 0xAF);
 }
 
-TEST(Util_ParseNumber_Unsigned_BaseTen, HandlesVeryLargeNumber)
+TEST(Util_ParseHexNumber, HandlesVeryLargeNumber)
 {
-	ASSERT_EQ(Util::ParseNumber<uint64_t>(L"18446744073709551610"), 18446744073709551610);
+	ASSERT_EQ(Util::ParseHexNumber<uint64_t>(L"0xFFFFFFFFFFFFFFFA"), 0xFFFFFFFFFFFFFFFA);
 }
 
-TEST(Util_ParseNumber_Unsigned_BaseTen, HandlesMaximumValue)
+TEST(Util_ParseHexNumber, HandlesMaximumValue)
 {
-	ASSERT_EQ(Util::ParseNumber<uint8_t>(L"255"), 255);
+	ASSERT_EQ(Util::ParseHexNumber<uint64_t>(L"0xFFFFFFFFFFFFFFFF"), 0xFFFFFFFFFFFFFFFF);
 }
 
-TEST(Util_ParseNumber_Unsigned_BaseTen, HandlesMinimumValue)
+TEST(Util_ParseHexNumber, HandlesMinimumValue)
 {
-	ASSERT_EQ(Util::ParseNumber<uint8_t>(L"0"), 0);
+	ASSERT_EQ(Util::ParseHexNumber<uint64_t>(L"0x0"), 0x0);
 }
 
-TEST(Util_ParseNumber_Signed_BaseTen, ThrowsOnOverflow)
+TEST(Util_ParseHexNumber, HandlesOneDigit)
 {
-	ASSERT_THROW(Util::ParseNumber<int8_t>(L"128"), std::out_of_range);
+	ASSERT_EQ(Util::ParseHexNumber<uint8_t>(L"A"), 0xA);
 }
 
-TEST(Util_ParseNumber_Signed_BaseTen, ThrowsOnUnderflow)
+TEST(Util_ParseHexNumber, TrimsInput)
 {
-	ASSERT_THROW(Util::ParseNumber<int8_t>(L"-129"), std::out_of_range);
-}
-
-TEST(Util_ParseNumber_Signed_BaseTen, ReturnsCorrectValueWhenInputNegative)
-{
-	ASSERT_EQ(Util::ParseNumber<int32_t>(L"-1000"), -1000);
-}
-
-TEST(Util_ParseNumber_Signed_BaseTen, ReturnsCorrectValueWhenInputPositive)
-{
-	ASSERT_EQ(Util::ParseNumber<int32_t>(L"1000"), 1000);
-}
-
-TEST(Util_ParseNumber_Signed_BaseTen, HandlesVeryLargeNumber)
-{
-	ASSERT_EQ(Util::ParseNumber<int64_t>(L"9223372036854775800"), 9223372036854775800);
-}
-
-TEST(Util_ParseNumber_Signed_BaseTen, HandlesVeryLargeNegativeNumber)
-{
-	ASSERT_EQ(Util::ParseNumber<int64_t>(L"-9223372036854775800"), -9223372036854775800);
-}
-
-TEST(Util_ParseNumber_Signed_BaseTen, HandlesMaximumValue)
-{
-	ASSERT_EQ(Util::ParseNumber<int8_t>(L"127"), 127);
-}
-
-TEST(Util_ParseNumber_Signed_BaseTen, HandlesMinimumValue)
-{
-	ASSERT_EQ(Util::ParseNumber<int8_t>(L"-128"), -128);
-}
-
-TEST(Util_ParseNumber_Signed_BaseTen, HandlesOneDigit)
-{
-	ASSERT_EQ(Util::ParseNumber<int8_t>(L"1"), 1);
-}
-
-TEST(Util_ParseNumber_BaseTen, ThrowsWhenInputNotANumber)
-{
-	ASSERT_THROW(Util::ParseNumber<int32_t>(L"foobar"), std::invalid_argument);
-}
-
-TEST(Util_ParseNumber_BaseSixteen, ThrowsWhenInputNotANumber)
-{
-	ASSERT_THROW((Util::ParseNumber<uint32_t, 16>(L"foobar")), std::invalid_argument);
-}
-
-TEST(Util_ParseNumber_BaseSixteen, ThrowsOnOverflow)
-{
-	ASSERT_THROW((Util::ParseNumber<uint8_t, 16>(L"100")), std::out_of_range);
-}
-
-TEST(Util_ParseNumber_BaseSixteen, ReturnsCorrectValueWhenLowerCaseDigits)
-{
-	ASSERT_EQ((Util::ParseNumber<uint8_t, 16>(L"ff")), 255);
-}
-
-TEST(Util_ParseNumber_BaseSixteen, ReturnsCorrectValueWhenUpperCaseDigits)
-{
-	ASSERT_EQ((Util::ParseNumber<uint8_t, 16>(L"FF")), 255);
-}
-
-TEST(Util_ParseNumber_BaseSixteen, ReturnsCorrectValueWhenMixedCaseDigits)
-{
-	ASSERT_EQ((Util::ParseNumber<uint8_t, 16>(L"fF")), 255);
-}
-
-TEST(Util_ParseNumber_BaseSixteen, ReturnsCorrectValueWhenLowerCasePrefixed)
-{
-	ASSERT_EQ((Util::ParseNumber<uint8_t, 16>(L"0xFF")), 255);
-}
-
-TEST(Util_ParseNumber_BaseSixteen, ReturnsCorrectValueWhenUpperCasePrefixed)
-{
-	ASSERT_EQ((Util::ParseNumber<uint8_t, 16>(L"0XFF")), 255);
-}
-
-TEST(Util_ParseNumber_BaseSixteen, HandlesVeryLargeNumber)
-{
-	ASSERT_EQ((Util::ParseNumber<uint64_t, 16>(L"0xFFFFFFFFFFFFFFFA")), 0xFFFFFFFFFFFFFFFA);
-}
-
-TEST(Util_ParseNumber_BaseSixteen, HandlesMaximumValue)
-{
-	ASSERT_EQ((Util::ParseNumber<uint64_t, 16>(L"0xFFFFFFFFFFFFFFFF")), 0xFFFFFFFFFFFFFFFF);
-}
-
-TEST(Util_ParseNumber_BaseSixteen, HandlesMinimumValue)
-{
-	ASSERT_EQ((Util::ParseNumber<uint64_t, 16>(L"0x0")), 0);
-}
-
-TEST(Util_ParseNumber_BaseSixteen, HandlesOneDigit)
-{
-	ASSERT_EQ((Util::ParseNumber<uint8_t, 16>(L"A")), 0xA);
-}
-
-TEST(Util_ParseNumber, TrimsInput)
-{
-	ASSERT_EQ(Util::ParseNumber(L" \t \n 10  \r "), 10);
+	ASSERT_EQ(Util::ParseHexNumber(L" \t \n 10  \r "), 0x10);
 }
 
 TEST(Util_ExpandOneHexDigitByte, ExpandsByte)

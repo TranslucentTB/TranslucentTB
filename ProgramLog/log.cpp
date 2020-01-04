@@ -60,7 +60,7 @@ void Log::Initialize()
 	logger->sinks().push_back(std::make_shared<spdlog::sinks::windebug_sink_st>());
 
 	const auto file_log = std::make_shared<lazy_file_sink_mt>(GetPath);
-	file_log->set_level(Config{ }.LogVerbosity);
+	file_log->set_level(Config { }.LogVerbosity);
 	logger->sinks().push_back(file_log);
 
 	spdlog::set_default_logger(std::move(logger));

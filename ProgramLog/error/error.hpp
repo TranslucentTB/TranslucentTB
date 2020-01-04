@@ -69,4 +69,4 @@ namespace Error {
 };
 
 #define PROGRAMLOG_ERROR_LOCATION __FILE__, __LINE__, SPDLOG_FUNCTION
-#define MessagePrint(level_, message_) (Error::HandleImpl<(level_)>::Handle((message_), std::wstring_view{ }, PROGRAMLOG_ERROR_LOCATION))
+#define MessagePrint(level_, message_) (Error::HandleImpl<(level_)>::Handle((message_), std::wstring_view { }, PROGRAMLOG_ERROR_LOCATION))
