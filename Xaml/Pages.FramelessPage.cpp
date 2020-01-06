@@ -17,7 +17,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 			UTIL_STRINGIFY(Title),
 			xaml_typename<hstring>(),
 			xaml_typename<class_type>(),
-			{ box_value(L"") }
+			PropertyMetadata { box_value(L"") }
 		);
 
 	DependencyProperty FramelessPage::s_UserContentProperty =
@@ -25,7 +25,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 			UTIL_STRINGIFY(UserContent),
 			xaml_typename<UIElement>(),
 			xaml_typename<class_type>(),
-			{ nullptr }
+			nullptr
 	);
 
 	FramelessPage::FramelessPage()
