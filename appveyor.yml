@@ -11,7 +11,8 @@ platform:
 
 install:
 - vcpkg install --triplet %PLATFORM%-windows --head rapidjson wil
-- vcpkg install --triplet %PLATFORM%-windows detours gtest spdlog fmt
+- vcpkg install --triplet %PLATFORM%-windows gtest spdlog fmt
+- vcpkg install --triplet %PLATFORM%-windows --overlay-ports=ports detours
 
 before_build:
 - ps: .\update-version.ps1
