@@ -14,8 +14,8 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		Windows::UI::Xaml::UIElement UserContent();
 		void UserContent(Windows::UI::Xaml::UIElement element);
 
-		static Windows::UI::Xaml::DependencyProperty TitleProperty();
-		static Windows::UI::Xaml::DependencyProperty UserContentProperty();
+		static Windows::UI::Xaml::DependencyProperty TitleProperty() noexcept;
+		static Windows::UI::Xaml::DependencyProperty UserContentProperty() noexcept;
 
 	private:
 		static Windows::UI::Xaml::DependencyProperty s_TitleProperty;

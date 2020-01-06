@@ -43,7 +43,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		SetValue(s_TitleProperty, box_value(title));
 	}
 
-	DependencyProperty FramelessPage::TitleProperty()
+	DependencyProperty FramelessPage::TitleProperty() noexcept
 	{
 		return s_TitleProperty;
 	}
@@ -58,7 +58,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		SetValue(s_UserContentProperty, element);
 	}
 
-	DependencyProperty FramelessPage::UserContentProperty()
+	DependencyProperty FramelessPage::UserContentProperty() noexcept
 	{
 		return s_UserContentProperty;
 	}
