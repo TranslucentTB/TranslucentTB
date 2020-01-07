@@ -6,22 +6,24 @@
 #include <wil/resource.h>
 
 #include "util/strings.hpp"
+#include "util/to_string_view.hpp"
 
-std::wstring FormatHRESULT(HRESULT result, std::wstring_view description)
+void FormatHRESULT(fmt::wmemory_buffer &buf, HRESULT result, std::wstring_view description)
 {
-	return fmt::format(
+	fmt::format_to(
+		buf,
 		fmt(L"0x{:08X}: {}"),
 		static_cast<std::make_unsigned_t<HRESULT>>(result), // needs this otherwise we get some error codes in the negatives
 		description
 	);
 }
 
-std::wstring FormatIRestrictedErrorInfo(HRESULT result, BSTR description)
+void FormatIRestrictedErrorInfo(fmt::wmemory_buffer &buf, HRESULT result, BSTR description)
 {
-	return FormatHRESULT(result, Util::Trim({ description, SysStringLen(description) }));
+	FormatHRESULT(buf, result, Util::Trim({ description, SysStringLen(description) }));
 }
 
-std::wstring Error::MessageFromHRESULT(HRESULT result)
+void Error::MessageFromHRESULT(fmt::wmemory_buffer &buf, HRESULT result)
 {
 	wil::unique_hlocal_string error;
 	const DWORD count = FormatMessage(
@@ -34,12 +36,23 @@ std::wstring Error::MessageFromHRESULT(HRESULT result)
 		nullptr
 	);
 
-	return FormatHRESULT(result, count
-		? Util::Trim({ error.get(), count })
-		: fmt::format(fmt(L"[failed to get message for HRESULT] {}"), MessageFromHRESULT(HRESULT_FROM_WIN32(GetLastError()))));
+	if (count)
+	{
+		FormatHRESULT(buf, result, Util::Trim({ error.get(), count }));
+	}
+	else
+	{
+		fmt::wmemory_buffer hrBuf;
+		MessageFromHRESULT(hrBuf, HRESULT_FROM_WIN32(GetLastError()));
+
+		fmt::wmemory_buffer errBuf;
+		fmt::format_to(errBuf, fmt(L"[failed to get message for HRESULT] {}"), Util::ToStringView(hrBuf));
+
+		FormatHRESULT(buf, result, Util::ToStringView(errBuf));
+	}
 }
 
-std::wstring Error::MessageFromIRestrictedErrorInfo(IRestrictedErrorInfo *info)
+void Error::MessageFromIRestrictedErrorInfo(fmt::wmemory_buffer &buf, IRestrictedErrorInfo *info)
 {
 	if (info)
 	{
@@ -51,36 +64,27 @@ std::wstring Error::MessageFromIRestrictedErrorInfo(IRestrictedErrorInfo *info)
 		{
 			if (restrictedDescription)
 			{
-				return FormatIRestrictedErrorInfo(errorCode, restrictedDescription.get());
+				FormatIRestrictedErrorInfo(buf, errorCode, restrictedDescription.get());
 			}
 			else if (description)
 			{
-				return FormatIRestrictedErrorInfo(errorCode, description.get());
+				FormatIRestrictedErrorInfo(buf, errorCode, description.get());
 			}
 			else
 			{
-				return MessageFromHRESULT(errorCode);
+				MessageFromHRESULT(buf, errorCode);
 			}
 		}
 		else
 		{
-			return fmt::format(fmt(L"[failed to get details from IRestrictedErrorInfo] {}"), MessageFromHRESULT(hr));
+			fmt::wmemory_buffer hrBuf;
+			MessageFromHRESULT(hrBuf, hr);
+			fmt::format_to(buf, fmt(L"[failed to get details from IRestrictedErrorInfo] {}"), Util::ToStringView(hrBuf));
 		}
 	}
 	else
 	{
-		return L"[IRestrictedErrorInfo was null]";
-	}
-}
-
-std::wstring Error::MessageFromHresultError(const winrt::hresult_error &err)
-{
-	if (const auto info = err.try_as<IRestrictedErrorInfo>())
-	{
-		return MessageFromIRestrictedErrorInfo(info.get());
-	}
-	else
-	{
-		return MessageFromHRESULT(err.code());
+		static constexpr std::wstring_view INFO_NULL = L"[IRestrictedErrorInfo was null]";
+		buf.append(INFO_NULL.data(), INFO_NULL.data() + INFO_NULL.length());
 	}
 }

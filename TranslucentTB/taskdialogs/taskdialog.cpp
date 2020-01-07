@@ -4,6 +4,7 @@
 #include "../../ProgramLog/error/win32.hpp"
 #include "util/null_terminated_string_view.hpp"
 #include "util/strings.hpp"
+#include "util/to_string_view.hpp"
 #include "win32.hpp"
 
 HRESULT TTBTaskDialog::RawCallbackProc(HWND hwnd, UINT uNotification, WPARAM wParam, LPARAM lParam, LONG_PTR dwRefData)
@@ -36,7 +37,12 @@ bool TTBTaskDialog::Run(bool &checked)
 	HRESULT hr = TaskDialogIndirect(&m_Cfg, nullptr, nullptr, &checkedB);
 	if (FAILED(hr))
 	{
-		MessageBoxEx(Window::NullWindow, (L"Failed to open task dialog.\n\n" + Error::MessageFromHRESULT(hr)).c_str(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
+		fmt::wmemory_buffer errbuf;
+		Error::MessageFromHRESULT(errbuf, hr);
+
+		fmt::wmemory_buffer buf;
+		fmt::format_to(buf, fmt(L"Failed to open task dialog.\n\n{}\0"), Util::ToStringView(errbuf));
+		MessageBoxEx(Window::NullWindow, buf.data(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 		return false;
 	}
 	else

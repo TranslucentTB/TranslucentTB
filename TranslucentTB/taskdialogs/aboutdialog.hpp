@@ -10,6 +10,7 @@
 #include "appinfo.hpp"
 #include "../../ProgramLog/error/win32.hpp"
 #include "util/numbers.hpp"
+#include "util/to_string_view.hpp"
 #include "../uwp/uwp.hpp"
 #include "uwp.hpp"
 #include "win32.hpp"
@@ -69,6 +70,7 @@ private:
 
 	inline static std::wstring BuildVersionInfo(bool hasPackageIdentity)
 	{
+		fmt::wmemory_buffer buf;
 		// TODO: remove stream (or not since task dialogs are going away)
 		std::wostringstream str;
 
@@ -105,7 +107,9 @@ private:
 			}
 			catch (const winrt::hresult_error &error)
 			{
-				str << Error::MessageFromHresultError(error);
+				buf.clear();
+				Error::MessageFromHresultError(buf, error);
+				str << Util::ToStringView(buf);
 			}
 			str << std::endl;
 		}
@@ -113,7 +117,18 @@ private:
 		str << APP_NAME L" version: " APP_VERSION << std::endl;
 
 		const auto [build, hr2] = win32::GetWindowsBuild();
-		str << L"Windows version: " << (SUCCEEDED(hr2) ? build : Error::MessageFromHRESULT(hr2)) << std::endl;
+		str << L"Windows version: ";
+		if (SUCCEEDED(hr2))
+		{
+			str << build;
+		}
+		else
+		{
+			buf.clear();
+			Error::MessageFromHRESULT(buf, hr2);
+			str << Util::ToStringView(buf);
+		}
+		str << std::endl;
 
 		const uint8_t major = (DETOURS_VERSION & 0xF0000) >> 16;
 		const uint8_t minor = (DETOURS_VERSION & 0xF00) >> 8;
@@ -122,7 +137,7 @@ private:
 
 		str << L"RapidJSON version: " << RAPIDJSON_VERSION_STRING << std::endl;
 		str << L"spdlog version: " << SPDLOG_VER_MAJOR << L'.' << SPDLOG_VER_MINOR << L'.' << SPDLOG_VER_PATCH << std::endl;
-		str << L"{fmt} version: " << std::floor(FMT_VERSION / 10000) << L'.' << std::floor(FMT_VERSION % 10000 / 100) << L'.' << (FMT_VERSION % 100);
+		str << L"{fmt} version: " << (FMT_VERSION / 10000) << L'.' << (FMT_VERSION % 10000 / 100) << L'.' << (FMT_VERSION % 100);
 
 		return str.str();
 	}

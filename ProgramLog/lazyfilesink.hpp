@@ -19,6 +19,7 @@
 #include "error/error.hpp"
 #include "error/std.hpp"
 #include "error/win32.hpp"
+#include "util/to_string_view.hpp"
 
 template<typename Mutex>
 class lazy_file_sink final : public spdlog::sinks::base_sink<Mutex> {
@@ -65,6 +66,8 @@ private:
 	{
 		if (!std::exchange(m_Tried, true))
 		{
+			fmt::wmemory_buffer buf;
+
 			try
 			{
 				m_File = m_PathGetter();
@@ -72,14 +75,18 @@ private:
 			catch (const winrt::hresult_error &err)
 			{
 				HresultErrorHandle(err, spdlog::level::trace, L"Failed to get log file path.");
-				handle_open_error(Error::MessageFromHresultError(err));
+
+				Error::MessageFromHresultError(buf, err);
+				handle_open_error(Util::ToStringView(buf));
 
 				return;
 			}
 			catch (const std::filesystem::filesystem_error &err)
 			{
 				StdSystemErrorHandle(err, spdlog::level::trace, L"Failed to get log file path.");
-				handle_open_error(Error::MessageFromStdSystemError(err));
+
+				Error::MessageFromStdSystemError(buf, err);
+				handle_open_error(Util::ToStringView(buf));
 
 				return;
 			}
@@ -93,12 +100,14 @@ private:
 			{
 				const HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
 				HresultHandle(hr, spdlog::level::trace, L"Failed to create log file.");
-				handle_open_error(Error::MessageFromHRESULT(hr));
+
+				Error::MessageFromHRESULT(buf, hr);
+				handle_open_error(Util::ToStringView(buf));
 			}
 		}
 	}
 
-	void handle_open_error(std::wstring err)
+	void handle_open_error(std::wstring_view err)
 	{
 		fmt::wmemory_buffer buf;
 		fmt::format_to(buf, fmt(L"Failed to create log file. Logs won't be available during this session.\n\n{}"), err);
