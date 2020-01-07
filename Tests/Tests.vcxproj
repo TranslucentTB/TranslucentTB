@@ -12,6 +12,7 @@
     <Link>
       <AdditionalDependencies Condition="'$(Configuration)'=='Release'">gtest.lib;gtest_main.lib;gmock.lib;fmt.lib</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Configuration)'=='Debug'">gtestd.lib;gtest_maind.lib;gmockd.lib;fmtd.lib</AdditionalDependencies>
+      <AdditionalDependencies>ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -19,5 +20,6 @@
     <ClCompile Include="util\colors.cpp" />
     <ClCompile Include="util\numbers.cpp" />
     <ClCompile Include="util\strings.cpp" />
+    <ClCompile Include="win32.cpp" />
   </ItemGroup>
 </Project>

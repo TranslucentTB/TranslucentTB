@@ -15,5 +15,6 @@
     <ClCompile Include="util\colors.cpp">
       <Filter>Util Tests</Filter>
     </ClCompile>
+    <ClCompile Include="win32.cpp" />
   </ItemGroup>
 </Project>

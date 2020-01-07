@@ -175,7 +175,7 @@ public:
 				if (ParseResult result = doc.ParseStream<kParseCommentsFlag, AutoUTF<uint32_t>>(in))
 				{
 					Config cfg;
-					// TODO: exception throwing & catching
+					// TODO: exception throwing & catching, handle std::system_error from FilenameSet
 					cfg.Deserialize(doc);
 					return cfg;
 				}

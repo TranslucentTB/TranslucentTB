@@ -10,72 +10,35 @@
 #ifndef RC_INVOKED
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
-#include <cstdint>
-#include <cwctype>
-#include <functional>
 #include <initializer_list>
 #include <iterator>
 #include <string>
 #include <string_view>
-#include <unordered_set>
-
-#include "hash.hpp"
 
 namespace Util {
-	// Converts a string to its lowercase variant
-	inline void ToLowerInplace(std::wstring &data)
-	{
-		std::transform(data.begin(), data.end(), data.begin(), std::towlower);
-	}
-
-	// Converts a string to its lowercase variant
-	inline std::wstring ToLower(std::wstring data)
-	{
-		ToLowerInplace(data);
-		return data;
-	}
-
-	// Checks if two strings are the same, ignoring case
-	inline bool IgnoreCaseStringEquals(std::wstring_view l, std::wstring_view r) noexcept
-	{
-		return std::equal(l.begin(), l.end(), r.begin(), r.end(), [](wchar_t a, wchar_t b) noexcept
-		{
-			return std::towlower(a) == std::towlower(b);
-		});
-	}
-
 	namespace impl {
-		struct string_lowercase_compare {
-			using is_transparent = void;
-			inline bool operator()(std::wstring_view l, std::wstring_view r) const noexcept
-			{
-				return IgnoreCaseStringEquals(l, r);
-			}
-		};
-
-		struct string_lowercase_hash {
-			using transparent_key_equal = string_lowercase_compare;
-			inline std::size_t operator()(std::wstring_view k) const noexcept
-			{
-				std::size_t hash = INITIAL_HASH_VALUE;
-				for (wchar_t character : k)
-				{
-					character = std::towlower(character);
-					HashByte(hash, static_cast<uint8_t>((character & 0xFF00) >> 8));
-					HashByte(hash, character & 0xFF);
-				}
-
-				return hash;
-			}
-		};
-
 		// https://en.cppreference.com/w/cpp/string/wide/iswspace
 		static constexpr std::wstring_view WHITESPACES = L" \f\n\r\t\v";
 	}
 
-	// Case-insensitive string set.
-	using string_set = std::unordered_set<std::wstring, impl::string_lowercase_hash>;
+	constexpr bool IsAscii(wchar_t c)
+	{
+		return (c & ~0x007F) == 0;
+	}
+
+	constexpr wchar_t AsciiToUpper(wchar_t c)
+	{
+		assert(IsAscii(c));
+
+		const wchar_t lower = c + 0x0080 - 0x0061;
+		const wchar_t upper = c + 0x0080 - 0x007B;
+		const wchar_t combined = lower ^ upper;
+		const wchar_t mask = (combined & 0x0080) >> 2;
+
+		return c ^ mask;
+	}
 
 	// Removes instances of a character at the beginning and end of the string.
 	constexpr std::wstring_view Trim(std::wstring_view str, std::wstring_view characters = impl::WHITESPACES)

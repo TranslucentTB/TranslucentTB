@@ -2,7 +2,6 @@
 #include "arch.h"
 #include <functional>
 #include <string>
-#include <unordered_map>
 #include <windef.h>
 #include <WinUser.h>
 #include <wil/resource.h>

@@ -5,70 +5,24 @@
 
 using namespace testing;
 
-TEST(Util_ToLowerInplace, TurnsStringLowercase)
+TEST(Util_IsAscii, ReturnsTrueWhenAscii)
 {
-	std::wstring str = L"FOO";
-	Util::ToLowerInplace(str);
-	ASSERT_EQ(str, L"foo");
+	ASSERT_THAT(Util::IsAscii(L'a'), IsTrue());
 }
 
-TEST(Util_ToLower, ReturnsLowercaseString)
+TEST(Util_IsAscii, ReturnsFalseWhenNotAscii)
 {
-	ASSERT_EQ(Util::ToLower(L"FOO"), L"foo");
+	ASSERT_THAT(Util::IsAscii(L'\u00CB'), IsFalse());
 }
 
-TEST(Util_Equals, ReturnsFalseWhenLengthDifferent)
+TEST(Util_AsciiToUpper, ReturnsUppercaseAsciiFromLowercase)
 {
-	ASSERT_FALSE(Util::IgnoreCaseStringEquals(L"foo", L"foobar"));
-	ASSERT_FALSE(Util::IgnoreCaseStringEquals(L"FOOBAR", L"FOO"));
+	ASSERT_EQ(Util::AsciiToUpper(L'a'), L'A');
 }
 
-TEST(Util_Equals, ReturnsFalseWhenContentDifferent)
+TEST(Util_AsciiToUpper, ReturnsUppercaseAsciiFromUppercase)
 {
-	ASSERT_FALSE(Util::IgnoreCaseStringEquals(L"foo", L"bar"));
-	ASSERT_FALSE(Util::IgnoreCaseStringEquals(L"FOO", L"BAR"));
-}
-
-TEST(Util_Equals, ReturnsTrueWhenCaseDifferent)
-{
-	ASSERT_TRUE(Util::IgnoreCaseStringEquals(L"foo", L"FOO"));
-	ASSERT_TRUE(Util::IgnoreCaseStringEquals(L"FOOBAR", L"foobar"));
-}
-
-TEST(Util_Equals, ReturnsTrueWhenContentSame)
-{
-	ASSERT_TRUE(Util::IgnoreCaseStringEquals(L"foo", L"foo"));
-}
-
-TEST(Util_StringLowerCaseHash, DifferentWhenLengthDifferent)
-{
-	const Util::impl::string_lowercase_hash hasher;
-
-	ASSERT_NE(hasher(L"foo"), hasher(L"foobar"));
-	ASSERT_NE(hasher(L"FOOBAR"),hasher(L"FOO"));
-}
-
-TEST(Util_StringLowerCaseHash, DifferentWhenContentDifferent)
-{
-	const Util::impl::string_lowercase_hash hasher;
-
-	ASSERT_NE(hasher(L"foo"), hasher(L"bar"));
-	ASSERT_NE(hasher(L"FOO"), hasher(L"BAR"));
-}
-
-TEST(Util_StringLowerCaseHash, SameWhenCaseDifferent)
-{
-	const Util::impl::string_lowercase_hash hasher;
-
-	ASSERT_EQ(hasher(L"foo"), hasher(L"FOO"));
-	ASSERT_EQ(hasher(L"FOOBAR"), hasher(L"foobar"));
-}
-
-TEST(Util_StringLowerCaseHash, SameWhenContentSame)
-{
-	const Util::impl::string_lowercase_hash hasher;
-
-	ASSERT_EQ(hasher(L"foo"), hasher(L"foo"));
+	ASSERT_EQ(Util::AsciiToUpper(L'A'), L'A');
 }
 
 TEST(Util_Trim, TrimsLeft)

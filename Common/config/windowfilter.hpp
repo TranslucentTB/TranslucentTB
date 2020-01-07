@@ -6,7 +6,7 @@
 #include <unordered_set>
 
 #include "../util/null_terminated_string_view.hpp"
-#include "../util/strings.hpp"
+#include "../win32.hpp"
 
 #ifdef _TRANSLUCENTTB_EXE
 #include "../window.hpp"
@@ -95,7 +95,7 @@ private:
 
 	std::unordered_set<std::wstring> m_ClassList;
 	std::unordered_set<std::wstring> m_TitleList;
-	Util::string_set m_FileList;
+	win32::FilenameSet m_FileList;
 
 	static constexpr Util::null_terminated_wstring_view CLASS_KEY = L"window_class";
 	static constexpr Util::null_terminated_wstring_view TITLE_KEY = L"window_title";
