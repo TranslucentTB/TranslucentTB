@@ -236,24 +236,29 @@ public:
 			outer.top <= inner.top && outer.bottom >= inner.bottom;
 	}
 
+	inline static bool IsSameFilename(std::wstring_view l, std::wstring_view r)
+	{
+		const int result = CompareStringOrdinal(
+			l.data(), wil::safe_cast<int>(l.length()),
+			r.data(), wil::safe_cast<int>(r.length()),
+			true
+		);
+
+		if (result)
+		{
+			return result == CSTR_EQUAL;
+		}
+		else
+		{
+			throw std::system_error(static_cast<int>(GetLastError()), std::system_category(), "Failed to compare strings");
+		}
+	}
+
 	struct FilenameEqual {
 		using is_transparent = void;
 		inline bool operator()(std::wstring_view l, std::wstring_view r) const
 		{
-			const int result = CompareStringOrdinal(
-				l.data(), wil::safe_cast<int>(l.length()),
-				r.data(), wil::safe_cast<int>(r.length()),
-				true
-			);
-
-			if (result)
-			{
-				return result == CSTR_EQUAL;
-			}
-			else
-			{
-				throw std::system_error(static_cast<int>(GetLastError()), std::system_category(), "Failed to compare strings");
-			}
+			return IsSameFilename(l, r);
 		}
 	};
 
@@ -272,7 +277,7 @@ public:
 				}
 				else
 				{
-					// it wasn't, call an API and break out
+					// when we encounter a non-ascii character, call an API to hash the rest and break out
 					SlowHash(hash, k.substr(i));
 					break;
 				}

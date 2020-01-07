@@ -93,49 +93,37 @@ TEST(win32_RectFitsInRect, TrueWhenSameBounds)
 	ASSERT_THAT(win32::RectFitsInRect(a, b), IsTrue());
 }
 
-TEST(win32_FilenameEqual, FalseWhenLengthDifferent)
+TEST(win32_IsSameFilename, FalseWhenLengthDifferent)
 {
-	const win32::FilenameEqual equal;
-
-	ASSERT_THAT(equal(L"foo", L"foobar"), IsFalse());
-	ASSERT_THAT(equal(L"FOOBAR", L"FOO"), IsFalse());
+	ASSERT_THAT(win32::IsSameFilename(L"foo", L"foobar"), IsFalse());
+	ASSERT_THAT(win32::IsSameFilename(L"FOOBAR", L"FOO"), IsFalse());
 }
 
-TEST(win32_FilenameEqual, FalseWhenContentDifferent)
+TEST(win32_IsSameFilename, FalseWhenContentDifferent)
 {
-	const win32::FilenameEqual equal;
-
-	ASSERT_THAT(equal(L"foo", L"bar"), IsFalse());
-	ASSERT_THAT(equal(L"FOO", L"BAR"), IsFalse());
+	ASSERT_THAT(win32::IsSameFilename(L"foo", L"bar"), IsFalse());
+	ASSERT_THAT(win32::IsSameFilename(L"FOO", L"BAR"), IsFalse());
 }
 
-TEST(win32_FilenameEqual, TrueWhenCaseDifferent)
+TEST(win32_IsSameFilename, TrueWhenCaseDifferent)
 {
-	const win32::FilenameEqual equal;
-
-	ASSERT_THAT(equal(L"foo", L"FOO"), IsTrue());
-	ASSERT_THAT(equal(L"FOOBAR", L"foobar"), IsTrue());
+	ASSERT_THAT(win32::IsSameFilename(L"foo", L"FOO"), IsTrue());
+	ASSERT_THAT(win32::IsSameFilename(L"FOOBAR", L"foobar"), IsTrue());
 }
 
-TEST(win32_FilenameHash, TrueWhenContentSame)
+TEST(win32_IsSameFilename, TrueWhenContentSame)
 {
-	const win32::FilenameEqual equal;
-
-	ASSERT_THAT(equal(L"foo", L"foo"), IsTrue());
+	ASSERT_THAT(win32::IsSameFilename(L"foo", L"foo"), IsTrue());
 }
 
-TEST(win32_FilenameEqual, HandlesNonAsciiCharacters)
+TEST(win32_IsSameFilename, HandlesNonAsciiCharacters)
 {
-	const win32::FilenameEqual equal;
-
-	ASSERT_THAT(equal(L"\u00EB", L"\u00CB"), IsTrue());
+	ASSERT_THAT(win32::IsSameFilename(L"\u00EB", L"\u00CB"), IsTrue());
 }
 
-TEST(win32_FilenameEqual, HandlesMixedCharacters)
+TEST(win32_IsSameFilename, HandlesMixedCharacters)
 {
-	const win32::FilenameEqual equal;
-
-	ASSERT_THAT(equal(L"aAa\u00CB\u00EB\u00CBAaA", L"AaA\u00EB\u00CB\u00EBaAa"), IsTrue());
+	ASSERT_THAT(win32::IsSameFilename(L"aAa\u00CB\u00EB\u00CBAaA", L"AaA\u00EB\u00CB\u00EBaAa"), IsTrue());
 }
 
 TEST(win32_FilenameHash, DifferentWhenLengthDifferent)

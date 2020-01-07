@@ -18,7 +18,7 @@ void MainAppWindow::SetupFolderWatch()
 
 	m_FolderWatcher = wil::make_folder_change_reader(m_ConfigPath.parent_path().c_str(), false, wil::FolderChangeEvents::All, [this](wil::FolderChangeEvent, std::wstring_view file)
 	{
-		if (file.empty() || Util::IgnoreCaseStringEquals(file, CONFIG_FILE))
+		if (file.empty() || win32::IsSameFilename(file, CONFIG_FILE))
 		{
 			// This callback runs on another thread, so we use a message to avoid threading issues.
 			send_message(m_FileChangedMessage);
