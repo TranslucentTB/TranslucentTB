@@ -7,21 +7,16 @@
     <ProjectName>Xaml</ProjectName>
     <RootNamespace>TranslucentTB.Xaml</RootNamespace>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <TargetName>$(RootNamespace)</TargetName>
-
     <!-- Compile as a UWP project for the XAML compiler to compile the pages. -->
     <MinimalCoreWin>true</MinimalCoreWin>
     <AppContainerApplication>true</AppContainerApplication>
     <ApplicationType>Windows Store</ApplicationType>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
-
     <!-- But link against the desktop CRT, we're not making a true UWP app. -->
     <_NoWinAPIFamilyApp>true</_NoWinAPIFamilyApp>
     <_VC_Target_Library_Platform>Desktop</_VC_Target_Library_Platform>
-
     <!-- Don't store outputs in a subfolder otherwise the main program can't find them. -->
     <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
-
     <!-- Disable embedded XBF (even if the naming suggests otherwise) so that our XAML is in the final resources.pri. -->
     <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
     <_GenerateProjectPriFileDependsOn>PlaceAppXbfAtRootOfResourceTree;$(_GenerateProjectPriFileDependsOn)</_GenerateProjectPriFileDependsOn>
