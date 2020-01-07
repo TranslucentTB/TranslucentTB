@@ -1,0 +1,3 @@
+Source: member-thunk
+Version: 0.0.1
+Description: Generates thunks to allow WinAPI callbacks to member functions

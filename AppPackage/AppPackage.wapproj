@@ -49,6 +49,7 @@
     <PackageCertificateKeyFile>DevelopmentKey.pfx</PackageCertificateKeyFile>
     <EntryPointProjectUniqueName>..\TranslucentTB\TranslucentTB.vcxproj</EntryPointProjectUniqueName>
     <DebuggerType>NativeOnly</DebuggerType>
+    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -106,7 +107,8 @@
       <_TemporaryFilteredWapProjOutput Include="@(_FilteredNonWapProjProjectOutput)" />
       <_FilteredNonWapProjProjectOutput Remove="@(_TemporaryFilteredWapProjOutput)" />
       <_FilteredNonWapProjProjectOutput Include="@(_TemporaryFilteredWapProjOutput)">
-        <SourceProject></SourceProject>
+        <SourceProject>
+        </SourceProject>
       </_FilteredNonWapProjProjectOutput>
     </ItemGroup>
   </Target>
