@@ -68,7 +68,7 @@ public:
 
 private:
 	template<typename Writer, typename T, typename Hash, typename Equal, typename Alloc>
-	inline static void SerializeStringSet(Writer &writer, const std::unordered_set<T, Hash, Equal, Alloc>&set, std::wstring_view key)
+	inline static void SerializeStringSet(Writer &writer, const std::unordered_set<T, Hash, Equal, Alloc> &set, std::wstring_view key)
 	{
 		writer.Key(key.data(), static_cast<rapidjson::SizeType>(key.length()));
 		writer.StartArray();
