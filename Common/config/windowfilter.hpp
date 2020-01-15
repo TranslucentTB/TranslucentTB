@@ -43,6 +43,7 @@ public:
 			return true;
 		}
 
+		// TODO:handle throw
 		if (!m_FileList.empty() && m_FileList.contains(window.file().filename().native()))
 		{
 			return true;
@@ -66,10 +67,10 @@ public:
 #endif
 
 private:
-	template<typename Writer, typename T>
-	inline static void SerializeStringSet(Writer &writer, const T &set, std::wstring_view key)
+	template<typename Writer, typename T, typename Hash, typename Equal, typename Alloc>
+	inline static void SerializeStringSet(Writer &writer, const std::unordered_set<T, Hash, Equal, Alloc>&set, std::wstring_view key)
 	{
-		writer.String(key.data(), static_cast<rapidjson::SizeType>(key.length()));
+		writer.Key(key.data(), static_cast<rapidjson::SizeType>(key.length()));
 		writer.StartArray();
 		for (const std::wstring &str : set)
 		{
@@ -78,8 +79,8 @@ private:
 		writer.EndArray();
 	}
 
-	template<typename T>
-	inline static void DeserializeStringSet(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val, T &set, Util::null_terminated_wstring_view key)
+	template<typename T, typename Hash, typename Equal, typename Alloc>
+	inline static void DeserializeStringSet(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val, std::unordered_set<T, Hash, Equal, Alloc> &set, Util::null_terminated_wstring_view key)
 	{
 		if (const auto arr = val.FindMember(key.c_str()); arr != val.MemberEnd() && arr->value.IsArray())
 		{

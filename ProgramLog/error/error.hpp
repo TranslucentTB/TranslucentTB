@@ -46,7 +46,7 @@ namespace Error {
 	template<spdlog::level::level_enum level>
 	struct HandleImpl {
 		template<typename T, typename U>
-#ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
+#ifdef __cpp_concepts // MIGRATION: IDE concept support
 			requires Util::is_convertible_to_wstring_view_v<T> && Util::is_convertible_to_wstring_view_v<U>
 #endif
 		inline static void Handle(const T &message, const U &error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function)
@@ -58,7 +58,7 @@ namespace Error {
 	template<>
 	struct HandleImpl<spdlog::level::critical> {
 		template<typename T, typename U>
-#ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
+#ifdef __cpp_concepts // MIGRATION: IDE concept support
 			requires Util::is_convertible_to_wstring_view_v<T> && Util::is_convertible_to_wstring_view_v<U>
 #endif
 		[[noreturn]] inline static void Handle(const T &message, const U &error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function)

@@ -147,6 +147,8 @@ public:
 				writer.StartObject();
 				Serialize(writer);
 				writer.EndObject();
+
+				writer.Flush();
 			}
 			else
 			{

@@ -37,7 +37,7 @@ void MainAppWindow::LoadStartupTask() try
 		{
 			auto result = op.GetResults().GetAt(0);
 
-			auto lock = m_TaskLock.lock_exclusive();
+			const auto lock = m_TaskLock.lock_exclusive();
 			m_StartupTask = std::move(result);
 		}
 		HresultErrorCatch(spdlog::level::warn, L"Failed to get first startup task.");
@@ -92,6 +92,13 @@ void MainAppWindow::RefreshMenu()
 	AppearanceMenuRefresh(7, m_Config.StartOpenedAppearance);
 	AppearanceMenuRefresh(8, m_Config.CortanaOpenedAppearance);
 	AppearanceMenuRefresh(9, m_Config.TimelineOpenedAppearance);
+
+	CheckItem(ID_DISABLESAVING, m_Config.DisableSaving);
+
+	if (m_HasPackageIdentity)
+	{
+		AutostartMenuRefresh();
+	}
 }
 
 void MainAppWindow::AppearanceMenuRefresh(uint8_t groupId, TaskbarAppearance &appearance, bool &b, bool controlsEnabled)
@@ -99,15 +106,7 @@ void MainAppWindow::AppearanceMenuRefresh(uint8_t groupId, TaskbarAppearance &ap
 	const uint16_t group = 0x9C00 + (groupId << 4);
 	CheckItem(group + 0, b);
 
-	if (controlsEnabled && !b)
-	{
-		EnableItem(group + 1, false);
-	}
-	else
-	{
-		EnableItem(group + 1, appearance.Accent != ACCENT_NORMAL);
-	}
-
+	EnableItem(group + 1, controlsEnabled && !b ? false : appearance.Accent != ACCENT_NORMAL);
 	if (controlsEnabled)
 	{
 		EnableItem(group + 2, b);
@@ -128,6 +127,71 @@ void MainAppWindow::AppearanceMenuRefresh(uint8_t groupId, TaskbarAppearance &ap
 	}
 
 	CheckRadio(group + 2, group + 6, group + radio_to_check);
+}
+
+void MainAppWindow::AutostartMenuRefresh()
+{
+	bool userModifiable = false;
+	bool enabled = false;
+	uint16_t text = IDS_AUTOSTART_NORMAL;
+
+	if (m_HasPackageIdentity)
+	{
+		try
+		{
+			const auto guard = m_TaskLock.lock_shared();
+			if (m_StartupTask)
+			{
+				switch (m_StartupTask.State())
+				{
+					using winrt::Windows::ApplicationModel::StartupTaskState;
+
+				case StartupTaskState::Disabled:
+					userModifiable = true;
+					break;
+
+				case StartupTaskState::DisabledByPolicy:
+					text = IDS_AUTOSTART_DISABLED_GPEDIT;
+					break;
+
+				case StartupTaskState::DisabledByUser:
+					text = IDS_AUTOSTART_DISABLED_TASKMGR;
+					break;
+
+				case StartupTaskState::Enabled:
+					userModifiable = true;
+					enabled = true;
+					break;
+
+				case StartupTaskState::EnabledByPolicy:
+					enabled = true;
+					text = IDS_AUTOSTART_ENABLED_GPEDIT;
+					break;
+
+				default:
+					text = IDS_AUTOSTART_UNKNOWN;
+					break;
+				}
+			}
+			else
+			{
+				text = IDS_AUTOSTART_NULL;
+			}
+		}
+		catch (const winrt::hresult_error &err)
+		{
+			HresultErrorHandle(err, spdlog::level::warn, L"Failed to get startup task state");
+			text = IDS_AUTOSTART_ERROR;
+		}
+	}
+	else
+	{
+		text = IDS_AUTOSTART_NO_PKG_IDENT;
+	}
+
+	CheckItem(ID_AUTOSTART, enabled);
+	EnableItem(ID_AUTOSTART, userModifiable);
+	SetText(ID_AUTOSTART, text);
 }
 
 void MainAppWindow::ClickHandler(unsigned int id)
@@ -287,13 +351,15 @@ void MainAppWindow::AutostartMenuHandler() try
 	if (!m_HasPackageIdentity)
 	{
 		MessagePrint(spdlog::level::err, L"No package identity!");
+		return;
 	}
 
-	auto lock = m_TaskLock.lock_shared();
+	const auto lock = m_TaskLock.lock_shared();
 
 	if (!m_StartupTask)
 	{
 		MessagePrint(spdlog::level::err, L"Startup task is null.");
+		return;
 	}
 
 	switch (m_StartupTask.State())

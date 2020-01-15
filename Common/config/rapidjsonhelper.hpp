@@ -11,14 +11,14 @@ namespace RapidJSONHelper {
 	template<class Writer>
 	inline void Serialize(Writer &writer, bool value, std::wstring_view key)
 	{
-		writer.String(key.data(), static_cast<rapidjson::SizeType>(key.length()));
+		writer.Key(key.data(), static_cast<rapidjson::SizeType>(key.length()));
 		writer.Bool(value);
 	}
 
 	template<class Writer, class T>
 	inline void Serialize(Writer &writer, const T &member, std::wstring_view key, const std::unordered_map<T, std::wstring_view> &map)
 	{
-		writer.String(key.data(), static_cast<rapidjson::SizeType>(key.length()));
+		writer.Key(key.data(), static_cast<rapidjson::SizeType>(key.length()));
 		const auto enum_str = Util::FindOrDefault(map, member);
 		writer.String(enum_str.data(), static_cast<rapidjson::SizeType>(enum_str.length()));
 	}
@@ -26,7 +26,7 @@ namespace RapidJSONHelper {
 	template<class Writer, class T>
 	inline void Serialize(Writer &writer, const T &member, std::wstring_view key)
 	{
-		writer.String(key.data(), static_cast<rapidjson::SizeType>(key.length()));
+		writer.Key(key.data(), static_cast<rapidjson::SizeType>(key.length()));
 		writer.StartObject();
 		member.Serialize(writer);
 		writer.EndObject();

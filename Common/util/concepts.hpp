@@ -2,7 +2,7 @@
 #include <type_traits>
 
 namespace Util {
-#ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
+#ifdef __cpp_concepts // MIGRATION: IDE concept support
 	template<typename T>
 	concept pointer = std::is_pointer_v<T>;
 

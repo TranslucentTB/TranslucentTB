@@ -174,9 +174,12 @@ STRINGTABLE
 	IDS_OPENLOG_NORMAL             L"Open log file"
 	IDS_OPENLOG_ERROR              L"Error when initializing log file"
 	IDS_OPENLOG_EMPTY              L"Nothing has been logged yet"
-	IDS_AUTOSTART_QUERYING         L"Querying startup state..."
 	IDS_AUTOSTART_NORMAL           L"Open at boot"
 	IDS_AUTOSTART_DISABLED_TASKMGR L"Startup has been disabled in Task Manager"
 	IDS_AUTOSTART_DISABLED_GPEDIT  L"Startup has been disabled by Group Policy"
 	IDS_AUTOSTART_ENABLED_GPEDIT   L"Startup has been enabled by Group Policy"
+	IDS_AUTOSTART_NULL             L"Startup task is null"
+	IDS_AUTOSTART_ERROR            L"Failed to get startup task state"
+	IDS_AUTOSTART_UNKNOWN          L"Unknown startup task state"
+	IDS_AUTOSTART_NO_PKG_IDENT     L"No package identity"
 }

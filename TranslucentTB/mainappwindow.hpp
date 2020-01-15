@@ -30,6 +30,7 @@ private:
 
 	void RefreshMenu() override;
 	void AppearanceMenuRefresh(uint8_t groupId, TaskbarAppearance &appearance, bool &b, bool controlsEnabled);
+	void AutostartMenuRefresh();
 
 	inline void AppearanceMenuRefresh(uint8_t groupId, OptionalTaskbarAppearance &appearance)
 	{

@@ -106,7 +106,7 @@ public:
 		while (Thread32Next(snapshot.get(), &thread));
 	}
 
-#ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
+#ifdef __cpp_concepts // MIGRATION: IDE concept support
 	template<Util::function_pointer T>
 #else
 	template<typename T>
@@ -136,7 +136,7 @@ public:
 		}
 	}
 
-#ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
+#ifdef __cpp_concepts // MIGRATION: IDE concept support
 	template<Util::function_pointer T>
 #else
 	template<typename T>
