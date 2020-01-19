@@ -33,6 +33,8 @@ protected:
 
 	inline void CheckRadio(unsigned int first, unsigned int last, unsigned int id)
 	{
+		// todo: can sometimes print
+		// [contextmenu.hpp:39] Failed to set menu radio item. (0x00000000: The operation completed successfully.)
 		BOOL ret = CheckMenuRadioItem(m_Menu.get(), first, last, id, MF_BYCOMMAND);
 		if (!ret)
 		{

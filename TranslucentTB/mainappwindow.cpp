@@ -93,6 +93,8 @@ void MainAppWindow::RefreshMenu()
 	AppearanceMenuRefresh(8, m_Config.CortanaOpenedAppearance);
 	AppearanceMenuRefresh(9, m_Config.TimelineOpenedAppearance);
 
+	LogMenuRefresh();
+
 	CheckItem(ID_DISABLESAVING, m_Config.DisableSaving);
 
 	if (m_HasPackageIdentity)
@@ -127,6 +129,48 @@ void MainAppWindow::AppearanceMenuRefresh(uint8_t groupId, TaskbarAppearance &ap
 	}
 
 	CheckRadio(group + 2, group + 6, group + radio_to_check);
+}
+
+void MainAppWindow::LogMenuRefresh()
+{
+	bool ok = false;
+	bool logsEnabled = false;
+	bool hasFile = false;
+	uint16_t text = IDS_OPENLOG_ERROR;
+	unsigned int levelButton = 0; // todo: is that the right value to check none of the radios?
+
+	if (const auto sink = Log::GetSink())
+	{
+		const auto level = sink->level();
+		if (level >= spdlog::level::debug && level <= spdlog::level::err)
+		{
+			levelButton = level - spdlog::level::debug + ID_LOG_DEBUG;
+		}
+		else if (level == spdlog::level::off)
+		{
+			levelButton = ID_LOG_OFF;
+		}
+
+		hasFile = sink->opened();
+		if (hasFile)
+		{
+			ok = true;
+			logsEnabled = level != spdlog::level::off;
+			text = IDS_OPENLOG_NORMAL;
+		}
+		else if (!hasFile && !sink->tried())
+		{
+			ok = true;
+			logsEnabled = level != spdlog::level::off;
+			text = IDS_OPENLOG_EMPTY;
+		}
+	}
+
+	EnableItem(ID_LOG, ok);
+	CheckItem(ID_LOG, logsEnabled);
+	EnableItem(ID_OPENLOG, hasFile);
+	SetText(ID_OPENLOG, text);
+	CheckRadio(ID_LOG_DEBUG, ID_LOG_OFF, levelButton);
 }
 
 void MainAppWindow::AutostartMenuRefresh()
@@ -308,14 +352,17 @@ void MainAppWindow::LogMenuHandler(uint8_t offset)
 {
 	if (offset == 0)
 	{
-		Log::ViewFile();
+		if (const auto sink = Log::GetSink(); sink && sink->opened())
+		{
+			HresultVerify(win32::EditFile(sink->file()), spdlog::level::err, L"Failed to open log file in Notepad");
+		}
 	}
-	else if (offset <= 2 && offset >= 5)
+	else if (offset >= spdlog::level::debug + 1 && offset <= spdlog::level::err + 1)
 	{
 		m_Config.LogVerbosity = static_cast<spdlog::level::level_enum>(offset - 1);
 		VerbosityChanged();
 	}
-	else if (offset == 6)
+	else if (offset == spdlog::level::off)
 	{
 		m_Config.LogVerbosity = spdlog::level::off;
 		VerbosityChanged();
