@@ -10,6 +10,7 @@
 
 #ifdef _TRANSLUCENTTB_EXE
 #include "../window.hpp"
+#include "../../ProgramLog/error/std.hpp"
 #endif
 
 class WindowFilter {
@@ -22,16 +23,11 @@ public:
 		SerializeStringSet(writer, m_FileList, FILE_KEY);
 	}
 
-	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val)
+	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &obj)
 	{
-		if (!val.IsObject())
-		{
-			return;
-		}
-
-		DeserializeStringSet(val, m_ClassList, CLASS_KEY);
-		DeserializeStringSet(val, m_TitleList, TITLE_KEY);
-		DeserializeStringSet(val, m_FileList, FILE_KEY);
+		DeserializeStringSet(obj, m_ClassList, CLASS_KEY);
+		DeserializeStringSet(obj, m_TitleList, TITLE_KEY);
+		DeserializeStringSet(obj, m_FileList, FILE_KEY);
 	}
 
 #ifdef _TRANSLUCENTTB_EXE
@@ -43,10 +39,16 @@ public:
 			return true;
 		}
 
-		// TODO:handle throw
-		if (!m_FileList.empty() && m_FileList.contains(window.file().filename().native()))
+		if (!m_FileList.empty())
 		{
-			return true;
+			try
+			{
+				if (m_FileList.contains(window.file().filename().native()))
+				{
+					return true;
+				}
+			}
+			StdSystemErrorCatch(spdlog::level::warn, L"Failed to check if window process is part of window filter");
 		}
 
 		// Do it last because titles can change, so it's less reliable.
@@ -80,16 +82,17 @@ private:
 	}
 
 	template<typename T, typename Hash, typename Equal, typename Alloc>
-	inline static void DeserializeStringSet(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val, std::unordered_set<T, Hash, Equal, Alloc> &set, Util::null_terminated_wstring_view key)
+	inline static void DeserializeStringSet(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &obj, std::unordered_set<T, Hash, Equal, Alloc> &set, Util::null_terminated_wstring_view key)
 	{
-		if (const auto arr = val.FindMember(key.c_str()); arr != val.MemberEnd() && arr->value.IsArray())
+		if (const auto it = obj.FindMember(key.c_str()); it != obj.MemberEnd())
 		{
-			for (const auto &elem : arr->value.GetArray())
+			const auto &array = it->value;
+			RapidJSONHelper::EnsureType(rapidjson::Type::kArrayType, array.GetType(), key);
+
+			for (const auto &elem : array.GetArray())
 			{
-				if (elem.IsString())
-				{
-					set.emplace(elem.GetString(), elem.GetStringLength());
-				}
+				RapidJSONHelper::EnsureType(rapidjson::Type::kStringType, elem.GetType(), L"array element");
+				set.emplace(elem.GetString(), elem.GetStringLength());
 			}
 		}
 	}
@@ -100,5 +103,5 @@ private:
 
 	static constexpr Util::null_terminated_wstring_view CLASS_KEY = L"window_class";
 	static constexpr Util::null_terminated_wstring_view TITLE_KEY = L"window_title";
-	static constexpr Util::null_terminated_wstring_view FILE_KEY = L"process_file";
+	static constexpr Util::null_terminated_wstring_view FILE_KEY = L"process_name";
 };

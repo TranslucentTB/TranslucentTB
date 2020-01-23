@@ -80,24 +80,19 @@ public:
 		RapidJSONHelper::Serialize(writer, LogVerbosity, LOG_KEY, LOG_MAP);
 	}
 
-	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val)
+	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &obj)
 	{
-		if (!val.IsObject())
-		{
-			return;
-		}
-
-		RapidJSONHelper::Deserialize(val, DesktopAppearance, DESKTOP_KEY);
-		RapidJSONHelper::Deserialize(val, VisibleWindowAppearance, VISIBLE_KEY);
-		RapidJSONHelper::Deserialize(val, MaximisedWindowAppearance, MAXIMISED_KEY);
-		RapidJSONHelper::Deserialize(val, StartOpenedAppearance, START_KEY);
-		RapidJSONHelper::Deserialize(val, CortanaOpenedAppearance, CORTANA_KEY);
-		RapidJSONHelper::Deserialize(val, TimelineOpenedAppearance, TIMELINE_KEY);
-		RapidJSONHelper::Deserialize(val, Whitelist, WHITELIST_KEY);
-		RapidJSONHelper::Deserialize(val, Blacklist, BLACKLIST_KEY);
-		RapidJSONHelper::Deserialize(val, HideTray, TRAY_KEY);
-		RapidJSONHelper::Deserialize(val, DisableSaving, SAVING_KEY);
-		RapidJSONHelper::Deserialize(val, LogVerbosity, LOG_KEY, LOG_MAP);
+		RapidJSONHelper::Deserialize(obj, DesktopAppearance, DESKTOP_KEY);
+		RapidJSONHelper::Deserialize(obj, VisibleWindowAppearance, VISIBLE_KEY);
+		RapidJSONHelper::Deserialize(obj, MaximisedWindowAppearance, MAXIMISED_KEY);
+		RapidJSONHelper::Deserialize(obj, StartOpenedAppearance, START_KEY);
+		RapidJSONHelper::Deserialize(obj, CortanaOpenedAppearance, CORTANA_KEY);
+		RapidJSONHelper::Deserialize(obj, TimelineOpenedAppearance, TIMELINE_KEY);
+		RapidJSONHelper::Deserialize(obj, Whitelist, WHITELIST_KEY);
+		RapidJSONHelper::Deserialize(obj, Blacklist, BLACKLIST_KEY);
+		RapidJSONHelper::Deserialize(obj, HideTray, TRAY_KEY);
+		RapidJSONHelper::Deserialize(obj, DisableSaving, SAVING_KEY);
+		RapidJSONHelper::Deserialize(obj, LogVerbosity, LOG_KEY, LOG_MAP);
 	}
 
 #ifdef _TRANSLUCENTTB_EXE
@@ -157,10 +152,17 @@ public:
 				GenericDocument<UTF16LE<>> doc;
 				if (ParseResult result = doc.ParseStream<kParseCommentsFlag, AutoUTF<uint32_t>>(in))
 				{
-					Config cfg;
-					// TODO: exception throwing & catching, handle std::system_error from FilenameSet
-					cfg.Deserialize(doc);
-					return cfg;
+					static constexpr std::wstring_view ERR_MSG = L"Failed to deserialize JSON document";
+					try
+					{
+						RapidJSONHelper::EnsureType(rapidjson::Type::kObjectType, doc.GetType(), L"root node");
+
+						Config cfg;
+						cfg.Deserialize(doc);
+						return cfg;
+					}
+					HelperDeserializationErrorCatch(spdlog::level::err, ERR_MSG)
+					StdSystemErrorCatch(spdlog::level::err, ERR_MSG);
 				}
 				else
 				{

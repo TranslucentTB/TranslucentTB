@@ -125,7 +125,7 @@ void MainAppWindow::LogMenuRefresh()
 	bool logsEnabled = false;
 	bool hasFile = false;
 	uint16_t text = IDS_OPENLOG_ERROR;
-	unsigned int levelButton = 0; // todo: is that the right value to check none of the radios?
+	unsigned int levelButton = 0;
 
 	if (const auto sink = Log::GetSink())
 	{
@@ -269,12 +269,11 @@ void MainAppWindow::ClickHandler(unsigned int id)
 				}
 				break;
 			case ID_EDITSETTINGS:
-				Save();
 				HresultVerify(win32::EditFile(m_ConfigPath), spdlog::level::err, L"Failed to open configuration file.");
 				break;
 			case ID_RETURNTODEFAULTSETTINGS:
 				m_Config = { };
-				Save(); // Reloaded by folder watcher
+				ConfigurationReloaded();
 				break;
 			case ID_DISABLESAVING:
 				InvertBool(m_Config.DisableSaving);

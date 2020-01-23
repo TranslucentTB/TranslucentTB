@@ -13,15 +13,10 @@ struct OptionalTaskbarAppearance : TaskbarAppearance {
 		TaskbarAppearance::Serialize(writer);
 	}
 
-	void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val)
+	void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &obj)
 	{
-		if (!val.IsObject())
-		{
-			return;
-		}
-
-		RapidJSONHelper::Deserialize(val, Enabled, ENABLED_KEY);
-		TaskbarAppearance::Deserialize(val);
+		RapidJSONHelper::Deserialize(obj, Enabled, ENABLED_KEY);
+		TaskbarAppearance::Deserialize(obj);
 	}
 
 private:

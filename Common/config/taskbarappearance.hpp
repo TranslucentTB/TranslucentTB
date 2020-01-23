@@ -27,30 +27,24 @@ struct TaskbarAppearance {
 		writer.Uint((Color & 0xFF000000) >> 24);
 	}
 
-	void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val)
+	void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &obj)
 	{
-		if (!val.IsObject())
+		RapidJSONHelper::Deserialize(obj, Accent, ACCENT_KEY, ACCENT_MAP);
+
+		if (const auto it = obj.FindMember(COLOR_KEY.data()); it != obj.MemberEnd())
 		{
-			return;
+			const auto &color = it->value;
+			RapidJSONHelper::EnsureType(rapidjson::Type::kStringType, color.GetType(), COLOR_KEY);
+
+			Color = (Color & 0xFF000000) + Util::SwapColorEndian(Util::ColorFromString({ color.GetString(), color.GetStringLength() }));
 		}
 
-		RapidJSONHelper::Deserialize(val, Accent, ACCENT_KEY, ACCENT_MAP);
-
-		if (const auto color = val.FindMember(COLOR_KEY.data()); color != val.MemberEnd() && color->value.IsString())
+		if (const auto it = obj.FindMember(OPACITY_KEY.data()); it != obj.MemberEnd())
 		{
-			try
-			{
-				Color = (Color & 0xFF000000) + Util::SwapColorEndian(Util::ColorFromString({ color->value.GetString(), color->value.GetStringLength() }));
-			}
-			catch (const std::exception &)
-			{
-				// ignore
-			}
-		}
+			const auto &opacity = it->value;
+			RapidJSONHelper::EnsureType(rapidjson::Type::kNumberType, opacity.GetType(), OPACITY_KEY);
 
-		if (const auto opacity = val.FindMember(OPACITY_KEY.data()); opacity != val.MemberEnd() && opacity->value.IsInt())
-		{
-			Color = (std::clamp(opacity->value.GetInt(), 0, 255) << 24) + (Color & 0xFFFFFF);
+			Color = (std::clamp(opacity.GetInt(), 0, 255) << 24) + (Color & 0xFFFFFF);
 		}
 	}
 
