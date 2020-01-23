@@ -31,10 +31,8 @@ private:
 	// better aero peek support: detect current peeked to window and include in calculation
 	// dynamic cortana and task view
 	// close if explorer crashes twice in 30 seconds
-	// rework peek button hiding - allow to interact when not visible, use normalwindow info
-	//     to add support to show when windows are displayed but not maximised
 	// make sure opening start while already opened on other monitor works
-	// hook for what windowhelper checks
+	// hook more things to make sure we dont miss anything
 
 	// The magic function that does the thing
 	const PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SetWindowCompositionAttribute;
@@ -87,21 +85,16 @@ private:
 	LRESULT OnRequestAttributeRefresh(LPARAM lParam);
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
-	// Aero Peek button
-	void ShowAeroPeekButton(Window taskbar, bool show);
-	void RefreshAeroPeekButton();
-
 	// Config
 	TaskbarAppearance GetConfig(taskbar_iterator taskbar) const;
 
 	// Attribute
+	void ShowAeroPeekButton(Window taskbar, bool show);
 	void SetAttribute(Window window, TaskbarAppearance config);
 	void RefreshAttribute(taskbar_iterator taskbar);
+	void RefreshAllAttributes();
 
 	// State
-	void Poll();
-	void RefreshTaskbars();
-	void InsertTaskbar(HMONITOR mon, Window window);
 	taskbar_iterator InsertWindow(Window window);
 
 	// Other
@@ -110,9 +103,11 @@ private:
 	static wil::unique_hwineventhook CreateHook(DWORD eventMin, DWORD eventMax, const hook_thunk &thunk);
 	void ReturnToStock();
 	bool IsStartMenuOpened();
+	void InsertTaskbar(HMONITOR mon, Window window);
 
 	inline static HMONITOR GetStartMenuMonitor()
 	{
+		// TODO: should make this more reliable
 		return Window::ForegroundWindow().monitor();
 	}
 
@@ -124,7 +119,11 @@ private:
 public:
 	TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance);
 
-	void ConfigurationChanged();
+	inline void ConfigurationChanged()
+	{
+		RefreshAllAttributes();
+	}
+
 	void DumpState();
 	void ResetState();
 

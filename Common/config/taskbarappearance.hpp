@@ -1,9 +1,9 @@
 #pragma once
 #include "../arch.h"
+#include <array>
 #include <rapidjson/document.h>
 #include <rapidjson/encodings.h>
 #include <string_view>
-#include <unordered_map>
 #include <windef.h>
 
 #include "rapidjsonhelper.hpp"
@@ -18,7 +18,7 @@ struct TaskbarAppearance {
 	template<class Writer>
 	inline void Serialize(Writer &writer) const
 	{
-		RapidJSONHelper::Serialize(writer, Accent, ACCENT_KEY, s_AccentMap);
+		RapidJSONHelper::Serialize(writer, Accent, ACCENT_KEY, ACCENT_MAP);
 
 		writer.String(COLOR_KEY.data(), static_cast<rapidjson::SizeType>(COLOR_KEY.length()));
 		writer.String(Util::StringFromColor(Util::SwapColorEndian(Color)));
@@ -34,7 +34,7 @@ struct TaskbarAppearance {
 			return;
 		}
 
-		RapidJSONHelper::Deserialize(val, Accent, ACCENT_KEY, s_AccentMap);
+		RapidJSONHelper::Deserialize(val, Accent, ACCENT_KEY, ACCENT_MAP);
 
 		if (const auto color = val.FindMember(COLOR_KEY.data()); color != val.MemberEnd() && color->value.IsString())
 		{
@@ -55,12 +55,12 @@ struct TaskbarAppearance {
 	}
 
 private:
-	inline static const std::unordered_map<ACCENT_STATE, std::wstring_view> s_AccentMap = {
-		{ ACCENT_NORMAL,                     L"normal"  },
-		{ ACCENT_ENABLE_GRADIENT,            L"opaque"  },
-		{ ACCENT_ENABLE_TRANSPARENTGRADIENT, L"clear"   },
-		{ ACCENT_ENABLE_BLURBEHIND,          L"blur"    },
-		{ ACCENT_ENABLE_ACRYLICBLURBEHIND,   L"acrylic" }
+	static constexpr std::array<std::wstring_view, 5> ACCENT_MAP = {
+		L"normal",
+		L"opaque",
+		L"clear",
+		L"blur",
+		L"acrylic"
 	};
 
 	static constexpr Util::null_terminated_wstring_view ACCENT_KEY = L"accent";

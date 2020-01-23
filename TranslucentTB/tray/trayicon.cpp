@@ -91,13 +91,8 @@ TrayIcon::TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view classN
 	m_whiteIconResource(whiteIconResource),
 	m_darkIconResource(darkIconResource),
 	m_Show(false),
-	m_TaskbarCreatedMessage(RegisterWindowMessage(WM_TASKBARCREATED))
+	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED))
 {
-	if (!m_TaskbarCreatedMessage)
-	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to register taskbar created message.");
-	}
-
 	if (const errno_t err = wcscpy_s(m_IconData.szTip, windowName.c_str()))
 	{
 		ErrnoTHandle(err, spdlog::level::warn, L"Failed to copy tray icon tooltip text.");

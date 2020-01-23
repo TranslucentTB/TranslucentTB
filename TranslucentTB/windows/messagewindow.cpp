@@ -36,7 +36,6 @@ MessageWindow::MessageWindow(Util::null_terminated_wstring_view className, Util:
 	m_IconResource(iconResource)
 {
 	m_WindowHandle = Window::Create(0, m_WindowClass, windowName, style, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, parent);
-
 	if (!m_WindowHandle)
 	{
 		LastErrorHandle(spdlog::level::critical, L"Failed to create message window!");
@@ -49,10 +48,13 @@ MessageWindow::MessageWindow(Util::null_terminated_wstring_view className, Util:
 	StdSystemErrorCatch(spdlog::level::critical, L"Failed to create window member thunk");
 
 	SetLastError(NO_ERROR);
-	LONG_PTR val = SetWindowLongPtr(m_WindowHandle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(m_ProcedureThunk->get_thunked_function()));
-	if (!val && GetLastError() != NO_ERROR)
+	const LONG_PTR val = SetWindowLongPtr(m_WindowHandle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(m_ProcedureThunk->get_thunked_function()));
+	if (!val)
 	{
-		LastErrorHandle(spdlog::level::critical, L"Failed to update window procedure!");
+		if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
+		{
+			HresultHandle(HRESULT_FROM_WIN32(lastErr), spdlog::level::critical, L"Failed to update window procedure!");
+		}
 	}
 
 	if (DynamicLoader::uxtheme())

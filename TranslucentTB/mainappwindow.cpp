@@ -10,12 +10,7 @@
 
 void MainAppWindow::SetupFolderWatch()
 {
-	m_FileChangedMessage = RegisterWindowMessage(WM_FILECHANGED);
-	if (!m_FileChangedMessage)
-	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to register file changed message.");
-	}
-
+	m_FileChangedMessage = Window::RegisterMessage(WM_FILECHANGED);
 	m_FolderWatcher = wil::make_folder_change_reader(m_ConfigPath.parent_path().c_str(), false, wil::FolderChangeEvents::All, [this](wil::FolderChangeEvent, std::wstring_view file)
 	{
 		if (file.empty() || win32::IsSameFilename(file, CONFIG_FILE))
@@ -86,12 +81,12 @@ LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void MainAppWindow::RefreshMenu()
 {
-	AppearanceMenuRefresh(4, m_Config.DesktopAppearance, m_Config.UseRegularAppearanceWhenPeeking, false);
-	AppearanceMenuRefresh(5, m_Config.VisibleWindowAppearance);
-	AppearanceMenuRefresh(6, m_Config.MaximisedWindowAppearance);
-	AppearanceMenuRefresh(7, m_Config.StartOpenedAppearance);
-	AppearanceMenuRefresh(8, m_Config.CortanaOpenedAppearance);
-	AppearanceMenuRefresh(9, m_Config.TimelineOpenedAppearance);
+	// TODO AppearanceMenuRefresh(ID_GROUP_DESKTOP, m_Config.DesktopAppearance, m_Config.UseRegularAppearanceWhenPeeking, false);
+	AppearanceMenuRefresh(ID_GROUP_VISIBLE, m_Config.VisibleWindowAppearance);
+	AppearanceMenuRefresh(ID_GROUP_MAXIMISED, m_Config.MaximisedWindowAppearance);
+	AppearanceMenuRefresh(ID_GROUP_START, m_Config.StartOpenedAppearance);
+	AppearanceMenuRefresh(ID_GROUP_CORTANA, m_Config.CortanaOpenedAppearance);
+	AppearanceMenuRefresh(ID_GROUP_TIMELINE, m_Config.TimelineOpenedAppearance);
 
 	LogMenuRefresh();
 
@@ -103,32 +98,25 @@ void MainAppWindow::RefreshMenu()
 	}
 }
 
-void MainAppWindow::AppearanceMenuRefresh(uint8_t groupId, TaskbarAppearance &appearance, bool &b, bool controlsEnabled)
+void MainAppWindow::AppearanceMenuRefresh(uint16_t group, TaskbarAppearance &appearance, bool &b, bool controlsEnabled)
 {
-	const uint16_t group = 0x9C00 + (groupId << 4);
-	CheckItem(group + 0, b);
+	CheckItem(ID_TYPE_ACTIONS + group + ID_OFFSET_ENABLED, b);
 
-	EnableItem(group + 1, controlsEnabled && !b ? false : appearance.Accent != ACCENT_NORMAL);
+	EnableItem(ID_TYPE_ACTIONS + group + ID_OFFSET_COLOR, controlsEnabled && !b ? false : appearance.Accent != ACCENT_NORMAL);
 	if (controlsEnabled)
 	{
-		EnableItem(group + 2, b);
-		EnableItem(group + 3, b);
-		EnableItem(group + 4, b);
-		EnableItem(group + 5, b);
-		EnableItem(group + 6, b);
+		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_NORMAL, b);
+		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_OPAQUE, b);
+		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_CLEAR, b);
+		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_BLUR, b);
+		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_ACRYLIC, b);
 	}
 
-	uint32_t radio_to_check;
-	if (appearance.Accent == ACCENT_NORMAL)
-	{
-		radio_to_check = 2;
-	}
-	else
-	{
-		radio_to_check = appearance.Accent + 2;
-	}
-
-	CheckRadio(group + 2, group + 6, group + radio_to_check);
+	CheckRadio(
+		ID_TYPE_RADIOS + group + ID_OFFSET_NORMAL,
+		ID_TYPE_RADIOS + group + ID_OFFSET_ACRYLIC,
+		ID_TYPE_RADIOS + group + appearance.Accent
+	);
 }
 
 void MainAppWindow::LogMenuRefresh()
@@ -142,16 +130,10 @@ void MainAppWindow::LogMenuRefresh()
 	if (const auto sink = Log::GetSink())
 	{
 		const auto level = sink->level();
-		if (level >= spdlog::level::debug && level <= spdlog::level::err)
-		{
-			levelButton = level - spdlog::level::debug + ID_LOG_DEBUG;
-		}
-		else if (level == spdlog::level::off)
-		{
-			levelButton = ID_LOG_OFF;
-		}
 
+		levelButton = level + ID_RADIOS_LOG;
 		hasFile = sink->opened();
+
 		if (hasFile)
 		{
 			ok = true;
@@ -166,11 +148,11 @@ void MainAppWindow::LogMenuRefresh()
 		}
 	}
 
-	EnableItem(ID_LOG, ok);
-	CheckItem(ID_LOG, logsEnabled);
+	EnableItem(ID_SUBMENU_LOG, ok);
+	CheckItem(ID_SUBMENU_LOG, logsEnabled);
 	EnableItem(ID_OPENLOG, hasFile);
 	SetText(ID_OPENLOG, text);
-	CheckRadio(ID_LOG_DEBUG, ID_LOG_OFF, levelButton);
+	CheckRadio(ID_LOG_TRACE, ID_LOG_OFF, levelButton);
 }
 
 void MainAppWindow::AutostartMenuRefresh()
@@ -240,85 +222,102 @@ void MainAppWindow::AutostartMenuRefresh()
 
 void MainAppWindow::ClickHandler(unsigned int id)
 {
-	if ((id & 0xFF00) >> 8 == 0x9C)
+	const uint16_t group = id & ID_GROUP_MASK;
+
+	switch (id & ID_TYPE_MASK)
 	{
-		const uint8_t group_id = (id & 0xF0) >> 4;
-		const uint8_t offset = id & 0xF;
-		switch (group_id)
+	case ID_TYPE_RADIOS:
+	{
+		const uint8_t offset = id & ID_OFFSET_MASK;
+		switch (group)
 		{
-		case 0x4:
-			AppearanceMenuHandler(offset, m_Config.DesktopAppearance, m_Config.UseRegularAppearanceWhenPeeking);
-			break;
-		case 0x5:
-		case 0x6:
-		case 0x7:
-		case 0x8:
-		case 0x9:
-		{
-			auto &appearance = OptionalAppearanceForGroup(group_id);
-			AppearanceMenuHandler(offset, appearance, appearance.Enabled);
-			break;
-		}
-		case 0xA:
-			m_Config.Peek = static_cast<PeekBehavior>(offset);
+		case ID_GROUP_DESKTOP:
+		case ID_GROUP_VISIBLE:
+		case ID_GROUP_MAXIMISED:
+		case ID_GROUP_START:
+		case ID_GROUP_CORTANA:
+		case ID_GROUP_TIMELINE:
+			AppearanceForGroup(group).Accent = static_cast<ACCENT_STATE>(offset);
 			AppearanceChanged();
 			break;
-		case 0xB:
-			LogMenuHandler(offset);
+		case ID_GROUP_LOG:
+			m_Config.LogVerbosity = static_cast<spdlog::level::level_enum>(offset);
+			VerbosityChanged();
 			break;
 		}
+		break;
 	}
-	else
-	{
-		const uint8_t item = id & 0xFF;
-		switch (item)
+
+	case ID_TYPE_ACTIONS:
+		switch (group)
 		{
-		case 0x0:
-			Save();
-			HresultVerify(win32::EditFile(m_ConfigPath), spdlog::level::err, L"Failed to open configuration file.");
+		case ID_GROUP_DESKTOP:
+		case ID_GROUP_VISIBLE:
+		case ID_GROUP_MAXIMISED:
+		case ID_GROUP_START:
+		case ID_GROUP_CORTANA:
+		case ID_GROUP_TIMELINE:
+			// TODO
 			break;
-		case 0x1:
-			m_Config = { };
-			Save(); // Reloaded by folder watcher
-			break;
-		case 0x2:
-			InvertBool(m_Config.DisableSaving);
-			break;
-		case 0x3:
-			HideTrayHandler();
-			break;
-		case 0x4:
-			m_Worker.DumpState();
-			break;
-		case 0x5:
-			m_Worker.ResetState();
-			break;
-		case 0x6:
-			AboutDialog(m_HasPackageIdentity, hinstance()).Run();
-			break;
-		case 0x8:
-			AutostartMenuHandler();
-			break;
-		case 0x9:
-			HresultVerify(win32::OpenLink(L"https://" APP_NAME ".github.io/tips"), spdlog::level::err, L"Failed to open tips & tricks link.");
-			break;
-		case 0x7:
-		case 0xA:
-			Exit(item == 0xA);
+		default:
+			switch (id)
+			{
+			case ID_OPENLOG:
+				if (const auto sink = Log::GetSink(); sink && sink->opened())
+				{
+					HresultVerify(win32::EditFile(sink->file()), spdlog::level::err, L"Failed to open log file in Notepad");
+				}
+				break;
+			case ID_EDITSETTINGS:
+				Save();
+				HresultVerify(win32::EditFile(m_ConfigPath), spdlog::level::err, L"Failed to open configuration file.");
+				break;
+			case ID_RETURNTODEFAULTSETTINGS:
+				m_Config = { };
+				Save(); // Reloaded by folder watcher
+				break;
+			case ID_DISABLESAVING:
+				InvertBool(m_Config.DisableSaving);
+				break;
+			case ID_HIDETRAY:
+				HideTrayHandler();
+				break;
+			case ID_DUMPWORKER:
+				m_Worker.DumpState();
+				break;
+			case ID_RESETWORKER:
+				m_Worker.ResetState();
+				break;
+			case ID_ABOUT:
+				AboutDialog(m_HasPackageIdentity, hinstance()).Run();
+				break;
+			case ID_AUTOSTART:
+				AutostartMenuHandler();
+				break;
+			case ID_TIPS:
+				HresultVerify(win32::OpenLink(L"https://" APP_NAME ".github.io/tips"), spdlog::level::err, L"Failed to open tips & tricks link.");
+				break;
+			case ID_EXITWITHOUTSAVING:
+			case ID_EXIT:
+				Exit(id == ID_EXIT);
+				break;
+			}
 			break;
 		}
+		break;
 	}
 }
 
-OptionalTaskbarAppearance &MainAppWindow::OptionalAppearanceForGroup(uint8_t group_id)
+TaskbarAppearance &MainAppWindow::AppearanceForGroup(uint16_t group)
 {
-	switch (group_id)
+	switch (group)
 	{
-	case 0x5: return m_Config.VisibleWindowAppearance;
-	case 0x6: return m_Config.MaximisedWindowAppearance;
-	case 0x7: return m_Config.StartOpenedAppearance;
-	case 0x8: return m_Config.CortanaOpenedAppearance;
-	case 0x9: return m_Config.TimelineOpenedAppearance;
+	case ID_GROUP_DESKTOP: return m_Config.DesktopAppearance;
+	case ID_GROUP_VISIBLE: return m_Config.VisibleWindowAppearance;
+	case ID_GROUP_MAXIMISED: return m_Config.MaximisedWindowAppearance;
+	case ID_GROUP_START: return m_Config.StartOpenedAppearance;
+	case ID_GROUP_CORTANA: return m_Config.CortanaOpenedAppearance;
+	case ID_GROUP_TIMELINE: return m_Config.TimelineOpenedAppearance;
 	default:
 		assert(false);
 		__assume(0);
@@ -327,69 +326,30 @@ OptionalTaskbarAppearance &MainAppWindow::OptionalAppearanceForGroup(uint8_t gro
 
 void MainAppWindow::AppearanceMenuHandler(uint8_t offset, TaskbarAppearance &appearance, bool &b)
 {
-	if (offset == 0)
+	if (offset == ID_OFFSET_ENABLED)
 	{
 		InvertBool(b);
 		AppearanceChanged();
 	}
-	else if (offset == 1)
+	else if (offset == ID_OFFSET_COLOR)
 	{
 		// TODO: color
-	}
-	else if (offset == 2)
-	{
-		appearance.Accent = ACCENT_NORMAL;
-		AppearanceChanged();
-	}
-	else
-	{
-		appearance.Accent = static_cast<ACCENT_STATE>(offset - 2);
-		AppearanceChanged();
-	}
-}
-
-void MainAppWindow::LogMenuHandler(uint8_t offset)
-{
-	if (offset == 0)
-	{
-		if (const auto sink = Log::GetSink(); sink && sink->opened())
-		{
-			HresultVerify(win32::EditFile(sink->file()), spdlog::level::err, L"Failed to open log file in Notepad");
-		}
-	}
-	else if (offset >= spdlog::level::debug + 1 && offset <= spdlog::level::err + 1)
-	{
-		m_Config.LogVerbosity = static_cast<spdlog::level::level_enum>(offset - 1);
-		VerbosityChanged();
-	}
-	else if (offset == spdlog::level::off)
-	{
-		m_Config.LogVerbosity = spdlog::level::off;
-		VerbosityChanged();
 	}
 }
 
 void MainAppWindow::HideTrayHandler()
 {
-	auto str = fmt::format(
-		fmt(L"To see the tray icon again, {}edit the configuration file at {}.\n\n"
-		L"Are you sure you want to proceed?"),
-		m_HasPackageIdentity ? L"reset " APP_NAME " in the Settings app or " : L"",
-		m_ConfigPath.native()
-	);
-
 	if (MessageBoxEx(
 			Window::NullWindow,
-			str.c_str(),
+			L"This change is temporary and will be lost the next time the configuration is loaded.\n\n"
+			L"To make this permanent, edit the configuration file using \"Advanced\" > \"Edit settings\".\n\n"
+			L"Are you sure you want to proceed?",
 			APP_NAME,
 			MB_YESNO | MB_ICONINFORMATION | MB_SETFOREGROUND,
 			MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL)
 		) == IDYES)
 	{
-		m_Config.HideTray = true;
-		TrayIconChanged();
-
-		m_Config.Save(m_ConfigPath);
+		Hide();
 	}
 }
 
@@ -484,7 +444,7 @@ MainAppWindow::MainAppWindow(std::filesystem::path configPath, bool hasPackageId
 	TrayContextMenu(TRAY_GUID, TRAY_WINDOW, APP_NAME, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance),
 	m_ConfigPath(std::move(configPath)),
 	m_Config(Config::Load(m_ConfigPath)),
-	// hack: load verbosity as early as possible
+	// (ab)use of comma operator to load verbosity as early as possible
 	m_Worker((VerbosityChanged(), m_Config), hInstance),
 	m_FileChangedMessage(0),
 	m_HasPackageIdentity(hasPackageIdentity),

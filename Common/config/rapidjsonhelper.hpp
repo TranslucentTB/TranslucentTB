@@ -1,8 +1,9 @@
 #pragma once
+#include <algorithm>
+#include <array>
 #include <rapidjson/document.h>
 #include <rapidjson/encodings.h>
 #include <string_view>
-#include <unordered_map>
 
 #include "../util/null_terminated_string_view.hpp"
 #include "../util/map.hpp"
@@ -15,12 +16,16 @@ namespace RapidJSONHelper {
 		writer.Bool(value);
 	}
 
-	template<class Writer, class T>
-	inline void Serialize(Writer &writer, const T &member, std::wstring_view key, const std::unordered_map<T, std::wstring_view> &map)
+	template<class Writer, class T, std::size_t size>
+	inline void Serialize(Writer &writer, const T &member, std::wstring_view key, const std::array<std::wstring_view, size> &arr)
 	{
-		writer.Key(key.data(), static_cast<rapidjson::SizeType>(key.length()));
-		const auto enum_str = Util::FindOrDefault(map, member);
-		writer.String(enum_str.data(), static_cast<rapidjson::SizeType>(enum_str.length()));
+		if (member >= 0 && member <= size - 1)
+		{
+			writer.Key(key.data(), static_cast<rapidjson::SizeType>(key.length()));
+
+			const auto enum_str = arr[member];
+			writer.String(enum_str.data(), static_cast<rapidjson::SizeType>(enum_str.length()));
+		}
 	}
 
 	template<class Writer, class T>
@@ -45,8 +50,8 @@ namespace RapidJSONHelper {
 		}
 	}
 
-	template<class T>
-	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val, T &member, Util::null_terminated_wstring_view key, const std::unordered_map<T, std::wstring_view> &map)
+	template<class T, std::size_t size>
+	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val, T &member, Util::null_terminated_wstring_view key, const std::array<std::wstring_view, size> &arr)
 	{
 		if (!val.IsObject())
 		{
@@ -55,9 +60,10 @@ namespace RapidJSONHelper {
 
 		if (const auto value = val.FindMember(key.c_str()); value != val.MemberEnd() && value->value.IsString())
 		{
-			if (const auto iter = Util::FindValue(map, { value->value.GetString(), value->value.GetStringLength() }); iter != map.end())
+			if (const auto it = std::find(arr.begin(), arr.end(), std::wstring_view(value->value.GetString(), value->value.GetStringLength()));
+				it != arr.end())
 			{
-				member = iter->first;
+				member = static_cast<T>(it - arr.begin());
 			}
 		}
 	}

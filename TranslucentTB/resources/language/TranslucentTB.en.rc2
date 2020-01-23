@@ -60,7 +60,6 @@ IDR_TRAY_MENU MENUEX
 	{
 		POPUP L"Desktop"
 		{
-			MENUITEM L"Use when peeking",                               ID_DESKTOP_ON_PEEK
 			MENUITEM L"Accent Color",                                   ID_DESKTOP_COLOR
 			MENUITEM L"",                                               0, MFT_SEPARATOR
 			MENUITEM L"Normal",                                         ID_DESKTOP_NORMAL
@@ -71,7 +70,7 @@ IDR_TRAY_MENU MENUEX
 		}
 		POPUP L"Visible window"
 		{
-			MENUITEM L"Enabled",                                        ID_VISIBLE
+			MENUITEM L"Enabled",                                        ID_VISIBLE_ENABLED
 			MENUITEM L"Accent Color",                                   ID_VISIBLE_COLOR
 			MENUITEM L"",                                               0, MFT_SEPARATOR
 			MENUITEM L"Normal",                                         ID_VISIBLE_NORMAL
@@ -82,7 +81,7 @@ IDR_TRAY_MENU MENUEX
 		}
 		POPUP L"Maximised window"
 		{
-			MENUITEM L"Enabled",                                        ID_MAXIMISED
+			MENUITEM L"Enabled",                                        ID_MAXIMISED_ENABLED
 			MENUITEM L"Accent Color",                                   ID_MAXIMISED_COLOR
 			MENUITEM L"",                                               0, MFT_SEPARATOR
 			MENUITEM L"Normal",                                         ID_MAXIMISED_NORMAL
@@ -93,7 +92,7 @@ IDR_TRAY_MENU MENUEX
 		}
 		POPUP L"Start Menu opened"
 		{
-			MENUITEM L"Enabled",                                        ID_START
+			MENUITEM L"Enabled",                                        ID_START_ENABLED
 			MENUITEM L"Accent Color",                                   ID_START_COLOR
 			MENUITEM L"",                                               0, MFT_SEPARATOR
 			MENUITEM L"Normal",                                         ID_START_NORMAL
@@ -104,7 +103,7 @@ IDR_TRAY_MENU MENUEX
 		}
 		POPUP L"Cortana/Search opened"
 		{
-			MENUITEM L"Enabled",                                        ID_CORTANA
+			MENUITEM L"Enabled",                                        ID_CORTANA_ENABLED
 			MENUITEM L"Accent Color",                                   ID_CORTANA_COLOR
 			MENUITEM L"",                                               0, MFT_SEPARATOR
 			MENUITEM L"Normal",                                         ID_CORTANA_NORMAL
@@ -115,7 +114,7 @@ IDR_TRAY_MENU MENUEX
 		}
 		POPUP L"Timeline opened"
 		{
-			MENUITEM L"Enabled",                                        ID_TIMELINE
+			MENUITEM L"Enabled",                                        ID_TIMELINE_ENABLED
 			MENUITEM L"Accent Color",                                   ID_TIMELINE_COLOR
 			MENUITEM L"",                                               0, MFT_SEPARATOR
 			MENUITEM L"Normal",                                         ID_TIMELINE_NORMAL
@@ -125,23 +124,17 @@ IDR_TRAY_MENU MENUEX
 			MENUITEM L"Acrylic",                                        ID_TIMELINE_ACRYLIC
 		}
 		MENUITEM L"",                                               0, MFT_SEPARATOR
-		POPUP L"Show Aero Peek"
-		{
-			MENUITEM L"Always",                                         ID_PEEK_SHOW
-			MENUITEM L"When a window is maximised on the main monitor", ID_PEEK_DYNAMIC_MAIN_MONITOR
-			MENUITEM L"When a window is maximised on any monitor",      ID_PEEK_DYNAMIC_ANY_MONITOR
-			MENUITEM L"When the main monitor desktop is active",        ID_PEEK_DYNAMIC_FOREGROUND_DESKTOP
-			MENUITEM L"Never",                                          ID_PEEK_HIDE
-		}
 		POPUP L"Advanced"
 		{
 			MENUITEM L"Open log file",                                  ID_OPENLOG
-			POPUP L"Log verbosity",                                     ID_LOG
+			POPUP L"Log verbosity",                                     ID_SUBMENU_LOG
 			{
+				MENUITEM L"Trace",                                          ID_LOG_TRACE
 				MENUITEM L"Debug",                                          ID_LOG_DEBUG
 				MENUITEM L"Information",                                    ID_LOG_INFO
 				MENUITEM L"Warnings",                                       ID_LOG_WARN
 				MENUITEM L"Errors",                                         ID_LOG_ERR
+				MENUITEM L"Critical",                                       ID_LOG_CRITICAL
 				MENUITEM L"",                                               0, MFT_SEPARATOR
 				MENUITEM L"Off",                                            ID_LOG_OFF
 			}

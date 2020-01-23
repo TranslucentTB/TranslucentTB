@@ -13,13 +13,7 @@
 void TaskbarAttributeWorker::OnAeroPeekEnterExit(DWORD event, HWND, LONG, LONG, DWORD, DWORD)
 {
 	m_PeekActive = event == EVENT_SYSTEM_PEEKSTART;
-	if (m_Config.UseRegularAppearanceWhenPeeking)
-	{
-		for (auto iter = m_Taskbars.begin(); iter != m_Taskbars.end(); ++iter)
-		{
-			RefreshAttribute(iter);
-		}
-	}
+	RefreshAllAttributes();
 }
 
 void TaskbarAttributeWorker::OnWindowStateChange(DWORD, HWND hwnd, LONG idObject, LONG, DWORD, DWORD)
@@ -30,15 +24,7 @@ void TaskbarAttributeWorker::OnWindowStateChange(DWORD, HWND hwnd, LONG idObject
 
 		if (iter != m_Taskbars.end())
 		{
-			// RefreshAttribute done before because RefreshAeroPeekButton triggers
-			// Windows internal message loop, see comment in InsertWindow.
 			RefreshAttribute(iter);
-
-			if ((iter->first == m_MainTaskbarMonitor && (m_Config.Peek == PeekBehavior::WindowMaximisedOnMainMonitor || m_Config.Peek == PeekBehavior::DesktopIsForegroundWindow)) ||
-				m_Config.Peek == PeekBehavior::WindowMaximisedOnAnyMonitor)
-			{
-				RefreshAeroPeekButton();
-			}
 		}
 	}
 }
@@ -50,7 +36,7 @@ void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG 
 		if (const auto className = window.classname(); className == TASKBAR || className == SECONDARY_TASKBAR)
 		{
 			MessagePrint(spdlog::level::debug, L"A taskbar got created or destroyed, refreshing...");
-			RefreshTaskbars();
+			ResetState();
 		}
 	}
 
@@ -59,29 +45,31 @@ void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG 
 
 void TaskbarAttributeWorker::OnForegroundWindowChange(DWORD, HWND hwnd, LONG idObject, LONG, DWORD, DWORD)
 {
-	if (Window window(hwnd); idObject == OBJID_WINDOW && window.valid() &&
-		m_Config.Peek == PeekBehavior::DesktopIsForegroundWindow)
+	if (Window window(hwnd); idObject == OBJID_WINDOW && window.valid())
 	{
-		RefreshAeroPeekButton();
+		// placeholder
 	}
 }
 
 void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 {
-	const HMONITOR mon = state
-		? m_CurrentStartMonitor = GetStartMenuMonitor()
-		: std::exchange(m_CurrentStartMonitor, nullptr);
+	HMONITOR mon = nullptr;
+	if (state)
+	{
+		mon = m_CurrentStartMonitor = GetStartMenuMonitor();
+	}
+	else
+	{
+		mon = std::exchange(m_CurrentStartMonitor, nullptr);
+	}
 
 	if (const auto iter = m_Taskbars.find(mon); iter != m_Taskbars.end())
 	{
 		RefreshAttribute(iter);
 	}
 
-	const std::wstring_view msg = state
-		? L"Start menu opened on monitor {}"
-		: L"Start menu closed on monitor {}";
 	Util::small_wmemory_buffer<50> buf;
-	fmt::format_to(buf, msg, static_cast<void*>(mon));
+	fmt::format_to(buf, fmt(L"Start menu {} on monitor {}"), state ? L"opened" : L"closed", static_cast<void*>(mon));
 
 	MessagePrint(spdlog::level::debug, buf);
 }
@@ -125,49 +113,9 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 	}
 }
 
-void TaskbarAttributeWorker::ShowAeroPeekButton(Window taskbar, bool show)
-{
-	const Window peek = taskbar.find_child(L"TrayNotifyWnd").find_child(L"TrayShowDesktopButtonWClass");
-
-	if (show)
-	{
-		SetWindowLong(peek, GWL_EXSTYLE, GetWindowLong(peek, GWL_EXSTYLE) & ~WS_EX_LAYERED);
-	}
-	else
-	{
-		SetWindowLong(peek, GWL_EXSTYLE, GetWindowLong(peek, GWL_EXSTYLE) | WS_EX_LAYERED);
-
-		SetLayeredWindowAttributes(peek, 0, 0, LWA_ALPHA);
-	}
-}
-
-void TaskbarAttributeWorker::RefreshAeroPeekButton()
-{
-	const auto &taskbarInfo = m_Taskbars.at(m_MainTaskbarMonitor);
-
-	switch (m_Config.Peek)
-	{
-	case PeekBehavior::AlwaysShow:
-	case PeekBehavior::AlwaysHide:
-		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, m_Config.Peek == PeekBehavior::AlwaysShow);
-		break;
-
-	case PeekBehavior::WindowMaximisedOnMainMonitor:
-		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, !taskbarInfo.MaximisedWindows.empty());
-		break;
-
-	case PeekBehavior::WindowMaximisedOnAnyMonitor:
-		ShowAeroPeekButton(taskbarInfo.TaskbarWindow, std::any_of(m_Taskbars.begin(), m_Taskbars.end(), [](const auto &kvp)
-		{
-			return !kvp.second.MaximisedWindows.empty();
-		}));
-		break;
-	}
-}
-
 TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) const
 {
-	if (m_Config.UseRegularAppearanceWhenPeeking && m_PeekActive)
+	if (m_PeekActive)
 	{
 		return m_Config.DesktopAppearance;
 	}
@@ -194,6 +142,25 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 	}
 
 	return m_Config.DesktopAppearance;
+}
+
+void TaskbarAttributeWorker::ShowAeroPeekButton(Window taskbar, bool show)
+{
+	// todo: make lazy. weirdly cpu intensive
+	// missing all error handling
+	const Window peek = taskbar.find_child(L"TrayNotifyWnd").find_child(L"TrayShowDesktopButtonWClass");
+
+	if (show)
+	{
+		SetWindowLong(peek, GWL_EXSTYLE, GetWindowLong(peek, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+	}
+	else
+	{
+		SetWindowLong(peek, GWL_EXSTYLE, GetWindowLong(peek, GWL_EXSTYLE) | WS_EX_LAYERED);
+
+		// Non-zero alpha makes the button still interactible.
+		SetLayeredWindowAttributes(peek, 0, 1, LWA_ALPHA);
+	}
 }
 
 void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance config)
@@ -239,61 +206,37 @@ void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance confi
 
 void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
 {
-	SetAttribute(taskbar->second.TaskbarWindow, GetConfig(taskbar));
-}
+	const auto &cfg = GetConfig(taskbar);
+	SetAttribute(taskbar->second.TaskbarWindow, cfg);
 
-void TaskbarAttributeWorker::Poll()
-{
-	// TODO: check if user is using areo peek here (if not possible, assume they aren't)
-	if (IsStartMenuOpened())
+	// ShowAeroPeekButton triggers Windows internal message loop,
+	// do not pass any member of taskbar map by reference.
+	// See comment in InsertWindow.
+	if (taskbar->first == m_MainTaskbarMonitor && !m_PeekActive)
 	{
-		m_CurrentStartMonitor = GetStartMenuMonitor();
-	}
-	else
-	{
-		m_CurrentStartMonitor = nullptr;
-	}
-
-	for (const Window window : Window::FindEnum())
-	{
-		InsertWindow(window);
+		ShowAeroPeekButton(taskbar->second.TaskbarWindow, /*TODO: cfg.ShowPeek*/false);
 	}
 }
 
-void TaskbarAttributeWorker::RefreshTaskbars()
+void TaskbarAttributeWorker::RefreshAllAttributes()
 {
-	MessagePrint(spdlog::level::debug, L"Refreshing taskbar handles.");
-
-	// Older handles are invalid, so clear state to be ready for new ones.
-	m_Taskbars.clear();
-	m_NormalTaskbars.clear();
-
-	// Keep old hooks alive while we rehook to keep the DLL loaded in Explorer.
-	// They will unhook automatically at the end of this function.
-	const auto hooks = std::move(m_Hooks);
-	m_Hooks.clear(); // Bring back m_Hooks to a known state after being moved from.
-
-	const Window main_taskbar = Window::Find(TASKBAR);
-	InsertTaskbar(m_MainTaskbarMonitor = main_taskbar.monitor(), main_taskbar);
-
-	for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))
+	taskbar_iterator mainMonIt = m_Taskbars.end();
+	for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
 	{
-		InsertTaskbar(secondtaskbar.monitor(), secondtaskbar);
+		if (it->first != m_MainTaskbarMonitor)
+		{
+			RefreshAttribute(it);
+		}
+		else
+		{
+			mainMonIt = it;
+		}
 	}
-}
 
-void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
-{
-	m_Taskbars.insert_or_assign(mon, MonitorInfo{ window });
-
-	auto hook = ExplorerDetour::Inject(window);
-	if (hook)
+	// Always do it last, in case of Windows internal message loop
+	if (mainMonIt != m_Taskbars.end())
 	{
-		m_Hooks.push_back(std::move(hook));
-	}
-	else
-	{
-		LastErrorHandle(spdlog::level::critical, L"Failed to set hook.");
+		RefreshAttribute(mainMonIt);
 	}
 }
 
@@ -306,25 +249,28 @@ TaskbarAttributeWorker::taskbar_iterator TaskbarAttributeWorker::InsertWindow(Wi
 	// changing, it means m_Taskbars is cleared while we still
 	// have an iterator to it. Acquiring the iterator after the
 	// call to on_current_desktop resolves this issue.
-	bool windowMatches = (m_Config.Whitelist.IsFiltered(window) || WindowHelper::IsUserWindow(window)) && !m_Config.Blacklist.IsFiltered(window);
+	const bool windowMatches = (WindowHelper::IsUserWindow(window) || m_Config.Whitelist.IsFiltered(window)) && !m_Config.Blacklist.IsFiltered(window);
 
 	const auto iter = m_Taskbars.find(window.monitor());
 	if (iter != m_Taskbars.end())
 	{
+		auto &monInfo = iter->second;
+		auto &maximised = monInfo.MaximisedWindows;
+		auto &normal = monInfo.NormalWindows;
 		if (windowMatches && window.maximised())
 		{
-			iter->second.MaximisedWindows.insert(window);
-			iter->second.NormalWindows.erase(window);
+			maximised.insert(window);
+			normal.erase(window);
 		}
 		else if (windowMatches && !window.minimised())
 		{
-			iter->second.MaximisedWindows.erase(window);
-			iter->second.NormalWindows.insert(window);
+			maximised.erase(window);
+			normal.insert(window);
 		}
 		else
 		{
-			iter->second.MaximisedWindows.erase(window);
-			iter->second.NormalWindows.erase(window);
+			maximised.erase(window);
+			normal.erase(window);
 		}
 	}
 
@@ -358,26 +304,42 @@ StdSystemErrorCatch(spdlog::level::critical, L"Failed to create worker member th
 
 wil::unique_hwineventhook TaskbarAttributeWorker::CreateHook(DWORD eventMin, DWORD eventMax, const hook_thunk &thunk)
 {
-	wil::unique_hwineventhook hook(SetWinEventHook(eventMin, eventMax, nullptr, thunk->get_thunked_function(), 0, 0, WINEVENT_OUTOFCONTEXT));
-	if (!hook)
+	if (wil::unique_hwineventhook hook { SetWinEventHook(eventMin, eventMax, nullptr, thunk->get_thunked_function(), 0, 0, WINEVENT_OUTOFCONTEXT) })
 	{
-		MessagePrint(spdlog::level::warn, L"Failed to create a Windows event hook.");
+		return hook;
 	}
-	return hook;
+	else
+	{
+		MessagePrint(spdlog::level::critical, L"Failed to create a Windows event hook.");
+	}
 }
 
 void TaskbarAttributeWorker::ReturnToStock()
 {
-	ShowAeroPeekButton(m_Taskbars.at(m_MainTaskbarMonitor).TaskbarWindow, true);
-
 	m_disableAttributeRefreshReply = true;
-
-	for (const auto &[_, monInf] : m_Taskbars)
+	auto guard = wil::scope_exit([this]
 	{
-		SetAttribute(monInf.TaskbarWindow, { ACCENT_NORMAL });
+		m_disableAttributeRefreshReply = false;
+	});
+
+	taskbar_iterator mainMonIt = m_Taskbars.end();
+	for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
+	{
+		SetAttribute(it->second.TaskbarWindow, { ACCENT_NORMAL });
+
+		if (it->first == m_MainTaskbarMonitor)
+		{
+			mainMonIt = it;
+		}
 	}
 
-	m_disableAttributeRefreshReply = false;
+	guard.reset();
+
+	// Always do it last, in case of Windows internal message loop
+	if (mainMonIt != m_Taskbars.end())
+	{
+		ShowAeroPeekButton(mainMonIt->second.TaskbarWindow, true);
+	}
 }
 
 bool TaskbarAttributeWorker::IsStartMenuOpened()
@@ -392,6 +354,21 @@ bool TaskbarAttributeWorker::IsStartMenuOpened()
 	{
 		HresultHandle(hr, spdlog::level::info, L"Failed to query launcher visibility state.");
 		return false;
+	}
+}
+
+void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
+{
+	m_Taskbars.insert_or_assign(mon, MonitorInfo{ window });
+
+	auto hook = ExplorerDetour::Inject(window);
+	if (hook)
+	{
+		m_Hooks.push_back(std::move(hook));
+	}
+	else
+	{
+		LastErrorHandle(spdlog::level::critical, L"Failed to set hook.");
 	}
 }
 
@@ -414,7 +391,9 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_ShowHideHook(CreateHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, m_WindowStateChangeThunk)),
 	m_CreateDestroyHook(CreateHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, m_WindowCreateDestroyThunk)),
 	m_ForegroundChangeHook(CreateHook(EVENT_SYSTEM_FOREGROUND, m_ForegroundWindowChangeThunk)),
-	m_TitleChangeHook(CreateHook(EVENT_OBJECT_NAMECHANGE, m_WindowStateChangeThunk))
+	m_TitleChangeHook(CreateHook(EVENT_OBJECT_NAMECHANGE, m_WindowStateChangeThunk)),
+	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED)),
+	m_RefreshRequestedMessage(Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH))
 {
 	try
 	{
@@ -428,28 +407,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	}
 	ResultExceptionCatch(spdlog::level::warn, L"Failed to create app visibility instance.");
 
-	m_TaskbarCreatedMessage = RegisterWindowMessage(WM_TASKBARCREATED);
-	if (!m_TaskbarCreatedMessage)
-	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to register taskbar created message.");
-	}
-
-	m_RefreshRequestedMessage = RegisterWindowMessage(WM_TTBHOOKREQUESTREFRESH);
-	if (!m_RefreshRequestedMessage)
-	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to register hook refresh request message.");
-	}
-
 	ResetState();
-}
-
-void TaskbarAttributeWorker::ConfigurationChanged()
-{
-	RefreshAeroPeekButton();
-	for (auto iter = m_Taskbars.begin(); iter != m_Taskbars.end(); ++iter)
-	{
-		RefreshAttribute(iter);
-	}
 }
 
 void TaskbarAttributeWorker::DumpState()
@@ -501,9 +459,51 @@ void TaskbarAttributeWorker::DumpState()
 
 void TaskbarAttributeWorker::ResetState()
 {
-	RefreshTaskbars();
-	Poll();
-	ConfigurationChanged();
+	MessagePrint(spdlog::level::debug, L"Resetting worker state");
+
+	// Keep old hooks alive while we rehook to avoid DLL unload.
+	auto oldHooks = std::move(m_Hooks);
+
+	// Clear state
+	m_PeekActive = false;
+	m_CurrentStartMonitor = nullptr;
+	m_MainTaskbarMonitor = nullptr;
+	m_Taskbars.clear();
+	m_NormalTaskbars.clear();
+	m_Hooks.clear();
+
+	const Window main_taskbar = Window::Find(TASKBAR);
+	m_MainTaskbarMonitor = main_taskbar.monitor();
+	InsertTaskbar(m_MainTaskbarMonitor, main_taskbar);
+
+	for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))
+	{
+		InsertTaskbar(secondtaskbar.monitor(), secondtaskbar);
+	}
+
+	// Drop the old hooks
+	oldHooks.clear();
+
+	// TODO: check if aero peek is active
+
+	if (IsStartMenuOpened())
+	{
+		m_CurrentStartMonitor = GetStartMenuMonitor();
+	}
+	else
+	{
+		m_CurrentStartMonitor = nullptr;
+	}
+
+	// This might race but it's not an issue because our
+	// hooks will catch it.
+	for (const Window window : Window::FindEnum())
+	{
+		InsertWindow(window);
+	}
+
+	// Apply the calculated effects
+	RefreshAllAttributes();
 }
 
 TaskbarAttributeWorker::~TaskbarAttributeWorker()

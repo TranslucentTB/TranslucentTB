@@ -14,15 +14,18 @@ bool ExplorerDetour::s_DetourInstalled;
 
 BOOL WINAPI ExplorerDetour::SetWindowCompositionAttributeDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data) noexcept
 {
-	if (data->Attrib == WCA_ACCENT_POLICY &&
-		Window::Find(WORKER_WINDOW, WORKER_WINDOW).send_message(s_RequestAttribute, 0, reinterpret_cast<LPARAM>(hWnd)))
+	if (data->Attrib == WCA_ACCENT_POLICY)
 	{
-		return true;
+		if (const auto worker = Window::Find(WORKER_WINDOW, WORKER_WINDOW))
+		{
+			if (worker.send_message(s_RequestAttribute, 0, reinterpret_cast<LPARAM>(hWnd)))
+			{
+				return true;
+			}
+		}
 	}
-	else
-	{
-		return SetWindowCompositionAttribute(hWnd, data);
-	}
+
+	return SetWindowCompositionAttribute(hWnd, data);
 }
 
 LRESULT CALLBACK ExplorerDetour::CallWndProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept
@@ -56,7 +59,7 @@ bool ExplorerDetour::Install() noexcept
 
 	if (!s_RequestAttribute)
 	{
-		s_RequestAttribute = RegisterWindowMessage(WM_TTBHOOKREQUESTREFRESH);
+		s_RequestAttribute = Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH);
 		if (!s_RequestAttribute)
 		{
 			return false;

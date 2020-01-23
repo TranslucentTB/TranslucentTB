@@ -19,7 +19,7 @@ enum ACCENT_STATE : INT {				// Affects the rendering of the background of a win
 	ACCENT_ENABLE_HOSTBACKDROP = 5,			// Unknown.
 	ACCENT_INVALID_STATE = 6,				// Unknown. Seems to draw background fully transparent.
 
-	ACCENT_NORMAL = 150						// Fake value: tells TTB to send a message to the taskbar for it restore its default effect.
+	ACCENT_NORMAL = 0x0						// Fake value: tells TTB to send a message to the taskbar for it restore its default effect.
 };
 
 // UserDefinedType: ACCENT_POLICY

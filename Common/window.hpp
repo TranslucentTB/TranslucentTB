@@ -12,6 +12,7 @@
 #include <filesystem>
 
 #include "../TranslucentTB/windows/windowclass.hpp"
+#include "../ProgramLog/error/win32.hpp"
 #endif
 
 class Window {
@@ -81,6 +82,18 @@ public:
 		return Create(dwExStyle, winClass.atom(), winClass.hinstance(), windowName, dwStyle, x, y, nWidth, nHeight, parent, hMenu, lpParam);
 	}
 #endif
+
+	inline static UINT RegisterMessage(Util::null_terminated_wstring_view message)
+	{
+		const UINT msg = RegisterWindowMessage(message.c_str());
+#ifdef _TRANSLUCENTTB_EXE
+		if (!msg)
+		{
+			LastErrorHandle(spdlog::level::warn, L"Failed to register window message.");
+		}
+#endif
+		return msg;
+	}
 
 	inline static Window ForegroundWindow() noexcept
 	{
@@ -198,19 +211,9 @@ public:
 		return SendMessage(m_WindowHandle, message, wparam, lparam);
 	}
 
-	inline LRESULT send_message(Util::null_terminated_wstring_view message, WPARAM wparam = 0, LPARAM lparam = 0) const noexcept
-	{
-		return send_message(RegisterWindowMessage(message.c_str()), wparam, lparam);
-	}
-
 	inline bool post_message(unsigned int message, WPARAM wparam = 0, LPARAM lparam = 0) const noexcept
 	{
 		return PostMessage(m_WindowHandle, message, wparam, lparam);
-	}
-
-	inline bool post_message(Util::null_terminated_wstring_view message, WPARAM wparam = 0, LPARAM lparam = 0) const noexcept
-	{
-		return post_message(RegisterWindowMessage(message.c_str()), wparam, lparam);
 	}
 
 	inline Window find_child(Util::null_terminated_wstring_view className = { }, Util::null_terminated_wstring_view windowName = { }, Window childAfter = Window::NullWindow) const noexcept
