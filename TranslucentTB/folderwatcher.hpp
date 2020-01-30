@@ -47,6 +47,8 @@ class FolderWatcher {
 
 		default:
 			LastErrorHandle(spdlog::level::warn, L"Error occured while watching directory");
+			[[fallthrough]];
+		case ERROR_OPERATION_ABORTED:
 			break;
 		}
 	}
@@ -83,6 +85,17 @@ public:
 		else
 		{
 			LastErrorHandle(spdlog::level::warn, L"Failed to open folder handle");
+		}
+	}
+
+	inline ~FolderWatcher()
+	{
+		if (m_FolderHandle)
+		{
+			if (!CancelIo(m_FolderHandle.get()))
+			{
+				LastErrorHandle(spdlog::level::warn, L"Failed to cancel asynchronous IO");
+			}
 		}
 	}
 
