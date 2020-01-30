@@ -34,7 +34,7 @@ class FolderWatcher {
 		case ERROR_SUCCESS:
 			for (const auto &fileEntry : wil::create_next_entry_offset_iterator(reinterpret_cast<FILE_NOTIFY_INFORMATION *>(that->m_Buffer.get())))
 			{
-				that->m_Callback(that->m_Context, fileEntry.Action, { fileEntry.FileName, fileEntry.FileNameLength / 2});
+				that->m_Callback(that->m_Context, fileEntry.Action, { fileEntry.FileName, fileEntry.FileNameLength / 2 });
 			}
 
 			that->rearm();
