@@ -23,20 +23,14 @@ namespace Error {
 			MessageFromHRESULT(buf, err.code());
 		}
 	}
-
-	template<spdlog::level::level_enum level, typename T>
-	inline void VerifyHr(HRESULT hr, const T &message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function)
-	{
-		if (FAILED(hr))
-		{
-			fmt::wmemory_buffer buf;
-			MessageFromHRESULT(buf, hr);
-			HandleImpl<level>::Handle(message, buf, file, line, function);
-		}
-	}
 }
 
-#define HresultVerify(hresult_, level_, message_) Error::VerifyHr<(level_)>((hresult_), (message_), PROGRAMLOG_ERROR_LOCATION)
+#define HresultVerify(hresult_, level_, message_) do { \
+	if (const HRESULT hr_ = (hresult_); FAILED(hr_)) \
+	{ \
+		HresultHandle(hr_, (level_), (message_)); \
+	} \
+} while (0)
 
 #define HresultHandle(hresult_, level_, message_) do { \
 	fmt::wmemory_buffer buf_; \
@@ -55,10 +49,6 @@ namespace Error {
 
 #define HresultErrorCatch(level_, message_) catch (const winrt::hresult_error &exception_) { HresultErrorHandle(exception_, (level_), (message_)); }
 
-#define ResultExceptionHandle(exception_, level_, message_) do { \
-	fmt::wmemory_buffer buf_; \
-	Error::MessageFromHRESULT(buf_, (exception_).GetErrorCode()); \
-	Error::HandleImpl<(level_)>::Handle((message_), buf_, PROGRAMLOG_ERROR_LOCATION); \
-} while (0)
+#define ResultExceptionHandle(exception_, level_, message_) HresultHandle((exception_).GetErrorCode(), (level_), (message_))
 
 #define ResultExceptionCatch(level_, message_) catch (const wil::ResultException &exception_) { ResultExceptionHandle(exception_, (level_), (message_)); }

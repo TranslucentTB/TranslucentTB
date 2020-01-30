@@ -8,19 +8,6 @@
 #include "../ProgramLog/log.hpp"
 #include "../ProgramLog/error/win32.hpp"
 
-void MainAppWindow::SetupFolderWatch()
-{
-	m_FileChangedMessage = Window::RegisterMessage(WM_FILECHANGED);
-	m_FolderWatcher = wil::make_folder_change_reader(m_ConfigPath.parent_path().c_str(), false, wil::FolderChangeEvents::All, [this](wil::FolderChangeEvent, std::wstring_view file)
-	{
-		if (file.empty() || win32::IsSameFilename(file, CONFIG_FILE))
-		{
-			// This callback runs on another thread, so we use a message to avoid threading issues.
-			send_message(m_FileChangedMessage);
-		}
-	});
-}
-
 void MainAppWindow::LoadStartupTask() try
 {
 	using namespace winrt::Windows::Foundation;
@@ -66,16 +53,7 @@ LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	default:
-		if (uMsg == m_FileChangedMessage)
-		{
-			m_Config = Config::Load(m_ConfigPath);
-			ConfigurationReloaded();
-			return 0;
-		}
-		else
-		{
-			return TrayContextMenu::MessageHandler(uMsg, wParam, lParam);
-		}
+		return TrayContextMenu::MessageHandler(uMsg, wParam, lParam);
 	}
 }
 
@@ -439,18 +417,26 @@ void MainAppWindow::ConfigurationReloaded()
 	AppearanceChanged();
 }
 
+void MainAppWindow::WatcherCallback(void *context, DWORD, std::wstring_view fileName)
+{
+	if (fileName.empty() || win32::IsSameFilename(fileName, CONFIG_FILE))
+	{
+		const auto that = static_cast<MainAppWindow *>(context);
+		that->m_Config = Config::Load(that->m_ConfigPath);
+		that->ConfigurationReloaded();
+	}
+}
+
 MainAppWindow::MainAppWindow(std::filesystem::path configPath, bool hasPackageIdentity, HINSTANCE hInstance) :
 	TrayContextMenu(TRAY_GUID, TRAY_WINDOW, APP_NAME, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance),
 	m_ConfigPath(std::move(configPath)),
 	m_Config(Config::Load(m_ConfigPath)),
 	// (ab)use of comma operator to load verbosity as early as possible
 	m_Worker((VerbosityChanged(), m_Config), hInstance),
-	m_FileChangedMessage(0),
+	m_Watcher(m_ConfigPath.parent_path(), false, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE, WatcherCallback, this),
 	m_HasPackageIdentity(hasPackageIdentity),
 	m_StartupTask(nullptr)
 {
-	SetupFolderWatch();
-
 	if (m_HasPackageIdentity)
 	{
 		LoadStartupTask();
@@ -476,10 +462,9 @@ WPARAM MainAppWindow::Run()
 {
 	while (true)
 	{
-		const DWORD result = MsgWaitForMultipleObjectsEx(0, nullptr, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE | MWMO_INPUTAVAILABLE);
-
-		if (result == WAIT_OBJECT_0)
+		switch (MsgWaitForMultipleObjectsEx(0, nullptr, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE | MWMO_INPUTAVAILABLE))
 		{
+		case WAIT_OBJECT_0:
 			// TODO: pretranslate
 			for (MSG msg; PeekMessage(&msg, 0, 0, 0, PM_REMOVE);)
 			{
@@ -493,17 +478,13 @@ WPARAM MainAppWindow::Run()
 					return msg.wParam;
 				}
 			}
-		}
-		else if (result == WAIT_IO_COMPLETION)
-		{
+			[[fallthrough]];
+		case WAIT_IO_COMPLETION:
 			continue;
-		}
-		else if (result == WAIT_FAILED)
-		{
+
+		case WAIT_FAILED:
 			LastErrorHandle(spdlog::level::critical, L"Failed to enter alertable wait state!");
-		}
-		else
-		{
+		default:
 			MessagePrint(spdlog::level::critical, L"MsgWaitForMultipleObjectsEx returned an unexpected value!");
 		}
 	}

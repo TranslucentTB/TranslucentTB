@@ -484,19 +484,17 @@ void TaskbarAttributeWorker::ResetState()
 	// Drop the old hooks
 	oldHooks.clear();
 
+	// This might race but it's not an issue because
+	// it'll race on a single thread and only ends up
+	// doing something twice.
+
 	// TODO: check if aero peek is active
 
 	if (IsStartMenuOpened())
 	{
 		m_CurrentStartMonitor = GetStartMenuMonitor();
 	}
-	else
-	{
-		m_CurrentStartMonitor = nullptr;
-	}
 
-	// This might race but it's not an issue because our
-	// hooks will catch it.
 	for (const Window window : Window::FindEnum())
 	{
 		InsertWindow(window);

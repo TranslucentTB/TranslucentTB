@@ -1,12 +1,14 @@
 #pragma once
 #include "tray/traycontextmenu.hpp"
 #include <filesystem>
+#include <string_view>
 #include <wil/filesystem.h>
 #include <wil/resource.h>
 #include <winrt/base.h>
 #include <winrt/Windows.ApplicationModel.h>
 
 #include "config/config.hpp"
+#include "folderwatcher.hpp"
 #include "taskbar/taskbarattributeworker.hpp"
 
 class MainAppWindow final : public TrayContextMenu {
@@ -15,15 +17,12 @@ private:
 	Config m_Config;
 
 	TaskbarAttributeWorker m_Worker;
-
-	UINT m_FileChangedMessage;
-	wil::unique_folder_change_reader m_FolderWatcher;
+	FolderWatcher m_Watcher;
 
 	bool m_HasPackageIdentity;
 	wil::srwlock m_TaskLock;
 	winrt::Windows::ApplicationModel::StartupTask m_StartupTask;
 
-	void SetupFolderWatch();
 	void LoadStartupTask();
 
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
@@ -60,6 +59,8 @@ private:
 	{
 		b = !b;
 	}
+
+	static void WatcherCallback(void *context, DWORD, std::wstring_view fileName);
 
 public:
 	MainAppWindow(std::filesystem::path configPath, bool hasPackageIdentity, HINSTANCE hInstance);

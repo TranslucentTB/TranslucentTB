@@ -161,6 +161,7 @@ public:
 						cfg.Deserialize(doc);
 						return cfg;
 					}
+					// TODO: catch ColorFromString
 					HelperDeserializationErrorCatch(spdlog::level::err, ERR_MSG)
 					StdSystemErrorCatch(spdlog::level::err, ERR_MSG);
 				}

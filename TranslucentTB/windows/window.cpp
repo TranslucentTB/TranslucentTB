@@ -25,9 +25,8 @@ std::wstring Window::title() const
 	}
 
 	// We're assuming that a window won't change title between the previous call and this.
-	// But it very well could. Thankfully it'll either be smaller and waste a bit of RAM,
-	// or be bigger and not fit, in which case GetWindowText would error because the
-	// buffer is not big enough.
+	// But it very well could. It'll either be smaller and waste a bit of RAM, or have
+	// GetWindowText trim it.
 	
 	// For the null terminator
 	windowTitle.resize(titleSize + 1);

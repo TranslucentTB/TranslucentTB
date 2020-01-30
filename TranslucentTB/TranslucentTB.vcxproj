@@ -34,6 +34,7 @@
     <ClCompile Include="windows\windowclass.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="folderwatcher.hpp" />
     <ClInclude Include="localization.hpp" />
     <ClInclude Include="mainappwindow.hpp" />
     <ClInclude Include="taskbar\appvisibilitysink.hpp" />

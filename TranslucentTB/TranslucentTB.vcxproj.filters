@@ -101,6 +101,9 @@
     <ClInclude Include="mainappwindow.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="folderwatcher.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\TranslucentTB.ico">
