@@ -1,5 +1,6 @@
 #include "log.hpp"
 #include <chrono>
+#include <debugapi.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/logger.h>
 #include <spdlog/sinks/msvc_sink.h>
@@ -45,25 +46,33 @@ std::filesystem::path Log::GetPath()
 
 void Log::LogErrorHandler(const std::string &message)
 {
-	const std::string err = fmt::format(fmt("An error has been encountered while logging a message.\n\n{}"), message);
-	MessageBoxExA(Window::NullWindow, err.c_str(), UTF8_ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
+	fmt::memory_buffer buf;
+	fmt::format_to(buf, fmt("An error has been encountered while logging a message.\n\n{}\0"), message);
+	MessageBoxExA(Window::NullWindow, buf.data(), UTF8_ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 }
 
 void Log::Initialize()
 {
-	spdlog::flush_on(spdlog::level::off);
-	spdlog::set_error_handler(LogErrorHandler);
+	using namespace spdlog;
 
-	auto logger = std::make_shared<spdlog::logger>("");
-	spdlog::initialize_logger(logger);
+	set_formatter(std::make_unique<pattern_formatter>(pattern_time_type::utc));
+	set_level(level::trace);
+	flush_on(level::off);
+	set_error_handler(LogErrorHandler);
 
-	logger->sinks().push_back(std::make_shared<spdlog::sinks::windebug_sink_st>());
+	auto defaultLogger = std::make_shared<logger>("");
+	initialize_logger(defaultLogger);
 
-	const auto file_log = std::make_shared<lazy_file_sink_st>(GetPath);
-	file_log->set_level(Config { }.LogVerbosity);
-	logger->sinks().push_back(file_log);
+	if (IsDebuggerPresent())
+	{
+		defaultLogger->sinks().push_back(std::make_shared<sinks::windebug_sink_st>());
+	}
 
-	spdlog::set_default_logger(std::move(logger));
+	const auto fileLog = std::make_shared<lazy_file_sink_st>(GetPath);
+	fileLog->set_level(Config { }.LogVerbosity);
+	defaultLogger->sinks().push_back(fileLog);
 
-	s_LogSink = file_log;
+	set_default_logger(std::move(defaultLogger));
+
+	s_LogSink = fileLog;
 }

@@ -21,6 +21,8 @@
 
 namespace Error {
 	namespace impl {
+		PROGRAMLOG_API bool ShouldLog(spdlog::level::level_enum level);
+
 		// Needs to be in DLL because spdlog log registry is per-module.
 		PROGRAMLOG_API void Log(const fmt::wmemory_buffer &msg, spdlog::level::level_enum level, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function);
 
@@ -29,9 +31,12 @@ namespace Error {
 		template<spdlog::level::level_enum level>
 		inline void Handle(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function)
 		{
-			fmt::wmemory_buffer buf;
-			GetLogMessage(buf, message, error_message);
-			Log(buf, level, file, line, function);
+			if (ShouldLog(level))
+			{
+				fmt::wmemory_buffer buf;
+				GetLogMessage(buf, message, error_message);
+				Log(buf, level, file, line, function);
+			}
 		}
 
 		template<>

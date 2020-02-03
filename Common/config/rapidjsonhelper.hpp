@@ -1,12 +1,12 @@
 #pragma once
 #include <algorithm>
 #include <array>
+#include <fmt/format.h>
 #include <rapidjson/document.h>
 #include <rapidjson/encodings.h>
 #include <string>
 #include <string_view>
 
-#include "../util/fmt.hpp"
 #include "../util/null_terminated_string_view.hpp"
 #include "../util/map.hpp"
 
@@ -39,10 +39,9 @@ namespace RapidJSONHelper {
 
 		if (actual != expected)
 		{
-			Util::small_wmemory_buffer<100> buf;
-			fmt::format_to(buf, fmt(L"Expected {} but found {} while deserializing key \"{}\""), TYPE_NAMES[expected], TYPE_NAMES[actual], obj);
+			std::wstring msg = fmt::format(fmt(L"Expected {} but found {} while deserializing key \"{}\""), TYPE_NAMES[expected], TYPE_NAMES[actual], obj);
 
-			throw DeserializationError { fmt::to_string(buf) };
+			throw DeserializationError { std::move(msg) };
 		}
 	}
 

@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <memory>
 #include <string_view>
+#include <type_traits>
 #include <winbase.h>
 #include <windef.h>
 #include <wil/filesystem.h>
@@ -14,7 +15,7 @@
 class FolderWatcher {
 	static constexpr std::size_t BUFFER_SIZE = 4096;
 
-	using callback_t = void(*)(void *, DWORD, std::wstring_view);
+	using callback_t = std::add_pointer_t<void(void *, DWORD, std::wstring_view)>;
 
 	bool m_Recursive;
 	DWORD m_Filter;
@@ -26,7 +27,7 @@ class FolderWatcher {
 	callback_t m_Callback;
 	void *m_Context;
 
-	inline static void callback(DWORD error, DWORD, OVERLAPPED *overlapped)
+	inline static void WINAPI callback(DWORD error, DWORD, OVERLAPPED *overlapped)
 	{
 		const auto that = static_cast<FolderWatcher *>(overlapped->hEvent);
 		switch (error)

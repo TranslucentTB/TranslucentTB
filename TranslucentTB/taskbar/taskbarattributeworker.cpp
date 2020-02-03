@@ -31,6 +31,7 @@ void TaskbarAttributeWorker::OnWindowStateChange(DWORD, HWND hwnd, LONG idObject
 
 void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD idEventThread, DWORD dwmsEventTime)
 {
+	// todo: do we need special destroyed window handling
 	if (Window window(hwnd); idObject == OBJID_WINDOW && window.valid())
 	{
 		if (const auto className = window.classname(); className == TASKBAR || className == SECONDARY_TASKBAR)
@@ -107,6 +108,11 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 			return 0;
 		}
 	}
+	else if (uMsg == WM_TIMER && wParam == TIMER_ID)
+	{
+		ResetState(false);
+		return 0;
+	}
 	else
 	{
 		return MessageWindow::MessageHandler(uMsg, wParam, lParam);
@@ -158,7 +164,7 @@ void TaskbarAttributeWorker::ShowAeroPeekButton(Window taskbar, bool show)
 	{
 		SetWindowLong(peek, GWL_EXSTYLE, GetWindowLong(peek, GWL_EXSTYLE) | WS_EX_LAYERED);
 
-		// Non-zero alpha makes the button still interactible.
+		// Non-zero alpha makes the button still interactible, even if practically invisible.
 		SetLayeredWindowAttributes(peek, 0, 1, LWA_ALPHA);
 	}
 }
@@ -344,17 +350,21 @@ void TaskbarAttributeWorker::ReturnToStock()
 
 bool TaskbarAttributeWorker::IsStartMenuOpened()
 {
-	BOOL start_visible;
-	const HRESULT hr = m_IAV->IsLauncherVisible(&start_visible);
-	if (SUCCEEDED(hr))
+	if (m_IAV)
 	{
-		return start_visible;
+		BOOL start_visible;
+		const HRESULT hr = m_IAV->IsLauncherVisible(&start_visible);
+		if (SUCCEEDED(hr))
+		{
+			return start_visible;
+		}
+		else
+		{
+			HresultHandle(hr, spdlog::level::info, L"Failed to query launcher visibility state.");
+		}
 	}
-	else
-	{
-		HresultHandle(hr, spdlog::level::info, L"Failed to query launcher visibility state.");
-		return false;
-	}
+
+	return false;
 }
 
 void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
@@ -393,8 +403,14 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_ForegroundChangeHook(CreateHook(EVENT_SYSTEM_FOREGROUND, m_ForegroundWindowChangeThunk)),
 	m_TitleChangeHook(CreateHook(EVENT_OBJECT_NAMECHANGE, m_WindowStateChangeThunk)),
 	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED)),
-	m_RefreshRequestedMessage(Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH))
+	m_RefreshRequestedMessage(Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH)),
+	m_TimerCookie(SetTimer(m_WindowHandle, TIMER_ID, 10000, nullptr))
 {
+	if (!m_TimerCookie)
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to register timer");
+	}
+
 	try
 	{
 		m_IAV = wil::CoCreateInstance<IAppVisibility>(CLSID_AppVisibility);
@@ -457,12 +473,9 @@ void TaskbarAttributeWorker::DumpState()
 	MessagePrint(spdlog::level::off, L"===== End TaskbarAttributeWorker state dump =====");
 }
 
-void TaskbarAttributeWorker::ResetState()
+void TaskbarAttributeWorker::ResetState(bool rehook)
 {
 	MessagePrint(spdlog::level::debug, L"Resetting worker state");
-
-	// Keep old hooks alive while we rehook to avoid DLL unload.
-	auto oldHooks = std::move(m_Hooks);
 
 	// Clear state
 	m_PeekActive = false;
@@ -472,17 +485,21 @@ void TaskbarAttributeWorker::ResetState()
 	m_NormalTaskbars.clear();
 	m_Hooks.clear();
 
-	const Window main_taskbar = Window::Find(TASKBAR);
-	m_MainTaskbarMonitor = main_taskbar.monitor();
-	InsertTaskbar(m_MainTaskbarMonitor, main_taskbar);
-
-	for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))
+	if (rehook)
 	{
-		InsertTaskbar(secondtaskbar.monitor(), secondtaskbar);
-	}
+		// Keep old hooks alive while we rehook to avoid DLL unload.
+		auto oldHooks = std::move(m_Hooks);
+		m_Hooks.clear();
 
-	// Drop the old hooks
-	oldHooks.clear();
+		const Window main_taskbar = Window::Find(TASKBAR);
+		m_MainTaskbarMonitor = main_taskbar.monitor();
+		InsertTaskbar(m_MainTaskbarMonitor, main_taskbar);
+
+		for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))
+		{
+			InsertTaskbar(secondtaskbar.monitor(), secondtaskbar);
+		}
+	}
 
 	// This might race but it's not an issue because
 	// it'll race on a single thread and only ends up
@@ -506,5 +523,10 @@ void TaskbarAttributeWorker::ResetState()
 
 TaskbarAttributeWorker::~TaskbarAttributeWorker()
 {
+	if (!KillTimer(m_WindowHandle, m_TimerCookie))
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to kill timer");
+	}
+
 	ReturnToStock();
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "../arch.h"
 #include <array>
+#include <fmt/format.h>
 #include <rapidjson/document.h>
 #include <rapidjson/encodings.h>
 #include <string_view>
@@ -36,7 +37,16 @@ struct TaskbarAppearance {
 			const auto &color = it->value;
 			RapidJSONHelper::EnsureType(rapidjson::Type::kStringType, color.GetType(), COLOR_KEY);
 
-			Color = (Color & 0xFF000000) + Util::SwapColorEndian(Util::ColorFromString({ color.GetString(), color.GetStringLength() }));
+			try
+			{
+				Color = (Color & 0xFF000000) + Util::SwapColorEndian(Util::ColorFromString({ color.GetString(), color.GetStringLength() }));
+			}
+			catch (const std::invalid_argument &)
+			{
+				std::wstring msg = fmt::format(fmt(L"Found invalid color string \"{}\" while deserializing key \"{}\""), std::wstring_view(color.GetString(), color.GetStringLength()), COLOR_KEY);
+
+				throw RapidJSONHelper::DeserializationError { std::move(msg) };
+			}
 		}
 
 		if (const auto it = obj.FindMember(OPACITY_KEY.data()); it != obj.MemberEnd())

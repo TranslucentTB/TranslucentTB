@@ -25,6 +25,12 @@ namespace Error {
 	}
 }
 
+#define HresultHandle(hresult_, level_, message_) do { \
+	fmt::wmemory_buffer buf_; \
+	Error::MessageFromHRESULT(buf_, (hresult_)); \
+	Error::HandleImpl<(level_)>::Handle((message_), buf_, PROGRAMLOG_ERROR_LOCATION); \
+} while (0)
+
 #define HresultVerify(hresult_, level_, message_) do { \
 	if (const HRESULT hr_ = (hresult_); FAILED(hr_)) \
 	{ \
@@ -32,14 +38,7 @@ namespace Error {
 	} \
 } while (0)
 
-#define HresultHandle(hresult_, level_, message_) do { \
-	fmt::wmemory_buffer buf_; \
-	Error::MessageFromHRESULT(buf_, (hresult_)); \
-	Error::HandleImpl<(level_)>::Handle((message_), buf_, PROGRAMLOG_ERROR_LOCATION); \
-} while (0)
-
 #define LastErrorHandle(level_, message_) HresultHandle(HRESULT_FROM_WIN32(GetLastError()), (level_), (message_))
-
 
 #define HresultErrorHandle(exception_, level_, message_) do { \
 	fmt::wmemory_buffer buf_; \

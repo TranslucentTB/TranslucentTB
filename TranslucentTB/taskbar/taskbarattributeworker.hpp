@@ -21,6 +21,8 @@
 
 class TaskbarAttributeWorker : public MessageWindow {
 private:
+	static constexpr UINT_PTR TIMER_ID = 0x1337;
+
 	struct MonitorInfo {
 		Window TaskbarWindow;
 		std::unordered_set<Window> MaximisedWindows;
@@ -69,9 +71,10 @@ private:
 	wilx::unique_app_visibility_token m_IAVECookie;
 	AppVisibilitySink::StartOpened_revoker m_AVSinkRevoker;
 
-	// Messages
+	// Messages & timers
 	UINT m_TaskbarCreatedMessage;
 	UINT m_RefreshRequestedMessage;
+	UINT_PTR m_TimerCookie;
 
 	// Type aliases
 	using taskbar_iterator = decltype(m_Taskbars)::const_iterator;
@@ -125,7 +128,7 @@ public:
 	}
 
 	void DumpState();
-	void ResetState();
+	void ResetState(bool rehook = true);
 
 	~TaskbarAttributeWorker();
 };

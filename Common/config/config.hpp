@@ -21,6 +21,7 @@
 #include <rapidjson/filereadstream.h>
 #include <rapidjson/filewritestream.h>
 #include <rapidjson/prettywriter.h>
+#include <share.h>
 #include <wil/resource.h>
 
 #include "../appinfo.hpp"
@@ -101,7 +102,7 @@ public:
 		if (ignoreDisabledSaving || !DisableSaving)
 		{
 			wil::unique_file pfile;
-			const errno_t err = _wfopen_s(pfile.put(), file.c_str(), L"wb");
+			const errno_t err = _wfopen_s(pfile.put(), file.c_str(), L"wbS");
 			if (err == 0)
 			{
 				using namespace rapidjson;
@@ -138,9 +139,8 @@ public:
 		// This check is so that if the file gets deleted for whatever reason while the app is running, default configuration gets restored immediatly.
 		if (std::filesystem::is_regular_file(file))
 		{
-			wil::unique_file pfile;
-			const errno_t err = _wfopen_s(pfile.put(), file.c_str(), L"rb");
-			if (err == 0)
+			wil::unique_file pfile(_wfsopen(file.c_str(), L"rbS", _SH_DENYNO));
+			if (pfile)
 			{
 				using namespace rapidjson;
 
@@ -161,7 +161,6 @@ public:
 						cfg.Deserialize(doc);
 						return cfg;
 					}
-					// TODO: catch ColorFromString
 					HelperDeserializationErrorCatch(spdlog::level::err, ERR_MSG)
 					StdSystemErrorCatch(spdlog::level::err, ERR_MSG);
 				}
@@ -172,7 +171,7 @@ public:
 			}
 			else
 			{
-				ErrnoTHandle(err, spdlog::level::err, L"Failed to load configuration!");
+				ErrnoHandle(spdlog::level::err, L"Failed to load configuration!");
 			}
 		}
 
