@@ -5,7 +5,7 @@
 
 [Setup]
 AllowRootDirectory=yes
-AppCopyright=Copyright © 2018 {#AppPublisher}
+AppCopyright=Copyright © 2020 {#AppPublisher}
 AppendDefaultDirName=no
 AppMutex={#AppMutex}
 AppName={#AppName}
