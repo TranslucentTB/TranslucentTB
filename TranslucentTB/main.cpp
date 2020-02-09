@@ -713,15 +713,18 @@ int WINAPI wWinMain(const HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 		WINEVENT_OUTOFCONTEXT
 	);
 
-	// Detect additional monitor connection
+	// Detect additional monitor connect/disconnect
 	EventHook creation_hook(
 		EVENT_OBJECT_CREATE,
-		EVENT_OBJECT_CREATE,
+		EVENT_OBJECT_DESTROY,
 		[](DWORD, const Window &window, ...)
 		{
-			if (window.valid() && *window.classname() == L"Shell_SecondaryTrayWnd")
+			if (window.valid())
 			{
-				run.taskbars[window.monitor()] = { window, &Config::REGULAR_APPEARANCE };
+				if (const auto classname = window.classname(); *classname == L"Shell_TrayWnd" || *classname == L"Shell_SecondaryTrayWnd")
+				{
+					RefreshHandles();
+				}
 			}
 		},
 		WINEVENT_OUTOFCONTEXT
