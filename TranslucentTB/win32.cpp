@@ -1,28 +1,6 @@
 #include "win32.hpp"
-#include <processthreadsapi.h>
 
 #include "../ProgramLog/error/win32.hpp"
-
-std::filesystem::path win32::s_ExeLocation;
-
-const std::filesystem::path &win32::GetExeLocation()
-{
-	if (s_ExeLocation.empty())
-	{
-		auto [loc, hr] = GetProcessFileName(GetCurrentProcess());
-
-		if (SUCCEEDED(hr))
-		{
-			s_ExeLocation = std::move(loc);
-		}
-		else
-		{
-			HresultHandle(hr, spdlog::level::critical, L"Failed to determine executable location!");
-		}
-	}
-
-	return s_ExeLocation;
-}
 
 void win32::HardenProcess()
 {
@@ -32,11 +10,10 @@ void win32::HardenProcess()
 	// but in release we'd rather not.
 	static constexpr spdlog::level::level_enum level =
 #ifdef _DEBUG
-		spdlog::level::warn
+		spdlog::level::warn;
 #else
-		spdlog::level::trace
+		spdlog::level::trace;
 #endif
-		;
 
 	if (!HeapSetInformation(nullptr, HeapEnableTerminationOnCorruption, nullptr, 0))
 	{

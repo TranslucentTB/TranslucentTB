@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <fmt/format.h>
 #include <memory>
+#include <processthreadsapi.h>
 #include <winbase.h>
 #include <shellapi.h>
 #include <Shlobj.h>
@@ -79,6 +80,12 @@ public:
 		{
 			return { { }, HRESULT_FROM_WIN32(GetLastError()) };
 		}
+	}
+
+	// Gets location of current process
+	static std::pair<std::filesystem::path, HRESULT> GetExeLocation()
+	{
+		return GetProcessFilename(GetCurrentProcess());
 	}
 
 	inline static std::pair<std::filesystem::path, HRESULT> GetModulePath(HMODULE mod)
@@ -318,13 +325,6 @@ public:
 	using FilenameSet = std::unordered_set<std::wstring, FilenameHash, FilenameEqual>;
 
 #ifdef _TRANSLUCENTTB_EXE
-private:
-	static std::filesystem::path s_ExeLocation;
-
-public:
-	// Gets location of current module, fatally dies if failed.
-	static const std::filesystem::path &GetExeLocation();
-
 	// Applies various settings that make code execution more secure.
 	static void HardenProcess();
 #endif

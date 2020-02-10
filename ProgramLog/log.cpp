@@ -47,7 +47,8 @@ std::filesystem::path Log::GetPath()
 void Log::LogErrorHandler(const std::string &message)
 {
 	fmt::memory_buffer buf;
-	fmt::format_to(buf, fmt("An error has been encountered while logging a message.\n\n{}\0"), message);
+	fmt::format_to(buf, fmt("An error has been encountered while logging a message.\n\n{}"), message);
+	buf.push_back('\0');
 	MessageBoxExA(Window::NullWindow, buf.data(), UTF8_ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 }
 

@@ -8,8 +8,10 @@
 #include <wil/resource.h>
 
 #include "../log.hpp"
+#include "std.hpp"
 #include "win32.hpp"
 #include "window.hpp"
+#include "util/memory.hpp"
 
 bool Error::impl::ShouldLog(spdlog::level::level_enum level)
 {
@@ -88,46 +90,43 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 
 wil::unique_handle Error::CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type)
 {
-	// todo: use single allocation
-	struct thread_info {
-		std::wstring body;
+	struct msgbox_info : Util::flexible_array<wchar_t> {
 		Util::null_terminated_wstring_view title;
 		unsigned int type;
+		wchar_t body[];
 	};
 
-	auto info = std::make_unique<thread_info>();
+	std::unique_ptr<msgbox_info> info(new (buf.size() + 1) msgbox_info);
 	info->title = title;
 	info->type = type;
 
+	errno_t err = wmemcpy_s(info->body, buf.size() + 1, buf.data(), buf.size());
+	if (err != 0)
+	{
+		ErrnoTHandle(err, spdlog::level::trace, L"Failed to copy message box body");
+		return nullptr;
+	}
+
+	info->body[buf.size()] = L'\0';
+
 	wil::unique_handle thread(CreateThread(nullptr, 0, [](void *userData) -> DWORD
 	{
-		std::unique_ptr<thread_info> info(static_cast<thread_info *>(userData));
+		decltype(info) boxInfo(static_cast<msgbox_info *>(userData));
 
-		MessageBoxEx(Window::NullWindow, info->body.c_str(), info->title.c_str(), info->type | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
+		MessageBoxEx(Window::NullWindow, boxInfo->body, boxInfo->title.c_str(), boxInfo->type | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 
 		return 0;
-	}, info.get(), CREATE_SUSPENDED, nullptr));
+	}, info.get(), 0, nullptr));
 
 	if (thread)
 	{
-		// Allocate only if thread is created
-		info->body = fmt::to_string(buf);
-
-		if (ResumeThread(thread.get()) != -1)
-		{
-			// Ownership transferred to thread
-			static_cast<void>(info.release());
-		}
-		else
-		{
-			LastErrorHandle(spdlog::level::warn, L"Failed to resume thread");
-		}
+		// Ownership transferred to thread
+		static_cast<void>(info.release());
 	}
 	else
 	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to create thread");
+		LastErrorHandle(spdlog::level::trace, L"Failed to create thread");
 	}
 
-	// Transfer ownership to caller
 	return thread;
 }

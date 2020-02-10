@@ -46,7 +46,7 @@ std::wstring Window::classname() const
 	className.resize(257);	// According to docs, maximum length of a class name is 256, but it's ambiguous
 							// wether this includes the null terminator or not.
 
-	const int count = GetClassName(m_WindowHandle, className.data(), 257);
+	const int count = GetClassName(m_WindowHandle, className.data(), className.size());
 	if (!count)
 	{
 		LastErrorHandle(spdlog::level::info, L"Getting class name of a window failed.");

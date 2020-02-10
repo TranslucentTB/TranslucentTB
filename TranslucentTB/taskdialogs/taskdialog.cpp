@@ -41,7 +41,8 @@ bool TTBTaskDialog::Run(bool &checked)
 		Error::MessageFromHRESULT(errbuf, hr);
 
 		fmt::wmemory_buffer buf;
-		fmt::format_to(buf, fmt(L"Failed to open task dialog.\n\n{}\0"), Util::ToStringView(errbuf));
+		fmt::format_to(buf, fmt(L"Failed to open task dialog.\n\n{}"), Util::ToStringView(errbuf));
+		buf.push_back(L'\0');
 		MessageBoxEx(Window::NullWindow, buf.data(), ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 		return false;
 	}

@@ -16,6 +16,8 @@ namespace Error {
 	Error::HandleImpl<(level_)>::Handle((message_), buf_, PROGRAMLOG_ERROR_LOCATION); \
 } while (0)
 
+#define ErrnoHandle(level_, message_) ErrnoTHandle(errno, (level_), (message_))
+
 #define StdSystemErrorHandle(exception_, level_, message_) do { \
 	fmt::wmemory_buffer buf_; \
 	Error::MessageFromStdSystemError(buf_, (exception_)); \

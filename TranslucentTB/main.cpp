@@ -46,7 +46,9 @@ std::filesystem::path GetConfigFileLocation(bool hasPackageIdentity)
 	}
 	else
 	{
-		config_folder = win32::GetExeLocation().parent_path();
+		const auto [loc, hr] = win32::GetExeLocation();
+		HresultVerify(hr, spdlog::level::critical, L"Failed to determine executable location!");
+		config_folder = loc.parent_path();
 	}
 
 	config_folder /= CONFIG_FILE;
