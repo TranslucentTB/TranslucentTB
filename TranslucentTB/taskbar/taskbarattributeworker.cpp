@@ -302,7 +302,7 @@ void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::
 	}
 }
 
-TaskbarAttributeWorker::hook_thunk TaskbarAttributeWorker::CreateThunk(void(TaskbarAttributeWorker:: *proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD)) try
+TaskbarAttributeWorker::hook_thunk TaskbarAttributeWorker::CreateThunk(void(CALLBACK TaskbarAttributeWorker:: *proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD)) try
 {
 	return member_thunk::make(this, proc);
 }

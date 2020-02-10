@@ -3,8 +3,8 @@
 #include <fmt/format.h>
 #include <spdlog/common.h>
 #include <string_view>
-#include <winbase.h>
 #include <windef.h>
+#include <winbase.h>
 #include <wil/resource.h>
 
 #include "../api.h"

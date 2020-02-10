@@ -11,9 +11,8 @@
 class MessageWindow : public Window {
 private:
 	static void NTAPI DeleteThisAPC(ULONG_PTR that);
+	static LRESULT CALLBACK RawMessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	// Order important: the thunk needs to be destroyed after the window class
-	std::unique_ptr<member_thunk::thunk<WNDPROC>> m_ProcedureThunk;
 	WindowClass m_WindowClass;
 	const wchar_t *m_IconResource;
 
@@ -27,7 +26,7 @@ protected:
 		return m_WindowClass.hinstance();
 	}
 
-	inline virtual LRESULT CALLBACK MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
+	inline virtual LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		switch (uMsg)
 		{

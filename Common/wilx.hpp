@@ -25,7 +25,7 @@ namespace wilx {
 		};
 
 		template<typename Return, typename... Args>
-		struct function_traits<Return(*)(Args...)> {
+		struct function_traits<Return(STDMETHODCALLTYPE *)(Args...)> {
 			template<std::size_t I>
 			using arg = std::tuple_element_t<I, std::tuple<Args...>>;
 		};

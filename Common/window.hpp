@@ -1,9 +1,11 @@
 #pragma once
 #include "arch.h"
 #include <dwmapi.h>
+#include <errhandlingapi.h>
 #include <functional>
 #include <string>
 #include <windef.h>
+#include <winerror.h>
 #include <winuser.h>
 
 #include "util/null_terminated_string_view.hpp"
@@ -222,6 +224,36 @@ public:
 	}
 
 	constexpr FindEnum find_childs(Util::null_terminated_wstring_view className = { }, Util::null_terminated_wstring_view windowName = { }) const noexcept;
+
+	inline std::pair<LONG_PTR, HRESULT> get_long_ptr(int index) const noexcept
+	{
+		SetLastError(NO_ERROR);
+		const LONG_PTR val = GetWindowLongPtr(m_WindowHandle, index);
+		if (!val)
+		{
+			if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
+			{
+				return { 0, HRESULT_FROM_WIN32(lastErr) };
+			}
+		}
+
+		return { val, S_OK };
+	}
+
+	inline std::pair<LONG_PTR, HRESULT> set_long_ptr(int index, LONG_PTR newValue) noexcept
+	{
+		SetLastError(NO_ERROR);
+		const LONG_PTR val = SetWindowLongPtr(m_WindowHandle, index, newValue);
+		if (!val)
+		{
+			if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
+			{
+				return { 0, HRESULT_FROM_WIN32(lastErr) };
+			}
+		}
+
+		return { val, S_OK };
+	}
 
 	constexpr HWND handle() const noexcept
 	{

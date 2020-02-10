@@ -27,7 +27,7 @@ private:
 		return S_OK;
 	}
 
-	void remove_StartOpened(int64_t token)
+	void STDMETHODCALLTYPE remove_StartOpened(int64_t token)
 	{
 		m_startOpened.remove({ token });
 	}
