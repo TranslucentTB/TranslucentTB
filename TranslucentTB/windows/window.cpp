@@ -73,11 +73,10 @@ std::filesystem::path Window::file() const
 
 bool Window::on_current_desktop() const
 {
-	static const auto desktop_manager = wil::CoCreateInstance<VirtualDesktopManager, IVirtualDesktopManager>();
+	static const auto desktop_manager = wil::CoCreateInstance<IVirtualDesktopManager>(CLSID_VirtualDesktopManager);
 
 	BOOL on_current_desktop;
-	const HRESULT hr = desktop_manager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop);
-	if (SUCCEEDED(hr))
+	if (const HRESULT hr = desktop_manager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop); SUCCEEDED(hr))
 	{
 		return on_current_desktop;
 	}
