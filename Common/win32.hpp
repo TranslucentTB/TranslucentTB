@@ -85,7 +85,7 @@ public:
 	// Gets location of current process
 	static std::pair<std::filesystem::path, HRESULT> GetExeLocation()
 	{
-		return GetProcessFilename(GetCurrentProcess());
+		return GetProcessFileName(GetCurrentProcess());
 	}
 
 	inline static std::pair<std::filesystem::path, HRESULT> GetModulePath(HMODULE mod)

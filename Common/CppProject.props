@@ -161,7 +161,7 @@
 
       <!-- Warnings and errors -->
       <WarningLevel>Level4</WarningLevel>
-      <DisableSpecificWarnings>4275;4324;4840;5054</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4200;4275;4324;4840;5054</DisableSpecificWarnings>
       <UseFullPaths>true</UseFullPaths>
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
 
