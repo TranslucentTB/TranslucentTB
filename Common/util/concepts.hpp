@@ -4,15 +4,6 @@
 namespace Util {
 #ifdef __cpp_concepts // MIGRATION: IDE concept support
 	template<typename T>
-	concept pointer = std::is_pointer_v<T>;
-
-	template<typename T>
-	concept function = std::is_function_v<T>;
-
-	template<typename T>
-	concept function_pointer = pointer<T> && function<std::remove_pointer_t<T>>;
-
-	template<typename T>
-	concept member_function_pointer = pointer<T> && std::is_member_function_pointer_v<T>;
+	concept function_pointer = std::is_pointer_v<T> && std::is_function_v<std::remove_pointer_t<T>>;
 #endif
 }

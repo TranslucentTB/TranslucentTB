@@ -4,6 +4,7 @@
 #include "arch.h"
 #include <cstddef>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 #include <wil/resource.h>
 #include <winnt.h>
@@ -13,7 +14,7 @@
 namespace wilx {
 	// Send help
 	namespace impl {
-		template</*Util::pointer*/ typename T>
+		template<typename T>
 		struct function_traits;
 
 		template<typename Parent, typename Return, typename... Args>
@@ -30,23 +31,35 @@ namespace wilx {
 			using arg = std::tuple_element_t<I, std::tuple<Args...>>;
 		};
 
-		template</*Util::member_function_pointer*/ typename T>
+		template<typename T>
 		using parent_t = typename function_traits<T>::parent;
 
-		template</*Util::pointer*/ typename T, std::size_t I>
+		template<typename T, std::size_t I>
 		using arg_t = typename function_traits<T>::template arg<I>;
 	}
 
-	template</*Util::member_function_pointer*/ auto close_fn, impl::arg_t<decltype(close_fn), 0> invalid_token = impl::arg_t<decltype(close_fn), 0>()>
+	template<auto close_fn, impl::arg_t<decltype(close_fn), 0> invalid_token = impl::arg_t<decltype(close_fn), 0>()>
+#ifdef __cpp_concepts // MIGRATION: IDE concepts support
+		requires std::is_member_function_pointer_v<decltype(close_fn)>
+#endif
 	using unique_com_token = wil::unique_com_token<impl::parent_t<decltype(close_fn)>, impl::arg_t<decltype(close_fn), 0>, decltype(close_fn), close_fn, invalid_token>;
 
-	template</*Util::member_function_pointer*/ auto close_fn>
+	template<auto close_fn>
+#ifdef __cpp_concepts // MIGRATION: IDE concepts support
+		requires std::is_member_function_pointer_v<decltype(close_fn)>
+#endif
 	using unique_com_call = wil::unique_com_call<impl::parent_t<decltype(close_fn)>, decltype(close_fn), close_fn>;
 
-	template</*Util::function_pointer*/ auto close_fn>
+	template<auto close_fn>
+#ifdef __cpp_concepts // MIGRATION: IDE concepts support
+		requires Util::function_pointer<decltype(close_fn)>
+#endif
 	using unique_any = wil::unique_any<impl::arg_t<decltype(close_fn), 0>, decltype(close_fn), close_fn>;
 
-	template</*Util::function_pointer*/ auto delete_fn>
+	template<auto delete_fn>
+#ifdef __cpp_concepts // MIGRATION: IDE concepts support
+		requires Util::function_pointer<decltype(delete_fn)>
+#endif
 	using function_deleter = wil::function_deleter<decltype(delete_fn), delete_fn>;
 }
 
