@@ -481,12 +481,12 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 	m_PeekActive = false;
 	m_CurrentStartMonitor = nullptr;
 	m_MainTaskbarMonitor = nullptr;
-	m_Taskbars.clear();
-	m_NormalTaskbars.clear();
-	m_Hooks.clear();
 
 	if (rehook)
 	{
+		m_Taskbars.clear();
+		m_NormalTaskbars.clear();
+
 		// Keep old hooks alive while we rehook to avoid DLL unload.
 		auto oldHooks = std::move(m_Hooks);
 		m_Hooks.clear();
@@ -498,6 +498,14 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 		for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))
 		{
 			InsertTaskbar(secondtaskbar.monitor(), secondtaskbar);
+		}
+	}
+	else
+	{
+		for (auto &[mon, info] : m_Taskbars)
+		{
+			info.MaximisedWindows.clear();
+			info.NormalWindows.clear();
 		}
 	}
 
