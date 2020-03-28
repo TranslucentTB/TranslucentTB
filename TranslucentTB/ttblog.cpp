@@ -10,6 +10,7 @@
 #ifndef STORE
 #include <vector>
 #endif
+#include <iomanip>
 #include <WinBase.h>
 #include <winerror.h>
 #include <winnt.h>
@@ -154,12 +155,19 @@ void Log::OutputMessage(const std::wstring &message)
 
 	if (*m_FileHandle)
 	{
-		std::time_t current_time = std::time(0);
-
+		SYSTEMTIME t = SYSTEMTIME();
+		GetLocalTime(&t);
+		
 		std::wostringstream buffer;
-		buffer << L'(' << _wctime(&current_time);
-		buffer.seekp(-1, std::ios_base::end); // Seek behind the newline created by _wctime
-		buffer << L") " << message << L"\r\n";
+		buffer << L'(' << std::setfill(L'0')
+			<< std::setw(4) << t.wYear << L'-'
+			<< std::setw(2) << t.wMonth << L'-'
+			<< std::setw(2) << t.wDay << L' '
+			<< std::setw(2) << t.wHour << L':'
+			<< std::setw(2) << t.wMinute << L':'
+			<< std::setw(2) << t.wSecond << L'.'
+			<< std::setw(3) << t.wMilliseconds
+			<< L") " << message << L"\r\n";
 
 		const std::wstring error = buffer.str();
 
