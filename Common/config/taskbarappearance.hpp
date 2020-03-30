@@ -41,11 +41,11 @@ struct TaskbarAppearance {
 			{
 				Color = (Color & 0xFF000000) + Util::SwapColorEndian(Util::ColorFromString({ color.GetString(), color.GetStringLength() }));
 			}
-			catch (const std::invalid_argument &)
+			catch (...)
 			{
-				std::wstring msg = fmt::format(fmt(L"Found invalid color string \"{}\" while deserializing key \"{}\""), std::wstring_view(color.GetString(), color.GetStringLength()), COLOR_KEY);
-
-				throw RapidJSONHelper::DeserializationError { std::move(msg) };
+				throw RapidJSONHelper::DeserializationError {
+					fmt::format(fmt(L"Found invalid color string \"{}\" while deserializing key \"{}\""), std::wstring_view(color.GetString(), color.GetStringLength()), COLOR_KEY);
+				};
 			}
 		}
 

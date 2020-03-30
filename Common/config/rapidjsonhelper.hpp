@@ -39,9 +39,9 @@ namespace RapidJSONHelper {
 
 		if (actual != expected)
 		{
-			std::wstring msg = fmt::format(fmt(L"Expected {} but found {} while deserializing key \"{}\""), TYPE_NAMES[expected], TYPE_NAMES[actual], obj);
-
-			throw DeserializationError { std::move(msg) };
+			throw DeserializationError {
+				fmt::format(fmt(L"Expected {} but found {} while deserializing key \"{}\""), TYPE_NAMES[expected], TYPE_NAMES[actual], obj)
+			};
 		}
 	}
 
