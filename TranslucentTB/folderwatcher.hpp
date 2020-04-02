@@ -13,36 +13,39 @@
 #include "../ProgramLog/error/win32.hpp"
 
 class FolderWatcher {
-	static constexpr std::size_t BUFFER_SIZE = 4096;
-
 	using callback_t = std::add_pointer_t<void(void *, DWORD, std::wstring_view)>;
+
+	// this needs to be first for our little casting trick to work
+	OVERLAPPED m_Overlapped;
 
 	bool m_Recursive;
 	DWORD m_Filter;
 
 	wil::unique_hfile m_FolderHandle;
-	OVERLAPPED m_Overlapped;
-	std::unique_ptr<char[]> m_Buffer;
-
 	callback_t m_Callback;
-	void *m_Context;
+
+	wil::unique_virtualalloc_ptr<char[]> m_Buffer;
+	DWORD m_BufferSize;
 
 	inline static void WINAPI callback(DWORD error, DWORD, OVERLAPPED *overlapped)
 	{
-		const auto that = static_cast<FolderWatcher *>(overlapped->hEvent);
+		// getting parent pointer by casting first child pointer needs standard layout.
+		static_assert(std::is_standard_layout_v<FolderWatcher>);
+
+		const auto that = reinterpret_cast<FolderWatcher *>(overlapped);
 		switch (error)
 		{
 		case ERROR_SUCCESS:
 			for (const auto &fileEntry : wil::create_next_entry_offset_iterator(reinterpret_cast<FILE_NOTIFY_INFORMATION *>(that->m_Buffer.get())))
 			{
-				that->m_Callback(that->m_Context, fileEntry.Action, { fileEntry.FileName, fileEntry.FileNameLength / 2 });
+				that->m_Callback(overlapped->hEvent, fileEntry.Action, { fileEntry.FileName, fileEntry.FileNameLength / 2 });
 			}
 
 			that->rearm();
 			break;
 
 		case ERROR_NOTIFY_ENUM_DIR:
-			that->m_Callback(that->m_Context, 0, { });
+			that->m_Callback(overlapped->hEvent, 0, { });
 			that->rearm();
 			break;
 
@@ -56,7 +59,7 @@ class FolderWatcher {
 
 	inline void rearm()
 	{
-		if (!ReadDirectoryChangesW(m_FolderHandle.get(), m_Buffer.get(), BUFFER_SIZE, m_Recursive, m_Filter, nullptr, &m_Overlapped, callback))
+		if (!ReadDirectoryChangesW(m_FolderHandle.get(), m_Buffer.get(), m_BufferSize, m_Recursive, m_Filter, nullptr, &m_Overlapped, callback))
 		{
 			LastErrorHandle(spdlog::level::warn, L"Failed to arm directory watcher");
 		}
@@ -64,14 +67,13 @@ class FolderWatcher {
 
 public:
 	inline FolderWatcher(const std::filesystem::path &path, bool recursive, DWORD filter, callback_t callback, void *context) :
+		m_Overlapped {
+			.hEvent = context // not used for ReadDirectoryChanges so we can stash the user context pointer in it.
+		},
 		m_Recursive(recursive),
 		m_Filter(filter),
-		m_Overlapped {
-			.hEvent = this // not used for ReadDirectoryChanges so we can stash the this pointer in it.
-		},
-		m_Buffer(std::make_unique<char[]>(BUFFER_SIZE)),
 		m_Callback(callback),
-		m_Context(context)
+		m_BufferSize()
 	{
 		m_FolderHandle.reset(CreateFile(
 			path.c_str(), FILE_LIST_DIRECTORY,
@@ -81,7 +83,19 @@ public:
 
 		if (m_FolderHandle)
 		{
-			rearm();
+			SYSTEM_INFO info;
+			GetSystemInfo(&info);
+			m_BufferSize = std::max(info.dwPageSize, info.dwAllocationGranularity);
+
+			m_Buffer.reset(reinterpret_cast<char*>(VirtualAlloc(nullptr, m_BufferSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)));
+			if (m_Buffer)
+			{
+				rearm();
+			}
+			else
+			{
+				LastErrorHandle(spdlog::level::warn, L"Failed to allocate overlapped IO buffer");
+			}
 		}
 		else
 		{
@@ -91,7 +105,7 @@ public:
 
 	inline ~FolderWatcher()
 	{
-		if (m_FolderHandle)
+		if (m_FolderHandle && m_Buffer)
 		{
 			if (!CancelIo(m_FolderHandle.get()))
 			{
