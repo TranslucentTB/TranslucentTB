@@ -5,7 +5,6 @@
 #include <string_view>
 #include <unordered_set>
 
-#include "../util/null_terminated_string_view.hpp"
 #include "../win32.hpp"
 
 #ifdef _TRANSLUCENTTB_EXE
@@ -72,19 +71,19 @@ private:
 	template<typename Writer, typename T, typename Hash, typename Equal, typename Alloc>
 	inline static void SerializeStringSet(Writer &writer, const std::unordered_set<T, Hash, Equal, Alloc> &set, std::wstring_view key)
 	{
-		writer.Key(key.data(), static_cast<rapidjson::SizeType>(key.length()));
+		RapidJSONHelper::WriteKey(writer, key);
 		writer.StartArray();
 		for (const std::wstring &str : set)
 		{
-			writer.String(str);
+			RapidJSONHelper::WriteString(writer, str);
 		}
 		writer.EndArray();
 	}
 
 	template<typename T, typename Hash, typename Equal, typename Alloc>
-	inline static void DeserializeStringSet(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &obj, std::unordered_set<T, Hash, Equal, Alloc> &set, Util::null_terminated_wstring_view key)
+	inline static void DeserializeStringSet(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &obj, std::unordered_set<T, Hash, Equal, Alloc> &set, std::wstring_view key)
 	{
-		if (const auto it = obj.FindMember(key.c_str()); it != obj.MemberEnd())
+		if (const auto it = obj.FindMember(RapidJSONHelper::StringViewToValue(key)); it != obj.MemberEnd())
 		{
 			const auto &array = it->value;
 			RapidJSONHelper::EnsureType(rapidjson::Type::kArrayType, array.GetType(), key);
@@ -92,7 +91,7 @@ private:
 			for (const auto &elem : array.GetArray())
 			{
 				RapidJSONHelper::EnsureType(rapidjson::Type::kStringType, elem.GetType(), L"array element");
-				set.emplace(elem.GetString(), elem.GetStringLength());
+				set.emplace(RapidJSONHelper::ValueToStringView(elem));
 			}
 		}
 	}
@@ -101,7 +100,7 @@ private:
 	std::unordered_set<std::wstring> m_TitleList;
 	win32::FilenameSet m_FileList;
 
-	static constexpr Util::null_terminated_wstring_view CLASS_KEY = L"window_class";
-	static constexpr Util::null_terminated_wstring_view TITLE_KEY = L"window_title";
-	static constexpr Util::null_terminated_wstring_view FILE_KEY = L"process_name";
+	static constexpr std::wstring_view CLASS_KEY = L"window_class";
+	static constexpr std::wstring_view TITLE_KEY = L"window_title";
+	static constexpr std::wstring_view FILE_KEY = L"process_name";
 };

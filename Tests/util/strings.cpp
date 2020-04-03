@@ -35,7 +35,6 @@ TEST(Util_Trim, TrimsRight)
 	ASSERT_EQ(Util::Trim(L"foo \nbar\t\r \f\n\v"), L"foo \nbar");
 }
 
-
 TEST(Util_Trim, TrimsLeftRight)
 {
 	ASSERT_EQ(Util::Trim(L"\t\v \f\n\rfoo \nbar\t\r \f\n\v"), L"foo \nbar");

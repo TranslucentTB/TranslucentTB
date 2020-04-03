@@ -10,7 +10,6 @@
 #include "rapidjsonhelper.hpp"
 #include "../undoc/user32.hpp"
 #include "../util/colors.hpp"
-#include "../util/null_terminated_string_view.hpp"
 
 struct TaskbarAppearance {
 	ACCENT_STATE Accent;
@@ -21,10 +20,12 @@ struct TaskbarAppearance {
 	{
 		RapidJSONHelper::Serialize(writer, Accent, ACCENT_KEY, ACCENT_MAP);
 
-		writer.String(COLOR_KEY.data(), static_cast<rapidjson::SizeType>(COLOR_KEY.length()));
-		writer.String(Util::StringFromColor(Util::SwapColorEndian(Color)));
+		RapidJSONHelper::WriteKey(writer, COLOR_KEY);
+		fmt::wmemory_buffer buf;
+		Util::StringFromColor(Util::SwapColorEndian(Color));
+		RapidJSONHelper::WriteString(writer, Util::ToStringView(buf));
 
-		writer.String(OPACITY_KEY.data(), static_cast<rapidjson::SizeType>(OPACITY_KEY.length()));
+		RapidJSONHelper::WriteKey(writer, OPACITY_KEY);
 		writer.Uint((Color & 0xFF000000) >> 24);
 	}
 
@@ -32,24 +33,25 @@ struct TaskbarAppearance {
 	{
 		RapidJSONHelper::Deserialize(obj, Accent, ACCENT_KEY, ACCENT_MAP);
 
-		if (const auto it = obj.FindMember(COLOR_KEY.data()); it != obj.MemberEnd())
+		if (const auto it = obj.FindMember(RapidJSONHelper::StringViewToValue(COLOR_KEY)); it != obj.MemberEnd())
 		{
 			const auto &color = it->value;
 			RapidJSONHelper::EnsureType(rapidjson::Type::kStringType, color.GetType(), COLOR_KEY);
 
+			const auto colorStr = RapidJSONHelper::ValueToStringView(color);
 			try
 			{
-				Color = (Color & 0xFF000000) + Util::SwapColorEndian(Util::ColorFromString({ color.GetString(), color.GetStringLength() }));
+				Color = (Color & 0xFF000000) + Util::SwapColorEndian(Util::ColorFromString(colorStr));
 			}
 			catch (...)
 			{
 				throw RapidJSONHelper::DeserializationError {
-					fmt::format(fmt(L"Found invalid color string \"{}\" while deserializing key \"{}\""), std::wstring_view(color.GetString(), color.GetStringLength()), COLOR_KEY)
+					fmt::format(fmt(L"Found invalid color string \"{}\" while deserializing key \"{}\""), colorStr, COLOR_KEY)
 				};
 			}
 		}
 
-		if (const auto it = obj.FindMember(OPACITY_KEY.data()); it != obj.MemberEnd())
+		if (const auto it = obj.FindMember(RapidJSONHelper::StringViewToValue(OPACITY_KEY)); it != obj.MemberEnd())
 		{
 			const auto &opacity = it->value;
 			RapidJSONHelper::EnsureType(rapidjson::Type::kNumberType, opacity.GetType(), OPACITY_KEY);
@@ -67,7 +69,7 @@ private:
 		L"acrylic"
 	};
 
-	static constexpr Util::null_terminated_wstring_view ACCENT_KEY = L"accent";
-	static constexpr Util::null_terminated_wstring_view COLOR_KEY = L"color";
-	static constexpr Util::null_terminated_wstring_view OPACITY_KEY = L"opacity";
+	static constexpr std::wstring_view ACCENT_KEY = L"accent";
+	static constexpr std::wstring_view COLOR_KEY = L"color";
+	static constexpr std::wstring_view OPACITY_KEY = L"opacity";
 };

@@ -21,7 +21,7 @@ std::wstring Window::title() const
 		}
 
 		// Failure or empty title.
-		return windowTitle;
+		return { };
 	}
 
 	// We're assuming that a window won't change title between the previous call and this.
@@ -30,10 +30,16 @@ std::wstring Window::title() const
 	
 	// For the null terminator
 	windowTitle.resize(titleSize + 1);
+	SetLastError(NO_ERROR);
 	const int copiedChars = GetWindowText(m_WindowHandle, windowTitle.data(), titleSize + 1);
 	if (!copiedChars)
 	{
-		LastErrorHandle(spdlog::level::info, L"Getting title of a window failed.");
+		if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
+		{
+			LastErrorHandle(spdlog::level::info, L"Getting title of a window failed.");
+		}
+
+		return { };
 	}
 
 	windowTitle.resize(copiedChars);

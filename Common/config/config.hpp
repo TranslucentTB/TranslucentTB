@@ -5,7 +5,6 @@
 #include <spdlog/common.h>
 #include <string_view>
 
-#include "../util/null_terminated_string_view.hpp"
 #include "optionaltaskbarappearance.hpp"
 #include "rapidjsonhelper.hpp"
 #include "taskbarappearance.hpp"
@@ -190,15 +189,15 @@ private:
 		L"off"
 	};
 
-	static constexpr Util::null_terminated_wstring_view DESKTOP_KEY = L"desktop_appearance";
-	static constexpr Util::null_terminated_wstring_view VISIBLE_KEY = L"visible_window_appearance";
-	static constexpr Util::null_terminated_wstring_view MAXIMISED_KEY = L"maximised_window_appearance";
-	static constexpr Util::null_terminated_wstring_view START_KEY = L"start_opened_appearance";
-	static constexpr Util::null_terminated_wstring_view CORTANA_KEY = L"cortana_opened_appearance";
-	static constexpr Util::null_terminated_wstring_view TIMELINE_KEY = L"timeline_opened_appearance";
-	static constexpr Util::null_terminated_wstring_view WHITELIST_KEY = L"whitelist";
-	static constexpr Util::null_terminated_wstring_view BLACKLIST_KEY = L"blacklist";
-	static constexpr Util::null_terminated_wstring_view TRAY_KEY = L"hide_tray";
-	static constexpr Util::null_terminated_wstring_view SAVING_KEY = L"disable_saving";
-	static constexpr Util::null_terminated_wstring_view LOG_KEY = L"verbosity";
+	static constexpr std::wstring_view DESKTOP_KEY = L"desktop_appearance";
+	static constexpr std::wstring_view VISIBLE_KEY = L"visible_window_appearance";
+	static constexpr std::wstring_view MAXIMISED_KEY = L"maximised_window_appearance";
+	static constexpr std::wstring_view START_KEY = L"start_opened_appearance";
+	static constexpr std::wstring_view CORTANA_KEY = L"cortana_opened_appearance";
+	static constexpr std::wstring_view TIMELINE_KEY = L"timeline_opened_appearance";
+	static constexpr std::wstring_view WHITELIST_KEY = L"whitelist";
+	static constexpr std::wstring_view BLACKLIST_KEY = L"blacklist";
+	static constexpr std::wstring_view TRAY_KEY = L"hide_tray";
+	static constexpr std::wstring_view SAVING_KEY = L"disable_saving";
+	static constexpr std::wstring_view LOG_KEY = L"verbosity";
 };
