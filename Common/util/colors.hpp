@@ -48,7 +48,7 @@ namespace Util {
 
 	inline void StringFromColor(fmt::wmemory_buffer &buf, uint32_t color)
 	{
-		return fmt::format_to(buf, fmt(L"#{:06X}"), color & 0xFFFFFF);
+		fmt::format_to(buf, fmt(L"#{:06X}"), color & 0xFFFFFF);
 	}
 
 	constexpr uint32_t SwapColorEndian(uint32_t color)

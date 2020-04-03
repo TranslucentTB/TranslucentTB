@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "util/colors.hpp"
+#include "util/to_string_view.hpp"
 
 using namespace testing;
 
@@ -31,22 +32,30 @@ TEST(Util_ColorFromString, ThrowsWhenColorIsNot3Or6Characters)
 
 TEST(Util_StringFromColor, ReturnsCorrectString)
 {
-	ASSERT_EQ(Util::StringFromColor(0xC0FFEE), L"#C0FFEE");
+	fmt::wmemory_buffer buf;
+	Util::StringFromColor(buf, 0xC0FFEE);
+	ASSERT_EQ(Util::ToStringView(buf), L"#C0FFEE");
 }
 
 TEST(Util_StringFromColor, IgnoresFirstByte)
 {
-	ASSERT_EQ(Util::StringFromColor(0xDEADBEEF), L"#ADBEEF");
+	fmt::wmemory_buffer buf;
+	Util::StringFromColor(buf, 0xDEADBEEF);
+	ASSERT_EQ(Util::ToStringView(buf), L"#ADBEEF");
 }
 
 TEST(Util_StringFromColor, PadsLeftRight)
 {
-	ASSERT_EQ(Util::StringFromColor(0x00FF00), L"#00FF00");
+	fmt::wmemory_buffer buf;
+	Util::StringFromColor(buf, 0x00FF00);
+	ASSERT_EQ(Util::ToStringView(buf), L"#00FF00");
 }
 
 TEST(Util_StringFromColor, BlackColor)
 {
-	ASSERT_EQ(Util::StringFromColor(0x000000), L"#000000");
+	fmt::wmemory_buffer buf;
+	Util::StringFromColor(buf, 0x000000);
+	ASSERT_EQ(Util::ToStringView(buf), L"#000000");
 }
 
 TEST(Util_SwapColorEndian, SwapsEndianness)

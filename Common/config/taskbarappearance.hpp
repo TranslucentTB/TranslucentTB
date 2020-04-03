@@ -22,7 +22,7 @@ struct TaskbarAppearance {
 
 		RapidJSONHelper::WriteKey(writer, COLOR_KEY);
 		fmt::wmemory_buffer buf;
-		Util::StringFromColor(Util::SwapColorEndian(Color));
+		Util::StringFromColor(buf, Util::SwapColorEndian(Color));
 		RapidJSONHelper::WriteString(writer, Util::ToStringView(buf));
 
 		RapidJSONHelper::WriteKey(writer, OPACITY_KEY);
