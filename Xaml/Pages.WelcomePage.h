@@ -13,12 +13,12 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void OpenDiscordLink(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
 		void EditConfigFile(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
 
-		event_token DiscordJoinRequested(const Windows::Foundation::EventHandler<hstring>& handler);
+		event_token DiscordJoinRequested(const DiscordJoinDelegate &handler);
 		void DiscordJoinRequested(const winrt::event_token& token) noexcept;
 
 	private:
 		hstring m_ConfigFile;
-		event<Windows::Foundation::EventHandler<hstring>> m_DiscordJoinRequestedHandler;
+		event<DiscordJoinDelegate> m_DiscordJoinRequestedHandler;
 	};
 }
 

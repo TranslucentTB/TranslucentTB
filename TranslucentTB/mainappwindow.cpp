@@ -519,7 +519,7 @@ MainAppWindow::MainAppWindow(HINSTANCE hInstance) :
 		// Run first time experience.
 		//Config{ }.Save(m_ConfigPath);
 		const auto window = CreateXamlWindow<winrt::TranslucentTB::Xaml::Pages::WelcomePage>(m_ConfigPath.native());
-		window->content().DiscordJoinRequested([this](...)
+		window->content().DiscordJoinRequested([this]
 		{
 			OpenDiscordServer();
 		});

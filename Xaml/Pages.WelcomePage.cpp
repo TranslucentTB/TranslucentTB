@@ -36,7 +36,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 	void WelcomePage::OpenDiscordLink(const IInspectable &, const RoutedEventArgs &)
 	{
-		m_DiscordJoinRequestedHandler(*this, L"w95DGTK");
+		m_DiscordJoinRequestedHandler();
 	}
 
 	void WelcomePage::EditConfigFile(const IInspectable &, const RoutedEventArgs &)
@@ -44,7 +44,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		HresultVerify(win32::EditFile(std::wstring_view(m_ConfigFile)), spdlog::level::err, L"Failed to open text editor");
 	}
 
-	event_token WelcomePage::DiscordJoinRequested(const Windows::Foundation::EventHandler<hstring> &handler)
+	event_token WelcomePage::DiscordJoinRequested(const DiscordJoinDelegate &handler)
 	{
 		return m_DiscordJoinRequestedHandler.add(handler);
 	}
