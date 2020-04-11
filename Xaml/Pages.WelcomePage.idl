@@ -6,5 +6,7 @@ namespace TranslucentTB.Xaml.Pages
 	runtimeclass WelcomePage : FramelessPage
 	{
 		WelcomePage(String configFile);
+
+		event Windows.Foundation.EventHandler<String> DiscordJoinRequested;
 	}
 }

@@ -100,7 +100,7 @@ wil::unique_handle Error::CreateMessageBoxThread(const fmt::wmemory_buffer &buf,
 	info->title = title;
 	info->type = type;
 
-	errno_t err = wmemcpy_s(info->body, buf.size() + 1, buf.data(), buf.size());
+	const errno_t err = wmemcpy_s(info->body, buf.size() + 1, buf.data(), buf.size());
 	if (err != 0)
 	{
 		ErrnoTHandle(err, spdlog::level::trace, L"Failed to copy message box body");

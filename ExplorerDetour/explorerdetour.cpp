@@ -18,10 +18,18 @@ BOOL WINAPI ExplorerDetour::SetWindowCompositionAttributeDetour(HWND hWnd, const
 	{
 		if (const auto worker = Window::Find(WORKER_WINDOW, WORKER_WINDOW))
 		{
+#ifndef _DEBUG
 			if (worker.send_message(s_RequestAttribute, 0, reinterpret_cast<LPARAM>(hWnd)))
 			{
 				return true;
 			}
+#else
+			// avoid freezing Explorer in debug mode
+			if (DWORD_PTR result; SendMessageTimeout(worker, s_RequestAttribute, 0, reinterpret_cast<LPARAM>(hWnd), SMTO_ABORTIFHUNG, 50, &result) && result)
+			{
+				return true;
+			}
+#endif
 		}
 	}
 

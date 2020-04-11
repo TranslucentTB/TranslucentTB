@@ -36,12 +36,21 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 	void WelcomePage::OpenDiscordLink(const IInspectable &, const RoutedEventArgs &)
 	{
-		// TODO: try directly opening an installed discord client?
-		HresultVerify(win32::OpenLink(L"https://discord.gg/w95DGTK"), spdlog::level::err, L"Failed to open browser");
+		m_DiscordJoinRequestedHandler(*this, L"w95DGTK");
 	}
 
 	void WelcomePage::EditConfigFile(const IInspectable &, const RoutedEventArgs &)
 	{
 		HresultVerify(win32::EditFile(std::wstring_view(m_ConfigFile)), spdlog::level::err, L"Failed to open text editor");
+	}
+
+	event_token WelcomePage::DiscordJoinRequested(const Windows::Foundation::EventHandler<hstring> &handler)
+	{
+		return m_DiscordJoinRequestedHandler.add(handler);
+	}
+
+	void WelcomePage::DiscordJoinRequested(const winrt::event_token &token) noexcept
+	{
+		m_DiscordJoinRequestedHandler.remove(token);
 	}
 }

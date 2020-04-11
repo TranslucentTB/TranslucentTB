@@ -18,12 +18,7 @@
 #include "util/strings.hpp"
 #include "win32.hpp"
 
-enum class CenteringStrategy {
-	Mouse,
-	Monitor
-};
 
-// TODO: base xaml page host to avoid lots of template duplication
 template<typename T>
 class XamlPageHost : public MessageWindow {
 private:
@@ -64,61 +59,6 @@ private:
 	inline static float GetDpiScale(HMONITOR mon)
 	{
 		return GetDpi(mon) / static_cast<float>(USER_DEFAULT_SCREEN_DPI);
-	}
-
-	inline static RECT CenterRectOnMouse(LONG width, LONG height, const RECT &workArea, POINT mouse)
-	{
-		RECT temp;
-		temp.left = mouse.x - (width / 2);
-		temp.right = temp.left + width;
-
-		temp.top = mouse.y - (height / 2);
-		temp.bottom = temp.top + height;
-
-		if (win32::RectFitsInRect(workArea, temp))
-		{
-			return temp;
-		}
-
-		const bool rightDoesntFits = temp.right > workArea.right;
-		const bool leftDoesntFits = temp.left < workArea.left;
-		const bool bottomDoesntFits = temp.bottom > workArea.bottom;
-		const bool topDoesntFits = temp.top < workArea.top;
-
-		if ((rightDoesntFits && leftDoesntFits) || (bottomDoesntFits && topDoesntFits))
-		{
-			// Doesn't fits in the monitor work area (lol wat)
-			// TODO: throwing might not be a good idea here
-			throw winrt::hresult_out_of_bounds();
-		}
-
-		// Offset the rect so that it is completely in the work area
-		int x_offset = 0;
-		if (rightDoesntFits)
-		{
-			x_offset = workArea.right - temp.right; // Negative offset
-		}
-		else if (leftDoesntFits)
-		{
-			x_offset = workArea.left - temp.left;
-		}
-
-		int y_offset = 0;
-		if (bottomDoesntFits)
-		{
-			y_offset = workArea.bottom - temp.bottom; // Negative offset
-		}
-		else if (topDoesntFits)
-		{
-			y_offset = workArea.top - temp.top;
-		}
-
-		if (!OffsetRect(&temp, x_offset, y_offset))
-		{
-			throw winrt::hresult_error(E_FAIL);
-		}
-
-		return temp;
 	}
 
 	inline static RECT CenterRectOnMonitor(LONG width, LONG height, const RECT &workArea)
@@ -181,7 +121,7 @@ private:
 		return MessageWindow::MessageHandler(uMsg, wParam, lParam);
 	}
 
-	inline RECT CenterWindow(CenteringStrategy strategy, LONG width, LONG height, HMONITOR mon, POINT mouse)
+	inline RECT CenterWindow(LONG width, LONG height, HMONITOR mon, POINT mouse)
 	{
 		MONITORINFO mi = { sizeof(mi) };
 		if (!GetMonitorInfo(mon, &mi))
@@ -189,17 +129,10 @@ private:
 			throw winrt::hresult_error(E_FAIL);
 		}
 
-		if (strategy == CenteringStrategy::Mouse)
-		{
-			return CenterRectOnMouse(width, height, mi.rcWork, mouse);
-		}
-		else
-		{
-			return CenterRectOnMonitor(width, height, mi.rcWork);
-		}
+		return CenterRectOnMonitor(width, height, mi.rcWork);
 	}
 
-	RECT CalculateWindowPosition(CenteringStrategy strategy)
+	RECT CalculateWindowPosition()
 	{
 		m_content.Measure(winrt::Windows::UI::Xaml::SizeHelper::FromDimensions(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()));
 
@@ -213,7 +146,7 @@ private:
 		size.Height *= scale;
 		size.Width *= scale;
 
-		return CenterWindow(strategy, static_cast<LONG>(std::round(size.Width)), static_cast<LONG>(std::round(size.Height)), mon, point);
+		return CenterWindow(static_cast<LONG>(std::round(size.Width)), static_cast<LONG>(std::round(size.Height)), mon, point);
 	}
 
 	void PositionWindow(const RECT &rect, bool showWindow = false)
@@ -226,12 +159,12 @@ public:
 	// TODO: support multiple instances
 	// todo: movable window
 	template<typename... Args>
-	inline XamlPageHost(HINSTANCE hInst, CenteringStrategy strategy, Args&&... args) :
+	inline XamlPageHost(HINSTANCE hInst, Args&&... args) :
 		MessageWindow(GetClassName(), { }, hInst, WS_OVERLAPPED),
 		// Don't construct the XAML stuff already.
 		m_content(nullptr)
 	{
-		auto nativeSource = m_source.as<IDesktopWindowXamlSourceNative2>();
+		auto nativeSource = m_source.as<IDesktopWindowXamlSourceNative>();
 		winrt::check_hresult(nativeSource->AttachToWindow(m_WindowHandle));
 
 		winrt::check_hresult(nativeSource->get_WindowHandle(m_interopWnd.put()));
@@ -257,15 +190,20 @@ public:
 		const MARGINS margins = { 1 };
 		DwmExtendFrameIntoClientArea(m_WindowHandle, &margins);
 
-		PositionWindow(CalculateWindowPosition(strategy), true);
+		PositionWindow(CalculateWindowPosition(), true);
 
 		UpdateWindow(m_WindowHandle);
 		SetFocus(m_WindowHandle);
 	}
 
-	inline T *operator ->()
+	inline const winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource &source() const noexcept
 	{
-		return &m_content;
+		return m_source;
+	}
+
+	inline T &content() noexcept
+	{
+		return m_content;
 	}
 
 	inline ~XamlPageHost()

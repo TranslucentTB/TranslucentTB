@@ -1,6 +1,8 @@
 #include "mainappwindow.hpp"
+#include <winrt/TranslucentTB.Xaml.Pages.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/Windows.Storage.h>
 
 #include "taskdialogs/aboutdialog.hpp"
 #include "constants.hpp"
@@ -285,7 +287,7 @@ void MainAppWindow::ClickHandler(unsigned int id)
 	}
 }
 
-TaskbarAppearance &MainAppWindow::AppearanceForGroup(uint16_t group)
+TaskbarAppearance &MainAppWindow::AppearanceForGroup(uint16_t group) noexcept
 {
 	switch (group)
 	{
@@ -417,6 +419,58 @@ void MainAppWindow::ConfigurationReloaded()
 	AppearanceChanged();
 }
 
+std::filesystem::path MainAppWindow::GetConfigPath()
+{
+	std::filesystem::path config_folder;
+	if (m_HasPackageIdentity)
+	{
+		try
+		{
+			config_folder = std::wstring_view(winrt::Windows::Storage::ApplicationData::Current().RoamingFolder().Path());
+		}
+		HresultErrorCatch(spdlog::level::critical, L"Getting application folder paths failed!");
+	}
+	else
+	{
+		const auto [loc, hr] = win32::GetExeLocation();
+		HresultVerify(hr, spdlog::level::critical, L"Failed to determine executable location!");
+		config_folder = loc.parent_path();
+	}
+
+	config_folder /= CONFIG_FILE;
+	return config_folder;
+}
+
+std::unique_ptr<discord::Core> MainAppWindow::CreateDiscordCore()
+{
+	discord::Core *core{};
+	// https://github.com/discord/gamesdk-and-dispatch/issues/46
+	const auto result = discord::Core::Create(698033470781521940, static_cast<uint64_t>(discord::CreateFlags::NoRequireDiscord), &core);
+	if (!core)
+	{
+		// todo
+	}
+
+	return std::unique_ptr<discord::Core> { core };
+}
+
+void MainAppWindow::OpenDiscordServer()
+{
+	if (!m_DiscordCore)
+	{
+		m_DiscordCore = CreateDiscordCore();
+	}
+
+	if (m_DiscordCore)
+	{
+		m_DiscordCore->OverlayManager().OpenGuildInvite("discord-linux", [](discord::Result result)
+		{
+			// todo;
+		});
+	}
+	// todo: fallback
+}
+
 void MainAppWindow::WatcherCallback(void *context, DWORD, std::wstring_view fileName)
 {
 	if (fileName.empty() || win32::IsSameFilename(fileName, CONFIG_FILE))
@@ -427,15 +481,16 @@ void MainAppWindow::WatcherCallback(void *context, DWORD, std::wstring_view file
 	}
 }
 
-MainAppWindow::MainAppWindow(std::filesystem::path configPath, bool hasPackageIdentity, HINSTANCE hInstance) :
+MainAppWindow::MainAppWindow(HINSTANCE hInstance) :
 	TrayContextMenu(TRAY_GUID, TRAY_WINDOW, APP_NAME, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance),
-	m_ConfigPath(std::move(configPath)),
+	m_HasPackageIdentity(UWP::HasPackageIdentity()),
+	m_ConfigPath(GetConfigPath()),
 	m_Config(Config::Load(m_ConfigPath)),
 	// (ab)use of comma operator to load verbosity as early as possible
 	m_Worker((VerbosityChanged(), m_Config), hInstance),
 	m_Watcher(m_ConfigPath.parent_path(), false, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE, WatcherCallback, this),
-	m_HasPackageIdentity(hasPackageIdentity),
-	m_StartupTask(nullptr)
+	m_StartupTask(nullptr),
+	m_App(nullptr)
 {
 	if (m_HasPackageIdentity)
 	{
@@ -454,8 +509,22 @@ MainAppWindow::MainAppWindow(std::filesystem::path configPath, bool hasPackageId
 		}
 	}
 
-	// Shows the tray icon if not disabled
-	TrayIconChanged();
+	if (std::filesystem::exists(m_ConfigPath))
+	{
+		// Shows the tray icon if not disabled.
+		TrayIconChanged();
+	}
+	//else
+	{
+		// Run first time experience.
+		//Config{ }.Save(m_ConfigPath);
+		const auto window = CreateXamlWindow<winrt::TranslucentTB::Xaml::Pages::WelcomePage>(m_ConfigPath.native());
+		window->content().DiscordJoinRequested([this](...)
+		{
+			OpenDiscordServer();
+		});
+		// todo
+	}
 }
 
 WPARAM MainAppWindow::Run()
@@ -465,6 +534,16 @@ WPARAM MainAppWindow::Run()
 		switch (MsgWaitForMultipleObjectsEx(0, nullptr, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE | MWMO_INPUTAVAILABLE))
 		{
 		case WAIT_OBJECT_0:
+			if (m_DiscordCore)
+			{
+				const auto result = m_DiscordCore->RunCallbacks();
+				if (result != discord::Result::Ok)
+				{
+					m_DiscordCore = nullptr;
+					// todo: log
+				}
+			}
+
 			// TODO: pretranslate
 			for (MSG msg; PeekMessage(&msg, 0, 0, 0, PM_REMOVE);)
 			{
@@ -484,13 +563,14 @@ WPARAM MainAppWindow::Run()
 
 		case WAIT_FAILED:
 			LastErrorHandle(spdlog::level::critical, L"Failed to enter alertable wait state!");
+
 		default:
 			MessagePrint(spdlog::level::critical, L"MsgWaitForMultipleObjectsEx returned an unexpected value!");
 		}
 	}
 }
 
-void MainAppWindow::CloseRemote()
+void MainAppWindow::CloseRemote() noexcept
 {
 	Window::Find(TRAY_WINDOW, APP_NAME).send_message(WM_CLOSE);
 }

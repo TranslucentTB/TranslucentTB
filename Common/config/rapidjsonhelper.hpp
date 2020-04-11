@@ -8,8 +8,6 @@
 #include <string>
 #include <string_view>
 
-#include "../util/map.hpp"
-
 namespace RapidJSONHelper {
 	struct DeserializationError {
 		const std::wstring what;
@@ -90,7 +88,7 @@ namespace RapidJSONHelper {
 		if (member >= 0 && member <= size - 1)
 		{
 			WriteKey(writer, key);
-			WriteString(arr[member]);
+			WriteString(writer, arr[member]);
 		}
 	}
 

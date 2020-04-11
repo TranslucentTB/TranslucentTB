@@ -10,6 +10,7 @@
 #include "rapidjsonhelper.hpp"
 #include "../undoc/user32.hpp"
 #include "../util/colors.hpp"
+#include "../util/to_string_view.hpp"
 
 struct TaskbarAppearance {
 	ACCENT_STATE Accent;
