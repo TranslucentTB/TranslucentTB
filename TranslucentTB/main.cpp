@@ -27,6 +27,7 @@
 #include "ttberror.hpp"
 #include "ttblog.hpp"
 #include "util.hpp"
+#include "localization.hpp"
 #ifdef STORE
 #include "uwp.hpp"
 #endif
@@ -554,8 +555,10 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 	if (!Config::NO_TRAY)
 	{
-		static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYICON), MAKEINTRESOURCE(IDR_POPUP_MENU), hInstance);
+		static Localization locale = GetDefaultLocalization();
 
+		static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYICON), MAKEINTRESOURCE(IDR_POPUP_MENU), locale, hInstance);
+		
 		tray.BindColor(IDM_REGULAR_COLOR, Config::REGULAR_APPEARANCE.COLOR);
 		tray.BindEnum(Config::REGULAR_APPEARANCE.ACCENT, REGULAR_BUTTOM_MAP);
 
@@ -663,7 +666,7 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 		tray.RegisterCustomRefresh(RefreshMenu);
 
-		tray.ChangeItemText(tray.GetHMenu(), IDM_REGULAR, L"默认");
+		
 	}
 }
 

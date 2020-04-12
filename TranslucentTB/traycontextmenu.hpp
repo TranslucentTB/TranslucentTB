@@ -7,6 +7,7 @@
 
 #include "trayicon.hpp"
 #include "util.hpp"
+#include "localization.hpp"
 #include "win32.hpp"
 
 class TrayContextMenu : public TrayIcon {
@@ -21,13 +22,17 @@ private:
 	MessageWindow::CALLBACKCOOKIE m_Cookie;
 
 	std::vector<std::function<void()>> m_RefreshFunctions;
+	const Localization& locale;
+
+private:
+	void ApplyLocalization();
 
 public:
 	inline HMENU GetHMenu()
 	{
 		return m_Menu;
 	}
-	TrayContextMenu(MessageWindow &window, wchar_t *iconResource, wchar_t *menuResource, const HINSTANCE &hInstance = GetModuleHandle(NULL));
+	TrayContextMenu(MessageWindow &window, wchar_t *iconResource, wchar_t *menuResource,const Localization& locale, const HINSTANCE &hInstance = GetModuleHandle(NULL));
 
 	using MENUCALLBACKCOOKIE = unsigned long long;
 

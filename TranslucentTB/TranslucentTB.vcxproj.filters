@@ -17,6 +17,9 @@
       <UniqueIdentifier>{8a3034e1-4c07-4ca8-a036-8cfc161a562d}</UniqueIdentifier>
       <Extensions>cfg;csv</Extensions>
     </Filter>
+    <Filter Include="Resource Files\Localizations">
+      <UniqueIdentifier>{6be31373-5d87-4128-8d26-7fe4ea14b2eb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -67,11 +70,11 @@
     <ClCompile Include="hooks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="localization.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="win32.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -141,6 +144,15 @@
     <ClInclude Include="hooks.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="locales.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="localization.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TranslucentTB.rc2">
@@ -156,6 +168,12 @@
     </None>
     <None Include="..\LICENSE.md" />
     <None Include="..\Readme.md" />
+    <None Include="localizations\en-US.locale">
+      <Filter>Resource Files\Localizations</Filter>
+    </None>
+    <None Include="localizations\zh-CN.locale">
+      <Filter>Resource Files\Localizations</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="app.manifest">

@@ -35,6 +35,7 @@
     <ClCompile Include="eventhook.cpp" />
     <ClCompile Include="findwindowiterator.cpp" />
     <ClCompile Include="hooks.cpp" />
+    <ClCompile Include="localization.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="messagewindow.cpp" />
     <ClCompile Include="traycontextmenu.cpp" />
@@ -58,6 +59,8 @@
     <ClInclude Include="eventhook.hpp" />
     <ClInclude Include="findwindowiterator.hpp" />
     <ClInclude Include="hooks.hpp" />
+    <ClInclude Include="locales.h" />
+    <ClInclude Include="localization.hpp" />
     <ClInclude Include="messagewindow.hpp" />
     <ClInclude Include="registrykey.hpp" />
     <ClInclude Include="swcadata.hpp" />
@@ -81,6 +84,8 @@
     <None Include="..\Readme.md" />
     <None Include="config.cfg" />
     <None Include="dynamic-ws-exclude.csv" />
+    <None Include="localizations\en-US.locale" />
+    <None Include="localizations\zh-CN.locale" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CPicker\CPicker.vcxproj">

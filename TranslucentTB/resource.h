@@ -59,3 +59,12 @@
 #define IDM_EXIT                        40055
 
 #define IDM_REGULAR						40056
+#define IDM_MAXIMISED_WINDOW			40057
+#define IDM_START_MENU_OPENED			40058
+#define IDM_CORTANA_OPENED				40059
+#define IDM_SHOW_AERO_PEEK				40060
+#define IDM_ADVANCED					40061
+
+
+#define IDR_FILE_LOCALE_EN_US			50001
+#define IDR_FILE_LOCALE_ZH_CN			50002

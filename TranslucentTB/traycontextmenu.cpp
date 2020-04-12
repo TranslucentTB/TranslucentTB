@@ -7,7 +7,7 @@ long TrayContextMenu::TrayCallback(WPARAM, LPARAM lParam)
 {
 	if (lParam == WM_LBUTTONUP || lParam == WM_RBUTTONUP)
 	{
-		for (const auto &refreshFunction : m_RefreshFunctions)
+		for (const auto& refreshFunction : m_RefreshFunctions)
 		{
 			refreshFunction();
 		}
@@ -31,10 +31,10 @@ long TrayContextMenu::TrayCallback(WPARAM, LPARAM lParam)
 			return 0;
 		}
 
-		const auto &callbackVector = m_MenuCallbackMap[item];
+		const auto& callbackVector = m_MenuCallbackMap[item];
 		if (callbackVector.size() > 0)
 		{
-			for (const auto &[_, callback] : callbackVector)
+			for (const auto& [_, callback] : callbackVector)
 			{
 				callback();
 			}
@@ -43,8 +43,18 @@ long TrayContextMenu::TrayCallback(WPARAM, LPARAM lParam)
 	return 0;
 }
 
-TrayContextMenu::TrayContextMenu(MessageWindow &window, wchar_t *iconResource, wchar_t *menuResource, const HINSTANCE &hInstance) :
-	TrayIcon(window, iconResource, 0, hInstance)
+void TrayContextMenu::ApplyLocalization()
+{
+	using namespace std;
+	for (const auto& item : LOCALE_MATCH_MAP)
+	{
+		this->ChangeItemText(m_Menu, item.first, wstring(locale[item.second]));
+	}
+}
+
+TrayContextMenu::TrayContextMenu(MessageWindow& window, wchar_t* iconResource, wchar_t* menuResource, const Localization& locale, const HINSTANCE& hInstance) :
+	TrayIcon(window, iconResource, 0, hInstance),
+	locale(locale)
 {
 	m_Menu = LoadMenu(hInstance, menuResource);
 	if (!m_Menu)
@@ -53,6 +63,8 @@ TrayContextMenu::TrayContextMenu(MessageWindow &window, wchar_t *iconResource, w
 	}
 
 	m_Cookie = RegisterTrayCallback(std::bind(&TrayContextMenu::TrayCallback, this, std::placeholders::_1, std::placeholders::_2));
+
+	ApplyLocalization();
 }
 
 TrayContextMenu::~TrayContextMenu()
