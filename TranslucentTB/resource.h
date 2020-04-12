@@ -57,3 +57,5 @@
 #define IDM_AUTOSTART                   40053
 #define IDM_TIPS                        40054
 #define IDM_EXIT                        40055
+
+#define IDM_REGULAR						40056

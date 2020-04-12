@@ -29,7 +29,7 @@ IDR_POPUP_MENU MENUEX
 BEGIN
     POPUP ""
     BEGIN
-        POPUP "Regular"
+        POPUP "Regular",                            IDM_REGULAR
         BEGIN
             MENUITEM "Accent Color",                IDM_REGULAR_COLOR
             MENUITEM "",                            0, MFT_SEPARATOR

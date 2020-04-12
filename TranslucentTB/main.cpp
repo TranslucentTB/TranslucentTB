@@ -662,6 +662,8 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 
 		tray.RegisterCustomRefresh(RefreshMenu);
+
+		tray.ChangeItemText(tray.GetHMenu(), IDM_REGULAR, L"默认");
 	}
 }
 
