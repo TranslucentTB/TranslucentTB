@@ -46,7 +46,7 @@ BEGIN
             MENUITEM "Blur",                        IDM_REGULAR_BLUR
             MENUITEM "Fluent",                      IDM_REGULAR_FLUENT
         END
-        POPUP "Maximised window"                    IDM_MAXIMISED_WINDOW
+        POPUP "Maximised window",                   IDM_MAXIMISED_WINDOW
         BEGIN
             MENUITEM "Enabled",                     IDM_MAXIMISED
             MENUITEM "Regular when peeking",        IDM_MAXIMISED_PEEK
@@ -58,7 +58,7 @@ BEGIN
             MENUITEM "Blur",                        IDM_MAXIMISED_BLUR
             MENUITEM "Fluent",                      IDM_MAXIMISED_FLUENT
         END
-        POPUP "Start Menu opened"                   IDM_START_MENU_OPENED
+        POPUP "Start Menu opened",                  IDM_START_MENU_OPENED
         BEGIN
             MENUITEM "Enabled",                     IDM_START
             MENUITEM "Accent Color",                IDM_START_COLOR
@@ -69,7 +69,7 @@ BEGIN
             MENUITEM "Blur",                        IDM_START_BLUR
             MENUITEM "Fluent",                      IDM_START_FLUENT
         END
-        POPUP "Cortana/Search opened"               IDM_CORTANA_OPENED
+        POPUP "Cortana/Search opened",              IDM_CORTANA_OPENED
         BEGIN
             MENUITEM "Enabled",                     IDM_CORTANA
             MENUITEM "Accent Color",                IDM_CORTANA_COLOR
@@ -92,7 +92,7 @@ BEGIN
             MENUITEM "Fluent",                      IDM_TIMELINE_FLUENT
         END
         MENUITEM "",                            0, MFT_SEPARATOR
-        POPUP "Show Aero Peek"                      IDM_SHOW_AERO_PEEK
+        POPUP "Show Aero Peek",                     IDM_SHOW_AERO_PEEK
         BEGIN
             MENUITEM "Always",                      IDM_PEEK_SHOW
             MENUITEM "Dynamic",                     IDM_PEEK_DYNAMIC
@@ -100,7 +100,7 @@ BEGIN
             MENUITEM "",                            0, MFT_SEPARATOR
             MENUITEM "Consider only main monitor",  IDM_PEEK_ONLY_MAIN
         END
-        POPUP "Advanced"                            IDM_ADVANCED
+        POPUP "Advanced",                           IDM_ADVANCED
         BEGIN
             MENUITEM "Open log file",               IDM_OPENLOG
             MENUITEM "Verbose logging",             IDM_VERBOSE

@@ -10,8 +10,10 @@ Localization GetDefaultLocalization()
 	LANGID lid = GetSystemDefaultLangID();
 	switch (lid)
 	{
+	case MAKELANGID(LANG_CHINESE,SUBLANG_CHINESE_SIMPLIFIED):
+		return Localization(IDR_FILE_LOCALE_ZH_CN);
 	default:
-		return Localization(/*IDR_FILE_LOCALE_EN_US*/0);
+		return Localization(IDR_FILE_LOCALE_EN_US);
 	}
 }
 

@@ -103,6 +103,8 @@ static const std::unordered_map<enum Config::PEEK, uint32_t> PEEK_BUTTON_MAP = {
 	{ Config::PEEK::Disabled,		IDM_PEEK_HIDE    }
 };
 
+static Localization GLOBAL_LOCALE = GetDefaultLocalization();
+
 #pragma endregion
 
 #pragma region That one function that does all the magic
@@ -315,17 +317,17 @@ void RefreshAutostartMenu(HMENU menu, const Autostart::StartupState &state)
 	switch (state)
 	{
 	case Autostart::StartupState::DisabledByUser:
-		autostart_text = L"Startup has been disabled in Task Manager";
+		autostart_text = GLOBAL_LOCALE[TRAY_MENU_STARTUP_HAS_BEEN_DISABLED_IN_TASK_MANAGER];
 		break;
 	case Autostart::StartupState::DisabledByPolicy:
-		autostart_text = L"Startup has been disabled in Group Policy";
+		autostart_text = GLOBAL_LOCALE[TRAY_MENU_STARTUP_HAS_BEEN_DISABLED_IN_GROUP_POLICY];
 		break;
 	case Autostart::StartupState::EnabledByPolicy:
-		autostart_text = L"Startup has been enabled in Group Policy";
+		autostart_text = GLOBAL_LOCALE[TRAY_MENU_STARTUP_HAS_BEEN_ENABLED_IN_GROUP_POLICY];
 		break;
 	case Autostart::StartupState::Enabled:
 	case Autostart::StartupState::Disabled:
-		autostart_text = L"Open at boot";
+		autostart_text = GLOBAL_LOCALE[TRAY_MENU_OPEN_AT_BOOT];
 	}
 	TrayContextMenu::ChangeItemText(menu, IDM_AUTOSTART, std::move(autostart_text));
 }
@@ -334,7 +336,7 @@ void RefreshMenu(HMENU menu)
 {
 	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, false, TrayContextMenu::ControlsEnabled);
 	TrayContextMenu::RefreshBool(IDM_AUTOSTART, menu, false, TrayContextMenu::Toggle);
-	TrayContextMenu::ChangeItemText(menu, IDM_AUTOSTART, L"Querying startup state...");
+	TrayContextMenu::ChangeItemText(menu, IDM_AUTOSTART, std::wstring(GLOBAL_LOCALE[TRAY_MENU_QUERYING_STARTUP_STATE]));
 	Autostart::GetStartupState().Completed([menu](auto info, ...)
 	{
 		RefreshAutostartMenu(menu, info.GetResults());
@@ -361,11 +363,11 @@ void RefreshMenu(HMENU menu)
 
 	const bool has_log = !Log::file().empty();
 	TrayContextMenu::RefreshBool(IDM_OPENLOG, menu, has_log, TrayContextMenu::ControlsEnabled);
-	TrayContextMenu::ChangeItemText(menu, IDM_OPENLOG, has_log
-		? L"Open log file"
+	TrayContextMenu::ChangeItemText(menu, IDM_OPENLOG, std::wstring(has_log
+		? GLOBAL_LOCALE[TRAY_MENU_OPEN_LOG_FILE]
 		: Log::init_done()
-			? L"Error when initializing log file"
-			: L"Nothing has been logged yet"
+			? GLOBAL_LOCALE[TRAY_MENU_ERROR_WHEN_INITIALIZING_LOG_FILE]
+			: GLOBAL_LOCALE[TRAY_MENU_NOTHING_HAS_BEEN_LOGGED_YET])
 	);
 
 	TrayContextMenu::RefreshBool(IDM_REGULAR_COLOR,   menu,
@@ -555,9 +557,9 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 	if (!Config::NO_TRAY)
 	{
-		static Localization locale = GetDefaultLocalization();
 
-		static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYICON), MAKEINTRESOURCE(IDR_POPUP_MENU), locale, hInstance);
+
+		static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYICON), MAKEINTRESOURCE(IDR_POPUP_MENU), GLOBAL_LOCALE, hInstance);
 		
 		tray.BindColor(IDM_REGULAR_COLOR, Config::REGULAR_APPEARANCE.COLOR);
 		tray.BindEnum(Config::REGULAR_APPEARANCE.ACCENT, REGULAR_BUTTOM_MAP);
