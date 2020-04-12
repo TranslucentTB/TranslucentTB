@@ -557,8 +557,6 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 	if (!Config::NO_TRAY)
 	{
-
-
 		static TrayContextMenu tray(window, MAKEINTRESOURCE(TRAYICON), MAKEINTRESOURCE(IDR_POPUP_MENU), GLOBAL_LOCALE, hInstance);
 		
 		tray.BindColor(IDM_REGULAR_COLOR, Config::REGULAR_APPEARANCE.COLOR);
@@ -667,8 +665,6 @@ void InitializeTray(const HINSTANCE &hInstance)
 
 
 		tray.RegisterCustomRefresh(RefreshMenu);
-
-		
 	}
 }
 
