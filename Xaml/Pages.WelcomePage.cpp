@@ -18,7 +18,7 @@ using namespace Windows::UI::Xaml;
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
-	WelcomePage::WelcomePage(hstring configFile) : m_ConfigFile(std::move(configFile))
+	WelcomePage::WelcomePage()
 	{
 		InitializeComponent();
 		Title(L"Welcome to " APP_NAME L"!");
@@ -41,7 +41,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 	void WelcomePage::EditConfigFile(const IInspectable &, const RoutedEventArgs &)
 	{
-		HresultVerify(win32::EditFile(std::wstring_view(m_ConfigFile)), spdlog::level::err, L"Failed to open text editor");
+		m_ConfigEditRequestedHandler();
 	}
 
 	event_token WelcomePage::DiscordJoinRequested(const DiscordJoinDelegate &handler)
@@ -52,5 +52,15 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	void WelcomePage::DiscordJoinRequested(const winrt::event_token &token) noexcept
 	{
 		m_DiscordJoinRequestedHandler.remove(token);
+	}
+
+	event_token WelcomePage::ConfigEditRequested(const ConfigEditDelegate &handler)
+	{
+		return m_ConfigEditRequestedHandler.add(handler);
+	}
+
+	void WelcomePage::ConfigEditRequested(const winrt::event_token &token) noexcept
+	{
+		m_ConfigEditRequestedHandler.remove(token);
 	}
 }

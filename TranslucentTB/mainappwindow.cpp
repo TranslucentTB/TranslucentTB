@@ -1,33 +1,10 @@
 #include "mainappwindow.hpp"
-#include <winrt/TranslucentTB.Xaml.Pages.h>
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.Foundation.Collections.h>
-#include <winrt/Windows.Storage.h>
 
 #include "taskdialogs/aboutdialog.hpp"
 #include "constants.hpp"
 #include "undoc/dynamicloader.hpp"
 #include "../ProgramLog/log.hpp"
 #include "../ProgramLog/error/win32.hpp"
-
-void MainAppWindow::LoadStartupTask() try
-{
-	using namespace winrt::Windows::Foundation;
-	using namespace winrt::Windows::ApplicationModel;
-	using Collections::IVectorView;
-	StartupTask::GetForCurrentPackageAsync().Completed([this](const IAsyncOperation<IVectorView<StartupTask>> &op, AsyncStatus)
-	{
-		try
-		{
-			auto result = op.GetResults().GetAt(0);
-
-			const auto lock = m_TaskLock.lock_exclusive();
-			m_StartupTask = std::move(result);
-		}
-		HresultErrorCatch(spdlog::level::warn, L"Failed to get first startup task.");
-	});
-}
-HresultErrorCatch(spdlog::level::warn, L"Failed to load package startup tasks.");
 
 LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -49,7 +26,7 @@ LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (wParam)
 		{
 			// The app can be closed anytime after processing this message. Save the settings.
-			Save();
+			m_Config.Save();
 		}
 
 		return 0;
@@ -61,24 +38,35 @@ LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void MainAppWindow::RefreshMenu()
 {
+	const auto &cfg = m_Config.GetConfig();
+
 	// TODO AppearanceMenuRefresh(ID_GROUP_DESKTOP, m_Config.DesktopAppearance, m_Config.UseRegularAppearanceWhenPeeking, false);
-	AppearanceMenuRefresh(ID_GROUP_VISIBLE, m_Config.VisibleWindowAppearance);
-	AppearanceMenuRefresh(ID_GROUP_MAXIMISED, m_Config.MaximisedWindowAppearance);
-	AppearanceMenuRefresh(ID_GROUP_START, m_Config.StartOpenedAppearance);
-	AppearanceMenuRefresh(ID_GROUP_CORTANA, m_Config.CortanaOpenedAppearance);
-	AppearanceMenuRefresh(ID_GROUP_TIMELINE, m_Config.TimelineOpenedAppearance);
+	AppearanceMenuRefresh(ID_GROUP_VISIBLE, cfg.VisibleWindowAppearance);
+	AppearanceMenuRefresh(ID_GROUP_MAXIMISED, cfg.MaximisedWindowAppearance);
+	AppearanceMenuRefresh(ID_GROUP_START, cfg.StartOpenedAppearance);
+	AppearanceMenuRefresh(ID_GROUP_CORTANA, cfg.CortanaOpenedAppearance);
+	AppearanceMenuRefresh(ID_GROUP_TIMELINE, cfg.TimelineOpenedAppearance);
 
-	LogMenuRefresh();
+	const auto [ok, logsEnabled, hasFile, logText, levelButton] = GetLogMenu();
+	EnableItem(ID_SUBMENU_LOG, ok);
+	CheckItem(ID_SUBMENU_LOG, logsEnabled);
+	EnableItem(ID_OPENLOG, hasFile);
+	SetText(ID_OPENLOG, logText);
+	CheckRadio(ID_LOG_TRACE, ID_LOG_OFF, levelButton);
 
-	CheckItem(ID_DISABLESAVING, m_Config.DisableSaving);
+	CheckItem(ID_DISABLESAVING, cfg.DisableSaving);
 
-	if (m_HasPackageIdentity)
+	if (m_Startup)
 	{
-		AutostartMenuRefresh();
+		const auto [userModifiable, enabled, autostartText] = GetAutostartMenu();
+
+		CheckItem(ID_AUTOSTART, enabled);
+		EnableItem(ID_AUTOSTART, userModifiable);
+		SetText(ID_AUTOSTART, autostartText);
 	}
 }
 
-void MainAppWindow::AppearanceMenuRefresh(uint16_t group, TaskbarAppearance &appearance, bool &b, bool controlsEnabled)
+void MainAppWindow::AppearanceMenuRefresh(uint16_t group, const TaskbarAppearance &appearance, bool b, bool controlsEnabled)
 {
 	CheckItem(ID_TYPE_ACTIONS + group + ID_OFFSET_ENABLED, b);
 
@@ -99,109 +87,65 @@ void MainAppWindow::AppearanceMenuRefresh(uint16_t group, TaskbarAppearance &app
 	);
 }
 
-void MainAppWindow::LogMenuRefresh()
+std::tuple<bool, bool, bool, uint16_t, unsigned int> MainAppWindow::GetLogMenu()
 {
-	bool ok = false;
-	bool logsEnabled = false;
-	bool hasFile = false;
-	uint16_t text = IDS_OPENLOG_ERROR;
-	unsigned int levelButton = 0;
-
-	if (const auto sink = Log::GetSink())
+	const auto sink = Log::GetSink();
+	if (!sink)
 	{
-		const auto level = sink->level();
-
-		levelButton = level + ID_RADIOS_LOG;
-		hasFile = sink->opened();
-
-		if (hasFile)
-		{
-			ok = true;
-			logsEnabled = level != spdlog::level::off;
-			text = IDS_OPENLOG_NORMAL;
-		}
-		else if (!hasFile && !sink->tried())
-		{
-			ok = true;
-			logsEnabled = level != spdlog::level::off;
-			text = IDS_OPENLOG_EMPTY;
-		}
+		return LOG_ERROR;
 	}
 
-	EnableItem(ID_SUBMENU_LOG, ok);
-	CheckItem(ID_SUBMENU_LOG, logsEnabled);
-	EnableItem(ID_OPENLOG, hasFile);
-	SetText(ID_OPENLOG, text);
-	CheckRadio(ID_LOG_TRACE, ID_LOG_OFF, levelButton);
-}
-
-void MainAppWindow::AutostartMenuRefresh()
-{
-	bool userModifiable = false;
-	bool enabled = false;
-	uint16_t text = IDS_AUTOSTART_NORMAL;
-
-	if (m_HasPackageIdentity)
+	const bool hasFile = sink->opened();
+	if (hasFile)
 	{
-		try
-		{
-			const auto guard = m_TaskLock.lock_shared();
-			if (m_StartupTask)
-			{
-				switch (m_StartupTask.State())
-				{
-					using winrt::Windows::ApplicationModel::StartupTaskState;
-
-				case StartupTaskState::Disabled:
-					userModifiable = true;
-					break;
-
-				case StartupTaskState::DisabledByPolicy:
-					text = IDS_AUTOSTART_DISABLED_GPEDIT;
-					break;
-
-				case StartupTaskState::DisabledByUser:
-					text = IDS_AUTOSTART_DISABLED_TASKMGR;
-					break;
-
-				case StartupTaskState::Enabled:
-					userModifiable = true;
-					enabled = true;
-					break;
-
-				case StartupTaskState::EnabledByPolicy:
-					enabled = true;
-					text = IDS_AUTOSTART_ENABLED_GPEDIT;
-					break;
-
-				default:
-					text = IDS_AUTOSTART_UNKNOWN;
-					break;
-				}
-			}
-			else
-			{
-				text = IDS_AUTOSTART_NULL;
-			}
-		}
-		catch (const winrt::hresult_error &err)
-		{
-			HresultErrorHandle(err, spdlog::level::warn, L"Failed to get startup task state");
-			text = IDS_AUTOSTART_ERROR;
-		}
+		return GetLogSuccess(hasFile, sink->level(), IDS_OPENLOG_NORMAL);
+	}
+	else if (!hasFile && !sink->tried())
+	{
+		return GetLogSuccess(hasFile, sink->level(), IDS_OPENLOG_EMPTY);
 	}
 	else
 	{
-		text = IDS_AUTOSTART_NO_PKG_IDENT;
+		return LOG_ERROR;
+	}
+}
+
+std::tuple<bool, bool, uint16_t> MainAppWindow::GetAutostartMenu()
+{
+	const auto state = m_Startup->GetState();
+	if (!state)
+	{
+		return { false, false, IDS_AUTOSTART_ERROR };
 	}
 
-	CheckItem(ID_AUTOSTART, enabled);
-	EnableItem(ID_AUTOSTART, userModifiable);
-	SetText(ID_AUTOSTART, text);
+	switch (*state)
+	{
+		using winrt::Windows::ApplicationModel::StartupTaskState;
+
+	case StartupTaskState::Disabled:
+		return { true, false, IDS_AUTOSTART_NORMAL };
+
+	case StartupTaskState::DisabledByPolicy:
+		return { false, false, IDS_AUTOSTART_DISABLED_GPEDIT };
+
+	case StartupTaskState::DisabledByUser:
+		return { false, false, IDS_AUTOSTART_DISABLED_TASKMGR };
+
+	case StartupTaskState::Enabled:
+		return { true, true, IDS_AUTOSTART_NORMAL };
+
+	case StartupTaskState::EnabledByPolicy:
+		return { false, true, IDS_AUTOSTART_ENABLED_GPEDIT };
+
+	default:
+		return { false, false, IDS_AUTOSTART_UNKNOWN };
+	}
 }
 
 void MainAppWindow::ClickHandler(unsigned int id)
 {
+	Config &cfg = m_Config.GetConfig();
+
 	const uint16_t group = id & ID_GROUP_MASK;
 
 	switch (id & ID_TYPE_MASK)
@@ -217,12 +161,12 @@ void MainAppWindow::ClickHandler(unsigned int id)
 		case ID_GROUP_START:
 		case ID_GROUP_CORTANA:
 		case ID_GROUP_TIMELINE:
-			AppearanceForGroup(group).Accent = static_cast<ACCENT_STATE>(offset);
-			AppearanceChanged();
+			AppearanceForGroup(cfg, group).Accent = static_cast<ACCENT_STATE>(offset);
+			m_Worker.ConfigurationChanged();
 			break;
 		case ID_GROUP_LOG:
-			m_Config.LogVerbosity = static_cast<spdlog::level::level_enum>(offset);
-			VerbosityChanged();
+			cfg.LogVerbosity = static_cast<spdlog::level::level_enum>(offset);
+			m_Config.UpdateVerbosity();
 			break;
 		}
 		break;
@@ -243,20 +187,19 @@ void MainAppWindow::ClickHandler(unsigned int id)
 			switch (id)
 			{
 			case ID_OPENLOG:
-				if (const auto sink = Log::GetSink(); sink && sink->opened())
-				{
-					HresultVerify(win32::EditFile(sink->file()), spdlog::level::err, L"Failed to open log file in Notepad");
-				}
+				HresultVerify(win32::EditFile(Log::GetSink()->file()), spdlog::level::err, L"Failed to open log file.");
 				break;
 			case ID_EDITSETTINGS:
-				HresultVerify(win32::EditFile(m_ConfigPath), spdlog::level::err, L"Failed to open configuration file.");
+				HresultVerify(win32::EditFile(m_Config.GetConfigPath()), spdlog::level::err, L"Failed to open configuration file.");
 				break;
 			case ID_RETURNTODEFAULTSETTINGS:
-				m_Config = { };
-				ConfigurationReloaded();
+				cfg = { };
+				m_Config.UpdateVerbosity();
+				UpdateTrayVisibility(!cfg.HideTray);
+				m_Worker.ConfigurationChanged();
 				break;
 			case ID_DISABLESAVING:
-				InvertBool(m_Config.DisableSaving);
+				cfg.DisableSaving = !cfg.DisableSaving;
 				break;
 			case ID_HIDETRAY:
 				HideTrayHandler();
@@ -268,7 +211,7 @@ void MainAppWindow::ClickHandler(unsigned int id)
 				m_Worker.ResetState();
 				break;
 			case ID_ABOUT:
-				AboutDialog(m_HasPackageIdentity, hinstance()).Run();
+				MessageBox(nullptr, L"TODO", L"TODO", 0); // TODO
 				break;
 			case ID_AUTOSTART:
 				AutostartMenuHandler();
@@ -287,16 +230,16 @@ void MainAppWindow::ClickHandler(unsigned int id)
 	}
 }
 
-TaskbarAppearance &MainAppWindow::AppearanceForGroup(uint16_t group) noexcept
+TaskbarAppearance &MainAppWindow::AppearanceForGroup(Config &cfg, uint16_t group) noexcept
 {
 	switch (group)
 	{
-	case ID_GROUP_DESKTOP: return m_Config.DesktopAppearance;
-	case ID_GROUP_VISIBLE: return m_Config.VisibleWindowAppearance;
-	case ID_GROUP_MAXIMISED: return m_Config.MaximisedWindowAppearance;
-	case ID_GROUP_START: return m_Config.StartOpenedAppearance;
-	case ID_GROUP_CORTANA: return m_Config.CortanaOpenedAppearance;
-	case ID_GROUP_TIMELINE: return m_Config.TimelineOpenedAppearance;
+	case ID_GROUP_DESKTOP: return cfg.DesktopAppearance;
+	case ID_GROUP_VISIBLE: return cfg.VisibleWindowAppearance;
+	case ID_GROUP_MAXIMISED: return cfg.MaximisedWindowAppearance;
+	case ID_GROUP_START: return cfg.StartOpenedAppearance;
+	case ID_GROUP_CORTANA: return cfg.CortanaOpenedAppearance;
+	case ID_GROUP_TIMELINE: return cfg.TimelineOpenedAppearance;
 	default:
 		assert(false);
 		__assume(0);
@@ -307,8 +250,8 @@ void MainAppWindow::AppearanceMenuHandler(uint8_t offset, TaskbarAppearance &app
 {
 	if (offset == ID_OFFSET_ENABLED)
 	{
-		InvertBool(b);
-		AppearanceChanged();
+		b = !b;
+		m_Worker.ConfigurationChanged();
 	}
 	else if (offset == ID_OFFSET_COLOR)
 	{
@@ -332,171 +275,46 @@ void MainAppWindow::HideTrayHandler()
 	}
 }
 
-void MainAppWindow::AutostartMenuHandler() try
+void MainAppWindow::AutostartMenuHandler()
 {
-	if (!m_HasPackageIdentity)
+	if (const auto state = m_Startup->GetState())
 	{
-		MessagePrint(spdlog::level::err, L"No package identity!");
-		return;
-	}
-
-	const auto lock = m_TaskLock.lock_shared();
-
-	if (!m_StartupTask)
-	{
-		MessagePrint(spdlog::level::err, L"Startup task is null.");
-		return;
-	}
-
-	switch (m_StartupTask.State())
-	{
-		using winrt::Windows::ApplicationModel::StartupTaskState;
-		using namespace winrt::Windows::Foundation;
-
-	case StartupTaskState::Disabled:
-		m_StartupTask.RequestEnableAsync().Completed([](const IAsyncOperation<StartupTaskState> &op, AsyncStatus)
+		switch (*state)
 		{
-			try
-			{
-				const auto result = op.GetResults();
-				if (result != StartupTaskState::Enabled &&
-					result != StartupTaskState::EnabledByPolicy)
-				{
-					MessagePrint(spdlog::level::err, L"A request to enable the startup task did not result in it being enabled.");
-				}
-			}
-			HresultErrorCatch(spdlog::level::err, L"Failed to enable startup task.")
-		});
-		break;
+			using winrt::Windows::ApplicationModel::StartupTaskState;
 
-	case StartupTaskState::Enabled:
-		m_StartupTask.Disable();
-		break;
+		case StartupTaskState::Disabled:
+			m_Startup->Enable();
+			break;
 
-	default:
-		MessagePrint(spdlog::level::err, L"Cannot change startup state because it is locked by external factors (for example Task Manager or Group Policy).");
-		break;
+		case StartupTaskState::Enabled:
+			m_Startup->Disable();
+			break;
+
+		default:
+			MessagePrint(spdlog::level::err, L"Cannot change startup state because it is locked by external factors (for example Task Manager or Group Policy).");
+			break;
+		}
 	}
 }
-HresultErrorCatch(spdlog::level::err, L"Changing startup task state failed!")
 
 void MainAppWindow::Exit(bool save)
 {
 	if (save)
 	{
-		Save();
+		m_Config.Save();
 	}
 
 	PostQuitMessage(0);
 }
 
-void MainAppWindow::VerbosityChanged()
-{
-	Log::SetLevel(m_Config.LogVerbosity);
-}
-
-void MainAppWindow::AppearanceChanged()
-{
-	m_Worker.ConfigurationChanged();
-}
-
-void MainAppWindow::TrayIconChanged()
-{
-	if (m_Config.HideTray)
-	{
-		Hide();
-	}
-	else
-	{
-		Show();
-	}
-}
-
-void MainAppWindow::ConfigurationReloaded()
-{
-	VerbosityChanged();
-	TrayIconChanged();
-	AppearanceChanged();
-}
-
-std::filesystem::path MainAppWindow::GetConfigPath()
-{
-	std::filesystem::path config_folder;
-	if (m_HasPackageIdentity)
-	{
-		try
-		{
-			config_folder = std::wstring_view(winrt::Windows::Storage::ApplicationData::Current().RoamingFolder().Path());
-		}
-		HresultErrorCatch(spdlog::level::critical, L"Getting application folder paths failed!");
-	}
-	else
-	{
-		const auto [loc, hr] = win32::GetExeLocation();
-		HresultVerify(hr, spdlog::level::critical, L"Failed to determine executable location!");
-		config_folder = loc.parent_path();
-	}
-
-	config_folder /= CONFIG_FILE;
-	return config_folder;
-}
-
-std::unique_ptr<discord::Core> MainAppWindow::CreateDiscordCore()
-{
-	discord::Core *core{};
-	// https://github.com/discord/gamesdk-and-dispatch/issues/46
-	const auto result = discord::Core::Create(698033470781521940, static_cast<uint64_t>(discord::CreateFlags::NoRequireDiscord), &core);
-	if (!core)
-	{
-		// todo
-	}
-
-	return std::unique_ptr<discord::Core> { core };
-}
-
-void MainAppWindow::OpenDiscordServer()
-{
-	if (!m_DiscordCore)
-	{
-		m_DiscordCore = CreateDiscordCore();
-	}
-
-	if (m_DiscordCore)
-	{
-		m_DiscordCore->OverlayManager().OpenGuildInvite("discord-linux", [](discord::Result result)
-		{
-			// todo;
-		});
-	}
-	// todo: fallback
-}
-
-void MainAppWindow::WatcherCallback(void *context, DWORD, std::wstring_view fileName)
-{
-	if (fileName.empty() || win32::IsSameFilename(fileName, CONFIG_FILE))
-	{
-		const auto that = static_cast<MainAppWindow *>(context);
-		that->m_Config = Config::Load(that->m_ConfigPath);
-		that->ConfigurationReloaded();
-	}
-}
-
-MainAppWindow::MainAppWindow(HINSTANCE hInstance) :
+MainAppWindow::MainAppWindow(std::optional<StartupManager> &startup, ConfigManager &config, TaskbarAttributeWorker &worker, HINSTANCE hInstance) :
 	TrayContextMenu(TRAY_GUID, TRAY_WINDOW, APP_NAME, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance),
-	m_HasPackageIdentity(UWP::HasPackageIdentity()),
-	m_ConfigPath(GetConfigPath()),
-	m_Config(Config::Load(m_ConfigPath)),
-	// (ab)use of comma operator to load verbosity as early as possible
-	m_Worker((VerbosityChanged(), m_Config), hInstance),
-	m_Watcher(m_ConfigPath.parent_path(), false, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE, WatcherCallback, this),
-	m_StartupTask(nullptr),
-	m_App(nullptr)
+	m_Startup(startup),
+	m_Config(config),
+	m_Worker(worker)
 {
-	if (m_HasPackageIdentity)
-	{
-		LoadStartupTask();
-	}
-	else
+	if (!m_Startup)
 	{
 		RemoveItem(ID_AUTOSTART);
 	}
@@ -509,64 +327,20 @@ MainAppWindow::MainAppWindow(HINSTANCE hInstance) :
 		}
 	}
 
-	if (std::filesystem::exists(m_ConfigPath))
-	{
-		// Shows the tray icon if not disabled.
-		TrayIconChanged();
-	}
-	//else
-	{
-		// Run first time experience.
-		//Config{ }.Save(m_ConfigPath);
-		const auto window = CreateXamlWindow<winrt::TranslucentTB::Xaml::Pages::WelcomePage>(m_ConfigPath.native());
-		window->content().DiscordJoinRequested([this]
-		{
-			OpenDiscordServer();
-		});
-		// todo
-	}
+
+	// Shows the tray icon if not disabled.
+	UpdateTrayVisibility(!config.GetConfig().HideTray);
 }
 
-WPARAM MainAppWindow::Run()
+void MainAppWindow::UpdateTrayVisibility(bool visible)
 {
-	while (true)
+	if (visible)
 	{
-		switch (MsgWaitForMultipleObjectsEx(0, nullptr, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE | MWMO_INPUTAVAILABLE))
-		{
-		case WAIT_OBJECT_0:
-			if (m_DiscordCore)
-			{
-				const auto result = m_DiscordCore->RunCallbacks();
-				if (result != discord::Result::Ok)
-				{
-					m_DiscordCore = nullptr;
-					// todo: log
-				}
-			}
-
-			// TODO: pretranslate
-			for (MSG msg; PeekMessage(&msg, 0, 0, 0, PM_REMOVE);)
-			{
-				if (msg.message != WM_QUIT)
-				{
-					TranslateMessage(&msg);
-					DispatchMessage(&msg);
-				}
-				else
-				{
-					return msg.wParam;
-				}
-			}
-			[[fallthrough]];
-		case WAIT_IO_COMPLETION:
-			continue;
-
-		case WAIT_FAILED:
-			LastErrorHandle(spdlog::level::critical, L"Failed to enter alertable wait state!");
-
-		default:
-			MessagePrint(spdlog::level::critical, L"MsgWaitForMultipleObjectsEx returned an unexpected value!");
-		}
+		Show();
+	}
+	else
+	{
+		Hide();
 	}
 }
 

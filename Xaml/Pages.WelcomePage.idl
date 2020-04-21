@@ -3,12 +3,14 @@ import "Pages.FramelessPage.idl";
 namespace TranslucentTB.Xaml.Pages
 {
 	delegate void DiscordJoinDelegate();
+	delegate void ConfigEditDelegate();
 
 	[default_interface]
 	runtimeclass WelcomePage : FramelessPage
 	{
-		WelcomePage(String configFile);
+		WelcomePage();
 
 		event DiscordJoinDelegate DiscordJoinRequested;
+		event ConfigEditDelegate ConfigEditRequested;
 	}
 }

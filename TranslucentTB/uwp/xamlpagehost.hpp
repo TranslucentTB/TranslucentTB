@@ -8,6 +8,7 @@
 #include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
 #include <windowsx.h>
 
+#include "winrt.hpp"
 #include "undefgetcurrenttime.h"
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.UI.Xaml.h>

@@ -126,4 +126,3 @@
 #define IDS_AUTOSTART_NULL                 60008
 #define IDS_AUTOSTART_ERROR                60009
 #define IDS_AUTOSTART_UNKNOWN              60010
-#define IDS_AUTOSTART_NO_PKG_IDENT         60011

@@ -1,7 +1,7 @@
 #pragma once
 #include "arch.h"
 #include <ShObjIdl.h>
-#include <winrt/base.h>
+#include "winrt.hpp"
 
 #include "wilx.hpp"
 

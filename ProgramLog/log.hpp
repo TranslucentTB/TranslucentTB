@@ -25,15 +25,7 @@ private:
 #endif
 
 public:
-	inline static void SetLevel(spdlog::level::level_enum level)
-	{
-		if (const auto sink = s_LogSink.lock())
-		{
-			sink->set_level(level);
-		}
-	}
-
-	inline static std::shared_ptr<const lazy_file_sink_st> GetSink()
+	inline static std::shared_ptr<lazy_file_sink_st> GetSink()
 	{
 		return s_LogSink.lock();
 	}

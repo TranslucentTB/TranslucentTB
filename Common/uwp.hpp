@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <string_view>
 #include <winerror.h>
+#include "winrt.hpp"
 #include <winrt/Windows.ApplicationModel.DataTransfer.h>
 
 namespace UWP {

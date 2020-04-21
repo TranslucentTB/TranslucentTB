@@ -43,6 +43,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)wilx.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)win32.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)window.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)winrt.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)CppProject.props" />

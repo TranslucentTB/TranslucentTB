@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include <winrt/base.h>
+#include "winrt.hpp"
 #include <winrt/Windows.UI.Xaml.Interop.h>
 #include <winrt/Windows.UI.Xaml.Markup.h>
 

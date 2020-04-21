@@ -13,15 +13,18 @@
       <PreprocessorDefinitions>_TRANSLUCENTTB_EXE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>advapi32.lib;comctl32.lib;dwmapi.lib;mincore.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>advapi32.lib;comctl32.lib;discord_game_sdk.lib;discord_game_sdk_cpp.lib;dwmapi.lib;mincore.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;user32.lib</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Configuration)'=='Release'">fmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Configuration)'=='Debug'">fmtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="application.cpp" />
+    <ClCompile Include="configmanager.cpp" />
     <ClCompile Include="localization.cpp" />
     <ClCompile Include="mainappwindow.cpp" />
+    <ClCompile Include="startupmanager.cpp" />
     <ClCompile Include="taskbar\taskbarattributeworker.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="windows\messagewindow.cpp" />
@@ -34,9 +37,12 @@
     <ClCompile Include="windows\windowclass.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="application.hpp" />
+    <ClInclude Include="configmanager.hpp" />
     <ClInclude Include="folderwatcher.hpp" />
     <ClInclude Include="localization.hpp" />
     <ClInclude Include="mainappwindow.hpp" />
+    <ClInclude Include="startupmanager.hpp" />
     <ClInclude Include="taskbar\appvisibilitysink.hpp" />
     <ClInclude Include="tray\traycontextmenu.hpp" />
     <ClInclude Include="taskbar\taskbarattributeworker.hpp" />

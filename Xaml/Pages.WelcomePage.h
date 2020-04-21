@@ -6,7 +6,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	struct WelcomePage : WelcomePageT<WelcomePage>
 	{
-		WelcomePage(hstring configFile);
+		WelcomePage();
 
 		void ForwardActionClick(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::Controls::ItemClickEventArgs &args);
 		void OpenLiberapayLink(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
@@ -16,9 +16,12 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		event_token DiscordJoinRequested(const DiscordJoinDelegate &handler);
 		void DiscordJoinRequested(const winrt::event_token& token) noexcept;
 
+		event_token ConfigEditRequested(const ConfigEditDelegate &handler);
+		void ConfigEditRequested(const winrt::event_token &token) noexcept;
+
 	private:
-		hstring m_ConfigFile;
 		event<DiscordJoinDelegate> m_DiscordJoinRequestedHandler;
+		event<ConfigEditDelegate> m_ConfigEditRequestedHandler;
 	};
 }
 

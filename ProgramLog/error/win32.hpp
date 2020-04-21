@@ -3,7 +3,7 @@
 #include <restrictederrorinfo.h>
 #include <windef.h>
 #include <winerror.h>
-#include <winrt/base.h>
+#include "winrt.hpp"
 #include <wil/result_macros.h>
 
 #include "error.hpp"

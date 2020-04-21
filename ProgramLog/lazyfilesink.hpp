@@ -11,7 +11,7 @@
 #include <utility>
 #include <wil/resource.h>
 #include <wil/safecast.h>
-#include <winrt/base.h>
+#include "winrt.hpp"
 
 #include "appinfo.hpp"
 #include "constants.hpp"

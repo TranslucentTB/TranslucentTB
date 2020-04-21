@@ -12,6 +12,7 @@
 
 #include "../ProgramLog/error/win32.hpp"
 
+// TODO: put stuff in cpp
 class FolderWatcher {
 	using callback_t = std::add_pointer_t<void(void *, DWORD, std::wstring_view)>;
 

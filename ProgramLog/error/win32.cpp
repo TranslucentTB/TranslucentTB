@@ -36,20 +36,7 @@ void Error::MessageFromHRESULT(fmt::wmemory_buffer &buf, HRESULT result)
 		nullptr
 	);
 
-	if (count)
-	{
-		FormatHRESULT(buf, result, Util::Trim({ error.get(), count }));
-	}
-	else
-	{
-		fmt::wmemory_buffer hrBuf;
-		MessageFromHRESULT(hrBuf, HRESULT_FROM_WIN32(GetLastError()));
-
-		fmt::wmemory_buffer errBuf;
-		fmt::format_to(errBuf, fmt(L"[failed to get message for HRESULT] {}"), Util::ToStringView(hrBuf));
-
-		FormatHRESULT(buf, result, Util::ToStringView(errBuf));
-	}
+	FormatHRESULT(buf, result, count ? Util::Trim({ error.get(), count }) : L"[failed to get message for HRESULT]");
 }
 
 void Error::MessageFromIRestrictedErrorInfo(fmt::wmemory_buffer &buf, IRestrictedErrorInfo *info)

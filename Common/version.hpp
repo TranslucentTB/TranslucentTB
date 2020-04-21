@@ -4,6 +4,7 @@
 #include <fmt/format.h>
 #include <string>
 #include <windef.h>
+#include "winrt.hpp"
 #include <winrt/Windows.ApplicationModel.h>
 
 struct Version {

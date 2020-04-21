@@ -310,7 +310,7 @@ public:
 			{
 				buf.resize(result);
 
-				for (const wchar_t c : buf)
+				for (const wchar_t &c : buf)
 				{
 					Util::HashCharacter(hash, c);
 				}

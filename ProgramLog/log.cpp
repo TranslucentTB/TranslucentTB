@@ -5,6 +5,7 @@
 #include <spdlog/logger.h>
 #include <spdlog/sinks/msvc_sink.h>
 #include <wil/resource.h>
+#include "winrt.hpp"
 #include <winrt/Windows.Storage.h>
 
 #include "appinfo.hpp"

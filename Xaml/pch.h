@@ -1,5 +1,5 @@
 #pragma once
-#include <unknwn.h>
+#include "winrt.hpp"
 
 // Remove intrusive macro from Windows headers
 #include "undefgetcurrenttime.h"

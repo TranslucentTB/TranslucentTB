@@ -1,4 +1,5 @@
 #include "uwp.hpp"
+#include "winrt.hpp"
 #include <winrt/Windows.ApplicationModel.Core.h>
 
 using namespace winrt;

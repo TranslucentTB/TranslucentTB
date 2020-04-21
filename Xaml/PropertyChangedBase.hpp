@@ -1,5 +1,5 @@
 #pragma once
-#include <winrt/base.h>
+#include "winrt.hpp"
 #include <winrt/Windows.UI.Xaml.Data.h>
 
 #include "util/strings.hpp"

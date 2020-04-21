@@ -1,58 +1,36 @@
 #include "arch.h"
-#include <filesystem>
-#include <sal.h>
+#include <synchapi.h>
 #include <wil/resource.h>
-#include <Unknwn.h>
-#include <winrt/base.h>
+#include "winrt.hpp"
 
+#include "application.hpp"
 #include "constants.hpp"
-#include "../ProgramLog/error/win32.hpp"
 #include "mainappwindow.hpp"
-#include "uwp.hpp"
-#include "taskdialogs/welcomedialog.hpp"
-#include "win32.hpp"
-#include "windows/windowclass.hpp"
-
-bool OpenOrCreateMutex(wil::unique_mutex &mutex, const wchar_t *name)
-{
-	if (mutex.try_open(name))
-	{
-		return false;
-	}
-	else
-	{
-		mutex.create(name);
-		return true;
-	}
-}
-
-void InitializeWindowsRuntime() try
-{
-	winrt::init_apartment(winrt::apartment_type::single_threaded);
-}
-HresultErrorCatch(spdlog::level::critical, L"Initialization of Windows Runtime failed.");
+#include "../ProgramLog/error/win32.hpp"
 
 _Use_decl_annotations_ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 {
 	win32::HardenProcess();
 
-	wil::unique_mutex mutex;
-	if (!OpenOrCreateMutex(mutex, MUTEX_GUID))
+	wil::unique_mutex mutex(MUTEX_GUID);
+	if (GetLastError() == ERROR_ALREADY_EXISTS)
 	{
 		// If there already is another instance running, tell it to exit
 		MainAppWindow::CloseRemote();
 	}
 
-	InitializeWindowsRuntime();
-
-	// Initialize GUI
-	MainAppWindow window(hInstance);
+	try
+	{
+		winrt::init_apartment(winrt::apartment_type::single_threaded);
+	}
+	HresultErrorCatch(spdlog::level::critical, L"Initialization of Windows Runtime failed.");
 
 	// Run the main program loop. When this method exits, TranslucentTB itself is about to exit.
-	return static_cast<int>(window.Run());
-	// Not uninitializing WinRT apartment here because it will cause issues
-	// with destruction of WinRT objects that have a static lifetime.
-	// Apartment gets cleaned up by system anyways when the process dies.
+	// TODO: has app identity
+	const auto exitCode = Application(hInstance, true).Run();
+
+	winrt::uninit_apartment();
+	return static_cast<int>(exitCode);
 }
 
 #pragma endregion
