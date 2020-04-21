@@ -50,10 +50,13 @@ class FolderWatcher {
 			that->rearm();
 			break;
 
-		default:
-			LastErrorHandle(spdlog::level::warn, L"Error occured while watching directory");
-			[[fallthrough]];
 		case ERROR_OPERATION_ABORTED:
+			break;
+
+		default:
+			that->m_FolderHandle.reset();
+			that->m_Buffer.reset();
+			LastErrorHandle(spdlog::level::warn, L"Error occured while watching directory");
 			break;
 		}
 	}
@@ -62,6 +65,8 @@ class FolderWatcher {
 	{
 		if (!ReadDirectoryChangesW(m_FolderHandle.get(), m_Buffer.get(), m_BufferSize, m_Recursive, m_Filter, nullptr, &m_Overlapped, callback))
 		{
+			m_FolderHandle.reset();
+			m_Buffer.reset();
 			LastErrorHandle(spdlog::level::warn, L"Failed to arm directory watcher");
 		}
 	}
@@ -95,6 +100,7 @@ public:
 			}
 			else
 			{
+				m_FolderHandle.reset();
 				LastErrorHandle(spdlog::level::warn, L"Failed to allocate overlapped IO buffer");
 			}
 		}
