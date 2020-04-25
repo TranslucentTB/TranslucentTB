@@ -327,7 +327,6 @@ MainAppWindow::MainAppWindow(std::optional<StartupManager> &startup, ConfigManag
 		}
 	}
 
-
 	// Shows the tray icon if not disabled.
 	UpdateTrayVisibility(!config.GetConfig().HideTray);
 }

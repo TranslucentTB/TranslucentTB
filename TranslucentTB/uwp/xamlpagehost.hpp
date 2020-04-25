@@ -170,13 +170,6 @@ public:
 
 		winrt::check_hresult(nativeSource->get_WindowHandle(m_interopWnd.put()));
 
-		/*TODO: m_FilterCookie = RegisterThreadMessageFilter([nativeSource](const MSG &msg)
-		{
-			BOOL result;
-			winrt::check_hresult(nativeSource->PreTranslateMessage(&msg, &result));
-			return result;
-		});*/
-
 		m_content = T(std::forward<Args>(args)...);
 
 		// Make sure T is a frameless page

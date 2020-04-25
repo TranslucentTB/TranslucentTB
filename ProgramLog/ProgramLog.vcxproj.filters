@@ -53,6 +53,9 @@
     <ClCompile Include="error\std.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="lazyfilesink.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

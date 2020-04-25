@@ -22,6 +22,7 @@
   <ItemGroup>
     <ClCompile Include="application.cpp" />
     <ClCompile Include="configmanager.cpp" />
+    <ClCompile Include="folderwatcher.cpp" />
     <ClCompile Include="localization.cpp" />
     <ClCompile Include="mainappwindow.cpp" />
     <ClCompile Include="startupmanager.cpp" />

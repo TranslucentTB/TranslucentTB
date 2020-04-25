@@ -10,6 +10,8 @@
 
 #include "appinfo.hpp"
 #include "config/config.hpp"
+#include "error/error.hpp"
+#include "window.hpp"
 #include "uwp.hpp"
 
 std::weak_ptr<lazy_file_sink_st> Log::s_LogSink;
