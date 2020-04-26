@@ -2,13 +2,17 @@
     x:Class="TranslucentTB.Xaml.Pages.FramelessPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:TranslucentTB.Xaml.Pages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" Background="{ThemeResource SystemControlAcrylicWindowBrush}">
 
-    <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="15,10,15,15">
+    <Grid Margin="15,10,15,15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
         <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" Text="{x:Bind Title, Mode = OneWay}" />
-        <ContentPresenter Content="{x:Bind UserContent, Mode = OneWay}" Margin="0,5,0,0" />
-    </StackPanel>
+        <ContentPresenter Grid.Row="1" Content="{x:Bind UserContent, Mode = OneWay}" Margin="0,5,0,0" />
+    </Grid>
 </Page>

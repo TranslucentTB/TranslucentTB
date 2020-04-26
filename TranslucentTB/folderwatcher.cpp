@@ -3,7 +3,7 @@
 
 #include "../ProgramLog/error/win32.hpp"
 
-void FolderWatcher::OverlappedCallback(DWORD error, DWORD, OVERLAPPED* overlapped)
+void FolderWatcher::OverlappedCallback(DWORD error, DWORD, OVERLAPPED *overlapped)
 {
 	// getting parent pointer by casting first child pointer needs standard layout.
 	static_assert(std::is_standard_layout_v<FolderWatcher> && offsetof(FolderWatcher, m_Overlapped) == 0);

@@ -30,12 +30,12 @@ namespace winrt::TranslucentTB::Xaml::Models::implementation
 		compare_assign(m_description, value, PROP_NAME);
 	}
 
-	hstring ActionItem::Icon()
+	Windows::UI::Xaml::UIElement ActionItem::Icon()
 	{
 		return m_icon;
 	}
 
-	void ActionItem::Icon(const hstring &value)
+	void ActionItem::Icon(const Windows::UI::Xaml::UIElement &value)
 	{
 		compare_assign(m_icon, value, PROP_NAME);
 	}

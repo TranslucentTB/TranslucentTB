@@ -15,8 +15,8 @@ namespace winrt::TranslucentTB::Xaml::Models::implementation
 		hstring Description();
 		void Description(const hstring &value);
 
-		hstring Icon();
-		void Icon(const hstring &value);
+		Windows::UI::Xaml::UIElement Icon();
+		void Icon(const Windows::UI::Xaml::UIElement &value);
 
 		event_token Click(const Windows::UI::Xaml::RoutedEventHandler &value);
 		void Click(const event_token &token);
@@ -26,7 +26,7 @@ namespace winrt::TranslucentTB::Xaml::Models::implementation
 	private:
 		hstring m_name;
 		hstring m_description;
-		hstring m_icon;
+		Windows::UI::Xaml::UIElement m_icon = nullptr;
 		event<Windows::UI::Xaml::RoutedEventHandler> m_click;
 	};
 }
