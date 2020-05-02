@@ -7,7 +7,9 @@
 #include <windef.h>
 #include "winrt.hpp"
 #include <winrt/TranslucentTB.Xaml.h>
+#include "undefgetcurrenttime.h"
 #include <winrt/Windows.UI.Xaml.Hosting.h>
+#include "redefgetcurrenttime.h"
 
 #include "configmanager.hpp"
 #include "mainappwindow.hpp"

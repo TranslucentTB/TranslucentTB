@@ -246,7 +246,7 @@ TaskbarAppearance &MainAppWindow::AppearanceForGroup(Config &cfg, uint16_t group
 	}
 }
 
-void MainAppWindow::AppearanceMenuHandler(uint8_t offset, TaskbarAppearance &appearance, bool &b)
+void MainAppWindow::AppearanceMenuHandler(uint8_t offset, [[maybe_unused]] TaskbarAppearance &appearance, bool &b)
 {
 	if (offset == ID_OFFSET_ENABLED)
 	{
@@ -255,7 +255,7 @@ void MainAppWindow::AppearanceMenuHandler(uint8_t offset, TaskbarAppearance &app
 	}
 	else if (offset == ID_OFFSET_COLOR)
 	{
-		// TODO: color
+		// TODO: color, remove maybe_unused
 	}
 }
 

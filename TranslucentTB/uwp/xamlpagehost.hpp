@@ -122,7 +122,7 @@ private:
 		return MessageWindow::MessageHandler(uMsg, wParam, lParam);
 	}
 
-	inline RECT CenterWindow(LONG width, LONG height, HMONITOR mon, POINT mouse)
+	inline RECT CenterWindow(LONG width, LONG height, HMONITOR mon)
 	{
 		MONITORINFO mi = { sizeof(mi) };
 		if (!GetMonitorInfo(mon, &mi))
@@ -139,15 +139,14 @@ private:
 
 		winrt::Windows::Foundation::Size size = m_content.DesiredSize();
 
-		POINT point;
-		winrt::check_bool(GetCursorPos(&point));
-		const HMONITOR mon = MonitorFromPoint(point, MONITOR_DEFAULTTOPRIMARY);
+		// get default monitor
+		const HMONITOR mon = MonitorFromPoint({ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
 
 		const float scale = GetDpiScale(mon);
 		size.Height *= scale;
 		size.Width *= scale;
 
-		return CenterWindow(static_cast<LONG>(std::round(size.Width)), static_cast<LONG>(std::round(size.Height)), mon, point);
+		return CenterWindow(static_cast<LONG>(std::round(size.Width)), static_cast<LONG>(std::round(size.Height)), mon);
 	}
 
 	void PositionWindow(const RECT &rect, bool showWindow = false)

@@ -52,7 +52,7 @@
     <Keyword>Win32Proj</Keyword>
     <DefaultLanguage>en-US</DefaultLanguage>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <SpectreMitigation>Spectre</SpectreMitigation>
+    <SpectreMitigation>SpectreLoad</SpectreMitigation>
 
     <!-- Versions -->
     <PlatformToolset>v142</PlatformToolset>
@@ -125,6 +125,7 @@
     <ClCompile>
       <!-- Windows requires SSE2 on any x86 processor, see https://docs.microsoft.com/windows-hardware/manufacture/desktop/paenxsse2-support-requirement-guide-for-windows-8 -->
       <PreprocessorDefinitions>RAPIDJSON_SSE2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <IntelJCCErratum>true</IntelJCCErratum>
     </ClCompile>
     <Link>
       <!-- Enable shadow stacks -->

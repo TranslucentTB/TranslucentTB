@@ -23,12 +23,15 @@ private:
 	void RefreshMenu() override;
 	void AppearanceMenuRefresh(uint16_t group, const TaskbarAppearance &appearance, bool b, bool controlsEnabled);
 
+#pragma warning(push)
+#pragma warning(disable: 4244)
 	// Ok, logs enabled, has file, text, level button
 	static constexpr std::tuple<bool, bool, bool, uint16_t, unsigned int> LOG_ERROR = { false, false, false, IDS_OPENLOG_ERROR, 0 };
 	static constexpr std::tuple<bool, bool, bool, uint16_t, unsigned int> GetLogSuccess(bool hasFile, spdlog::level::level_enum level, uint16_t text)
 	{
 		return { true, level != spdlog::level::off, hasFile, text, level + ID_RADIOS_LOG };
 	}
+#pragma warning(pop)
 	std::tuple<bool, bool, bool, uint16_t, unsigned int> GetLogMenu();
 
 	// User modifiable, enabled, text
