@@ -52,7 +52,7 @@
     <Keyword>Win32Proj</Keyword>
     <DefaultLanguage>en-US</DefaultLanguage>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <SpectreMitigation>SpectreLoad</SpectreMitigation>
+    <SpectreMitigation>Spectre</SpectreMitigation>
 
     <!-- Versions -->
     <PlatformToolset>v142</PlatformToolset>
