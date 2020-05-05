@@ -3,7 +3,7 @@
 #include "contextmenu.hpp"
 
 class TrayContextMenu : public TrayIcon, public ContextMenu {
-public:
+protected:
 	inline TrayContextMenu(const GUID &iconId, Util::null_terminated_wstring_view className,
 		Util::null_terminated_wstring_view windowName, const wchar_t *whiteIconResource, const wchar_t *darkIconResource,
 		const wchar_t *menuResource, HINSTANCE hInstance) :
@@ -11,7 +11,6 @@ public:
 		ContextMenu(menuResource, hInstance)
 	{ }
 
-protected:
 	inline LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override
 	{
 		switch (uMsg)

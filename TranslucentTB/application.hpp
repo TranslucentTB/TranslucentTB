@@ -64,9 +64,9 @@ public:
 				m_XamlApp = { };
 			}
 
-			const auto page = new XamlPageHost<T>(m_hInstance, std::forward<Args>(args)...);
+			auto page = std::make_unique<XamlPageHost<T>>(m_hInstance, std::forward<Args>(args)...);
 			m_XamlSources.push_back(page->source());
-			return page;
+			return page.release();
 		}
 		HresultErrorCatch(spdlog::level::critical, L"Failed to open window");
 	}

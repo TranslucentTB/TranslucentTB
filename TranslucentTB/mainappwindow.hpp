@@ -7,6 +7,7 @@
 #include <tuple>
 #include <windef.h>
 
+#include "config/config.hpp"
 #include "resources/ids.h"
 #include "startupmanager.hpp"
 

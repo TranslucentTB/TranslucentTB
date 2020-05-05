@@ -28,6 +28,7 @@
     <ClCompile Include="startupmanager.cpp" />
     <ClCompile Include="taskbar\taskbarattributeworker.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="uwp\basexamlpagehost.cpp" />
     <ClCompile Include="windows\messagewindow.cpp" />
     <ClCompile Include="tray\contextmenu.cpp" />
     <ClCompile Include="tray\trayicon.cpp" />
@@ -46,6 +47,7 @@
     <ClInclude Include="taskbar\launchervisibilitysink.hpp" />
     <ClInclude Include="tray\traycontextmenu.hpp" />
     <ClInclude Include="taskbar\taskbarattributeworker.hpp" />
+    <ClInclude Include="uwp\basexamlpagehost.hpp" />
     <ClInclude Include="uwp\xamlpagehost.hpp" />
     <ClInclude Include="windows\messagewindow.hpp" />
     <ClInclude Include="resources\ids.h" />

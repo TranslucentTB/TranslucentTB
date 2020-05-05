@@ -2,6 +2,7 @@
 #include <WinBase.h>
 #include <WinUser.h>
 #include <winrt/TranslucentTB.Xaml.Pages.h>
+#include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
 
 #include "uwp.hpp"
 
@@ -10,13 +11,15 @@ std::unique_ptr<discord::Core> Application::CreateDiscordCore()
 	discord::Core *coreRaw{};
 	// https://github.com/discord/gamesdk-and-dispatch/issues/46
 	const auto result = discord::Core::Create(698033470781521940, static_cast<uint64_t>(discord::CreateFlags::NoRequireDiscord), &coreRaw);
-	if (!core)
+	if (coreRaw)
+	{
+		std::unique_ptr<discord::Core> core(coreRaw);
+		return core;
+	}
+	else
 	{
 		// todo: log
 	}
-
-	std::unique_ptr<discord::Core> core(coreRaw);
-	return core;
 }
 
 void Application::ConfigurationChanged(void *context, const Config &cfg)
@@ -39,21 +42,20 @@ bool Application::PreTranslateMessage(const MSG &msg)
 	{
 		if (const auto xamlSource = it->get())
 		{
-			if (const auto native = xamlSource.try_as<IDesktopWindowXamlSourceNative2>())
+			const auto native = xamlSource.as<IDesktopWindowXamlSourceNative2>();
+
+			BOOL result { };
+			const HRESULT err = native->PreTranslateMessage(&msg, &result);
+			if (SUCCEEDED(err))
 			{
-				BOOL result { };
-				const HRESULT err = native->PreTranslateMessage(&msg, &result);
-				if (SUCCEEDED(err))
+				if (result)
 				{
-					if (result)
-					{
-						return true;
-					}
+					return true;
 				}
-				else
-				{
-					HresultHandle(err, spdlog::level::warn, L"Failed to pre-translate message.");
-				}
+			}
+			else
+			{
+				HresultHandle(err, spdlog::level::warn, L"Failed to pre-translate message.");
 			}
 
 			++it;

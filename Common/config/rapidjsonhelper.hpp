@@ -101,7 +101,7 @@ namespace RapidJSONHelper {
 		writer.EndObject();
 	}
 
-	// TODO: test
+	// TODO: write unit test
 	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &obj, bool &member, std::wstring_view key)
 	{
 		if (const auto it = obj.FindMember(StringViewToValue(key)); it != obj.MemberEnd())
@@ -121,13 +121,16 @@ namespace RapidJSONHelper {
 			const auto &value = it->value;
 			EnsureType(rapidjson::Type::kStringType, value.GetType(), key);
 
-			if (const auto it2 = std::find(arr.begin(), arr.end(), ValueToStringView(value)); it2 != arr.end())
+			const auto str = ValueToStringView(value);
+			if (const auto it2 = std::find(arr.begin(), arr.end(), str); it2 != arr.end())
 			{
 				member = static_cast<T>(it2 - arr.begin());
 			}
 			else
 			{
-				// TODO: throw
+				throw RapidJSONHelper::DeserializationError {
+					fmt::format(fmt(L"Found invalid enum string \"{}\" while deserializing key \"{}\""), str, key)
+				};
 			}
 		}
 	}

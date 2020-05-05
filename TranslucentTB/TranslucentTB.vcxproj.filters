@@ -60,6 +60,9 @@
     <ClCompile Include="folderwatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="uwp\basexamlpagehost.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\messagewindow.hpp">
@@ -108,6 +111,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="taskbar\launchervisibilitysink.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="uwp\basexamlpagehost.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -20,7 +20,7 @@
 #include "undoc/user32.hpp"
 #include "wilx.hpp"
 
-class TaskbarAttributeWorker : public MessageWindow {
+class TaskbarAttributeWorker final : public MessageWindow {
 private:
 	static constexpr UINT_PTR TIMER_ID = 0x1337;
 
@@ -131,5 +131,5 @@ public:
 	void DumpState();
 	void ResetState(bool rehook = true);
 
-	~TaskbarAttributeWorker();
+	~TaskbarAttributeWorker() override;
 };

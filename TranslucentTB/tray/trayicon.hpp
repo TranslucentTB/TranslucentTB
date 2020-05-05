@@ -40,7 +40,7 @@ public:
 	void Show();
 	void Hide();
 
-	~TrayIcon();
+	virtual ~TrayIcon() override;
 
 	inline TrayIcon(const TrayIcon &) = delete;
 	inline TrayIcon &operator =(const TrayIcon &) = delete;
