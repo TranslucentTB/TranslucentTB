@@ -15,36 +15,17 @@ class StartupManager {
 private:
 	static constexpr std::wstring_view FAILED_TO_ENABLE = L"Failed to enable startup task.";
 
-	wil::srwlock m_TaskLock;
+	mutable wil::srwlock m_TaskLock;
 	winrt::Windows::ApplicationModel::StartupTask m_StartupTask;
 
+	wil::slim_event_manual_reset m_TaskAcquiredEvent;
+
 public:
-	template<typename T>
-	StartupManager(T &&callback) try : m_StartupTask(nullptr)
-	{
-		using namespace winrt::Windows::ApplicationModel;
-		using namespace winrt::Windows::Foundation;
-		using Collections::IVectorView;
+	StartupManager();
 
-		StartupTask::GetForCurrentPackageAsync().Completed([this, call = std::forward<T>(callback)] (const IAsyncOperation<IVectorView<StartupTask>> &op, AsyncStatus)
-		{
-			try
-			{
-				auto result = op.GetResults().GetAt(0);
-
-				const auto lock = m_TaskLock.lock_exclusive();
-				m_StartupTask = std::move(result);
-				call();
-			}
-			HresultErrorCatch(spdlog::level::critical, L"Failed to get first startup task.");
-		});
-	}
-	HresultErrorCatch(spdlog::level::critical, L"Failed to load package startup tasks.");
-
-	// allow empty callback by default construction
-	StartupManager() : StartupManager([] { }) { }
-
-	std::optional<winrt::Windows::ApplicationModel::StartupTaskState> GetState();
+	std::optional<winrt::Windows::ApplicationModel::StartupTaskState> GetState() const;
 	void Enable();
 	void Disable();
+
+	inline bool WaitForTask() noexcept { return m_TaskAcquiredEvent.wait(); }
 };

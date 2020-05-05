@@ -33,32 +33,52 @@ public:
 	inline bool IsFiltered(Window window) const
 	{
 		// This is the fastest because we do the less string manipulation, so always try it first
-		if (!m_ClassList.empty() && m_ClassList.contains(window.classname()))
+		if (!m_ClassList.empty())
 		{
-			return true;
-		}
-
-		if (!m_FileList.empty())
-		{
-			try
+			if (const auto className = window.classname())
 			{
-				if (m_FileList.contains(window.file().filename().native()))
+				if (m_ClassList.contains(*className))
 				{
 					return true;
 				}
 			}
-			StdSystemErrorCatch(spdlog::level::warn, L"Failed to check if window process is part of window filter");
+			else
+			{
+				return false;
+			}
+		}
+
+		if (!m_FileList.empty())
+		{
+
+			if (const auto file = window.file())
+			{
+				try
+				{
+					if (m_FileList.contains(file->filename().native()))
+					{
+						return true;
+					}
+				}
+				StdSystemErrorCatch(spdlog::level::warn, L"Failed to check if window process is part of window filter");
+			}
+			else
+			{
+				return false;
+			}
 		}
 
 		// Do it last because titles can change, so it's less reliable.
 		if (!m_TitleList.empty())
 		{
-			const std::wstring title = window.title();
-			for (const std::wstring &value : m_TitleList)
+			if (const auto title = window.title())
 			{
-				if (title.find(value) != std::wstring::npos)
+				for (const auto &value : m_TitleList)
 				{
-					return true;
+					if (title->find(value) != std::wstring::npos)
+					{
+						return true;
+					}
 				}
 			}
 		}

@@ -10,19 +10,6 @@ void MessageWindow::DeleteThisAPC(ULONG_PTR that)
 	delete reinterpret_cast<MessageWindow *>(that);
 }
 
-LRESULT MessageWindow::RawMessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	const auto ptr = Window(hWnd).get_long_ptr(GWLP_USERDATA);
-	if (SUCCEEDED(ptr.second))
-	{
-		return reinterpret_cast<MessageWindow*>(ptr.first)->MessageHandler(uMsg, wParam, lParam);
-	}
-	else
-	{
-		HresultHandle(ptr.second, spdlog::level::critical, L"Failed to get window user data!");
-	}
-}
-
 void MessageWindow::Destroy()
 {
 	if (m_WindowHandle != Window::NullWindow)
@@ -54,11 +41,17 @@ MessageWindow::MessageWindow(Util::null_terminated_wstring_view className, Util:
 		LastErrorHandle(spdlog::level::critical, L"Failed to create message window!");
 	}
 
-	auto result = set_long_ptr(GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
-	HresultVerify(result.second, spdlog::level::critical, L"Failed to set window user data!");
+	try
+	{
+		m_ProcThunk = member_thunk::make(this, &MessageWindow::MessageHandler);
+	}
+	StdSystemErrorCatch(spdlog::level::critical, L"Failed to create message handler thunk!");
 
-	result = set_long_ptr(GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&RawMessageHandler));
-	HresultVerify(result.second, spdlog::level::critical, L"Failed to update window procedure!");
+	SetLastError(NO_ERROR);
+	if (!SetWindowLongPtr(m_WindowHandle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(m_ProcThunk->get_thunked_function())))
+	{
+		LastErrorVerify(spdlog::level::critical, L"Failed to update window procedure!");
+	}
 
 	if (DynamicLoader::uxtheme())
 	{

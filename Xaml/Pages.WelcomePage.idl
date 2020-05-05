@@ -2,15 +2,18 @@ import "Pages.FramelessPage.idl";
 
 namespace TranslucentTB.Xaml.Pages
 {
+	delegate void LiberapayOpenDelegate();
 	delegate void DiscordJoinDelegate();
 	delegate void ConfigEditDelegate();
 
 	[default_interface]
 	runtimeclass WelcomePage : FramelessPage
 	{
-		WelcomePage();
+		WelcomePage(Boolean hasPackageIdentity);
 
+		event LiberapayOpenDelegate LiberapayOpenRequested;
 		event DiscordJoinDelegate DiscordJoinRequested;
 		event ConfigEditDelegate ConfigEditRequested;
+		event Windows.Foundation.EventHandler<Boolean> LicenseApproved;
 	}
 }

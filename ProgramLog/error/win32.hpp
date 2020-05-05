@@ -40,6 +40,13 @@ namespace Error {
 
 #define LastErrorHandle(level_, message_) HresultHandle(HRESULT_FROM_WIN32(GetLastError()), (level_), (message_))
 
+#define LastErrorVerify(level_, message_) do { \
+	if (const DWORD lastErr_ = GetLastError(); lastErr_ != NO_ERROR) \
+	{ \
+		HresultHandle(HRESULT_FROM_WIN32(lastErr_), (level_), (message_)); \
+	} \
+} while (0)
+
 #define HresultErrorHandle(exception_, level_, message_) do { \
 	fmt::wmemory_buffer buf_; \
 	Error::MessageFromHresultError(buf_, (exception_)); \

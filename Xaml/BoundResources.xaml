@@ -13,10 +13,10 @@
                 <ColumnDefinition Width="35" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <ContentPresenter Content="{x:Bind Icon, Mode = OneWay}" Width="20" Height="24" HorizontalAlignment="Left" VerticalAlignment="Center" />
+            <ContentPresenter Content="{x:Bind Icon, Mode = OneWay}" Width="20" Height="24" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,6,0,0" />
             <StackPanel Grid.Column="1">
-                <TextBlock FontSize="14" Text="{x:Bind Name, Mode = OneWay}"/>
-                <TextBlock FontSize="13" Opacity="0.6" Text="{x:Bind Description, Mode = OneWay}" />
+                <TextBlock FontSize="14" Text="{x:Bind Name, Mode = OneWay}" />
+                <TextBlock FontSize="13" Opacity="0.6" Text="{x:Bind Description, Mode = OneWay}" TextWrapping="WrapWholeWords" />
             </StackPanel>
         </Grid>
     </DataTemplate>

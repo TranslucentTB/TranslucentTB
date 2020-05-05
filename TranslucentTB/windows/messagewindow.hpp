@@ -11,10 +11,11 @@
 class MessageWindow : public Window {
 private:
 	static void NTAPI DeleteThisAPC(ULONG_PTR that);
-	static LRESULT CALLBACK RawMessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	WindowClass m_WindowClass;
 	const wchar_t *m_IconResource;
+
+	std::unique_ptr<member_thunk::thunk<WNDPROC>> m_ProcThunk;
 
 	void Destroy();
 

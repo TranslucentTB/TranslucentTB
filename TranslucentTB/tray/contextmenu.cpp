@@ -19,9 +19,6 @@ void ContextMenu::ShowAt(Window window, POINT pt)
 	}
 	else
 	{
-		if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
-		{
-			HresultHandle(HRESULT_FROM_WIN32(lastErr), spdlog::level::warn, L"Failed to open context menu.");
-		}
+		LastErrorVerify(spdlog::level::warn, L"Failed to open context menu.");
 	}
 }

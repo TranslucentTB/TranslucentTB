@@ -1,6 +1,6 @@
 #include "mainappwindow.hpp"
 
-#include "taskdialogs/aboutdialog.hpp"
+#include "application.hpp"
 #include "constants.hpp"
 #include "undoc/dynamicloader.hpp"
 #include "../ProgramLog/log.hpp"
@@ -25,8 +25,8 @@ LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_ENDSESSION:
 		if (wParam)
 		{
-			// The app can be closed anytime after processing this message. Save the settings.
-			m_Config.Save();
+			// The app can be killed after processing this message, but we'll try doing it gracefully
+			Exit(true);
 		}
 
 		return 0;
@@ -38,7 +38,7 @@ LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void MainAppWindow::RefreshMenu()
 {
-	const auto &cfg = m_Config.GetConfig();
+	const auto &cfg = m_App.GetConfigManager().GetConfig();
 
 	// TODO AppearanceMenuRefresh(ID_GROUP_DESKTOP, m_Config.DesktopAppearance, m_Config.UseRegularAppearanceWhenPeeking, false);
 	AppearanceMenuRefresh(ID_GROUP_VISIBLE, cfg.VisibleWindowAppearance);
@@ -56,9 +56,9 @@ void MainAppWindow::RefreshMenu()
 
 	CheckItem(ID_DISABLESAVING, cfg.DisableSaving);
 
-	if (m_Startup)
+	if (const auto &manager = m_App.GetStartupManager())
 	{
-		const auto [userModifiable, enabled, autostartText] = GetAutostartMenu();
+		const auto [userModifiable, enabled, autostartText] = GetAutostartMenu(*manager);
 
 		CheckItem(ID_AUTOSTART, enabled);
 		EnableItem(ID_AUTOSTART, userModifiable);
@@ -110,9 +110,9 @@ std::tuple<bool, bool, bool, uint16_t, unsigned int> MainAppWindow::GetLogMenu()
 	}
 }
 
-std::tuple<bool, bool, uint16_t> MainAppWindow::GetAutostartMenu()
+std::tuple<bool, bool, uint16_t> MainAppWindow::GetAutostartMenu(const StartupManager &manager)
 {
-	const auto state = m_Startup->GetState();
+	const auto state = manager.GetState();
 	if (!state)
 	{
 		return { false, false, IDS_AUTOSTART_ERROR };
@@ -144,7 +144,9 @@ std::tuple<bool, bool, uint16_t> MainAppWindow::GetAutostartMenu()
 
 void MainAppWindow::ClickHandler(unsigned int id)
 {
-	Config &cfg = m_Config.GetConfig();
+	auto &cfgManager = m_App.GetConfigManager();
+	auto &cfg = cfgManager.GetConfig();
+	auto &worker = m_App.GetWorker();
 
 	const uint16_t group = id & ID_GROUP_MASK;
 
@@ -162,11 +164,11 @@ void MainAppWindow::ClickHandler(unsigned int id)
 		case ID_GROUP_CORTANA:
 		case ID_GROUP_TIMELINE:
 			AppearanceForGroup(cfg, group).Accent = static_cast<ACCENT_STATE>(offset);
-			m_Worker.ConfigurationChanged();
+			worker.ConfigurationChanged();
 			break;
 		case ID_GROUP_LOG:
 			cfg.LogVerbosity = static_cast<spdlog::level::level_enum>(offset);
-			m_Config.UpdateVerbosity();
+			cfgManager.UpdateVerbosity();
 			break;
 		}
 		break;
@@ -190,13 +192,13 @@ void MainAppWindow::ClickHandler(unsigned int id)
 				HresultVerify(win32::EditFile(Log::GetSink()->file()), spdlog::level::err, L"Failed to open log file.");
 				break;
 			case ID_EDITSETTINGS:
-				HresultVerify(win32::EditFile(m_Config.GetConfigPath()), spdlog::level::err, L"Failed to open configuration file.");
+				m_App.EditConfigFile();
 				break;
 			case ID_RETURNTODEFAULTSETTINGS:
 				cfg = { };
-				m_Config.UpdateVerbosity();
+				cfgManager.UpdateVerbosity();
 				UpdateTrayVisibility(!cfg.HideTray);
-				m_Worker.ConfigurationChanged();
+				worker.ConfigurationChanged();
 				break;
 			case ID_DISABLESAVING:
 				cfg.DisableSaving = !cfg.DisableSaving;
@@ -205,10 +207,10 @@ void MainAppWindow::ClickHandler(unsigned int id)
 				HideTrayHandler();
 				break;
 			case ID_DUMPWORKER:
-				m_Worker.DumpState();
+				worker.DumpState();
 				break;
 			case ID_RESETWORKER:
-				m_Worker.ResetState();
+				worker.ResetState();
 				break;
 			case ID_ABOUT:
 				MessageBox(nullptr, L"TODO", L"TODO", 0); // TODO
@@ -217,7 +219,7 @@ void MainAppWindow::ClickHandler(unsigned int id)
 				AutostartMenuHandler();
 				break;
 			case ID_TIPS:
-				HresultVerify(win32::OpenLink(L"https://" APP_NAME ".github.io/tips"), spdlog::level::err, L"Failed to open tips & tricks link.");
+				m_App.OpenTipsPage();
 				break;
 			case ID_EXITWITHOUTSAVING:
 			case ID_EXIT:
@@ -251,7 +253,7 @@ void MainAppWindow::AppearanceMenuHandler(uint8_t offset, [[maybe_unused]] Taskb
 	if (offset == ID_OFFSET_ENABLED)
 	{
 		b = !b;
-		m_Worker.ConfigurationChanged();
+		m_App.GetWorker().ConfigurationChanged();
 	}
 	else if (offset == ID_OFFSET_COLOR)
 	{
@@ -263,7 +265,7 @@ void MainAppWindow::HideTrayHandler()
 {
 	if (MessageBoxEx(
 			Window::NullWindow,
-			L"This change is temporary and will be lost the next time the configuration is loaded.\n\n"
+			L"This change is temporary and will be lost the next time TranslucentTB is started.\n\n"
 			L"To make this permanent, edit the configuration file using \"Advanced\" > \"Edit settings\".\n\n"
 			L"Are you sure you want to proceed?",
 			APP_NAME,
@@ -271,24 +273,26 @@ void MainAppWindow::HideTrayHandler()
 			MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL)
 		) == IDYES)
 	{
+		m_HideIconOverride = true;
 		Hide();
 	}
 }
 
 void MainAppWindow::AutostartMenuHandler()
 {
-	if (const auto state = m_Startup->GetState())
+	auto &manager  = *m_App.GetStartupManager();
+	if (const auto state = manager.GetState())
 	{
 		switch (*state)
 		{
 			using winrt::Windows::ApplicationModel::StartupTaskState;
 
 		case StartupTaskState::Disabled:
-			m_Startup->Enable();
+			manager.Enable();
 			break;
 
 		case StartupTaskState::Enabled:
-			m_Startup->Disable();
+			manager.Disable();
 			break;
 
 		default:
@@ -302,19 +306,18 @@ void MainAppWindow::Exit(bool save)
 {
 	if (save)
 	{
-		m_Config.Save();
+		m_App.GetConfigManager().Save();
 	}
 
 	PostQuitMessage(0);
 }
 
-MainAppWindow::MainAppWindow(std::optional<StartupManager> &startup, ConfigManager &config, TaskbarAttributeWorker &worker, HINSTANCE hInstance) :
+MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, HINSTANCE hInstance) :
 	TrayContextMenu(TRAY_GUID, TRAY_WINDOW, APP_NAME, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance),
-	m_Startup(startup),
-	m_Config(config),
-	m_Worker(worker)
+	m_App(app),
+	m_HideIconOverride(hideIconOverride)
 {
-	if (!m_Startup)
+	if (!m_App.GetStartupManager())
 	{
 		RemoveItem(ID_AUTOSTART);
 	}
@@ -328,12 +331,12 @@ MainAppWindow::MainAppWindow(std::optional<StartupManager> &startup, ConfigManag
 	}
 
 	// Shows the tray icon if not disabled.
-	UpdateTrayVisibility(!config.GetConfig().HideTray);
+	UpdateTrayVisibility(!m_App.GetConfigManager().GetConfig().HideTray);
 }
 
 void MainAppWindow::UpdateTrayVisibility(bool visible)
 {
-	if (visible)
+	if (!m_HideIconOverride && visible)
 	{
 		Show();
 	}
@@ -341,6 +344,12 @@ void MainAppWindow::UpdateTrayVisibility(bool visible)
 	{
 		Hide();
 	}
+}
+
+void MainAppWindow::RemoveHideTrayIconOverride()
+{
+	m_HideIconOverride = false;
+	UpdateTrayVisibility(!m_App.GetConfigManager().GetConfig().HideTray);
 }
 
 void MainAppWindow::CloseRemote() noexcept

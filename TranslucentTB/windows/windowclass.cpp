@@ -43,19 +43,13 @@ void WindowClass::ChangeIcon(Window window, const wchar_t *iconResource)
 	SetLastError(NO_ERROR);
 	if (!SetClassLongPtr(window, GCLP_HICON, reinterpret_cast<LONG_PTR>(m_hIcon.get())))
 	{
-		if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
-		{
-			HresultHandle(HRESULT_FROM_WIN32(lastErr), spdlog::level::warn, L"Failed to change large window class icon.");
-		}
+		LastErrorVerify(spdlog::level::warn, L"Failed to change large window class icon.");
 	}
 
 	SetLastError(NO_ERROR);
 	if (!SetClassLongPtr(window, GCLP_HICONSM, reinterpret_cast<LONG_PTR>(m_hIconSmall.get())))
 	{
-		if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
-		{
-			HresultHandle(HRESULT_FROM_WIN32(lastErr), spdlog::level::warn, L"Failed to change small window class icon.");
-		}
+		LastErrorVerify(spdlog::level::warn, L"Failed to change small window class icon.");
 	}
 }
 

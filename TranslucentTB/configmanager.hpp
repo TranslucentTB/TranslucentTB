@@ -21,7 +21,8 @@ class ConfigManager {
 	void *m_Context;
 
 public:
-	ConfigManager(bool hasPackageIdentity, callback_t callback, void *context);
+	inline ConfigManager(bool hasPackageIdentity, callback_t callback, void *context) : m_ConfigPath(DetermineConfigPath(hasPackageIdentity)), m_Callback(callback), m_Context(context) { }
+
 	void UpdateVerbosity();
 	Config &GetConfig();
 

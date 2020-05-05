@@ -7,10 +7,8 @@
 #include "../../ProgramLog/error/win32.hpp"
 #include "win32.hpp"
 
-std::wstring Window::title() const
+std::optional<std::wstring> Window::title() const
 {
-	std::wstring windowTitle;
-
 	SetLastError(NO_ERROR);
 	const int titleSize = GetWindowTextLength(m_WindowHandle);
 	if (!titleSize)
@@ -18,35 +16,38 @@ std::wstring Window::title() const
 		if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
 		{
 			HresultHandle(HRESULT_FROM_WIN32(lastErr), spdlog::level::info, L"Getting size of title of a window failed.");
+			return std::nullopt;
 		}
-
-		// Failure or empty title.
-		return { };
+		else
+		{
+			return std::make_optional<std::wstring>();
+		}
 	}
 
 	// We're assuming that a window won't change title between the previous call and this.
 	// But it very well could. It'll either be smaller and waste a bit of RAM, or have
 	// GetWindowText trim it.
-	
+
 	// For the null terminator
+	std::wstring windowTitle;
 	windowTitle.resize(titleSize + 1);
+
 	SetLastError(NO_ERROR);
 	const int copiedChars = GetWindowText(m_WindowHandle, windowTitle.data(), titleSize + 1);
 	if (!copiedChars)
 	{
 		if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
 		{
-			LastErrorHandle(spdlog::level::info, L"Getting title of a window failed.");
+			HresultHandle(HRESULT_FROM_WIN32(lastErr), spdlog::level::info, L"Getting title of a window failed.");
+			return std::nullopt;
 		}
-
-		return { };
 	}
 
 	windowTitle.resize(copiedChars);
-	return windowTitle;
+	return { std::move(windowTitle) };
 }
 
-std::wstring Window::classname() const
+std::optional<std::wstring> Window::classname() const
 {
 	std::wstring className;
 	className.resize(257);	// According to docs, maximum length of a class name is 256, but it's ambiguous
@@ -56,39 +57,81 @@ std::wstring Window::classname() const
 	if (!count)
 	{
 		LastErrorHandle(spdlog::level::info, L"Getting class name of a window failed.");
+		return std::nullopt;
 	}
 
 	className.resize(count);
-	return className;
+	return { std::move(className) };
 }
 
-std::filesystem::path Window::file() const
+std::optional<std::filesystem::path> Window::file() const
 {
 	const wil::unique_process_handle processHandle(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, process_id()));
 	if (!processHandle)
 	{
 		LastErrorHandle(spdlog::level::info, L"Getting process handle of a window failed.");
-		return { };
+		return std::nullopt;
 	}
 
 	auto [loc, hr] = win32::GetProcessFileName(processHandle.get());
-	HresultVerify(hr, spdlog::level::info, L"Getting file name of a window failed.");
+	if (FAILED(hr))
+	{
+		HresultHandle(hr, spdlog::level::info, L"Getting file name of a window failed.");
+		return std::nullopt;
+	}
 
-	return loc;
+	return { std::move(loc) };
 }
 
-bool Window::on_current_desktop() const
+std::optional<bool> Window::on_current_desktop() const
 {
-	static const auto desktop_manager = wil::CoCreateInstance<IVirtualDesktopManager>(CLSID_VirtualDesktopManager);
+	static const auto desktop_manager = []() -> wil::com_ptr<IVirtualDesktopManager>
+	{
+		try
+		{
+			return wil::CoCreateInstance<IVirtualDesktopManager>(CLSID_VirtualDesktopManager);
+		}
+		catch (const wil::ResultException &err)
+		{
+			ResultExceptionHandle(err, spdlog::level::warn, L"Failed to create virtual desktop manager");
+			return nullptr;
+		}
+	}();
 
-	BOOL on_current_desktop;
-	if (const HRESULT hr = desktop_manager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop); SUCCEEDED(hr))
+	if (desktop_manager)
 	{
-		return on_current_desktop;
+		BOOL on_current_desktop;
+		if (const HRESULT hr = desktop_manager->IsWindowOnCurrentVirtualDesktop(m_WindowHandle, &on_current_desktop); SUCCEEDED(hr))
+		{
+			return on_current_desktop;
+		}
+		else
+		{
+			HresultHandle(hr, spdlog::level::info, L"Verifying if a window is on the current virtual desktop failed.");
+		}
 	}
-	else
+
+	return std::nullopt;
+}
+
+bool Window::is_user_window() const
+{
+	if (valid() && visible() && !cloaked() && ancestor(GA_ROOT) == *this && !get(GW_OWNER))
 	{
-		HresultHandle(hr, spdlog::level::info, L"Verifying if a window is on the current virtual desktop failed.");
-		return true;
+		if (const auto on_desktop = on_current_desktop(); on_desktop && !*on_desktop)
+		{
+			return false;
+		}
+
+		if (const auto ex_style = long_ptr(GWL_EXSTYLE))
+		{
+			const auto s = *ex_style;
+			if (s & WS_EX_APPWINDOW || !(s & WS_EX_TOOLWINDOW || s & WS_EX_NOACTIVATE))
+			{
+				return !prop(L"ITaskList_Deleted");
+			}
+		}
 	}
+
+	return false;
 }

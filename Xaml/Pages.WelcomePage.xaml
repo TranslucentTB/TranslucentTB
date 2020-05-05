@@ -7,7 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource SystemControlAcrylicWindowBrush}" Width="625" Height="500">
+    Background="{ThemeResource SystemControlAcrylicWindowBrush}" Width="635" Height="550">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -21,34 +21,45 @@
 
         <StackPanel Grid.ColumnSpan="2" Orientation="Vertical" Spacing="15">
             <RichTextBlock TextWrapping="Wrap" IsTextSelectionEnabled="False">
-                <!-- TODO: better text -->
                 <Paragraph>
+                    By default, TranslucentTB darkens the taskbar a bit when there is a maximised window.
+                    You can alter this behavior, and many other settings, by editing the configuration file now or by using the tray icon after accepting the license.
+                </Paragraph>
+                <Paragraph Margin="0,6,0,0">
                     If you consider this software useful, please consider a donation through Liberapay by clicking the button below!
                 </Paragraph>
-                <Paragraph>
-                    If you need any technical assistance, feel free to drop in our Discord server! The button below should open the server directly in your Discord client.
+                <Paragraph Margin="0,6,0,0">
+                    If you need any technical assistance, feel free to drop in our Discord server!
+                    The button below should open the server directly in your Discord client, or in your browser if you don't have one running.
                 </Paragraph>
-                <Paragraph>
+                <Paragraph Margin="0,6,0,0">
                     Before using TranslucentTB, you must agree to the terms set forth by our license, the
                     <Hyperlink NavigateUri="https://github.com/TranslucentTB/TranslucentTB/blob/master/LICENSE.md">GPLv3</Hyperlink>. Press "I agree" below to continue.
                 </Paragraph>
             </RichTextBlock>
 
             <ListView Style="{StaticResource ActionsListViewStyle}" HorizontalAlignment="Stretch" ItemClick="ForwardActionClick">
-                <models:ActionItem Name="Donate to the project on Liberapay" Description="Show us your support by offering a single-time or recurring donation" Click="OpenLiberapayLink" />
+                <models:ActionItem Name="Donate to the project on Liberapay" Description="Show us your support by offering a single-time or recurring donation" Click="OpenLiberapayLink">
+                    <PathIcon Data="{StaticResource LiberapayLogo}" />
+                </models:ActionItem>
                 <models:ActionItem Name="Join our Discord server" Description="Chat with the developers and get technical assistance with the program" Click="OpenDiscordLink">
                     <PathIcon Data="{StaticResource DiscordLogo}" />
                 </models:ActionItem>
-                <models:ActionItem Name="Edit the configuration file before using TranslucentTB" Description="You can always do this by clicking 'Advanced > Edit settings' in the tray icon's context menu" Click="EditConfigFile">
+                <models:ActionItem Name="Edit the configuration file before using TranslucentTB" Click="EditConfigFile">
+                    <models:ActionItem.Description>
+                        You can always do this by clicking 'Advanced > Edit settings' in the tray icon's context menu
+                        Changes are automatically reloaded as you edit the file
+                    </models:ActionItem.Description>
                     <SymbolIcon Symbol="Edit" />
                 </models:ActionItem>
+                <!-- TODO: add tips and tricks -->
             </ListView>
         </StackPanel>
 
-        <CheckBox Grid.Row="1" Content="Automatically start TranslucentTB at system bootup" IsChecked="True" />
+        <CheckBox Grid.Row="1" Content="Automatically start TranslucentTB at system bootup" IsChecked="True" x:Name="StartupCheckbox" />
         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="10">
             <Button Width="100">I disagree</Button>
-            <Button Width="100">I agree</Button>
+            <Button Width="100" Click="AgreeButtonClicked">I agree</Button>
         </StackPanel>
     </Grid>
 </local:FramelessPage>

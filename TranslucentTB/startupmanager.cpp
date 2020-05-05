@@ -3,7 +3,28 @@
 using namespace winrt::Windows::Foundation;
 using winrt::Windows::ApplicationModel::StartupTaskState;
 
-std::optional<StartupTaskState> StartupManager::GetState()
+StartupManager::StartupManager() try : m_StartupTask(nullptr)
+{
+	using winrt::Windows::ApplicationModel::StartupTask;
+	using Collections::IVectorView;
+
+	StartupTask::GetForCurrentPackageAsync().Completed([this](const IAsyncOperation<IVectorView<StartupTask>> &op, AsyncStatus)
+	{
+		try
+		{
+			auto result = op.GetResults().GetAt(0);
+
+			const auto lock = m_TaskLock.lock_exclusive();
+			m_StartupTask = std::move(result);
+		}
+		HresultErrorCatch(spdlog::level::critical, L"Failed to get first startup task.");
+
+		m_TaskAcquiredEvent.SetEvent();
+	});
+}
+HresultErrorCatch(spdlog::level::critical, L"Failed to load package startup tasks.");
+
+std::optional<StartupTaskState> StartupManager::GetState() const
 {
 	try
 	{

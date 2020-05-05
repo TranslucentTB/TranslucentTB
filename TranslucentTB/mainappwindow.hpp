@@ -7,16 +7,15 @@
 #include <tuple>
 #include <windef.h>
 
-#include "configmanager.hpp"
 #include "resources/ids.h"
 #include "startupmanager.hpp"
-#include "taskbar/taskbarattributeworker.hpp"
+
+class Application;
 
 class MainAppWindow final : public TrayContextMenu {
 private:
-	std::optional<StartupManager> &m_Startup;
-	ConfigManager &m_Config;
-	TaskbarAttributeWorker &m_Worker;
+	Application &m_App;
+	bool m_HideIconOverride;
 
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
@@ -35,7 +34,7 @@ private:
 	std::tuple<bool, bool, bool, uint16_t, unsigned int> GetLogMenu();
 
 	// User modifiable, enabled, text
-	std::tuple<bool, bool, uint16_t> GetAutostartMenu();
+	std::tuple<bool, bool, uint16_t> GetAutostartMenu(const StartupManager &manager);
 
 	inline void AppearanceMenuRefresh(uint16_t group, const OptionalTaskbarAppearance &appearance)
 	{
@@ -51,9 +50,10 @@ private:
 	void Exit(bool save);
 
 public:
-	MainAppWindow(std::optional<StartupManager> &startup, ConfigManager &config, TaskbarAttributeWorker &worker, HINSTANCE hInstance);
+	MainAppWindow(Application &app, bool hideIconOverride, HINSTANCE hInstance);
 
 	void UpdateTrayVisibility(bool visible);
+	void RemoveHideTrayIconOverride();
 
 	static void CloseRemote() noexcept;
 };

@@ -3,6 +3,7 @@
 #include <functional>
 #include <member_thunk/common.hpp>
 #include <memory>
+#include <optional>
 #include <ShObjIdl.h>
 #include <string_view>
 #include <unordered_map>
@@ -12,9 +13,9 @@
 #include <wil/com.h>
 #include <wil/resource.h>
 
-#include "appvisibilitysink.hpp"
 #include "config/config.hpp"
 #include "config/taskbarappearance.hpp"
+#include "launchervisibilitysink.hpp"
 #include "../windows/messagewindow.hpp"
 #include "undoc/user32.hpp"
 #include "wilx.hpp"
@@ -69,11 +70,10 @@ private:
 	// IAppVisibility
 	wil::com_ptr<IAppVisibility> m_IAV;
 	wilx::unique_app_visibility_token m_IAVECookie;
-	AppVisibilitySink::StartOpened_revoker m_AVSinkRevoker;
 
 	// Messages & timers
-	UINT m_TaskbarCreatedMessage;
-	UINT m_RefreshRequestedMessage;
+	std::optional<UINT> m_TaskbarCreatedMessage;
+	std::optional<UINT> m_RefreshRequestedMessage;
 	UINT_PTR m_TimerCookie;
 
 	// Type aliases
@@ -101,7 +101,8 @@ private:
 	taskbar_iterator InsertWindow(Window window);
 
 	// Other
-	static void DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set);
+	static void DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set, bool showInfo = true);
+	void CreateAppVisibility();
 	hook_thunk CreateThunk(void (CALLBACK TaskbarAttributeWorker:: *proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD));
 	static wil::unique_hwineventhook CreateHook(DWORD eventMin, DWORD eventMax, const hook_thunk &thunk);
 	void ReturnToStock();

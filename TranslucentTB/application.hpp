@@ -35,15 +35,23 @@ class Application final {
 	std::optional<TaskbarAttributeWorker> m_Worker;
 	std::optional<MainAppWindow> m_AppWindow;
 
+	bool m_CompletedFirstStart;
+
 	bool PreTranslateMessage(const MSG &msg);
-	void SetupMainApplication(bool hasPackageIdentity);
+	void SetupMainApplication(bool hasPackageIdentity, bool hideIconOverride);
 
 public:
 	Application(HINSTANCE hInst, bool hasPackageIdentity);
 
 	WPARAM Run();
+	void OpenDonationPage();
 	void OpenDiscordServer();
 	void EditConfigFile();
+	void OpenTipsPage();
+
+	inline constexpr ConfigManager &GetConfigManager() noexcept { return m_Config; }
+	inline constexpr std::optional<StartupManager> &GetStartupManager() noexcept { return m_Startup; }
+	inline constexpr TaskbarAttributeWorker &GetWorker() noexcept { return *m_Worker; }
 
 	template<typename T, typename... Args>
 	inline XamlPageHost<T> *CreateXamlWindow(Args&&... args)
@@ -62,4 +70,6 @@ public:
 		}
 		HresultErrorCatch(spdlog::level::critical, L"Failed to open window");
 	}
+
+	~Application();
 };

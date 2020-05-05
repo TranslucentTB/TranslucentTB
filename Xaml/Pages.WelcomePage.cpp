@@ -1,7 +1,4 @@
 #include "pch.h"
-#include "arch.h"
-#include <shlobj_core.h>
-#include <wil/resource.h>
 
 #include "Pages.FramelessPage.h"
 #include "Pages.WelcomePage.h"
@@ -10,28 +7,31 @@
 #endif
 
 #include "appinfo.hpp"
-#include "../ProgramLog/error/win32.hpp"
-#include "win32.hpp"
 
 using namespace winrt;
 using namespace Windows::UI::Xaml;
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
-	WelcomePage::WelcomePage()
+	WelcomePage::WelcomePage(bool hasPackageIdentity)
 	{
 		InitializeComponent();
 		Title(L"Welcome to " APP_NAME L"!");
+
+		if (!hasPackageIdentity)
+		{
+			StartupCheckbox().Visibility(Visibility::Collapsed);
+		}
 	}
 
-	void WelcomePage::ForwardActionClick(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::Controls::ItemClickEventArgs &args)
+	void WelcomePage::ForwardActionClick(const IInspectable &sender, const Controls::ItemClickEventArgs &args)
 	{
 		args.ClickedItem().as<Models::ActionItem>().ForwardClick(sender, args);
 	}
 
 	void WelcomePage::OpenLiberapayLink(const IInspectable &, const RoutedEventArgs &)
 	{
-		HresultVerify(win32::OpenLink(L"https://liberapay.com/" APP_NAME), spdlog::level::err, L"Failed to open browser");
+		m_LiberapayOpenRequestedHandler();
 	}
 
 	void WelcomePage::OpenDiscordLink(const IInspectable &, const RoutedEventArgs &)
@@ -42,6 +42,21 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	void WelcomePage::EditConfigFile(const IInspectable &, const RoutedEventArgs &)
 	{
 		m_ConfigEditRequestedHandler();
+	}
+
+	void WelcomePage::AgreeButtonClicked(const IInspectable &, const RoutedEventArgs &)
+	{
+		m_LicenseApprovedHandler(*this, StartupCheckbox().IsChecked().Value());
+	}
+
+	event_token WelcomePage::LiberapayOpenRequested(const LiberapayOpenDelegate &handler)
+	{
+		return m_LiberapayOpenRequestedHandler.add(handler);
+	}
+
+	void WelcomePage::LiberapayOpenRequested(const winrt::event_token &token) noexcept
+	{
+		m_LiberapayOpenRequestedHandler.remove(token);
 	}
 
 	event_token WelcomePage::DiscordJoinRequested(const DiscordJoinDelegate &handler)
@@ -62,5 +77,15 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	void WelcomePage::ConfigEditRequested(const winrt::event_token &token) noexcept
 	{
 		m_ConfigEditRequestedHandler.remove(token);
+	}
+
+	event_token WelcomePage::LicenseApproved(const Windows::Foundation::EventHandler<bool> &handler)
+	{
+		return m_LicenseApprovedHandler.add(handler);
+	}
+
+	void WelcomePage::LicenseApproved(const winrt::event_token &token) noexcept
+	{
+		m_LicenseApprovedHandler.remove(token);
 	}
 }

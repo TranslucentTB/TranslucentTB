@@ -1,5 +1,6 @@
 #pragma once
 #include "../windows/messagewindow.hpp"
+#include <optional>
 #include <shellapi.h>
 #include <windef.h>
 #include <wil/resource.h>
@@ -14,7 +15,7 @@ private:
 
 	bool m_Show;
 
-	UINT m_TaskbarCreatedMessage;
+	std::optional<UINT> m_TaskbarCreatedMessage;
 
 	void LoadThemedIcon();
 	bool Notify(DWORD message, bool ignoreError = false);

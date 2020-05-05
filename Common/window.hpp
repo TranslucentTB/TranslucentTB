@@ -2,8 +2,8 @@
 #include "arch.h"
 #include <dwmapi.h>
 #include <errhandlingapi.h>
-#include <functional>
-#include <string>
+#include <optional>
+#include <utility>
 #include <windef.h>
 #include <winerror.h>
 #include <winuser.h>
@@ -12,6 +12,7 @@
 
 #ifdef _TRANSLUCENTTB_EXE
 #include <filesystem>
+#include <string>
 
 #include "../TranslucentTB/windows/windowclass.hpp"
 #include "../ProgramLog/error/win32.hpp"
@@ -19,6 +20,20 @@
 
 class Window {
 private:
+	static constexpr bool is_exception_free_v =
+#ifdef _TRANSLUCENTTB_EXE
+		false;
+#else
+		true;
+#endif
+
+	inline static void handle_error([[maybe_unused]] std::wstring_view err, [[maybe_unused]] HRESULT hr = HRESULT_FROM_WIN32(GetLastError())) noexcept(is_exception_free_v)
+	{
+#ifdef _TRANSLUCENTTB_EXE
+		HresultHandle(hr, spdlog::level::info, err);
+#endif
+	}
+
 	template<DWMWINDOWATTRIBUTE attrib>
 	struct attrib_return_type;
 
@@ -46,9 +61,19 @@ private:
 	using attrib_return_t = typename attrib_return_type<attrib>::type;
 
 	template<DWMWINDOWATTRIBUTE attrib>
-	inline HRESULT get_attribute(attrib_return_t<attrib> &val) const noexcept
+	inline std::optional<attrib_return_t<attrib>> get_attribute() const noexcept(is_exception_free_v)
 	{
-		return DwmGetWindowAttribute(m_WindowHandle, attrib, &val, sizeof(val));
+		attrib_return_t<attrib> val;
+		const HRESULT hr = DwmGetWindowAttribute(m_WindowHandle, attrib, &val, sizeof(val));
+		if (SUCCEEDED(hr))
+		{
+			return val;
+		}
+		else
+		{
+			handle_error(L"Failed to get window attribute.", hr);
+			return std::nullopt;
+		}
 	}
 
 protected:
@@ -85,16 +110,18 @@ public:
 	}
 #endif
 
-	inline static UINT RegisterMessage(Util::null_terminated_wstring_view message)
+	inline static std::optional<UINT> RegisterMessage(Util::null_terminated_wstring_view message) noexcept(is_exception_free_v)
 	{
 		const UINT msg = RegisterWindowMessage(message.c_str());
-#ifdef _TRANSLUCENTTB_EXE
-		if (!msg)
+		if (msg)
 		{
-			LastErrorHandle(spdlog::level::warn, L"Failed to register window message.");
+			return msg;
 		}
-#endif
-		return msg;
+		else
+		{
+			handle_error(L"Failed to register window message.");
+			return std::nullopt;
+		}
 	}
 
 	inline static Window ForegroundWindow() noexcept
@@ -115,19 +142,21 @@ public:
 	constexpr Window(HWND handle = Window::NullWindow) noexcept : m_WindowHandle(handle) { }
 
 #ifdef _TRANSLUCENTTB_EXE
-	std::wstring title() const;
+	std::optional<std::wstring> title() const;
 
-	std::wstring classname() const;
+	std::optional<std::wstring> classname() const;
 
-	std::filesystem::path file() const;
+	std::optional<std::filesystem::path> file() const;
 
-	bool on_current_desktop() const;
+	std::optional<bool> on_current_desktop() const;
+
+	// TODO: this should not return true for the cortana window (and make sure it doesn't for start/action center/tray overflow, tray icons)
+	bool is_user_window() const;
 #endif
 
-	inline bool cloaked() const noexcept
+	inline bool valid() const noexcept
 	{
-		DWORD attr;
-		return SUCCEEDED(get_attribute<DWMWA_CLOAKED>(attr)) && attr;
+		return IsWindow(m_WindowHandle);
 	}
 
 	inline bool maximised() const noexcept
@@ -150,19 +179,52 @@ public:
 		return IsWindowVisible(m_WindowHandle);
 	}
 
-	inline bool valid() const noexcept
+	inline bool cloaked() const noexcept(is_exception_free_v)
 	{
-		return IsWindow(m_WindowHandle);
-	}
-
-	inline explicit operator bool() const noexcept
-	{
-		return valid();
+		const auto attr = get_attribute<DWMWA_CLOAKED>();
+		return attr && *attr;
 	}
 
 	inline HMONITOR monitor() const noexcept
 	{
 		return MonitorFromWindow(m_WindowHandle, MONITOR_DEFAULTTONULL);
+	}
+
+	inline Window get(UINT cmd) const noexcept
+	{
+		return GetWindow(m_WindowHandle, cmd);
+	}
+
+	inline Window ancestor(UINT flags) const noexcept
+	{
+		return GetAncestor(m_WindowHandle, flags);
+	}
+
+	inline HANDLE prop(Util::null_terminated_wstring_view name) const noexcept
+	{
+		return GetProp(m_WindowHandle, name.c_str());
+	}
+
+	inline std::optional<LONG_PTR> long_ptr(int index) const noexcept(is_exception_free_v)
+	{
+		SetLastError(NO_ERROR);
+		const LONG_PTR val = GetWindowLongPtr(m_WindowHandle, index);
+		if (val)
+		{
+			return val;
+		}
+		else
+		{
+			if (const DWORD lastErr = GetLastError(); lastErr == NO_ERROR)
+			{
+				return val;
+			}
+			else
+			{
+				handle_error(L"Failed to get window pointer", HRESULT_FROM_WIN32(lastErr));
+				return std::nullopt;
+			}
+		}
 	}
 
 	inline DWORD thread_id() const noexcept
@@ -172,40 +234,51 @@ public:
 
 	inline DWORD process_id() const noexcept
 	{
-		DWORD pid;
+		DWORD pid { };
 		GetWindowThreadProcessId(m_WindowHandle, &pid);
 		return pid;
 	}
 
-	inline RECT rect() noexcept
+	inline std::optional<RECT> rect() const noexcept(is_exception_free_v)
 	{
 		RECT result { };
-		GetWindowRect(m_WindowHandle, &result);
-		return result;
+		if (GetWindowRect(m_WindowHandle, &result))
+		{
+			return result;
+		}
+		else
+		{
+			handle_error(L"Failed to get window region.");
+			return std::nullopt;
+		}
 	}
 
-	inline RECT client_rect() noexcept
+	inline std::optional<RECT> client_rect() const noexcept(is_exception_free_v)
 	{
 		RECT result { };
-		GetClientRect(m_WindowHandle, &result);
-		return result;
+		if (GetClientRect(m_WindowHandle, &result))
+		{
+			return result;
+		}
+		else
+		{
+			handle_error(L"Failed to get client region.");
+			return std::nullopt;
+		}
 	}
 
-	inline TITLEBARINFO titlebar_info() const noexcept
+	inline std::optional<TITLEBARINFO> titlebar_info() const noexcept(is_exception_free_v)
 	{
 		TITLEBARINFO info = { sizeof(info) };
-		GetTitleBarInfo(m_WindowHandle, &info);
-		return info;
-	}
-
-	inline LONG_PTR style() const noexcept
-	{
-		return GetWindowLongPtr(m_WindowHandle, GWL_STYLE);
-	}
-
-	inline LONG_PTR extended_style() const noexcept
-	{
-		return GetWindowLongPtr(m_WindowHandle, GWL_EXSTYLE);
+		if (GetTitleBarInfo(m_WindowHandle, &info))
+		{
+			return info;
+		}
+		else
+		{
+			handle_error(L"Failed to get titlebar info.");
+			return std::nullopt;
+		}
 	}
 
 	inline LRESULT send_message(unsigned int message, WPARAM wparam = 0, LPARAM lparam = 0) const noexcept
@@ -225,36 +298,6 @@ public:
 
 	constexpr FindEnum find_childs(Util::null_terminated_wstring_view className = { }, Util::null_terminated_wstring_view windowName = { }) const noexcept;
 
-	inline std::pair<LONG_PTR, HRESULT> get_long_ptr(int index) const noexcept
-	{
-		SetLastError(NO_ERROR);
-		const LONG_PTR val = GetWindowLongPtr(m_WindowHandle, index);
-		if (!val)
-		{
-			if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
-			{
-				return { 0, HRESULT_FROM_WIN32(lastErr) };
-			}
-		}
-
-		return { val, S_OK };
-	}
-
-	inline std::pair<LONG_PTR, HRESULT> set_long_ptr(int index, LONG_PTR newValue) noexcept
-	{
-		SetLastError(NO_ERROR);
-		const LONG_PTR val = SetWindowLongPtr(m_WindowHandle, index, newValue);
-		if (!val)
-		{
-			if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
-			{
-				return { 0, HRESULT_FROM_WIN32(lastErr) };
-			}
-		}
-
-		return { val, S_OK };
-	}
-
 	constexpr HWND handle() const noexcept
 	{
 		return m_WindowHandle;
@@ -270,30 +313,33 @@ public:
 		return m_WindowHandle;
 	}
 
+	inline explicit operator bool() const noexcept
+	{
+		return valid();
+	}
+
 	constexpr bool operator ==(Window right) const noexcept
 	{
 		return m_WindowHandle == right.m_WindowHandle;
 	}
 
-	constexpr bool operator !=(Window right) const noexcept
+	constexpr bool operator ==(HWND right) const noexcept
 	{
-		return !operator==(right);
+		return m_WindowHandle == right;
 	}
 
 	friend struct std::hash<Window>;
 };
 
 // Specialize std::hash to allow the use of Window as unordered_map and unordered_set key.
-namespace std {
-	template<>
-	struct hash<Window> {
-		inline std::size_t operator()(Window k) const noexcept
-		{
-			static constexpr std::hash<HWND> hasher;
-			return hasher(k.m_WindowHandle);
-		}
-	};
-}
+template<>
+struct std::hash<Window> {
+	inline std::size_t operator()(Window k) const noexcept
+	{
+		static constexpr std::hash<HWND> hasher;
+		return hasher(k.m_WindowHandle);
+	}
+};
 
 // Iterator class for FindEnum
 class FindWindowIterator {

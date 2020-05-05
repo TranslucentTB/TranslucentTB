@@ -8,7 +8,6 @@
 #include "undoc/winuser.hpp"
 #include "util/fmt.hpp"
 #include "win32.hpp"
-#include "../windows/windowhelper.hpp"
 
 void TaskbarAttributeWorker::OnAeroPeekEnterExit(DWORD event, HWND, LONG, LONG, DWORD, DWORD)
 {
@@ -92,12 +91,12 @@ LRESULT TaskbarAttributeWorker::OnRequestAttributeRefresh(LPARAM lParam)
 
 LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (uMsg == m_TaskbarCreatedMessage || uMsg == WM_DISPLAYCHANGE)
+	if ((m_TaskbarCreatedMessage && uMsg == *m_TaskbarCreatedMessage) || uMsg == WM_DISPLAYCHANGE)
 	{
 		ResetState();
 		return 0;
 	}
-	else if (uMsg == m_RefreshRequestedMessage)
+	else if (m_RefreshRequestedMessage && uMsg == *m_RefreshRequestedMessage)
 	{
 		if (!m_disableAttributeRefreshReply)
 		{
@@ -255,7 +254,7 @@ TaskbarAttributeWorker::taskbar_iterator TaskbarAttributeWorker::InsertWindow(Wi
 	// changing, it means m_Taskbars is cleared while we still
 	// have an iterator to it. Acquiring the iterator after the
 	// call to on_current_desktop resolves this issue.
-	const bool windowMatches = (WindowHelper::IsUserWindow(window) || m_Config.Whitelist.IsFiltered(window)) && !m_Config.Blacklist.IsFiltered(window);
+	const bool windowMatches = (window.is_user_window() || m_Config.Whitelist.IsFiltered(window)) && !m_Config.Blacklist.IsFiltered(window);
 
 	const auto iter = m_Taskbars.find(window.monitor());
 	if (iter != m_Taskbars.end())
@@ -283,7 +282,7 @@ TaskbarAttributeWorker::taskbar_iterator TaskbarAttributeWorker::InsertWindow(Wi
 	return iter;
 }
 
-void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set)
+void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set, bool showInfo)
 {
 	fmt::wmemory_buffer buf;
 	if (!set.empty())
@@ -291,7 +290,27 @@ void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::
 		for (const Window window : set)
 		{
 			buf.clear();
-			fmt::format_to(buf, fmt(L"{}{} [{}] [{}] [{}]"), prefix, static_cast<void*>(window.handle()), window.title(), window.classname(), window.file().filename().native());
+			if (showInfo)
+			{
+				std::wstring title, className, fileName;
+				if (const auto titleOpt = window.title())
+				{
+					title = std::move(*titleOpt);
+					if (const auto classNameOpt = window.classname())
+					{
+						className = std::move(*classNameOpt);
+						if (const auto fileOpt = window.file())
+						{
+							fileName = fileOpt->filename().native();
+						}
+					}
+				}
+				fmt::format_to(buf, fmt(L"{}{} [{}] [{}] [{}]"), prefix, static_cast<void *>(window.handle()), title, className, fileName);
+			}
+			else
+			{
+				fmt::format_to(buf, fmt(L"{}{}"), prefix, static_cast<void *>(window.handle()));
+			}
 			MessagePrint(spdlog::level::off, buf);
 		}
 	}
@@ -300,6 +319,27 @@ void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::
 		fmt::format_to(buf, fmt(L"{}[none]"), prefix);
 		MessagePrint(spdlog::level::off, buf);
 	}
+}
+
+void TaskbarAttributeWorker::CreateAppVisibility()
+{
+	try
+	{
+		m_IAV = wil::CoCreateInstance<IAppVisibility>(CLSID_AppVisibility);
+	}
+	catch (const wil::ResultException &err)
+	{
+		ResultExceptionHandle(err, spdlog::level::warn, L"Failed to create app visibility instance.");
+		return;
+	}
+
+	const auto av_sink = winrt::make_self<LauncherVisibilitySink>([](void* context, bool state)
+	{
+		static_cast<TaskbarAttributeWorker *>(context)->OnStartVisibilityChange(state);
+	}, this);
+
+	m_IAVECookie.associate(m_IAV.get());
+	HresultVerify(m_IAV->Advise(av_sink.get(), m_IAVECookie.put()), spdlog::level::warn, L"Failed to register app visibility sink.");
 }
 
 TaskbarAttributeWorker::hook_thunk TaskbarAttributeWorker::CreateThunk(void(CALLBACK TaskbarAttributeWorker:: *proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD)) try
@@ -403,25 +443,15 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_ForegroundChangeHook(CreateHook(EVENT_SYSTEM_FOREGROUND, m_ForegroundWindowChangeThunk)),
 	m_TitleChangeHook(CreateHook(EVENT_OBJECT_NAMECHANGE, m_WindowStateChangeThunk)),
 	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED)),
-	m_RefreshRequestedMessage(Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH)),
-	m_TimerCookie(SetTimer(m_WindowHandle, TIMER_ID, 10000, nullptr))
+	m_RefreshRequestedMessage(Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH))/* TODO,
+	m_TimerCookie(SetTimer(m_WindowHandle, TIMER_ID, 10000, nullptr))*/
 {
 	if (!m_TimerCookie)
 	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to register timer");
+		//LastErrorHandle(spdlog::level::warn, L"Failed to register timer");
 	}
 
-	try
-	{
-		m_IAV = wil::CoCreateInstance<IAppVisibility>(CLSID_AppVisibility);
-		const auto av_sink = winrt::make_self<AppVisibilitySink>();
-
-		m_AVSinkRevoker = av_sink->StartOpened(winrt::auto_revoke, { this, &TaskbarAttributeWorker::OnStartVisibilityChange });
-
-		m_IAVECookie.associate(m_IAV.get());
-		HresultVerify(m_IAV->Advise(av_sink.get(), m_IAVECookie.put()), spdlog::level::warn, L"Failed to register app visibility sink.");
-	}
-	ResultExceptionCatch(spdlog::level::warn, L"Failed to create app visibility instance.");
+	CreateAppVisibility();
 
 	ResetState();
 }
@@ -455,7 +485,7 @@ void TaskbarAttributeWorker::DumpState()
 	if (m_CurrentStartMonitor != nullptr)
 	{
 		buf.clear();
-		fmt::format_to(buf, fmt(L"Start menu is opened on monitor: {}"), static_cast<void*>(m_CurrentStartMonitor));
+		fmt::format_to(buf, fmt(L"Start menu is opened on monitor: {}"), static_cast<void *>(m_CurrentStartMonitor));
 		MessagePrint(spdlog::level::off, buf);
 	}
 	else
@@ -464,11 +494,11 @@ void TaskbarAttributeWorker::DumpState()
 	}
 
 	buf.clear();
-	fmt::format_to(buf, fmt(L"Main taskbar is on monitor: {}"), static_cast<void*>(m_MainTaskbarMonitor));
+	fmt::format_to(buf, fmt(L"Main taskbar is on monitor: {}"), static_cast<void *>(m_MainTaskbarMonitor));
 	MessagePrint(spdlog::level::off, buf);
 
 	MessagePrint(spdlog::level::off, L"Taskbars currently using normal appearance:");
-	DumpWindowSet(L"    ", m_NormalTaskbars);
+	DumpWindowSet(L"    ", m_NormalTaskbars, false);
 
 	MessagePrint(spdlog::level::off, L"===== End TaskbarAttributeWorker state dump =====");
 }

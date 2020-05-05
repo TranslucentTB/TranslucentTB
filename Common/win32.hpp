@@ -34,21 +34,21 @@
 class win32
 {
 private:
-	inline static std::pair<std::unique_ptr<std::byte[]>, HRESULT> LoadFileVersionInfo(const std::filesystem::path &file, DWORD flags = 0)
+	static std::unique_ptr<std::byte[]> LoadFileVersionInfo(const std::filesystem::path &file, DWORD flags = 0)
 	{
 		const DWORD size = GetFileVersionInfoSizeEx(flags, file.c_str(), nullptr);
 		if (!size)
 		{
-			return { nullptr, HRESULT_FROM_WIN32(GetLastError()) };
+			return nullptr;
 		}
 
 		auto data = std::make_unique<std::byte[]>(size);
 		if (!GetFileVersionInfoEx(flags, file.c_str(), 0, size, data.get()))
 		{
-			return { nullptr, HRESULT_FROM_WIN32(GetLastError()) };
+			return nullptr;
 		}
 
-		return { std::move(data), S_OK };
+		return data;
 	}
 
 	inline static HRESULT ShellExec(SHELLEXECUTEINFO &info) noexcept
@@ -182,10 +182,10 @@ public:
 	// Gets the language-neutral FileVersion of a PE binary.
 	inline static std::pair<Version, HRESULT> GetFixedFileVersion(const std::filesystem::path &file)
 	{
-		const auto [data, hr] = LoadFileVersionInfo(file, FILE_VER_GET_NEUTRAL);
-		if (FAILED(hr))
+		const auto data = LoadFileVersionInfo(file, FILE_VER_GET_NEUTRAL);
+		if (!data)
 		{
-			return { { }, hr };
+			return { { }, HRESULT_FROM_WIN32(GetLastError()) };
 		}
 
 		VS_FIXEDFILEINFO *fixedFileInfo;

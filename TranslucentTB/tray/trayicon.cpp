@@ -61,14 +61,14 @@ LRESULT TrayIcon::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	default:
-		if (uMsg == m_TaskbarCreatedMessage)
+		if (m_TaskbarCreatedMessage && uMsg == *m_TaskbarCreatedMessage)
 		{
 			if (m_Show)
 			{
 				m_Show = false;
 				Show();
 			}
-			
+
 			return 0;
 		}
 	}

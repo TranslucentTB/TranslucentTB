@@ -24,9 +24,6 @@
     <ClCompile Include="windows\messagewindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="taskdialogs\taskdialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="tray\trayicon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -65,19 +62,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="taskdialogs\aboutdialog.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="windows\messagewindow.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="taskdialogs\taskdialog.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="tray\trayicon.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="taskdialogs\welcomedialog.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\windowclass.hpp">
@@ -86,16 +74,10 @@
     <ClInclude Include="resources\ids.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\windowhelper.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="uwp\uwp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="taskbar\taskbarattributeworker.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="taskbar\appvisibilitysink.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="uwp\xamlpagehost.hpp">
@@ -123,6 +105,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="application.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="taskbar\launchervisibilitysink.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

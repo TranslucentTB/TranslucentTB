@@ -29,7 +29,6 @@
     <ClCompile Include="taskbar\taskbarattributeworker.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="windows\messagewindow.cpp" />
-    <ClCompile Include="taskdialogs\taskdialog.cpp" />
     <ClCompile Include="tray\contextmenu.cpp" />
     <ClCompile Include="tray\trayicon.cpp" />
     <ClCompile Include="uwp\uwp.cpp" />
@@ -44,20 +43,16 @@
     <ClInclude Include="localization.hpp" />
     <ClInclude Include="mainappwindow.hpp" />
     <ClInclude Include="startupmanager.hpp" />
-    <ClInclude Include="taskbar\appvisibilitysink.hpp" />
+    <ClInclude Include="taskbar\launchervisibilitysink.hpp" />
     <ClInclude Include="tray\traycontextmenu.hpp" />
     <ClInclude Include="taskbar\taskbarattributeworker.hpp" />
-    <ClInclude Include="taskdialogs\aboutdialog.hpp" />
     <ClInclude Include="uwp\xamlpagehost.hpp" />
     <ClInclude Include="windows\messagewindow.hpp" />
     <ClInclude Include="resources\ids.h" />
-    <ClInclude Include="taskdialogs\taskdialog.hpp" />
     <ClInclude Include="tray\contextmenu.hpp" />
     <ClInclude Include="tray\trayicon.hpp" />
     <ClInclude Include="uwp\uwp.hpp" />
-    <ClInclude Include="taskdialogs\welcomedialog.hpp" />
     <ClInclude Include="windows\windowclass.hpp" />
-    <ClInclude Include="windows\windowhelper.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\TranslucentTB.rc2" />

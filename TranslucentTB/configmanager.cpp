@@ -40,10 +40,6 @@ void ConfigManager::WatcherCallback(void *context, DWORD, std::wstring_view file
 	}
 }
 
-ConfigManager::ConfigManager(bool hasPackageIdentity, callback_t callback, void* context) : m_ConfigPath(DetermineConfigPath(hasPackageIdentity)), m_Callback(callback), m_Context(context)
-{
-}
-
 void ConfigManager::UpdateVerbosity()
 {
 	if (const auto sink = Log::GetSink())

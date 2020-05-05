@@ -67,8 +67,12 @@ bool ExplorerDetour::Install() noexcept
 
 	if (!s_RequestAttribute)
 	{
-		s_RequestAttribute = Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH);
-		if (!s_RequestAttribute)
+		const auto message = Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH);
+		if (message)
+		{
+			s_RequestAttribute = *message;
+		}
+		else
 		{
 			return false;
 		}
