@@ -47,6 +47,12 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	void WelcomePage::AgreeButtonClicked(const IInspectable &, const RoutedEventArgs &)
 	{
 		m_LicenseApprovedHandler(*this, StartupCheckbox().IsChecked().Value());
+		Close();
+	}
+
+	void WelcomePage::DisagreeButtonClicked(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args)
+	{
+		Close();
 	}
 
 	event_token WelcomePage::LiberapayOpenRequested(const LiberapayOpenDelegate &handler)

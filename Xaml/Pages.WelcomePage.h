@@ -14,6 +14,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void EditConfigFile(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
 
 		void AgreeButtonClicked(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+		void DisagreeButtonClicked(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
 
 		event_token LiberapayOpenRequested(const LiberapayOpenDelegate &handler);
 		void LiberapayOpenRequested(const winrt::event_token &token) noexcept;

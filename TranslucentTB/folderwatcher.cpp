@@ -67,7 +67,7 @@ FolderWatcher::FolderWatcher(const std::filesystem::path &path, bool recursive, 
 		GetSystemInfo(&info);
 		m_BufferSize = std::max(info.dwPageSize, info.dwAllocationGranularity);
 
-		m_Buffer.reset(reinterpret_cast<char*>(VirtualAlloc(nullptr, m_BufferSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)));
+		m_Buffer.reset(static_cast<char *>(VirtualAlloc(nullptr, m_BufferSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)));
 		if (m_Buffer)
 		{
 			rearm();

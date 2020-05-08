@@ -44,6 +44,19 @@ LRESULT BaseXamlPageHost::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam
 		PositionWindow(*reinterpret_cast<RECT *>(lParam));
 		break;
 
+	case WM_SYSCOMMAND:
+		if (wParam == SC_CLOSE)
+		{
+			return 0;
+		}
+		else
+		{
+			break;
+		}
+
+	case WM_CLOSE:
+		return 0;
+
 	case WM_NCDESTROY:
 		HeapDeletePostNcDestroy();
 		return 0;

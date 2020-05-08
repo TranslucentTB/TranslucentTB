@@ -52,13 +52,12 @@
                     </models:ActionItem.Description>
                     <SymbolIcon Symbol="Edit" />
                 </models:ActionItem>
-                <!-- TODO: add tips and tricks -->
             </ListView>
         </StackPanel>
 
         <CheckBox Grid.Row="1" Content="Automatically start TranslucentTB at system bootup" IsChecked="True" x:Name="StartupCheckbox" />
         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="10">
-            <Button Width="100">I disagree</Button>
+            <Button Width="100" Click="DisagreeButtonClicked">I disagree</Button>
             <Button Width="100" Click="AgreeButtonClicked">I agree</Button>
         </StackPanel>
     </Grid>

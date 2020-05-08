@@ -135,42 +135,42 @@ public:
 
 	inline static Config Load(const std::filesystem::path &file)
 	{
-		// This check is so that if the file gets deleted for whatever reason while the app is running, default configuration gets restored immediatly.
-		if (std::filesystem::is_regular_file(file))
+		wil::unique_file pfile(_wfsopen(file.c_str(), L"rbS", _SH_DENYNO));
+		if (pfile)
 		{
-			wil::unique_file pfile(_wfsopen(file.c_str(), L"rbS", _SH_DENYNO));
-			if (pfile)
+			using namespace rapidjson;
+
+			char buffer[256];
+			FileReadStream filestream(pfile.get(), buffer, std::size(buffer));
+
+			AutoUTFInputStream<uint32_t, FileReadStream> in(filestream);
+
+			GenericDocument<UTF16LE<>> doc;
+			if (ParseResult result = doc.ParseStream<kParseCommentsFlag, AutoUTF<uint32_t>>(in))
 			{
-				using namespace rapidjson;
-
-				char buffer[256];
-				FileReadStream filestream(pfile.get(), buffer, std::size(buffer));
-
-				AutoUTFInputStream<uint32_t, FileReadStream> in(filestream);
-
-				GenericDocument<UTF16LE<>> doc;
-				if (ParseResult result = doc.ParseStream<kParseCommentsFlag, AutoUTF<uint32_t>>(in))
+				static constexpr std::wstring_view ERR_MSG = L"Failed to deserialize JSON document";
+				try
 				{
-					static constexpr std::wstring_view ERR_MSG = L"Failed to deserialize JSON document";
-					try
-					{
-						RapidJSONHelper::EnsureType(rapidjson::Type::kObjectType, doc.GetType(), L"root node");
+					RapidJSONHelper::EnsureType(rapidjson::Type::kObjectType, doc.GetType(), L"root node");
 
-						Config cfg;
-						cfg.Deserialize(doc);
-						return cfg;
-					}
-					HelperDeserializationErrorCatch(spdlog::level::err, ERR_MSG)
-					StdSystemErrorCatch(spdlog::level::err, ERR_MSG);
+					Config cfg;
+					cfg.Deserialize(doc);
+					return cfg;
 				}
-				else
-				{
-					ParseErrorCodeHandle(result.Code(), spdlog::level::err, L"Failed to parse configuration!");
-				}
+				HelperDeserializationErrorCatch(spdlog::level::err, ERR_MSG)
+				StdSystemErrorCatch(spdlog::level::err, ERR_MSG);
 			}
 			else
 			{
-				ErrnoHandle(spdlog::level::err, L"Failed to load configuration!");
+				ParseErrorCodeHandle(result.Code(), spdlog::level::err, L"Failed to parse configuration!");
+			}
+		}
+		else
+		{
+			// It's not an error for the config file to not exist.
+			if (const errno_t err = errno; err != ENOENT)
+			{
+				ErrnoTHandle(err, spdlog::level::err, L"Failed to load configuration!");
 			}
 		}
 

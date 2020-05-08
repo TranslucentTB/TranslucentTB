@@ -1,5 +1,7 @@
 namespace TranslucentTB.Xaml.Pages
 {
+	delegate void ClosedDelegate();
+
 	[default_interface]
 	[contentproperty("UserContent")]
 	unsealed runtimeclass FramelessPage : Windows.UI.Xaml.Controls.Page
@@ -11,5 +13,8 @@ namespace TranslucentTB.Xaml.Pages
 
 		Windows.UI.Xaml.UIElement UserContent;
 		static Windows.UI.Xaml.DependencyProperty UserContentProperty { get; };
+
+		void Close();
+		event ClosedDelegate Closed;
 	}
 }

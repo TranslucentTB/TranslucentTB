@@ -1,6 +1,7 @@
 #pragma once
 #include "basexamlpagehost.hpp"
 
+#include <concepts>
 #include <limits>
 #include <string>
 
@@ -17,12 +18,14 @@
 
 template<typename T>
 #ifdef __cpp_concepts // MIGRATION: IDE concepts support
+	// https://github.com/microsoft/cppwinrt/issues/609
 	requires std::derived_from<T, winrt::impl::base_one<T, winrt::TranslucentTB::Xaml::Pages::FramelessPage>>
 #endif
 class XamlPageHost final : public BaseXamlPageHost {
 private:
 	T m_content;
 	winrt::event_token m_TitleChangedToken;
+	typename T::Closed_revoker m_ClosedRevoker;
 
 	static constexpr std::wstring_view ExtractTypename()
 	{
@@ -67,6 +70,13 @@ public:
 
 		SetTitle();
 		m_TitleChangedToken.value = m_content.RegisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), { this, &XamlPageHost::SetTitle });
+		m_ClosedRevoker = m_content.Closed(winrt::auto_revoke, [this]
+		{
+			if (!DestroyWindow(handle()))
+			{
+				LastErrorHandle(spdlog::level::err, L"Failed to close window???");
+			}
+		});
 
 		// Magic that gives us shadows
 		const MARGINS margins = { 1 };
@@ -90,6 +100,7 @@ public:
 
 	inline ~XamlPageHost() override
 	{
+		m_ClosedRevoker.revoke();
 		m_content.UnregisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), std::exchange(m_TitleChangedToken.value, 0));
 		m_content = nullptr;
 	}

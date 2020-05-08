@@ -19,6 +19,7 @@ std::unique_ptr<discord::Core> Application::CreateDiscordCore()
 	else
 	{
 		// todo: log
+		return nullptr;
 	}
 }
 
@@ -84,7 +85,7 @@ void Application::SetupMainApplication(bool hasPackageIdentity, bool hideIconOve
 
 Application::Application(HINSTANCE hInst, bool hasPackageIdentity) : m_hInstance(hInst), m_Config(hasPackageIdentity, ConfigurationChanged, this), m_XamlApp(nullptr), m_CompletedFirstStart(false)
 {
-	const bool isFirstBoot = !std::filesystem::exists(m_Config.GetConfigPath());
+	const bool isFirstBoot = true;//!std::filesystem::exists(m_Config.GetConfigPath());
 	SetupMainApplication(hasPackageIdentity, isFirstBoot);
 
 	if (isFirstBoot)
@@ -96,7 +97,7 @@ Application::Application(HINSTANCE hInst, bool hasPackageIdentity) : m_hInstance
 		content.DiscordJoinRequested({ this, &Application::OpenDiscordServer });
 		content.ConfigEditRequested({ this, &Application::EditConfigFile });
 
-		content.LicenseApproved([this, hasPackageIdentity, window](const auto &, bool startupState)
+		content.LicenseApproved([this, hasPackageIdentity](const auto &, bool startupState)
 		{
 			if (hasPackageIdentity)
 			{
@@ -120,18 +121,15 @@ Application::Application(HINSTANCE hInst, bool hasPackageIdentity) : m_hInstance
 
 			m_AppWindow->RemoveHideTrayIconOverride();
 			m_CompletedFirstStart = true;
-
-			if (!DestroyWindow(window->handle()))
-			{
-				LastErrorHandle(spdlog::level::err, L"Failed to close window???");
-			}
 		});
 
-		/* TODO: what if user manually closes window? can we prevent that?
-		content.LicenseDisapproved([]
+		content.Closed([this]
 		{
-			PostQuitMessage(1);
-		});*/
+			if (!m_CompletedFirstStart)
+			{
+				PostQuitMessage(1);
+			}
+		});
 	}
 	else
 	{
