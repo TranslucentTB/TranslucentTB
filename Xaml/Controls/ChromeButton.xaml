@@ -1,0 +1,61 @@
+<Button
+    x:Class="TranslucentTB.Xaml.Controls.ChromeButton"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:local="using:TranslucentTB.Xaml.Controls"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" IsTabStop="False" Width="45" Height="29">
+
+    <!-- TODO: dont hardcode the colors, fix Foreground only changing after Background fade -->
+    <Button.Template>
+        <ControlTemplate TargetType="local:ChromeButton">
+            <ContentPresenter x:Name="ContentPresenter"
+                Background="#00E81123"
+                Foreground="{ThemeResource SystemBaseHighColor}"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Content="{TemplateBinding Icon}">
+
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualStateGroup.Transitions>
+                            <VisualTransition From="PointerOver" To="Normal" GeneratedDuration="0:0:0.15" />
+                            <VisualTransition From="Normal" To="PointerOver" GeneratedDuration="0:0:0.05" />
+                        </VisualStateGroup.Transitions>
+
+                        <VisualState x:Name="Normal">
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                    <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource SystemBaseHighColor}" />
+                                </ObjectAnimationUsingKeyFrames>
+                                <ColorAnimation Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="(ContentPresenter.Background).(SolidColorBrush.Color)" To="#00E81123" Duration="0" />
+                            </Storyboard>
+                        </VisualState>
+
+                        <VisualState x:Name="PointerOver">
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                    <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Bind HoverPressedForeground, Mode = OneWay, TargetNullValue = {ThemeResource SystemBaseHighColor}}" />
+                                </ObjectAnimationUsingKeyFrames>
+                                <ColorAnimation Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="(ContentPresenter.Background).(SolidColorBrush.Color)" To="#FFE81123" Duration="0" />
+                            </Storyboard>
+                        </VisualState>
+
+                        <VisualState x:Name="Pressed">
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                    <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Bind HoverPressedForeground, Mode = OneWay, TargetNullValue = {ThemeResource SystemBaseHighColor}}" />
+                                </ObjectAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                    <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="#99E71021" />
+                                </ObjectAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
+            </ContentPresenter>
+        </ControlTemplate>
+    </Button.Template>
+    
+</Button>

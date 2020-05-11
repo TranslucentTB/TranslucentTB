@@ -1,0 +1,15 @@
+namespace TranslucentTB.Xaml.Controls
+{
+	[default_interface]
+	[contentproperty("Icon")]
+	runtimeclass ChromeButton : Windows.UI.Xaml.Controls.Button
+	{
+		ChromeButton();
+
+		Windows.UI.Xaml.Controls.IconElement Icon;
+		static Windows.UI.Xaml.DependencyProperty IconProperty { get; };
+
+		Windows.UI.Xaml.Media.Brush HoverPressedForeground;
+		static Windows.UI.Xaml.DependencyProperty HoverPressedForegroundProperty { get; };
+	}
+}

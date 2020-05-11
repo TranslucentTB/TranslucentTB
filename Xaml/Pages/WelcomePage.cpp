@@ -24,7 +24,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		}
 	}
 
-	void WelcomePage::ForwardActionClick(const IInspectable &sender, const Controls::ItemClickEventArgs &args)
+	void WelcomePage::ForwardActionClick(const IInspectable &sender, const Windows::UI::Xaml::Controls::ItemClickEventArgs &args)
 	{
 		args.ClickedItem().as<Models::ActionItem>().ForwardClick(sender, args);
 	}

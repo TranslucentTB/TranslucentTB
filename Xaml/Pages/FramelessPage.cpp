@@ -18,7 +18,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 			xaml_typename<hstring>(),
 			xaml_typename<class_type>(),
 			PropertyMetadata { box_value(L"") }
-		);
+	);
 
 	DependencyProperty FramelessPage::s_UserContentProperty =
 		DependencyProperty::Register(

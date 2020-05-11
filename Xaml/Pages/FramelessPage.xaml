@@ -1,6 +1,7 @@
 <Page
     x:Class="TranslucentTB.Xaml.Pages.FramelessPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:controls="using:TranslucentTB.Xaml.Controls"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -13,7 +14,9 @@
         </Grid.RowDefinitions>
 
         <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" Text="{x:Bind Title, Mode = OneWay}" Margin="15,6,15,0"/>
-        <Button HorizontalAlignment="Right" VerticalAlignment="Top" Width="45" Height="29" Visibility="{x:Bind IsClosable, Mode = OneWay}" Click="Close" />
+        <controls:ChromeButton HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="{x:Bind IsClosable, Mode = OneWay}" Click="Close" HoverPressedForeground="White">
+            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8BB;" FontSize="10" />
+        </controls:ChromeButton>
         <ContentPresenter Grid.Row="1" Content="{x:Bind UserContent, Mode = OneWay}" Margin="15,5,15,15" />
     </Grid>
 </Page>

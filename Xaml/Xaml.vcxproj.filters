@@ -30,6 +30,7 @@
     <Page Include="BoundResources.xaml" />
     <Page Include="Pages\WelcomePage.xaml" />
     <Page Include="Pages\FramelessPage.xaml" />
+    <Page Include="Controls\ChromeButton.xaml" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
