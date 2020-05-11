@@ -18,6 +18,7 @@
                 <Setter Property="SelectionMode" Value="None" />
                 <Setter Property="IsItemClickEnabled" Value="True" />
                 <Setter Property="ItemTemplate" Value="{StaticResource ActionsListViewTemplate}" />
+                <Setter Property="TabNavigation" Value="Local" />
             </Style>
 
             <ResourceDictionary.MergedDictionaries>

@@ -15,15 +15,16 @@ class BaseXamlPageHost : public MessageWindow {
 private:
 	Window m_interopWnd;
 	winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource m_source;
+	winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource::TakeFocusRequested_revoker m_focusRevoker;
 
+protected:
 	static float GetDpiScale(HMONITOR mon);
 
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
-protected:
 	RECT CalculateWindowPosition(winrt::Windows::Foundation::Size size);
 	void PositionWindow(const RECT &rect, bool showWindow = false);
-	virtual void ArrangeContent(winrt::Windows::Foundation::Rect area) = 0;
+	void PositionInteropWindow(int x, int y);
 
 	BaseXamlPageHost(Util::null_terminated_wstring_view className, HINSTANCE hInst);
 
@@ -35,6 +36,7 @@ public:
 
 	inline virtual ~BaseXamlPageHost()
 	{
+		m_focusRevoker.revoke();
 		m_source.Close();
 		m_source = nullptr;
 	}

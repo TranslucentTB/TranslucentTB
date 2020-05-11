@@ -55,9 +55,50 @@ private:
 		}
 	}
 
-	inline void ArrangeContent(winrt::Windows::Foundation::Rect area) override
+	inline LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override
 	{
-		m_content.Arrange(area);
+		switch (uMsg)
+		{
+		case WM_SIZE:
+		{
+			const int x = LOWORD(lParam);
+			const int y = HIWORD(lParam);
+			PositionInteropWindow(x, y);
+
+			const float scale = GetDpiScale(monitor());
+			m_content.Arrange(winrt::Windows::UI::Xaml::RectHelper::FromCoordinatesAndDimensions(0, 0, x / scale, y / scale));
+			return 0;
+		}
+
+		case WM_SYSCOMMAND:
+			if (wParam == SC_CLOSE)
+			{
+				if (!m_content.IsClosable())
+				{
+					return 0;
+				}
+				else
+				{
+					m_ClosedRevoker.revoke();
+					m_content.Close();
+				}
+			}
+			break;
+
+		case WM_CLOSE:
+			if (!m_content.IsClosable())
+			{
+				return 0;
+			}
+			else
+			{
+				m_ClosedRevoker.revoke();
+				m_content.Close();
+				break;
+			}
+		}
+
+		return BaseXamlPageHost::MessageHandler(uMsg, wParam, lParam);
 	}
 
 public:
@@ -70,9 +111,9 @@ public:
 
 		SetTitle();
 		m_TitleChangedToken.value = m_content.RegisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), { this, &XamlPageHost::SetTitle });
-		m_ClosedRevoker = m_content.Closed(winrt::auto_revoke, [this]
+		m_ClosedRevoker = m_content.Closed(winrt::auto_revoke, [handle = handle()]
 		{
-			if (!DestroyWindow(handle()))
+			if (!DestroyWindow(handle))
 			{
 				LastErrorHandle(spdlog::level::err, L"Failed to close window???");
 			}

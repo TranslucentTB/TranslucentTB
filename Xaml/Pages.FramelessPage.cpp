@@ -28,9 +28,22 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 			nullptr
 	);
 
+	DependencyProperty FramelessPage::s_IsClosableProperty =
+		DependencyProperty::Register(
+			UTIL_STRINGIFY(IsClosable),
+			xaml_typename<bool>(),
+			xaml_typename<class_type>(),
+			PropertyMetadata { box_value(false) }
+	);
+
 	FramelessPage::FramelessPage()
 	{
 		InitializeComponent();
+	}
+
+	void FramelessPage::Close(...)
+	{
+		m_ClosedHandler();
 	}
 
 	hstring FramelessPage::Title()
@@ -63,9 +76,19 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		return s_UserContentProperty;
 	}
 
-	void FramelessPage::Close()
+	bool FramelessPage::IsClosable()
 	{
-		m_ClosedHandler();
+		return unbox_value<bool>(GetValue(s_IsClosableProperty));
+	}
+
+	void FramelessPage::IsClosable(bool closeable)
+	{
+		SetValue(s_IsClosableProperty, box_value(closeable));
+	}
+
+	Windows::UI::Xaml::DependencyProperty FramelessPage::IsClosableProperty() noexcept
+	{
+		return s_IsClosableProperty;
 	}
 
 	event_token FramelessPage::Closed(const ClosedDelegate &handler)
@@ -73,7 +96,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		return m_ClosedHandler.add(handler);
 	}
 
-	void FramelessPage::Closed(const winrt::event_token &token) noexcept
+	void FramelessPage::Closed(const winrt::event_token &token)
 	{
 		m_ClosedHandler.remove(token);
 	}

@@ -45,7 +45,7 @@
                 <models:ActionItem Name="Join our Discord server" Description="Chat with the developers and get technical assistance with the program" Click="OpenDiscordLink">
                     <PathIcon Data="{StaticResource DiscordLogo}" />
                 </models:ActionItem>
-                <models:ActionItem Name="Edit the configuration file before using TranslucentTB" Click="EditConfigFile">
+                <models:ActionItem Name="Edit the configuration file" Click="EditConfigFile">
                     <models:ActionItem.Description>
                         You can always do this by clicking 'Advanced > Edit settings' in the tray icon's context menu
                         Changes are automatically reloaded as you edit the file

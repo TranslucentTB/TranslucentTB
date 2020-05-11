@@ -26,36 +26,9 @@ LRESULT BaseXamlPageHost::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam
 	case WM_NCCALCSIZE:
 		return 0;
 
-	case WM_SIZE:
-	{
-		const int x = LOWORD(lParam);
-		const int y = HIWORD(lParam);
-		if (!SetWindowPos(m_interopWnd, Window::NullWindow, 0, 0, x, y, 0))
-		{
-			LastErrorHandle(spdlog::level::warn, L"Failed to set position of interop window.");
-		}
-
-		const float scale = GetDpiScale(monitor());
-		ArrangeContent(winrt::Windows::UI::Xaml::RectHelper::FromCoordinatesAndDimensions(0, 0, x / scale, y / scale));
-		return 0;
-	}
-
 	case WM_DPICHANGED:
 		PositionWindow(*reinterpret_cast<RECT *>(lParam));
 		break;
-
-	case WM_SYSCOMMAND:
-		if (wParam == SC_CLOSE)
-		{
-			return 0;
-		}
-		else
-		{
-			break;
-		}
-
-	case WM_CLOSE:
-		return 0;
 
 	case WM_NCDESTROY:
 		HeapDeletePostNcDestroy();
@@ -81,11 +54,11 @@ RECT BaseXamlPageHost::CalculateWindowPosition(winrt::Windows::Foundation::Size 
 	size.Width *= scale;
 
 	RECT temp;
-	temp.left = (mi.rcWork.right - mi.rcWork.left - size.Width) / 2 + mi.rcWork.left;
-	temp.right = temp.left + size.Width;
+	temp.left = static_cast<LONG>((mi.rcWork.right - mi.rcWork.left - size.Width) / 2) + mi.rcWork.left;
+	temp.right = temp.left + static_cast<LONG>(size.Width);
 
-	temp.top = (mi.rcWork.bottom - mi.rcWork.top - size.Height) / 2 + mi.rcWork.top;
-	temp.bottom = temp.top + size.Height;
+	temp.top = static_cast<LONG>((mi.rcWork.bottom - mi.rcWork.top - size.Height) / 2) + mi.rcWork.top;
+	temp.bottom = temp.top + static_cast<LONG>(size.Height);
 
 	return temp;
 }
@@ -96,6 +69,14 @@ void BaseXamlPageHost::PositionWindow(const RECT &rect, bool showWindow)
 	winrt::check_bool(SetWindowPos(m_WindowHandle, Window::NullWindow, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, showWindow ? SWP_SHOWWINDOW | SWP_FRAMECHANGED : 0));
 }
 
+void BaseXamlPageHost::PositionInteropWindow(int x, int y)
+{
+	if (!SetWindowPos(m_interopWnd, Window::NullWindow, 0, 0, x, y, 0))
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to set position of interop window.");
+	}
+}
+
 BaseXamlPageHost::BaseXamlPageHost(Util::null_terminated_wstring_view className, HINSTANCE hInst) :
 	MessageWindow(className, { }, hInst, WS_OVERLAPPED)
 {
@@ -103,4 +84,11 @@ BaseXamlPageHost::BaseXamlPageHost(Util::null_terminated_wstring_view className,
 	winrt::check_hresult(nativeSource->AttachToWindow(m_WindowHandle));
 
 	winrt::check_hresult(nativeSource->get_WindowHandle(m_interopWnd.put()));
+
+	using namespace winrt::Windows::UI::Xaml::Hosting;
+	m_focusRevoker = m_source.TakeFocusRequested(winrt::auto_revoke, [](const DesktopWindowXamlSource &sender, const DesktopWindowXamlSourceTakeFocusRequestedEventArgs &args)
+	{
+		// just cycle back to beginning
+		sender.NavigateFocus(args.Request());
+	});
 }

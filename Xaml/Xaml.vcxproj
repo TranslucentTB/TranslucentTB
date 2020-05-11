@@ -128,11 +128,6 @@
       <SubType>Designer</SubType>
     </Midl>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ProgramLog\ProgramLog.vcxproj">
-      <Project>{62cd9de0-af10-40f0-b72c-7a7b5bbba3c7}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Microsoft.VCRTForwarders.140.1.0.4\build\native\Microsoft.VCRTForwarders.140.targets" Condition="Exists('..\packages\Microsoft.VCRTForwarders.140.1.0.4\build\native\Microsoft.VCRTForwarders.140.targets')" />
     <Import Project="..\packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.0.0\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.targets" Condition="Exists('..\packages\Microsoft.Toolkit.Win32.UI.XamlApplication.6.0.0\build\native\Microsoft.Toolkit.Win32.UI.XamlApplication.targets')" />
