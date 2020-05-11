@@ -130,6 +130,11 @@ Application::Application(HINSTANCE hInst, bool hasPackageIdentity) : m_hInstance
 				PostQuitMessage(1);
 			}
 		});
+
+		if (!SetForegroundWindow(window->handle()))
+		{
+			MessagePrint(spdlog::level::warn, L"Failed to set foreground window");
+		}
 	}
 	else
 	{

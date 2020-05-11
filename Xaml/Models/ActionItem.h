@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Models.ActionItem.g.h"
-#include "PropertyChangedBase.hpp"
+#include "Models/ActionItem.g.h"
+#include "../PropertyChangedBase.hpp"
 
 namespace winrt::TranslucentTB::Xaml::Models::implementation
 {

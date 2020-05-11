@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Pages.FramelessPage.g.h"
+#include "Pages/FramelessPage.g.h"
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {

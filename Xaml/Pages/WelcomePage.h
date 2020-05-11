@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Pages.WelcomePage.g.h"
+#include "Pages/WelcomePage.g.h"
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {

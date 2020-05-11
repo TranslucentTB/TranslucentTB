@@ -1,8 +1,8 @@
 #include "pch.h"
 
-#include "Models.ActionItem.h"
-#if __has_include("Models.ActionItem.g.cpp")
-#include "Models.ActionItem.g.cpp"
+#include "ActionItem.h"
+#if __has_include("Models/ActionItem.g.cpp")
+#include "Models/ActionItem.g.cpp"
 #endif
 
 using namespace winrt;

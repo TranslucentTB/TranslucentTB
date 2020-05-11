@@ -2,9 +2,9 @@
 
 #include "util/strings.hpp"
 
-#include "Pages.FramelessPage.h"
-#if __has_include("Pages.FramelessPage.g.cpp")
-#include "Pages.FramelessPage.g.cpp"
+#include "FramelessPage.h"
+#if __has_include("Pages/FramelessPage.g.cpp")
+#include "Pages/FramelessPage.g.cpp"
 #endif
 
 using namespace winrt;

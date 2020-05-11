@@ -1,4 +1,4 @@
-import "Pages.FramelessPage.idl";
+import "Pages/FramelessPage.idl";
 
 namespace TranslucentTB.Xaml.Pages
 {

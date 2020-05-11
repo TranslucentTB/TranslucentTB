@@ -8,6 +8,7 @@
     <RootNamespace>TranslucentTB.Xaml</RootNamespace>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
+    <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
     <!-- Compile as a UWP project for the XAML compiler to compile the pages. -->
     <MinimalCoreWin>true</MinimalCoreWin>
     <AppContainerApplication>true</AppContainerApplication>
@@ -46,20 +47,20 @@
       <DependentUpon>BoundResources.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
-    <ClCompile Include="Pages.FramelessPage.cpp">
-      <DependentUpon>Pages.FramelessPage.xaml</DependentUpon>
+    <ClCompile Include="Pages\FramelessPage.cpp">
+      <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Pages.WelcomePage.cpp">
-      <DependentUpon>Pages.WelcomePage.xaml</DependentUpon>
+    <ClCompile Include="Pages\WelcomePage.cpp">
+      <DependentUpon>Pages\WelcomePage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
-    <ClCompile Include="Models.ActionItem.cpp">
-      <DependentUpon>Models.ActionItem.idl</DependentUpon>
+    <ClCompile Include="Models\ActionItem.cpp">
+      <DependentUpon>Models\ActionItem.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
   </ItemGroup>
@@ -75,10 +76,10 @@
     <Page Include="BoundResources.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Pages.FramelessPage.xaml">
+    <Page Include="Pages\FramelessPage.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Pages.WelcomePage.xaml">
+    <Page Include="Pages\WelcomePage.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
@@ -92,17 +93,17 @@
       <DependentUpon>BoundResources.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
-    <ClInclude Include="Pages.FramelessPage.h">
-      <DependentUpon>Pages.FramelessPage.xaml</DependentUpon>
+    <ClInclude Include="Pages\FramelessPage.h">
+      <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Pages.WelcomePage.h">
-      <DependentUpon>Pages.WelcomePage.xaml</DependentUpon>
+    <ClInclude Include="Pages\WelcomePage.h">
+      <DependentUpon>Pages\WelcomePage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
-    <ClInclude Include="Models.ActionItem.h">
-      <DependentUpon>Models.ActionItem.idl</DependentUpon>
+    <ClInclude Include="Models\ActionItem.h">
+      <DependentUpon>Models\ActionItem.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="PropertyChangedBase.hpp" />
@@ -116,15 +117,15 @@
       <DependentUpon>BoundResources.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
-    <Midl Include="Pages.FramelessPage.idl">
-      <DependentUpon>Pages.FramelessPage.xaml</DependentUpon>
+    <Midl Include="Pages\FramelessPage.idl">
+      <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
-    <Midl Include="Pages.WelcomePage.idl">
-      <DependentUpon>Pages.WelcomePage.xaml</DependentUpon>
+    <Midl Include="Pages\WelcomePage.idl">
+      <DependentUpon>Pages\WelcomePage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
-    <Midl Include="Models.ActionItem.idl">
+    <Midl Include="Models\ActionItem.idl">
       <SubType>Designer</SubType>
     </Midl>
   </ItemGroup>
