@@ -1,0 +1,8 @@
+namespace TranslucentTB.Xaml.Converters
+{
+	[default_interface]
+	runtimeclass ModifyOpacitySolidColorBrushToColorValueConverter : Windows.UI.Xaml.Data.IValueConverter
+	{
+		ModifyOpacitySolidColorBrushToColorValueConverter();
+	}
+}

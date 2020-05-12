@@ -13,10 +13,12 @@
 #include <winrt/Windows.UI.Xaml.Documents.h>
 #include <winrt/Windows.UI.Xaml.Interop.h>
 #include <winrt/Windows.UI.Xaml.Markup.h>
+#include <winrt/Windows.UI.Xaml.Media.h>
 #include <winrt/Windows.UI.Xaml.Navigation.h>
 #include <winrt/Microsoft.Toolkit.Win32.UI.XamlHost.h>
 #include <winrt/TranslucentTB.Xaml.h>
 #include <winrt/TranslucentTB.Xaml.Controls.h>
+#include <winrt/TranslucentTB.Xaml.Converters.h>
 #include <winrt/TranslucentTB.Xaml.Models.h>
 #include <winrt/TranslucentTB.Xaml.Pages.h>
 
