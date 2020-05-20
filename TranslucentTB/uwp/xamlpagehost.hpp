@@ -128,7 +128,7 @@ public:
 	{
 		SetTheme();
 		source().Content(m_content);
-		
+
 		SetTitle();
 		m_TitleChangedToken.value = m_content.RegisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), { this, &XamlPageHost::SetTitle });
 		m_ClosedRevoker = m_content.Closed(winrt::auto_revoke, [handle = handle()]
