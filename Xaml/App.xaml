@@ -29,6 +29,11 @@
                 <Setter Property="PressedBackground" Value="#99E71021" />
             </Style>
 
+            <Style TargetType="controls:ChromeButton">
+                <Setter Property="HoverBackground" Value="#347F7F7F" />
+                <Setter Property="PressedBackground" Value="#6A7F7F7F" />
+            </Style>
+
             <ResourceDictionary.MergedDictionaries>
                 <local:BoundResources />
             </ResourceDictionary.MergedDictionaries>

@@ -15,6 +15,7 @@
 
 #include "util/strings.hpp"
 #include "../ProgramLog/error/win32.hpp"
+#include "undoc/dynamicloader.hpp"
 
 template<typename T>
 #ifdef __cpp_concepts // MIGRATION: IDE concepts support
@@ -55,6 +56,19 @@ private:
 		}
 	}
 
+	inline void SetTheme()
+	{
+		if (DynamicLoader::uxtheme())
+		{
+			if (const auto saudm = DynamicLoader::ShouldAppsUseDarkMode())
+			{
+				// only the last bit has info, the rest is garbage
+				using winrt::Windows::UI::Xaml::ElementTheme;
+				m_content.RequestedTheme((saudm() & 0x1) ? ElementTheme::Dark : ElementTheme::Light);
+			}
+		}
+	}
+
 	inline LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override
 	{
 		switch (uMsg)
@@ -85,6 +99,11 @@ private:
 			}
 			break;
 
+		case WM_SETTINGCHANGE:
+			// can't set this on the application, it throws unsupported operation
+			SetTheme();
+			break;
+
 		case WM_CLOSE:
 			if (!m_content.IsClosable())
 			{
@@ -94,8 +113,8 @@ private:
 			{
 				m_ClosedRevoker.revoke();
 				m_content.Close();
-				break;
 			}
+			break;
 		}
 
 		return BaseXamlPageHost::MessageHandler(uMsg, wParam, lParam);
@@ -107,8 +126,9 @@ public:
 		BaseXamlPageHost(GetClassName(), hInst),
 		m_content(std::forward<Args>(args)...)
 	{
+		SetTheme();
 		source().Content(m_content);
-
+		
 		SetTitle();
 		m_TitleChangedToken.value = m_content.RegisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), { this, &XamlPageHost::SetTitle });
 		m_ClosedRevoker = m_content.Closed(winrt::auto_revoke, [handle = handle()]
@@ -123,6 +143,7 @@ public:
 		const MARGINS margins = { 1 };
 		HresultVerify(DwmExtendFrameIntoClientArea(m_WindowHandle, &margins), spdlog::level::warn, L"Failed to extend frame into client area");
 
+		// TODO: pass size of work area rather than infinite
 		m_content.Measure(winrt::Windows::UI::Xaml::SizeHelper::FromDimensions(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()));
 		PositionWindow(CalculateWindowPosition(m_content.DesiredSize()), true);
 

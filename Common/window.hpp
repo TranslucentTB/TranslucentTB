@@ -239,6 +239,13 @@ public:
 		return pid;
 	}
 
+	inline std::pair<DWORD, DWORD> thread_process_id() const noexcept
+	{
+		std::pair<DWORD, DWORD> pair { };
+		pair.first = GetWindowThreadProcessId(m_WindowHandle, &pair.second);
+		return pair;
+	}
+
 	inline std::optional<RECT> rect() const noexcept(is_exception_free_v)
 	{
 		RECT result { };

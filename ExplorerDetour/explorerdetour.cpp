@@ -115,7 +115,7 @@ void ExplorerDetour::Uninstall()
 
 wil::unique_hhook ExplorerDetour::Inject(Window window) noexcept
 {
-	const DWORD pid = window.process_id();
+	const auto [tid, pid] = window.thread_process_id();
 	wil::unique_process_handle proc(OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, pid));
 	if (!proc)
 	{
@@ -137,7 +137,5 @@ wil::unique_hhook ExplorerDetour::Inject(Window window) noexcept
 		}
 	}
 
-	proc.reset();
-
-	return wil::unique_hhook(SetWindowsHookEx(WH_CALLWNDPROC, CallWndProc, wil::GetModuleInstanceHandle(), window.thread_id()));
+	return wil::unique_hhook(SetWindowsHookEx(WH_CALLWNDPROC, CallWndProc, wil::GetModuleInstanceHandle(), tid));
 }

@@ -25,12 +25,14 @@ private:
 	static BOOL WINAPI SetWindowCompositionAttributeDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data) noexcept;
 	static LRESULT CALLBACK CallWndProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
 
-public:
-#ifdef EXPLORERDETOUR_EXPORTS
 	static bool IsInExplorer() noexcept;
 	static bool Install() noexcept;
 	static void Uninstall();
+
+#ifdef EXPLORERDETOUR_EXPORTS
+	friend BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept;
 #endif
 
+public:
 	EXPLORERDETOUR_API static wil::unique_hhook Inject(Window window) noexcept;
 };

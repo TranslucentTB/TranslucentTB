@@ -106,5 +106,21 @@ namespace DynamicLoader {
 
 		return fn;
 	}
+
+	// Used each time the system theme/settings change
+	inline PFN_SHOULD_APPS_USE_DARK_MODE ShouldAppsUseDarkMode()
+	{
+		static PFN_SHOULD_APPS_USE_DARK_MODE fn;
+		if (!fn)
+		{
+			fn = reinterpret_cast<PFN_SHOULD_APPS_USE_DARK_MODE>(GetProcAddress(uxtheme(), MAKEINTRESOURCEA(132)));
+			if (!fn)
+			{
+				LastErrorHandle(spdlog::level::warn, L"Failed to get address of ShouldAppsUseDarkMode");
+			}
+		}
+
+		return fn;
+	}
 #endif
 }

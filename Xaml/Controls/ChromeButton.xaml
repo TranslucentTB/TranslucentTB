@@ -12,62 +12,48 @@
         <converters:ModifyOpacitySolidColorBrushToColorValueConverter x:Name="ModifyOpacity" />
     </Button.Resources>
 
-    <!-- TODO: fix Foreground only changing after Background fade -->
+    <!-- https://github.com/microsoft/microsoft-ui-xaml/issues/2429 -->
     <Button.Template>
         <ControlTemplate TargetType="local:ChromeButton">
             <ContentPresenter x:Name="ContentPresenter"
-                Foreground="{ThemeResource SystemBaseHighColor}"
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center"
-                Content="{TemplateBinding Icon}">
-
-                <ContentPresenter.Background>
-                    <SolidColorBrush Color="{Binding HoverBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay, Converter = {StaticResource ModifyOpacity}}" />
-                </ContentPresenter.Background>
+                Content="{TemplateBinding Icon}"
+                Background="Transparent">
 
                 <VisualStateManager.VisualStateGroups>
-                    <VisualStateGroup x:Name="CommonStates">
-                        <VisualStateGroup.Transitions>
-                            <VisualTransition From="PointerOver" To="Normal" GeneratedDuration="0:0:0.15" />
-                            <VisualTransition From="Normal" To="PointerOver" GeneratedDuration="0:0:0.05" />
-                        </VisualStateGroup.Transitions>
-
+                    <VisualStateGroup>
                         <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource SystemBaseHighColor}" />
+                            </VisualState.Setters>
                             <Storyboard>
-                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                    <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{ThemeResource SystemBaseHighColor}" />
-                                </ObjectAnimationUsingKeyFrames>
                                 <ColorAnimation
                                     Storyboard.TargetName="ContentPresenter"
                                     Storyboard.TargetProperty="(ContentPresenter.Background).(SolidColorBrush.Color)"
-                                    To="{Binding HoverBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay, Converter = {StaticResource ModifyOpacity}}" Duration="0" />
+                                    To="{Binding HoverBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay, Converter = {StaticResource ModifyOpacity}}"
+                                    Duration="0:0:0.15" />
                             </Storyboard>
                         </VisualState>
 
                         <VisualState x:Name="PointerOver">
+                            <VisualState.Setters>
+                                <Setter Target="ContentPresenter.Foreground" Value="{Binding HoverForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay, TargetNullValue = {ThemeResource SystemBaseHighColor}}" />
+                            </VisualState.Setters>
                             <Storyboard>
-                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                    <DiscreteObjectKeyFrame
-                                        KeyTime="0:0:0"
-                                        Value="{Binding HoverForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay, TargetNullValue = {ThemeResource SystemBaseHighColor}}" />
-                                </ObjectAnimationUsingKeyFrames>
                                 <ColorAnimation
                                     Storyboard.TargetName="ContentPresenter"
                                     Storyboard.TargetProperty="(ContentPresenter.Background).(SolidColorBrush.Color)"
                                     To="{Binding HoverBackground.Color, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                    Duration="0" />
+                                    Duration="0:0:0.05" />
                             </Storyboard>
                         </VisualState>
 
                         <VisualState x:Name="Pressed">
-                            <Storyboard>
-                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                                    <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding PressedForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay, TargetNullValue = {ThemeResource SystemBaseHighColor}}" />
-                                </ObjectAnimationUsingKeyFrames>
-                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
-                                    <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{Binding PressedBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay, TargetNullValue = HoverBackground}" />
-                                </ObjectAnimationUsingKeyFrames>
-                            </Storyboard>
+                            <VisualState.Setters>
+                                <Setter Target="ContentPresenter.Foreground" Value="{Binding PressedForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay, TargetNullValue = {ThemeResource SystemBaseHighColor}}" />
+                                <Setter Target="ContentPresenter.Background" Value="{Binding PressedBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay, TargetNullValue = HoverBackground}" />
+                            </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>
                 </VisualStateManager.VisualStateGroups>

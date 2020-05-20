@@ -7,7 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource SystemControlAcrylicWindowBrush}" Width="635" Height="550">
+    Background="{ThemeResource SystemControlAcrylicWindowBrush}" Width="635" Height="450">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -23,14 +23,7 @@
             <RichTextBlock TextWrapping="Wrap" IsTextSelectionEnabled="False">
                 <Paragraph>
                     By default, TranslucentTB darkens the taskbar a bit when there is a maximised window.
-                    You can alter this behavior, and many other settings, by editing the configuration file now or by using the tray icon (which will appear after accepting the license).
-                </Paragraph>
-                <Paragraph Margin="0,6,0,0">
-                    If you consider this software useful, please consider a donation through Liberapay by clicking the button below!
-                </Paragraph>
-                <Paragraph Margin="0,6,0,0">
-                    If you need any technical assistance, feel free to drop in our Discord server!
-                    The button below should open the server directly in your Discord client, or in your browser if you don't have one running.
+                    You can alter this behavior, and many other settings, by editing the configuration file now or by using the tray icon.
                 </Paragraph>
                 <Paragraph Margin="0,6,0,0">
                     Before using TranslucentTB, you must agree to the terms set forth by our license, the
@@ -57,8 +50,8 @@
 
         <CheckBox Grid.Row="1" Content="Automatically start TranslucentTB at system bootup" IsChecked="True" x:Name="StartupCheckbox" />
         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="10">
-            <Button Width="100" Click="DisagreeButtonClicked">I disagree</Button>
-            <Button Width="100" Click="AgreeButtonClicked">I agree</Button>
+            <Button Width="100" Style="{StaticResource ButtonRevealStyle}" Click="DisagreeButtonClicked">I disagree</Button>
+            <Button Width="100" Style="{StaticResource ButtonRevealStyle}" Click="AgreeButtonClicked">I agree</Button>
         </StackPanel>
     </Grid>
 </local:FramelessPage>

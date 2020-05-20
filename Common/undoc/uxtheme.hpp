@@ -18,4 +18,5 @@ enum class PreferredAppMode : INT {
 
 typedef PreferredAppMode(WINAPI* PFN_SET_PREFERRED_APP_MODE)(PreferredAppMode appMode);
 typedef BOOL(WINAPI* PFN_ALLOW_DARK_MODE_FOR_WINDOW)(HWND window, bool allow);
+typedef BOOL(WINAPI* PFN_SHOULD_APPS_USE_DARK_MODE)();
 typedef BOOL(WINAPI* PFN_SHOULD_SYSTEM_USE_DARK_MODE)();
