@@ -82,6 +82,7 @@ void Application::SetupMainApplication(bool hasPackageIdentity, bool hideIconOve
 
 Application::Application(HINSTANCE hInst, bool hasPackageIdentity) : m_hInstance(hInst), m_Config(hasPackageIdentity, ConfigurationChanged, this), m_XamlApp(nullptr), m_CompletedFirstStart(false)
 {
+	// TODO: avoid toctou?
 	const bool isFirstBoot = true;//TODO: !std::filesystem::exists(m_Config.GetConfigPath());
 	SetupMainApplication(hasPackageIdentity, isFirstBoot);
 
