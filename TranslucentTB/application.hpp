@@ -9,6 +9,7 @@
 #include <winrt/TranslucentTB.Xaml.h>
 #include "undefgetcurrenttime.h"
 #include <winrt/Windows.UI.Xaml.Hosting.h>
+#include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
 #include "redefgetcurrenttime.h"
 
 #include "configmanager.hpp"
@@ -28,7 +29,7 @@ class Application final {
 	std::optional<StartupManager> m_Startup;
 
 	winrt::TranslucentTB::Xaml::App m_XamlApp;
-	std::vector<winrt::weak_ref<winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource>> m_XamlSources;
+	std::vector<winrt::weak_ref<IDesktopWindowXamlSourceNative2>> m_XamlSources;
 
 	std::unique_ptr<discord::Core> m_DiscordCore;
 
@@ -65,7 +66,11 @@ public:
 			}
 
 			auto page = std::make_unique<XamlPageHost<T>>(m_hInstance, std::forward<Args>(args)...);
-			m_XamlSources.push_back(page->source());
+			if (const auto nativeSource = page->source().try_as<IDesktopWindowXamlSourceNative2>())
+			{
+				m_XamlSources.push_back(nativeSource);
+			}
+			
 			return page.release();
 		}
 		HresultErrorCatch(spdlog::level::critical, L"Failed to open window");

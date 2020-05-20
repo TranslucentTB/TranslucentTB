@@ -69,7 +69,7 @@ private:
 	wil::com_ptr<IAppVisibility> m_IAV;
 	wilx::unique_app_visibility_token m_IAVECookie;
 
-	// Messages & timers
+	// Messages
 	std::optional<UINT> m_TaskbarCreatedMessage;
 	std::optional<UINT> m_RefreshRequestedMessage;
 

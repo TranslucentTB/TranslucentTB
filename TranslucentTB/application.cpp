@@ -2,7 +2,6 @@
 #include <WinBase.h>
 #include <WinUser.h>
 #include <winrt/TranslucentTB.Xaml.Pages.h>
-#include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
 
 #include "uwp.hpp"
 
@@ -43,10 +42,8 @@ bool Application::PreTranslateMessage(const MSG &msg)
 	{
 		if (const auto xamlSource = it->get())
 		{
-			const auto native = xamlSource.as<IDesktopWindowXamlSourceNative2>();
-
 			BOOL result { };
-			const HRESULT err = native->PreTranslateMessage(&msg, &result);
+			const HRESULT err = xamlSource->PreTranslateMessage(&msg, &result);
 			if (SUCCEEDED(err))
 			{
 				if (result)
