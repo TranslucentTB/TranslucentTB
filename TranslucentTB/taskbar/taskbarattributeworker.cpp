@@ -107,11 +107,6 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 			return 0;
 		}
 	}
-	else if (uMsg == WM_TIMER && wParam == TIMER_ID)
-	{
-		ResetState(false);
-		return 0;
-	}
 	else
 	{
 		return MessageWindow::MessageHandler(uMsg, wParam, lParam);
@@ -443,13 +438,8 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_ForegroundChangeHook(CreateHook(EVENT_SYSTEM_FOREGROUND, m_ForegroundWindowChangeThunk)),
 	m_TitleChangeHook(CreateHook(EVENT_OBJECT_NAMECHANGE, m_WindowStateChangeThunk)),
 	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED)),
-	m_RefreshRequestedMessage(Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH))/* TODO,
-	m_TimerCookie(SetTimer(m_WindowHandle, TIMER_ID, 10000, nullptr))*/
+	m_RefreshRequestedMessage(Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH))
 {
-	if (!m_TimerCookie)
-	{
-		//LastErrorHandle(spdlog::level::warn, L"Failed to register timer");
-	}
 
 	CreateAppVisibility();
 
@@ -561,10 +551,5 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 
 TaskbarAttributeWorker::~TaskbarAttributeWorker()
 {
-	if (!KillTimer(m_WindowHandle, m_TimerCookie))
-	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to kill timer");
-	}
-
 	ReturnToStock();
 }

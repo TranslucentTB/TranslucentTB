@@ -22,8 +22,6 @@
 
 class TaskbarAttributeWorker final : public MessageWindow {
 private:
-	static constexpr UINT_PTR TIMER_ID = 0x1337;
-
 	struct MonitorInfo {
 		Window TaskbarWindow;
 		std::unordered_set<Window> MaximisedWindows;
@@ -74,7 +72,6 @@ private:
 	// Messages & timers
 	std::optional<UINT> m_TaskbarCreatedMessage;
 	std::optional<UINT> m_RefreshRequestedMessage;
-	UINT_PTR m_TimerCookie;
 
 	// Type aliases
 	using taskbar_iterator = decltype(m_Taskbars)::const_iterator;
