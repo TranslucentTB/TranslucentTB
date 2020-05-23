@@ -14,7 +14,7 @@
 #include "window.hpp"
 #include "uwp.hpp"
 
-std::weak_ptr<lazy_file_sink_st> Log::s_LogSink;
+std::weak_ptr<lazy_file_sink_mt> Log::s_LogSink;
 
 std::time_t Log::GetProcessCreationTime() noexcept
 {
@@ -72,7 +72,7 @@ void Log::Initialize()
 		defaultLogger->sinks().push_back(std::make_shared<sinks::windebug_sink_st>());
 	}
 
-	const auto fileLog = std::make_shared<lazy_file_sink_st>(GetPath);
+	const auto fileLog = std::make_shared<lazy_file_sink_mt>(GetPath);
 	fileLog->set_level(Config { }.LogVerbosity);
 	defaultLogger->sinks().push_back(fileLog);
 

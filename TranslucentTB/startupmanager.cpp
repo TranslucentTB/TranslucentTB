@@ -34,10 +34,7 @@ std::optional<StartupTaskState> StartupManager::GetState() const
 			return m_StartupTask.State();
 		}
 	}
-	catch (const winrt::hresult_error &err)
-	{
-		HresultErrorHandle(err, spdlog::level::warn, L"Failed to get startup task status.");
-	}
+	HresultErrorCatch(spdlog::level::warn, L"Failed to get startup task status.");
 
 	return std::nullopt;
 }

@@ -95,12 +95,12 @@ Application::Application(HINSTANCE hInst, bool hasPackageIdentity) : m_hInstance
 		content.DiscordJoinRequested({ this, &Application::OpenDiscordServer });
 		content.ConfigEditRequested({ this, &Application::EditConfigFile });
 
-		content.LicenseApproved([this, hasPackageIdentity](const auto &, bool startupState)
+		content.LicenseApproved([this](const auto &, bool startupState)
 		{
-			if (hasPackageIdentity)
+			if (m_Startup)
 			{
-				auto &manager = m_Startup.emplace();
-				if (manager.WaitForTask())
+				// TODO: avoid blocking, use dispatcher to get back on ui thread
+				if (auto &manager = *m_Startup; manager.WaitForTask())
 				{
 					if (startupState)
 					{

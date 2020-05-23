@@ -28,7 +28,7 @@ namespace Util {
 
 	// Apparently no wide string to number parser accepted an explicit ending to the string
 	// so here I am. Also C locales sucks.
-#ifdef __cpp_concepts // MIGRATION: IDE concept support
+#ifdef __cpp_lib_concepts // MIGRATION: IDE concept support
 	template<std::unsigned_integral T = uint32_t>
 #else
 	template<typename T = uint32_t>

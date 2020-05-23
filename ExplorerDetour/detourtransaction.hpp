@@ -106,11 +106,7 @@ public:
 		while (Thread32Next(snapshot.get(), &thread));
 	}
 
-#ifdef __cpp_concepts // MIGRATION: IDE concept support
 	template<Util::function_pointer T>
-#else
-	template<typename T>
-#endif
 	inline void attach(T &function, std::type_identity_t<T> detour)
 	{
 		const LONG result = DetourAttach(reinterpret_cast<void **>(&function), reinterpret_cast<void *>(detour));
@@ -136,11 +132,7 @@ public:
 		}
 	}
 
-#ifdef __cpp_concepts // MIGRATION: IDE concept support
 	template<Util::function_pointer T>
-#else
-	template<typename T>
-#endif
 	inline void detach(T &function, std::type_identity_t<T> detour)
 	{
 		const LONG result = DetourDetach(reinterpret_cast<void **>(&function), reinterpret_cast<void *>(detour));

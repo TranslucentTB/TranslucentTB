@@ -118,6 +118,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <OptimizeReferences>true</OptimizeReferences>
+
+      <!-- Disable PDB paths -->
+      <AdditionalOptions>/pdbaltpath:%_PDB% %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
 
@@ -165,7 +168,7 @@
       <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING=1;RAPIDJSON_ERROR_CHARTYPE=wchar_t;RAPIDJSON_ERROR_STRING=UTIL_WIDEN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
       <!-- spdlog -->
-      <PreprocessorDefinitions>SPDLOG_DISABLE_DEFAULT_LOGGER;SPDLOG_FMT_EXTERNAL;SPDLOG_NO_ATOMIC_LEVELS;SPDLOG_NO_NAME;SPDLOG_NO_THREAD_ID;SPDLOG_NO_TLS;SPDLOG_WCHAR_TO_UTF8_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SPDLOG_DISABLE_DEFAULT_LOGGER;SPDLOG_FMT_EXTERNAL;SPDLOG_NO_NAME;SPDLOG_NO_THREAD_ID;SPDLOG_NO_TLS;SPDLOG_WCHAR_TO_UTF8_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
       <!-- wil -->
       <PreprocessorDefinitions>RESULT_SUPPRESS_STATIC_INITIALIZERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>

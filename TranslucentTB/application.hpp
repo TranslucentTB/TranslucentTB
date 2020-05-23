@@ -70,7 +70,7 @@ public:
 			{
 				m_XamlSources.push_back(nativeSource);
 			}
-			
+
 			return page.release();
 		}
 		HresultErrorCatch(spdlog::level::critical, L"Failed to open window");

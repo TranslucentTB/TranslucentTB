@@ -13,7 +13,7 @@
 
 class Log {
 private:
-	PROGRAMLOG_API static std::weak_ptr<lazy_file_sink_st> s_LogSink;
+	PROGRAMLOG_API static std::weak_ptr<lazy_file_sink_mt> s_LogSink;
 
 	static std::time_t GetProcessCreationTime() noexcept;
 	static std::filesystem::path GetPath();
@@ -25,7 +25,7 @@ private:
 #endif
 
 public:
-	inline static std::shared_ptr<lazy_file_sink_st> GetSink()
+	inline static std::shared_ptr<lazy_file_sink_mt> GetSink()
 	{
 		return s_LogSink.lock();
 	}

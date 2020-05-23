@@ -50,6 +50,7 @@
     <EntryPointProjectUniqueName>..\TranslucentTB\TranslucentTB.vcxproj</EntryPointProjectUniqueName>
     <DebuggerType>NativeOnly</DebuggerType>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA512</AppxPackageSigningTimestampDigestAlgorithm>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">

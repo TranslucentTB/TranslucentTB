@@ -18,7 +18,7 @@
 #include "undoc/dynamicloader.hpp"
 
 template<typename T>
-#ifdef __cpp_concepts // MIGRATION: IDE concepts support
+#ifdef __cpp_lib_concepts // MIGRATION: IDE concepts support
 	// https://github.com/microsoft/cppwinrt/issues/609
 	requires std::derived_from<T, winrt::impl::base_one<T, winrt::TranslucentTB::Xaml::Pages::FramelessPage>>
 #endif
