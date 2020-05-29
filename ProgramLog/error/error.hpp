@@ -1,6 +1,7 @@
 #pragma once
 #include "arch.h"
 #include <fmt/format.h>
+#include <RestrictedErrorInfo.h>
 #include <spdlog/common.h>
 #include <string_view>
 #include <windef.h>
@@ -29,7 +30,7 @@ namespace Error {
 		PROGRAMLOG_API void GetLogMessage(fmt::wmemory_buffer &out, std::wstring_view message, std::wstring_view error_message, std::wstring_view err_message_fmt = L"{} ({})", std::wstring_view message_fmt = L"{}");
 
 		template<spdlog::level::level_enum level>
-		inline void Handle(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function)
+		inline void Handle(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function, HRESULT, IRestrictedErrorInfo*)
 		{
 			if (ShouldLog(level))
 			{
@@ -40,10 +41,10 @@ namespace Error {
 		}
 
 		template<>
-		PROGRAMLOG_API void Handle<spdlog::level::err>(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function);
+		PROGRAMLOG_API void Handle<spdlog::level::err>(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function, HRESULT, IRestrictedErrorInfo*);
 
 		template<>
-		[[noreturn]] PROGRAMLOG_API void Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function);
+		[[noreturn]] PROGRAMLOG_API void Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function, HRESULT err, IRestrictedErrorInfo *errInfo);
 	}
 
 	wil::unique_handle CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type);
@@ -52,9 +53,9 @@ namespace Error {
 	struct HandleImpl {
 		template<typename T, typename U>
 		requires Util::is_convertible_to_wstring_view_v<T> && Util::is_convertible_to_wstring_view_v<U>
-		inline static void Handle(const T &message, const U &error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function)
+		inline static void Handle(const T &message, const U &error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function, HRESULT err = E_FAIL, IRestrictedErrorInfo *errInfo = nullptr)
 		{
-			impl::Handle<level>(Util::ToStringView(message), Util::ToStringView(error_message), file, line, function);
+			impl::Handle<level>(Util::ToStringView(message), Util::ToStringView(error_message), file, line, function, err, errInfo);
 		}
 	};
 
@@ -64,9 +65,9 @@ namespace Error {
 #ifdef __cpp_concepts // MIGRATION: IDE concept support
 			requires Util::is_convertible_to_wstring_view_v<T> && Util::is_convertible_to_wstring_view_v<U>
 #endif
-		[[noreturn]] inline static void Handle(const T &message, const U &error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function)
+		[[noreturn]] inline static void Handle(const T &message, const U &error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function, HRESULT err = E_FAIL, IRestrictedErrorInfo *errInfo = nullptr)
 		{
-			impl::Handle<spdlog::level::critical>(Util::ToStringView(message), Util::ToStringView(error_message), file, line, function);
+			impl::Handle<spdlog::level::critical>(Util::ToStringView(message), Util::ToStringView(error_message), file, line, function, err, errInfo);
 		}
 	};
 };

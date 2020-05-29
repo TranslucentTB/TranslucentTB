@@ -39,7 +39,7 @@ void Error::MessageFromHRESULT(fmt::wmemory_buffer &buf, HRESULT result)
 	FormatHRESULT(buf, result, count ? Util::Trim({ error.get(), count }) : L"[failed to get message for HRESULT]");
 }
 
-void Error::MessageFromIRestrictedErrorInfo(fmt::wmemory_buffer &buf, IRestrictedErrorInfo *info)
+bool Error::MessageFromIRestrictedErrorInfo(fmt::wmemory_buffer &buf, IRestrictedErrorInfo *info, HRESULT failureCode)
 {
 	if (info)
 	{
@@ -47,7 +47,7 @@ void Error::MessageFromIRestrictedErrorInfo(fmt::wmemory_buffer &buf, IRestricte
 		wil::unique_bstr description, restrictedDescription, capabilitySid;
 
 		hr = info->GetErrorDetails(description.put(), &errorCode, restrictedDescription.put(), capabilitySid.put());
-		if (SUCCEEDED(hr))
+		if (SUCCEEDED(hr) && errorCode == failureCode)
 		{
 			if (restrictedDescription)
 			{
@@ -61,6 +61,8 @@ void Error::MessageFromIRestrictedErrorInfo(fmt::wmemory_buffer &buf, IRestricte
 			{
 				MessageFromHRESULT(buf, errorCode);
 			}
+
+			return true;
 		}
 		else
 		{
@@ -74,4 +76,6 @@ void Error::MessageFromIRestrictedErrorInfo(fmt::wmemory_buffer &buf, IRestricte
 		static constexpr std::wstring_view INFO_NULL = L"[IRestrictedErrorInfo was null]";
 		buf.append(INFO_NULL.data(), INFO_NULL.data() + INFO_NULL.length());
 	}
+
+	return false;
 }

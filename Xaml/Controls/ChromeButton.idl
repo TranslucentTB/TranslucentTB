@@ -9,16 +9,22 @@ namespace TranslucentTB.Xaml.Controls
 		Windows.UI.Xaml.Controls.IconElement Icon;
 		static Windows.UI.Xaml.DependencyProperty IconProperty { get; };
 
-		Windows.UI.Xaml.Media.SolidColorBrush HoverForeground;
+		Windows.UI.Color NormalForeground;
+		static Windows.UI.Xaml.DependencyProperty NormalForegroundProperty { get; };
+
+		Windows.UI.Color NormalBackground;
+		static Windows.UI.Xaml.DependencyProperty NormalBackgroundProperty { get; };
+
+		Windows.UI.Color HoverForeground;
 		static Windows.UI.Xaml.DependencyProperty HoverForegroundProperty { get; };
 
-		Windows.UI.Xaml.Media.SolidColorBrush HoverBackground;
+		Windows.UI.Color HoverBackground;
 		static Windows.UI.Xaml.DependencyProperty HoverBackgroundProperty { get; };
 
-		Windows.UI.Xaml.Media.SolidColorBrush PressedForeground;
+		Windows.UI.Color PressedForeground;
 		static Windows.UI.Xaml.DependencyProperty PressedForegroundProperty { get; };
 
-		Windows.UI.Xaml.Media.SolidColorBrush PressedBackground;
+		Windows.UI.Color PressedBackground;
 		static Windows.UI.Xaml.DependencyProperty PressedBackgroundProperty { get; };
 	}
 }

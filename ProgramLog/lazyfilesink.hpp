@@ -12,17 +12,21 @@ template<typename Mutex>
 class lazy_file_sink final : public spdlog::sinks::base_sink<Mutex> {
 	using path_getter_t = std::add_pointer_t<std::filesystem::path()>;
 public:
-	explicit lazy_file_sink(path_getter_t getter) : m_PathGetter(getter), m_Tried(false) { }
+	explicit lazy_file_sink(path_getter_t getter) : m_FailureDialogDisabled(false), m_PathGetter(getter), m_Tried(false) { }
 
 	const std::filesystem::path &file() const noexcept { return m_File; }
 	bool opened() const noexcept { return m_Handle.is_valid(); }
 	bool tried() const noexcept { return m_Tried; }
+
+	void disable_failure_dialog() noexcept;
 
 protected:
 	void sink_it_(const spdlog::details::log_msg &msg) override;
 	void flush_() override;
 
 private:
+	bool m_FailureDialogDisabled;
+
 	path_getter_t m_PathGetter;
 	bool m_Tried;
 	wil::unique_hfile m_Handle;

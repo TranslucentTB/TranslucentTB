@@ -37,6 +37,5 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="Models\ActionItem.idl" />
-    <Midl Include="Converters\ModifyOpacitySolidColorBrushToColorValueConverter.idl" />
   </ItemGroup>
 </Project>

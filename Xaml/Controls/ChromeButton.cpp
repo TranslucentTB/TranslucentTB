@@ -8,6 +8,7 @@
 #endif
 
 using namespace winrt;
+using namespace Windows::UI;
 using namespace Windows::UI::Xaml;
 
 namespace winrt::TranslucentTB::Xaml::Controls::implementation
@@ -20,10 +21,26 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 			nullptr
 	);
 
+	DependencyProperty ChromeButton::s_NormalForegroundProperty =
+		DependencyProperty::Register(
+			UTIL_STRINGIFY(NormalForeground),
+			xaml_typename<Color>(),
+			xaml_typename<class_type>(),
+			nullptr
+	);
+
+	DependencyProperty ChromeButton::s_NormalBackgroundProperty =
+		DependencyProperty::Register(
+			UTIL_STRINGIFY(NormalBackground),
+			xaml_typename<Color>(),
+			xaml_typename<class_type>(),
+			nullptr
+	);
+
 	DependencyProperty ChromeButton::s_HoverForegroundProperty =
 		DependencyProperty::Register(
 			UTIL_STRINGIFY(HoverForeground),
-			xaml_typename<Media::SolidColorBrush>(),
+			xaml_typename<Color>(),
 			xaml_typename<class_type>(),
 			nullptr
 	);
@@ -31,7 +48,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 	DependencyProperty ChromeButton::s_HoverBackgroundProperty =
 		DependencyProperty::Register(
 			UTIL_STRINGIFY(HoverBackground),
-			xaml_typename<Media::SolidColorBrush>(),
+			xaml_typename<Color>(),
 			xaml_typename<class_type>(),
 			nullptr
 	);
@@ -39,7 +56,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 	DependencyProperty ChromeButton::s_PressedForegroundProperty =
 		DependencyProperty::Register(
 			UTIL_STRINGIFY(PressedForeground),
-			xaml_typename<Media::SolidColorBrush>(),
+			xaml_typename<Color>(),
 			xaml_typename<class_type>(),
 			nullptr
 	);
@@ -47,7 +64,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 	DependencyProperty ChromeButton::s_PressedBackgroundProperty =
 		DependencyProperty::Register(
 			UTIL_STRINGIFY(PressedBackground),
-			xaml_typename<Media::SolidColorBrush>(),
+			xaml_typename<Color>(),
 			xaml_typename<class_type>(),
 			nullptr
 	);
@@ -67,67 +84,97 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 		SetValue(s_IconProperty, icon);
 	}
 
-	Windows::UI::Xaml::DependencyProperty ChromeButton::IconProperty() noexcept
+	DependencyProperty ChromeButton::IconProperty() noexcept
 	{
 		return s_IconProperty;
 	}
 
-	Media::SolidColorBrush ChromeButton::HoverForeground()
+	Color ChromeButton::NormalForeground()
 	{
-		return GetValue(s_HoverForegroundProperty).as<Media::SolidColorBrush>();
+		return unbox_value<Color>(GetValue(s_NormalForegroundProperty));
 	}
 
-	void ChromeButton::HoverForeground(Media::SolidColorBrush color)
+	void ChromeButton::NormalForeground(const Color &color)
 	{
-		SetValue(s_HoverForegroundProperty, color);
+		SetValue(s_NormalForegroundProperty, box_value(color));
 	}
 
-	Windows::UI::Xaml::DependencyProperty ChromeButton::HoverForegroundProperty() noexcept
+	DependencyProperty ChromeButton::NormalForegroundProperty() noexcept
+	{
+		return s_NormalForegroundProperty;
+	}
+
+	Color ChromeButton::NormalBackground()
+	{
+		return unbox_value<Color>(GetValue(s_NormalBackgroundProperty));
+	}
+
+	void ChromeButton::NormalBackground(const Color &color)
+	{
+		SetValue(s_NormalBackgroundProperty, box_value(color));
+	}
+
+	DependencyProperty ChromeButton::NormalBackgroundProperty() noexcept
+	{
+		return s_NormalBackgroundProperty;
+	}
+
+	Color ChromeButton::HoverForeground()
+	{
+		return unbox_value<Color>(GetValue(s_HoverForegroundProperty));
+	}
+
+	void ChromeButton::HoverForeground(const Color &color)
+	{
+		SetValue(s_HoverForegroundProperty, box_value(color));
+	}
+
+	DependencyProperty ChromeButton::HoverForegroundProperty() noexcept
 	{
 		return s_HoverForegroundProperty;
 	}
 
-	Media::SolidColorBrush ChromeButton::HoverBackground()
+	Color ChromeButton::HoverBackground()
 	{
-		return GetValue(s_HoverBackgroundProperty).as<Media::SolidColorBrush>();
+		return unbox_value<Color>(GetValue(s_HoverBackgroundProperty));
 	}
 
-	void ChromeButton::HoverBackground(Media::SolidColorBrush color)
+	void ChromeButton::HoverBackground(const Color &color)
 	{
-		SetValue(s_HoverBackgroundProperty, color);
+		SetValue(s_HoverBackgroundProperty, box_value(color));
 	}
 
-	Windows::UI::Xaml::DependencyProperty ChromeButton::HoverBackgroundProperty() noexcept
+	DependencyProperty ChromeButton::HoverBackgroundProperty() noexcept
 	{
 		return s_HoverBackgroundProperty;
 	}
 
-	Media::SolidColorBrush ChromeButton::PressedForeground()
+	Color ChromeButton::PressedForeground()
 	{
-		return GetValue(s_PressedForegroundProperty).as<Media::SolidColorBrush>();
+		return unbox_value<Color>(GetValue(s_PressedForegroundProperty));
 	}
 
-	void ChromeButton::PressedForeground(Media::SolidColorBrush color)
+	void ChromeButton::PressedForeground(const Color &color)
 	{
-		SetValue(s_PressedForegroundProperty, color);
+		SetValue(s_PressedForegroundProperty, box_value(color));
 	}
 
-	Windows::UI::Xaml::DependencyProperty ChromeButton::PressedForegroundProperty() noexcept
+	DependencyProperty ChromeButton::PressedForegroundProperty() noexcept
 	{
 		return s_PressedForegroundProperty;
 	}
 
-	Media::SolidColorBrush ChromeButton::PressedBackground()
+	Color ChromeButton::PressedBackground()
 	{
-		return GetValue(s_PressedBackgroundProperty).as<Media::SolidColorBrush>();
+		return unbox_value<Color>(GetValue(s_PressedBackgroundProperty));
 	}
 
-	void ChromeButton::PressedBackground(Media::SolidColorBrush color)
+	void ChromeButton::PressedBackground(const Color &color)
 	{
-		SetValue(s_PressedBackgroundProperty, color);
+		SetValue(s_PressedBackgroundProperty, box_value(color));
 	}
 
-	Windows::UI::Xaml::DependencyProperty ChromeButton::PressedBackgroundProperty() noexcept
+	DependencyProperty ChromeButton::PressedBackgroundProperty() noexcept
 	{
 		return s_PressedBackgroundProperty;
 	}

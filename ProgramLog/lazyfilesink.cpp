@@ -14,6 +14,13 @@
 #include "util/to_string_view.hpp"
 
 template<typename Mutex>
+void lazy_file_sink<Mutex>::disable_failure_dialog() noexcept
+{
+	std::lock_guard<Mutex> lock(this->mutex_);
+	m_FailureDialogDisabled = true;
+}
+
+template<typename Mutex>
 void lazy_file_sink<Mutex>::sink_it_(const spdlog::details::log_msg &msg)
 {
 	open();
@@ -52,20 +59,22 @@ void lazy_file_sink<Mutex>::open()
 		}
 		catch (const winrt::hresult_error &err)
 		{
-			HresultErrorHandle(err, spdlog::level::trace, L"Failed to get log file path.");
-
-			Error::MessageFromHresultError(buf, err);
-			handle_open_error(Util::ToStringView(buf));
-
+			if (!m_FailureDialogDisabled)
+			{
+				HresultErrorHandleWithBuffer(buf, err, spdlog::level::trace, L"Failed to get log file path.");
+				handle_open_error(Util::ToStringView(buf));
+			}
+			
 			return;
 		}
 		catch (const std::filesystem::filesystem_error &err)
 		{
-			StdSystemErrorHandle(err, spdlog::level::trace, L"Failed to get log file path.");
-
-			Error::MessageFromStdSystemError(buf, err);
-			handle_open_error(Util::ToStringView(buf));
-
+			if (!m_FailureDialogDisabled)
+			{
+				StdSystemErrorHandleWithBuffer(buf, err, spdlog::level::trace, L"Failed to get log file path.");
+				handle_open_error(Util::ToStringView(buf));
+			}
+			
 			return;
 		}
 
@@ -74,12 +83,10 @@ void lazy_file_sink<Mutex>::open()
 		{
 			write(UTF8_BOM);
 		}
-		else
+		else if (!m_FailureDialogDisabled)
 		{
 			const HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
-			HresultHandle(hr, spdlog::level::trace, L"Failed to create log file.");
-
-			Error::MessageFromHRESULT(buf, hr);
+			HresultHandleWithBuffer(buf, hr, spdlog::level::trace, L"Failed to create log file.");
 			handle_open_error(Util::ToStringView(buf));
 		}
 	}

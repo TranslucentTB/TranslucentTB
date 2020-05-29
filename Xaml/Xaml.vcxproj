@@ -51,10 +51,6 @@
       <DependentUpon>Controls\ChromeButton.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
-    <ClCompile Include="Converters\ModifyOpacitySolidColorBrushToColorValueConverter.cpp">
-      <DependentUpon>Converters\ModifyOpacitySolidColorBrushToColorValueConverter.idl</DependentUpon>
-      <SubType>Code</SubType>
-    </ClCompile>
     <ClCompile Include="Pages\FramelessPage.cpp">
       <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -108,10 +104,6 @@
       <DependentUpon>Controls\ChromeButton.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
-    <ClInclude Include="Converters\ModifyOpacitySolidColorBrushToColorValueConverter.h">
-      <DependentUpon>Converters\ModifyOpacitySolidColorBrushToColorValueConverter.idl</DependentUpon>
-      <SubType>Code</SubType>
-    </ClInclude>
     <ClInclude Include="Pages\FramelessPage.h">
       <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -139,9 +131,6 @@
     <Midl Include="Controls\ChromeButton.idl">
       <DependentUpon>Controls\ChromeButton.xaml</DependentUpon>
       <SubType>Code</SubType>
-    </Midl>
-    <Midl Include="Converters\ModifyOpacitySolidColorBrushToColorValueConverter.idl">
-      <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Pages\FramelessPage.idl">
       <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>

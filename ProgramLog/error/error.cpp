@@ -2,6 +2,7 @@
 #include "error.hpp"
 
 #include <debugapi.h>
+#include <roerrorapi.h>
 #include <spdlog/spdlog.h>
 #include <string>
 #include <processthreadsapi.h>
@@ -15,6 +16,11 @@
 
 bool Error::impl::ShouldLog(spdlog::level::level_enum level)
 {
+	if (level == spdlog::level::err || level == spdlog::level::critical)
+	{
+		return true;
+	}
+
 	if (IsDebuggerPresent())
 	{
 		return true;
@@ -46,44 +52,68 @@ void Error::impl::GetLogMessage(fmt::wmemory_buffer &out, std::wstring_view mess
 }
 
 template<>
-void Error::impl::Handle<spdlog::level::err>(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function)
+void Error::impl::Handle<spdlog::level::err>(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function, HRESULT, IRestrictedErrorInfo*)
 {
 	fmt::wmemory_buffer buf;
-	if (ShouldLog(spdlog::level::err))
+	GetLogMessage(buf, message, error_message);
+	Log(buf, spdlog::level::err, file, line, function);
+
+	if (!IsDebuggerPresent())
 	{
-		GetLogMessage(buf, message, error_message);
-		Log(buf, spdlog::level::err, file, line, function);
+		buf.clear();
+		GetLogMessage(buf, message, error_message, ERROR_MESSAGE L"\n\n{}\n\n{}", ERROR_MESSAGE L"\n\n{}");
+
+		CreateMessageBoxThread(buf, ERROR_TITLE, MB_ICONWARNING);
 	}
-
-	buf.clear();
-	GetLogMessage(buf, message, error_message, ERROR_MESSAGE L"\n\n{}\n\n{}", ERROR_MESSAGE L"\n\n{}");
-
-	CreateMessageBoxThread(buf, ERROR_TITLE, MB_ICONWARNING);
+	else
+	{
+		__debugbreak();
+	}
 }
 
 template<>
-void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function)
+void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function, HRESULT err, IRestrictedErrorInfo *errInfo)
 {
 	fmt::wmemory_buffer buf;
-	if (ShouldLog(spdlog::level::critical))
+	GetLogMessage(buf, message, error_message);
+	if (const auto sink = Log::GetSink())
 	{
-		GetLogMessage(buf, message, error_message);
-		Log(buf, spdlog::level::critical, file, line, function);
+		// If the failure is in config path retrieval, we might get a dialog from the sink, for failing to get log path.
+		sink->disable_failure_dialog();
 	}
 
-	buf.clear();
-	GetLogMessage(buf, message, error_message, FATAL_ERROR_MESSAGE L"\n\n{}\n\n{}", FATAL_ERROR_MESSAGE L"\n\n{}");
+	Log(buf, spdlog::level::critical, file, line, function);
 
-	if (auto thread = CreateMessageBoxThread(buf, FATAL_ERROR_TITLE, MB_ICONERROR | MB_TOPMOST))
+	if (!IsDebuggerPresent())
 	{
-		if (WaitForSingleObject(thread.get(), INFINITE) == WAIT_FAILED)
+		buf.clear();
+		GetLogMessage(buf, message, error_message, FATAL_ERROR_MESSAGE L"\n\n{}\n\n{}", FATAL_ERROR_MESSAGE L"\n\n{}");
+
+		if (auto thread = CreateMessageBoxThread(buf, FATAL_ERROR_TITLE, MB_ICONERROR | MB_TOPMOST))
 		{
-			LastErrorHandle(spdlog::level::warn, L"Failed to wait for thread");
+			if (WaitForSingleObject(thread.get(), INFINITE) == WAIT_FAILED)
+			{
+				LastErrorHandle(spdlog::level::warn, L"Failed to wait for thread");
+			}
 		}
 	}
 
-	// Calling abort() will generate a dialog box, but we already have our own.
-	// Raising a fail-fast exception skips it but also allows WER to do its job.
+	if (errInfo)
+	{
+		if (const HRESULT hr = SetRestrictedErrorInfo(errInfo); SUCCEEDED(hr))
+		{
+			// This gives us much better error reporting if the error came from a WinRT module:
+			// the stack trace in the dump, debugger and telemetry is unaffected by our error handling,
+			// giving us better insight into what went wrong.
+			RoFailFastWithErrorContext(err);
+			__assume(0);
+		}
+		else
+		{
+			HresultHandle(hr, spdlog::level::warn, L"Failed to set restricted error info");
+		}
+	}
+
 	RaiseFailFastException(nullptr, nullptr, FAIL_FAST_GENERATE_EXCEPTION_ADDRESS);
 	__assume(0);
 }

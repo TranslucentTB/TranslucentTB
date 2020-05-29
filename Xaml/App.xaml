@@ -23,14 +23,20 @@
             </Style>
 
             <Style x:Key="CloseButtonStyle" TargetType="controls:ChromeButton">
+                <Setter Property="NormalForeground" Value="{ThemeResource SystemBaseHighColor}" />
+                <Setter Property="NormalBackground" Value="#00E81123" />
                 <Setter Property="HoverForeground" Value="White" />
-                <Setter Property="HoverBackground" Value="#E81123" />
+                <Setter Property="HoverBackground" Value="#FFE81123" />
                 <Setter Property="PressedForeground" Value="White" />
-                <Setter Property="PressedBackground" Value="#99E71021" />
+                <Setter Property="PressedBackground" Value="#99E81123" />
             </Style>
 
             <Style TargetType="controls:ChromeButton">
+                <Setter Property="NormalForeground" Value="{ThemeResource SystemBaseHighColor}" />
+                <Setter Property="NormalBackground" Value="#007F7F7F" />
+                <Setter Property="HoverForeground" Value="{ThemeResource SystemBaseHighColor}" />
                 <Setter Property="HoverBackground" Value="#347F7F7F" />
+                <Setter Property="PressedForeground" Value="{ThemeResource SystemBaseHighColor}" />
                 <Setter Property="PressedBackground" Value="#6A7F7F7F" />
             </Style>
 
