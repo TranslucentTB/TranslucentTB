@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:TranslucentTB.Xaml.Pages"
+    xmlns:controls="using:TranslucentTB.Xaml.Controls"
     xmlns:models="using:TranslucentTB.Xaml.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -31,21 +32,15 @@
                 </Paragraph>
             </RichTextBlock>
 
-            <ListView Style="{StaticResource ActionsListViewStyle}" HorizontalAlignment="Stretch" ItemClick="ForwardActionClick">
-                <models:ActionItem Name="Donate to the project on Liberapay" Description="Show us your support by offering a single-time or recurring donation" Click="OpenLiberapayLink">
+            <controls:ActionList>
+                <models:Action Name="Donate to the project on Liberapay" Description="Show us your support by offering a single-time or recurring donation" Click="OpenLiberapayLink">
                     <PathIcon Data="{StaticResource LiberapayLogo}" />
-                </models:ActionItem>
-                <models:ActionItem Name="Join our Discord server" Description="Chat with the developers and get technical assistance with the program" Click="OpenDiscordLink">
+                </models:Action>
+                <models:Action Name="Join our Discord server" Description="Chat with the developers and get technical assistance with the program" Click="OpenDiscordLink">
                     <PathIcon Data="{StaticResource DiscordLogo}" />
-                </models:ActionItem>
-                <models:ActionItem Name="Edit the configuration file" Click="EditConfigFile">
-                    <models:ActionItem.Description>
-                        You can always do this by clicking 'Advanced > Edit settings' in the tray icon's context menu
-                        Changes are automatically reloaded as you edit the file
-                    </models:ActionItem.Description>
-                    <SymbolIcon Symbol="Edit" />
-                </models:ActionItem>
-            </ListView>
+                </models:Action>
+                <models:Action Name="Edit the configuration file" Description="You can always do this by clicking 'Advanced > Edit settings' in the tray icon's context menu&#10;Changes are automatically reloaded as you edit the file" Click="EditConfigFile" Icon="Edit" />
+            </controls:ActionList>
         </StackPanel>
 
         <CheckBox Grid.Row="1" Content="Automatically start TranslucentTB at system bootup" IsChecked="True" x:Name="StartupCheckbox" />

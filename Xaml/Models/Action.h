@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Models/ActionItem.g.h"
+#include "Models/Action.g.h"
 #include "../PropertyChangedBase.hpp"
 
 namespace winrt::TranslucentTB::Xaml::Models::implementation
 {
-	struct ActionItem : ActionItemT<ActionItem>, PropertyChangedBase<ActionItem>
+	struct Action : ActionT<Action>, PropertyChangedBase<Action>
 	{
-		ActionItem() = default;
+		Action() = default;
 
 		hstring Name();
 		void Name(const hstring &value);
@@ -15,8 +15,8 @@ namespace winrt::TranslucentTB::Xaml::Models::implementation
 		hstring Description();
 		void Description(const hstring &value);
 
-		Windows::UI::Xaml::UIElement Icon();
-		void Icon(const Windows::UI::Xaml::UIElement &value);
+		Windows::UI::Xaml::Controls::IconElement Icon();
+		void Icon(const Windows::UI::Xaml::Controls::IconElement &value);
 
 		event_token Click(const Windows::UI::Xaml::RoutedEventHandler &value);
 		void Click(const event_token &token);
@@ -26,14 +26,14 @@ namespace winrt::TranslucentTB::Xaml::Models::implementation
 	private:
 		hstring m_name;
 		hstring m_description;
-		Windows::UI::Xaml::UIElement m_icon = nullptr;
+		Windows::UI::Xaml::Controls::IconElement m_icon = nullptr;
 		event<Windows::UI::Xaml::RoutedEventHandler> m_click;
 	};
 }
 
 namespace winrt::TranslucentTB::Xaml::Models::factory_implementation
 {
-	struct ActionItem : ActionItemT<ActionItem, implementation::ActionItem>
+	struct Action : ActionT<Action, implementation::Action>
 	{
 	};
 }

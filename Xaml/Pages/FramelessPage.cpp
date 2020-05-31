@@ -86,7 +86,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		SetValue(s_IsClosableProperty, box_value(closeable));
 	}
 
-	Windows::UI::Xaml::DependencyProperty FramelessPage::IsClosableProperty() noexcept
+	DependencyProperty FramelessPage::IsClosableProperty() noexcept
 	{
 		return s_IsClosableProperty;
 	}

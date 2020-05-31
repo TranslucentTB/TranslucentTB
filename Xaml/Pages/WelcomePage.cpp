@@ -24,11 +24,6 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		}
 	}
 
-	void WelcomePage::ForwardActionClick(const IInspectable &sender, const Windows::UI::Xaml::Controls::ItemClickEventArgs &args)
-	{
-		args.ClickedItem().as<Models::ActionItem>().ForwardClick(sender, args);
-	}
-
 	void WelcomePage::OpenLiberapayLink(const IInspectable &, const RoutedEventArgs &)
 	{
 		m_LiberapayOpenRequestedHandler();
@@ -50,7 +45,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		Close();
 	}
 
-	void WelcomePage::DisagreeButtonClicked(const Windows::Foundation::IInspectable &, const Windows::UI::Xaml::RoutedEventArgs &)
+	void WelcomePage::DisagreeButtonClicked(const IInspectable &, const RoutedEventArgs &)
 	{
 		Close();
 	}

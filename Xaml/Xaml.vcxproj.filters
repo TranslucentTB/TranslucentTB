@@ -27,15 +27,15 @@
     <ClInclude Include="PropertyChangedBase.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="BoundResources.xaml" />
     <Page Include="Pages\WelcomePage.xaml" />
     <Page Include="Pages\FramelessPage.xaml" />
     <Page Include="Controls\ChromeButton.xaml" />
+    <Page Include="Controls\ActionList.xaml" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="Models\ActionItem.idl" />
+    <Midl Include="Models\Action.idl" />
   </ItemGroup>
 </Project>

@@ -43,8 +43,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
-    <ClCompile Include="BoundResources.cpp">
-      <DependentUpon>BoundResources.xaml</DependentUpon>
+    <ClCompile Include="Controls\ActionList.cpp">
+      <DependentUpon>Controls\ActionList.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="Controls\ChromeButton.cpp">
@@ -63,8 +63,8 @@
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
-    <ClCompile Include="Models\ActionItem.cpp">
-      <DependentUpon>Models\ActionItem.idl</DependentUpon>
+    <ClCompile Include="Models\Action.cpp">
+      <DependentUpon>Models\Action.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
   </ItemGroup>
@@ -77,7 +77,7 @@
       <SubType>Designer</SubType>
       <FileType>Document</FileType>
     </ApplicationDefinition>
-    <Page Include="BoundResources.xaml">
+    <Page Include="Controls\ActionList.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Controls\ChromeButton.xaml">
@@ -96,8 +96,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
-    <ClInclude Include="BoundResources.h">
-      <DependentUpon>BoundResources.xaml</DependentUpon>
+    <ClInclude Include="Controls\ActionList.h">
+      <DependentUpon>Controls\ActionList.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="Controls\ChromeButton.h">
@@ -113,8 +113,8 @@
       <DependentUpon>Pages\WelcomePage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
-    <ClInclude Include="Models\ActionItem.h">
-      <DependentUpon>Models\ActionItem.idl</DependentUpon>
+    <ClInclude Include="Models\Action.h">
+      <DependentUpon>Models\Action.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="PropertyChangedBase.hpp" />
@@ -124,8 +124,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
-    <Midl Include="BoundResources.idl">
-      <DependentUpon>BoundResources.xaml</DependentUpon>
+    <Midl Include="Controls\ActionList.idl">
+      <DependentUpon>Controls\ActionList.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
     <Midl Include="Controls\ChromeButton.idl">
@@ -140,7 +140,7 @@
       <DependentUpon>Pages\WelcomePage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
-    <Midl Include="Models\ActionItem.idl">
+    <Midl Include="Models\Action.idl">
       <SubType>Designer</SubType>
     </Midl>
   </ItemGroup>

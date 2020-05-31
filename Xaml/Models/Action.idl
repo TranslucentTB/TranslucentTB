@@ -1,0 +1,14 @@
+namespace TranslucentTB.Xaml.Models
+{
+	[default_interface]
+	[contentproperty("Icon")]
+	runtimeclass Action : Windows.UI.Xaml.Data.INotifyPropertyChanged
+	{
+		Action();
+
+		String Name;
+		String Description;
+		Windows.UI.Xaml.Controls.IconElement Icon;
+		event Windows.UI.Xaml.RoutedEventHandler Click;
+	}
+}

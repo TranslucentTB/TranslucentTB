@@ -1,8 +1,0 @@
-namespace TranslucentTB.Xaml
-{
-	[default_interface]
-	runtimeclass BoundResources : Windows.UI.Xaml.ResourceDictionary
-	{
-		BoundResources();
-	}
-}
