@@ -45,8 +45,8 @@
 
         <CheckBox Grid.Row="1" Content="Automatically start TranslucentTB at system bootup" IsChecked="True" x:Name="StartupCheckbox" />
         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="10">
-            <Button Width="100" Style="{StaticResource ButtonRevealStyle}" Click="DisagreeButtonClicked">I disagree</Button>
             <Button Width="100" Style="{StaticResource ButtonRevealStyle}" Click="AgreeButtonClicked">I agree</Button>
+            <Button Width="100" Style="{StaticResource ButtonRevealStyle}" Click="DisagreeButtonClicked">I disagree</Button>
         </StackPanel>
     </Grid>
 </local:FramelessPage>
