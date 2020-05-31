@@ -12,7 +12,6 @@
 #include "std.hpp"
 #include "win32.hpp"
 #include "window.hpp"
-#include "util/memory.hpp"
 
 bool Error::impl::ShouldLog(spdlog::level::level_enum level)
 {
@@ -120,13 +119,7 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 
 wil::unique_handle Error::CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type)
 {
-	struct msgbox_info : Util::flexible_array<wchar_t> {
-		Util::null_terminated_wstring_view title;
-		unsigned int type;
-		wchar_t body[];
-	};
-
-	std::unique_ptr<msgbox_info> info(new (buf.size() + 1) msgbox_info);
+	auto info = impl::msgbox_info::make(buf.size() + 1);
 	info->title = title;
 	info->type = type;
 
@@ -139,9 +132,9 @@ wil::unique_handle Error::CreateMessageBoxThread(const fmt::wmemory_buffer &buf,
 
 	info->body[buf.size()] = L'\0';
 
-	wil::unique_handle thread(CreateThread(nullptr, 0, [](void *userData) -> DWORD
+	wil::unique_handle thread(CreateThread(nullptr, 0, [](void *userData) noexcept -> DWORD
 	{
-		decltype(info) boxInfo(static_cast<msgbox_info *>(userData));
+		decltype(info) boxInfo(static_cast<impl::msgbox_info *>(userData));
 
 		MessageBoxEx(Window::NullWindow, boxInfo->body, boxInfo->title.c_str(), boxInfo->type | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 

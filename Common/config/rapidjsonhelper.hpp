@@ -13,18 +13,18 @@ namespace RapidJSONHelper {
 		const std::wstring what;
 	};
 
+	static constexpr std::array<std::wstring_view, 7> TYPE_NAMES = {
+		L"null",
+		L"bool",
+		L"bool",
+		L"object",
+		L"array",
+		L"string",
+		L"number"
+	};
+
 	inline void EnsureType(rapidjson::Type expected, rapidjson::Type actual, std::wstring_view obj)
 	{
-		static constexpr std::array<std::wstring_view, 7> TYPE_NAMES = {
-			L"null",
-			L"bool",
-			L"bool",
-			L"object",
-			L"array",
-			L"string",
-			L"number"
-		};
-
 		if (expected == rapidjson::Type::kTrueType)
 		{
 			expected = rapidjson::Type::kFalseType;

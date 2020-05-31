@@ -10,6 +10,7 @@
 
 #include "../api.h"
 #include "appinfo.hpp"
+#include "util/memory.hpp"
 #include "util/null_terminated_string_view.hpp"
 #include "util/to_string_view.hpp"
 
@@ -22,6 +23,12 @@
 
 namespace Error {
 	namespace impl {
+		struct msgbox_info : Util::flexible_array<msgbox_info> {
+			Util::null_terminated_wstring_view title;
+			unsigned int type;
+			wchar_t body[];
+		};
+
 		PROGRAMLOG_API bool ShouldLog(spdlog::level::level_enum level);
 
 		// Needs to be in DLL because spdlog log registry is per-module.
@@ -70,6 +77,11 @@ namespace Error {
 			impl::Handle<spdlog::level::critical>(Util::ToStringView(message), Util::ToStringView(error_message), file, line, function, err, errInfo);
 		}
 	};
+};
+
+template<>
+struct Util::flexible_array_traits<Error::impl::msgbox_info> {
+	static constexpr auto data = &Error::impl::msgbox_info::body;
 };
 
 #define PROGRAMLOG_ERROR_LOCATION __FILE__, __LINE__, SPDLOG_FUNCTION
