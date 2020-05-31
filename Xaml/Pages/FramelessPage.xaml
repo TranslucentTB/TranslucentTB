@@ -15,6 +15,9 @@
 
         <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" Text="{x:Bind Title, Mode = OneWay}" Margin="15,6,15,0"/>
         <controls:ChromeButton HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="{x:Bind IsClosable, Mode = OneWay}" Click="Close" Style="{StaticResource CloseButtonStyle}">
+            <ToolTipService.ToolTip>
+                Close
+            </ToolTipService.ToolTip>
             <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8BB;" FontSize="10" />
         </controls:ChromeButton>
         <ContentPresenter Grid.Row="1" Content="{x:Bind UserContent, Mode = OneWay}" Margin="15,5,15,15" />
