@@ -79,7 +79,6 @@ namespace Util {
 			return ptr;
 		}
 
-#ifdef __cpp_lib_destroying_delete // MIGRATION: compiler destroying delete support
 		void operator delete(flexible_array *ptr, std::destroying_delete_t)
 		{
 			const std::size_t sizeCopy = ptr->_size;
@@ -87,11 +86,5 @@ namespace Util {
 
 			::operator delete(ptr, allocation_size(sizeCopy));
 		}
-#else
-		void operator delete(void *ptr) noexcept
-		{
-			::operator delete(ptr);
-		}
-#endif
 	};
 }

@@ -7,19 +7,16 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" Background="{ThemeResource SystemControlAcrylicWindowBrush}">
 
-    <Grid>
+    <Grid x:DefaultBindMode="OneWay">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" Text="{x:Bind Title, Mode = OneWay}" Margin="15,6,15,0"/>
-        <controls:ChromeButton HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="{x:Bind IsClosable, Mode = OneWay}" Click="Close" Style="{StaticResource CloseButtonStyle}">
-            <ToolTipService.ToolTip>
-                Close
-            </ToolTipService.ToolTip>
+        <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" Text="{x:Bind Title}" Margin="15,6,15,0"/>
+        <controls:ChromeButton HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="{x:Bind IsClosable}" Click="Close" Style="{StaticResource CloseButtonStyle}" ToolTipService.ToolTip="Close">
             <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8BB;" FontSize="10" />
         </controls:ChromeButton>
-        <ContentPresenter Grid.Row="1" Content="{x:Bind UserContent, Mode = OneWay}" Margin="15,5,15,15" />
+        <ContentPresenter Grid.Row="1" Content="{x:Bind UserContent}" Margin="15,5,15,15" />
     </Grid>
 </Page>

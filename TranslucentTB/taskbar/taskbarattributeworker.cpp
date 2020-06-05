@@ -127,7 +127,7 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 
 	if (m_Config.MaximisedWindowAppearance.Enabled)
 	{
-		if (!taskbar->second.MaximisedWindows.empty())
+		if (!IsEmptySet(taskbar->second.MaximisedWindows))
 		{
 			return m_Config.MaximisedWindowAppearance;
 		}
@@ -135,7 +135,7 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 
 	if (m_Config.VisibleWindowAppearance.Enabled)
 	{
-		if (!taskbar->second.MaximisedWindows.empty() || !taskbar->second.NormalWindows.empty())
+		if (!IsEmptySet(taskbar->second.MaximisedWindows) || !IsEmptySet(taskbar->second.NormalWindows))
 		{
 			return m_Config.VisibleWindowAppearance;
 		}
@@ -220,7 +220,7 @@ void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
 
 void TaskbarAttributeWorker::RefreshAllAttributes()
 {
-	taskbar_iterator mainMonIt = m_Taskbars.end();
+	auto mainMonIt = m_Taskbars.end();
 	for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
 	{
 		if (it->first != m_MainTaskbarMonitor)
@@ -275,6 +275,27 @@ TaskbarAttributeWorker::taskbar_iterator TaskbarAttributeWorker::InsertWindow(Wi
 	}
 
 	return iter;
+}
+
+bool TaskbarAttributeWorker::IsEmptySet(std::unordered_set<Window> &set)
+{
+	std::size_t validCount = 0;
+	for (auto it = set.begin(); it != set.end();)
+	{
+		if (it->valid())
+		{
+			++validCount;
+			++it;
+		}
+		else
+		{
+			// Sometimes some windows will get closed but we never get a notification about it,
+			// so remove those from the set since they're not good anymore.
+			it = set.erase(it);
+		}
+	}
+
+	return validCount == 0;
 }
 
 void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set, bool showInfo)
@@ -363,7 +384,7 @@ void TaskbarAttributeWorker::ReturnToStock()
 		m_disableAttributeRefreshReply = false;
 	});
 
-	taskbar_iterator mainMonIt = m_Taskbars.end();
+	auto mainMonIt = m_Taskbars.end();
 	for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
 	{
 		SetAttribute(it->second.TaskbarWindow, { ACCENT_NORMAL });

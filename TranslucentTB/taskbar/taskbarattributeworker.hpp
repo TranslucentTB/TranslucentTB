@@ -74,7 +74,7 @@ private:
 	std::optional<UINT> m_RefreshRequestedMessage;
 
 	// Type aliases
-	using taskbar_iterator = decltype(m_Taskbars)::const_iterator;
+	using taskbar_iterator = decltype(m_Taskbars)::iterator;
 
 	// Callbacks
 	void CALLBACK OnAeroPeekEnterExit(DWORD event, HWND, LONG, LONG, DWORD, DWORD);
@@ -98,6 +98,7 @@ private:
 	taskbar_iterator InsertWindow(Window window);
 
 	// Other
+	static bool IsEmptySet(std::unordered_set<Window> &set);
 	static void DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set, bool showInfo = true);
 	void CreateAppVisibility();
 	hook_thunk CreateThunk(void (CALLBACK TaskbarAttributeWorker:: *proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD));

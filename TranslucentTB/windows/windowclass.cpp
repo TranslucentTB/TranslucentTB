@@ -8,8 +8,14 @@
 
 void WindowClass::LoadIcons(const wchar_t *iconResource)
 {
-	HresultVerify(LoadIconMetric(m_hInstance, iconResource, LIM_LARGE, m_hIcon.put()), spdlog::level::warn, L"Failed to load large window class icon.");
-	HresultVerify(LoadIconMetric(m_hInstance, iconResource, LIM_SMALL, m_hIconSmall.put()), spdlog::level::warn, L"Failed to load small window class icon.");
+	m_hIcon.reset();
+	m_hIconSmall.reset();
+
+	if (iconResource)
+	{
+		HresultVerify(LoadIconMetric(m_hInstance, iconResource, LIM_LARGE, m_hIcon.put()), spdlog::level::warn, L"Failed to load large window class icon.");
+		HresultVerify(LoadIconMetric(m_hInstance, iconResource, LIM_SMALL, m_hIconSmall.put()), spdlog::level::warn, L"Failed to load small window class icon.");
+	}
 }
 
 WindowClass::WindowClass(WNDPROC procedure, Util::null_terminated_wstring_view className, const wchar_t *iconResource, HINSTANCE hInstance, unsigned int style, HBRUSH brush, HCURSOR cursor) :
