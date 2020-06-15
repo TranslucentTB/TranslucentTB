@@ -17,7 +17,7 @@ namespace Error {
 } while (0)
 
 #define ErrnoTHandle(err_, level_, message_) do { \
-	if (Error::impl::ShouldLog((level_)))\
+	if (Error::ShouldLog((level_))) \
 	{ \
 		fmt::wmemory_buffer buf_; \
 		ErrnoTHandleWithBuffer(buf_, (err_), (level_), (message_)); \
@@ -33,7 +33,7 @@ namespace Error {
 } while (0)
 
 #define StdSystemErrorHandle(exception_, level_, message_) do { \
-	if (Error::impl::ShouldLog((level_)))\
+	if (Error::ShouldLog((level_))) \
 	{ \
 		fmt::wmemory_buffer buf_; \
 		StdSystemErrorHandleWithBuffer(buf_, (exception_), (level_), (message_)); \

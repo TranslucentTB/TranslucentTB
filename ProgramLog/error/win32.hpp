@@ -43,7 +43,7 @@ namespace Error {
 } while (0)
 
 #define HresultHandle(hresult_, level_, message_) do { \
-	if (Error::impl::ShouldLog((level_)))\
+	if (Error::ShouldLog((level_))) \
 	{ \
 		fmt::wmemory_buffer buf_; \
 		HresultHandleWithBuffer(buf_, (hresult_), (level_), (message_)); \
@@ -74,7 +74,7 @@ namespace Error {
 } while (0)
 
 #define HresultErrorHandle(exception_, level_, message_) do { \
-	if (Error::impl::ShouldLog((level_)))\
+	if (Error::ShouldLog((level_))) \
 	{ \
 		fmt::wmemory_buffer buf_; \
 		HresultErrorHandleWithBuffer(buf_, (exception_), (level_), (message_)); \

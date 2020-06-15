@@ -13,7 +13,11 @@ private:
 	const wchar_t *m_darkIconResource;
 	wil::unique_hicon m_Icon;
 
-	bool m_Show;
+	// to know if we should restore the icon when explorer restarts,
+	// may have initially failed to show if TTB started before explorer.
+	bool m_ShowPreference;
+	// to avoid redundant or assured failure calls
+	bool m_CurrentlyShowing;
 
 	std::optional<UINT> m_TaskbarCreatedMessage;
 

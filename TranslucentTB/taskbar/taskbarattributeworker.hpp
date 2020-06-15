@@ -95,7 +95,7 @@ private:
 	void RefreshAllAttributes();
 
 	// State
-	taskbar_iterator InsertWindow(Window window);
+	void InsertWindow(Window window, bool refresh);
 
 	// Other
 	static bool IsEmptySet(std::unordered_set<Window> &set);
@@ -117,6 +117,43 @@ private:
 	{
 		return CreateHook(event, event, thunk);
 	}
+
+	friend class AttributeRefresher;
+
+	class AttributeRefresher {
+	private:
+		TaskbarAttributeWorker &m_Worker;
+		taskbar_iterator m_MainMonIt;
+
+	public:
+		AttributeRefresher(TaskbarAttributeWorker &worker) noexcept : m_Worker(worker), m_MainMonIt(m_Worker.m_Taskbars.end()) { }
+
+		AttributeRefresher(const AttributeRefresher &) = delete;
+		AttributeRefresher &operator =(const AttributeRefresher &) = delete;
+
+		void refresh(taskbar_iterator it)
+		{
+			if (it->first == m_Worker.m_MainTaskbarMonitor)
+			{
+				assert(m_MainMonIt == m_Worker.m_Taskbars.end());
+				m_MainMonIt = it;
+			}
+			else
+			{
+				m_Worker.RefreshAttribute(it);
+			}
+		}
+
+		void disarm() noexcept { m_MainMonIt = m_Worker.m_Taskbars.end(); }
+
+		~AttributeRefresher() noexcept(false)
+		{
+			if (m_MainMonIt != m_Worker.m_Taskbars.end())
+			{
+				m_Worker.RefreshAttribute(m_MainMonIt);
+			}
+		}
+	};
 
 public:
 	TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance);

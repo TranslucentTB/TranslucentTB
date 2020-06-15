@@ -19,28 +19,49 @@ void TaskbarAttributeWorker::OnWindowStateChange(DWORD, HWND hwnd, LONG idObject
 {
 	if (Window window(hwnd); idObject == OBJID_WINDOW && window.valid())
 	{
-		const auto iter = InsertWindow(window);
-
-		if (iter != m_Taskbars.end())
-		{
-			RefreshAttribute(iter);
-		}
+		InsertWindow(window, true);
 	}
 }
 
-void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD idEventThread, DWORD dwmsEventTime)
+void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG idObject, LONG, DWORD, DWORD)
 {
-	// todo: do we need special destroyed window handling
-	if (Window window(hwnd); idObject == OBJID_WINDOW && window.valid())
+	if (const Window window(hwnd); idObject == OBJID_WINDOW)
 	{
-		if (const auto className = window.classname(); className == TASKBAR || className == SECONDARY_TASKBAR)
+		if (event == EVENT_OBJECT_CREATE && window.valid())
 		{
-			MessagePrint(spdlog::level::debug, L"A taskbar got created or destroyed, refreshing...");
-			ResetState();
+			if (const auto className = window.classname(); className && (*className == TASKBAR || *className == SECONDARY_TASKBAR))
+			{
+				MessagePrint(spdlog::level::debug, L"A taskbar got created, refreshing...");
+				ResetState();
+			}
+			else
+			{
+				InsertWindow(window, true);
+			}
+		}
+		else if (event == EVENT_OBJECT_DESTROY)
+		{
+			// events are asynchronous, the window might be invalid already
+			// important to not try to query its info here, just go off the handle
+			AttributeRefresher refresher(*this);
+			for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
+			{
+				if (it->second.TaskbarWindow == window)
+				{
+					MessagePrint(spdlog::level::debug, L"A taskbar got destroyed, refreshing...");
+					ResetState();
+
+					// iterators invalid
+					refresher.disarm();
+					return;
+				}
+				else if (it->second.MaximisedWindows.erase(window) > 0 || it->second.NormalWindows.erase(window) > 0)
+				{
+					refresher.refresh(it);
+				}
+			}
 		}
 	}
-
-	OnWindowStateChange(event, hwnd, idObject, idChild, idEventThread, dwmsEventTime);
 }
 
 void TaskbarAttributeWorker::OnForegroundWindowChange(DWORD, HWND hwnd, LONG idObject, LONG, DWORD, DWORD)
@@ -68,10 +89,13 @@ void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 		RefreshAttribute(iter);
 	}
 
-	Util::small_wmemory_buffer<50> buf;
-	fmt::format_to(buf, fmt(L"Start menu {} on monitor {}"), state ? L"opened" : L"closed", static_cast<void*>(mon));
+	if (Error::ShouldLog(spdlog::level::debug))
+	{
+		Util::small_wmemory_buffer<50> buf;
+		fmt::format_to(buf, fmt(L"Start menu {} on monitor {}"), state ? L"opened" : L"closed", static_cast<void*>(mon));
 
-	MessagePrint(spdlog::level::debug, buf);
+		MessagePrint(spdlog::level::debug, buf);
+	}
 }
 
 LRESULT TaskbarAttributeWorker::OnRequestAttributeRefresh(LPARAM lParam)
@@ -91,12 +115,14 @@ LRESULT TaskbarAttributeWorker::OnRequestAttributeRefresh(LPARAM lParam)
 
 LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if ((m_TaskbarCreatedMessage && uMsg == *m_TaskbarCreatedMessage) || uMsg == WM_DISPLAYCHANGE)
+	if (uMsg == m_TaskbarCreatedMessage || uMsg == WM_DISPLAYCHANGE)
 	{
+		MessagePrint(spdlog::level::debug, uMsg == WM_DISPLAYCHANGE ? L"Monitor configuration change detected, refreshing..." : L"Main taskbar got created, refreshing...");
+
 		ResetState();
 		return 0;
 	}
-	else if (m_RefreshRequestedMessage && uMsg == *m_RefreshRequestedMessage)
+	else if (uMsg == m_RefreshRequestedMessage)
 	{
 		if (!m_disableAttributeRefreshReply)
 		{
@@ -220,29 +246,25 @@ void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
 
 void TaskbarAttributeWorker::RefreshAllAttributes()
 {
-	auto mainMonIt = m_Taskbars.end();
+	AttributeRefresher refresher(*this);
 	for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
 	{
-		if (it->first != m_MainTaskbarMonitor)
-		{
-			RefreshAttribute(it);
-		}
-		else
-		{
-			mainMonIt = it;
-		}
-	}
-
-	// Always do it last, in case of Windows internal message loop
-	if (mainMonIt != m_Taskbars.end())
-	{
-		RefreshAttribute(mainMonIt);
+		refresher.refresh(it);
 	}
 }
 
-TaskbarAttributeWorker::taskbar_iterator TaskbarAttributeWorker::InsertWindow(Window window)
+void TaskbarAttributeWorker::InsertWindow(Window window, bool refresh)
 {
-	// Note: find() is done here after the checks because
+	AttributeRefresher attrRefresher(*this);
+	const auto refresher = [&attrRefresher, refresh](taskbar_iterator it)
+	{
+		if (refresh)
+		{
+			attrRefresher.refresh(it);
+		}
+	};
+
+	// Note: The checks are done before iterating because
 	// some methods (most notably Window::on_current_desktop)
 	// will trigger a Windows internal message loop,
 	// which pumps messages to the worker. When the DPI is
@@ -250,31 +272,38 @@ TaskbarAttributeWorker::taskbar_iterator TaskbarAttributeWorker::InsertWindow(Wi
 	// have an iterator to it. Acquiring the iterator after the
 	// call to on_current_desktop resolves this issue.
 	const bool windowMatches = (window.is_user_window() || m_Config.Whitelist.IsFiltered(window)) && !m_Config.Blacklist.IsFiltered(window);
-
-	const auto iter = m_Taskbars.find(window.monitor());
-	if (iter != m_Taskbars.end())
+	const HMONITOR mon = window.monitor();
+	
+	for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
 	{
-		auto &monInfo = iter->second;
-		auto &maximised = monInfo.MaximisedWindows;
-		auto &normal = monInfo.NormalWindows;
-		if (windowMatches && window.maximised())
+		auto &maximised = it->second.MaximisedWindows;
+		auto &normal = it->second.NormalWindows;
+
+		if (it->first == mon)
 		{
-			maximised.insert(window);
-			normal.erase(window);
+			if (windowMatches && window.maximised())
+			{
+				maximised.insert(window);
+				normal.erase(window);
+
+				refresher(it);
+				continue;
+			}
+			else if (windowMatches && !window.minimised())
+			{
+				maximised.erase(window);
+				normal.insert(window);
+
+				refresher(it);
+				continue;
+			}
 		}
-		else if (windowMatches && !window.minimised())
+
+		if (maximised.erase(window) > 0 || normal.erase(window) > 0)
 		{
-			maximised.erase(window);
-			normal.insert(window);
-		}
-		else
-		{
-			maximised.erase(window);
-			normal.erase(window);
+			refresher(it);
 		}
 	}
-
-	return iter;
 }
 
 bool TaskbarAttributeWorker::IsEmptySet(std::unordered_set<Window> &set)
@@ -532,9 +561,11 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 		auto oldHooks = std::move(m_Hooks);
 		m_Hooks.clear();
 
-		const Window main_taskbar = Window::Find(TASKBAR);
-		m_MainTaskbarMonitor = main_taskbar.monitor();
-		InsertTaskbar(m_MainTaskbarMonitor, main_taskbar);
+		if (const Window main_taskbar = Window::Find(TASKBAR))
+		{
+			m_MainTaskbarMonitor = main_taskbar.monitor();
+			InsertTaskbar(m_MainTaskbarMonitor, main_taskbar);
+		}
 
 		for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))
 		{
@@ -563,7 +594,7 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 
 	for (const Window window : Window::FindEnum())
 	{
-		InsertWindow(window);
+		InsertWindow(window, false);
 	}
 
 	// Apply the calculated effects

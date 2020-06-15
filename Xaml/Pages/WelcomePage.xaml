@@ -24,7 +24,7 @@
             <RichTextBlock TextWrapping="Wrap" IsTextSelectionEnabled="False">
                 <Paragraph>
                     By default, TranslucentTB darkens the taskbar a bit when there is a maximised window.
-                    You can alter this behavior, and many other settings, by editing the configuration file now or by using the tray icon.
+                    You can alter this behavior, and many other settings, by editing the configuration file now or by using the tray icon (which will appear after accepting the license).
                 </Paragraph>
                 <Paragraph Margin="0,6,0,0">
                     Before using TranslucentTB, you must agree to the terms set forth by our license, the

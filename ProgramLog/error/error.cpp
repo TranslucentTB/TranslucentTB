@@ -13,7 +13,7 @@
 #include "win32.hpp"
 #include "window.hpp"
 
-bool Error::impl::ShouldLog(spdlog::level::level_enum level)
+bool Error::ShouldLog(spdlog::level::level_enum level)
 {
 	if (level == spdlog::level::err || level == spdlog::level::critical)
 	{
@@ -101,7 +101,7 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 	{
 		if (const HRESULT hr = SetRestrictedErrorInfo(errInfo); SUCCEEDED(hr))
 		{
-			// This gives us much better error reporting if the error came from a WinRT module:
+			// This gives much better error reporting if the error came from a WinRT module:
 			// the stack trace in the dump, debugger and telemetry is unaffected by our error handling,
 			// giving us better insight into what went wrong.
 			RoFailFastWithErrorContext(err);

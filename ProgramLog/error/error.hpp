@@ -22,14 +22,14 @@
 #define ERROR_TITLE UTIL_WIDEN(UTF8_ERROR_TITLE)
 
 namespace Error {
+	PROGRAMLOG_API bool ShouldLog(spdlog::level::level_enum level);
+
 	namespace impl {
 		struct msgbox_info : Util::flexible_array<msgbox_info> {
 			Util::null_terminated_wstring_view title;
 			unsigned int type;
 			wchar_t body[];
 		};
-
-		PROGRAMLOG_API bool ShouldLog(spdlog::level::level_enum level);
 
 		// Needs to be in DLL because spdlog log registry is per-module.
 		PROGRAMLOG_API void Log(const fmt::wmemory_buffer &msg, spdlog::level::level_enum level, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function);

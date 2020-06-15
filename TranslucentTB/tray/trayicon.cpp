@@ -18,7 +18,7 @@ void TrayIcon::LoadThemedIcon()
 		}
 	}
 
-	if (HRESULT hr = LoadIconMetric(hinstance(), icon, LIM_SMALL, m_Icon.put()); SUCCEEDED(hr))
+	if (const HRESULT hr = LoadIconMetric(hinstance(), icon, LIM_SMALL, m_Icon.put()); SUCCEEDED(hr))
 	{
 		m_IconData.uFlags |= NIF_ICON;
 		m_IconData.hIcon = m_Icon.get();
@@ -41,7 +41,7 @@ bool TrayIcon::Notify(DWORD message, bool ignoreError)
 	{
 		if (!ignoreError)
 		{
-			LastErrorHandle(spdlog::level::warn, L"Failed to notify shell.");
+			LastErrorHandle(spdlog::level::info, L"Failed to notify shell.");
 		}
 
 		return false;
@@ -54,18 +54,21 @@ LRESULT TrayIcon::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_DPICHANGED:
 	case WM_SETTINGCHANGE:
-		if (m_Show)
+		LoadThemedIcon();
+
+		if (m_CurrentlyShowing)
 		{
-			LoadThemedIcon();
 			Notify(NIM_MODIFY);
 		}
 		break;
 	default:
-		if (m_TaskbarCreatedMessage && uMsg == *m_TaskbarCreatedMessage)
+		if (uMsg == m_TaskbarCreatedMessage)
 		{
-			if (m_Show)
+			if (m_ShowPreference)
 			{
-				m_Show = false;
+				// it's not actually showing anymore, explorer restarted
+				m_CurrentlyShowing = false;
+
 				Show();
 			}
 
@@ -90,7 +93,8 @@ TrayIcon::TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view classN
 	},
 	m_whiteIconResource(whiteIconResource),
 	m_darkIconResource(darkIconResource),
-	m_Show(false),
+	m_ShowPreference(false),
+	m_CurrentlyShowing(false),
 	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED))
 {
 	if (const errno_t err = wcscpy_s(m_IconData.szTip, windowName.c_str()))
@@ -99,6 +103,8 @@ TrayIcon::TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view classN
 		m_IconData.uFlags &= ~NIF_TIP;
 	}
 
+	LoadThemedIcon();
+
 	// Clear icon from a previous instance that didn't cleanly exit.
 	// Errors if instance cleanly exited, so avoid logging it.
 	Notify(NIM_DELETE, true);
@@ -106,29 +112,20 @@ TrayIcon::TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view classN
 
 void TrayIcon::Show()
 {
-	if (!m_Show)
+	m_ShowPreference = true;
+	if (!m_CurrentlyShowing && Notify(NIM_ADD))
 	{
-		if (!m_Icon)
-		{
-			LoadThemedIcon();
-		}
-
-		if (Notify(NIM_ADD) && Notify(NIM_SETVERSION))
-		{
-			m_Show = true;
-		}
+		Notify(NIM_SETVERSION);
+		m_CurrentlyShowing = true;
 	}
 }
 
 void TrayIcon::Hide()
 {
-	if (m_Show)
+	m_ShowPreference = false;
+	if (m_CurrentlyShowing && Notify(NIM_DELETE))
 	{
-		if (Notify(NIM_DELETE))
-		{
-			m_Icon.reset();
-			m_Show = false;
-		}
+		m_CurrentlyShowing = false;
 	}
 }
 
