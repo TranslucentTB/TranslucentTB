@@ -16,8 +16,8 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	WelcomePage::WelcomePage(bool hasPackageIdentity)
 	{
 		InitializeComponent();
-		Title(L"Welcome to " APP_NAME L"!");
 
+		Title(L"Welcome to " APP_NAME L"!");
 		if (!hasPackageIdentity)
 		{
 			StartupCheckbox().Visibility(Visibility::Collapsed);
@@ -41,7 +41,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 	void WelcomePage::AgreeButtonClicked(const IInspectable &, const RoutedEventArgs &)
 	{
-		m_LicenseApprovedHandler(*this, StartupCheckbox().IsChecked().Value());
+		m_LicenseApprovedHandler(StartupCheckbox().IsChecked().Value());
 		Close();
 	}
 
@@ -80,7 +80,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		m_ConfigEditRequestedHandler.remove(token);
 	}
 
-	event_token WelcomePage::LicenseApproved(const Windows::Foundation::EventHandler<bool> &handler)
+	event_token WelcomePage::LicenseApproved(const LicenseApprovedDelegate &handler)
 	{
 		return m_LicenseApprovedHandler.add(handler);
 	}

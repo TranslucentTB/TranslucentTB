@@ -24,14 +24,14 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		event_token ConfigEditRequested(const ConfigEditDelegate &handler);
 		void ConfigEditRequested(const winrt::event_token &token);
 
-		event_token LicenseApproved(const Windows::Foundation::EventHandler<bool> &handler);
+		event_token LicenseApproved(const LicenseApprovedDelegate &handler);
 		void LicenseApproved(const winrt::event_token &token);
 
 	private:
 		event<LiberapayOpenDelegate> m_LiberapayOpenRequestedHandler;
 		event<DiscordJoinDelegate> m_DiscordJoinRequestedHandler;
 		event<ConfigEditDelegate> m_ConfigEditRequestedHandler;
-		event<Windows::Foundation::EventHandler<bool>> m_LicenseApprovedHandler;
+		event<LicenseApprovedDelegate> m_LicenseApprovedHandler;
 	};
 }
 

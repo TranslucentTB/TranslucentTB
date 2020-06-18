@@ -12,10 +12,14 @@ StartupTask StartupManager::GetTaskSafe() const noexcept
 
 IAsyncAction StartupManager::AcquireTask() try
 {
-	const auto task = (co_await StartupTask::GetForCurrentPackageAsync()).GetAt(0);
-
 	const auto lock = m_TaskLock.lock_exclusive();
-	m_StartupTask = std::move(task);
+
+	if (!m_StartupTask)
+	{
+		const auto task = (co_await StartupTask::GetForCurrentPackageAsync()).GetAt(0);
+
+		m_StartupTask = std::move(task);
+	}
 }
 HresultErrorCatch(spdlog::level::critical, L"Failed to load package startup task.");
 

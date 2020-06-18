@@ -108,7 +108,7 @@ Application::Application(HINSTANCE hInst, bool hasPackageIdentity) : m_hInstance
 		content.DiscordJoinRequested({ this, &Application::OpenDiscordServer });
 		content.ConfigEditRequested({ this, &Application::EditConfigFile });
 
-		content.LicenseApproved([this](const auto &, bool startupState) -> winrt::fire_and_forget
+		content.LicenseApproved([this](bool startupState) -> winrt::fire_and_forget
 		{
 			// set this first because awaiting will make the callback return,
 			// causing the Closed event to fire and call PostQuitMessage.
@@ -148,6 +148,11 @@ Application::Application(HINSTANCE hInst, bool hasPackageIdentity) : m_hInstance
 	}
 	else
 	{
+		if (m_Startup)
+		{
+			m_Startup->AcquireTask();
+		}
+
 		m_CompletedFirstStart = true;
 	}
 }

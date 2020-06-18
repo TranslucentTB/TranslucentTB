@@ -5,6 +5,7 @@ namespace TranslucentTB.Xaml.Pages
 	delegate void LiberapayOpenDelegate();
 	delegate void DiscordJoinDelegate();
 	delegate void ConfigEditDelegate();
+	delegate void LicenseApprovedDelegate(Boolean startupState);
 
 	[default_interface]
 	runtimeclass WelcomePage : FramelessPage
@@ -14,6 +15,6 @@ namespace TranslucentTB.Xaml.Pages
 		event LiberapayOpenDelegate LiberapayOpenRequested;
 		event DiscordJoinDelegate DiscordJoinRequested;
 		event ConfigEditDelegate ConfigEditRequested;
-		event Windows.Foundation.EventHandler<Boolean> LicenseApproved;
+		event LicenseApprovedDelegate LicenseApproved;
 	}
 }
