@@ -34,9 +34,8 @@ void ConfigManager::WatcherCallback(void *context, DWORD, std::wstring_view file
 	{
 		const auto that = static_cast<ConfigManager *>(context);
 
-		const Config &cfg = that->m_Config.emplace(Config::Load(that->m_ConfigPath));
-		that->UpdateVerbosity();
-		that->m_Callback(that->m_Context, cfg);
+		that->LoadConfig();
+		that->m_Callback(that->m_Context, *that->m_Config);
 	}
 }
 
@@ -44,17 +43,31 @@ void ConfigManager::UpdateVerbosity()
 {
 	if (const auto sink = Log::GetSink())
 	{
-		sink->set_level(m_Config->LogVerbosity);
+		sink->set_level(GetConfig().LogVerbosity);
 	}
+}
+
+bool ConfigManager::LoadConfig()
+{
+	bool fileExists = false;
+	bool hasPreviousConfig = m_Config.has_value();
+
+	m_Config = Config::Load(m_ConfigPath, fileExists);
+	UpdateVerbosity();
+
+	if (!hasPreviousConfig)
+	{
+		m_Watcher.emplace(m_ConfigPath.parent_path(), false, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE, WatcherCallback, this);
+	}
+
+	return fileExists;
 }
 
 Config &ConfigManager::GetConfig()
 {
 	if (!m_Config)
 	{
-		m_Config = Config::Load(m_ConfigPath);
-		UpdateVerbosity();
-		m_Watcher.emplace(m_ConfigPath.parent_path(), false, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE, WatcherCallback, this);
+		LoadConfig();
 	}
 
 	return *m_Config;

@@ -9,8 +9,9 @@
 #include <winrt/TranslucentTB.Xaml.h>
 #include "undefgetcurrenttime.h"
 #include <winrt/Windows.UI.Xaml.Hosting.h>
-#include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
 #include "redefgetcurrenttime.h"
+#include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
+#include <winrt/Windows.System.h>
 
 #include "configmanager.hpp"
 #include "mainappwindow.hpp"
@@ -20,10 +21,13 @@
 #include "uwp/xamlpagehost.hpp"
 
 class Application final {
+	static winrt::Windows::System::DispatcherQueueController CreateDispatcher();
 	static std::unique_ptr<discord::Core> CreateDiscordCore();
 	static void ConfigurationChanged(void *context, const Config &cfg);
 
 	HINSTANCE m_hInstance;
+
+	winrt::Windows::System::DispatcherQueueController m_Dispatcher;
 
 	ConfigManager m_Config;
 	std::optional<StartupManager> m_Startup;

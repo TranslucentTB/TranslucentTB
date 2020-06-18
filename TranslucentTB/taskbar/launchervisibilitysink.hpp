@@ -5,7 +5,7 @@
 #include "winrt.hpp"
 
 class LauncherVisibilitySink : public winrt::implements<LauncherVisibilitySink, IAppVisibilityEvents> {
-	using callback_t = std::add_pointer_t<void(void* , bool)>;
+	using callback_t = std::add_pointer_t<void(void * , bool)>;
 
 	callback_t m_Callback;
 	void *m_Context;

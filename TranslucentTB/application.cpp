@@ -1,9 +1,23 @@
 #include "application.hpp"
+#include <DispatcherQueue.h>
 #include <WinBase.h>
 #include <WinUser.h>
 #include <winrt/TranslucentTB.Xaml.Pages.h>
 
 #include "uwp.hpp"
+
+winrt::Windows::System::DispatcherQueueController Application::CreateDispatcher()
+{
+	const DispatcherQueueOptions options = {
+		.dwSize = sizeof(options),
+		.threadType = DQTYPE_THREAD_CURRENT,
+		.apartmentType = DQTAT_COM_STA
+	};
+
+	ABI::Windows::System::IDispatcherQueueController *controller;
+	HresultVerify(CreateDispatcherQueueController(options, &controller), spdlog::level::critical, L"Failed to create dispatcher!");
+	return { controller, winrt::take_ownership_from_abi };
+}
 
 std::unique_ptr<discord::Core> Application::CreateDiscordCore()
 {
@@ -72,7 +86,7 @@ void Application::SetupMainApplication(bool hasPackageIdentity, bool hideIconOve
 {
 	m_Worker.emplace(m_Config.GetConfig(), m_hInstance);
 
-	if (hasPackageIdentity && !m_Startup)
+	if (hasPackageIdentity)
 	{
 		m_Startup.emplace();
 	}
@@ -80,10 +94,9 @@ void Application::SetupMainApplication(bool hasPackageIdentity, bool hideIconOve
 	m_AppWindow.emplace(*this, hideIconOverride, m_hInstance);
 }
 
-Application::Application(HINSTANCE hInst, bool hasPackageIdentity) : m_hInstance(hInst), m_Config(hasPackageIdentity, ConfigurationChanged, this), m_XamlApp(nullptr), m_CompletedFirstStart(false)
+Application::Application(HINSTANCE hInst, bool hasPackageIdentity) : m_hInstance(hInst), m_Dispatcher(CreateDispatcher()), m_Config(hasPackageIdentity, ConfigurationChanged, this), m_XamlApp(nullptr), m_CompletedFirstStart(false)
 {
-	// TODO: avoid toctou?
-	const bool isFirstBoot = true;//TODO: !std::filesystem::exists(m_Config.GetConfigPath());
+	const bool isFirstBoot = !m_Config.LoadConfig();
 	SetupMainApplication(hasPackageIdentity, isFirstBoot);
 
 	if (isFirstBoot)
@@ -95,30 +108,29 @@ Application::Application(HINSTANCE hInst, bool hasPackageIdentity) : m_hInstance
 		content.DiscordJoinRequested({ this, &Application::OpenDiscordServer });
 		content.ConfigEditRequested({ this, &Application::EditConfigFile });
 
-		content.LicenseApproved([this](const auto &, bool startupState)
+		content.LicenseApproved([this](const auto &, bool startupState) -> winrt::fire_and_forget
 		{
+			// set this first because awaiting will make the callback return,
+			// causing the Closed event to fire and call PostQuitMessage.
+			m_CompletedFirstStart = true;
+
 			if (m_Startup)
 			{
-				// TODO: avoid blocking, use dispatcher to get back on ui thread
-				if (auto &manager = *m_Startup; manager.WaitForTask())
+				co_await m_Startup->AcquireTask();
+				if (startupState)
 				{
-					if (startupState)
-					{
-						manager.Enable();
-					}
-					else
-					{
-						manager.Disable();
-					}
+					co_await m_Startup->Enable();
 				}
 				else
 				{
-					LastErrorHandle(spdlog::level::err, L"Failed to wait for startup task acquisition.");
+					m_Startup->Disable();
 				}
+
+				// return to the UI thread
+				co_await winrt::resume_foreground(m_Dispatcher.DispatcherQueue());
 			}
 
 			m_AppWindow->RemoveHideTrayIconOverride();
-			m_CompletedFirstStart = true;
 		});
 
 		content.Closed([this]
@@ -216,7 +228,7 @@ void Application::OpenDiscordServer()
 
 void Application::EditConfigFile()
 {
-	m_Config.Save();
+	m_Config.SaveConfig();
 	HresultVerify(win32::EditFile(m_Config.GetConfigPath()), spdlog::level::err, L"Failed to open configuration file.");
 }
 

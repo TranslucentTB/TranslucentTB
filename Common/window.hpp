@@ -104,7 +104,7 @@ public:
 	inline static Window Create(unsigned long dwExStyle, const WindowClass &winClass,
 		Util::null_terminated_wstring_view windowName, unsigned long dwStyle, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT,
 		int nWidth = CW_USEDEFAULT, int nHeight = CW_USEDEFAULT, Window parent = Window::NullWindow,
-		HMENU hMenu = nullptr, void* lpParam = nullptr) noexcept
+		HMENU hMenu = nullptr, void *lpParam = nullptr) noexcept
 	{
 		return Create(dwExStyle, winClass.atom(), winClass.hinstance(), windowName, dwStyle, x, y, nWidth, nHeight, parent, hMenu, lpParam);
 	}

@@ -174,7 +174,7 @@
       <PreprocessorDefinitions>RESULT_SUPPRESS_STATIC_INITIALIZERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
       <!-- Windows -->
-      <PreprocessorDefinitions>STRICT_TYPED_ITEMIDS;NOMINMAX;_WINDOWS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_HIDE_GLOBAL_ASYNC_STATUS;STRICT_TYPED_ITEMIDS;NOMINMAX;_WINDOWS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
 

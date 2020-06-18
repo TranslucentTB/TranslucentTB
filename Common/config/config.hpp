@@ -133,8 +133,9 @@ public:
 		}
 	}
 
-	inline static Config Load(const std::filesystem::path &file)
+	inline static Config Load(const std::filesystem::path &file, bool &fileExists)
 	{
+		fileExists = true;
 		wil::unique_file pfile(_wfsopen(file.c_str(), L"rbS", _SH_DENYNO));
 		if (pfile)
 		{
@@ -170,6 +171,7 @@ public:
 			// It's not an error for the config file to not exist.
 			if (const errno_t err = errno; err != ENOENT)
 			{
+				fileExists = false;
 				ErrnoTHandle(err, spdlog::level::err, L"Failed to load configuration!");
 			}
 		}

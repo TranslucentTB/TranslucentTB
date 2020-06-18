@@ -92,7 +92,7 @@ void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 	if (Error::ShouldLog(spdlog::level::debug))
 	{
 		Util::small_wmemory_buffer<50> buf;
-		fmt::format_to(buf, fmt(L"Start menu {} on monitor {}"), state ? L"opened" : L"closed", static_cast<void*>(mon));
+		fmt::format_to(buf, fmt(L"Start menu {} on monitor {}"), state ? L"opened" : L"closed", static_cast<void *>(mon));
 
 		MessagePrint(spdlog::level::debug, buf);
 	}
@@ -273,7 +273,7 @@ void TaskbarAttributeWorker::InsertWindow(Window window, bool refresh)
 	// call to on_current_desktop resolves this issue.
 	const bool windowMatches = (window.is_user_window() || m_Config.Whitelist.IsFiltered(window)) && !m_Config.Blacklist.IsFiltered(window);
 	const HMONITOR mon = window.monitor();
-	
+
 	for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
 	{
 		auto &maximised = it->second.MaximisedWindows;
@@ -378,7 +378,7 @@ void TaskbarAttributeWorker::CreateAppVisibility()
 		return;
 	}
 
-	const auto av_sink = winrt::make_self<LauncherVisibilitySink>([](void* context, bool state)
+	const auto av_sink = winrt::make_self<LauncherVisibilitySink>([](void *context, bool state)
 	{
 		static_cast<TaskbarAttributeWorker *>(context)->OnStartVisibilityChange(state);
 	}, this);
@@ -504,7 +504,7 @@ void TaskbarAttributeWorker::DumpState()
 	for (const auto &[monitor, info] : m_Taskbars)
 	{
 		buf.clear();
-		fmt::format_to(buf, fmt(L"Monitor {} [taskbar {}]:"), static_cast<void*>(monitor), static_cast<void*>(info.TaskbarWindow.handle()));
+		fmt::format_to(buf, fmt(L"Monitor {} [taskbar {}]:"), static_cast<void *>(monitor), static_cast<void *>(info.TaskbarWindow.handle()));
 		MessagePrint(spdlog::level::off, buf);
 
 		MessagePrint(spdlog::level::off, L"    Maximised windows:");

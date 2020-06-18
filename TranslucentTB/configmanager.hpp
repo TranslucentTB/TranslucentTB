@@ -7,6 +7,7 @@
 #include "config/config.hpp"
 #include "folderwatcher.hpp"
 
+// TODO: move Config::Load and Config::Save in ConfigManager?
 class ConfigManager {
 	using callback_t = std::add_pointer_t<void(void *, const Config &)>;
 
@@ -24,6 +25,7 @@ public:
 	inline ConfigManager(bool hasPackageIdentity, callback_t callback, void *context) : m_ConfigPath(DetermineConfigPath(hasPackageIdentity)), m_Callback(callback), m_Context(context) { }
 
 	void UpdateVerbosity();
+	bool LoadConfig();
 	Config &GetConfig();
 
 	constexpr const std::filesystem::path &GetConfigPath() const noexcept
@@ -31,7 +33,7 @@ public:
 		return m_ConfigPath;
 	}
 
-	inline void Save()
+	inline void SaveConfig()
 	{
 		GetConfig().Save(m_ConfigPath);
 	}

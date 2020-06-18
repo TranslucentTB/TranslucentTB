@@ -306,7 +306,7 @@ void MainAppWindow::Exit(bool save)
 {
 	if (save)
 	{
-		m_App.GetConfigManager().Save();
+		m_App.GetConfigManager().SaveConfig();
 	}
 
 	PostQuitMessage(0);
