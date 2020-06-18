@@ -5,15 +5,10 @@
 #include "App.g.cpp"
 #endif
 
-#include "appinfo.hpp"
-
-using namespace winrt;
-using namespace Windows::UI::Xaml;
-
 namespace winrt::TranslucentTB::Xaml::implementation
 {
 	App::App()
 	{
-		Initialize();
+		// empty
 	}
 }
