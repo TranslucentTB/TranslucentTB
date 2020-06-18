@@ -169,9 +169,12 @@ public:
 		else
 		{
 			// It's not an error for the config file to not exist.
-			if (const errno_t err = errno; err != ENOENT)
+			if (const errno_t err = errno; err == ENOENT)
 			{
 				fileExists = false;
+			}
+			else
+			{
 				ErrnoTHandle(err, spdlog::level::err, L"Failed to load configuration!");
 			}
 		}
