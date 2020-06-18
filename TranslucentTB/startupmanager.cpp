@@ -29,7 +29,7 @@ std::optional<StartupTaskState> StartupManager::GetState() const
 	{
 		try
 		{
-			return m_StartupTask.State();
+			return task.State();
 		}
 		HresultErrorCatch(spdlog::level::warn, L"Failed to get startup task status.");
 	}
@@ -47,7 +47,7 @@ IAsyncAction StartupManager::Enable()
 			result = co_await task.RequestEnableAsync();
 		}
 		HresultErrorCatch(spdlog::level::err, L"Failed to enable startup task.");
-		
+
 		if (result != StartupTaskState::Enabled && result != StartupTaskState::EnabledByPolicy)
 		{
 			MessagePrint(spdlog::level::err, L"A request to enable the startup task did not result in it being enabled.");
@@ -55,7 +55,7 @@ IAsyncAction StartupManager::Enable()
 	}
 }
 
-void StartupManager::Disable() 
+void StartupManager::Disable()
 {
 	if (const auto task = GetTaskSafe())
 	{
