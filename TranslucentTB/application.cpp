@@ -82,13 +82,13 @@ void Application::CreateWelcomePage(bool hasPackageIdentity, IAsyncOperation<boo
 
 		content.DiscordJoinRequested([this]() -> winrt::fire_and_forget
 		{
-			co_await winrt::resume_foreground(m_Dispatcher.DispatcherQueue());
+			co_await m_Dispatcher.DispatcherQueue();
 			OpenDiscordServer();
 		});
 
 		content.ConfigEditRequested([this]() -> winrt::fire_and_forget
 		{
-			co_await winrt::resume_foreground(m_Dispatcher.DispatcherQueue());
+			co_await m_Dispatcher.DispatcherQueue();
 			EditConfigFile();
 		});
 
@@ -110,7 +110,7 @@ void Application::CreateWelcomePage(bool hasPackageIdentity, IAsyncOperation<boo
 				}
 			}
 
-			co_await winrt::resume_foreground(m_Dispatcher.DispatcherQueue());
+			co_await m_Dispatcher.DispatcherQueue();
 			m_AppWindow->RemoveHideTrayIconOverride();
 		});
 
@@ -118,7 +118,7 @@ void Application::CreateWelcomePage(bool hasPackageIdentity, IAsyncOperation<boo
 		{
 			if (!m_CompletedFirstStart)
 			{
-				co_await winrt::resume_foreground(m_Dispatcher.DispatcherQueue());
+				co_await m_Dispatcher.DispatcherQueue();
 				PostQuitMessage(1);
 			}
 		});
