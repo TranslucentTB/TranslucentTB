@@ -1,8 +1,11 @@
 #pragma once
 #include "arch.h"
+#include <atomic>
 #include <discord-game-sdk/core.h>
+#include <functional>
 #include <memory>
 #include <optional>
+#include <thread>
 #include <utility>
 #include <windef.h>
 #include "winrt.hpp"
@@ -40,15 +43,14 @@ class Application final {
 	std::optional<TaskbarAttributeWorker> m_Worker;
 	std::optional<MainAppWindow> m_AppWindow;
 
-	bool m_CompletedFirstStart;
+	std::atomic<bool> m_CompletedFirstStart;
 
-	bool PreTranslateMessage(const MSG &msg);
 	void SetupMainApplication(bool hasPackageIdentity, bool hideIconOverride);
+	void CreateWelcomePage(bool hasPackageIdentity);
 
 public:
 	Application(HINSTANCE hInst, bool hasPackageIdentity);
 
-	WPARAM Run();
 	void OpenDonationPage();
 	void OpenDiscordServer();
 	void EditConfigFile();
@@ -58,26 +60,36 @@ public:
 	inline constexpr std::optional<StartupManager> &GetStartupManager() noexcept { return m_Startup; }
 	inline constexpr TaskbarAttributeWorker &GetWorker() noexcept { return *m_Worker; }
 
-	template<typename T, typename... Args>
-	inline XamlPageHost<T> *CreateXamlWindow(Args&&... args)
+	void RunDiscordCallbacks();
+
+	inline WPARAM Run()
 	{
-		try
+		return m_AppWindow->Run();
+	}
+
+	template<typename T, typename Callback, typename... Args>
+	inline void CreateXamlWindow(Callback &&callback, Args... args)
+	{
+		// Load XAML
+		if (!m_XamlApp)
 		{
-			// Load XAML
-			if (!m_XamlApp)
+			try
 			{
 				m_XamlApp = { };
 			}
-
-			auto page = std::make_unique<XamlPageHost<T>>(m_hInstance, std::forward<Args>(args)...);
-			if (const auto nativeSource = page->source().try_as<IDesktopWindowXamlSourceNative2>())
-			{
-				m_XamlSources.push_back(nativeSource);
-			}
-
-			return page.release();
+			HresultErrorCatch(spdlog::level::critical, L"Failed to load XAML resources");
 		}
-		HresultErrorCatch(spdlog::level::critical, L"Failed to open window");
+
+		std::thread([hInst = m_hInstance, callback = std::forward<Callback>(callback), ...args = std::move(args)]
+		{
+			try
+			{
+				XamlPageHost<T> page(hInst, std::move(args)...);
+				std::invoke(callback, page);
+				page.Run();
+			}
+			HresultErrorCatch(spdlog::level::critical, L"Failed to create window");
+		}).detach();
 	}
 
 	~Application();

@@ -14,8 +14,11 @@
 class BaseXamlPageHost : public MessageWindow {
 private:
 	Window m_interopWnd;
+	winrt::Windows::UI::Xaml::Hosting::WindowsXamlManager m_manager;
 	winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource m_source;
 	winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource::TakeFocusRequested_revoker m_focusRevoker;
+
+	bool PreTranslateMessage(const MSG &msg) override;
 
 protected:
 	static float GetDpiScale(HMONITOR mon);
@@ -28,17 +31,21 @@ protected:
 
 	BaseXamlPageHost(Util::null_terminated_wstring_view className, HINSTANCE hInst);
 
-public:
 	inline constexpr winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource &source() noexcept
 	{
 		return m_source;
 	}
 
-	inline virtual ~BaseXamlPageHost()
+public:
+	inline ~BaseXamlPageHost()
 	{
 		m_focusRevoker.revoke();
 		m_source.Close();
 		m_source = nullptr;
+		m_manager.Close();
+		m_manager = nullptr;
+
+		winrt::uninit_apartment();
 	}
 
 	BaseXamlPageHost(const BaseXamlPageHost&) = delete;

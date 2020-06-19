@@ -133,10 +133,7 @@ public:
 		m_TitleChangedToken.value = m_content.RegisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), { this, &XamlPageHost::SetTitle });
 		m_ClosedRevoker = m_content.Closed(winrt::auto_revoke, [handle = handle()]
 		{
-			if (!DestroyWindow(handle))
-			{
-				LastErrorHandle(spdlog::level::err, L"Failed to close window???");
-			}
+			PostQuitMessage(0);
 		});
 
 		// Magic that gives us shadows
@@ -152,7 +149,13 @@ public:
 			MessagePrint(spdlog::level::warn, L"Failed to update window");
 		}
 
-		SetFocus(m_WindowHandle);
+		if (!SetForegroundWindow(m_WindowHandle))
+		{
+			MessagePrint(spdlog::level::warn, L"Failed to set foreground window");
+		}
+
+		// TODO: we also get a flash of white when creating the window
+		// TODO: window not fluent and not keyboard interactible on first opening
 	}
 
 	inline constexpr T &content() noexcept
@@ -160,11 +163,17 @@ public:
 		return m_content;
 	}
 
-	inline ~XamlPageHost() override
+	inline ~XamlPageHost()
 	{
+		// hide the window before destructing the XAML stuff to avoid a flash of white
+		show(SW_HIDE);
+
+		source().Content(nullptr);
 		m_ClosedRevoker.revoke();
 		m_content.UnregisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), std::exchange(m_TitleChangedToken.value, 0));
 		m_content = nullptr;
+
+		// TODO: we are leaking memory
 	}
 
 	XamlPageHost(const XamlPageHost &) = delete;

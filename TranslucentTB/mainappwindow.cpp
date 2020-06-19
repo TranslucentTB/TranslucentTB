@@ -6,6 +6,12 @@
 #include "../ProgramLog/log.hpp"
 #include "../ProgramLog/error/win32.hpp"
 
+bool MainAppWindow::PreTranslateMessage(const MSG &)
+{
+	m_App.RunDiscordCallbacks();
+	return false;
+}
+
 LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)

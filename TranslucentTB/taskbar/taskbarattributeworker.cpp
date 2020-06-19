@@ -338,10 +338,10 @@ void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::
 			if (showInfo)
 			{
 				std::wstring title, className, fileName;
-				if (const auto titleOpt = window.title())
+				if (auto titleOpt = window.title())
 				{
 					title = std::move(*titleOpt);
-					if (const auto classNameOpt = window.classname())
+					if (auto classNameOpt = window.classname())
 					{
 						className = std::move(*classNameOpt);
 						if (const auto fileOpt = window.file())

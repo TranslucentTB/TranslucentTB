@@ -10,21 +10,20 @@
 
 class MessageWindow : public Window {
 private:
-	static void NTAPI DeleteThisAPC(ULONG_PTR that);
-
 	WindowClass m_WindowClass;
 	const wchar_t *m_IconResource;
 
 	std::unique_ptr<member_thunk::thunk<WNDPROC>> m_ProcThunk;
 
-	void Destroy();
-
 protected:
-	void HeapDeletePostNcDestroy();
-
 	inline HINSTANCE hinstance() const noexcept
 	{
 		return m_WindowClass.hinstance();
+	}
+
+	inline virtual bool PreTranslateMessage(const MSG &)
+	{
+		return false;
 	}
 
 	inline virtual LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -42,7 +41,9 @@ protected:
 	MessageWindow(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName, HINSTANCE hInstance, unsigned long style = 0, Window parent = Window::NullWindow, const wchar_t *iconResource = MAKEINTRESOURCE(IDI_MAINICON));
 
 public:
-	virtual ~MessageWindow();
+	WPARAM Run();
+
+	~MessageWindow();
 
 	inline MessageWindow(const MessageWindow &) = delete;
 	inline MessageWindow &operator =(const MessageWindow &) = delete;

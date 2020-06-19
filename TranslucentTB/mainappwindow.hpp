@@ -18,6 +18,7 @@ private:
 	Application &m_App;
 	bool m_HideIconOverride;
 
+	bool PreTranslateMessage(const MSG &msg) override;
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	void RefreshMenu() override;

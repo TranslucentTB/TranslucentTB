@@ -6,22 +6,26 @@ using namespace winrt::Windows::ApplicationModel;
 
 StartupTask StartupManager::GetTaskSafe() const noexcept
 {
-	const auto lock = m_TaskLock.lock_shared();
+	const auto lock = m_TaskLock.acquire();
 	return m_StartupTask;
 }
 
-IAsyncAction StartupManager::AcquireTask() try
+IAsyncOperation<bool> StartupManager::AcquireTask() try
 {
-	const auto lock = m_TaskLock.lock_exclusive();
+	const auto lock = m_TaskLock.acquire();
 
 	if (!m_StartupTask)
 	{
-		const auto task = (co_await StartupTask::GetForCurrentPackageAsync()).GetAt(0);
-
-		m_StartupTask = std::move(task);
+		m_StartupTask = (co_await StartupTask::GetForCurrentPackageAsync()).GetAt(0);
 	}
+
+	co_return true;
 }
-HresultErrorCatch(spdlog::level::critical, L"Failed to load package startup task.");
+catch (const winrt::hresult_error &err)
+{
+	HresultErrorHandle(err, spdlog::level::err, L"Failed to load package startup task.");
+	co_return false;
+}
 
 std::optional<StartupTaskState> StartupManager::GetState() const
 {
@@ -46,7 +50,11 @@ IAsyncAction StartupManager::Enable()
 		{
 			result = co_await task.RequestEnableAsync();
 		}
-		HresultErrorCatch(spdlog::level::err, L"Failed to enable startup task.");
+		catch (const winrt::hresult_error &err)
+		{
+			HresultErrorHandle(err, spdlog::level::err, L"Failed to enable startup task.");
+			co_return;
+		}
 
 		if (result != StartupTaskState::Enabled && result != StartupTaskState::EnabledByPolicy)
 		{

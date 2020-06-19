@@ -12,15 +12,16 @@
 
 class StartupManager {
 private:
-	mutable wil::srwlock m_TaskLock;
+	// TODO: replace with std::binary_semaphore
+	mutable wil::unique_semaphore m_TaskLock;
 	winrt::Windows::ApplicationModel::StartupTask m_StartupTask;
 
 	winrt::Windows::ApplicationModel::StartupTask GetTaskSafe() const noexcept;
 
 public:
-	inline StartupManager() noexcept : m_StartupTask(nullptr) { }
+	inline StartupManager() noexcept : m_TaskLock(1, 1), m_StartupTask(nullptr) { }
 
-	winrt::Windows::Foundation::IAsyncAction AcquireTask();
+	winrt::Windows::Foundation::IAsyncOperation<bool> AcquireTask();
 
 	std::optional<winrt::Windows::ApplicationModel::StartupTaskState> GetState() const;
 	winrt::Windows::Foundation::IAsyncAction Enable();

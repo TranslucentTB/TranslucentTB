@@ -166,5 +166,5 @@ public:
 	void DumpState();
 	void ResetState(bool rehook = true);
 
-	~TaskbarAttributeWorker() override;
+	~TaskbarAttributeWorker();
 };

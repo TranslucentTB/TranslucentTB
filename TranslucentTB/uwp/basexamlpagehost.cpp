@@ -4,6 +4,27 @@
 
 #include "../ProgramLog/error/win32.hpp"
 
+using namespace winrt::Windows::UI::Xaml::Hosting;
+
+bool BaseXamlPageHost::PreTranslateMessage(const MSG &msg)
+{
+	if (const auto source = m_source.try_as<IDesktopWindowXamlSourceNative2>())
+	{
+		BOOL result { };
+		const HRESULT err = source->PreTranslateMessage(&msg, &result);
+		if (SUCCEEDED(err))
+		{
+			return result;
+		}
+		else
+		{
+			HresultHandle(err, spdlog::level::warn, L"Failed to pre-translate message.");
+		}
+	}
+
+	return false;
+}
+
 float BaseXamlPageHost::GetDpiScale(HMONITOR mon)
 {
 	UINT dpiX, dpiY;
@@ -19,7 +40,6 @@ float BaseXamlPageHost::GetDpiScale(HMONITOR mon)
 }
 
 LRESULT BaseXamlPageHost::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
-
 {
 	switch (uMsg)
 	{
@@ -29,10 +49,6 @@ LRESULT BaseXamlPageHost::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam
 	case WM_DPICHANGED:
 		PositionWindow(*reinterpret_cast<RECT *>(lParam));
 		break;
-
-	case WM_NCDESTROY:
-		HeapDeletePostNcDestroy();
-		return 0;
 	}
 
 	return MessageWindow::MessageHandler(uMsg, wParam, lParam);
@@ -78,14 +94,19 @@ void BaseXamlPageHost::PositionInteropWindow(int x, int y)
 }
 
 BaseXamlPageHost::BaseXamlPageHost(Util::null_terminated_wstring_view className, HINSTANCE hInst) :
-	MessageWindow(className, { }, hInst, WS_OVERLAPPED)
+	MessageWindow(className, { }, hInst, WS_OVERLAPPED),
+	m_manager(nullptr),
+	m_source(nullptr)
 {
+	winrt::init_apartment(winrt::apartment_type::single_threaded);
+	m_manager = WindowsXamlManager::InitializeForCurrentThread();
+	m_source = { };
+
 	auto nativeSource = m_source.as<IDesktopWindowXamlSourceNative2>();
 	winrt::check_hresult(nativeSource->AttachToWindow(m_WindowHandle));
 
 	winrt::check_hresult(nativeSource->get_WindowHandle(m_interopWnd.put()));
 
-	using namespace winrt::Windows::UI::Xaml::Hosting;
 	m_focusRevoker = m_source.TakeFocusRequested(winrt::auto_revoke, [](const DesktopWindowXamlSource &sender, const DesktopWindowXamlSourceTakeFocusRequestedEventArgs &args)
 	{
 		// just cycle back to beginning
