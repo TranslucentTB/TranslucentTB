@@ -98,7 +98,7 @@ void Application::CreateWelcomePage(bool hasPackageIdentity, IAsyncOperation<boo
 			// causing the Closed event to fire and call PostQuitMessage.
 			m_CompletedFirstStart = true;
 
-			if (m_Startup && co_await task)
+			if (task && co_await task)
 			{
 				if (startupState)
 				{
