@@ -45,8 +45,8 @@ class Application final {
 
 	std::atomic<bool> m_CompletedFirstStart;
 
-	void SetupMainApplication(bool hasPackageIdentity, bool hideIconOverride);
-	void CreateWelcomePage(bool hasPackageIdentity);
+	winrt::Windows::Foundation::IAsyncOperation<bool> SetupMainApplication(bool hasPackageIdentity, bool hideIconOverride);
+	void CreateWelcomePage(bool hasPackageIdentity, winrt::Windows::Foundation::IAsyncOperation<bool> startupTask);
 
 public:
 	Application(HINSTANCE hInst, bool hasPackageIdentity);

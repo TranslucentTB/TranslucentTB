@@ -6,6 +6,8 @@
 
 #include "uwp.hpp"
 
+using winrt::Windows::Foundation::IAsyncOperation;
+
 winrt::Windows::System::DispatcherQueueController Application::CreateDispatcher()
 {
 	const DispatcherQueueOptions options = {
@@ -50,22 +52,29 @@ void Application::ConfigurationChanged(void *context, const Config &cfg)
 	}
 }
 
-void Application::SetupMainApplication(bool hasPackageIdentity, bool hideIconOverride)
+IAsyncOperation<bool> Application::SetupMainApplication(bool hasPackageIdentity, bool hideIconOverride)
 {
 	m_Worker.emplace(m_Config.GetConfig(), m_hInstance);
 
+	IAsyncOperation<bool> task;
 	if (hasPackageIdentity)
 	{
-		m_Startup.emplace();
+		// it's important that we fire this on the main thread
+		// otherwise the XAML window thread will call uninit_apartment
+		// which will terminate the RPC server hosting the object,
+		// making it unusable.
+		m_Startup.emplace(task);
 	}
 
 	m_AppWindow.emplace(*this, hideIconOverride, m_hInstance);
+
+	return task;
 }
 
-void Application::CreateWelcomePage(bool hasPackageIdentity)
+void Application::CreateWelcomePage(bool hasPackageIdentity, IAsyncOperation<bool> startupTask)
 {
 	using winrt::TranslucentTB::Xaml::Pages::WelcomePage;
-	CreateXamlWindow<WelcomePage>([this](XamlPageHost<WelcomePage> &host)
+	CreateXamlWindow<WelcomePage>([this, task = std::move(startupTask)](XamlPageHost<WelcomePage> &host)
 	{
 		const auto &content = host.content();
 
@@ -83,25 +92,21 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 			EditConfigFile();
 		});
 
-		content.LicenseApproved([this](bool startupState) -> winrt::fire_and_forget
+		content.LicenseApproved([this, task = std::move(task)](bool startupState) -> winrt::fire_and_forget
 		{
 			// set this first because awaiting will make the callback return,
 			// causing the Closed event to fire and call PostQuitMessage.
 			m_CompletedFirstStart = true;
 
-			if (m_Startup)
+			if (m_Startup && co_await task)
 			{
-				const bool success = co_await m_Startup->AcquireTask();
-				if (success)
+				if (startupState)
 				{
-					if (startupState)
-					{
-						co_await m_Startup->Enable();
-					}
-					else
-					{
-						m_Startup->Disable();
-					}
+					co_await m_Startup->Enable();
+				}
+				else
+				{
+					m_Startup->Disable();
 				}
 			}
 
@@ -123,19 +128,14 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 Application::Application(HINSTANCE hInst, bool hasPackageIdentity) : m_hInstance(hInst), m_Dispatcher(CreateDispatcher()), m_Config(hasPackageIdentity, ConfigurationChanged, this), m_XamlApp(nullptr), m_CompletedFirstStart(false)
 {
 	const bool isFirstBoot = !m_Config.LoadConfig();
-	SetupMainApplication(hasPackageIdentity, isFirstBoot);
+	const IAsyncOperation<bool> task = SetupMainApplication(hasPackageIdentity, isFirstBoot);
 
 	if (isFirstBoot)
 	{
-		CreateWelcomePage(hasPackageIdentity);
+		CreateWelcomePage(hasPackageIdentity, std::move(task));
 	}
 	else
 	{
-		if (m_Startup)
-		{
-			m_Startup->AcquireTask();
-		}
-
 		m_CompletedFirstStart = true;
 	}
 }

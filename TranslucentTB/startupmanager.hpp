@@ -17,11 +17,13 @@ private:
 	winrt::Windows::ApplicationModel::StartupTask m_StartupTask;
 
 	winrt::Windows::ApplicationModel::StartupTask GetTaskSafe() const noexcept;
+	winrt::Windows::Foundation::IAsyncOperation<bool> AcquireTask();
 
 public:
-	inline StartupManager() noexcept : m_TaskLock(1, 1), m_StartupTask(nullptr) { }
-
-	winrt::Windows::Foundation::IAsyncOperation<bool> AcquireTask();
+	inline StartupManager(winrt::Windows::Foundation::IAsyncOperation<bool> &task) noexcept : m_TaskLock(1, 1), m_StartupTask(nullptr)
+	{
+		task = AcquireTask();
+	}
 
 	std::optional<winrt::Windows::ApplicationModel::StartupTaskState> GetState() const;
 	winrt::Windows::Foundation::IAsyncAction Enable();
