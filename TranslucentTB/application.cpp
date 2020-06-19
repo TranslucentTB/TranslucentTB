@@ -83,6 +83,7 @@ void Application::CreateWelcomePage(bool hasPackageIdentity, IAsyncOperation<boo
 		content.DiscordJoinRequested([this]() -> winrt::fire_and_forget
 		{
 			co_await m_Dispatcher.DispatcherQueue();
+			// TODO: this behaves weirdly
 			OpenDiscordServer();
 		});
 
