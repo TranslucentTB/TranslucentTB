@@ -64,7 +64,7 @@ void lazy_file_sink<Mutex>::open()
 				HresultErrorHandleWithBuffer(buf, err, spdlog::level::trace, L"Failed to get log file path.");
 				handle_open_error(Util::ToStringView(buf));
 			}
-			
+
 			return;
 		}
 		catch (const std::filesystem::filesystem_error &err)
@@ -74,7 +74,7 @@ void lazy_file_sink<Mutex>::open()
 				StdSystemErrorHandleWithBuffer(buf, err, spdlog::level::trace, L"Failed to get log file path.");
 				handle_open_error(Util::ToStringView(buf));
 			}
-			
+
 			return;
 		}
 
@@ -97,7 +97,7 @@ void lazy_file_sink<Mutex>::handle_open_error(std::wstring_view err)
 {
 	fmt::wmemory_buffer buf;
 	fmt::format_to(buf, fmt(L"Failed to create log file. Logs won't be available during this session.\n\n{}"), err);
-	Error::CreateMessageBoxThread(buf, ERROR_TITLE, MB_ICONWARNING);
+	Error::CreateMessageBoxThread(buf, ERROR_TITLE, MB_ICONWARNING).detach();
 }
 
 template<typename Mutex>

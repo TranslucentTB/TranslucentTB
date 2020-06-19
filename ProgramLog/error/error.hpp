@@ -4,13 +4,11 @@
 #include <RestrictedErrorInfo.h>
 #include <spdlog/common.h>
 #include <string_view>
-#include <windef.h>
-#include <winbase.h>
-#include <wil/resource.h>
+#include <thread>
+#include <winerror.h>
 
 #include "../api.h"
 #include "appinfo.hpp"
-#include "util/memory.hpp"
 #include "util/null_terminated_string_view.hpp"
 #include "util/to_string_view.hpp"
 
@@ -25,12 +23,6 @@ namespace Error {
 	PROGRAMLOG_API bool ShouldLog(spdlog::level::level_enum level);
 
 	namespace impl {
-		struct msgbox_info : Util::flexible_array<msgbox_info> {
-			Util::null_terminated_wstring_view title;
-			unsigned int type;
-			wchar_t body[];
-		};
-
 		// Needs to be in DLL because spdlog log registry is per-module.
 		PROGRAMLOG_API void Log(const fmt::wmemory_buffer &msg, spdlog::level::level_enum level, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function);
 
@@ -54,7 +46,7 @@ namespace Error {
 		[[noreturn]] PROGRAMLOG_API void Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function, HRESULT err, IRestrictedErrorInfo *errInfo);
 	}
 
-	wil::unique_handle CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type);
+	std::thread CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type);
 
 	template<spdlog::level::level_enum level>
 	struct HandleImpl {
@@ -77,11 +69,6 @@ namespace Error {
 			impl::Handle<spdlog::level::critical>(Util::ToStringView(message), Util::ToStringView(error_message), file, line, function, err, errInfo);
 		}
 	};
-};
-
-template<>
-struct Util::flexible_array_traits<Error::impl::msgbox_info> {
-	static constexpr auto data = &Error::impl::msgbox_info::body;
 };
 
 #define PROGRAMLOG_ERROR_LOCATION __FILE__, __LINE__, SPDLOG_FUNCTION

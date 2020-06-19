@@ -32,7 +32,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)util\concepts.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\fmt.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\hash.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)util\memory.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\null_terminated_string_view.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\numbers.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\map.hpp" />

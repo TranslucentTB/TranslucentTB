@@ -62,7 +62,7 @@ void Error::impl::Handle<spdlog::level::err>(std::wstring_view message, std::wst
 		buf.clear();
 		GetLogMessage(buf, message, error_message, ERROR_MESSAGE L"\n\n{}\n\n{}", ERROR_MESSAGE L"\n\n{}");
 
-		CreateMessageBoxThread(buf, ERROR_TITLE, MB_ICONWARNING);
+		CreateMessageBoxThread(buf, ERROR_TITLE, MB_ICONWARNING).detach();
 	}
 	else
 	{
@@ -88,13 +88,7 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 		buf.clear();
 		GetLogMessage(buf, message, error_message, FATAL_ERROR_MESSAGE L"\n\n{}\n\n{}", FATAL_ERROR_MESSAGE L"\n\n{}");
 
-		if (auto thread = CreateMessageBoxThread(buf, FATAL_ERROR_TITLE, MB_ICONERROR | MB_TOPMOST))
-		{
-			if (WaitForSingleObject(thread.get(), INFINITE) == WAIT_FAILED)
-			{
-				LastErrorHandle(spdlog::level::warn, L"Failed to wait for thread");
-			}
-		}
+		CreateMessageBoxThread(buf, FATAL_ERROR_TITLE, MB_ICONERROR | MB_TOPMOST).join();
 	}
 
 	if (errInfo)
@@ -117,39 +111,10 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 	__assume(0);
 }
 
-wil::unique_handle Error::CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type)
+std::thread Error::CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type)
 {
-	auto info = impl::msgbox_info::make(buf.size() + 1);
-	info->title = title;
-	info->type = type;
-
-	const errno_t err = wmemcpy_s(info->body, buf.size() + 1, buf.data(), buf.size());
-	if (err != 0)
+	return std::thread([title, type, body = fmt::to_string(buf)]
 	{
-		ErrnoTHandle(err, spdlog::level::trace, L"Failed to copy message box body");
-		return nullptr;
-	}
-
-	info->body[buf.size()] = L'\0';
-
-	wil::unique_handle thread(CreateThread(nullptr, 0, [](void *userData) noexcept -> DWORD
-	{
-		decltype(info) boxInfo(static_cast<impl::msgbox_info *>(userData));
-
-		MessageBoxEx(Window::NullWindow, boxInfo->body, boxInfo->title.c_str(), boxInfo->type | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
-
-		return 0;
-	}, info.get(), 0, nullptr));
-
-	if (thread)
-	{
-		// Ownership transferred to thread
-		static_cast<void>(info.release());
-	}
-	else
-	{
-		LastErrorHandle(spdlog::level::trace, L"Failed to create thread");
-	}
-
-	return thread;
+		MessageBoxEx(Window::NullWindow, body.c_str(), title.c_str(), type | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
+	});
 }
