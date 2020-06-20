@@ -1,5 +1,4 @@
 #include "window.hpp"
-#include <optional>
 #include <ShObjIdl.h>
 #include <wil/com.h>
 #include <wil/resource.h>

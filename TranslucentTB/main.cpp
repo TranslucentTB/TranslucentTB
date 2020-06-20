@@ -29,7 +29,8 @@ _Use_decl_annotations_ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar
 	// Run the main program loop. When this method exits, TranslucentTB itself is about to exit.
 	const auto exitCode = Application(hInstance, UWP::HasPackageIdentity()).Run();
 
-	winrt::uninit_apartment();
+	// let the apartment get cleaned up by the system so that our static
+	// COM pointers don't crash when they try to call Release().
 	return static_cast<int>(exitCode);
 }
 
