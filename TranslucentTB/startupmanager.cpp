@@ -1,19 +1,13 @@
 #include "startupmanager.hpp"
 #include <winrt/Windows.Foundation.Collections.h>
 
+#include "../ProgramLog/error/win32.hpp"
+
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::ApplicationModel;
 
-StartupTask StartupManager::GetTaskSafe() const noexcept
-{
-	const auto lock = m_TaskLock.acquire();
-	return m_StartupTask;
-}
-
 IAsyncOperation<bool> StartupManager::AcquireTask() try
 {
-	const auto lock = m_TaskLock.acquire();
-
 	if (!m_StartupTask)
 	{
 		m_StartupTask = (co_await StartupTask::GetForCurrentPackageAsync()).GetAt(0);
@@ -29,11 +23,11 @@ catch (const winrt::hresult_error &err)
 
 std::optional<StartupTaskState> StartupManager::GetState() const
 {
-	if (const auto task = GetTaskSafe())
+	if (m_StartupTask)
 	{
 		try
 		{
-			return task.State();
+			return m_StartupTask.State();
 		}
 		HresultErrorCatch(spdlog::level::warn, L"Failed to get startup task status.");
 	}
@@ -43,12 +37,12 @@ std::optional<StartupTaskState> StartupManager::GetState() const
 
 IAsyncAction StartupManager::Enable()
 {
-	if (const auto task = GetTaskSafe())
+	if (m_StartupTask)
 	{
 		StartupTaskState result;
 		try
 		{
-			result = co_await task.RequestEnableAsync();
+			result = co_await m_StartupTask.RequestEnableAsync();
 		}
 		catch (const winrt::hresult_error &err)
 		{
@@ -65,11 +59,11 @@ IAsyncAction StartupManager::Enable()
 
 void StartupManager::Disable()
 {
-	if (const auto task = GetTaskSafe())
+	if (m_StartupTask)
 	{
 		try
 		{
-			task.Disable();
+			m_StartupTask.Disable();
 		}
 		HresultErrorCatch(spdlog::level::err, L"Failed to disable startup task.");
 	}

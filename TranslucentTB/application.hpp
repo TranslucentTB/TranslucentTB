@@ -33,20 +33,17 @@ class Application final {
 	winrt::Windows::System::DispatcherQueueController m_Dispatcher;
 
 	ConfigManager m_Config;
+	std::optional<TaskbarAttributeWorker> m_Worker;
 	std::optional<StartupManager> m_Startup;
+	std::optional<MainAppWindow> m_AppWindow;
 
 	winrt::TranslucentTB::Xaml::App m_XamlApp;
-	std::vector<winrt::weak_ref<IDesktopWindowXamlSourceNative2>> m_XamlSources;
-
 	std::unique_ptr<discord::Core> m_DiscordCore;
-
-	std::optional<TaskbarAttributeWorker> m_Worker;
-	std::optional<MainAppWindow> m_AppWindow;
 
 	std::atomic<bool> m_CompletedFirstStart;
 
-	winrt::Windows::Foundation::IAsyncOperation<bool> SetupMainApplication(bool hasPackageIdentity, bool hideIconOverride);
-	void CreateWelcomePage(bool hasPackageIdentity, winrt::Windows::Foundation::IAsyncOperation<bool> startupTask);
+	void SetupMainApplication(bool hasPackageIdentity, bool hideIconOverride);
+	void CreateWelcomePage(bool hasPackageIdentity);
 
 public:
 	Application(HINSTANCE hInst, bool hasPackageIdentity);

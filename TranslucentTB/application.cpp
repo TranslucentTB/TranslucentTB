@@ -52,29 +52,22 @@ void Application::ConfigurationChanged(void *context, const Config &cfg)
 	}
 }
 
-IAsyncOperation<bool> Application::SetupMainApplication(bool hasPackageIdentity, bool hideIconOverride)
+void Application::SetupMainApplication(bool hasPackageIdentity, bool hideIconOverride)
 {
 	m_Worker.emplace(m_Config.GetConfig(), m_hInstance);
 
-	IAsyncOperation<bool> task;
 	if (hasPackageIdentity)
 	{
-		// it's important that we fire this on the main thread
-		// otherwise the XAML window thread will call uninit_apartment
-		// which will terminate the RPC server hosting the object,
-		// making it unusable.
-		m_Startup.emplace(task);
+		m_Startup.emplace();
 	}
 
 	m_AppWindow.emplace(*this, hideIconOverride, m_hInstance);
-
-	return task;
 }
 
-void Application::CreateWelcomePage(bool hasPackageIdentity, IAsyncOperation<bool> startupTask)
+void Application::CreateWelcomePage(bool hasPackageIdentity)
 {
 	using winrt::TranslucentTB::Xaml::Pages::WelcomePage;
-	CreateXamlWindow<WelcomePage>([this, task = std::move(startupTask)](XamlPageHost<WelcomePage> &host)
+	CreateXamlWindow<WelcomePage>([this](XamlPageHost<WelcomePage> &host)
 	{
 		const auto &content = host.content();
 
@@ -93,13 +86,20 @@ void Application::CreateWelcomePage(bool hasPackageIdentity, IAsyncOperation<boo
 			EditConfigFile();
 		});
 
-		content.LicenseApproved([this, task = std::move(task)](bool startupState) -> winrt::fire_and_forget
+		content.LicenseApproved([this](bool startupState) -> winrt::fire_and_forget
 		{
 			// set this first because awaiting will make the callback return,
 			// causing the Closed event to fire and call PostQuitMessage.
 			m_CompletedFirstStart = true;
 
-			if (task && co_await task)
+			// move back to the main thread.
+			// it's not safe to co_await in the calling thread because as
+			// soon as we hit the first suspension point, the window and
+			// message loop is torn down.
+			co_await m_Dispatcher.DispatcherQueue();
+			m_AppWindow->RemoveHideTrayIconOverride();
+
+			if (m_Startup && co_await m_Startup->AcquireTask())
 			{
 				if (startupState)
 				{
@@ -110,9 +110,6 @@ void Application::CreateWelcomePage(bool hasPackageIdentity, IAsyncOperation<boo
 					m_Startup->Disable();
 				}
 			}
-
-			co_await m_Dispatcher.DispatcherQueue();
-			m_AppWindow->RemoveHideTrayIconOverride();
 		});
 
 		content.Closed([this]() -> winrt::fire_and_forget
@@ -129,14 +126,19 @@ void Application::CreateWelcomePage(bool hasPackageIdentity, IAsyncOperation<boo
 Application::Application(HINSTANCE hInst, bool hasPackageIdentity) : m_hInstance(hInst), m_Dispatcher(CreateDispatcher()), m_Config(hasPackageIdentity, ConfigurationChanged, this), m_XamlApp(nullptr), m_CompletedFirstStart(false)
 {
 	const bool isFirstBoot = !m_Config.LoadConfig();
-	const IAsyncOperation<bool> task = SetupMainApplication(hasPackageIdentity, isFirstBoot);
+	SetupMainApplication(hasPackageIdentity, isFirstBoot);
 
 	if (isFirstBoot)
 	{
-		CreateWelcomePage(hasPackageIdentity, std::move(task));
+		CreateWelcomePage(hasPackageIdentity);
 	}
 	else
 	{
+		if (m_Startup)
+		{
+			m_Startup->AcquireTask();
+		}
+
 		m_CompletedFirstStart = true;
 	}
 }
