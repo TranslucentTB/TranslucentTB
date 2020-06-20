@@ -87,15 +87,13 @@ private:
 		case WM_SYSCOMMAND:
 			if (wParam == SC_CLOSE)
 			{
-				if (!m_content.IsClosable())
+				if (m_content.IsClosable())
 				{
-					return 0;
+					m_content.RequestClose();
+					Flash();
 				}
-				else
-				{
-					m_ClosedRevoker.revoke();
-					m_content.Close();
-				}
+
+				return 0;
 			}
 			break;
 
@@ -105,16 +103,13 @@ private:
 			break;
 
 		case WM_CLOSE:
-			if (!m_content.IsClosable())
+			if (m_content.IsClosable())
 			{
-				return 0;
+				m_content.RequestClose();
+				Flash();
 			}
-			else
-			{
-				m_ClosedRevoker.revoke();
-				m_content.Close();
-			}
-			break;
+
+			return 0;
 		}
 
 		return BaseXamlPageHost::MessageHandler(uMsg, wParam, lParam);
@@ -131,7 +126,7 @@ public:
 
 		SetTitle();
 		m_TitleChangedToken.value = m_content.RegisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), { this, &XamlPageHost::SetTitle });
-		m_ClosedRevoker = m_content.Closed(winrt::auto_revoke, [handle = handle()]
+		m_ClosedRevoker = m_content.Closed(winrt::auto_revoke, []
 		{
 			PostQuitMessage(0);
 		});
@@ -154,8 +149,9 @@ public:
 			MessagePrint(spdlog::level::warn, L"Failed to set foreground window");
 		}
 
-		// TODO: we also get a flash of white when creating the window
+		// TODO: we get a flash of white when creating the window
 		// TODO: window not fluent and not keyboard interactible on first opening
+		// TODO: clicking in the window to make it active and then pressing alt-f4 doesn't works (but alt-tabbing or the taskbar tray icon does)
 	}
 
 	inline constexpr T &content() noexcept

@@ -8,7 +8,8 @@ namespace TranslucentTB.Xaml.Pages
 	{
 		FramelessPage();
 
-		void Close();
+		protected void Close();
+		void RequestClose();
 
 		String Title;
 		static Windows.UI.Xaml.DependencyProperty TitleProperty { get; };
@@ -20,5 +21,6 @@ namespace TranslucentTB.Xaml.Pages
 		static Windows.UI.Xaml.DependencyProperty IsClosableProperty { get; };
 
 		event ClosedDelegate Closed;
+		protected event Windows.UI.Xaml.RoutedEventHandler CloseRequested;
 	}
 }

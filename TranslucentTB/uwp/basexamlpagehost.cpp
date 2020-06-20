@@ -93,6 +93,17 @@ void BaseXamlPageHost::PositionInteropWindow(int x, int y)
 	}
 }
 
+void BaseXamlPageHost::Flash() noexcept
+{
+	FLASHWINFO fwi = {
+		.cbSize = sizeof(fwi),
+		.hwnd = m_WindowHandle,
+		.dwFlags = FLASHW_ALL | FLASHW_TIMERNOFG
+	};
+
+	FlashWindowEx(&fwi);
+}
+
 BaseXamlPageHost::BaseXamlPageHost(Util::null_terminated_wstring_view className, HINSTANCE hInst) :
 	MessageWindow(className, { }, hInst, WS_OVERLAPPED),
 	m_manager(nullptr),

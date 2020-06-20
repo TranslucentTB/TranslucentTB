@@ -41,9 +41,26 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		InitializeComponent();
 	}
 
-	void FramelessPage::Close(...)
+	void FramelessPage::Close()
 	{
 		m_ClosedHandler();
+	}
+
+	void FramelessPage::RequestClose()
+	{
+		CloseButtonClicked(nullptr, Windows::UI::Xaml::RoutedEventArgs { });
+	}
+
+	void FramelessPage::CloseButtonClicked(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args)
+	{
+		if (m_CloseRequestedHandler)
+		{
+			m_CloseRequestedHandler(sender, args);
+		}
+		else
+		{
+			Close();
+		}
 	}
 
 	hstring FramelessPage::Title()
@@ -99,5 +116,15 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	void FramelessPage::Closed(const winrt::event_token &token)
 	{
 		m_ClosedHandler.remove(token);
+	}
+
+	event_token FramelessPage::CloseRequested(const Windows::UI::Xaml::RoutedEventHandler &handler)
+	{
+		return m_CloseRequestedHandler.add(handler);
+	}
+
+	void FramelessPage::CloseRequested(const winrt::event_token &token)
+	{
+		m_CloseRequestedHandler.remove(token);
 	}
 }

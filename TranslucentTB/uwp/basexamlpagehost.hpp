@@ -29,6 +29,8 @@ protected:
 	void PositionWindow(const RECT &rect, bool showWindow = false);
 	void PositionInteropWindow(int x, int y);
 
+	void Flash() noexcept;
+
 	BaseXamlPageHost(Util::null_terminated_wstring_view className, HINSTANCE hInst);
 
 	inline constexpr winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource &source() noexcept

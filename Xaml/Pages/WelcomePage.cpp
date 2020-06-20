@@ -1,6 +1,5 @@
 #include "pch.h"
 
-#include "FramelessPage.h"
 #include "WelcomePage.h"
 #if __has_include("Pages/WelcomePage.g.cpp")
 #include "Pages/WelcomePage.g.cpp"

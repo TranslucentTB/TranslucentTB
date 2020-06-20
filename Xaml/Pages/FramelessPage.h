@@ -8,7 +8,10 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		FramelessPage();
 
-		void Close(...);
+		void Close();
+		void RequestClose();
+
+		void CloseButtonClicked(const Windows::Foundation::IInspectable& sender, const Windows::UI::Xaml::RoutedEventArgs& args);
 
 		hstring Title();
 		void Title(hstring title);
@@ -25,8 +28,12 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		event_token Closed(const ClosedDelegate &handler);
 		void Closed(const winrt::event_token &token);
 
+		event_token CloseRequested(const Windows::UI::Xaml::RoutedEventHandler &handler);
+		void CloseRequested(const winrt::event_token &token);
+
 	private:
 		event<ClosedDelegate> m_ClosedHandler;
+		event<Windows::UI::Xaml::RoutedEventHandler> m_CloseRequestedHandler;
 
 		static Windows::UI::Xaml::DependencyProperty s_TitleProperty;
 		static Windows::UI::Xaml::DependencyProperty s_UserContentProperty;
