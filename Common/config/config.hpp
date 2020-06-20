@@ -47,12 +47,12 @@ public:
 
 	// Default-init with default settings
 	inline Config() noexcept :
-		DesktopAppearance { ACCENT_ENABLE_TRANSPARENTGRADIENT, 0 },
-		VisibleWindowAppearance { ACCENT_ENABLE_TRANSPARENTGRADIENT, 0, false },
-		MaximisedWindowAppearance { ACCENT_ENABLE_BLURBEHIND, 0xAA000000, true },
-		StartOpenedAppearance { ACCENT_NORMAL, 0, true },
-		CortanaOpenedAppearance { ACCENT_NORMAL, 0, true },
-		TimelineOpenedAppearance { ACCENT_NORMAL, 0, true },
+		DesktopAppearance { ACCENT_ENABLE_TRANSPARENTGRADIENT, { } },
+		VisibleWindowAppearance { ACCENT_ENABLE_TRANSPARENTGRADIENT, { }, false },
+		MaximisedWindowAppearance { ACCENT_ENABLE_BLURBEHIND, { 0x00, 0x00, 0x00, 0xAA }, true },
+		StartOpenedAppearance { ACCENT_NORMAL, { }, true },
+		CortanaOpenedAppearance { ACCENT_NORMAL, { }, true },
+		TimelineOpenedAppearance { ACCENT_NORMAL, { }, true },
 		Whitelist(),
 		Blacklist(),
 		HideTray(false),

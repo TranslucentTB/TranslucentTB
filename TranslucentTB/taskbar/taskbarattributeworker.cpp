@@ -208,18 +208,18 @@ void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance confi
 		m_NormalTaskbars.erase(window);
 	}
 
+	if (config.Accent == ACCENT_ENABLE_ACRYLICBLURBEHIND && config.Color.A == 0)
+	{
+		// Acrylic mode doesn't likes a completely 0 opacity
+		config.Color.A = 1;
+	}
+
 	ACCENT_POLICY policy = {
 		config.Accent,
 		2,
-		config.Color,
+		config.Color.ToABGR(),
 		0
 	};
-
-	if (policy.AccentState == ACCENT_ENABLE_ACRYLICBLURBEHIND && policy.GradientColor >> 24 == 0x00)
-	{
-		// Acrylic mode doesn't likes a completely 0 opacity
-		policy.GradientColor = (0x01 << 24) + (policy.GradientColor & 0x00FFFFFF);
-	}
 
 	const WINDOWCOMPOSITIONATTRIBDATA data = {
 		WCA_ACCENT_POLICY,

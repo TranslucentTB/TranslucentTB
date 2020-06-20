@@ -383,11 +383,6 @@ public:
 		return m_currentWindow == right.m_currentWindow;
 	}
 
-	constexpr bool operator !=(const FindWindowIterator &right) const noexcept
-	{
-		return !operator==(right);
-	}
-
 	constexpr Window operator *() const noexcept
 	{
 		return m_currentWindow;

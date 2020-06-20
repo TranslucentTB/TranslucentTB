@@ -16,6 +16,7 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)appinfo.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arch.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)config\color.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config\config.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config\optionaltaskbarappearance.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config\rapidjsonhelper.hpp" />
@@ -28,7 +29,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)undoc\user32.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)undoc\uxtheme.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)undoc\winuser.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)util\colors.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\concepts.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\fmt.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\hash.hpp" />

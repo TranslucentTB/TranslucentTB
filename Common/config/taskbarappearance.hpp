@@ -9,12 +9,13 @@
 
 #include "rapidjsonhelper.hpp"
 #include "../undoc/user32.hpp"
-#include "../util/colors.hpp"
+#include "color.hpp"
+#include "../util/fmt.hpp"
 #include "../util/to_string_view.hpp"
 
 struct TaskbarAppearance {
 	ACCENT_STATE Accent;
-	COLORREF     Color;
+	Color Color;
 
 	template<class Writer>
 	inline void Serialize(Writer &writer) const
@@ -22,12 +23,9 @@ struct TaskbarAppearance {
 		RapidJSONHelper::Serialize(writer, Accent, ACCENT_KEY, ACCENT_MAP);
 
 		RapidJSONHelper::WriteKey(writer, COLOR_KEY);
-		fmt::wmemory_buffer buf;
-		Util::StringFromColor(buf, Util::SwapColorEndian(Color));
+		Util::small_wmemory_buffer<9> buf;
+		Color.ToString(buf);
 		RapidJSONHelper::WriteString(writer, Util::ToStringView(buf));
-
-		RapidJSONHelper::WriteKey(writer, OPACITY_KEY);
-		writer.Uint((Color & 0xFF000000) >> 24);
 	}
 
 	void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &obj)
@@ -42,7 +40,7 @@ struct TaskbarAppearance {
 			const auto colorStr = RapidJSONHelper::ValueToStringView(color);
 			try
 			{
-				Color = (Color & 0xFF000000) + Util::SwapColorEndian(Util::ColorFromString(colorStr));
+				Color = Color::FromString(colorStr);
 			}
 			catch (...)
 			{
@@ -50,14 +48,6 @@ struct TaskbarAppearance {
 					fmt::format(fmt(L"Found invalid color string \"{}\" while deserializing key \"{}\""), colorStr, COLOR_KEY)
 				};
 			}
-		}
-
-		if (const auto it = obj.FindMember(RapidJSONHelper::StringViewToValue(OPACITY_KEY)); it != obj.MemberEnd())
-		{
-			const auto &opacity = it->value;
-			RapidJSONHelper::EnsureType(rapidjson::Type::kNumberType, opacity.GetType(), OPACITY_KEY);
-
-			Color = (std::clamp(opacity.GetInt(), 0, 255) << 24) + (Color & 0xFFFFFF);
 		}
 	}
 
@@ -72,5 +62,4 @@ private:
 
 	static constexpr std::wstring_view ACCENT_KEY = L"accent";
 	static constexpr std::wstring_view COLOR_KEY = L"color";
-	static constexpr std::wstring_view OPACITY_KEY = L"opacity";
 };
