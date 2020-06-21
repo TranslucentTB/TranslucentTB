@@ -18,7 +18,9 @@ public:
 	bool opened() const noexcept { return m_Handle.is_valid(); }
 	bool tried() const noexcept { return m_Tried; }
 
+#ifdef PROGRAMLOG_EXPORTS
 	void disable_failure_dialog() noexcept;
+#endif
 
 protected:
 	void sink_it_(const spdlog::details::log_msg &msg) override;

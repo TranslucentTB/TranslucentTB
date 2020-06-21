@@ -4,6 +4,7 @@
 
 #include "constants.hpp"
 #include "../ProgramLog/error/win32.hpp"
+#include "../ProgramLog/error/winrt.hpp"
 #include "../ProgramLog/log.hpp"
 
 std::filesystem::path ConfigManager::DetermineConfigPath(bool hasPackageIdentity)

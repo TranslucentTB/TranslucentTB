@@ -20,7 +20,7 @@
 #include "mainappwindow.hpp"
 #include "startupmanager.hpp"
 #include "taskbar/taskbarattributeworker.hpp"
-#include "../ProgramLog/error/win32.hpp"
+#include "../ProgramLog/error/winrt.hpp"
 #include "uwp/xamlpagehost.hpp"
 
 class Application final {

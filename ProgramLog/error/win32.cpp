@@ -8,7 +8,7 @@
 #include "util/strings.hpp"
 #include "util/to_string_view.hpp"
 
-void FormatHRESULT(fmt::wmemory_buffer &buf, HRESULT result, std::wstring_view description)
+void Error::impl::FormatHRESULT(fmt::wmemory_buffer &buf, HRESULT result, std::wstring_view description)
 {
 	fmt::format_to(
 		buf,
@@ -16,11 +16,6 @@ void FormatHRESULT(fmt::wmemory_buffer &buf, HRESULT result, std::wstring_view d
 		static_cast<std::make_unsigned_t<HRESULT>>(result), // needs this otherwise we get some error codes in the negatives
 		description
 	);
-}
-
-void FormatIRestrictedErrorInfo(fmt::wmemory_buffer &buf, HRESULT result, BSTR description)
-{
-	FormatHRESULT(buf, result, Util::Trim({ description, SysStringLen(description) }));
 }
 
 void Error::MessageFromHRESULT(fmt::wmemory_buffer &buf, HRESULT result)
@@ -36,46 +31,5 @@ void Error::MessageFromHRESULT(fmt::wmemory_buffer &buf, HRESULT result)
 		nullptr
 	);
 
-	FormatHRESULT(buf, result, count ? Util::Trim({ error.get(), count }) : L"[failed to get message for HRESULT]");
-}
-
-bool Error::MessageFromIRestrictedErrorInfo(fmt::wmemory_buffer &buf, IRestrictedErrorInfo *info, HRESULT failureCode)
-{
-	if (info)
-	{
-		HRESULT hr, errorCode;
-		wil::unique_bstr description, restrictedDescription, capabilitySid;
-
-		hr = info->GetErrorDetails(description.put(), &errorCode, restrictedDescription.put(), capabilitySid.put());
-		if (SUCCEEDED(hr) && errorCode == failureCode)
-		{
-			if (restrictedDescription)
-			{
-				FormatIRestrictedErrorInfo(buf, errorCode, restrictedDescription.get());
-			}
-			else if (description)
-			{
-				FormatIRestrictedErrorInfo(buf, errorCode, description.get());
-			}
-			else
-			{
-				MessageFromHRESULT(buf, errorCode);
-			}
-
-			return true;
-		}
-		else
-		{
-			fmt::wmemory_buffer hrBuf;
-			MessageFromHRESULT(hrBuf, hr);
-			fmt::format_to(buf, fmt(L"[failed to get details from IRestrictedErrorInfo] {}"), Util::ToStringView(hrBuf));
-		}
-	}
-	else
-	{
-		static constexpr std::wstring_view INFO_NULL = L"[IRestrictedErrorInfo was null]";
-		buf.append(INFO_NULL.data(), INFO_NULL.data() + INFO_NULL.length());
-	}
-
-	return false;
+	impl::FormatHRESULT(buf, result, count ? Util::Trim({ error.get(), count }) : L"[failed to get message for HRESULT]");
 }

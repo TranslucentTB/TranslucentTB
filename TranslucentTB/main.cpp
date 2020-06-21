@@ -1,4 +1,5 @@
 #include "arch.h"
+#include <errhandlingapi.h>
 #include <synchapi.h>
 #include <wil/resource.h>
 #include "winrt.hpp"
@@ -6,7 +7,7 @@
 #include "application.hpp"
 #include "constants.hpp"
 #include "mainappwindow.hpp"
-#include "../ProgramLog/error/win32.hpp"
+#include "../ProgramLog/error/winrt.hpp"
 #include "uwp.hpp"
 
 _Use_decl_annotations_ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar_t *, int)

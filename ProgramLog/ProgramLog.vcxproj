@@ -22,6 +22,7 @@
     <ClCompile Include="error\error.cpp" />
     <ClCompile Include="error\std.cpp" />
     <ClCompile Include="error\win32.cpp" />
+    <ClCompile Include="error\winrt.cpp" />
     <ClCompile Include="lazyfilesink.cpp" />
     <ClCompile Include="log.cpp" />
   </ItemGroup>
@@ -31,6 +32,7 @@
     <ClInclude Include="error\rapidjson.hpp" />
     <ClInclude Include="error\std.hpp" />
     <ClInclude Include="error\win32.hpp" />
+    <ClInclude Include="error\winrt.hpp" />
     <ClInclude Include="lazyfilesink.hpp" />
     <ClInclude Include="log.hpp" />
   </ItemGroup>

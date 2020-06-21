@@ -46,7 +46,9 @@ namespace Error {
 		[[noreturn]] PROGRAMLOG_API void Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function, HRESULT err, IRestrictedErrorInfo *errInfo);
 	}
 
+#ifdef PROGRAMLOG_EXPORTS
 	std::thread CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type);
+#endif
 
 	template<spdlog::level::level_enum level>
 	struct HandleImpl {

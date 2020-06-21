@@ -11,6 +11,7 @@
 #include "error/error.hpp"
 #include "error/std.hpp"
 #include "error/win32.hpp"
+#include "error/winrt.hpp"
 #include "util/to_string_view.hpp"
 
 template<typename Mutex>

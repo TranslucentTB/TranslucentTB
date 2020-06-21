@@ -1,7 +1,7 @@
 #include "startupmanager.hpp"
 #include <winrt/Windows.Foundation.Collections.h>
 
-#include "../ProgramLog/error/win32.hpp"
+#include "../ProgramLog/error/winrt.hpp"
 
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::ApplicationModel;
