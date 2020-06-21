@@ -28,7 +28,7 @@
                 </Paragraph>
                 <Paragraph Margin="0,6,0,0">
                     Before using TranslucentTB, you must agree to the terms set forth by our license, the
-                    <Hyperlink NavigateUri="https://github.com/TranslucentTB/TranslucentTB/blob/master/LICENSE.md">GPLv3</Hyperlink>. Press "I agree" below to continue.
+                    <Hyperlink NavigateUri="https://github.com/TranslucentTB/TranslucentTB/blob/master/LICENSE.md" ToolTipService.ToolTip="Click here to open the license terms in your browser">GPLv3</Hyperlink>. Press "I agree" below to continue.
                 </Paragraph>
             </RichTextBlock>
 
