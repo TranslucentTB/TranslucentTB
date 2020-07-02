@@ -147,7 +147,7 @@ public:
 			AutoUTFInputStream<uint32_t, FileReadStream> in(filestream);
 
 			GenericDocument<UTF16LE<>> doc;
-			if (ParseResult result = doc.ParseStream<kParseCommentsFlag, AutoUTF<uint32_t>>(in))
+			if (const ParseResult result = doc.ParseStream<kParseCommentsFlag, AutoUTF<uint32_t>>(in))
 			{
 				static constexpr std::wstring_view ERR_MSG = L"Failed to deserialize JSON document";
 				try

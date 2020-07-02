@@ -1,4 +1,5 @@
 #pragma once
+#include <bit>
 #include <cstdint>
 #include <fmt/format.h>
 #include <stdexcept>
@@ -13,23 +14,18 @@ struct Color {
 	uint8_t R, G, B, A;
 
 	constexpr Color() noexcept : R(0), G(0), B(0), A(0) { }
-	constexpr Color(uint8_t r, uint8_t g, uint8_t b) noexcept : R(r), G(g), B(b), A(255) { }
-	constexpr Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept : R(r), G(g), B(b), A(a) { }
+	constexpr Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) noexcept : R(r), G(g), B(b), A(a) { }
 	constexpr Color(winrt::Windows::UI::Color col) noexcept : R(col.R), G(col.G), B(col.B), A(col.A) { }
-
-#pragma warning(push)
-#pragma warning(disable: 4244)
-	constexpr explicit Color(uint32_t col) noexcept : R((col & 0xFF000000) >> 24), G((col & 0xFF0000) >> 16), B((col & 0xFF00) >> 8), A(col & 0xFF) { }
-#pragma warning(pop)
+	constexpr explicit Color(uint32_t col) noexcept : Color(std::bit_cast<Color>(SwapBytes(col))) { }
 
 	constexpr uint32_t ToRGBA() const noexcept
 	{
-		return ToPacked(R, G, B, A);
+		return SwapBytes(ToABGR());
 	}
 
 	constexpr uint32_t ToABGR() const noexcept
 	{
-		return ToPacked(A, B, G, R);
+		return std::bit_cast<uint32_t>(*this);
 	}
 
 	template<std::size_t size>
@@ -91,12 +87,12 @@ struct Color {
 
 	constexpr bool operator ==(Color other) const noexcept
 	{
-		return R == other.R && G == other.G && B == other.B && A == other.A;
+		return ToABGR() == other.ToABGR();
 	}
 
 private:
-	static constexpr uint32_t ToPacked(uint8_t first, uint8_t second, uint8_t third, uint8_t fourth) noexcept
+	static constexpr uint32_t SwapBytes(uint32_t num) noexcept
 	{
-		return (uint32_t(first) << 24) | (uint32_t(second) << 16) | (uint32_t(third) << 8) | uint32_t(fourth);
+		return (num >> 24) | ((num & 0xFF0000) >> 8) | ((num & 0xFF00) << 8) | (num << 24);
 	}
 };
