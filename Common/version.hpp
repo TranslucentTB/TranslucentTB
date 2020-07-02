@@ -15,7 +15,7 @@ struct Version {
 
 	inline std::wstring ToString() const
 	{
-		return fmt::format(fmt(L"{}.{}.{}.{}"), Major, Minor, Build, Revision);
+		return fmt::format(FMT_STRING(L"{}.{}.{}.{}"), Major, Minor, Build, Revision);
 	}
 
 	static constexpr Version FromHighLow(DWORD high, DWORD low)

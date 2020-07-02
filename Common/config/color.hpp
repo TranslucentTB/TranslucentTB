@@ -31,7 +31,7 @@ struct Color {
 	template<std::size_t size>
 	inline void ToString(fmt::basic_memory_buffer<wchar_t, size> &buf) const
 	{
-		fmt::format_to(buf, fmt(L"#{:08X}"), ToRGBA());
+		fmt::format_to(buf, FMT_STRING(L"#{:08X}"), ToRGBA());
 	}
 
 	inline static Color FromString(std::wstring_view str)

@@ -12,7 +12,7 @@ void Error::impl::FormatHRESULT(fmt::wmemory_buffer &buf, HRESULT result, std::w
 {
 	fmt::format_to(
 		buf,
-		fmt(L"0x{:08X}: {}"),
+		FMT_STRING(L"0x{:08X}: {}"),
 		static_cast<std::make_unsigned_t<HRESULT>>(result), // needs this otherwise we get some error codes in the negatives
 		description
 	);

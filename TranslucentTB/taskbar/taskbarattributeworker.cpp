@@ -92,7 +92,7 @@ void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 	if (Error::ShouldLog(spdlog::level::debug))
 	{
 		Util::small_wmemory_buffer<50> buf;
-		fmt::format_to(buf, fmt(L"Start menu {} on monitor {}"), state ? L"opened" : L"closed", static_cast<void *>(mon));
+		fmt::format_to(buf, FMT_STRING(L"Start menu {} on monitor {}"), state ? L"opened" : L"closed", static_cast<void *>(mon));
 
 		MessagePrint(spdlog::level::debug, buf);
 	}
@@ -350,18 +350,18 @@ void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::
 						}
 					}
 				}
-				fmt::format_to(buf, fmt(L"{}{} [{}] [{}] [{}]"), prefix, static_cast<void *>(window.handle()), title, className, fileName);
+				fmt::format_to(buf, FMT_STRING(L"{}{} [{}] [{}] [{}]"), prefix, static_cast<void *>(window.handle()), title, className, fileName);
 			}
 			else
 			{
-				fmt::format_to(buf, fmt(L"{}{}"), prefix, static_cast<void *>(window.handle()));
+				fmt::format_to(buf, FMT_STRING(L"{}{}"), prefix, static_cast<void *>(window.handle()));
 			}
 			MessagePrint(spdlog::level::off, buf);
 		}
 	}
 	else
 	{
-		fmt::format_to(buf, fmt(L"{}[none]"), prefix);
+		fmt::format_to(buf, FMT_STRING(L"{}[none]"), prefix);
 		MessagePrint(spdlog::level::off, buf);
 	}
 }
@@ -504,7 +504,7 @@ void TaskbarAttributeWorker::DumpState()
 	for (const auto &[monitor, info] : m_Taskbars)
 	{
 		buf.clear();
-		fmt::format_to(buf, fmt(L"Monitor {} [taskbar {}]:"), static_cast<void *>(monitor), static_cast<void *>(info.TaskbarWindow.handle()));
+		fmt::format_to(buf, FMT_STRING(L"Monitor {} [taskbar {}]:"), static_cast<void *>(monitor), static_cast<void *>(info.TaskbarWindow.handle()));
 		MessagePrint(spdlog::level::off, buf);
 
 		MessagePrint(spdlog::level::off, L"    Maximised windows:");
@@ -515,17 +515,17 @@ void TaskbarAttributeWorker::DumpState()
 	}
 
 	buf.clear();
-	fmt::format_to(buf, fmt(L"User is using Aero Peek: {}"), m_PeekActive);
+	fmt::format_to(buf, FMT_STRING(L"User is using Aero Peek: {}"), m_PeekActive);
 	MessagePrint(spdlog::level::off, buf);
 
 	buf.clear();
-	fmt::format_to(buf, fmt(L"Worker handles requests from hooks: {}"), !m_disableAttributeRefreshReply);
+	fmt::format_to(buf, FMT_STRING(L"Worker handles requests from hooks: {}"), !m_disableAttributeRefreshReply);
 	MessagePrint(spdlog::level::off, buf);
 
 	if (m_CurrentStartMonitor != nullptr)
 	{
 		buf.clear();
-		fmt::format_to(buf, fmt(L"Start menu is opened on monitor: {}"), static_cast<void *>(m_CurrentStartMonitor));
+		fmt::format_to(buf, FMT_STRING(L"Start menu is opened on monitor: {}"), static_cast<void *>(m_CurrentStartMonitor));
 		MessagePrint(spdlog::level::off, buf);
 	}
 	else
@@ -534,7 +534,7 @@ void TaskbarAttributeWorker::DumpState()
 	}
 
 	buf.clear();
-	fmt::format_to(buf, fmt(L"Main taskbar is on monitor: {}"), static_cast<void *>(m_MainTaskbarMonitor));
+	fmt::format_to(buf, FMT_STRING(L"Main taskbar is on monitor: {}"), static_cast<void *>(m_MainTaskbarMonitor));
 	MessagePrint(spdlog::level::off, buf);
 
 	MessagePrint(spdlog::level::off, L"Taskbars currently using normal appearance:");

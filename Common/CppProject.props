@@ -161,9 +161,6 @@
       <UseFullPaths>true</UseFullPaths>
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
 
-      <!-- {fmt} -->
-      <PreprocessorDefinitions>FMT_STRING_ALIAS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-
       <!-- RapidJSON -->
       <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING=1;RAPIDJSON_ERROR_CHARTYPE=wchar_t;RAPIDJSON_ERROR_STRING=UTIL_WIDEN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 

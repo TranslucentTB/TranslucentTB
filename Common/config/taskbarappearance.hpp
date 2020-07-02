@@ -45,7 +45,7 @@ struct TaskbarAppearance {
 			catch (...)
 			{
 				throw RapidJSONHelper::DeserializationError {
-					fmt::format(fmt(L"Found invalid color string \"{}\" while deserializing key \"{}\""), colorStr, COLOR_KEY)
+					fmt::format(FMT_STRING(L"Found invalid color string \"{}\" while deserializing key \"{}\""), colorStr, COLOR_KEY)
 				};
 			}
 		}

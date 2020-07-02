@@ -97,7 +97,7 @@ template<typename Mutex>
 void lazy_file_sink<Mutex>::handle_open_error(std::wstring_view err)
 {
 	fmt::wmemory_buffer buf;
-	fmt::format_to(buf, fmt(L"Failed to create log file. Logs won't be available during this session.\n\n{}"), err);
+	fmt::format_to(buf, FMT_STRING(L"Failed to create log file. Logs won't be available during this session.\n\n{}"), err);
 	Error::CreateMessageBoxThread(buf, ERROR_TITLE, MB_ICONWARNING).detach();
 }
 

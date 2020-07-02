@@ -66,7 +66,7 @@ void Error::impl::Handle<spdlog::level::err>(std::wstring_view message, std::wst
 	}
 	else
 	{
-		__debugbreak();
+		DebugBreak();
 	}
 }
 
@@ -113,7 +113,7 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 
 std::thread Error::CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type)
 {
-	return std::thread([title, type, body = fmt::to_string(buf)]
+	return std::thread([title, type, body = fmt::to_string(buf)]() noexcept
 	{
 		MessageBoxEx(Window::NullWindow, body.c_str(), title.c_str(), type | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 	});

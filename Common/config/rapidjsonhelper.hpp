@@ -38,7 +38,7 @@ namespace RapidJSONHelper {
 		if (actual != expected)
 		{
 			throw DeserializationError {
-				fmt::format(fmt(L"Expected {} but found {} while deserializing key \"{}\""), TYPE_NAMES[expected], TYPE_NAMES[actual], obj)
+				fmt::format(FMT_STRING(L"Expected {} but found {} while deserializing key \"{}\""), TYPE_NAMES[expected], TYPE_NAMES[actual], obj)
 			};
 		}
 	}
@@ -129,7 +129,7 @@ namespace RapidJSONHelper {
 			else
 			{
 				throw RapidJSONHelper::DeserializationError {
-					fmt::format(fmt(L"Found invalid enum string \"{}\" while deserializing key \"{}\""), str, key)
+					fmt::format(FMT_STRING(L"Found invalid enum string \"{}\" while deserializing key \"{}\""), str, key)
 				};
 			}
 		}

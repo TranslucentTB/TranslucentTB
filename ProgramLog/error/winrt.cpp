@@ -37,7 +37,7 @@ bool Error::MessageFromIRestrictedErrorInfo(fmt::wmemory_buffer &buf, IRestricte
 		{
 			fmt::wmemory_buffer hrBuf;
 			MessageFromHRESULT(hrBuf, hr);
-			fmt::format_to(buf, fmt(L"[failed to get details from IRestrictedErrorInfo] {}"), Util::ToStringView(hrBuf));
+			fmt::format_to(buf, FMT_STRING(L"[failed to get details from IRestrictedErrorInfo] {}"), Util::ToStringView(hrBuf));
 		}
 	}
 	else

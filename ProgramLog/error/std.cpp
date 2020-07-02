@@ -19,13 +19,13 @@ void Error::MessageFromErrno(fmt::wmemory_buffer &buf, errno_t err)
 		MessageFromErrno(formatErrBuf, strErr);
 
 		err_buf.clear();
-		fmt::format_to(err_buf, fmt(L"[failed to get message for errno_t] {}"), Util::ToStringView(formatErrBuf));
+		fmt::format_to(err_buf, FMT_STRING(L"[failed to get message for errno_t] {}"), Util::ToStringView(formatErrBuf));
 	}
 
 	auto str = Util::ToStringView(err_buf);
 	Util::TrimInplace(str);
 
-	fmt::format_to(buf, fmt(L"{}: {}"), err, str);
+	fmt::format_to(buf, FMT_STRING(L"{}: {}"), err, str);
 }
 
 void Error::MessageFromStdSystemError(fmt::wmemory_buffer &buf, const std::system_error &err)
