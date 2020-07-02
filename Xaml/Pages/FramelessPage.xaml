@@ -13,8 +13,8 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" Text="{x:Bind Title}" Margin="15,6,15,0"/>
-        <controls:ChromeButton HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="{x:Bind IsClosable}" Click="CloseButtonClicked" Style="{StaticResource CloseButtonStyle}" ToolTipService.ToolTip="Close">
+        <TextBlock Style="{ThemeResource SubheaderTextBlockStyle}" Text="{x:Bind Title}" Margin="15,6,15,0"/>
+        <controls:ChromeButton HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="{x:Bind IsClosable}" Click="CloseButtonClicked" Style="{ThemeResource CloseButtonStyle}" ToolTipService.ToolTip="Close">
             <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8BB;" FontSize="10" />
         </controls:ChromeButton>
         <ContentPresenter Grid.Row="1" Content="{x:Bind UserContent}" Margin="15,5,15,15" />

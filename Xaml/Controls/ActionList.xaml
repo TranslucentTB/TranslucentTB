@@ -19,7 +19,7 @@
                     </Grid.ColumnDefinitions>
                     <ContentPresenter Content="{x:Bind Icon}" Width="20" Height="24" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,6,0,0" />
                     <StackPanel Grid.Column="1">
-                        <TextBlock FontSize="14" Text="{x:Bind Name}" />
+                        <TextBlock FontSize="14" Text="{x:Bind Name}" Foreground="{ThemeResource SystemAccentColor}" />
                         <TextBlock FontSize="13" Opacity="0.6" Text="{x:Bind Description}" TextWrapping="WrapWholeWords" />
                     </StackPanel>
                 </Grid>

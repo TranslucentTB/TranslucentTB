@@ -39,14 +39,16 @@
                 <models:Action Name="Join our Discord server" Description="Chat with the developers and get technical assistance with the program" Click="OpenDiscordLink">
                     <PathIcon Data="{StaticResource DiscordLogo}" />
                 </models:Action>
-                <models:Action Name="Edit the configuration file" Description="You can always do this by clicking 'Advanced > Edit settings' in the tray icon's context menu&#10;Changes are automatically reloaded as you edit the file" Click="EditConfigFile" Icon="Edit" />
+                <models:Action Name="Edit the configuration file" Description="You can always do this by clicking 'Advanced > Edit settings' in the tray icon's context menu&#10;Changes are automatically reloaded as you edit the file" Click="EditConfigFile">
+                    <PathIcon Data="{StaticResource EditIcon}" />
+                </models:Action>
             </controls:ActionList>
         </StackPanel>
 
         <CheckBox Grid.Row="1" Content="Automatically start TranslucentTB at system bootup" IsChecked="True" x:Name="StartupCheckbox" />
         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="10">
-            <Button Width="100" Style="{StaticResource ButtonRevealStyle}" Click="AgreeButtonClicked">I agree</Button>
-            <Button Width="100" Style="{StaticResource ButtonRevealStyle}" Click="DisagreeButtonClicked">I disagree</Button>
+            <Button Width="100" Style="{ThemeResource AccentButtonStyle}" Click="AgreeButtonClicked">I agree</Button>
+            <Button Width="100" Click="DisagreeButtonClicked">I disagree</Button>
         </StackPanel>
     </Grid>
 </local:FramelessPage>
