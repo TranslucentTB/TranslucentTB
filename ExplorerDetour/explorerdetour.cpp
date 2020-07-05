@@ -38,7 +38,7 @@ BOOL WINAPI ExplorerDetour::SetWindowCompositionAttributeDetour(HWND hWnd, const
 
 LRESULT CALLBACK ExplorerDetour::CallWndProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept
 {
-	// Dummy
+	// Placeholder
 	return CallNextHookEx(nullptr, nCode, wParam, lParam);
 }
 
