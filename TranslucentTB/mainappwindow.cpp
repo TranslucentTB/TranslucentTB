@@ -6,11 +6,13 @@
 #include "../ProgramLog/log.hpp"
 #include "../ProgramLog/error/win32.hpp"
 
+#ifndef DO_NOT_USE_GAME_SDK
 bool MainAppWindow::PreTranslateMessage(const MSG &)
 {
 	m_App.RunDiscordCallbacks();
 	return false;
 }
+#endif
 
 LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {

@@ -69,6 +69,16 @@
     <ComputeCompileInputsTargets>$(ComputeCompileInputsTargets);EnableWinRTLeanAndMean</ComputeCompileInputsTargets>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <fmtlib Condition="'$(Configuration)'=='Release'">fmt.lib</fmtlib>
+    <fmtlib Condition="'$(Configuration)'=='Debug'">fmtd.lib</fmtlib>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UsingGameSDK)'==''">
+    <UsingGameSDK>false</UsingGameSDK>
+    <UsingGameSDK Condition="'$(Platform)'=='Win32' Or '$(Platform)'=='x64'">true</UsingGameSDK>
+  </PropertyGroup>
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
 
   <PropertyGroup>
@@ -160,6 +170,9 @@
       <DisableSpecificWarnings>4200;4275;4324;4840;5054</DisableSpecificWarnings>
       <UseFullPaths>true</UseFullPaths>
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
+
+      <!-- Discord GameSDK -->
+      <PreprocessorDefinitions Condition="'$(UsingGameSDK)'!='true'">DO_NOT_USE_GAME_SDK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
       <!-- RapidJSON -->
       <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING=1;RAPIDJSON_ERROR_CHARTYPE=wchar_t;RAPIDJSON_ERROR_STRING=UTIL_WIDEN;%(PreprocessorDefinitions)</PreprocessorDefinitions>

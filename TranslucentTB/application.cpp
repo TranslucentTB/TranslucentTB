@@ -21,6 +21,21 @@ winrt::Windows::System::DispatcherQueueController Application::CreateDispatcher(
 	return { controller, winrt::take_ownership_from_abi };
 }
 
+void Application::ConfigurationChanged(void *context, const Config &cfg)
+{
+	const auto that = static_cast<Application *>(context);
+	if (that->m_Worker)
+	{
+		that->m_Worker->ConfigurationChanged();
+	}
+
+	if (that->m_AppWindow)
+	{
+		that->m_AppWindow->UpdateTrayVisibility(!cfg.HideTray);
+	}
+}
+
+#ifndef DO_NOT_USE_GAME_SDK
 std::unique_ptr<discord::Core> Application::CreateDiscordCore()
 {
 	discord::Core *coreRaw{};
@@ -37,20 +52,7 @@ std::unique_ptr<discord::Core> Application::CreateDiscordCore()
 		return nullptr;
 	}
 }
-
-void Application::ConfigurationChanged(void *context, const Config &cfg)
-{
-	const auto that = static_cast<Application *>(context);
-	if (that->m_Worker)
-	{
-		that->m_Worker->ConfigurationChanged();
-	}
-
-	if (that->m_AppWindow)
-	{
-		that->m_AppWindow->UpdateTrayVisibility(!cfg.HideTray);
-	}
-}
+#endif
 
 void Application::SetupMainApplication(bool hasPackageIdentity, bool hideIconOverride)
 {
@@ -73,12 +75,16 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 
 		content.LiberapayOpenRequested({ this, &Application::OpenDonationPage });
 
+#ifndef DO_NOT_USE_GAME_SDK
 		content.DiscordJoinRequested([this]() -> winrt::fire_and_forget
 		{
 			co_await m_Dispatcher.DispatcherQueue();
 			// TODO: this behaves weirdly
 			OpenDiscordServer();
 		});
+#else
+		content.DiscordJoinRequested({ this, &Application::OpenDiscordServer });
+#endif
 
 		content.ConfigEditRequested([this]() -> winrt::fire_and_forget
 		{
@@ -150,6 +156,7 @@ void Application::OpenDonationPage()
 
 void Application::OpenDiscordServer()
 {
+#ifndef DO_NOT_USE_GAME_SDK
 	if (!m_DiscordCore)
 	{
 		m_DiscordCore = CreateDiscordCore();
@@ -157,8 +164,8 @@ void Application::OpenDiscordServer()
 
 	if (m_DiscordCore)
 	{
-		// TODO: actual invite
-		m_DiscordCore->OverlayManager().OpenGuildInvite("discord-linux", [](discord::Result result)
+		// TODO: use a constant
+		m_DiscordCore->OverlayManager().OpenGuildInvite("w95DGTK", [](discord::Result result)
 		{
 			if (result != discord::Result::Ok)
 			{
@@ -170,6 +177,9 @@ void Application::OpenDiscordServer()
 	{
 		// todo: also fallback
 	}
+#else
+	HresultVerify(win32::OpenLink(L"https://discord.gg/w95DGTK"), spdlog::level::err, L"Failed to open Discord server link.");
+#endif
 }
 
 void Application::EditConfigFile()
@@ -183,6 +193,7 @@ void Application::OpenTipsPage()
 	HresultVerify(win32::OpenLink(L"https://" APP_NAME ".github.io/tips"), spdlog::level::err, L"Failed to open tips & tricks link.");
 }
 
+#ifndef DO_NOT_USE_GAME_SDK
 void Application::RunDiscordCallbacks()
 {
 	if (m_DiscordCore)
@@ -195,6 +206,7 @@ void Application::RunDiscordCallbacks()
 		}
 	}
 }
+#endif
 
 Application::~Application()
 {

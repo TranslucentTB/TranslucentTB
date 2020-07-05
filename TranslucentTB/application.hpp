@@ -1,7 +1,6 @@
 #pragma once
 #include "arch.h"
 #include <atomic>
-#include <discord-game-sdk/core.h>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -23,10 +22,17 @@
 #include "../ProgramLog/error/winrt.hpp"
 #include "uwp/xamlpagehost.hpp"
 
+#ifndef DO_NOT_USE_GAME_SDK
+#include <discord-game-sdk/core.h>
+#endif
+
 class Application final {
 	static winrt::Windows::System::DispatcherQueueController CreateDispatcher();
-	static std::unique_ptr<discord::Core> CreateDiscordCore();
 	static void ConfigurationChanged(void *context, const Config &cfg);
+
+#ifndef DO_NOT_USE_GAME_SDK
+	static std::unique_ptr<discord::Core> CreateDiscordCore();
+#endif
 
 	HINSTANCE m_hInstance;
 
@@ -38,7 +44,10 @@ class Application final {
 	std::optional<MainAppWindow> m_AppWindow;
 
 	winrt::TranslucentTB::Xaml::App m_XamlApp;
+
+#ifndef DO_NOT_USE_GAME_SDK
 	std::unique_ptr<discord::Core> m_DiscordCore;
+#endif
 
 	std::atomic<bool> m_CompletedFirstStart;
 
