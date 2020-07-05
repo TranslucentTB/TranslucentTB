@@ -13,14 +13,14 @@ class FolderWatcher {
 	// this needs to be first for our little casting trick to work
 	OVERLAPPED m_Overlapped;
 
+	wil::unique_virtualalloc_ptr<char[]> m_Buffer;
+	DWORD m_BufferSize;
+
 	bool m_Recursive;
 	DWORD m_Filter;
 
 	wil::unique_hfile m_FolderHandle;
 	callback_t m_Callback;
-
-	wil::unique_virtualalloc_ptr<char[]> m_Buffer;
-	DWORD m_BufferSize;
 
 	static void WINAPI OverlappedCallback(DWORD error, DWORD, OVERLAPPED *overlapped);
 
