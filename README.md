@@ -4,7 +4,7 @@
 [![Join on Discord](https://discordapp.com/api/guilds/304387206552879116/widget.png?style=shield)][Discord]
 [![Join on Gitter](https://badges.gitter.im/TranslucentTB/Lobby.svg)][Gitter]
 [![Total downloads](https://img.shields.io/github/downloads/TranslucentTB/TranslucentTB/total.svg)](https://github.com/TranslucentTB/TranslucentTB/releases)
-[![Build status](https://ci.appveyor.com/api/projects/status/9yym3vr6s5gc7vk3/branch/master?svg=true)](https://ci.appveyor.com/project/sylveon/translucenttb/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/9yym3vr6s5gc7vk3/branch/release?svg=true)](https://ci.appveyor.com/project/sylveon/translucenttb/branch/release)
 
 A lightweight (uses a few MB of RAM and almost no CPU) utility that makes the Windows taskbar translucent/transparent on Windows 10.
 
@@ -54,7 +54,7 @@ Speaking of compiling...
 
 ## Building from source
 
-You can checkout one of the available branches. However, it is recommended to use `master`, as the code here is stable and has been passed through peer review.
+You can checkout one of the available branches. However, it is recommended to use `release`, as the code here is stable and has been passed through peer review.
 
 Via [git](https://git-scm.com):
 
