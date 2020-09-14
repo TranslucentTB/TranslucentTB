@@ -4,7 +4,7 @@
 #include <WinUser.h>
 #include <winrt/TranslucentTB.Xaml.Pages.h>
 
-#include "uwp.hpp"
+#include "uwp/uwp.hpp"
 
 using winrt::Windows::Foundation::IAsyncOperation;
 
@@ -151,7 +151,7 @@ Application::Application(HINSTANCE hInst, bool hasPackageIdentity) : m_hInstance
 
 void Application::OpenDonationPage()
 {
-	HresultVerify(win32::OpenLink(L"https://liberapay.com/" APP_NAME), spdlog::level::err, L"Failed to open Liberapay link");
+	UWP::OpenUri(winrt::Windows::Foundation::Uri(L"https://liberapay.com/" APP_NAME));
 }
 
 void Application::OpenDiscordServer()
@@ -178,7 +178,7 @@ void Application::OpenDiscordServer()
 		// todo: also fallback
 	}
 #else
-	HresultVerify(win32::OpenLink(L"https://discord.gg/w95DGTK"), spdlog::level::err, L"Failed to open Discord server link.");
+	UWP::OpenUri(winrt::Windows::Foundation::Uri(L"https://discord.gg/w95DGTK"));
 #endif
 }
 
@@ -190,7 +190,7 @@ void Application::EditConfigFile()
 
 void Application::OpenTipsPage()
 {
-	HresultVerify(win32::OpenLink(L"https://" APP_NAME ".github.io/tips"), spdlog::level::err, L"Failed to open tips & tricks link.");
+	UWP::OpenUri(winrt::Windows::Foundation::Uri(L"https://" APP_NAME ".github.io/tips"));
 }
 
 #ifndef DO_NOT_USE_GAME_SDK

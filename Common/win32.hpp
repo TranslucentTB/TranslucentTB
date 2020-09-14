@@ -51,18 +51,6 @@ private:
 		return data;
 	}
 
-	inline static HRESULT ShellExec(SHELLEXECUTEINFO &info) noexcept
-	{
-		if (ShellExecuteEx(&info))
-		{
-			return S_OK;
-		}
-		else
-		{
-			return HRESULT_FROM_WIN32(GetLastError());
-		}
-	}
-
 public:
 	// Gets location of the file of a process
 	inline static std::pair<std::filesystem::path, HRESULT> GetProcessFileName(HANDLE process)
@@ -83,7 +71,7 @@ public:
 	}
 
 	// Gets location of current process
-	static std::pair<std::filesystem::path, HRESULT> GetExeLocation()
+	inline static std::pair<std::filesystem::path, HRESULT> GetExeLocation()
 	{
 		return GetProcessFileName(GetCurrentProcess());
 	}
@@ -109,19 +97,6 @@ public:
 		}
 	}
 
-	// Checks Windows build number.
-	inline static bool IsAtLeastBuild(uint32_t buildNumber) noexcept
-	{
-		OSVERSIONINFOEX versionInfo = { sizeof(versionInfo), 10, 0, buildNumber };
-
-		DWORDLONG mask = 0;
-		VER_SET_CONDITION(mask, VER_MAJORVERSION, VER_GREATER_EQUAL);
-		VER_SET_CONDITION(mask, VER_MINORVERSION, VER_GREATER_EQUAL);
-		VER_SET_CONDITION(mask, VER_BUILDNUMBER, VER_GREATER_EQUAL);
-
-		return VerifyVersionInfo(&versionInfo, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, mask);
-	}
-
 	// Opens a file in the default text editor.
 	inline static HRESULT EditFile(const std::filesystem::path &file) noexcept
 	{
@@ -134,23 +109,14 @@ public:
 			.lpClass = L".txt"
 		};
 
-		return ShellExec(info);
-	}
-
-	// Opens a link in the default browser.
-	// NOTE: doesn't attempts to validate the link, make sure it's correct.
-	inline static HRESULT OpenLink(Util::null_terminated_wstring_view link) noexcept
-	{
-		SHELLEXECUTEINFO info = {
-			.cbSize = sizeof(info),
-			.fMask = SEE_MASK_CLASSNAME,
-			.lpVerb = L"open",
-			.lpFile = link.c_str(),
-			.nShow = SW_SHOW,
-			.lpClass = L"https" // http causes the file to be downloaded then opened, https does not
-		};
-
-		return ShellExec(info);
+		if (ShellExecuteEx(&info))
+		{
+			return S_OK;
+		}
+		else
+		{
+			return HRESULT_FROM_WIN32(GetLastError());
+		}
 	}
 
 	// Gets the current Windows build identifier.
@@ -227,14 +193,6 @@ public:
 		default:
 			return L"Invalid";
 		}
-	}
-
-	// Opens a folder and highlights a file in the File Explorer.
-	inline static HRESULT RevealFile(const std::filesystem::path &file) noexcept
-	{
-		wil::unique_cotaskmem_ptr<ITEMIDLIST_ABSOLUTE> list(ILCreateFromPath(file.c_str()));
-
-		return SHOpenFolderAndSelectItems(list.get(), 0, nullptr, 0);
 	}
 
 	static constexpr bool RectFitsInRect(const RECT &outer, const RECT &inner)

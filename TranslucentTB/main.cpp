@@ -8,8 +8,8 @@
 #include "constants.hpp"
 #include "mainappwindow.hpp"
 #include "../ProgramLog/error/winrt.hpp"
-#include "uwp.hpp"
 #include "../ProgramLog/log.hpp"
+#include "uwp/uwp.hpp"
 
 _Use_decl_annotations_ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 {

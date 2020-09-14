@@ -1,6 +1,8 @@
 #pragma once
-#include "version.hpp"
+#include "winrt.hpp"
+#include <winrt/Windows.Foundation.h>
 
 namespace UWP {
-	Version GetApplicationVersion();
+	bool HasPackageIdentity() noexcept;
+	winrt::Windows::Foundation::IAsyncAction OpenUri(const winrt::Windows::Foundation::Uri &uri);
 };
