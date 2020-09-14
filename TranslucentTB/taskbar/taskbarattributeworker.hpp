@@ -1,14 +1,11 @@
 #pragma once
 #include "arch.h"
-#include <functional>
 #include <member_thunk/page.hpp>
-#include <memory>
 #include <optional>
 #include <ShObjIdl.h>
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
-#include <utility>
 #include <vector>
 #include <wil/com.h>
 #include <wil/resource.h>

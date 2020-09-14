@@ -1,4 +1,6 @@
 #include "taskbarattributeworker.hpp"
+#include <algorithm>
+#include <functional>
 #include <member_thunk/member_thunk.hpp>
 
 #include "constants.hpp"
