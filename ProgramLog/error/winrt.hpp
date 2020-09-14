@@ -7,11 +7,9 @@
 #include "error.hpp"
 
 namespace Error {
-#ifdef PROGRAMLOG_EXPORTS
 	namespace impl {
 		void FormatIRestrictedErrorInfo(fmt::wmemory_buffer &buf, HRESULT result, BSTR description);
 	}
-#endif
 
 	PROGRAMLOG_API bool MessageFromIRestrictedErrorInfo(fmt::wmemory_buffer &buf, IRestrictedErrorInfo *info, HRESULT failureCode);
 	PROGRAMLOG_API winrt::com_ptr<IRestrictedErrorInfo> MessageFromHresultError(fmt::wmemory_buffer &buf, const winrt::hresult_error &err, HRESULT *errCode = nullptr);
