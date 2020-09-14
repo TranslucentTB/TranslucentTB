@@ -8,34 +8,42 @@
 #include <type_traits>
 #include <wil/resource.h>
 
+enum class lazy_sink_state {
+	opened,
+	nothing_logged,
+	failed
+};
+
 template<typename Mutex>
 class lazy_file_sink final : public spdlog::sinks::base_sink<Mutex> {
 	using path_getter_t = std::add_pointer_t<std::filesystem::path()>;
 public:
-	explicit lazy_file_sink(path_getter_t getter) : m_FailureDialogDisabled(false), m_PathGetter(getter), m_Tried(false) { }
+	explicit lazy_file_sink(std::filesystem::path path) : m_File(std::move(path)), m_Tried(false) { }
 
 	const std::filesystem::path &file() const noexcept { return m_File; }
-	bool opened() const noexcept { return m_Handle.is_valid(); }
-	bool tried() const noexcept { return m_Tried; }
 
-#ifdef PROGRAMLOG_EXPORTS
-	void disable_failure_dialog() noexcept;
-#endif
+	lazy_sink_state state() const noexcept
+	{
+		if (m_Tried)
+		{
+			return m_Handle
+				? lazy_sink_state::opened
+				: lazy_sink_state::failed;
+		}
+
+		return lazy_sink_state::nothing_logged;
+	}
 
 protected:
 	void sink_it_(const spdlog::details::log_msg &msg) override;
 	void flush_() override;
 
 private:
-	bool m_FailureDialogDisabled;
-
-	path_getter_t m_PathGetter;
 	bool m_Tried;
 	wil::unique_hfile m_Handle;
 	std::filesystem::path m_File;
 
 	void open();
-	void handle_open_error(std::wstring_view err);
 
 	template<typename T>
 	void write(const T &thing);

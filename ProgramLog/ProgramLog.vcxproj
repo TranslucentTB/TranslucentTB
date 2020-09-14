@@ -17,6 +17,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="error\errno.cpp" />
     <ClCompile Include="error\error.cpp" />
     <ClCompile Include="error\std.cpp" />
     <ClCompile Include="error\win32.cpp" />
@@ -26,6 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="api.h" />
+    <ClInclude Include="error\errno.hpp" />
     <ClInclude Include="error\error.hpp" />
     <ClInclude Include="error\rapidjson.hpp" />
     <ClInclude Include="error\std.hpp" />

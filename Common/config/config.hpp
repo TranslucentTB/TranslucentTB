@@ -24,6 +24,7 @@
 #include <wil/resource.h>
 
 #include "../appinfo.hpp"
+#include "../../ProgramLog/error/errno.hpp"
 #include "../../ProgramLog/error/rapidjson.hpp"
 #include "../../ProgramLog/error/std.hpp"
 #endif

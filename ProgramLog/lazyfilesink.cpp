@@ -15,13 +15,6 @@
 #include "util/to_string_view.hpp"
 
 template<typename Mutex>
-void lazy_file_sink<Mutex>::disable_failure_dialog() noexcept
-{
-	std::lock_guard<Mutex> lock(this->mutex_);
-	m_FailureDialogDisabled = true;
-}
-
-template<typename Mutex>
 void lazy_file_sink<Mutex>::sink_it_(const spdlog::details::log_msg &msg)
 {
 	open();
@@ -52,53 +45,16 @@ void lazy_file_sink<Mutex>::open()
 {
 	if (!std::exchange(m_Tried, true))
 	{
-		fmt::wmemory_buffer buf;
-
-		try
-		{
-			m_File = m_PathGetter();
-		}
-		catch (const winrt::hresult_error &err)
-		{
-			if (!m_FailureDialogDisabled)
-			{
-				HresultErrorHandleWithBuffer(buf, err, spdlog::level::trace, L"Failed to get log file path.");
-				handle_open_error(Util::ToStringView(buf));
-			}
-
-			return;
-		}
-		catch (const std::filesystem::filesystem_error &err)
-		{
-			if (!m_FailureDialogDisabled)
-			{
-				StdSystemErrorHandleWithBuffer(buf, err, spdlog::level::trace, L"Failed to get log file path.");
-				handle_open_error(Util::ToStringView(buf));
-			}
-
-			return;
-		}
-
 		m_Handle.reset(CreateFile(m_File.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, nullptr));
 		if (m_Handle)
 		{
 			write(UTF8_BOM);
 		}
-		else if (!m_FailureDialogDisabled)
+		else
 		{
-			const HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
-			HresultHandleWithBuffer(buf, hr, spdlog::level::trace, L"Failed to create log file.");
-			handle_open_error(Util::ToStringView(buf));
+			LastErrorHandle(spdlog::level::err, L"Failed to create log file. Logs won't be available during this session.");
 		}
 	}
-}
-
-template<typename Mutex>
-void lazy_file_sink<Mutex>::handle_open_error(std::wstring_view err)
-{
-	fmt::wmemory_buffer buf;
-	fmt::format_to(buf, FMT_STRING(L"Failed to create log file. Logs won't be available during this session.\n\n{}"), err);
-	Error::CreateMessageBoxThread(buf, ERROR_TITLE, MB_ICONWARNING).detach();
 }
 
 template<typename Mutex>

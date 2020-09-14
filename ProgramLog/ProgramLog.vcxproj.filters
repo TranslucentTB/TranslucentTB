@@ -39,6 +39,9 @@
     <ClInclude Include="error\winrt.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="error\errno.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -60,6 +63,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="error\winrt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="error\errno.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

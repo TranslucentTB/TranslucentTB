@@ -4,6 +4,7 @@
 #include "appinfo.hpp"
 #include "constants.hpp"
 #include "undoc/dynamicloader.hpp"
+#include "../../ProgramLog/error/errno.hpp"
 #include "../../ProgramLog/error/std.hpp"
 #include "../../ProgramLog/error/win32.hpp"
 

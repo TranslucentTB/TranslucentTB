@@ -11,8 +11,9 @@
 #include "appinfo.hpp"
 #include "config/config.hpp"
 #include "error/error.hpp"
+#include "error/winrt.hpp"
+#include "error/std.hpp"
 #include "window.hpp"
-#include "uwp.hpp"
 
 std::weak_ptr<lazy_file_sink_mt> Log::s_LogSink;
 
@@ -31,20 +32,49 @@ std::time_t Log::GetProcessCreationTime() noexcept
 	}
 }
 
-std::filesystem::path Log::GetPath()
+std::filesystem::path Log::GetPath(bool hasPackageIdentity)
 {
+	static constexpr std::wstring_view FAILED_TO_GET_PATH = L"Failed to get log file path.";
+
 	std::filesystem::path path;
-	if (UWP::HasPackageIdentity())
+	fmt::wmemory_buffer buf;
+	if (hasPackageIdentity)
 	{
-		using namespace winrt::Windows::Storage;
-		path = std::wstring_view(ApplicationData::Current().TemporaryFolder().Path());
+		try
+		{
+			using namespace winrt::Windows::Storage;
+			path = std::wstring_view(ApplicationData::Current().TemporaryFolder().Path());
+		}
+		catch (const winrt::hresult_error &err)
+		{
+			HresultErrorHandleWithBuffer(buf, err, spdlog::level::trace, FAILED_TO_GET_PATH);
+			HandlePathError(Util::ToStringView(buf));
+
+			return { };
+		}
 	}
 	else
 	{
-		path = std::filesystem::temp_directory_path();
+		std::error_code code;
+		path = std::filesystem::temp_directory_path(code);
+		if (code)
+		{
+			StdErrorCodeHandleWithBuffer(buf, code, spdlog::level::trace, FAILED_TO_GET_PATH);
+			HandlePathError(Util::ToStringView(buf));
+
+			return { };
+		}
 	}
 
-	return path / fmt::format(FMT_STRING(L"{}.log"), GetProcessCreationTime());
+	fmt::format_to(buf, FMT_STRING(L"{}.log"), GetProcessCreationTime());
+	return path / Util::ToStringView(buf);
+}
+
+void Log::HandlePathError(std::wstring_view err)
+{
+	fmt::wmemory_buffer buf;
+	fmt::format_to(buf, FMT_STRING(L"Failed to get log file path. Logs won't be available during this session.\n\n{}"), err);
+	Error::impl::CreateMessageBoxThread(buf, ERROR_TITLE, MB_ICONWARNING).detach();
 }
 
 void Log::LogErrorHandler(const std::string &message)
@@ -55,7 +85,7 @@ void Log::LogErrorHandler(const std::string &message)
 	MessageBoxExA(Window::NullWindow, buf.data(), UTF8_ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 }
 
-void Log::Initialize()
+void Log::Initialize(bool hasPackageIdentity)
 {
 	using namespace spdlog;
 
@@ -72,11 +102,14 @@ void Log::Initialize()
 		defaultLogger->sinks().push_back(std::make_shared<sinks::windebug_sink_st>());
 	}
 
-	const auto fileLog = std::make_shared<lazy_file_sink_mt>(GetPath);
-	fileLog->set_level(Config { }.LogVerbosity);
-	defaultLogger->sinks().push_back(fileLog);
+	set_default_logger(defaultLogger);
 
-	set_default_logger(std::move(defaultLogger));
+	if (auto path = GetPath(hasPackageIdentity); !path.empty())
+	{
+		const auto fileLog = std::make_shared<lazy_file_sink_mt>(std::move(path));
+		fileLog->set_level(Config{ }.LogVerbosity);
+		defaultLogger->sinks().push_back(fileLog);
 
-	s_LogSink = fileLog;
+		s_LogSink = fileLog;
+	}
 }

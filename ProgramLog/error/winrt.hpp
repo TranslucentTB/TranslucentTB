@@ -21,7 +21,7 @@ namespace Error {
 	fmt::wmemory_buffer &bufLocal_ = (buf_); \
 	HRESULT errCode_ { }; \
 	const auto errInfo_ = Error::MessageFromHresultError(bufLocal_, (exception_), &errCode_); \
-	Error::HandleImpl<(level_)>::Handle((message_), bufLocal_, PROGRAMLOG_ERROR_LOCATION, errCode_, errInfo_.get()); \
+	Error::impl::Handle<(level_)>(Util::ToStringView((message_)), Util::ToStringView(bufLocal_), PROGRAMLOG_ERROR_LOCATION, errCode_, errInfo_.get()); \
 } while (0)
 
 #define HresultErrorHandle(exception_, level_, message_) do { \

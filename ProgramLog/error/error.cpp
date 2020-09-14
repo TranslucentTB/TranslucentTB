@@ -75,12 +75,6 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 {
 	fmt::wmemory_buffer buf;
 	GetLogMessage(buf, message, error_message);
-	if (const auto sink = Log::GetSink())
-	{
-		// If the failure is in config path retrieval, we might get a dialog from the sink, for failing to get log path.
-		sink->disable_failure_dialog();
-	}
-
 	Log(buf, spdlog::level::critical, file, line, function);
 
 	if (!IsDebuggerPresent())
@@ -111,7 +105,7 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 	__assume(0);
 }
 
-std::thread Error::CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type)
+std::thread Error::impl::CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type)
 {
 	return std::thread([title, type, body = fmt::to_string(buf)]() noexcept
 	{

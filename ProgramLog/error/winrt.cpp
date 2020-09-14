@@ -16,22 +16,29 @@ bool Error::MessageFromIRestrictedErrorInfo(fmt::wmemory_buffer &buf, IRestricte
 		wil::unique_bstr description, restrictedDescription, capabilitySid;
 
 		hr = info->GetErrorDetails(description.put(), &errorCode, restrictedDescription.put(), capabilitySid.put());
-		if (SUCCEEDED(hr) && errorCode == failureCode)
+		if (SUCCEEDED(hr))
 		{
-			if (restrictedDescription)
+			if (errorCode == failureCode)
 			{
-				impl::FormatIRestrictedErrorInfo(buf, errorCode, restrictedDescription.get());
-			}
-			else if (description)
-			{
-				impl::FormatIRestrictedErrorInfo(buf, errorCode, description.get());
+				if (restrictedDescription)
+				{
+					impl::FormatIRestrictedErrorInfo(buf, errorCode, restrictedDescription.get());
+				}
+				else if (description)
+				{
+					impl::FormatIRestrictedErrorInfo(buf, errorCode, description.get());
+				}
+				else
+				{
+					MessageFromHRESULT(buf, errorCode);
+				}
+
+				return true; // allow crash with error info
 			}
 			else
 			{
-				MessageFromHRESULT(buf, errorCode);
+				fmt::format_to(buf, FMT_STRING(L"[IRestrictedErrorInfo did not return expected HRESULT] expected: {}, actual: {}"), failureCode, errorCode);
 			}
-
-			return true;
 		}
 		else
 		{

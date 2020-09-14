@@ -7,11 +7,9 @@
 #include "error.hpp"
 
 namespace Error {
-#ifdef PROGRAMLOG_EXPORTS
 	namespace impl {
 		void FormatHRESULT(fmt::wmemory_buffer &buf, HRESULT result, std::wstring_view description);
 	}
-#endif
 
 	PROGRAMLOG_API void MessageFromHRESULT(fmt::wmemory_buffer &buf, HRESULT result);
 }
@@ -19,7 +17,7 @@ namespace Error {
 #define HresultHandleWithBuffer(buf_, hresult_, level_, message_) do { \
 	fmt::wmemory_buffer &bufLocal_ = (buf_); \
 	Error::MessageFromHRESULT(bufLocal_, (hresult_)); \
-	Error::HandleImpl<(level_)>::Handle((message_), bufLocal_, PROGRAMLOG_ERROR_LOCATION); \
+	Error::impl::Handle<(level_)>(Util::ToStringView((message_)), Util::ToStringView(bufLocal_), PROGRAMLOG_ERROR_LOCATION); \
 } while (0)
 
 #define HresultHandle(hresult_, level_, message_) do { \

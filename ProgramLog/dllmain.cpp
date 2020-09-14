@@ -12,7 +12,6 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 	{
 	case DLL_PROCESS_ATTACH:
 		DisableThreadLibraryCalls(hinstDLL);
-		Log::Initialize();
 		break;
 
 	case DLL_PROCESS_DETACH:

@@ -78,7 +78,7 @@ void MainAppWindow::AppearanceMenuRefresh(uint16_t group, const TaskbarAppearanc
 {
 	CheckItem(ID_TYPE_ACTIONS + group + ID_OFFSET_ENABLED, b);
 
-	EnableItem(ID_TYPE_ACTIONS + group + ID_OFFSET_COLOR, controlsEnabled && !b ? false : appearance.Accent != ACCENT_NORMAL);
+	EnableItem(ID_TYPE_ACTIONS + group + ID_OFFSET_COLOR, controlsEnabled && b && appearance.Accent != ACCENT_NORMAL);
 	if (controlsEnabled)
 	{
 		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_NORMAL, b);
@@ -97,25 +97,23 @@ void MainAppWindow::AppearanceMenuRefresh(uint16_t group, const TaskbarAppearanc
 
 std::tuple<bool, bool, bool, uint16_t, unsigned int> MainAppWindow::GetLogMenu()
 {
-	const auto sink = Log::GetSink();
-	if (!sink)
+	if (const auto sink = Log::GetSink())
 	{
-		return LOG_ERROR;
+		if (const auto state = sink->state(); state != lazy_sink_state::failed)
+		{
+			const bool opened = state == lazy_sink_state::opened;
+			const auto level = sink->level();
+			return {
+				true,
+				level != spdlog::level::off,
+				opened,
+				opened ? IDS_OPENLOG_NORMAL : IDS_OPENLOG_EMPTY,
+				level + ID_RADIOS_LOG
+			};
+		}
 	}
 
-	const bool hasFile = sink->opened();
-	if (hasFile)
-	{
-		return GetLogSuccess(hasFile, sink->level(), IDS_OPENLOG_NORMAL);
-	}
-	else if (!hasFile && !sink->tried())
-	{
-		return GetLogSuccess(hasFile, sink->level(), IDS_OPENLOG_EMPTY);
-	}
-	else
-	{
-		return LOG_ERROR;
-	}
+	return { false, false, false, IDS_OPENLOG_ERROR, 0 };
 }
 
 std::tuple<bool, bool, uint16_t> MainAppWindow::GetAutostartMenu(const StartupManager &manager)
