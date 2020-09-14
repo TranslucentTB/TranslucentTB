@@ -1,7 +1,8 @@
 #include "startupmanager.hpp"
 #include <winrt/Windows.Foundation.Collections.h>
 
-#include "../ProgramLog/error/winrt.hpp"
+#include "../../ProgramLog/error/winrt.hpp"
+#include "../uwp/uwp.hpp"
 
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::ApplicationModel;
@@ -67,4 +68,10 @@ void StartupManager::Disable()
 		}
 		HresultErrorCatch(spdlog::level::err, L"Failed to disable startup task.");
 	}
+}
+
+IAsyncAction StartupManager::OpenSettingsPage()
+{
+	static const Uri settingsUri { L"ms-settings:startupapps" };
+	return UWP::OpenUri(settingsUri);
 }

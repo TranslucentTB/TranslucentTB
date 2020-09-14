@@ -5,7 +5,7 @@
 #include <type_traits>
 
 #include "config/config.hpp"
-#include "folderwatcher.hpp"
+#include "../folderwatcher.hpp"
 
 // TODO: move Config::Load and Config::Save in ConfigManager?
 class ConfigManager {

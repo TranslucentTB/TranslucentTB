@@ -15,9 +15,9 @@
 #include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
 #include <winrt/Windows.System.h>
 
-#include "configmanager.hpp"
+#include "managers/configmanager.hpp"
 #include "mainappwindow.hpp"
-#include "startupmanager.hpp"
+#include "managers/startupmanager.hpp"
 #include "taskbar/taskbarattributeworker.hpp"
 #include "../ProgramLog/error/winrt.hpp"
 #include "uwp/xamlpagehost.hpp"

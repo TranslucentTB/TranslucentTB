@@ -16,4 +16,5 @@ public:
 	std::optional<winrt::Windows::ApplicationModel::StartupTaskState> GetState() const;
 	winrt::Windows::Foundation::IAsyncAction Enable();
 	void Disable();
+	winrt::Windows::Foundation::IAsyncAction OpenSettingsPage();
 };

@@ -19,11 +19,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="application.cpp" />
-    <ClCompile Include="configmanager.cpp" />
+    <ClCompile Include="managers\configmanager.cpp" />
     <ClCompile Include="folderwatcher.cpp" />
     <ClCompile Include="localization.cpp" />
     <ClCompile Include="mainappwindow.cpp" />
-    <ClCompile Include="startupmanager.cpp" />
+    <ClCompile Include="managers\startupmanager.cpp" />
     <ClCompile Include="taskbar\taskbarattributeworker.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="uwp\basexamlpagehost.cpp" />
@@ -37,11 +37,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.hpp" />
-    <ClInclude Include="configmanager.hpp" />
+    <ClInclude Include="managers\configmanager.hpp" />
     <ClInclude Include="folderwatcher.hpp" />
     <ClInclude Include="localization.hpp" />
     <ClInclude Include="mainappwindow.hpp" />
-    <ClInclude Include="startupmanager.hpp" />
+    <ClInclude Include="managers\startupmanager.hpp" />
     <ClInclude Include="taskbar\launchervisibilitysink.hpp" />
     <ClInclude Include="tray\traycontextmenu.hpp" />
     <ClInclude Include="taskbar\taskbarattributeworker.hpp" />

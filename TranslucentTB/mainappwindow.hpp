@@ -9,7 +9,7 @@
 
 #include "config/config.hpp"
 #include "resources/ids.h"
-#include "startupmanager.hpp"
+#include "managers/startupmanager.hpp"
 
 class Application;
 
