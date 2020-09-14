@@ -32,7 +32,7 @@ _Use_decl_annotations_ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar
 	HresultErrorCatch(spdlog::level::critical, L"Initialization of Windows Runtime failed.");
 
 	// Run the main program loop. When this method exits, TranslucentTB itself is about to exit.
-	const auto exitCode = Application(hInstance, UWP::HasPackageIdentity()).Run();
+	const auto exitCode = Application(hInstance, hasPackageIdentity).Run();
 
 	// let the apartment get cleaned up by the system so that our static
 	// COM pointers don't crash when they try to call Release().
