@@ -119,33 +119,34 @@ std::tuple<bool, bool, bool, uint16_t, unsigned int> MainAppWindow::GetLogMenu()
 
 std::tuple<bool, bool, uint16_t> MainAppWindow::GetAutostartMenu(const StartupManager &manager)
 {
-	const auto state = manager.GetState();
-	if (!state)
+	if (const auto state = manager.GetState())
+	{
+		switch (*state)
+		{
+			using winrt::Windows::ApplicationModel::StartupTaskState;
+
+		case StartupTaskState::Disabled:
+			return { true, false, IDS_AUTOSTART_NORMAL };
+
+		case StartupTaskState::DisabledByPolicy:
+			return { false, false, IDS_AUTOSTART_DISABLED_GPEDIT };
+
+		case StartupTaskState::DisabledByUser:
+			return { true, false, IDS_AUTOSTART_DISABLED_SETTINGS };
+
+		case StartupTaskState::Enabled:
+			return { true, true, IDS_AUTOSTART_NORMAL };
+
+		case StartupTaskState::EnabledByPolicy:
+			return { false, true, IDS_AUTOSTART_ENABLED_GPEDIT };
+
+		default:
+			return { false, false, IDS_AUTOSTART_UNKNOWN };
+		}
+	}
+	else
 	{
 		return { false, false, IDS_AUTOSTART_ERROR };
-	}
-
-	switch (*state)
-	{
-		using winrt::Windows::ApplicationModel::StartupTaskState;
-
-	case StartupTaskState::Disabled:
-		return { true, false, IDS_AUTOSTART_NORMAL };
-
-	case StartupTaskState::DisabledByPolicy:
-		return { false, false, IDS_AUTOSTART_DISABLED_GPEDIT };
-
-	case StartupTaskState::DisabledByUser:
-		return { false, false, IDS_AUTOSTART_DISABLED_TASKMGR };
-
-	case StartupTaskState::Enabled:
-		return { true, true, IDS_AUTOSTART_NORMAL };
-
-	case StartupTaskState::EnabledByPolicy:
-		return { false, true, IDS_AUTOSTART_ENABLED_GPEDIT };
-
-	default:
-		return { false, false, IDS_AUTOSTART_UNKNOWN };
 	}
 }
 
@@ -304,8 +305,12 @@ void MainAppWindow::AutostartMenuHandler()
 			manager.Disable();
 			break;
 
+		case StartupTaskState::DisabledByUser:
+			manager.OpenSettingsPage();
+			break;
+
 		default:
-			MessagePrint(spdlog::level::err, L"Cannot change startup state because it is locked by external factors (for example Task Manager or Group Policy).");
+			MessagePrint(spdlog::level::err, L"Cannot change startup state because it is locked by external factors (for example Group Policy).");
 			break;
 		}
 	}

@@ -120,9 +120,8 @@
 #define IDS_OPENLOG_ERROR                  60002
 #define IDS_OPENLOG_EMPTY                  60003
 #define IDS_AUTOSTART_NORMAL               60004
-#define IDS_AUTOSTART_DISABLED_TASKMGR     60005
+#define IDS_AUTOSTART_DISABLED_SETTINGS    60005
 #define IDS_AUTOSTART_DISABLED_GPEDIT      60006
 #define IDS_AUTOSTART_ENABLED_GPEDIT       60007
-#define IDS_AUTOSTART_NULL                 60008
-#define IDS_AUTOSTART_ERROR                60009
-#define IDS_AUTOSTART_UNKNOWN              60010
+#define IDS_AUTOSTART_ERROR                60008
+#define IDS_AUTOSTART_UNKNOWN              60009
