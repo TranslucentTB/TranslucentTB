@@ -46,20 +46,10 @@ namespace wilx {
 	requires std::is_member_function_pointer_v<decltype(close_fn)>
 	using unique_com_call = wil::unique_com_call<impl::parent_t<decltype(close_fn)>, decltype(close_fn), close_fn>;
 
-#ifdef __cpp_concepts // MIGRATION: IDE concepts support
 	template<Util::function_pointer auto close_fn>
-#else
-	template<auto close_fn>
-	requires Util::function_pointer<decltype(close_fn)>
-#endif
 	using unique_any = wil::unique_any<impl::arg_t<decltype(close_fn), 0>, decltype(close_fn), close_fn>;
 
-#ifdef __cpp_concepts // MIGRATION: IDE concepts support
 	template<Util::function_pointer auto delete_fn>
-#else
-	template<auto delete_fn>
-	requires Util::function_pointer<decltype(delete_fn)>
-#endif
 	using function_deleter = wil::function_deleter<decltype(delete_fn), delete_fn>;
 }
 

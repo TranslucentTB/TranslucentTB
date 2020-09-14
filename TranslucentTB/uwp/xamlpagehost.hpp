@@ -18,10 +18,7 @@
 #include "undoc/dynamicloader.hpp"
 
 template<typename T>
-#ifdef __cpp_lib_concepts // MIGRATION: IDE concepts support
-	// https://github.com/microsoft/cppwinrt/issues/609
-	requires std::derived_from<T, winrt::impl::base_one<T, winrt::TranslucentTB::Xaml::Pages::FramelessPage>>
-#endif
+requires std::derived_from<T, winrt::impl::base_one<T, winrt::TranslucentTB::Xaml::Pages::FramelessPage>> // https://github.com/microsoft/cppwinrt/issues/609
 class XamlPageHost final : public BaseXamlPageHost {
 private:
 	T m_content;
