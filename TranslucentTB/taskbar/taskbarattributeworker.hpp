@@ -92,7 +92,7 @@ private:
 	void InsertWindow(Window window, bool refresh);
 
 	// Other
-	static bool IsEmptySet(std::unordered_set<Window> &set);
+	static bool SetOnlyContainsValidWindows(std::unordered_set<Window> &set);
 	static void DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set, bool showInfo = true);
 	void CreateAppVisibility();
 	WINEVENTPROC CreateThunk(void (CALLBACK TaskbarAttributeWorker:: *proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD));

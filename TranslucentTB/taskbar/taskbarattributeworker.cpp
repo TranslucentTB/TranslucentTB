@@ -153,7 +153,7 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 
 	if (m_Config.MaximisedWindowAppearance.Enabled)
 	{
-		if (!IsEmptySet(taskbar->second.MaximisedWindows))
+		if (!SetOnlyContainsValidWindows(taskbar->second.MaximisedWindows))
 		{
 			return m_Config.MaximisedWindowAppearance;
 		}
@@ -161,7 +161,7 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 
 	if (m_Config.VisibleWindowAppearance.Enabled)
 	{
-		if (!IsEmptySet(taskbar->second.MaximisedWindows) || !IsEmptySet(taskbar->second.NormalWindows))
+		if (!SetOnlyContainsValidWindows(taskbar->second.MaximisedWindows) || !SetOnlyContainsValidWindows(taskbar->second.NormalWindows))
 		{
 			return m_Config.VisibleWindowAppearance;
 		}
@@ -306,25 +306,10 @@ void TaskbarAttributeWorker::InsertWindow(Window window, bool refresh)
 	}
 }
 
-bool TaskbarAttributeWorker::IsEmptySet(std::unordered_set<Window> &set)
+bool TaskbarAttributeWorker::SetOnlyContainsValidWindows(std::unordered_set<Window> &set)
 {
-	std::size_t validCount = 0;
-	for (auto it = set.begin(); it != set.end();)
-	{
-		if (it->valid())
-		{
-			++validCount;
-			++it;
-		}
-		else
-		{
-			// Sometimes some windows will get closed but we never get a notification about it,
-			// so remove those from the set since they're not good anymore.
-			it = set.erase(it);
-		}
-	}
-
-	return validCount == 0;
+	std::erase_if(set, std::not_fn(&Window::valid));
+	return set.empty();
 }
 
 void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set, bool showInfo)
