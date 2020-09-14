@@ -87,7 +87,7 @@ TrayIcon::TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view classN
 	m_IconData {
 		.cbSize = sizeof(m_IconData),
 		.hWnd = m_WindowHandle,
-		.uFlags = NIF_TIP | NIF_MESSAGE | NIF_GUID,
+		.uFlags = NIF_MESSAGE | NIF_GUID,
 		.uCallbackMessage = TRAY_CALLBACK,
 		.uVersion = NOTIFYICON_VERSION_4,
 		.guidItem = iconId
@@ -98,10 +98,13 @@ TrayIcon::TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view classN
 	m_CurrentlyShowing(false),
 	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED))
 {
-	if (const errno_t err = wcscpy_s(m_IconData.szTip, windowName.c_str()))
+	if (const errno_t err = wcscpy_s(m_IconData.szTip, windowName.c_str()); !err)
+	{
+		m_IconData.uFlags |= NIF_TIP | NIF_SHOWTIP;
+	}
+	else
 	{
 		ErrnoTHandle(err, spdlog::level::warn, L"Failed to copy tray icon tooltip text.");
-		m_IconData.uFlags &= ~NIF_TIP;
 	}
 
 	LoadThemedIcon();
