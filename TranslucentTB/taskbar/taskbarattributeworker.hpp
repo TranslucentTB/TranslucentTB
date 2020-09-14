@@ -1,7 +1,7 @@
 #pragma once
 #include "arch.h"
 #include <functional>
-#include <member_thunk/common.hpp>
+#include <member_thunk/page.hpp>
 #include <memory>
 #include <optional>
 #include <ShObjIdl.h>
@@ -47,14 +47,8 @@ private:
 	std::unordered_set<Window> m_NormalTaskbars;
 	const Config &m_Config;
 
-	// Thunks
-	using hook_thunk = std::unique_ptr<member_thunk::thunk<WINEVENTPROC>>;
-	hook_thunk m_AeroPeekEnterExitThunk;
-	hook_thunk m_WindowStateChangeThunk;
-	hook_thunk m_WindowCreateDestroyThunk;
-	hook_thunk m_ForegroundWindowChangeThunk;
-
 	// Hooks
+	member_thunk::page<> m_ThunkPage;
 	wil::unique_hwineventhook m_PeekUnpeekHook;
 	wil::unique_hwineventhook m_CloakUncloakHook;
 	wil::unique_hwineventhook m_MinimizeRestoreHook;
@@ -101,8 +95,8 @@ private:
 	static bool IsEmptySet(std::unordered_set<Window> &set);
 	static void DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set, bool showInfo = true);
 	void CreateAppVisibility();
-	hook_thunk CreateThunk(void (CALLBACK TaskbarAttributeWorker:: *proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD));
-	static wil::unique_hwineventhook CreateHook(DWORD eventMin, DWORD eventMax, const hook_thunk &thunk);
+	WINEVENTPROC CreateThunk(void (CALLBACK TaskbarAttributeWorker:: *proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD));
+	static wil::unique_hwineventhook CreateHook(DWORD eventMin, DWORD eventMax, WINEVENTPROC proc);
 	void ReturnToStock();
 	bool IsStartMenuOpened();
 	void InsertTaskbar(HMONITOR mon, Window window);
@@ -113,9 +107,9 @@ private:
 		return Window::ForegroundWindow().monitor();
 	}
 
-	inline static wil::unique_hwineventhook CreateHook(DWORD event, const hook_thunk &thunk)
+	inline static wil::unique_hwineventhook CreateHook(DWORD event, WINEVENTPROC proc)
 	{
-		return CreateHook(event, event, thunk);
+		return CreateHook(event, event, proc);
 	}
 
 	friend class AttributeRefresher;

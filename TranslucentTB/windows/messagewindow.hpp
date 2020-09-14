@@ -1,6 +1,6 @@
 #pragma once
 #include "arch.h"
-#include <member_thunk/common.hpp>
+#include <member_thunk/page.hpp>
 #include <windef.h>
 
 #include "../resources/ids.h"
@@ -13,7 +13,7 @@ private:
 	WindowClass m_WindowClass;
 	const wchar_t *m_IconResource;
 
-	std::unique_ptr<member_thunk::thunk<WNDPROC>> m_ProcThunk;
+	member_thunk::page<> m_ProcPage;
 
 protected:
 	inline HINSTANCE hinstance() const noexcept

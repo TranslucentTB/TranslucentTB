@@ -7,7 +7,8 @@
 
 MessageWindow::MessageWindow(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName, HINSTANCE hInstance, unsigned long style, Window parent, const wchar_t *iconResource) :
 	m_WindowClass(DefWindowProc, className, iconResource, hInstance),
-	m_IconResource(iconResource)
+	m_IconResource(iconResource),
+	m_ProcPage(member_thunk::allocate_page())
 {
 	m_WindowHandle = Window::Create(0, m_WindowClass, windowName, style, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, parent);
 	if (!m_WindowHandle)
@@ -15,14 +16,11 @@ MessageWindow::MessageWindow(Util::null_terminated_wstring_view className, Util:
 		LastErrorHandle(spdlog::level::critical, L"Failed to create message window!");
 	}
 
-	try
-	{
-		m_ProcThunk = member_thunk::make(this, &MessageWindow::MessageHandler);
-	}
-	StdSystemErrorCatch(spdlog::level::critical, L"Failed to create message handler thunk!");
+	const auto proc = m_ProcPage.make_thunk<WNDPROC>(this, &MessageWindow::MessageHandler);
+	m_ProcPage.mark_executable();
 
 	SetLastError(NO_ERROR);
-	if (!SetWindowLongPtr(m_WindowHandle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(m_ProcThunk->get_thunked_function())))
+	if (!SetWindowLongPtr(m_WindowHandle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(proc)))
 	{
 		LastErrorVerify(spdlog::level::critical, L"Failed to update window procedure!");
 	}

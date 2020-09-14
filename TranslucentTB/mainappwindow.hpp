@@ -44,7 +44,7 @@ private:
 	void HideTrayHandler();
 	void AutostartMenuHandler();
 
-	void Exit(bool save);
+	void Exit();
 
 public:
 	MainAppWindow(Application &app, bool hideIconOverride, HINSTANCE hInstance);

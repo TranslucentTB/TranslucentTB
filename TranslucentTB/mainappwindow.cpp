@@ -1,4 +1,5 @@
 #include "mainappwindow.hpp"
+#include <member_thunk/member_thunk.hpp>
 
 #include "application.hpp"
 #include "constants.hpp"
@@ -19,7 +20,7 @@ LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch (uMsg)
 	{
 	case WM_CLOSE:
-		Exit(true);
+		Exit();
 		return 1;
 
 	case WM_QUERYENDSESSION:
@@ -34,7 +35,7 @@ LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (wParam)
 		{
 			// The app can be killed after processing this message, but we'll try doing it gracefully
-			Exit(true);
+			Exit();
 		}
 
 		return 0;
@@ -218,8 +219,8 @@ void MainAppWindow::ClickHandler(unsigned int id)
 			case ID_RESETWORKER:
 				worker.ResetState();
 				break;
-			case ID_ABOUT:
-				MessageBox(nullptr, L"TODO", L"TODO", 0); // TODO
+			case ID_COMPACTHEAP:
+				member_thunk::compact();
 				break;
 			case ID_AUTOSTART:
 				AutostartMenuHandler();
@@ -227,9 +228,11 @@ void MainAppWindow::ClickHandler(unsigned int id)
 			case ID_TIPS:
 				m_App.OpenTipsPage();
 				break;
-			case ID_EXITWITHOUTSAVING:
+			case ID_ABOUT:
+				MessageBox(nullptr, L"TODO", L"TODO", 0); // TODO
+				break;
 			case ID_EXIT:
-				Exit(id == ID_EXIT);
+				Exit();
 				break;
 			}
 			break;
@@ -308,13 +311,9 @@ void MainAppWindow::AutostartMenuHandler()
 	}
 }
 
-void MainAppWindow::Exit(bool save)
+void MainAppWindow::Exit()
 {
-	if (save)
-	{
-		m_App.GetConfigManager().SaveConfig();
-	}
-
+	m_App.GetConfigManager().SaveConfig();
 	PostQuitMessage(0);
 }
 

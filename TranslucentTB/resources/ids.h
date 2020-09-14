@@ -110,10 +110,10 @@
 #define ID_HIDETRAY                        (ID_ACTIONS_OTHER + 0x03)
 #define ID_DUMPWORKER                      (ID_ACTIONS_OTHER + 0x04)
 #define ID_RESETWORKER                     (ID_ACTIONS_OTHER + 0x05)
-#define ID_ABOUT                           (ID_ACTIONS_OTHER + 0x06)
-#define ID_EXITWITHOUTSAVING               (ID_ACTIONS_OTHER + 0x07)
-#define ID_AUTOSTART                       (ID_ACTIONS_OTHER + 0x08)
-#define ID_TIPS                            (ID_ACTIONS_OTHER + 0x09)
+#define ID_COMPACTHEAP                     (ID_ACTIONS_OTHER + 0x06)
+#define ID_AUTOSTART                       (ID_ACTIONS_OTHER + 0x07)
+#define ID_TIPS                            (ID_ACTIONS_OTHER + 0x08)
+#define ID_ABOUT                           (ID_ACTIONS_OTHER + 0x09)
 #define ID_EXIT                            (ID_ACTIONS_OTHER + 0x0A)
 
 #define IDS_OPENLOG_NORMAL                 60001

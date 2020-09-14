@@ -146,12 +146,11 @@ IDR_TRAY_MENU MENUEX
 			MENUITEM L"",                                               0, MFT_SEPARATOR
 			MENUITEM L"Dump dynamic state to log",                      ID_DUMPWORKER
 			MENUITEM L"Reset dynamic state",                            ID_RESETWORKER
-			MENUITEM L"",                                               0, MFT_SEPARATOR
-			MENUITEM L"About",                                          ID_ABOUT
-			MENUITEM L"Exit without saving settings",                   ID_EXITWITHOUTSAVING
+			MENUITEM L"Compact thunk heap",                             ID_COMPACTHEAP
 		}
 		MENUITEM L"Open at boot",                                   ID_AUTOSTART
 		MENUITEM L"Tips and tricks",                                ID_TIPS
+		MENUITEM L"About TranslucentTB",                            ID_ABOUT
 		MENUITEM L"Exit",                                           ID_EXIT
 	}
 }

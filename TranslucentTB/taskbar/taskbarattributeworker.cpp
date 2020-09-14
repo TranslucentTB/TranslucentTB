@@ -387,15 +387,14 @@ void TaskbarAttributeWorker::CreateAppVisibility()
 	HresultVerify(m_IAV->Advise(av_sink.get(), m_IAVECookie.put()), spdlog::level::warn, L"Failed to register app visibility sink.");
 }
 
-TaskbarAttributeWorker::hook_thunk TaskbarAttributeWorker::CreateThunk(void(CALLBACK TaskbarAttributeWorker:: *proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD)) try
+WINEVENTPROC TaskbarAttributeWorker::CreateThunk(void(CALLBACK TaskbarAttributeWorker:: *proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD))
 {
-	return member_thunk::make(this, proc);
+	return m_ThunkPage.make_thunk<WINEVENTPROC>(this, proc);
 }
-StdSystemErrorCatch(spdlog::level::critical, L"Failed to create worker member thunk!");
 
-wil::unique_hwineventhook TaskbarAttributeWorker::CreateHook(DWORD eventMin, DWORD eventMax, const hook_thunk &thunk)
+wil::unique_hwineventhook TaskbarAttributeWorker::CreateHook(DWORD eventMin, DWORD eventMax, WINEVENTPROC proc)
 {
-	if (wil::unique_hwineventhook hook { SetWinEventHook(eventMin, eventMax, nullptr, thunk->get_thunked_function(), 0, 0, WINEVENT_OUTOFCONTEXT) })
+	if (wil::unique_hwineventhook hook { SetWinEventHook(eventMin, eventMax, nullptr, proc, 0, 0, WINEVENT_OUTOFCONTEXT) })
 	{
 		return hook;
 	}
@@ -475,21 +474,21 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_CurrentStartMonitor(nullptr),
 	m_MainTaskbarMonitor(nullptr),
 	m_Config(cfg),
-	m_AeroPeekEnterExitThunk(CreateThunk(&TaskbarAttributeWorker::OnAeroPeekEnterExit)),
-	m_WindowStateChangeThunk(CreateThunk(&TaskbarAttributeWorker::OnWindowStateChange)),
-	m_WindowCreateDestroyThunk(CreateThunk(&TaskbarAttributeWorker::OnWindowCreateDestroy)),
-	m_ForegroundWindowChangeThunk(CreateThunk(&TaskbarAttributeWorker::OnForegroundWindowChange)),
-	m_PeekUnpeekHook(CreateHook(EVENT_SYSTEM_PEEKSTART, EVENT_SYSTEM_PEEKEND, m_AeroPeekEnterExitThunk)),
-	m_CloakUncloakHook(CreateHook(EVENT_OBJECT_CLOAKED, EVENT_OBJECT_UNCLOAKED, m_WindowStateChangeThunk)),
-	m_MinimizeRestoreHook(CreateHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, m_WindowStateChangeThunk)),
-	m_ResizeMoveHook(CreateHook(EVENT_OBJECT_LOCATIONCHANGE, m_WindowStateChangeThunk)),
-	m_ShowHideHook(CreateHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, m_WindowStateChangeThunk)),
-	m_CreateDestroyHook(CreateHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, m_WindowCreateDestroyThunk)),
-	m_ForegroundChangeHook(CreateHook(EVENT_SYSTEM_FOREGROUND, m_ForegroundWindowChangeThunk)),
-	m_TitleChangeHook(CreateHook(EVENT_OBJECT_NAMECHANGE, m_WindowStateChangeThunk)),
+	m_ThunkPage(member_thunk::allocate_page()),
+	m_PeekUnpeekHook(CreateHook(EVENT_SYSTEM_PEEKSTART, EVENT_SYSTEM_PEEKEND, CreateThunk(&TaskbarAttributeWorker::OnAeroPeekEnterExit))),
+	m_CreateDestroyHook(CreateHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, CreateThunk(&TaskbarAttributeWorker::OnWindowCreateDestroy))),
+	m_ForegroundChangeHook(CreateHook(EVENT_SYSTEM_FOREGROUND, CreateThunk(&TaskbarAttributeWorker::OnForegroundWindowChange))),
 	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED)),
 	m_RefreshRequestedMessage(Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH))
 {
+	const auto stateThunk = CreateThunk(&TaskbarAttributeWorker::OnWindowStateChange);
+	m_CloakUncloakHook = CreateHook(EVENT_OBJECT_CLOAKED, EVENT_OBJECT_UNCLOAKED, stateThunk);
+	m_MinimizeRestoreHook = CreateHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, stateThunk);
+	m_ResizeMoveHook = CreateHook(EVENT_OBJECT_LOCATIONCHANGE, stateThunk);
+	m_ShowHideHook = CreateHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, stateThunk);
+	m_TitleChangeHook = CreateHook(EVENT_OBJECT_NAMECHANGE, stateThunk);
+
+	m_ThunkPage.mark_executable();
 
 	CreateAppVisibility();
 
