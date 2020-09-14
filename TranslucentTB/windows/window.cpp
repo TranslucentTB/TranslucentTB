@@ -115,19 +115,18 @@ std::optional<bool> Window::on_current_desktop() const
 
 bool Window::is_user_window() const
 {
-	if (valid() && visible() && !cloaked() && ancestor(GA_ROOT) == *this && !get(GW_OWNER))
+	if (valid() && visible() && !cloaked() && ancestor(GA_ROOT) == m_WindowHandle && get(GW_OWNER) == Window::NullWindow)
 	{
-		if (const auto on_desktop = on_current_desktop(); on_desktop && !*on_desktop)
+		if (const auto on_desktop = on_current_desktop(); !on_desktop.value_or(false))
 		{
 			return false;
 		}
 
 		if (const auto ex_style = long_ptr(GWL_EXSTYLE))
 		{
-			const auto s = *ex_style;
-			if (s & WS_EX_APPWINDOW || !(s & WS_EX_TOOLWINDOW || s & WS_EX_NOACTIVATE))
+			if (const auto s = *ex_style; s & WS_EX_APPWINDOW || !(s & WS_EX_TOOLWINDOW || s & WS_EX_NOACTIVATE))
 			{
-				return !prop(L"ITaskList_Deleted");
+				return prop(L"ITaskList_Deleted") == nullptr;
 			}
 		}
 	}
