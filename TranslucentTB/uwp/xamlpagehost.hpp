@@ -77,7 +77,7 @@ private:
 			PositionInteropWindow(x, y);
 
 			const float scale = GetDpiScale(monitor());
-			m_content.Arrange(winrt::Windows::UI::Xaml::RectHelper::FromCoordinatesAndDimensions(0, 0, x / scale, y / scale));
+			m_content.Arrange({ 0, 0, x / scale, y / scale });
 			return 0;
 		}
 
@@ -133,7 +133,7 @@ public:
 		HresultVerify(DwmExtendFrameIntoClientArea(m_WindowHandle, &margins), spdlog::level::warn, L"Failed to extend frame into client area");
 
 		// TODO: pass size of work area rather than infinite
-		m_content.Measure(winrt::Windows::UI::Xaml::SizeHelper::FromDimensions(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()));
+		m_content.Measure({ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() });
 		PositionWindow(CalculateWindowPosition(m_content.DesiredSize()), true);
 
 		if (!UpdateWindow(m_WindowHandle))
