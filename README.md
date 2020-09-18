@@ -26,7 +26,7 @@ You can see examples of the customizations you can make in the images below:
   - **Dynamic Start Menu**: Will change the taskbar appearance when the start menu is opened.
   - **Dynamic Cortana**: Will change the taskbar appearance when Cortana (or the search menu if Cortana is disabled) is open.
   - **Dynamic Timeline/Task View**: Will change the taskbar apperance when the Timeline is open.
-- Ability to **show or hide the Aero Peek** button depending on the currently active dynamic mode.
+- Ability to **show or hide the Aero Peek button** depending on the currently active dynamic mode.
 
 You can see it in action [here](https://gfycat.com/TidyFelineCrownofthornsstarfish) (short) and [here](https://gfycat.com/ConsciousCriminalDassie) (longer).
 
