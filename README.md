@@ -189,5 +189,5 @@ TranslucentTB also allows for more customizability over the taskbar with feature
 
 This program is free (as in speech) software under the GPLv3. Please see the [LICENSE.md](LICENSE.md) file for more.
 
-[Discord]: https://discord.gg/w95DGTK
+[Discord]: https://discord.gg/TranslucentTB
 [Gitter]: https://gitter.im/TranslucentTB/Lobby
