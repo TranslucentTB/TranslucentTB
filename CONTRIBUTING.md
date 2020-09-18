@@ -6,7 +6,8 @@ If you are considering a major feature, need guidance, or want to talk an idea o
 
 At this time we have no plans of expanding this beyond the taskbar.
 
-## Building from source <!-- TODO: needs update -->
+## Building from source
+<!-- TODO: needs update -->
 
 You can checkout one of the available branches. For development, one should use `develop`. If you want to simply build it, use `release`.
 
