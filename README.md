@@ -48,7 +48,7 @@ To add TranslucentTB to startup, check the "Open at boot" entry in the Transluce
 
 ## Security
 
-Some antiviruses are over eager, so they might flag this program as malicious. IT IS NOT! Over 2M users have downloaded this program safely. The source is open, you can [compile it yourself](CONTRIBUTING#building-from-source), and we welcome any and all security reviews.
+Some antiviruses are over eager, so they might flag this program as malicious. IT IS NOT! Over 2M users have downloaded this program safely. The source is open, you can [compile it yourself](CONTRIBUTING.md#building-from-source), and we welcome any and all security reviews.
 
 ## Thanks
 
