@@ -8,7 +8,7 @@ At this time we have no plans of expanding this beyond the taskbar.
 
 ## Building from source <!-- TODO: needs update -->
 
-You can checkout one of the available branches. For development, one should use `develop`. If you want to simply build it, use `master`.
+You can checkout one of the available branches. For development, one should use `develop`. If you want to simply build it, use `release`.
 
 Via [git](https://git-scm.com):
 
@@ -109,5 +109,5 @@ When contributing, please respect the style used by the codebase. Quick rundown:
 
 When trying to debug the main program, it might seem confusing at first because the only two projects listed for launch in the header are StorePackage and DesktopInstallerBuilder. Just right-click the TranslucentTB project and select "Set as startup project".
 
-[Discord]: https://discord.gg/w95DGTK
+[Discord]: https://discord.gg/TranslucentTB
 [Gitter]: https://gitter.im/TranslucentTB/Lobby

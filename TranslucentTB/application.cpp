@@ -164,8 +164,7 @@ void Application::OpenDiscordServer()
 
 	if (m_DiscordCore)
 	{
-		// TODO: use a constant
-		m_DiscordCore->OverlayManager().OpenGuildInvite("w95DGTK", [](discord::Result result)
+		m_DiscordCore->OverlayManager().OpenGuildInvite(UTF8_APP_NAME, [](discord::Result result)
 		{
 			if (result != discord::Result::Ok)
 			{
@@ -178,7 +177,7 @@ void Application::OpenDiscordServer()
 		// todo: also fallback
 	}
 #else
-	UWP::OpenUri(winrt::Windows::Foundation::Uri(L"https://discord.gg/w95DGTK"));
+	UWP::OpenUri(winrt::Windows::Foundation::Uri(L"https://discord.gg/" APP_NAME));
 #endif
 }
 
