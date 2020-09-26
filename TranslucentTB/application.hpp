@@ -1,9 +1,7 @@
 #pragma once
 #include "arch.h"
 #include <atomic>
-#include <functional>
 #include <memory>
-#include <optional>
 #include <thread>
 #include <utility>
 #include <windef.h>
@@ -32,6 +30,9 @@ class Application final {
 
 #ifndef DO_NOT_USE_GAME_SDK
 	static std::unique_ptr<discord::Core> CreateDiscordCore();
+
+	std::unique_ptr<discord::Core> m_DiscordCore;
+	void RunDiscordCallbacks();
 #endif
 
 	HINSTANCE m_hInstance;
@@ -39,23 +40,19 @@ class Application final {
 	winrt::Windows::System::DispatcherQueueController m_Dispatcher;
 
 	ConfigManager m_Config;
-	std::optional<TaskbarAttributeWorker> m_Worker;
-	std::optional<StartupManager> m_Startup;
-	std::optional<MainAppWindow> m_AppWindow;
+	TaskbarAttributeWorker m_Worker;
+	StartupManager m_Startup;
+	MainAppWindow m_AppWindow;
 
 	winrt::TranslucentTB::Xaml::App m_XamlApp;
 
-#ifndef DO_NOT_USE_GAME_SDK
-	std::unique_ptr<discord::Core> m_DiscordCore;
-#endif
-
 	std::atomic<bool> m_CompletedFirstStart;
 
-	void SetupMainApplication(bool hasPackageIdentity, bool hideIconOverride);
 	void CreateWelcomePage(bool hasPackageIdentity);
+	Application(HINSTANCE hInst, bool hasPackageIdentity, bool fileExists);
 
 public:
-	Application(HINSTANCE hInst, bool hasPackageIdentity);
+	Application(HINSTANCE hInst, bool hasPackageIdentity) : Application(hInst, hasPackageIdentity, false) { }
 
 	void OpenDonationPage();
 	void OpenDiscordServer();
@@ -63,10 +60,8 @@ public:
 	void OpenTipsPage();
 
 	inline constexpr ConfigManager &GetConfigManager() noexcept { return m_Config; }
-	inline constexpr std::optional<StartupManager> &GetStartupManager() noexcept { return m_Startup; }
-	inline constexpr TaskbarAttributeWorker &GetWorker() noexcept { return *m_Worker; }
-
-	void RunDiscordCallbacks();
+	inline constexpr StartupManager &GetStartupManager() noexcept { return m_Startup; }
+	inline constexpr TaskbarAttributeWorker &GetWorker() noexcept { return m_Worker; }
 
 	inline WPARAM Run()
 	{

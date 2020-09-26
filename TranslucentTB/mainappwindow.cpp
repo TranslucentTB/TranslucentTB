@@ -67,7 +67,7 @@ void MainAppWindow::RefreshMenu()
 
 	if (const auto &manager = m_App.GetStartupManager())
 	{
-		const auto [userModifiable, enabled, autostartText] = GetAutostartMenu(*manager);
+		const auto [userModifiable, enabled, autostartText] = GetAutostartMenu(manager);
 
 		CheckItem(ID_AUTOSTART, enabled);
 		EnableItem(ID_AUTOSTART, userModifiable);
@@ -96,6 +96,8 @@ void MainAppWindow::AppearanceMenuRefresh(uint16_t group, const TaskbarAppearanc
 	);
 }
 
+#pragma warning(push)
+#pragma warning(disable: 4244)
 std::tuple<bool, bool, bool, uint16_t, unsigned int> MainAppWindow::GetLogMenu()
 {
 	if (const auto sink = Log::GetSink())
@@ -149,6 +151,7 @@ std::tuple<bool, bool, uint16_t> MainAppWindow::GetAutostartMenu(const StartupMa
 		return { false, false, IDS_AUTOSTART_ERROR };
 	}
 }
+#pragma warning(pop)
 
 void MainAppWindow::ClickHandler(unsigned int id)
 {
@@ -290,7 +293,7 @@ void MainAppWindow::HideTrayHandler()
 
 void MainAppWindow::AutostartMenuHandler()
 {
-	auto &manager  = *m_App.GetStartupManager();
+	auto &manager  = m_App.GetStartupManager();
 	if (const auto state = manager.GetState())
 	{
 		switch (*state)
@@ -322,12 +325,12 @@ void MainAppWindow::Exit()
 	PostQuitMessage(0);
 }
 
-MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, HINSTANCE hInstance) :
+MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, bool hideStartup, HINSTANCE hInstance) :
 	TrayContextMenu(TRAY_GUID, TRAY_WINDOW, APP_NAME, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance),
 	m_App(app),
 	m_HideIconOverride(hideIconOverride)
 {
-	if (!m_App.GetStartupManager())
+	if (hideStartup)
 	{
 		RemoveItem(ID_AUTOSTART);
 	}

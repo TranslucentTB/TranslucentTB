@@ -2,7 +2,6 @@
 #include "arch.h"
 #include "tray/traycontextmenu.hpp"
 #include <cstddef>
-#include <optional>
 #include <spdlog/common.h>
 #include <tuple>
 #include <windef.h>
@@ -47,7 +46,7 @@ private:
 	void Exit();
 
 public:
-	MainAppWindow(Application &app, bool hideIconOverride, HINSTANCE hInstance);
+	MainAppWindow(Application &app, bool hideIconOverride, bool hideStartup, HINSTANCE hInstance);
 
 	void UpdateTrayVisibility(bool visible);
 	void RemoveHideTrayIconOverride();

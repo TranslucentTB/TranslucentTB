@@ -6,8 +6,6 @@
 
 #include "uwp/uwp.hpp"
 
-using winrt::Windows::Foundation::IAsyncOperation;
-
 winrt::Windows::System::DispatcherQueueController Application::CreateDispatcher()
 {
 	const DispatcherQueueOptions options = {
@@ -24,15 +22,8 @@ winrt::Windows::System::DispatcherQueueController Application::CreateDispatcher(
 void Application::ConfigurationChanged(void *context, const Config &cfg)
 {
 	const auto that = static_cast<Application *>(context);
-	if (that->m_Worker)
-	{
-		that->m_Worker->ConfigurationChanged();
-	}
-
-	if (that->m_AppWindow)
-	{
-		that->m_AppWindow->UpdateTrayVisibility(!cfg.HideTray);
-	}
+	that->m_Worker.ConfigurationChanged();
+	that->m_AppWindow.UpdateTrayVisibility(!cfg.HideTray);
 }
 
 #ifndef DO_NOT_USE_GAME_SDK
@@ -52,19 +43,20 @@ std::unique_ptr<discord::Core> Application::CreateDiscordCore()
 		return nullptr;
 	}
 }
-#endif
 
-void Application::SetupMainApplication(bool hasPackageIdentity, bool hideIconOverride)
+void Application::RunDiscordCallbacks()
 {
-	m_Worker.emplace(m_Config.GetConfig(), m_hInstance);
-
-	if (hasPackageIdentity)
+	if (m_DiscordCore)
 	{
-		m_Startup.emplace();
+		const auto result = m_DiscordCore->RunCallbacks();
+		if (result != discord::Result::Ok)
+		{
+			m_DiscordCore = nullptr;
+			// todo: log
+		}
 	}
-
-	m_AppWindow.emplace(*this, hideIconOverride, m_hInstance);
 }
+#endif
 
 void Application::CreateWelcomePage(bool hasPackageIdentity)
 {
@@ -129,23 +121,25 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 	}, hasPackageIdentity);
 }
 
-Application::Application(HINSTANCE hInst, bool hasPackageIdentity) : m_hInstance(hInst), m_Dispatcher(CreateDispatcher()), m_Config(hasPackageIdentity, ConfigurationChanged, this), m_XamlApp(nullptr), m_CompletedFirstStart(false)
+Application::Application(HINSTANCE hInst, bool hasPackageIdentity, bool fileExists) :
+	m_hInstance(hInst),
+	m_Dispatcher(CreateDispatcher()),
+	m_Config(hasPackageIdentity, fileExists, ConfigurationChanged, this),
+	m_Worker(m_Config.GetConfig(), m_hInstance),
+	m_AppWindow(*this, !fileExists, !hasPackageIdentity, hInst),
+	m_XamlApp(nullptr),
+	m_CompletedFirstStart(fileExists)
 {
-	const bool isFirstBoot = !m_Config.LoadConfig();
-	SetupMainApplication(hasPackageIdentity, isFirstBoot);
-
-	if (isFirstBoot)
+	if (!fileExists)
 	{
 		CreateWelcomePage(hasPackageIdentity);
 	}
 	else
 	{
-		if (m_Startup)
+		if (hasPackageIdentity)
 		{
-			m_Startup->AcquireTask();
+			m_Startup.AcquireTask();
 		}
-
-		m_CompletedFirstStart = true;
 	}
 }
 
@@ -191,21 +185,6 @@ void Application::OpenTipsPage()
 {
 	UWP::OpenUri(winrt::Windows::Foundation::Uri(L"https://" APP_NAME ".github.io/tips"));
 }
-
-#ifndef DO_NOT_USE_GAME_SDK
-void Application::RunDiscordCallbacks()
-{
-	if (m_DiscordCore)
-	{
-		const auto result = m_DiscordCore->RunCallbacks();
-		if (result != discord::Result::Ok)
-		{
-			m_DiscordCore = nullptr;
-			// todo: log
-		}
-	}
-}
-#endif
 
 Application::~Application()
 {
