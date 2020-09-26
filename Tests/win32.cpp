@@ -5,6 +5,12 @@
 
 using namespace testing;
 
+// to allow ASSERT_EQ with RECT
+static bool operator==(const RECT &left, const RECT &right) noexcept
+{
+	return std::memcmp(&left, &right, sizeof(RECT)) == 0;
+}
+
 TEST(win32_RectFitsInRect, FalseWhenBiggerInnerRect)
 {
 	const RECT a = { 2, 2, 3, 3 };
@@ -91,6 +97,96 @@ TEST(win32_RectFitsInRect, TrueWhenSameBounds)
 	const RECT b = { 0, 0, 1, 1 };
 
 	ASSERT_THAT(win32::RectFitsInRect(a, b), IsTrue());
+}
+
+TEST(win32_OffsetRect, SupportsNegativeXOffset)
+{
+	RECT r = {
+		.left = 10,
+		.top = 10,
+		.right = 20,
+		.bottom = 20
+	};
+	const RECT expected = {
+		.left = 5,
+		.top = 10,
+		.right = 15,
+		.bottom = 20
+	};
+
+	win32::OffsetRect(r, -5, 0);
+	ASSERT_EQ(r, expected);
+}
+
+TEST(win32_OffsetRect, SupportsNegativeYOffset)
+{
+	RECT r = {
+		.left = 10,
+		.top = 10,
+		.right = 20,
+		.bottom = 20
+	};
+	const RECT expected = {
+		.left = 10,
+		.top = 5,
+		.right = 20,
+		.bottom = 15
+	};
+
+	win32::OffsetRect(r, 0, -5);
+	ASSERT_EQ(r, expected);
+}
+
+TEST(win32_OffsetRect, SupportsPositiveXOffset)
+{
+	RECT r = {
+		.left = 10,
+		.top = 10,
+		.right = 20,
+		.bottom = 20
+	};
+	const RECT expected = {
+		.left = 15,
+		.top = 10,
+		.right = 25,
+		.bottom = 20
+	};
+
+	win32::OffsetRect(r, 5, 0);
+	ASSERT_EQ(r, expected);
+}
+
+TEST(win32_OffsetRect, SupportsPositiveYOffset)
+{
+	RECT r = {
+		.left = 10,
+		.top = 10,
+		.right = 20,
+		.bottom = 20
+	};
+	const RECT expected = {
+		.left = 10,
+		.top = 15,
+		.right = 20,
+		.bottom = 25
+	};
+
+	win32::OffsetRect(r, 0, 5);
+	ASSERT_EQ(r, expected);
+}
+
+TEST(win32_OffsetRect, SupportsZeroOffset)
+{
+	RECT r = {
+		.left = 10,
+		.top = 10,
+		.right = 20,
+		.bottom = 20
+	};
+	const RECT expected = r;
+
+	win32::OffsetRect(r, 0, 0);
+	ASSERT_EQ(r, expected);
 }
 
 TEST(win32_IsSameFilename, FalseWhenLengthDifferent)
