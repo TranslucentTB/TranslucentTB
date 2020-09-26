@@ -29,13 +29,13 @@ void Application::ConfigurationChanged(void *context, const Config &cfg)
 #ifndef DO_NOT_USE_GAME_SDK
 std::unique_ptr<discord::Core> Application::CreateDiscordCore()
 {
-	discord::Core *coreRaw{};
+	discord::Core *core{};
 	// https://github.com/discord/gamesdk-and-dispatch/issues/46
-	const auto result = discord::Core::Create(698033470781521940, static_cast<uint64_t>(discord::CreateFlags::NoRequireDiscord), &coreRaw);
-	if (coreRaw)
+	// TODO: use a define
+	const auto result = discord::Core::Create(698033470781521940, static_cast<uint64_t>(discord::CreateFlags::NoRequireDiscord), &core);
+	if (core)
 	{
-		std::unique_ptr<discord::Core> core(coreRaw);
-		return core;
+		return std::unique_ptr<discord::Core>{ core };
 	}
 	else
 	{
