@@ -1,11 +1,11 @@
 #include "pch.h"
 
-#include "util/strings.hpp"
-
 #include "ChromeButton.h"
 #if __has_include("Controls/ChromeButton.g.cpp")
 #include "Controls/ChromeButton.g.cpp"
 #endif
+
+#include "util/strings.hpp"
 
 using namespace winrt;
 using namespace Windows::UI;

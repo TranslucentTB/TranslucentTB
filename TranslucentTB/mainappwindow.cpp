@@ -7,14 +7,6 @@
 #include "../ProgramLog/log.hpp"
 #include "../ProgramLog/error/win32.hpp"
 
-#ifndef DO_NOT_USE_GAME_SDK
-bool MainAppWindow::PreTranslateMessage(const MSG &)
-{
-	m_App.RunDiscordCallbacks();
-	return false;
-}
-#endif
-
 LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -230,7 +222,7 @@ void MainAppWindow::ClickHandler(unsigned int id)
 				AutostartMenuHandler();
 				break;
 			case ID_TIPS:
-				m_App.OpenTipsPage();
+				Application::OpenTipsPage();
 				break;
 			case ID_ABOUT:
 				MessageBox(nullptr, L"TODO", L"TODO", 0); // TODO
@@ -322,7 +314,7 @@ void MainAppWindow::AutostartMenuHandler()
 void MainAppWindow::Exit()
 {
 	m_App.GetConfigManager().SaveConfig();
-	PostQuitMessage(0);
+	m_App.Shutdown(0);
 }
 
 MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, bool hideStartup, HINSTANCE hInstance) :

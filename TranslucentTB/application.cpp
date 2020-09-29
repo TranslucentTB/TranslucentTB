@@ -4,9 +4,11 @@
 #include <WinUser.h>
 #include <winrt/TranslucentTB.Xaml.Pages.h>
 
+#include "../ProgramLog/error/std.hpp"
+#include "../ProgramLog/error/win32.hpp"
 #include "uwp/uwp.hpp"
 
-winrt::Windows::System::DispatcherQueueController Application::CreateDispatcher()
+winrt::Windows::System::DispatcherQueueController Application::CreateDispatcherController()
 {
 	const DispatcherQueueOptions options = {
 		.dwSize = sizeof(options),
@@ -60,92 +62,68 @@ void Application::RunDiscordCallbacks()
 
 void Application::CreateWelcomePage(bool hasPackageIdentity)
 {
-	using winrt::TranslucentTB::Xaml::Pages::WelcomePage;
-	CreateXamlWindow<WelcomePage>([this](XamlPageHost<WelcomePage> &host)
+	const auto content = m_Xaml.CreateXamlWindow<winrt::TranslucentTB::Xaml::Pages::WelcomePage>(xaml_startup_position::center, hasPackageIdentity);
+
+	auto closeRevoker = content.Closed(winrt::auto_revoke, [this]
 	{
-		const auto &content = host.content();
+		// Redo the first start next time.
+		std::error_code errc;
+		std::filesystem::remove(m_Config.GetConfigPath(), errc);
+		StdErrorCodeVerify(errc, spdlog::level::warn, L"Failed to delete config file");
 
-		content.LiberapayOpenRequested({ this, &Application::OpenDonationPage });
+		Shutdown(1);
+	});
 
-#ifndef DO_NOT_USE_GAME_SDK
-		content.DiscordJoinRequested([this]() -> winrt::fire_and_forget
+	content.LiberapayOpenRequested(OpenDonationPage);
+	content.DiscordJoinRequested({ this, &Application::OpenDiscordServer });
+	content.ConfigEditRequested({ this, &Application::EditConfigFile });
+
+	content.LicenseApproved([this, hasPackageIdentity, revoker = std::move(closeRevoker)](bool startupState) mutable -> winrt::fire_and_forget
+	{
+		// remove the close handler because awaiting will make the close event fire.
+		revoker.revoke();
+
+		if (hasPackageIdentity && co_await m_Startup.AcquireTask())
 		{
-			co_await m_Dispatcher.DispatcherQueue();
-			// TODO: this behaves weirdly
-			OpenDiscordServer();
-		});
-#else
-		content.DiscordJoinRequested({ this, &Application::OpenDiscordServer });
-#endif
-
-		content.ConfigEditRequested([this]() -> winrt::fire_and_forget
-		{
-			co_await m_Dispatcher.DispatcherQueue();
-			EditConfigFile();
-		});
-
-		content.LicenseApproved([this](bool startupState) -> winrt::fire_and_forget
-		{
-			// set this first because awaiting will make the callback return,
-			// causing the Closed event to fire and call PostQuitMessage.
-			m_CompletedFirstStart = true;
-
-			// move back to the main thread.
-			// it's not safe to co_await in the calling thread because as
-			// soon as we hit the first suspension point, the window and
-			// message loop is torn down.
-			co_await m_Dispatcher.DispatcherQueue();
-			m_AppWindow->RemoveHideTrayIconOverride();
-
-			if (m_Startup && co_await m_Startup->AcquireTask())
+			if (startupState)
 			{
-				if (startupState)
-				{
-					co_await m_Startup->Enable();
-				}
-				else
-				{
-					m_Startup->Disable();
-				}
+				co_await m_Startup.Enable();
 			}
-		});
-
-		content.Closed([this]() -> winrt::fire_and_forget
-		{
-			if (!m_CompletedFirstStart)
+			else
 			{
-				co_await m_Dispatcher.DispatcherQueue();
-				PostQuitMessage(1);
+				m_Startup.Disable();
 			}
-		});
-	}, hasPackageIdentity);
+		}
+
+		m_AppWindow.RemoveHideTrayIconOverride();
+	});
 }
 
 Application::Application(HINSTANCE hInst, bool hasPackageIdentity, bool fileExists) :
-	m_hInstance(hInst),
-	m_Dispatcher(CreateDispatcher()),
 	m_Config(hasPackageIdentity, fileExists, ConfigurationChanged, this),
-	m_Worker(m_Config.GetConfig(), m_hInstance),
+	m_Worker(m_Config.GetConfig(), hInst),
 	m_AppWindow(*this, !fileExists, !hasPackageIdentity, hInst),
-	m_XamlApp(nullptr),
-	m_CompletedFirstStart(fileExists)
+	m_DispatcherController(CreateDispatcherController()),
+	m_Xaml(m_DispatcherController.DispatcherQueue(), hInst)
 {
 	if (!fileExists)
 	{
 		CreateWelcomePage(hasPackageIdentity);
 	}
-	else
+	else if (hasPackageIdentity)
 	{
-		if (hasPackageIdentity)
-		{
-			m_Startup.AcquireTask();
-		}
+		m_Startup.AcquireTask();
 	}
 }
 
 void Application::OpenDonationPage()
 {
 	UWP::OpenUri(winrt::Windows::Foundation::Uri(L"https://liberapay.com/" APP_NAME));
+}
+
+void Application::OpenTipsPage()
+{
+	UWP::OpenUri(winrt::Windows::Foundation::Uri(L"https://" APP_NAME ".github.io/tips"));
 }
 
 void Application::OpenDiscordServer()
@@ -181,16 +159,46 @@ void Application::EditConfigFile()
 	HresultVerify(win32::EditFile(m_Config.GetConfigPath()), spdlog::level::err, L"Failed to open configuration file.");
 }
 
-void Application::OpenTipsPage()
+int Application::Run()
 {
-	UWP::OpenUri(winrt::Windows::Foundation::Uri(L"https://" APP_NAME ".github.io/tips"));
+	while (true)
+	{
+		switch (MsgWaitForMultipleObjectsEx(0, nullptr, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE | MWMO_INPUTAVAILABLE))
+		{
+		case WAIT_OBJECT_0:
+			RunDiscordCallbacks();
+
+			for (MSG msg; PeekMessage(&msg, 0, 0, 0, PM_REMOVE);)
+			{
+				if (msg.message != WM_QUIT)
+				{
+					if (!m_Xaml.PreTranslateMessage(msg))
+					{
+						TranslateMessage(&msg);
+						DispatchMessage(&msg);
+					}
+				}
+				else
+				{
+					return static_cast<int>(msg.wParam);
+				}
+			}
+			[[fallthrough]];
+		case WAIT_IO_COMPLETION:
+			continue;
+
+		case WAIT_FAILED:
+			LastErrorHandle(spdlog::level::critical, L"Failed to enter alertable wait state!");
+
+		default:
+			MessagePrint(spdlog::level::critical, L"MsgWaitForMultipleObjectsEx returned an unexpected value!");
+		}
+	}
 }
 
-Application::~Application()
+winrt::fire_and_forget Application::Shutdown(int exitCode)
 {
-	if (!m_CompletedFirstStart)
-	{
-		// Redo the first start next time.
-		std::filesystem::remove(m_Config.GetConfigPath());
-	}
+	// todo: close all xaml
+	co_await m_DispatcherController.ShutdownQueueAsync();
+	PostQuitMessage(exitCode);
 }

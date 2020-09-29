@@ -31,6 +31,7 @@
     <Page Include="Pages\FramelessPage.xaml" />
     <Page Include="Controls\ChromeButton.xaml" />
     <Page Include="Controls\ActionList.xaml" />
+    <Page Include="Pages\ColorPickerPage.xaml" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />

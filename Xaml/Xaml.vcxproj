@@ -51,6 +51,10 @@
       <DependentUpon>Controls\ChromeButton.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="Pages\ColorPickerPage.cpp">
+      <DependentUpon>Pages\ColorPickerPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="Pages\FramelessPage.cpp">
       <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -83,6 +87,9 @@
     <Page Include="Controls\ChromeButton.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Pages\ColorPickerPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Pages\FramelessPage.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -102,6 +109,10 @@
     </ClInclude>
     <ClInclude Include="Controls\ChromeButton.h">
       <DependentUpon>Controls\ChromeButton.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Pages\ColorPickerPage.h">
+      <DependentUpon>Pages\ColorPickerPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="Pages\FramelessPage.h">
@@ -130,6 +141,10 @@
     </Midl>
     <Midl Include="Controls\ChromeButton.idl">
       <DependentUpon>Controls\ChromeButton.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="Pages\ColorPickerPage.idl">
+      <DependentUpon>Pages\ColorPickerPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
     <Midl Include="Pages\FramelessPage.idl">

@@ -1,11 +1,11 @@
 #include "pch.h"
 
-#include "util/strings.hpp"
-
 #include "FramelessPage.h"
 #if __has_include("Pages/FramelessPage.g.cpp")
 #include "Pages/FramelessPage.g.cpp"
 #endif
+
+#include "util/strings.hpp"
 
 using namespace winrt;
 using namespace Windows::UI::Xaml;
@@ -41,26 +41,37 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		InitializeComponent();
 	}
 
+	bool FramelessPage::RequestClose()
+	{
+		if (IsClosable())
+		{
+			Close();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 	void FramelessPage::Close()
 	{
 		m_ClosedHandler();
 	}
 
-	void FramelessPage::RequestClose()
+	event_token FramelessPage::Closed(const ClosedDelegate &handler)
 	{
-		CloseButtonClicked(nullptr, Windows::UI::Xaml::RoutedEventArgs { });
+		return m_ClosedHandler.add(handler);
 	}
 
-	void FramelessPage::CloseButtonClicked(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args)
+	void FramelessPage::Closed(const winrt::event_token &token)
 	{
-		if (m_CloseRequestedHandler)
-		{
-			m_CloseRequestedHandler(sender, args);
-		}
-		else
-		{
-			Close();
-		}
+		m_ClosedHandler.remove(token);
+	}
+
+	void FramelessPage::CloseButtonClicked(const Windows::Foundation::IInspectable &, const Windows::UI::Xaml::RoutedEventArgs &)
+	{
+		RequestClose();
 	}
 
 	hstring FramelessPage::Title()
@@ -68,7 +79,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		return unbox_value<hstring>(GetValue(s_TitleProperty));
 	}
 
-	void FramelessPage::Title(hstring title)
+	void FramelessPage::Title(const hstring &title)
 	{
 		SetValue(s_TitleProperty, box_value(title));
 	}
@@ -83,7 +94,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		return GetValue(s_UserContentProperty).as<UIElement>();
 	}
 
-	void FramelessPage::UserContent(UIElement element)
+	void FramelessPage::UserContent(const UIElement &element)
 	{
 		SetValue(s_UserContentProperty, element);
 	}
@@ -106,25 +117,5 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	DependencyProperty FramelessPage::IsClosableProperty() noexcept
 	{
 		return s_IsClosableProperty;
-	}
-
-	event_token FramelessPage::Closed(const ClosedDelegate &handler)
-	{
-		return m_ClosedHandler.add(handler);
-	}
-
-	void FramelessPage::Closed(const winrt::event_token &token)
-	{
-		m_ClosedHandler.remove(token);
-	}
-
-	event_token FramelessPage::CloseRequested(const Windows::UI::Xaml::RoutedEventHandler &handler)
-	{
-		return m_CloseRequestedHandler.add(handler);
-	}
-
-	void FramelessPage::CloseRequested(const winrt::event_token &token)
-	{
-		m_CloseRequestedHandler.remove(token);
 	}
 }

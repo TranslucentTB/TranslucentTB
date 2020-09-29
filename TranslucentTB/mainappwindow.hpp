@@ -17,10 +17,6 @@ private:
 	Application &m_App;
 	bool m_HideIconOverride;
 
-#ifndef DO_NOT_USE_GAME_SDK
-	bool PreTranslateMessage(const MSG &msg) override;
-#endif
-
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	void RefreshMenu() override;

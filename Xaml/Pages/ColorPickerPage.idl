@@ -1,0 +1,10 @@
+import "Pages/FramelessPage.idl";
+
+namespace TranslucentTB.Xaml.Pages
+{
+	[default_interface]
+	runtimeclass ColorPickerPage : FramelessPage
+	{
+		ColorPickerPage(String category, Windows.UI.Color currentColor);
+	}
+}

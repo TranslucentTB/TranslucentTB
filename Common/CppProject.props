@@ -177,6 +177,9 @@
       <!-- RapidJSON -->
       <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING=1;RAPIDJSON_ERROR_CHARTYPE=wchar_t;RAPIDJSON_ERROR_STRING=UTIL_WIDEN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
+      <!-- member_thunk -->
+      <PreprocessorDefinitions>MEMBER_THUNK_DEFAULT_HEAP_SAFETY=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+
       <!-- spdlog -->
       <PreprocessorDefinitions>SPDLOG_DISABLE_DEFAULT_LOGGER;SPDLOG_FMT_EXTERNAL;SPDLOG_NO_NAME;SPDLOG_NO_THREAD_ID;SPDLOG_NO_TLS;SPDLOG_WCHAR_TO_UTF8_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 

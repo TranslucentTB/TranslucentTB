@@ -34,41 +34,6 @@ MessageWindow::MessageWindow(Util::null_terminated_wstring_view className, Util:
 	}
 }
 
-WPARAM MessageWindow::Run()
-{
-	while (true)
-	{
-		switch (MsgWaitForMultipleObjectsEx(0, nullptr, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE | MWMO_INPUTAVAILABLE))
-		{
-		case WAIT_OBJECT_0:
-			for (MSG msg; PeekMessage(&msg, 0, 0, 0, PM_REMOVE);)
-			{
-				if (msg.message != WM_QUIT)
-				{
-					if (!PreTranslateMessage(msg))
-					{
-						TranslateMessage(&msg);
-						DispatchMessage(&msg);
-					}
-				}
-				else
-				{
-					return msg.wParam;
-				}
-			}
-			[[fallthrough]];
-		case WAIT_IO_COMPLETION:
-			continue;
-
-		case WAIT_FAILED:
-			LastErrorHandle(spdlog::level::critical, L"Failed to enter alertable wait state!");
-
-		default:
-			MessagePrint(spdlog::level::critical, L"MsgWaitForMultipleObjectsEx returned an unexpected value!");
-		}
-	}
-}
-
 MessageWindow::~MessageWindow()
 {
 	if (!DestroyWindow(m_WindowHandle))
