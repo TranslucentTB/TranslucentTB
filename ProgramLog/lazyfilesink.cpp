@@ -74,5 +74,5 @@ void lazy_file_sink<Mutex>::write(const T &thing)
 	}
 }
 
-// We don't actually use the singlethreaded sink.
-template class lazy_file_sink<std::mutex>;
+// We don't actually use the multithreaded sink.
+template class lazy_file_sink<spdlog::details::null_mutex>;
