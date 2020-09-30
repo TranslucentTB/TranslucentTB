@@ -22,7 +22,7 @@ namespace Error {
 } while (0)
 
 #define StdErrorCodeVerify(errc_, level_, message_) do { \
-	if (errc_) \
+	if (errc_) [[unlikely]] \
 	{ \
 		StdErrorCodeHandle(errc_, (level_), (message_)); \
 	} \

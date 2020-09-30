@@ -54,7 +54,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		return m_LiberapayOpenRequestedHandler.add(handler);
 	}
 
-	void WelcomePage::LiberapayOpenRequested(const winrt::event_token &token)
+	void WelcomePage::LiberapayOpenRequested(const event_token &token)
 	{
 		m_LiberapayOpenRequestedHandler.remove(token);
 	}
@@ -64,7 +64,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		return m_DiscordJoinRequestedHandler.add(handler);
 	}
 
-	void WelcomePage::DiscordJoinRequested(const winrt::event_token &token)
+	void WelcomePage::DiscordJoinRequested(const event_token &token)
 	{
 		m_DiscordJoinRequestedHandler.remove(token);
 	}
@@ -74,7 +74,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		return m_ConfigEditRequestedHandler.add(handler);
 	}
 
-	void WelcomePage::ConfigEditRequested(const winrt::event_token &token)
+	void WelcomePage::ConfigEditRequested(const event_token &token)
 	{
 		m_ConfigEditRequestedHandler.remove(token);
 	}
@@ -84,7 +84,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		return m_LicenseApprovedHandler.add(handler);
 	}
 
-	void WelcomePage::LicenseApproved(const winrt::event_token &token)
+	void WelcomePage::LicenseApproved(const event_token &token)
 	{
 		m_LicenseApprovedHandler.remove(token);
 	}

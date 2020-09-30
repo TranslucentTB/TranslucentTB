@@ -38,5 +38,6 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="Models\Action.idl" />
+    <Midl Include="Pages\FramelessPageWithMessageDialog.idl" />
   </ItemGroup>
 </Project>

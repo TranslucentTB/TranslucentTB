@@ -64,7 +64,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		return m_ClosedHandler.add(handler);
 	}
 
-	void FramelessPage::Closed(const winrt::event_token &token)
+	void FramelessPage::Closed(const event_token &token)
 	{
 		m_ClosedHandler.remove(token);
 	}

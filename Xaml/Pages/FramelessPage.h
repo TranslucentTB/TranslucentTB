@@ -12,7 +12,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 		void Close();
 		event_token Closed(const ClosedDelegate &handler);
-		void Closed(const winrt::event_token &token);
+		void Closed(const event_token &token);
 
 		void CloseButtonClicked(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
 

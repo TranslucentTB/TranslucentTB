@@ -16,9 +16,9 @@ winrt::Windows::System::DispatcherQueueController Application::CreateDispatcherC
 		.apartmentType = DQTAT_COM_STA
 	};
 
-	ABI::Windows::System::IDispatcherQueueController *controller;
-	HresultVerify(CreateDispatcherQueueController(options, &controller), spdlog::level::critical, L"Failed to create dispatcher!");
-	return { controller, winrt::take_ownership_from_abi };
+	winrt::com_ptr<ABI::Windows::System::IDispatcherQueueController> controller;
+	HresultVerify(CreateDispatcherQueueController(options, controller.put()), spdlog::level::critical, L"Failed to create dispatcher!");
+	return { controller.detach(), winrt::take_ownership_from_abi };
 }
 
 void Application::ConfigurationChanged(void *context, const Config &cfg)

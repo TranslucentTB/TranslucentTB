@@ -34,7 +34,6 @@
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <ModuleDefinitionFile>Xaml.def</ModuleDefinitionFile>
       <AppContainer>false</AppContainer>
-      <AdditionalDependencies>shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4197 %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -69,7 +68,9 @@
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <ClCompile Include="Models\Action.cpp">
       <DependentUpon>Models\Action.idl</DependentUpon>
-      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Pages\FramelessPageWithMessageDialog.cpp">
+      <DependentUpon>Pages\FramelessPageWithMessageDialog.idl</DependentUpon>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -126,9 +127,11 @@
     </ClInclude>
     <ClInclude Include="Models\Action.h">
       <DependentUpon>Models\Action.idl</DependentUpon>
-      <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="PropertyChangedBase.hpp" />
+    <ClInclude Include="Pages\FramelessPageWithMessageDialog.h">
+      <DependentUpon>Pages\FramelessPageWithMessageDialog.idl</DependentUpon>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl">
@@ -155,9 +158,8 @@
       <DependentUpon>Pages\WelcomePage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
-    <Midl Include="Models\Action.idl">
-      <SubType>Designer</SubType>
-    </Midl>
+    <Midl Include="Models\Action.idl" />
+    <Midl Include="Pages\FramelessPageWithMessageDialog.idl" />
   </ItemGroup>
   <Target Name="PlaceAppXbfAtRootOfResourceTree" DependsOnTargets="GetPackagingOutputs">
     <ItemGroup>
