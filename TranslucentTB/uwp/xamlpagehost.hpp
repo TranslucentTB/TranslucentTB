@@ -211,7 +211,7 @@ public:
 
 		if (const auto initWithWnd = m_content.try_as<IInitializeWithWindow>())
 		{
-			winrt::check_hresult(initWithWnd->Initialize(m_WindowHandle));
+			HresultVerify(initWithWnd->Initialize(m_WindowHandle), spdlog::level::warn, L"Failed to initialize with window");
 		}
 
 		// TODO: keyboard focus issues
