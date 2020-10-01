@@ -15,7 +15,7 @@
 #include "error/std.hpp"
 #include "window.hpp"
 
-std::weak_ptr<lazy_file_sink_mt> Log::s_LogSink;
+std::weak_ptr<lazy_file_sink_st> Log::s_LogSink;
 
 std::time_t Log::GetProcessCreationTime() noexcept
 {
@@ -106,7 +106,7 @@ void Log::Initialize(bool hasPackageIdentity)
 
 	if (auto path = GetPath(hasPackageIdentity); !path.empty())
 	{
-		const auto fileLog = std::make_shared<lazy_file_sink_mt>(std::move(path));
+		const auto fileLog = std::make_shared<lazy_file_sink_st>(std::move(path));
 		fileLog->set_level(Config{ }.LogVerbosity);
 		defaultLogger->sinks().push_back(fileLog);
 

@@ -10,46 +10,39 @@
 #include <winrt/Windows.UI.Xaml.Hosting.h>
 #include "redefgetcurrenttime.h"
 
+enum class xaml_startup_position {
+	center,
+	mouse
+};
 
 class BaseXamlPageHost : public MessageWindow {
 private:
 	Window m_interopWnd;
-	winrt::Windows::UI::Xaml::Hosting::WindowsXamlManager m_manager;
 	winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource m_source;
 	winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource::TakeFocusRequested_revoker m_focusRevoker;
 
-	bool PreTranslateMessage(const MSG &msg) override;
+	void UpdateFrame();
 
 protected:
+	static HMONITOR GetInitialMonitor(POINT &cursor, xaml_startup_position position);
 	static float GetDpiScale(HMONITOR mon);
+	static void CalculateInitialPosition(int &x, int &y, int width, int height, POINT cursor, const RECT &workArea, xaml_startup_position position) noexcept;
+	static bool AdjustWindowPosition(int &x, int &y, int width, int height, const RECT &workArea) noexcept;
 
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
-
-	RECT CalculateWindowPosition(winrt::Windows::Foundation::Size size);
-	void PositionWindow(const RECT &rect, bool showWindow = false);
-	void PositionInteropWindow(int x, int y);
-
-	void Flash() noexcept;
-
+	void ResizeWindow(int x, int y, int width, int height, bool move);
+	void Flash();
 	BaseXamlPageHost(Util::null_terminated_wstring_view className, HINSTANCE hInst);
 
-	inline constexpr winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource &source() noexcept
+	constexpr winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource &source() noexcept
 	{
 		return m_source;
 	}
 
-public:
 	inline ~BaseXamlPageHost()
 	{
 		m_focusRevoker.revoke();
 		m_source.Close();
 		m_source = nullptr;
-		m_manager.Close();
-		m_manager = nullptr;
-
-		winrt::uninit_apartment();
 	}
-
-	BaseXamlPageHost(const BaseXamlPageHost&) = delete;
-	BaseXamlPageHost& operator =(const BaseXamlPageHost&) = delete;
 };

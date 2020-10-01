@@ -4,15 +4,13 @@
 #include <type_traits>
 #include "winrt.hpp"
 
-class LauncherVisibilitySink : public winrt::implements<LauncherVisibilitySink, IAppVisibilityEvents> {
-	using callback_t = std::add_pointer_t<void(void * , bool)>;
-
-	callback_t m_Callback;
-	void *m_Context;
+template<auto Callback, typename T>
+class LauncherVisibilitySink : public winrt::implements<LauncherVisibilitySink<Callback, T>, IAppVisibilityEvents> {
+	T* context;
 
 	IFACEMETHODIMP LauncherVisibilityChange(BOOL currentVisibleState) noexcept override try
 	{
-		m_Callback(m_Context, currentVisibleState);
+		std::invoke(Callback, context, currentVisibleState);
 		return S_OK;
 	}
 	catch (...)
@@ -26,5 +24,5 @@ class LauncherVisibilitySink : public winrt::implements<LauncherVisibilitySink, 
 	}
 
 public:
-	inline LauncherVisibilitySink(callback_t callback, void *context) noexcept : m_Callback(callback), m_Context(context) { }
+	constexpr LauncherVisibilitySink(T* context) noexcept : context(context) { }
 };

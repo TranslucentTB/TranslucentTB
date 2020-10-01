@@ -17,4 +17,9 @@ public:
 	winrt::Windows::Foundation::IAsyncAction Enable();
 	void Disable();
 	winrt::Windows::Foundation::IAsyncAction OpenSettingsPage();
+
+	inline explicit operator bool() const noexcept
+	{
+		return m_StartupTask != nullptr;
+	}
 };

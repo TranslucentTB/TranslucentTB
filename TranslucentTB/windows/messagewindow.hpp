@@ -21,11 +21,6 @@ protected:
 		return m_WindowClass.hinstance();
 	}
 
-	inline virtual bool PreTranslateMessage(const MSG &)
-	{
-		return false;
-	}
-
 	inline virtual LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		switch (uMsg)
@@ -39,10 +34,6 @@ protected:
 	}
 
 	MessageWindow(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName, HINSTANCE hInstance, unsigned long style = 0, Window parent = Window::NullWindow, const wchar_t *iconResource = MAKEINTRESOURCE(IDI_MAINICON));
-
-public:
-	WPARAM Run();
-
 	~MessageWindow();
 
 	inline MessageWindow(const MessageWindow &) = delete;

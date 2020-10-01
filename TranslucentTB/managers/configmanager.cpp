@@ -35,41 +35,26 @@ void ConfigManager::WatcherCallback(void *context, DWORD, std::wstring_view file
 	{
 		const auto that = static_cast<ConfigManager *>(context);
 
-		that->LoadConfig();
-		that->m_Callback(that->m_Context, *that->m_Config);
+		bool ignored = false;
+		that->m_Config = Config::Load(that->m_ConfigPath, ignored);
+		that->m_Callback(that->m_Context, that->m_Config);
 	}
+}
+
+ConfigManager::ConfigManager(bool hasPackageIdentity, bool &fileExists, callback_t callback, void *context) :
+	m_ConfigPath(DetermineConfigPath(hasPackageIdentity)),
+	m_Config(Config::Load(m_ConfigPath, fileExists)),
+	// dirty trick to set log verbosity asap
+	m_Watcher((UpdateVerbosity(), m_ConfigPath.parent_path()), false, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE, WatcherCallback, this),
+	m_Callback(callback),
+	m_Context(context)
+{
 }
 
 void ConfigManager::UpdateVerbosity()
 {
 	if (const auto sink = Log::GetSink())
 	{
-		sink->set_level(GetConfig().LogVerbosity);
+		sink->set_level(m_Config.LogVerbosity);
 	}
-}
-
-bool ConfigManager::LoadConfig()
-{
-	bool fileExists = false;
-	bool hasPreviousConfig = m_Config.has_value();
-
-	m_Config = Config::Load(m_ConfigPath, fileExists);
-	UpdateVerbosity();
-
-	if (!hasPreviousConfig)
-	{
-		m_Watcher.emplace(m_ConfigPath.parent_path(), false, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE, WatcherCallback, this);
-	}
-
-	return fileExists;
-}
-
-Config &ConfigManager::GetConfig()
-{
-	if (!m_Config)
-	{
-		LoadConfig();
-	}
-
-	return *m_Config;
 }

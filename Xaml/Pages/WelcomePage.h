@@ -17,16 +17,16 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void DisagreeButtonClicked(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
 
 		event_token LiberapayOpenRequested(const LiberapayOpenDelegate &handler);
-		void LiberapayOpenRequested(const winrt::event_token &token);
+		void LiberapayOpenRequested(const event_token &token);
 
 		event_token DiscordJoinRequested(const DiscordJoinDelegate &handler);
-		void DiscordJoinRequested(const winrt::event_token &token);
+		void DiscordJoinRequested(const event_token &token);
 
 		event_token ConfigEditRequested(const ConfigEditDelegate &handler);
-		void ConfigEditRequested(const winrt::event_token &token);
+		void ConfigEditRequested(const event_token &token);
 
 		event_token LicenseApproved(const LicenseApprovedDelegate &handler);
-		void LicenseApproved(const winrt::event_token &token);
+		void LicenseApproved(const event_token &token);
 
 	private:
 		event<LiberapayOpenDelegate> m_LiberapayOpenRequestedHandler;

@@ -15,18 +15,21 @@ class ConfigManager {
 	static void WatcherCallback(void *context, DWORD, std::wstring_view fileName);
 
 	std::filesystem::path m_ConfigPath;
-	std::optional<Config> m_Config;
-	std::optional<FolderWatcher> m_Watcher;
+	Config m_Config;
+	FolderWatcher m_Watcher;
 
 	callback_t m_Callback;
 	void *m_Context;
 
 public:
-	inline ConfigManager(bool hasPackageIdentity, callback_t callback, void *context) : m_ConfigPath(DetermineConfigPath(hasPackageIdentity)), m_Callback(callback), m_Context(context) { }
+	ConfigManager(bool hasPackageIdentity, bool &fileExists, callback_t callback, void *context);
 
 	void UpdateVerbosity();
-	bool LoadConfig();
-	Config &GetConfig();
+
+	constexpr Config &GetConfig() noexcept
+	{
+		return m_Config;
+	}
 
 	constexpr const std::filesystem::path &GetConfigPath() const noexcept
 	{

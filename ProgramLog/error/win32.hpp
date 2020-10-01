@@ -29,7 +29,7 @@ namespace Error {
 } while (0)
 
 #define HresultVerify(hresult_, level_, message_) do { \
-	if (const HRESULT hr_ = (hresult_); FAILED(hr_)) \
+	if (const HRESULT hr_ = (hresult_); FAILED(hr_)) [[unlikely]] \
 	{ \
 		HresultHandle(hr_, (level_), (message_)); \
 	} \
@@ -38,7 +38,7 @@ namespace Error {
 #define LastErrorHandle(level_, message_) HresultHandle(HRESULT_FROM_WIN32(GetLastError()), (level_), (message_))
 
 #define LastErrorVerify(level_, message_) do { \
-	if (const DWORD lastErr_ = GetLastError(); lastErr_ != NO_ERROR) \
+	if (const DWORD lastErr_ = GetLastError(); lastErr_ != NO_ERROR) [[unlikely]] \
 	{ \
 		HresultHandle(HRESULT_FROM_WIN32(lastErr_), (level_), (message_)); \
 	} \

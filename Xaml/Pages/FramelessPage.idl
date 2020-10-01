@@ -8,8 +8,10 @@ namespace TranslucentTB.Xaml.Pages
 	{
 		FramelessPage();
 
+		overridable Boolean RequestClose();
+
 		protected void Close();
-		void RequestClose();
+		event ClosedDelegate Closed;
 
 		String Title;
 		static Windows.UI.Xaml.DependencyProperty TitleProperty { get; };
@@ -19,8 +21,5 @@ namespace TranslucentTB.Xaml.Pages
 
 		Boolean IsClosable;
 		static Windows.UI.Xaml.DependencyProperty IsClosableProperty { get; };
-
-		event ClosedDelegate Closed;
-		protected event Windows.UI.Xaml.RoutedEventHandler CloseRequested;
 	}
 }

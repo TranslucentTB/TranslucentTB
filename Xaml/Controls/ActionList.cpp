@@ -1,11 +1,11 @@
 #include "pch.h"
 
-#include "../Models/Action.h"
-
 #include "Controls/ActionList.h"
 #if __has_include("Controls/ActionList.g.cpp")
 #include "Controls/ActionList.g.cpp"
 #endif
+
+#include "../Models/Action.h"
 
 using namespace winrt;
 using namespace Windows::UI::Xaml;

@@ -365,11 +365,7 @@ void TaskbarAttributeWorker::CreateAppVisibility()
 		return;
 	}
 
-	const auto av_sink = winrt::make_self<LauncherVisibilitySink>([](void *context, bool state)
-	{
-		static_cast<TaskbarAttributeWorker *>(context)->OnStartVisibilityChange(state);
-	}, this);
-
+	const auto av_sink = winrt::make_self<LauncherVisibilitySink<&TaskbarAttributeWorker::OnStartVisibilityChange, TaskbarAttributeWorker>>(this);
 	m_IAVECookie.associate(m_IAV.get());
 	HresultVerify(m_IAV->Advise(av_sink.get(), m_IAVECookie.put()), spdlog::level::warn, L"Failed to register app visibility sink.");
 }

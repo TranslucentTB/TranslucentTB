@@ -2,27 +2,29 @@
 #include <ShellScalingApi.h>
 #include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
 
+#include "win32.hpp"
 #include "../ProgramLog/error/win32.hpp"
 
 using namespace winrt::Windows::UI::Xaml::Hosting;
 
-bool BaseXamlPageHost::PreTranslateMessage(const MSG &msg)
+void BaseXamlPageHost::UpdateFrame()
 {
-	if (const auto source = m_source.try_as<IDesktopWindowXamlSourceNative2>())
+	// Magic that gives us shadows
+	const MARGINS margins = { 1 };
+	HresultVerify(DwmExtendFrameIntoClientArea(m_WindowHandle, &margins), spdlog::level::warn, L"Failed to extend frame into client area");
+}
+
+HMONITOR BaseXamlPageHost::GetInitialMonitor(POINT &cursor, xaml_startup_position position)
+{
+	if (position == xaml_startup_position::mouse)
 	{
-		BOOL result { };
-		const HRESULT err = source->PreTranslateMessage(&msg, &result);
-		if (SUCCEEDED(err))
+		if (!GetCursorPos(&cursor))
 		{
-			return result;
-		}
-		else
-		{
-			HresultHandle(err, spdlog::level::warn, L"Failed to pre-translate message.");
+			LastErrorHandle(spdlog::level::warn, L"Failed to get cursor position");
 		}
 	}
 
-	return false;
+	return MonitorFromPoint(cursor, MONITOR_DEFAULTTOPRIMARY);
 }
 
 float BaseXamlPageHost::GetDpiScale(HMONITOR mon)
@@ -39,6 +41,71 @@ float BaseXamlPageHost::GetDpiScale(HMONITOR mon)
 	}
 }
 
+void BaseXamlPageHost::CalculateInitialPosition(int &x, int &y, int width, int height, POINT cursor, const RECT &workArea, xaml_startup_position position) noexcept
+{
+	if (position == xaml_startup_position::mouse)
+	{
+		// Center on the mouse
+		x = cursor.x - (width / 2);
+		y = cursor.y - (height / 2);
+
+		AdjustWindowPosition(x, y, width, height, workArea);
+	}
+	else
+	{
+		x = ((workArea.right - workArea.left - width) / 2) + workArea.left;
+		y = ((workArea.bottom - workArea.top - height) / 2) + workArea.top;
+	}
+}
+
+bool BaseXamlPageHost::AdjustWindowPosition(int &x, int &y, int width, int height, const RECT &workArea) noexcept
+{
+	RECT coords = { x, y, x + width, y + height };
+	if (win32::RectFitsInRect(workArea, coords))
+	{
+		// It fits, nothing to do.
+		return false;
+	}
+
+	const bool rightDoesntFits = coords.right > workArea.right;
+	const bool leftDoesntFits = coords.left < workArea.left;
+	const bool bottomDoesntFits = coords.bottom > workArea.bottom;
+	const bool topDoesntFits = coords.top < workArea.top;
+
+	if ((rightDoesntFits && leftDoesntFits) || (bottomDoesntFits && topDoesntFits))
+	{
+		// Doesn't fits in the monitor work area :(
+		return true;
+	}
+
+	// Offset the rect so that it is completely in the work area
+	int x_offset = 0;
+	if (rightDoesntFits)
+	{
+		x_offset = workArea.right - coords.right; // Negative offset
+	}
+	else if (leftDoesntFits)
+	{
+		x_offset = workArea.left - coords.left;
+	}
+
+	int y_offset = 0;
+	if (bottomDoesntFits)
+	{
+		y_offset = workArea.bottom - coords.bottom; // Negative offset
+	}
+	else if (topDoesntFits)
+	{
+		y_offset = workArea.top - coords.top;
+	}
+
+	win32::OffsetRect(coords, x_offset, y_offset);
+	x = coords.left;
+	y = coords.top;
+
+	return true;
+}
+
 LRESULT BaseXamlPageHost::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -46,54 +113,28 @@ LRESULT BaseXamlPageHost::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam
 	case WM_NCCALCSIZE:
 		return 0;
 
-	case WM_DPICHANGED:
-		PositionWindow(*reinterpret_cast<RECT *>(lParam));
-		break;
+	case WM_DWMCOMPOSITIONCHANGED:
+		UpdateFrame();
+		return 0;
 	}
 
 	return MessageWindow::MessageHandler(uMsg, wParam, lParam);
 }
 
-RECT BaseXamlPageHost::CalculateWindowPosition(winrt::Windows::Foundation::Size size)
+void BaseXamlPageHost::ResizeWindow(int x, int y, int width, int height, bool move)
 {
-	// get primary monitor
-	const HMONITOR mon = MonitorFromPoint({ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
-	MONITORINFO mi = { sizeof(mi) };
-	if (!GetMonitorInfo(mon, &mi))
+	if (!SetWindowPos(m_interopWnd, nullptr, 0, 0, width, height, SWP_SHOWWINDOW))
 	{
-		// no error info provided
-		throw winrt::hresult_error(E_FAIL);
+		LastErrorHandle(spdlog::level::warn, L"Failed to set interop window position");
 	}
 
-	const float scale = GetDpiScale(mon);
-	size.Height *= scale;
-	size.Width *= scale;
-
-	RECT temp;
-	temp.left = static_cast<LONG>((mi.rcWork.right - mi.rcWork.left - size.Width) / 2) + mi.rcWork.left;
-	temp.right = temp.left + static_cast<LONG>(size.Width);
-
-	temp.top = static_cast<LONG>((mi.rcWork.bottom - mi.rcWork.top - size.Height) / 2) + mi.rcWork.top;
-	temp.bottom = temp.top + static_cast<LONG>(size.Height);
-
-	return temp;
-}
-
-void BaseXamlPageHost::PositionWindow(const RECT &rect, bool showWindow)
-{
-	winrt::check_bool(SetWindowPos(m_interopWnd, Window::NullWindow, 0, 0, rect.right - rect.left, rect.bottom - rect.top, showWindow ? SWP_SHOWWINDOW : 0));
-	winrt::check_bool(SetWindowPos(m_WindowHandle, Window::NullWindow, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, showWindow ? SWP_SHOWWINDOW | SWP_FRAMECHANGED : 0));
-}
-
-void BaseXamlPageHost::PositionInteropWindow(int x, int y)
-{
-	if (!SetWindowPos(m_interopWnd, Window::NullWindow, 0, 0, x, y, 0))
+	if (!SetWindowPos(m_WindowHandle, nullptr, x, y, width, height, (move ? 0 : SWP_NOMOVE) | SWP_NOACTIVATE))
 	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to set position of interop window.");
+		LastErrorHandle(spdlog::level::warn, L"Failed to set host window position");
 	}
 }
 
-void BaseXamlPageHost::Flash() noexcept
+void BaseXamlPageHost::Flash()
 {
 	FLASHWINFO fwi = {
 		.cbSize = sizeof(fwi),
@@ -101,17 +142,16 @@ void BaseXamlPageHost::Flash() noexcept
 		.dwFlags = FLASHW_ALL | FLASHW_TIMERNOFG
 	};
 
-	FlashWindowEx(&fwi);
+	if (!FlashWindowEx(&fwi))
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to flash window");
+	}
 }
 
 BaseXamlPageHost::BaseXamlPageHost(Util::null_terminated_wstring_view className, HINSTANCE hInst) :
-	MessageWindow(className, { }, hInst, WS_OVERLAPPED),
-	m_manager(nullptr),
-	m_source(nullptr)
+	MessageWindow(className, { }, hInst, WS_OVERLAPPED)
 {
-	winrt::init_apartment(winrt::apartment_type::single_threaded);
-	m_manager = WindowsXamlManager::InitializeForCurrentThread();
-	m_source = { };
+	UpdateFrame();
 
 	auto nativeSource = m_source.as<IDesktopWindowXamlSourceNative2>();
 	winrt::check_hresult(nativeSource->AttachToWindow(m_WindowHandle));

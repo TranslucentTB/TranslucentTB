@@ -11,7 +11,7 @@ IAsyncOperation<bool> StartupManager::AcquireTask() try
 {
 	if (!m_StartupTask)
 	{
-		m_StartupTask = (co_await StartupTask::GetForCurrentPackageAsync()).GetAt(0);
+		m_StartupTask = co_await StartupTask::GetAsync(APP_NAME);
 	}
 
 	co_return true;

@@ -1,8 +1,8 @@
 #pragma once
 #include "basexamlpagehost.hpp"
-
 #include <concepts>
 #include <limits>
+#include <ShObjIdl_core.h>
 #include <string>
 
 #include "winrt.hpp"
@@ -10,6 +10,7 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.UI.Xaml.h>
 #include <winrt/Windows.UI.Xaml.Hosting.h>
+#include <winrt/Windows.System.h>
 #include <winrt/TranslucentTB.Xaml.Pages.h>
 #include "redefgetcurrenttime.h"
 
@@ -22,8 +23,19 @@ requires std::derived_from<T, winrt::impl::base_one<T, winrt::TranslucentTB::Xam
 class XamlPageHost final : public BaseXamlPageHost {
 private:
 	T m_content;
+	winrt::Windows::System::DispatcherQueue m_Dispatcher;
+
 	winrt::event_token m_TitleChangedToken;
 	typename T::Closed_revoker m_ClosedRevoker;
+
+	typename T::LayoutUpdated_revoker m_LayoutUpdatedRevoker;
+	winrt::Windows::Foundation::EventHandler<winrt::Windows::Foundation::IInspectable> m_LayoutUpdatedHandler = { this, &XamlPageHost::OnXamlLayoutChanged };
+
+	bool m_PendingSizeUpdate = false;
+	winrt::Windows::System::DispatcherQueueHandler m_SizeUpdater = { this, &XamlPageHost::UpdateWindowSize };
+
+	bool m_Initial = true;
+	const xaml_startup_position m_Position;
 
 	static constexpr std::wstring_view ExtractTypename()
 	{
@@ -45,7 +57,103 @@ private:
 		return class_name;
 	}
 
-	inline void SetTitle(...)
+	inline LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override
+	{
+		switch (uMsg)
+		{
+		case WM_SYSCOMMAND:
+			if (wParam == SC_CLOSE)
+			{
+				if (!m_content.RequestClose())
+				{
+					Flash();
+				}
+
+				return 0;
+			}
+			break;
+
+		case WM_SETTINGCHANGE:
+			UpdateTheme();
+			break;
+
+		case WM_CLOSE:
+			if (!m_content.RequestClose())
+			{
+				Flash();
+			}
+
+			return 0;
+		}
+
+		return BaseXamlPageHost::MessageHandler(uMsg, wParam, lParam);
+	}
+
+	inline void OnXamlLayoutChanged(...)
+	{
+		if (!m_PendingSizeUpdate)
+		{
+			m_PendingSizeUpdate = m_Dispatcher.TryEnqueue(winrt::Windows::System::DispatcherQueuePriority::Low, m_SizeUpdater);
+		}
+	}
+
+	inline void UpdateWindowSize()
+	{
+		m_LayoutUpdatedRevoker.revoke();
+		const auto guard = wil::scope_exit([this]
+		{
+			m_PendingSizeUpdate = false;
+			m_LayoutUpdatedRevoker = m_content.LayoutUpdated(winrt::auto_revoke, m_LayoutUpdatedHandler);
+		});
+
+		POINT cursor = { 0, 0 };
+		const HMONITOR mon = !m_Initial ? monitor() : GetInitialMonitor(cursor, m_Position);
+		MONITORINFO info = { sizeof(info) };
+		if (!GetMonitorInfo(mon, &info))
+		{
+			LastErrorHandle(spdlog::level::warn, L"Failed to get monitor info");
+			return;
+		}
+
+		const auto scale = GetDpiScale(mon);
+		winrt::Windows::Foundation::Size size = {
+			(info.rcWork.right - info.rcWork.left) * scale,
+			(info.rcWork.bottom - info.rcWork.top) * scale
+		};
+
+		m_content.Measure(size);
+		size = m_content.DesiredSize();
+		m_content.UpdateLayout(); // prevent the call to Measure from firing a LayoutUpdated event
+
+		const auto newHeight = static_cast<int>(size.Height * scale);
+		const auto newWidth = static_cast<int>(size.Width * scale);
+
+		const auto wndRect = rect();
+		if (wndRect && (wndRect->bottom - wndRect->top != newHeight || wndRect->right - wndRect->left != newWidth || m_Initial))
+		{
+			int x = wndRect->left, y = wndRect->top;
+			bool move = false;
+			if (!m_Initial)
+			{
+				move = AdjustWindowPosition(x, y, newWidth, newHeight, info.rcWork);
+			}
+			else
+			{
+				CalculateInitialPosition(x, y, newWidth, newHeight, cursor, info.rcWork, m_Position);
+				move = true;
+			}
+
+			ResizeWindow(x, y, newWidth, newHeight, move);
+
+			if (m_Initial)
+			{
+				show();
+				m_Initial = false;
+			}
+		}
+	}
+
+	inline void UpdateTitle(...)
 	{
 		if (!SetWindowText(m_WindowHandle, m_content.Title().c_str()))
 		{
@@ -53,7 +161,7 @@ private:
 		}
 	}
 
-	inline void SetTheme()
+	inline void UpdateTheme()
 	{
 		if (DynamicLoader::uxtheme())
 		{
@@ -66,109 +174,56 @@ private:
 		}
 	}
 
-	inline LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override
+	void OnClose()
 	{
-		switch (uMsg)
-		{
-		case WM_SIZE:
-		{
-			const int x = LOWORD(lParam);
-			const int y = HIWORD(lParam);
-			PositionInteropWindow(x, y);
+		delete this;
+	}
 
-			const float scale = GetDpiScale(monitor());
-			m_content.Arrange({ 0, 0, x / scale, y / scale });
-			return 0;
-		}
+	inline ~XamlPageHost()
+	{
+		// hide the window before tearing down everything
+		// prevents flashing white and makes it seem more reactive.
+		show(SW_HIDE);
 
-		case WM_SYSCOMMAND:
-			if (wParam == SC_CLOSE)
-			{
-				if (m_content.IsClosable())
-				{
-					m_content.RequestClose();
-					Flash();
-				}
-
-				return 0;
-			}
-			break;
-
-		case WM_SETTINGCHANGE:
-			// can't set this on the application, it throws unsupported operation
-			SetTheme();
-			break;
-
-		case WM_CLOSE:
-			if (m_content.IsClosable())
-			{
-				m_content.RequestClose();
-				Flash();
-			}
-
-			return 0;
-		}
-
-		return BaseXamlPageHost::MessageHandler(uMsg, wParam, lParam);
+		source().Content(nullptr);
+		m_ClosedRevoker.revoke();
+		m_LayoutUpdatedRevoker.revoke();
+		m_content.UnregisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), std::exchange(m_TitleChangedToken.value, 0));
+		m_content = nullptr;
 	}
 
 public:
 	template<typename... Args>
-	inline XamlPageHost(HINSTANCE hInst, Args&&... args) :
+	inline XamlPageHost(HINSTANCE hInst, xaml_startup_position position, winrt::Windows::System::DispatcherQueue dispatcher, Args&&... args) :
 		BaseXamlPageHost(GetClassName(), hInst),
-		m_content(std::forward<Args>(args)...)
+		m_content(std::forward<Args>(args)...),
+		m_Dispatcher(std::move(dispatcher)),
+		m_Position(position)
 	{
-		SetTheme();
+		UpdateTheme();
+		UpdateTitle();
+
+		m_TitleChangedToken.value = m_content.RegisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), { this, &XamlPageHost::UpdateTitle });
+		m_LayoutUpdatedRevoker = m_content.LayoutUpdated(winrt::auto_revoke, m_LayoutUpdatedHandler);
+		m_ClosedRevoker = m_content.Closed(winrt::auto_revoke, { this, &XamlPageHost::OnClose });
+
 		source().Content(m_content);
 
-		SetTitle();
-		m_TitleChangedToken.value = m_content.RegisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), { this, &XamlPageHost::SetTitle });
-		m_ClosedRevoker = m_content.Closed(winrt::auto_revoke, []
+		if (const auto initWithWnd = m_content.try_as<IInitializeWithWindow>())
 		{
-			PostQuitMessage(0);
-		});
-
-		// Magic that gives us shadows
-		const MARGINS margins = { 1 };
-		HresultVerify(DwmExtendFrameIntoClientArea(m_WindowHandle, &margins), spdlog::level::warn, L"Failed to extend frame into client area");
-
-		// TODO: pass size of work area rather than infinite
-		m_content.Measure({ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() });
-		PositionWindow(CalculateWindowPosition(m_content.DesiredSize()), true);
-
-		if (!UpdateWindow(m_WindowHandle))
-		{
-			MessagePrint(spdlog::level::warn, L"Failed to update window");
+			winrt::check_hresult(initWithWnd->Initialize(m_WindowHandle));
 		}
 
-		if (!SetForegroundWindow(m_WindowHandle))
-		{
-			MessagePrint(spdlog::level::warn, L"Failed to set foreground window");
-		}
-
-		// TODO: we get a flash of white when creating the window
-		// TODO: window not fluent and not keyboard interactible on first opening
-		// TODO: clicking in the window to make it active and then pressing alt-f4 doesn't works (but alt-tabbing or the taskbar tray icon does)
+		// TODO: keyboard focus issues
+		// todo: react to dpi change
+		// draggable titlebar
+		// set foreground
+		// not acrylic on first open
 	}
+
 
 	inline constexpr T &content() noexcept
 	{
 		return m_content;
 	}
-
-	inline ~XamlPageHost()
-	{
-		// hide the window before destructing the XAML stuff to avoid a flash of white
-		show(SW_HIDE);
-
-		source().Content(nullptr);
-		m_ClosedRevoker.revoke();
-		m_content.UnregisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), std::exchange(m_TitleChangedToken.value, 0));
-		m_content = nullptr;
-
-		// TODO: we are leaking memory
-	}
-
-	XamlPageHost(const XamlPageHost &) = delete;
-	XamlPageHost &operator =(const XamlPageHost &) = delete;
 };

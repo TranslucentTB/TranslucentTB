@@ -66,7 +66,6 @@
     <CppWinRTFastAbi>true</CppWinRTFastAbi>
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
-    <ComputeCompileInputsTargets>$(ComputeCompileInputsTargets);EnableWinRTLeanAndMean</ComputeCompileInputsTargets>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -141,8 +140,7 @@
       <IntelJCCErratum>true</IntelJCCErratum>
     </ClCompile>
     <Link>
-      <!-- Enable shadow stacks -->
-      <AdditionalOptions>/CETCOMPAT %(AdditionalOptions)</AdditionalOptions>
+      <CETCompat>true</CETCompat>
     </Link>
   </ItemDefinitionGroup>
 
@@ -177,6 +175,9 @@
       <!-- RapidJSON -->
       <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING=1;RAPIDJSON_ERROR_CHARTYPE=wchar_t;RAPIDJSON_ERROR_STRING=UTIL_WIDEN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
+      <!-- member_thunk -->
+      <PreprocessorDefinitions>MEMBER_THUNK_DEFAULT_HEAP_SAFETY=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+
       <!-- spdlog -->
       <PreprocessorDefinitions>SPDLOG_DISABLE_DEFAULT_LOGGER;SPDLOG_FMT_EXTERNAL;SPDLOG_NO_NAME;SPDLOG_NO_THREAD_ID;SPDLOG_NO_TLS;SPDLOG_WCHAR_TO_UTF8_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
@@ -184,18 +185,9 @@
       <PreprocessorDefinitions>RESULT_SUPPRESS_STATIC_INITIALIZERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
       <!-- Windows -->
-      <PreprocessorDefinitions>_HIDE_GLOBAL_ASYNC_STATUS;STRICT_TYPED_ITEMIDS;NOMINMAX;_WINDOWS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_HIDE_GLOBAL_ASYNC_STATUS;STRICT_TYPED_ITEMIDS;NOMINMAX;_WINDOWS;WIN32_LEAN_AND_MEAN;WINRT_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
-
-  <!-- Enable lean and mean WinRT only if the project does not contains files needing full WinRT -->
-  <Target Name="EnableWinRTLeanAndMean" Condition="'@(ClCompile)' != ''">
-    <ItemGroup Condition="'@(Page)' == '' And '@(ApplicationDefinition)' == ''">
-      <ClCompile>
-        <PreprocessorDefinitions>WINRT_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      </ClCompile>
-    </ItemGroup>
-  </Target>
 
   <ImportGroup Label="Shared">
     <Import Project="Common.vcxitems" Label="Shared" />

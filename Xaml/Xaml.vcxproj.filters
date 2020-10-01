@@ -31,11 +31,13 @@
     <Page Include="Pages\FramelessPage.xaml" />
     <Page Include="Controls\ChromeButton.xaml" />
     <Page Include="Controls\ActionList.xaml" />
+    <Page Include="Pages\ColorPickerPage.xaml" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="Models\Action.idl" />
+    <Midl Include="Pages\FramelessPageWithMessageDialog.idl" />
   </ItemGroup>
 </Project>

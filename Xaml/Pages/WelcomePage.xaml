@@ -26,8 +26,9 @@
                     You can alter this behavior, and many other settings, by editing the configuration file now or by using the tray icon (which will appear after accepting the license).
                 </Paragraph>
                 <Paragraph Margin="0,6,0,0">
-                    Before using TranslucentTB, you must agree to the terms set forth by our license, the
-                    <Hyperlink NavigateUri="https://github.com/TranslucentTB/TranslucentTB/blob/release/LICENSE.md" ToolTipService.ToolTip="Click here to open the license terms in your browser">GPLv3</Hyperlink>. Press "I agree" below to continue.
+                    Before using TranslucentTB, you must agree to <Hyperlink NavigateUri="https://translucenttb.github.io/privacy-policy" ToolTipService.ToolTip="Click here to open the privacy policy in your browser">our privacy policy</Hyperlink>.
+                    The privacy policy is very short and written to explicitly protect all your personal data.
+                    Press "I agree" below to continue.
                 </Paragraph>
             </RichTextBlock>
 

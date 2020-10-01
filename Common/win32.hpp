@@ -195,10 +195,18 @@ public:
 		}
 	}
 
-	static constexpr bool RectFitsInRect(const RECT &outer, const RECT &inner)
+	static constexpr bool RectFitsInRect(const RECT &outer, const RECT &inner) noexcept
 	{
 		return inner.right <= outer.right && inner.left >= outer.left &&
 			outer.top <= inner.top && outer.bottom >= inner.bottom;
+	}
+
+	static constexpr void OffsetRect(RECT &rect, int x, int y) noexcept
+	{
+		rect.left += x;
+		rect.right += x;
+		rect.top += y;
+		rect.bottom += y;
 	}
 
 	inline static bool IsSameFilename(std::wstring_view l, std::wstring_view r)

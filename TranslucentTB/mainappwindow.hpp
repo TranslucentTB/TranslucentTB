@@ -2,7 +2,6 @@
 #include "arch.h"
 #include "tray/traycontextmenu.hpp"
 #include <cstddef>
-#include <optional>
 #include <spdlog/common.h>
 #include <tuple>
 #include <windef.h>
@@ -17,10 +16,6 @@ class MainAppWindow final : public TrayContextMenu {
 private:
 	Application &m_App;
 	bool m_HideIconOverride;
-
-#ifndef DO_NOT_USE_GAME_SDK
-	bool PreTranslateMessage(const MSG &msg) override;
-#endif
 
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
@@ -47,7 +42,7 @@ private:
 	void Exit();
 
 public:
-	MainAppWindow(Application &app, bool hideIconOverride, HINSTANCE hInstance);
+	MainAppWindow(Application &app, bool hideIconOverride, bool hideStartup, HINSTANCE hInstance);
 
 	void UpdateTrayVisibility(bool visible);
 	void RemoveHideTrayIconOverride();

@@ -45,7 +45,4 @@ public:
 	void Hide();
 
 	~TrayIcon();
-
-	inline TrayIcon(const TrayIcon &) = delete;
-	inline TrayIcon &operator =(const TrayIcon &) = delete;
 };
