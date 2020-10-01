@@ -17,7 +17,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="config\color.cpp" />
+    <ClCompile Include="util\color.cpp" />
     <ClCompile Include="util\numbers.cpp" />
     <ClCompile Include="util\strings.cpp" />
     <ClCompile Include="win32.cpp" />

@@ -9,13 +9,13 @@
 
 #include "rapidjsonhelper.hpp"
 #include "../undoc/user32.hpp"
-#include "color.hpp"
+#include "../util/color.hpp"
 #include "../util/fmt.hpp"
 #include "../util/to_string_view.hpp"
 
 struct TaskbarAppearance {
 	ACCENT_STATE Accent;
-	Color Color;
+	Util::Color Color;
 
 	template<class Writer>
 	inline void Serialize(Writer &writer) const
@@ -40,7 +40,7 @@ struct TaskbarAppearance {
 			const auto colorStr = RapidJSONHelper::ValueToStringView(color);
 			try
 			{
-				Color = Color::FromString(colorStr);
+				Color = Util::Color::FromString(colorStr);
 			}
 			catch (...)
 			{
