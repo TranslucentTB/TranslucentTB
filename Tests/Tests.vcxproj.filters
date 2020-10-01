@@ -20,4 +20,7 @@
       <Filter>Util Tests</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
 </Project>
