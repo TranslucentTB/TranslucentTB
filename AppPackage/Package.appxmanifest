@@ -7,7 +7,7 @@
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   <Dependencies>
-    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.18362.0" MaxVersionTested="10.0.18362.0" />
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.18362.0" MaxVersionTested="10.0.19041.0" />
   </Dependencies>
   <Resources>
     <Resource Language="x-generate" />
@@ -24,12 +24,12 @@
         </uap:DefaultTile>
       </uap:VisualElements>
       <Extensions>
-        <uap3:Extension Category="windows.appExecutionAlias" Executable="TranslucentTB.exe" EntryPoint="Windows.FullTrustApplication">
+        <uap3:Extension Category="windows.appExecutionAlias" Executable="$targetnametoken$.exe" EntryPoint="$targetentrypoint$">
           <uap3:AppExecutionAlias>
-            <desktop:ExecutionAlias Alias="TranslucentTB.exe" />
+            <desktop:ExecutionAlias Alias="$targetnametoken$.exe" />
           </uap3:AppExecutionAlias>
         </uap3:Extension>
-        <desktop:Extension Category="windows.startupTask" Executable="TranslucentTB.exe" EntryPoint="Windows.FullTrustApplication">
+        <desktop:Extension Category="windows.startupTask" Executable="$targetnametoken$.exe" EntryPoint="$targetentrypoint$">
           <desktop:StartupTask TaskId="TranslucentTB" Enabled="false" DisplayName="TranslucentTB" />
         </desktop:Extension>
       </Extensions>

@@ -229,7 +229,10 @@ void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance confi
 		sizeof(policy)
 	};
 
-	SetWindowCompositionAttribute(window, &data);
+	if (!SetWindowCompositionAttribute(window, &data))
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to set window composition attribute");
+	}
 }
 
 void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)

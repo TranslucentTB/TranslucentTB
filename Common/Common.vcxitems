@@ -16,7 +16,7 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)appinfo.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arch.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)config\color.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\color.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config\config.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config\optionaltaskbarappearance.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config\rapidjsonhelper.hpp" />

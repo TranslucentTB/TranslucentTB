@@ -57,8 +57,8 @@
     <!-- Versions -->
     <PlatformToolset>v142</PlatformToolset>
     <VCProjectVersion>16.0</VCProjectVersion>
-    <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <MinimumVisualStudioVersion>16.8</MinimumVisualStudioVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformMinVersion>10.0.18362.0</WindowsTargetPlatformMinVersion>
 
     <!-- WinRT -->
@@ -165,7 +165,7 @@
 
       <!-- Warnings and errors -->
       <WarningLevel>Level4</WarningLevel>
-      <DisableSpecificWarnings>4200;4275;4324;4840;5054</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4275;5054</DisableSpecificWarnings>
       <UseFullPaths>true</UseFullPaths>
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
 

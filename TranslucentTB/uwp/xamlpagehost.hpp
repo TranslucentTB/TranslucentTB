@@ -89,7 +89,7 @@ private:
 		return BaseXamlPageHost::MessageHandler(uMsg, wParam, lParam);
 	}
 
-	inline void OnXamlLayoutChanged(...)
+	inline void OnXamlLayoutChanged(const winrt::Windows::Foundation::IInspectable &, const winrt::Windows::Foundation::IInspectable &)
 	{
 		if (!m_PendingSizeUpdate)
 		{
@@ -153,7 +153,7 @@ private:
 		}
 	}
 
-	inline void UpdateTitle(...)
+	inline void UpdateTitle(const winrt::Windows::UI::Xaml::DependencyObject &, const winrt::Windows::UI::Xaml::DependencyProperty &)
 	{
 		if (!SetWindowText(m_WindowHandle, m_content.Title().c_str()))
 		{
@@ -201,7 +201,7 @@ public:
 		m_Position(position)
 	{
 		UpdateTheme();
-		UpdateTitle();
+		UpdateTitle(nullptr, nullptr);
 
 		m_TitleChangedToken.value = m_content.RegisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), { this, &XamlPageHost::UpdateTitle });
 		m_LayoutUpdatedRevoker = m_content.LayoutUpdated(winrt::auto_revoke, m_LayoutUpdatedHandler);
