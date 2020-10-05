@@ -10,6 +10,7 @@
 #include <winrt/Windows.UI.Xaml.Hosting.h>
 #include "redefgetcurrenttime.h"
 
+#include "../../ProgramLog/error/winrt.hpp"
 #include "xamlpagehost.hpp"
 
 class XamlContentManager {
@@ -43,8 +44,22 @@ public:
 			InitializeXamlHosting();
 		}
 
-		// intentional leak, host manages its own lifetime
-		const auto host = new XamlPageHost<T>(m_hInst, pos, m_Dispatcher, std::forward<Args>(args)...);
-		return host->content();
+		try
+		{
+			// intentional leak, host manages its own lifetime
+			const auto host = new XamlPageHost<T>(m_hInst, pos, m_Dispatcher, std::forward<Args>(args)...);
+			return host->content();
+		}
+		HresultErrorCatch(spdlog::level::critical, L"Failed to create XAML window");
+	}
+
+	inline ~XamlContentManager()
+	{
+		m_App = nullptr;
+		if (m_Manager)
+		{
+			m_Manager.Close();
+			m_Manager = nullptr;
+		}
 	}
 };

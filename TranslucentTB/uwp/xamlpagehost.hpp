@@ -176,15 +176,18 @@ private:
 
 	void OnClose()
 	{
-		delete this;
+		// hide the window asap to give the impression of responsiveness
+		show(SW_HIDE);
+
+		// dispatch the deletion because deleting things here makes the XAML framework very angry
+		m_Dispatcher.TryEnqueue(winrt::Windows::System::DispatcherQueuePriority::Low, [this]
+		{
+			delete this;
+		});
 	}
 
 	inline ~XamlPageHost()
 	{
-		// hide the window before tearing down everything
-		// prevents flashing white and makes it seem more reactive.
-		show(SW_HIDE);
-
 		source().Content(nullptr);
 		m_ClosedRevoker.revoke();
 		m_LayoutUpdatedRevoker.revoke();

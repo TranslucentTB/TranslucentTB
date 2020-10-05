@@ -30,9 +30,11 @@
   </application>
 
   <file name="Xaml.dll" hashalg="SHA1" xmlns:winrt="urn:schemas-microsoft-com:winrt.v1">
-    <winrt:activatableClass name="TranslucentTB.Xaml.Pages.WelcomePage" threadingModel="both" />
-    <winrt:activatableClass name="TranslucentTB.Xaml.Pages.FramelessPage" threadingModel="both" />
     <winrt:activatableClass name="TranslucentTB.Xaml.App" threadingModel="both" />
+    <winrt:activatableClass name="TranslucentTB.Xaml.Pages.FramelessPage" threadingModel="both" />
+    <winrt:activatableClass name="TranslucentTB.Xaml.Pages.FramelessPageWithMessageDialog" threadingModel="both" />
+    <winrt:activatableClass name="TranslucentTB.Xaml.Pages.WelcomePage" threadingModel="both" />
+    <winrt:activatableClass name="TranslucentTB.Xaml.Pages.ColorPickerPage" threadingModel="both" />
   </file>
 
 </assembly>

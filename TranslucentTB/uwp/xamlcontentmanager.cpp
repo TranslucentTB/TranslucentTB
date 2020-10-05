@@ -3,22 +3,21 @@
 #include <winrt/Windows.UI.Core.h>
 
 #include "../../ProgramLog/error/win32.hpp"
-#include "../../ProgramLog/error/winrt.hpp"
 #include "window.hpp"
 
 void XamlContentManager::InitializeXamlHosting()
 {
 	try
 	{
-		m_App = { };
-	}
-	HresultErrorCatch(spdlog::level::critical, L"Failed to load XAML resources");
-
-	try
-	{
 		m_Manager = winrt::Windows::UI::Xaml::Hosting::WindowsXamlManager::InitializeForCurrentThread();
 	}
 	HresultErrorCatch(spdlog::level::critical, L"Failed to initialize WindowsXamlManager");
+
+	try
+	{
+		m_App = { };
+	}
+	HresultErrorCatch(spdlog::level::critical, L"Failed to load XAML resources");
 
 	Window coreWin;
 	try
