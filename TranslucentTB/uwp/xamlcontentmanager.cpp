@@ -7,17 +7,19 @@
 
 void XamlContentManager::InitializeXamlHosting()
 {
-	try
-	{
-		m_Manager = winrt::Windows::UI::Xaml::Hosting::WindowsXamlManager::InitializeForCurrentThread();
-	}
-	HresultErrorCatch(spdlog::level::critical, L"Failed to initialize WindowsXamlManager");
-
+	// Order is important.
+	// We get catastrophic failures if we initialize the WindowsXamlManager before our app. 
 	try
 	{
 		m_App = { };
 	}
 	HresultErrorCatch(spdlog::level::critical, L"Failed to load XAML resources");
+
+	try
+	{
+		m_Manager = winrt::Windows::UI::Xaml::Hosting::WindowsXamlManager::InitializeForCurrentThread();
+	}
+	HresultErrorCatch(spdlog::level::critical, L"Failed to initialize WindowsXamlManager");
 
 	Window coreWin;
 	try

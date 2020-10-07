@@ -39,7 +39,7 @@ public:
 	template<typename T, typename... Args>
 	T CreateXamlWindow(xaml_startup_position pos, Args&&... args)
 	{
-		if (!m_Manager || !m_App)
+		if (!m_App || !m_Manager)
 		{
 			InitializeXamlHosting();
 		}
@@ -55,11 +55,11 @@ public:
 
 	inline ~XamlContentManager()
 	{
-		m_App = nullptr;
 		if (m_Manager)
 		{
 			m_Manager.Close();
 			m_Manager = nullptr;
 		}
+		m_App = nullptr;
 	}
 };
