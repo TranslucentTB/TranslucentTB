@@ -39,6 +39,12 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 		void PressedBackground(const Windows::UI::Color &color);
 		static Windows::UI::Xaml::DependencyProperty PressedBackgroundProperty() noexcept;
 
+		bool IsTogglable();
+		void IsTogglable(bool value);
+		static Windows::UI::Xaml::DependencyProperty IsTogglableProperty() noexcept;
+
+		void OnToggle();
+
 	private:
 		static Windows::UI::Xaml::DependencyProperty s_IconProperty;
 		static Windows::UI::Xaml::DependencyProperty s_NormalForegroundProperty;
@@ -47,6 +53,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 		static Windows::UI::Xaml::DependencyProperty s_HoverBackgroundProperty;
 		static Windows::UI::Xaml::DependencyProperty s_PressedForegroundProperty;
 		static Windows::UI::Xaml::DependencyProperty s_PressedBackgroundProperty;
+		static Windows::UI::Xaml::DependencyProperty s_IsTogglableProperty;
 	};
 }
 

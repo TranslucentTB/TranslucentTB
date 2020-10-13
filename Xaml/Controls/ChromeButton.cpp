@@ -69,6 +69,14 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 			nullptr
 	);
 
+	DependencyProperty ChromeButton::s_IsTogglableProperty =
+		DependencyProperty::Register(
+			UTIL_STRINGIFY(IsTogglable),
+			xaml_typename<bool>(),
+			xaml_typename<class_type>(),
+			nullptr
+	);
+
 	ChromeButton::ChromeButton()
 	{
 		InitializeComponent();
@@ -177,5 +185,28 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 	DependencyProperty ChromeButton::PressedBackgroundProperty() noexcept
 	{
 		return s_PressedBackgroundProperty;
+	}
+
+	bool ChromeButton::IsTogglable()
+	{
+		return unbox_value<bool>(GetValue(s_IsTogglableProperty));
+	}
+
+	void ChromeButton::IsTogglable(bool value)
+	{
+		SetValue(s_IsTogglableProperty, box_value(value));
+	}
+
+	Windows::UI::Xaml::DependencyProperty ChromeButton::IsTogglableProperty() noexcept
+	{
+		return s_IsTogglableProperty;
+	}
+
+	void ChromeButton::OnToggle()
+	{
+		if (IsTogglable())
+		{
+			base_type::OnToggle();
+		}
 	}
 }

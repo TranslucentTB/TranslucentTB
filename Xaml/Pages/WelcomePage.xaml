@@ -19,14 +19,16 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.ColumnSpan="2" Orientation="Vertical" Spacing="15">
+        <StackPanel Grid.ColumnSpan="2" Orientation="Vertical" Spacing="10">
+            <TextBlock Style="{ThemeResource SubheaderTextBlockStyle}" Text="{x:Bind Title}" TextLineBounds="Tight" />
             <RichTextBlock TextWrapping="Wrap" IsTextSelectionEnabled="False">
                 <Paragraph>
                     By default, TranslucentTB darkens the taskbar a bit when there is a maximised window.
                     You can alter this behavior, and many other settings, by editing the configuration file now or by using the tray icon (which will appear after accepting the license).
                 </Paragraph>
                 <Paragraph Margin="0,6,0,0">
-                    Before using TranslucentTB, you must agree to <Hyperlink NavigateUri="https://translucenttb.github.io/privacy-policy" ToolTipService.ToolTip="Click here to open the privacy policy in your browser">our privacy policy</Hyperlink>.
+                    Before using TranslucentTB, you must agree to
+                    <Hyperlink NavigateUri="https://translucenttb.github.io/privacy-policy" ToolTipService.ToolTip="Click here to open the privacy policy in your browser">our privacy policy</Hyperlink>.
                     The privacy policy is very short and written to explicitly protect all your personal data.
                     Press "I agree" below to continue.
                 </Paragraph>

@@ -13,8 +13,9 @@ using namespace Windows::UI::Xaml;
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	ColorPickerPage::ColorPickerPage(const hstring &category, const Windows::UI::Color &currentColor) :
-		ColorPickerPageT<ColorPickerPage>(L"Do you want to save changes to the color?", APP_NAME)
+		ColorPickerPageT<ColorPickerPage>(L"Do you want to save changes to the color?")
 	{
+		TitlebarContent(single_threaded_observable_vector<Controls::ChromeButton>());
 		InitializeComponent();
 
 		Title(category + L" - Color picker - " APP_NAME);

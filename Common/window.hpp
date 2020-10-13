@@ -83,6 +83,8 @@ public:
 	static constexpr HWND NullWindow = nullptr;
 	inline static const HWND BroadcastWindow = HWND_BROADCAST;
 	inline static const HWND MessageOnlyWindow = HWND_MESSAGE;
+	inline static const HWND TopMostWindow = HWND_TOPMOST;
+	inline static const HWND NoTopMostWindow = HWND_NOTOPMOST;
 
 	class FindEnum;
 

@@ -25,15 +25,15 @@ private:
 	T m_content;
 	winrt::Windows::System::DispatcherQueue m_Dispatcher;
 
+	winrt::event_token m_AlwaysOnTopChangedToken;
 	winrt::event_token m_TitleChangedToken;
+	typename T::LayoutUpdated_revoker m_LayoutUpdatedRevoker;
 	typename T::Closed_revoker m_ClosedRevoker;
 
-	typename T::LayoutUpdated_revoker m_LayoutUpdatedRevoker;
 	winrt::Windows::Foundation::EventHandler<winrt::Windows::Foundation::IInspectable> m_LayoutUpdatedHandler = { this, &XamlPageHost::OnXamlLayoutChanged };
-
-	bool m_PendingSizeUpdate = false;
 	winrt::Windows::System::DispatcherQueueHandler m_SizeUpdater = { this, &XamlPageHost::UpdateWindowSize };
 
+	bool m_PendingSizeUpdate = false;
 	bool m_Initial = true;
 	const xaml_startup_position m_Position;
 
@@ -148,6 +148,10 @@ private:
 			if (m_Initial)
 			{
 				show();
+				if (!SetForegroundWindow(m_WindowHandle))
+				{
+					LastErrorHandle(spdlog::level::warn, L"Failed to set foreground window");
+				}
 				m_Initial = false;
 			}
 		}
@@ -158,6 +162,15 @@ private:
 		if (!SetWindowText(m_WindowHandle, m_content.Title().c_str()))
 		{
 			LastErrorHandle(spdlog::level::warn, L"Failed to set window title");
+		}
+	}
+
+	inline void UpdateAlwaysOnTop(const winrt::Windows::UI::Xaml::DependencyObject &, const winrt::Windows::UI::Xaml::DependencyProperty &)
+	{
+		const auto wnd = m_content.AlwaysOnTop() ? Window::TopMostWindow : Window::NoTopMostWindow;
+		if (!SetWindowPos(m_WindowHandle, wnd, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE))
+		{
+			LastErrorHandle(spdlog::level::warn, L"Failed to change window topmost state");
 		}
 	}
 
@@ -191,7 +204,9 @@ private:
 		source().Content(nullptr);
 		m_ClosedRevoker.revoke();
 		m_LayoutUpdatedRevoker.revoke();
+		m_LayoutUpdatedHandler = nullptr;
 		m_content.UnregisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), std::exchange(m_TitleChangedToken.value, 0));
+		m_content.UnregisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::AlwaysOnTopProperty(), std::exchange(m_AlwaysOnTopChangedToken.value, 0));
 		m_content = nullptr;
 	}
 
@@ -205,7 +220,9 @@ public:
 	{
 		UpdateTheme();
 		UpdateTitle(nullptr, nullptr);
+		UpdateAlwaysOnTop(nullptr, nullptr);
 
+		m_AlwaysOnTopChangedToken.value = m_content.RegisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::AlwaysOnTopProperty(), { this, &XamlPageHost::UpdateAlwaysOnTop });
 		m_TitleChangedToken.value = m_content.RegisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), { this, &XamlPageHost::UpdateTitle });
 		m_LayoutUpdatedRevoker = m_content.LayoutUpdated(winrt::auto_revoke, m_LayoutUpdatedHandler);
 		m_ClosedRevoker = m_content.Closed(winrt::auto_revoke, { this, &XamlPageHost::OnClose });
@@ -217,11 +234,14 @@ public:
 			HresultVerify(initWithWnd->Initialize(m_WindowHandle), spdlog::level::warn, L"Failed to initialize with window");
 		}
 
-		// TODO: keyboard focus issues
-		// todo: react to dpi change
+		// TODO:
 		// draggable titlebar
-		// set foreground
+		// focus window on open
+		// always on acrylic
+		// keyboard focus issues (setfocus?)
+		// react to dpi change
 		// not acrylic on first open
+		// the window shows up under the tray overflow
 	}
 
 

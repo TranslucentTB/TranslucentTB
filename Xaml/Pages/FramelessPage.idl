@@ -1,3 +1,5 @@
+import "Controls/ChromeButton.idl";
+
 namespace TranslucentTB.Xaml.Pages
 {
 	delegate void ClosedDelegate();
@@ -16,10 +18,16 @@ namespace TranslucentTB.Xaml.Pages
 		String Title;
 		static Windows.UI.Xaml.DependencyProperty TitleProperty { get; };
 
+		IObservableVector<TranslucentTB.Xaml.Controls.ChromeButton> TitlebarContent;
+		static Windows.UI.Xaml.DependencyProperty TitlebarContentProperty { get; };
+
 		Windows.UI.Xaml.UIElement UserContent;
 		static Windows.UI.Xaml.DependencyProperty UserContentProperty { get; };
 
 		Boolean IsClosable;
 		static Windows.UI.Xaml.DependencyProperty IsClosableProperty { get; };
+
+		Boolean AlwaysOnTop;
+		static Windows.UI.Xaml.DependencyProperty AlwaysOnTopProperty { get; };
 	}
 }

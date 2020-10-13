@@ -5,18 +5,35 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
+    mc:Ignorable="d">
 
-    <Grid x:DefaultBindMode="OneWay">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <Page.Background>
+        <AcrylicBrush BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemAltHighColor}" TintOpacity="0.3" FallbackColor="{ThemeResource SystemChromeLowColor}" />
+    </Page.Background>
 
-        <TextBlock Style="{ThemeResource SubheaderTextBlockStyle}" Text="{x:Bind Title}" Margin="15,6,15,0"/>
-        <controls:ChromeButton HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="{x:Bind IsClosable}" Click="CloseButtonClicked" Style="{ThemeResource CloseButtonStyle}" ToolTipService.ToolTip="Close">
-            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8BB;" FontSize="10" />
-        </controls:ChromeButton>
-        <ContentPresenter Grid.Row="1" Content="{x:Bind UserContent}" Margin="15,5,15,15" />
-    </Grid>
+    <RelativePanel x:DefaultBindMode="OneWay">
+        <Grid x:Name="Titlebar" Height="29" RelativePanel.AlignTopWithPanel="True" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.Background>
+                <AcrylicBrush BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemChromeAltHighColor}" TintOpacity="0.7" FallbackColor="{ThemeResource SystemAltHighColor}" />
+            </Grid.Background>
+
+            <TextBlock Grid.Column="0" Text="{x:Bind Title}" FontSize="12" VerticalAlignment="Center" Margin="9,0" TextLineBounds="Tight" />
+            <ItemsControl Grid.Column="1" ItemsSource="{x:Bind TitlebarContent}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+            <controls:ChromeButton Grid.Column="2" Visibility="{x:Bind IsClosable}" Click="CloseButtonClicked" Style="{ThemeResource CloseButtonStyle}" ToolTipService.ToolTip="Close">
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8BB;" FontSize="10" />
+            </controls:ChromeButton>
+        </Grid>
+        <ContentPresenter Content="{x:Bind UserContent}" Margin="15" RelativePanel.Below="Titlebar" RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True"/>
+    </RelativePanel>
 </Page>

@@ -1,5 +1,6 @@
 namespace TranslucentTB.Xaml.Models
 {
+	[bindable]
 	[default_interface]
 	[contentproperty("Icon")]
 	runtimeclass Action : Windows.UI.Xaml.Data.INotifyPropertyChanged

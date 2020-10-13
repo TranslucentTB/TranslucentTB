@@ -17,7 +17,15 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 			UTIL_STRINGIFY(Title),
 			xaml_typename<hstring>(),
 			xaml_typename<class_type>(),
-			PropertyMetadata { box_value(L"") }
+			nullptr
+	);
+
+	DependencyProperty FramelessPage::s_TitlebarContentProperty =
+		DependencyProperty::Register(
+			UTIL_STRINGIFY(TitlebarContent),
+			xaml_typename<Windows::Foundation::Collections::IObservableVector<Controls::ChromeButton>>(),
+			xaml_typename<class_type>(),
+			nullptr
 	);
 
 	DependencyProperty FramelessPage::s_UserContentProperty =
@@ -33,7 +41,15 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 			UTIL_STRINGIFY(IsClosable),
 			xaml_typename<bool>(),
 			xaml_typename<class_type>(),
-			PropertyMetadata { box_value(false) }
+			nullptr
+	);
+
+	DependencyProperty FramelessPage::s_AlwaysOnTopProperty =
+		DependencyProperty::Register(
+			UTIL_STRINGIFY(AlwaysOnTop),
+			xaml_typename<bool>(),
+			xaml_typename<class_type>(),
+			nullptr
 	);
 
 	FramelessPage::FramelessPage()
@@ -89,6 +105,21 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		return s_TitleProperty;
 	}
 
+	Windows::Foundation::Collections::IObservableVector<Controls::ChromeButton> FramelessPage::TitlebarContent()
+	{
+		return GetValue(s_TitlebarContentProperty).as<Windows::Foundation::Collections::IObservableVector<Controls::ChromeButton>>();
+	}
+
+	void FramelessPage::TitlebarContent(const Windows::Foundation::Collections::IObservableVector<Controls::ChromeButton> &content)
+	{
+		SetValue(s_TitlebarContentProperty, content);
+	}
+
+	Windows::UI::Xaml::DependencyProperty FramelessPage::TitlebarContentProperty() noexcept
+	{
+		return s_TitlebarContentProperty;
+	}
+
 	UIElement FramelessPage::UserContent()
 	{
 		return GetValue(s_UserContentProperty).as<UIElement>();
@@ -117,5 +148,20 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	DependencyProperty FramelessPage::IsClosableProperty() noexcept
 	{
 		return s_IsClosableProperty;
+	}
+
+	bool FramelessPage::AlwaysOnTop()
+	{
+		return unbox_value<bool>(GetValue(s_AlwaysOnTopProperty));
+	}
+
+	void FramelessPage::AlwaysOnTop(bool alwaysOnTop)
+	{
+		SetValue(s_AlwaysOnTopProperty, box_value(alwaysOnTop));
+	}
+
+	DependencyProperty FramelessPage::AlwaysOnTopProperty() noexcept
+	{
+		return s_AlwaysOnTopProperty;
 	}
 }

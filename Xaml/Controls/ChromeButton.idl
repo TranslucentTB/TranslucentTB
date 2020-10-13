@@ -2,7 +2,7 @@ namespace TranslucentTB.Xaml.Controls
 {
 	[default_interface]
 	[contentproperty("Icon")]
-	runtimeclass ChromeButton : Windows.UI.Xaml.Controls.Button
+	runtimeclass ChromeButton : Windows.UI.Xaml.Controls.Primitives.ToggleButton
 	{
 		ChromeButton();
 
@@ -26,5 +26,8 @@ namespace TranslucentTB.Xaml.Controls
 
 		Windows.UI.Color PressedBackground;
 		static Windows.UI.Xaml.DependencyProperty PressedBackgroundProperty { get; };
+
+		Boolean IsTogglable;
+		static Windows.UI.Xaml.DependencyProperty IsTogglableProperty { get; };
 	}
 }
