@@ -112,6 +112,7 @@
       <DependentUpon>Controls\ChromeButton.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="dependencyproperty.h" />
     <ClInclude Include="Pages\ColorPickerPage.h">
       <DependentUpon>Pages\ColorPickerPage.xaml</DependentUpon>
       <SubType>Code</SubType>

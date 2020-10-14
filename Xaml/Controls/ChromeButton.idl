@@ -1,3 +1,5 @@
+#include "..\dependencyproperty.h"
+
 namespace TranslucentTB.Xaml.Controls
 {
 	[default_interface]
@@ -6,28 +8,13 @@ namespace TranslucentTB.Xaml.Controls
 	{
 		ChromeButton();
 
-		Windows.UI.Xaml.Controls.IconElement Icon;
-		static Windows.UI.Xaml.DependencyProperty IconProperty { get; };
-
-		Windows.UI.Color NormalForeground;
-		static Windows.UI.Xaml.DependencyProperty NormalForegroundProperty { get; };
-
-		Windows.UI.Color NormalBackground;
-		static Windows.UI.Xaml.DependencyProperty NormalBackgroundProperty { get; };
-
-		Windows.UI.Color HoverForeground;
-		static Windows.UI.Xaml.DependencyProperty HoverForegroundProperty { get; };
-
-		Windows.UI.Color HoverBackground;
-		static Windows.UI.Xaml.DependencyProperty HoverBackgroundProperty { get; };
-
-		Windows.UI.Color PressedForeground;
-		static Windows.UI.Xaml.DependencyProperty PressedForegroundProperty { get; };
-
-		Windows.UI.Color PressedBackground;
-		static Windows.UI.Xaml.DependencyProperty PressedBackgroundProperty { get; };
-
-		Boolean IsTogglable;
-		static Windows.UI.Xaml.DependencyProperty IsTogglableProperty { get; };
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Xaml.Controls.IconElement, Icon);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Color, NormalForeground);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Color, NormalBackground);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Color, HoverForeground);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Color, HoverBackground);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Color, PressedForeground);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Color, PressedBackground);
+		DECL_DEPENDENCY_PROPERTY(Boolean, IsTogglable);
 	}
 }

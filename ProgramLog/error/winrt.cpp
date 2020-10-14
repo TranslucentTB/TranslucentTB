@@ -1,6 +1,7 @@
 #include "winrt.hpp"
 #include <wil/resource.h>
 
+#include "util/strings.hpp"
 #include "win32.hpp"
 
 void Error::impl::FormatIRestrictedErrorInfo(fmt::wmemory_buffer &buf, HRESULT result, BSTR description)

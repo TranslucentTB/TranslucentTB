@@ -14,7 +14,7 @@
 #include <winrt/TranslucentTB.Xaml.Pages.h>
 #include "redefgetcurrenttime.h"
 
-#include "util/strings.hpp"
+#include "util/string_macros.hpp"
 #include "../ProgramLog/error/win32.hpp"
 #include "undoc/dynamicloader.hpp"
 
@@ -237,7 +237,6 @@ public:
 		// TODO:
 		// draggable titlebar
 		// focus window on open
-		// always on acrylic
 		// keyboard focus issues (setfocus?)
 		// react to dpi change
 		// not acrylic on first open

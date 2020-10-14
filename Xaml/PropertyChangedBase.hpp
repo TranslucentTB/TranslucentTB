@@ -2,7 +2,7 @@
 #include "winrt.hpp"
 #include <winrt/Windows.UI.Xaml.Data.h>
 
-#include "util/strings.hpp"
+#include "util/string_macros.hpp"
 
 #define PROP_NAME UTIL_WIDEN(__FUNCTION__)
 

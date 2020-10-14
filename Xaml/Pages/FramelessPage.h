@@ -2,6 +2,7 @@
 
 #include "Pages/FramelessPage.g.h"
 #include "Controls/ChromeButton.h"
+#include "..\dependencyproperty.h"
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
@@ -17,34 +18,14 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 		void CloseButtonClicked(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
 
-		hstring Title();
-		void Title(const hstring &title);
-		static Windows::UI::Xaml::DependencyProperty TitleProperty() noexcept;
-
-		Windows::Foundation::Collections::IObservableVector<Controls::ChromeButton> TitlebarContent();
-		void TitlebarContent(const Windows::Foundation::Collections::IObservableVector<Controls::ChromeButton>& content);
-		static Windows::UI::Xaml::DependencyProperty TitlebarContentProperty() noexcept;
-
-		Windows::UI::Xaml::UIElement UserContent();
-		void UserContent(const Windows::UI::Xaml::UIElement &element);
-		static Windows::UI::Xaml::DependencyProperty UserContentProperty() noexcept;
-
-		bool IsClosable();
-		void IsClosable(bool closeable);
-		static Windows::UI::Xaml::DependencyProperty IsClosableProperty() noexcept;
-
-		bool AlwaysOnTop();
-		void AlwaysOnTop(bool alwaysOnTop);
-		static Windows::UI::Xaml::DependencyProperty AlwaysOnTopProperty() noexcept;
+		DECL_VALUE_DEPENDENCY_PROPERTY(hstring, Title);
+		DECL_REF_DEPENDENCY_PROPERTY(Windows::Foundation::Collections::IObservableVector<Controls::ChromeButton>, TitlebarContent);
+		DECL_REF_DEPENDENCY_PROPERTY(Windows::UI::Xaml::UIElement, UserContent);
+		DECL_VALUE_DEPENDENCY_PROPERTY(bool, IsClosable);
+		DECL_VALUE_DEPENDENCY_PROPERTY(bool, AlwaysOnTop);
 
 	private:
 		event<ClosedDelegate> m_ClosedHandler;
-
-		static Windows::UI::Xaml::DependencyProperty s_TitleProperty;
-		static Windows::UI::Xaml::DependencyProperty s_TitlebarContentProperty;
-		static Windows::UI::Xaml::DependencyProperty s_UserContentProperty;
-		static Windows::UI::Xaml::DependencyProperty s_IsClosableProperty;
-		static Windows::UI::Xaml::DependencyProperty s_AlwaysOnTopProperty;
 	};
 }
 

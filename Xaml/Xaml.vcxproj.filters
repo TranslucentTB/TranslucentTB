@@ -25,6 +25,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.base.hpp" />
     <ClInclude Include="PropertyChangedBase.hpp" />
+    <ClInclude Include="dependencyproperty.h" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Pages\WelcomePage.xaml" />

@@ -1,5 +1,5 @@
 #pragma once
-#include "util/strings.hpp"
+#include "util/string_macros.hpp"
 
 #define UTF8_APP_NAME "TranslucentTB"
 #define APP_NAME UTIL_WIDEN(UTF8_APP_NAME)

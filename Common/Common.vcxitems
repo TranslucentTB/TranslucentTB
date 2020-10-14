@@ -36,6 +36,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)util\numbers.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\map.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\strings.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\string_macros.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\to_string_view.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)version.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)wilx.hpp" />
