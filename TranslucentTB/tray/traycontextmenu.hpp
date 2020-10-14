@@ -22,7 +22,8 @@ protected:
 		default:
 			if (uMsg == TRAY_CALLBACK)
 			{
-				if (LOWORD(lParam) == WM_CONTEXTMENU || LOWORD(lParam) == WM_LBUTTONDOWN)
+				const UINT message = LOWORD(lParam);
+				if (message == WM_CONTEXTMENU || message == WM_LBUTTONDOWN)
 				{
 					if (!SetForegroundWindow(m_WindowHandle))
 					{
@@ -30,6 +31,7 @@ protected:
 					}
 
 					ShowAtCursor(m_WindowHandle);
+					post_message(WM_NULL);
 				}
 
 				return 0;
