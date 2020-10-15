@@ -78,25 +78,30 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 	content.DiscordJoinRequested({ this, &Application::OpenDiscordServer });
 	content.ConfigEditRequested({ this, &Application::EditConfigFile });
 
-	content.LicenseApproved([this, hasPackageIdentity, revoker = std::move(closeRevoker)](bool startupState) mutable -> winrt::fire_and_forget
+	content.LicenseApproved([this, hasPackageIdentity, revoker = std::move(closeRevoker)](bool startupState) mutable
 	{
-		// remove the close handler because awaiting will make the close event fire.
+		// remove the close handler because returning from the lambda will make the close event fire.
 		revoker.revoke();
 
-		if (hasPackageIdentity && co_await m_Startup.AcquireTask())
-		{
-			if (startupState)
-			{
-				co_await m_Startup.Enable();
-			}
-			else
-			{
-				m_Startup.Disable();
-			}
-		}
-
-		m_AppWindow.RemoveHideTrayIconOverride();
+		LicenseAcceptedCallback(hasPackageIdentity, startupState);
 	});
+}
+
+winrt::fire_and_forget Application::LicenseAcceptedCallback(bool hasPackageIdentity, bool startupState)
+{
+	if (hasPackageIdentity && co_await m_Startup.AcquireTask())
+	{
+		if (startupState)
+		{
+			co_await m_Startup.Enable();
+		}
+		else
+		{
+			m_Startup.Disable();
+		}
+	}
+
+	m_AppWindow.RemoveHideTrayIconOverride();
 }
 
 Application::Application(HINSTANCE hInst, bool hasPackageIdentity, bool fileExists) :

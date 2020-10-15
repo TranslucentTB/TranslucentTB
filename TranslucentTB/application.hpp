@@ -35,6 +35,7 @@ class Application final {
 	XamlContentManager m_Xaml;
 
 	void CreateWelcomePage(bool hasPackageIdentity);
+	winrt::fire_and_forget LicenseAcceptedCallback(bool hasPackageIdentity, bool startupState);
 	Application(HINSTANCE hInst, bool hasPackageIdentity, bool fileExists);
 
 public:
