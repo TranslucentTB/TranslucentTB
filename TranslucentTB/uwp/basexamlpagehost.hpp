@@ -39,9 +39,13 @@ protected:
 		return m_source;
 	}
 
-	inline ~BaseXamlPageHost()
+	inline void Cleanup() noexcept
 	{
 		m_focusRevoker.revoke();
+	}
+
+	inline ~BaseXamlPageHost()
+	{
 		m_source.Close();
 		m_source = nullptr;
 	}

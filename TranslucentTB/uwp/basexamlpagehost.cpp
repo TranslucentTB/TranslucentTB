@@ -123,7 +123,7 @@ LRESULT BaseXamlPageHost::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam
 
 void BaseXamlPageHost::ResizeWindow(int x, int y, int width, int height, bool move)
 {
-	if (!SetWindowPos(m_interopWnd, nullptr, 0, 0, width, height, SWP_SHOWWINDOW))
+	if (!SetWindowPos(m_interopWnd, nullptr, 0, 0, width, height, SWP_SHOWWINDOW | SWP_NOACTIVATE))
 	{
 		LastErrorHandle(spdlog::level::warn, L"Failed to set interop window position");
 	}

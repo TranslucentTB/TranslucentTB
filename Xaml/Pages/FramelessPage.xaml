@@ -23,7 +23,7 @@
             </Grid.Background>
 
             <TextBlock Grid.Column="0" Text="{x:Bind Title}" FontSize="12" VerticalAlignment="Center" Margin="9,0" TextLineBounds="Tight" />
-            <ItemsControl Grid.Column="1" ItemsSource="{x:Bind TitlebarContent}">
+            <ItemsControl Grid.Column="1" ItemsSource="{x:Bind TitlebarContent}" IsTabStop="False">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal" />

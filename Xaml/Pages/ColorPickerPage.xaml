@@ -9,7 +9,7 @@
     mc:Ignorable="d" Width="350" IsClosable="True">
 
     <local:FramelessPage.TitlebarContent>
-        <controls:ChromeButton ToolTipService.ToolTip="Always on top" IsTogglable="True" IsChecked="{x:Bind AlwaysOnTop, Mode = TwoWay}">
+        <controls:ChromeButton ToolTipService.ToolTip="Always on top" IsTogglable="True" IsChecked="{x:Bind AlwaysOnTop, Mode = TwoWay}" IsTabStop="True">
             <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE840;" FontSize="10" FontWeight="Medium" />
         </controls:ChromeButton>
     </local:FramelessPage.TitlebarContent>

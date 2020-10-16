@@ -83,11 +83,14 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 		// remove the close handler because returning from the lambda will make the close event fire.
 		revoker.revoke();
 
-		LicenseAcceptedCallback(hasPackageIdentity, startupState);
+		// This is in a different method because the lambda is freed after the first suspension point,
+		// leading to use-after-free issues. An independent method doesn't have that issue, because
+		// everything is stored in the coroutine frame, which is only freed once the coroutine ends.
+		LicenseApprovedCallback(hasPackageIdentity, startupState);
 	});
 }
 
-winrt::fire_and_forget Application::LicenseAcceptedCallback(bool hasPackageIdentity, bool startupState)
+winrt::fire_and_forget Application::LicenseApprovedCallback(bool hasPackageIdentity, bool startupState)
 {
 	if (hasPackageIdentity && co_await m_Startup.AcquireTask())
 	{

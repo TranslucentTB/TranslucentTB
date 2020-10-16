@@ -168,7 +168,7 @@ private:
 	inline void UpdateAlwaysOnTop(const winrt::Windows::UI::Xaml::DependencyObject &, const winrt::Windows::UI::Xaml::DependencyProperty &)
 	{
 		const auto wnd = m_content.AlwaysOnTop() ? Window::TopMostWindow : Window::NoTopMostWindow;
-		if (!SetWindowPos(m_WindowHandle, wnd, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE))
+		if (!SetWindowPos(m_WindowHandle, wnd, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE))
 		{
 			LastErrorHandle(spdlog::level::warn, L"Failed to change window topmost state");
 		}
@@ -189,25 +189,38 @@ private:
 
 	void OnClose()
 	{
-		// hide the window asap to give the impression of responsiveness
-		show(SW_HIDE);
+		// cleanup asap
+		BeforeDelete();
 
-		// dispatch the deletion because deleting things here makes the XAML framework very angry
+		// dispatch the rest because cleaning up the XAML source here makes the XAML framework very angry
 		m_Dispatcher.TryEnqueue(winrt::Windows::System::DispatcherQueuePriority::Low, [this]
 		{
 			delete this;
 		});
 	}
 
-	inline ~XamlPageHost()
+	void BeforeDelete()
 	{
+		show(SW_HIDE);
 		source().Content(nullptr);
+
 		m_ClosedRevoker.revoke();
 		m_LayoutUpdatedRevoker.revoke();
 		m_LayoutUpdatedHandler = nullptr;
-		m_content.UnregisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), std::exchange(m_TitleChangedToken.value, 0));
-		m_content.UnregisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::AlwaysOnTopProperty(), std::exchange(m_AlwaysOnTopChangedToken.value, 0));
+
+		if (m_TitleChangedToken)
+		{
+			m_content.UnregisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::TitleProperty(), std::exchange(m_TitleChangedToken.value, 0));
+		}
+
+		if (m_AlwaysOnTopChangedToken)
+		{
+			m_content.UnregisterPropertyChangedCallback(winrt::TranslucentTB::Xaml::Pages::FramelessPage::AlwaysOnTopProperty(), std::exchange(m_AlwaysOnTopChangedToken.value, 0));
+		}
+
 		m_content = nullptr;
+
+		BaseXamlPageHost::Cleanup();
 	}
 
 public:
