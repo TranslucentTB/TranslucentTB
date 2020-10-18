@@ -327,14 +327,6 @@ MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, bool hideS
 		RemoveItem(ID_AUTOSTART);
 	}
 
-	if (DynamicLoader::uxtheme())
-	{
-		if (const auto spam = DynamicLoader::SetPreferredAppMode())
-		{
-			spam(PreferredAppMode::AllowDark);
-		}
-	}
-
 	// Shows the tray icon if not disabled.
 	UpdateTrayVisibility(!m_App.GetConfigManager().GetConfig().HideTray);
 }

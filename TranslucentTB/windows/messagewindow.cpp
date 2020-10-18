@@ -25,12 +25,9 @@ MessageWindow::MessageWindow(Util::null_terminated_wstring_view className, Util:
 		LastErrorVerify(spdlog::level::critical, L"Failed to update window procedure!");
 	}
 
-	if (DynamicLoader::uxtheme())
+	if (const auto admfm = DynamicLoader::AllowDarkModeForWindow())
 	{
-		if (const auto admfm = DynamicLoader::AllowDarkModeForWindow())
-		{
-			admfm(m_WindowHandle, true);
-		}
+		admfm(m_WindowHandle, true);
 	}
 }
 

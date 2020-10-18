@@ -13,19 +13,26 @@
 #endif
 
 namespace DynamicLoader {
-	inline HMODULE user32()
-	{
-		static wil::unique_hmodule lib;
-		if (!lib)
-		{
-			lib.reset(LoadLibraryEx(L"user32.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+	inline constexpr bool is_exception_free_v =
 #ifdef _TRANSLUCENTTB_EXE
-			if (!lib)
+		false;
+#else
+		true;
+#endif
+
+	inline HMODULE user32() noexcept(is_exception_free_v)
+	{
+		static const wil::unique_hmodule lib = []
+		{
+			wil::unique_hmodule library(LoadLibraryEx(L"user32.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+#ifdef _TRANSLUCENTTB_EXE
+			if (!library)
 			{
 				LastErrorHandle(spdlog::level::critical, L"Failed to load user32.dll");
 			}
 #endif
-		}
+			return library;
+		}();
 
 		return lib.get();
 	}
@@ -33,32 +40,39 @@ namespace DynamicLoader {
 	// Both users store the value themselves:
 	// - ExplorerDetour for Detours to give a trampoline
 	// - TranslucentTB for reduced overhead (in hotpath)
-	inline PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SetWindowCompositionAttribute()
+	inline PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SetWindowCompositionAttribute() noexcept(is_exception_free_v)
 	{
-		// Exported by name
-		PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE fn = reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(user32(), "SetWindowCompositionAttribute"));
-#ifdef _TRANSLUCENTTB_EXE
-		if (!fn)
+		if (const auto hUser32 = user32())
 		{
-			LastErrorHandle(spdlog::level::critical, L"Failed to get address of SetWindowCompositionAttribute");
-		}
+			const auto fn = reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(hUser32, "SetWindowCompositionAttribute"));
+#ifdef _TRANSLUCENTTB_EXE
+			if (!fn)
+			{
+				LastErrorHandle(spdlog::level::critical, L"Failed to get address of SetWindowCompositionAttribute");
+			}
 #endif
 
-		return fn;
+			return fn;
+		}
+		else
+		{
+			return nullptr;
+		}
 	}
 
 #ifdef _TRANSLUCENTTB_EXE
 	inline HMODULE uxtheme()
 	{
-		static wil::unique_hmodule lib;
-		if (!lib)
+		static const wil::unique_hmodule lib = []
 		{
-			lib.reset(LoadLibraryEx(L"uxtheme.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
-			if (!lib)
+			wil::unique_hmodule library(LoadLibraryEx(L"uxtheme.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+			if (!library)
 			{
 				LastErrorHandle(spdlog::level::warn, L"Failed to load uxtheme.dll");
 			}
-		}
+
+			return library;
+		}();
 
 		return lib.get();
 	}
@@ -66,27 +80,42 @@ namespace DynamicLoader {
 	// Used only once
 	inline PFN_SET_PREFERRED_APP_MODE SetPreferredAppMode()
 	{
-		PFN_SET_PREFERRED_APP_MODE fn = reinterpret_cast<PFN_SET_PREFERRED_APP_MODE>(GetProcAddress(uxtheme(), MAKEINTRESOURCEA(135)));
-		if (!fn)
+		if (const auto hUxtheme = uxtheme())
 		{
-			LastErrorHandle(spdlog::level::warn, L"Failed to get address of SetPreferredAppMode");
-		}
+			const auto fn = reinterpret_cast<PFN_SET_PREFERRED_APP_MODE>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(135)));
+			if (!fn)
+			{
+				LastErrorHandle(spdlog::level::warn, L"Failed to get address of SetPreferredAppMode");
+			}
 
-		return fn;
+			return fn;
+		}
+		else
+		{
+			return nullptr;
+		}
 	}
 
 	// Used each new MessageWindow instance
 	inline PFN_ALLOW_DARK_MODE_FOR_WINDOW AllowDarkModeForWindow()
 	{
-		static PFN_ALLOW_DARK_MODE_FOR_WINDOW fn;
-		if (!fn)
+		static const auto fn = []() -> PFN_ALLOW_DARK_MODE_FOR_WINDOW
 		{
-			fn = reinterpret_cast<PFN_ALLOW_DARK_MODE_FOR_WINDOW>(GetProcAddress(uxtheme(), MAKEINTRESOURCEA(133)));
-			if (!fn)
+			if (const auto hUxtheme = uxtheme())
 			{
-				LastErrorHandle(spdlog::level::warn, L"Failed to get address of AllowDarkModeForWindow");
+				const auto admfw = reinterpret_cast<PFN_ALLOW_DARK_MODE_FOR_WINDOW>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(133)));
+				if (!admfw)
+				{
+					LastErrorHandle(spdlog::level::warn, L"Failed to get address of AllowDarkModeForWindow");
+				}
+
+				return admfw;
 			}
-		}
+			else
+			{
+				return nullptr;
+			}
+		}();
 
 		return fn;
 	}
@@ -94,15 +123,23 @@ namespace DynamicLoader {
 	// Used each time the system theme/settings change
 	inline PFN_SHOULD_SYSTEM_USE_DARK_MODE ShouldSystemUseDarkMode()
 	{
-		static PFN_SHOULD_SYSTEM_USE_DARK_MODE fn;
-		if (!fn)
+		static const auto fn = []() -> PFN_SHOULD_SYSTEM_USE_DARK_MODE
 		{
-			fn = reinterpret_cast<PFN_SHOULD_SYSTEM_USE_DARK_MODE>(GetProcAddress(uxtheme(), MAKEINTRESOURCEA(138)));
-			if (!fn)
+			if (const auto hUxtheme = uxtheme())
 			{
-				LastErrorHandle(spdlog::level::warn, L"Failed to get address of ShouldSystemUseDarkMode");
+				const auto ssudm = reinterpret_cast<PFN_SHOULD_SYSTEM_USE_DARK_MODE>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(138)));
+				if (!ssudm)
+				{
+					LastErrorHandle(spdlog::level::warn, L"Failed to get address of ShouldSystemUseDarkMode");
+				}
+
+				return ssudm;
 			}
-		}
+			else
+			{
+				return nullptr;
+			}
+		}();
 
 		return fn;
 	}
@@ -110,15 +147,23 @@ namespace DynamicLoader {
 	// Used each time the system theme/settings change
 	inline PFN_SHOULD_APPS_USE_DARK_MODE ShouldAppsUseDarkMode()
 	{
-		static PFN_SHOULD_APPS_USE_DARK_MODE fn;
-		if (!fn)
+		static const auto fn = []() -> PFN_SHOULD_APPS_USE_DARK_MODE
 		{
-			fn = reinterpret_cast<PFN_SHOULD_APPS_USE_DARK_MODE>(GetProcAddress(uxtheme(), MAKEINTRESOURCEA(132)));
-			if (!fn)
+			if (const auto hUxtheme = uxtheme())
 			{
-				LastErrorHandle(spdlog::level::warn, L"Failed to get address of ShouldAppsUseDarkMode");
+				const auto saudm = reinterpret_cast<PFN_SHOULD_APPS_USE_DARK_MODE>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(132)));
+				if (!saudm)
+				{
+					LastErrorHandle(spdlog::level::warn, L"Failed to get address of ShouldAppsUseDarkMode");
+				}
+
+				return saudm;
 			}
-		}
+			else
+			{
+				return nullptr;
+			}
+		}();
 
 		return fn;
 	}

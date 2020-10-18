@@ -11,12 +11,9 @@
 void TrayIcon::LoadThemedIcon()
 {
 	const wchar_t *icon = m_whiteIconResource;
-	if (DynamicLoader::uxtheme())
+	if (const auto ssudm = DynamicLoader::ShouldSystemUseDarkMode(); ssudm && !ssudm())
 	{
-		if (const auto ssudm = DynamicLoader::ShouldSystemUseDarkMode(); ssudm && !ssudm())
-		{
-			icon = m_darkIconResource;
-		}
+		icon = m_darkIconResource;
 	}
 
 	if (const HRESULT hr = LoadIconMetric(hinstance(), icon, LIM_SMALL, m_Icon.put()); SUCCEEDED(hr))

@@ -114,6 +114,11 @@ Application::Application(HINSTANCE hInst, bool hasPackageIdentity, bool fileExis
 	m_DispatcherController(CreateDispatcherController()),
 	m_Xaml(m_DispatcherController.DispatcherQueue(), hInst)
 {
+	if (const auto spam = DynamicLoader::SetPreferredAppMode())
+	{
+		spam(PreferredAppMode::AllowDark);
+	}
+
 	if (!fileExists)
 	{
 		CreateWelcomePage(hasPackageIdentity);

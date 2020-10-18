@@ -51,15 +51,8 @@ bool ExplorerDetour::Install() noexcept
 {
 	if (!SetWindowCompositionAttribute)
 	{
-		if (DynamicLoader::user32())
-		{
-			SetWindowCompositionAttribute = DynamicLoader::SetWindowCompositionAttribute();
-			if (!SetWindowCompositionAttribute)
-			{
-				return false;
-			}
-		}
-		else
+		SetWindowCompositionAttribute = DynamicLoader::SetWindowCompositionAttribute();
+		if (!SetWindowCompositionAttribute)
 		{
 			return false;
 		}
