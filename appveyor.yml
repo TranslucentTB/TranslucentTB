@@ -4,9 +4,7 @@ configuration:
 - Release
 - Debug
 platform:
-- x86
 - x64
-- ARM
 - ARM64
 
 install:

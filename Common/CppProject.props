@@ -59,20 +59,10 @@
 
   <PropertyGroup Condition="'$(UsingGameSDK)'==''">
     <UsingGameSDK>false</UsingGameSDK>
-    <UsingGameSDK Condition="'$(Platform)'=='Win32' Or '$(Platform)'=='x64'">true</UsingGameSDK>
+    <UsingGameSDK Condition="'$(Platform)'=='x64'">true</UsingGameSDK>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-
-  <PropertyGroup>
-    <!-- Avoid x86 using a different output directory because it feels special -->
-    <OutDir>$(SolutionDir)$(PlatformTarget)\$(Configuration)\</OutDir>
-    <IntDir>$(PlatformTarget)\$(Configuration)\</IntDir>
-
-    <!-- Never use UWP triplet -->
-    <VcpkgTriplet>$(PlatformTarget)-windows</VcpkgTriplet>
-  </PropertyGroup>
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 
@@ -117,7 +107,7 @@
     </Link>
   </ItemDefinitionGroup>
 
-  <ItemDefinitionGroup Condition="'$(Platform)'=='Win32' Or '$(Platform)'=='x64'">
+  <ItemDefinitionGroup Condition="'$(Platform)'=='x64'">
     <ClCompile>
       <!-- Windows requires SSE2 on any x86 processor, see https://docs.microsoft.com/windows-hardware/manufacture/desktop/paenxsse2-support-requirement-guide-for-windows-8 -->
       <PreprocessorDefinitions>RAPIDJSON_SSE2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -128,7 +118,7 @@
     </Link>
   </ItemDefinitionGroup>
 
-  <ItemDefinitionGroup Condition="'$(Platform)'=='ARM' Or '$(Platform)'=='ARM64'">
+  <ItemDefinitionGroup Condition="'$(Platform)'=='ARM64'">
     <ClCompile>
       <!-- Windows requires NEON on any ARM processor, see https://docs.microsoft.com/cpp/build/overview-of-arm-abi-conventions -->
       <PreprocessorDefinitions>RAPIDJSON_NEON;%(PreprocessorDefinitions)</PreprocessorDefinitions>

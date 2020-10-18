@@ -17,6 +17,8 @@
     <_NoWinAPIFamilyApp>true</_NoWinAPIFamilyApp>
     <_VC_Target_Library_Platform>Desktop</_VC_Target_Library_Platform>
     <DesktopCompatible>true</DesktopCompatible>
+    <!-- Never use UWP vcpkg triplet -->
+    <VcpkgTriplet>$(PlatformTarget)-windows</VcpkgTriplet>
     <!-- Don't store outputs in a subfolder otherwise the main program can't find them. -->
     <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
     <!-- Disable embedded XBF (even if the naming suggests otherwise) so that our XAML is in the final resources.pri. -->
