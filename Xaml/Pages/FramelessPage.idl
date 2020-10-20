@@ -5,7 +5,6 @@ namespace TranslucentTB.Xaml.Pages
 {
 	delegate void ClosedDelegate();
 
-	[default_interface]
 	[contentproperty("UserContent")]
 	unsealed runtimeclass FramelessPage : Windows.UI.Xaml.Controls.Page
 	{
@@ -19,6 +18,7 @@ namespace TranslucentTB.Xaml.Pages
 		DECL_DEPENDENCY_PROPERTY(String, Title);
 		DECL_DEPENDENCY_PROPERTY(IObservableVector<TranslucentTB.Xaml.Controls.ChromeButton>, TitlebarContent);
 		DECL_DEPENDENCY_PROPERTY(Windows.UI.Xaml.UIElement, UserContent);
+		DECL_DEPENDENCY_PROPERTY(Boolean, ExpandIntoTitlebar);
 		DECL_DEPENDENCY_PROPERTY(Boolean, IsClosable);
 		DECL_DEPENDENCY_PROPERTY(Boolean, AlwaysOnTop);
 	}

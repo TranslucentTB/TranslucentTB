@@ -21,6 +21,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		DECL_VALUE_DEPENDENCY_PROPERTY(hstring, Title);
 		DECL_REF_DEPENDENCY_PROPERTY(Windows::Foundation::Collections::IObservableVector<Controls::ChromeButton>, TitlebarContent);
 		DECL_REF_DEPENDENCY_PROPERTY(Windows::UI::Xaml::UIElement, UserContent);
+		DECL_VALUE_DEPENDENCY_PROPERTY(bool, ExpandIntoTitlebar);
 		DECL_VALUE_DEPENDENCY_PROPERTY(bool, IsClosable);
 		DECL_VALUE_DEPENDENCY_PROPERTY(bool, AlwaysOnTop);
 

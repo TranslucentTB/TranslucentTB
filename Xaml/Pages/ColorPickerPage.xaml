@@ -10,11 +10,11 @@
 
     <local:FramelessPage.TitlebarContent>
         <controls:ChromeButton ToolTipService.ToolTip="Always on top" IsTogglable="True" IsChecked="{x:Bind AlwaysOnTop, Mode = TwoWay}" IsTabStop="True">
-            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE840;" FontSize="10" FontWeight="Medium" />
+            <FontIcon Glyph="&#xE840;" FontSize="10" FontWeight="Medium" />
         </controls:ChromeButton>
     </local:FramelessPage.TitlebarContent>
 
-    <StackPanel Spacing="10">
+    <StackPanel Padding="15" Spacing="10">
         <ColorPicker x:Name="Picker" IsAlphaEnabled="True" IsMoreButtonVisible="True" />
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">

@@ -7,9 +7,9 @@
     xmlns:models="using:TranslucentTB.Xaml.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" Width="635" Height="450">
+    mc:Ignorable="d" Width="635" Height="450" ExpandIntoTitlebar="True">
 
-    <Grid>
+    <Grid Padding="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
@@ -35,13 +35,22 @@
             </RichTextBlock>
 
             <controls:ActionList>
-                <models:Action Name="Donate to the project on Liberapay" Description="Show us your support by offering a single-time or recurring donation" Click="OpenLiberapayLink">
+                <models:Action
+                    Name="Donate to the project on Liberapay"
+                    Click="OpenLiberapayLink"
+                    Description="Show us your support by offering a single-time or recurring donation">
                     <PathIcon Data="{StaticResource LiberapayLogo}" />
                 </models:Action>
-                <models:Action Name="Join our Discord server" Description="Chat with the developers and get technical assistance with the program" Click="OpenDiscordLink">
+                <models:Action
+                    Name="Join our Discord server"
+                    Click="OpenDiscordLink"
+                    Description="Chat with the developers and get technical assistance with the program">
                     <PathIcon Data="{StaticResource DiscordLogo}" />
                 </models:Action>
-                <models:Action Name="Edit the configuration file" Description="You can always do this by clicking 'Advanced > Edit settings' in the tray icon's context menu&#10;Changes are automatically reloaded as you edit the file" Click="EditConfigFile">
+                <models:Action
+                    Name="Edit the configuration file"
+                    Click="EditConfigFile"
+                    Description="You can always do this by clicking 'Advanced > Edit settings' in the tray icon's context menu&#10;Changes are automatically reloaded as you edit the file">
                     <PathIcon Data="{StaticResource EditIcon}" />
                 </models:Action>
             </controls:ActionList>

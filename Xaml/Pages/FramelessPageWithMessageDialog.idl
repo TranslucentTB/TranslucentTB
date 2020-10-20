@@ -2,7 +2,6 @@ import "Pages/FramelessPage.idl";
 
 namespace TranslucentTB.Xaml.Pages
 {
-	[default_interface]
 	unsealed runtimeclass FramelessPageWithMessageDialog : FramelessPage
 	{
 		[method_name("Create")]

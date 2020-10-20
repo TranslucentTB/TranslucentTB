@@ -60,6 +60,9 @@
       <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="FunctionalConverters.cpp">
+      <DependentUpon>FunctionalConverters.idl</DependentUpon>
+    </ClCompile>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -123,6 +126,9 @@
       <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="FunctionalConverters.h">
+      <DependentUpon>FunctionalConverters.idl</DependentUpon>
+    </ClInclude>
     <ClInclude Include="pch.h" />
     <ClInclude Include="Pages\WelcomePage.h">
       <DependentUpon>Pages\WelcomePage.xaml</DependentUpon>
@@ -157,6 +163,7 @@
       <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
+    <Midl Include="FunctionalConverters.idl" />
     <Midl Include="Pages\WelcomePage.idl">
       <DependentUpon>Pages\WelcomePage.xaml</DependentUpon>
       <SubType>Code</SubType>

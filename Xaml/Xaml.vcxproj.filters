@@ -40,5 +40,6 @@
   <ItemGroup>
     <Midl Include="Models\Action.idl" />
     <Midl Include="Pages\FramelessPageWithMessageDialog.idl" />
+    <Midl Include="FunctionalConverters.idl" />
   </ItemGroup>
 </Project>

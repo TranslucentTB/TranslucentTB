@@ -7,7 +7,6 @@ namespace TranslucentTB.Xaml.Pages
 	delegate void ConfigEditDelegate();
 	delegate void LicenseApprovedDelegate(Boolean startupState);
 
-	[default_interface]
 	runtimeclass WelcomePage : FramelessPage
 	{
 		WelcomePage(Boolean hasPackageIdentity);
