@@ -39,6 +39,14 @@ void XamlContentManager::InitializeXamlHosting()
 
 bool XamlContentManager::PreTranslateMessage(const MSG &msg)
 {
+	// prevent XAML islands from capturing ALT-F4 because of
+	// https://github.com/microsoft/microsoft-ui-xaml/issues/2408
+	if (msg.message == WM_SYSKEYDOWN && msg.wParam == VK_F4) [[unlikely]]
+	{
+		Window(msg.hwnd).ancestor(GA_ROOT).send_message(msg.message, msg.wParam, msg.lParam);
+		return true;
+	}
+
 	for (auto it = m_Sources.begin(); it != m_Sources.end();)
 	{
 		if (const auto source = it->get())
