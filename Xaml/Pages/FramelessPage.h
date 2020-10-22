@@ -11,12 +11,13 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		FramelessPage();
 
 		virtual bool RequestClose();
+		virtual Windows::Foundation::Rect DragRegion();
 
 		void Close();
 		event_token Closed(const ClosedDelegate &handler);
 		void Closed(const event_token &token);
 
-		void CloseButtonClicked(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+		void CloseButtonClicked(const IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
 
 		DECL_VALUE_DEPENDENCY_PROPERTY(hstring, Title);
 		DECL_REF_DEPENDENCY_PROPERTY(Windows::Foundation::Collections::IObservableVector<Controls::ChromeButton>, TitlebarContent);

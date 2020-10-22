@@ -21,7 +21,7 @@ namespace winrt::TranslucentTB::Xaml::Models::implementation
 		event_token Click(const Windows::UI::Xaml::RoutedEventHandler &value);
 		void Click(const event_token &token);
 
-		void ForwardClick(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+		void ForwardClick(const IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
 
 	private:
 		hstring m_name;

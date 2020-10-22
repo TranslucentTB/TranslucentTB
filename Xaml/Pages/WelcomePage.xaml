@@ -9,7 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" Width="635" Height="450" ExpandIntoTitlebar="True">
 
-    <Grid Padding="15">
+    <Grid x:Name="RootGrid" Padding="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
@@ -20,7 +20,7 @@
         </Grid.ColumnDefinitions>
 
         <StackPanel Grid.ColumnSpan="2" Orientation="Vertical" Spacing="10">
-            <TextBlock Style="{ThemeResource SubheaderTextBlockStyle}" Text="{x:Bind Title}" TextLineBounds="Tight" />
+            <TextBlock x:Name="TitleText" Style="{ThemeResource SubheaderTextBlockStyle}" Text="{x:Bind Title}" TextLineBounds="Tight" />
             <RichTextBlock TextWrapping="Wrap" IsTextSelectionEnabled="False">
                 <Paragraph>
                     By default, TranslucentTB darkens the taskbar a bit when there is a maximised window.
@@ -56,7 +56,7 @@
             </controls:ActionList>
         </StackPanel>
 
-        <CheckBox Grid.Row="1" Content="Automatically start TranslucentTB at system bootup" IsChecked="True" x:Name="StartupCheckbox" />
+        <CheckBox x:Name="StartupCheckbox" Grid.Row="1" Content="Automatically start TranslucentTB at system bootup" IsChecked="True" />
         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="10">
             <Button Width="100" Style="{ThemeResource AccentButtonStyle}" Click="AgreeButtonClicked">I agree</Button>
             <Button Width="100" Click="DisagreeButtonClicked">I disagree</Button>

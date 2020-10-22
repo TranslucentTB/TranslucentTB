@@ -11,6 +11,7 @@ namespace TranslucentTB.Xaml.Pages
 		FramelessPage();
 
 		overridable Boolean RequestClose();
+		overridable Windows.Foundation.Rect DragRegion { get; };
 
 		protected void Close();
 		event ClosedDelegate Closed;

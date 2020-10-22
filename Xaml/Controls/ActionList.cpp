@@ -17,7 +17,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 		InitializeComponent();
 	}
 
-	void ActionList::ForwardActionKeyDown(const Windows::Foundation::IInspectable &sender, const Input::KeyRoutedEventArgs &args)
+	void ActionList::ForwardActionKeyDown(const IInspectable &sender, const Input::KeyRoutedEventArgs &args)
 	{
 		using Windows::System::VirtualKey;
 
@@ -27,7 +27,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 		}
 	}
 
-	void ActionList::ForwardAction(const Windows::Foundation::IInspectable &sender, const RoutedEventArgs &args)
+	void ActionList::ForwardAction(const IInspectable &sender, const RoutedEventArgs &args)
 	{
 		sender.as<Windows::UI::Xaml::Controls::ListViewItem>().Tag().as<Models::implementation::Action>()->ForwardClick(sender, args);
 	}

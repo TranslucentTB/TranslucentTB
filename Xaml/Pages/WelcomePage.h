@@ -9,12 +9,14 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		WelcomePage(bool hasPackageIdentity);
 
-		void OpenLiberapayLink(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
-		void OpenDiscordLink(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
-		void EditConfigFile(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+		Windows::Foundation::Rect DragRegion() override;
 
-		void AgreeButtonClicked(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
-		void DisagreeButtonClicked(const Windows::Foundation::IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+		void OpenLiberapayLink(const IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+		void OpenDiscordLink(const IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+		void EditConfigFile(const IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+
+		void AgreeButtonClicked(const IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+		void DisagreeButtonClicked(const IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
 
 		event_token LiberapayOpenRequested(const LiberapayOpenDelegate &handler);
 		void LiberapayOpenRequested(const event_token &token);

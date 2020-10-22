@@ -28,6 +28,18 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		}
 	}
 
+	Windows::Foundation::Rect FramelessPage::DragRegion()
+	{
+		if (!ExpandIntoTitlebar())
+		{
+			return { 0, 0, static_cast<float>(TitleText().ActualWidth()), static_cast<float>(Titlebar().ActualHeight()) };
+		}
+		else
+		{
+			throw hresult_not_implemented(L"A page that uses ExpandIntoTitlebar should override DragRegion.");
+		}
+	}
+
 	void FramelessPage::Close()
 	{
 		m_ClosedHandler();
@@ -43,7 +55,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		m_ClosedHandler.remove(token);
 	}
 
-	void FramelessPage::CloseButtonClicked(const Windows::Foundation::IInspectable &, const Windows::UI::Xaml::RoutedEventArgs &)
+	void FramelessPage::CloseButtonClicked(const IInspectable &, const Windows::UI::Xaml::RoutedEventArgs &)
 	{
 		RequestClose();
 	}

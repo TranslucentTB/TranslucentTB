@@ -50,7 +50,7 @@ namespace winrt::TranslucentTB::Xaml::Models::implementation
 		m_click.remove(token);
 	}
 
-	void Action::ForwardClick(const Windows::Foundation::IInspectable &sender, const RoutedEventArgs &args)
+	void Action::ForwardClick(const IInspectable &sender, const RoutedEventArgs &args)
 	{
 		m_click(sender, args);
 	}
