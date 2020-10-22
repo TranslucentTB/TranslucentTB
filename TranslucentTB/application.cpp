@@ -104,6 +104,7 @@ winrt::fire_and_forget Application::LicenseApprovedCallback(bool hasPackageIdent
 		}
 	}
 
+	m_Config.SaveConfig(); // create the config file, if not already present
 	m_AppWindow.RemoveHideTrayIconOverride();
 }
 
