@@ -39,7 +39,7 @@ bool TrayIcon::Notify(DWORD message, bool ignoreError)
 	{
 		if (!ignoreError)
 		{
-			LastErrorHandle(spdlog::level::info, L"Failed to notify shell.");
+			MessagePrint(spdlog::level::info, L"Failed to notify shell.");
 		}
 
 		return false;

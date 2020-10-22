@@ -76,27 +76,6 @@ public:
 		return GetProcessFileName(GetCurrentProcess());
 	}
 
-	inline static std::pair<std::filesystem::path, HRESULT> GetModulePath(HMODULE mod)
-	{
-		const DWORD size = GetModuleFileName(mod, nullptr, 0);
-		if (!size)
-		{
-			return { { }, HRESULT_FROM_WIN32(GetLastError()) };
-		}
-
-		std::wstring location;
-		location.reserve(size);
-		if (const DWORD used = GetModuleFileName(mod, location.data(), size))
-		{
-			location.resize(used);
-			return { std::move(location), S_OK };
-		}
-		else
-		{
-			return { { }, HRESULT_FROM_WIN32(GetLastError()) };
-		}
-	}
-
 	// Opens a file in the default text editor.
 	inline static HRESULT EditFile(const std::filesystem::path &file) noexcept
 	{

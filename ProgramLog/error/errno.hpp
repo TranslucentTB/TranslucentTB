@@ -20,5 +20,3 @@ namespace Error {
 		ErrnoTHandleWithBuffer(buf_, (err_), (level_), (message_)); \
 	} \
 } while (0)
-
-#define ErrnoHandle(level_, message_) ErrnoTHandle(errno, (level_), (message_))
