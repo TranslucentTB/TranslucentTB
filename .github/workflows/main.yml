@@ -1,0 +1,12 @@
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        target: [x64, ARM64]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ilammy/msvc-dev-cmd@v1
+      - run: msbuild
