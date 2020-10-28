@@ -3,8 +3,6 @@ pool:
 
 variables:
   solution: $(Build.SourcesDirectory)/TranslucentTB.sln
-  vcpkgLocation: $(Build.BinariesDirectory)/vcpkg
-  vcpkgVersion: 2020.07
 
 strategy:
   matrix:
@@ -22,22 +20,10 @@ strategy:
       platform: x64
 
 steps:
-- task: run-vcpkg@0
+- script: vcpkg install --triplet $(platform)-windows --head rapidjson wil
+  displayName: 'Install vcpkg head dependencies'
+- script: vcpkg install --triplet $(platform)-windows --overlay-ports=$(Build.SourcesDirectory)/ports detours fmt gtest member-thunk spdlog
   displayName: 'Install vcpkg dependencies'
-  inputs:
-    vcpkgArguments: fmt gtest spdlog
-    vcpkgDirectory: $(vcpkgLocation)
-    vcpkgGitCommitId: $(vcpkgVersion)
-    vcpkgTriplet: $(platform)-windows
-- task: run-vcpkg@0
-  displayName: 'Install vcpkg overlay dependencies'
-  inputs:
-    vcpkgArguments: detours member-thunk --overlay-ports=$(Build.SourcesDirectory)/ports
-    vcpkgDirectory: $(vcpkgLocation)
-    vcpkgGitCommitId: $(vcpkgVersion)
-    vcpkgTriplet: $(platform)-windows
-- task: NuGetToolInstaller@1
-  displayName: 'Install NuGet'
 - task: NuGetCommand@2
   displayName: 'Restore NuGet packages'
   inputs:
