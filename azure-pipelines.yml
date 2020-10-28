@@ -20,10 +20,10 @@ strategy:
       platform: x64
 
 steps:
-- script: vcpkg install --triplet $(platform)-windows --head rapidjson wil
-  displayName: 'Install vcpkg head dependencies'
-- script: vcpkg install --triplet $(platform)-windows --overlay-ports=$(Build.SourcesDirectory)/ports detours fmt gtest member-thunk spdlog
+- script: vcpkg install --triplet $(platform)-windows fmt gtest spdlog
   displayName: 'Install vcpkg dependencies'
+- script: vcpkg install --triplet $(platform)-windows --overlay-ports=$(Build.SourcesDirectory)/ports --head detours member-thunk rapidjson wil
+  displayName: 'Install vcpkg head dependencies'
 - task: NuGetCommand@2
   displayName: 'Restore NuGet packages'
   inputs:
