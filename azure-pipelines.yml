@@ -2,7 +2,10 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  solution: TranslucentTB.sln
+  solution: $(Build.SourcesDirectory)/TranslucentTB.sln
+  vcpkgLocation: $(Build.BinariesDirectory)/vcpkg
+  vcpkgVersion: 2020.07
+  VCPKG_OVERLAY_PORTS: $(Build.SourcesDirectory)/ports
 
 strategy:
   matrix:
@@ -20,11 +23,20 @@ strategy:
       platform: x64
 
 steps:
+ - task: run-vcpkg@0
+   displayName: 'Install vcpkg dependencies'
+   inputs:
+     vcpkgArguments: install --triplet $(configuration)-windows detours fmt gtest member-thunk spdlog
+     vcpkgDirectory: $(vcpkgLocation)
+     vcpkgGitCommitId: $(vcpkgVersion)
 - task: NuGetToolInstaller@1
+  displayName: 'Install NuGet'
 - task: NuGetCommand@2
+  displayName: 'Restore NuGet packages'
   inputs:
     restoreSolution: $(solution)
 - task: VSBuild@1
+  displayName: 'Build solution'
   inputs:
     solution: $(solution)
     platform: $(platform)
