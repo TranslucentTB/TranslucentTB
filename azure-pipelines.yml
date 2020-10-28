@@ -26,7 +26,7 @@ steps:
 - task: run-vcpkg@0
   displayName: 'Install vcpkg dependencies'
   inputs:
-    vcpkgArguments: install --triplet $(configuration)-windows detours fmt gtest member-thunk spdlog
+    vcpkgArguments: install --triplet $(platform)-windows detours fmt gtest member-thunk spdlog
     vcpkgDirectory: $(vcpkgLocation)
     vcpkgGitCommitId: $(vcpkgVersion)
 - task: NuGetToolInstaller@1
