@@ -1,0 +1,32 @@
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: TranslucentTB.sln
+
+strategy:
+  matrix:
+    'ARM64 Debug':
+      configuration: Debug
+      platform: ARM64
+    'ARM64 Release':
+      configuration: Release
+      platform: ARM64
+    'x64 Debug':
+      configuration: Debug
+      platform: x64
+    'x64 Release':
+      configuration: Release
+      platform: x64
+
+steps:
+- task: NuGetToolInstaller@1
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: $(solution)
+
+- task: VSBuild@1
+  inputs:
+    solution: $(solution)
+    platform: $(platform)
+    configuration: '$(configuration)
