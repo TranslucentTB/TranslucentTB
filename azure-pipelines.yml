@@ -37,7 +37,7 @@ steps:
     solution: $(solution)
     platform: $(platform)
     configuration: $(configuration)
-- script: ./$(platform)/$(configuration)/Tests.exe --gtest_output=xml:$(testResultsFile)
+- script: $(platform)\$(configuration)\Tests.exe --gtest_output=xml:$(testResultsFile)
   displayName: 'Run unit tests'
   condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'))
 - powershell: |
