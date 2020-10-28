@@ -37,12 +37,17 @@ steps:
     solution: $(solution)
     platform: $(platform)
     configuration: $(configuration)
-- script: $(configuration)/$(platform)/Tests.exe --gtest_output=xml:$(testResultsFile)
+- script: ./$(platform)/$(configuration)/Tests.exe --gtest_output=xml:$(testResultsFile)
   displayName: 'Run unit tests'
+  condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'))
+- powershell: |
+    $fileExists = Test-Path -Path "$(testResultsFile)"
+    Write-Output "##vso[task.setvariable variable=testsRan]$fileExists"
+  displayName: 'Check if test results are present'
   condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'))
 - task: PublishTestResults@2
   displayName: 'Publish test results'
-  condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'))
+  condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'), eq(variables['testsRan'], true))
   inputs:
     testResultsFiles: $(testResultsFile)
     buildPlatform: $(platform)
