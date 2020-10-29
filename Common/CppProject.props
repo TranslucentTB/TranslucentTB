@@ -143,9 +143,6 @@
       <UseFullPaths>true</UseFullPaths>
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
 
-      <!-- Make CI using VS pre 16.8 happy -->
-      <AdditionalOptions Condition="'$(MSBuildVersion)' &lt; '16.8'">/await %(AdditionalOptions)</AdditionalOptions>
-
       <!-- Discord GameSDK -->
       <PreprocessorDefinitions Condition="'$(UsingGameSDK)'!='true'">DO_NOT_USE_GAME_SDK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
