@@ -94,9 +94,8 @@ TEST(win32_RectFitsInRect, TrueWhenSameBottomBound)
 TEST(win32_RectFitsInRect, TrueWhenSameBounds)
 {
 	const RECT a = { 0, 0, 1, 1 };
-	const RECT b = { 0, 0, 1, 1 };
 
-	ASSERT_THAT(win32::RectFitsInRect(a, b), IsTrue());
+	ASSERT_THAT(win32::RectFitsInRect(a, a), IsTrue());
 }
 
 TEST(win32_OffsetRect, SupportsNegativeXOffset)
