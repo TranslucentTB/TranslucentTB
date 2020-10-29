@@ -17,6 +17,8 @@
     <_NoWinAPIFamilyApp>true</_NoWinAPIFamilyApp>
     <_VC_Target_Library_Platform>Desktop</_VC_Target_Library_Platform>
     <DesktopCompatible>true</DesktopCompatible>
+    <!-- Never use UWP vcpkg triplet -->
+    <VcpkgTriplet>$(Platform)-windows</VcpkgTriplet>
     <!-- Don't store outputs in a subfolder otherwise the main program can't find them. -->
     <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
     <!-- Disable embedded XBF (even if the naming suggests otherwise) so that our XAML is in the final resources.pri. -->
@@ -24,10 +26,6 @@
     <_GenerateProjectPriFileDependsOn>PlaceAppXbfAtRootOfResourceTree;$(_GenerateProjectPriFileDependsOn)</_GenerateProjectPriFileDependsOn>
   </PropertyGroup>
   <Import Project="..\Common\CppProject.props" />
-  <PropertyGroup>
-    <!-- Never use UWP vcpkg triplet -->
-    <VcpkgTriplet>$(PlatformTarget)-windows</VcpkgTriplet>
-  </PropertyGroup>
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -75,9 +73,6 @@
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <ClCompile Include="Models\Action.cpp">
       <DependentUpon>Models\Action.idl</DependentUpon>
-    </ClCompile>
-    <ClCompile Include="Pages\FramelessPageWithMessageDialog.cpp">
-      <DependentUpon>Pages\FramelessPageWithMessageDialog.idl</DependentUpon>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -140,9 +135,6 @@
       <DependentUpon>Models\Action.idl</DependentUpon>
     </ClInclude>
     <ClInclude Include="PropertyChangedBase.hpp" />
-    <ClInclude Include="Pages\FramelessPageWithMessageDialog.h">
-      <DependentUpon>Pages\FramelessPageWithMessageDialog.idl</DependentUpon>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl">
@@ -171,7 +163,6 @@
       <SubType>Code</SubType>
     </Midl>
     <Midl Include="Models\Action.idl" />
-    <Midl Include="Pages\FramelessPageWithMessageDialog.idl" />
   </ItemGroup>
   <Target Name="PlaceAppXbfAtRootOfResourceTree" DependsOnTargets="GetPackagingOutputs">
     <ItemGroup>

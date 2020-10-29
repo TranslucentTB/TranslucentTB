@@ -55,7 +55,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		m_ClosedHandler.remove(token);
 	}
 
-	void FramelessPage::CloseButtonClicked(const IInspectable &, const Windows::UI::Xaml::RoutedEventArgs &)
+	void FramelessPage::CloseButtonClicked(const IInspectable &, const RoutedEventArgs &)
 	{
 		RequestClose();
 	}

@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include "../winrt.hpp"
 #include <winrt/Windows.UI.h>
 
 #include "numbers.hpp"
