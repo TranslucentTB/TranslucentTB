@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FramelessPageWithMessageDialog.h"
+#include "FramelessPage.h"
 #include "Pages/ColorPickerPage.g.h"
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
@@ -11,9 +11,22 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 		bool RequestClose() override;
 
+		event_token ChangesCommitted(const ChangesCommittedDelegate &handler);
+		void ChangesCommitted(const event_token &token);
+
+		void OkButtonClicked(const IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+		void CancelButtonClicked(const IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+		void ApplyButtonClicked(const IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+
+		void DialogOpened(const IInspectable &sender, const Windows::UI::Xaml::Controls::ContentDialogOpenedEventArgs &args);
+		void DialogClosed(const IInspectable &sender, const Windows::UI::Xaml::Controls::ContentDialogClosedEventArgs &args);
+
 	private:
 		fire_and_forget OpenConfirmDialog();
+		void DismissConfirmDialog();
+
 		bool m_DialogOpened = false;
+		event<ChangesCommittedDelegate> m_ChangesCommittedHandler;
 	};
 }
 
