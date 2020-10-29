@@ -8,6 +8,7 @@
 #include "undefgetcurrenttime.h"
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.UI.Xaml.Hosting.h>
+#include <winrt/TranslucentTB.Xaml.Pages.h>
 #include "redefgetcurrenttime.h"
 
 enum class xaml_startup_position {
@@ -30,23 +31,28 @@ protected:
 	static bool AdjustWindowPosition(int &x, int &y, int width, int height, const RECT &workArea) noexcept;
 
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
-	void ResizeWindow(int x, int y, int width, int height, bool move);
-	void Flash();
+	void ResizeWindow(int x, int y, int width, int height, bool move, UINT flags = 0);
+	void Flash() noexcept;
 	BaseXamlPageHost(Util::null_terminated_wstring_view className, HINSTANCE hInst);
-
-	constexpr winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource &source() noexcept
-	{
-		return m_source;
-	}
 
 	inline void Cleanup() noexcept
 	{
 		m_focusRevoker.revoke();
 	}
 
-	inline ~BaseXamlPageHost()
+	inline void BeforeDelete()
 	{
 		m_source.Close();
 		m_source = nullptr;
 	}
+
+public:
+	virtual ~BaseXamlPageHost() = default;
+
+	constexpr winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource &source() noexcept
+	{
+		return m_source;
+	}
+
+	virtual winrt::TranslucentTB::Xaml::Pages::FramelessPage page() noexcept = 0;
 };

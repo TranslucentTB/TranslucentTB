@@ -1,25 +1,12 @@
 #include "application.hpp"
-#include <DispatcherQueue.h>
 #include <WinBase.h>
 #include <WinUser.h>
+#include "winrt.hpp"
 #include <winrt/TranslucentTB.Xaml.Pages.h>
 
 #include "../ProgramLog/error/std.hpp"
 #include "../ProgramLog/error/win32.hpp"
 #include "uwp/uwp.hpp"
-
-winrt::Windows::System::DispatcherQueueController Application::CreateDispatcherController()
-{
-	const DispatcherQueueOptions options = {
-		.dwSize = sizeof(options),
-		.threadType = DQTYPE_THREAD_CURRENT,
-		.apartmentType = DQTAT_COM_STA
-	};
-
-	winrt::com_ptr<ABI::Windows::System::IDispatcherQueueController> controller;
-	HresultVerify(CreateDispatcherQueueController(options, controller.put()), spdlog::level::critical, L"Failed to create dispatcher!");
-	return { controller.detach(), winrt::take_ownership_from_abi };
-}
 
 void Application::ConfigurationChanged(void *context, const Config &cfg)
 {
@@ -62,32 +49,59 @@ void Application::RunDiscordCallbacks()
 
 void Application::CreateWelcomePage(bool hasPackageIdentity)
 {
-	const auto content = m_Xaml.CreateXamlWindow<winrt::TranslucentTB::Xaml::Pages::WelcomePage>(xaml_startup_position::center, hasPackageIdentity);
+	using winrt::TranslucentTB::Xaml::Pages::WelcomePage;
+	CreateXamlWindow<WelcomePage>(
+		xaml_startup_position::center,
+		[this, hasPackageIdentity](WelcomePage content)
+		{
+			auto closeRevoker = content.Closed(winrt::auto_revoke, [this]
+			{
+				// Delete the config file to redo the first start next time.
+				std::error_code errc;
+				// getting the config path *should* be thread-safe: nobody ever modifies it in the program lifetime
+				// and Application doesn't vanish from under our feet.
+				std::filesystem::remove(m_Config.GetConfigPath(), errc);
+				StdErrorCodeVerify(errc, spdlog::level::warn, L"Failed to delete config file");
 
-	auto closeRevoker = content.Closed(winrt::auto_revoke, [this]
-	{
-		// Redo the first start next time.
-		std::error_code errc;
-		std::filesystem::remove(m_Config.GetConfigPath(), errc);
-		StdErrorCodeVerify(errc, spdlog::level::warn, L"Failed to delete config file");
+				m_DispatcherController.DispatcherQueue().TryEnqueue([this]
+				{
+					Shutdown(1);
+				});
+			});
 
-		Shutdown(1);
-	});
+			content.LiberapayOpenRequested(OpenDonationPage);
 
-	content.LiberapayOpenRequested(OpenDonationPage);
-	content.DiscordJoinRequested({ this, &Application::OpenDiscordServer });
-	content.ConfigEditRequested({ this, &Application::EditConfigFile });
+			content.DiscordJoinRequested([this]
+			{
+				m_DispatcherController.DispatcherQueue().TryEnqueue([this]
+				{
+					OpenDiscordServer();
+				});
+			});
 
-	content.LicenseApproved([this, hasPackageIdentity, revoker = std::move(closeRevoker)](bool startupState) mutable
-	{
-		// remove the close handler because returning from the lambda will make the close event fire.
-		revoker.revoke();
+			content.ConfigEditRequested([this]
+			{
+				m_DispatcherController.DispatcherQueue().TryEnqueue([this]
+				{
+					EditConfigFile();
+				});
+			});
 
-		// This is in a different method because the lambda is freed after the first suspension point,
-		// leading to use-after-free issues. An independent method doesn't have that issue, because
-		// everything is stored in the coroutine frame, which is only freed once the coroutine ends.
-		LicenseApprovedCallback(hasPackageIdentity, startupState);
-	});
+			content.LicenseApproved([this, hasPackageIdentity, revoker = std::move(closeRevoker)](bool startupState) mutable
+			{
+				// remove the close handler because returning from the lambda will make the close event fire.
+				revoker.revoke();
+
+				m_DispatcherController.DispatcherQueue().TryEnqueue([this, hasPackageIdentity, startupState]
+				{
+					// This is in a different method because the lambda is freed after the first suspension point,
+					// leading to use-after-free issues. An independent method doesn't have that issue, because
+					// everything is stored in the coroutine frame, which is only freed once the coroutine ends.
+					LicenseApprovedCallback(hasPackageIdentity, startupState);
+				});
+			});
+		},
+		hasPackageIdentity);
 }
 
 winrt::fire_and_forget Application::LicenseApprovedCallback(bool hasPackageIdentity, bool startupState)
@@ -112,8 +126,8 @@ Application::Application(HINSTANCE hInst, bool hasPackageIdentity, bool fileExis
 	m_Config(hasPackageIdentity, fileExists, ConfigurationChanged, this),
 	m_Worker(m_Config.GetConfig(), hInst),
 	m_AppWindow(*this, !fileExists, !hasPackageIdentity, hInst),
-	m_DispatcherController(CreateDispatcherController()),
-	m_Xaml(m_DispatcherController.DispatcherQueue(), hInst)
+	m_DispatcherController(UWP::CreateDispatcherController()),
+	m_Xaml(hInst)
 {
 	if (const auto spam = DynamicLoader::SetPreferredAppMode())
 	{
@@ -186,11 +200,8 @@ int Application::Run()
 			{
 				if (msg.message != WM_QUIT)
 				{
-					if (!m_Xaml.PreTranslateMessage(msg))
-					{
-						TranslateMessage(&msg);
-						DispatchMessage(&msg);
-					}
+					TranslateMessage(&msg);
+					DispatchMessage(&msg);
 				}
 				else
 				{

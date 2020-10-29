@@ -1,8 +1,9 @@
 #include "uwp.hpp"
 #include <Windows.h>
 #include <appmodel.h>
-#include <winrt/Windows.System.h>
+#include <DispatcherQueue.h>
 
+#include "../ProgramLog/error/win32.hpp"
 #include "../ProgramLog/error/winrt.hpp"
 
 using namespace winrt::Windows;
@@ -31,4 +32,17 @@ Foundation::IAsyncAction UWP::OpenUri(const Foundation::Uri &uri)
 	{
 		MessagePrint(spdlog::level::err, L"Uri was not launched.");
 	}
+}
+
+winrt::Windows::System::DispatcherQueueController UWP::CreateDispatcherController()
+{
+	const DispatcherQueueOptions options = {
+		.dwSize = sizeof(options),
+		.threadType = DQTYPE_THREAD_CURRENT,
+		.apartmentType = DQTAT_COM_STA
+	};
+
+	winrt::com_ptr<ABI::Windows::System::IDispatcherQueueController> controller;
+	HresultVerify(CreateDispatcherQueueController(options, controller.put()), spdlog::level::critical, L"Failed to create dispatcher!");
+	return { controller.detach(), winrt::take_ownership_from_abi };
 }

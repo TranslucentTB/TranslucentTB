@@ -63,7 +63,10 @@
     <ClCompile Include="managers\startupmanager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="uwp\xamlcontentmanager.cpp">
+    <ClCompile Include="uwp\xamlthread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="uwp\xamlthreadpool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -119,7 +122,10 @@
     <ClInclude Include="managers\startupmanager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="uwp\xamlcontentmanager.hpp">
+    <ClInclude Include="uwp\xamlthread.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="uwp\xamlthreadpool.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

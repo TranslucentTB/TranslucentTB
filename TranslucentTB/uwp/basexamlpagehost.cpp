@@ -116,25 +116,29 @@ LRESULT BaseXamlPageHost::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam
 	case WM_DWMCOMPOSITIONCHANGED:
 		UpdateFrame();
 		return 0;
+
+	case WM_SETFOCUS:
+		SetFocus(m_interopWnd);
+		return 0;
 	}
 
 	return MessageWindow::MessageHandler(uMsg, wParam, lParam);
 }
 
-void BaseXamlPageHost::ResizeWindow(int x, int y, int width, int height, bool move)
+void BaseXamlPageHost::ResizeWindow(int x, int y, int width, int height, bool move, UINT flags)
 {
-	if (!SetWindowPos(m_interopWnd, nullptr, 0, 0, width, height, SWP_SHOWWINDOW | SWP_NOACTIVATE))
+	if (!SetWindowPos(m_interopWnd, nullptr, 0, 0, width, height, flags | SWP_NOACTIVATE)) [[unlikely]]
 	{
 		LastErrorHandle(spdlog::level::warn, L"Failed to set interop window position");
 	}
 
-	if (!SetWindowPos(m_WindowHandle, nullptr, x, y, width, height, (move ? 0 : SWP_NOMOVE) | SWP_NOACTIVATE))
+	if (!SetWindowPos(m_WindowHandle, nullptr, x, y, width, height, flags | (move ? 0 : SWP_NOMOVE) | SWP_NOACTIVATE)) [[unlikely]]
 	{
 		LastErrorHandle(spdlog::level::warn, L"Failed to set host window position");
 	}
 }
 
-void BaseXamlPageHost::Flash()
+void BaseXamlPageHost::Flash() noexcept
 {
 	FLASHWINFO fwi = {
 		.cbSize = sizeof(fwi),
@@ -142,21 +146,17 @@ void BaseXamlPageHost::Flash()
 		.dwFlags = FLASHW_ALL | FLASHW_TIMERNOFG
 	};
 
-	if (!FlashWindowEx(&fwi))
-	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to flash window");
-	}
+	FlashWindowEx(&fwi);
 }
 
 BaseXamlPageHost::BaseXamlPageHost(Util::null_terminated_wstring_view className, HINSTANCE hInst) :
-	MessageWindow(className, { }, hInst, WS_OVERLAPPED)
+	MessageWindow(className, { }, hInst, WS_SYSMENU)
 {
 	UpdateFrame();
 
 	auto nativeSource = m_source.as<IDesktopWindowXamlSourceNative2>();
-	winrt::check_hresult(nativeSource->AttachToWindow(m_WindowHandle));
-
-	winrt::check_hresult(nativeSource->get_WindowHandle(m_interopWnd.put()));
+	HresultVerify(nativeSource->AttachToWindow(m_WindowHandle), spdlog::level::critical, L"Failed to attach DesktopWindowXamlSource");
+	HresultVerify(nativeSource->get_WindowHandle(m_interopWnd.put()), spdlog::level::critical, L"Failed to get interop window handle");
 
 	m_focusRevoker = m_source.TakeFocusRequested(winrt::auto_revoke, [](const DesktopWindowXamlSource &sender, const DesktopWindowXamlSourceTakeFocusRequestedEventArgs &args)
 	{
