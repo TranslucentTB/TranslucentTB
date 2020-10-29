@@ -160,7 +160,14 @@ BaseXamlPageHost::BaseXamlPageHost(Util::null_terminated_wstring_view className,
 
 	m_focusRevoker = m_source.TakeFocusRequested(winrt::auto_revoke, [](const DesktopWindowXamlSource &sender, const DesktopWindowXamlSourceTakeFocusRequestedEventArgs &args)
 	{
-		// just cycle back to beginning
-		sender.NavigateFocus(args.Request());
+		using winrt::Windows::UI::Xaml::Hosting::XamlSourceFocusNavigationReason;
+
+		const auto request = args.Request();
+		const auto reason = request.Reason();
+		if (reason == XamlSourceFocusNavigationReason::First || reason == XamlSourceFocusNavigationReason::Last)
+		{
+			// just cycle back to beginning
+			sender.NavigateFocus(request);
+		}
 	});
 }
