@@ -56,4 +56,10 @@ public:
 	{
 		m_Xaml.CreateXamlWindow<T>(pos, std::forward<Callback>(callback), std::forward<Args>(args)...);
 	}
+
+	template<typename Callback>
+	void DispatchToMainThread(Callback &&callback)
+	{
+		m_DispatcherController.DispatcherQueue().TryEnqueue(std::forward<Callback>(callback));
+	}
 };

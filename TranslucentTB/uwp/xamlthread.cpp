@@ -130,7 +130,7 @@ XamlThread::XamlThread() :
 
 wil::unique_handle XamlThread::Delete()
 {
-	m_Dispatcher.DispatcherQueue().TryEnqueue([this]
+	m_Dispatcher.DispatcherQueue().TryEnqueue([this]() -> winrt::fire_and_forget
 	{
 		// only called during destruction of thread pool, so no locking needed
 		m_CurrentWindow.reset();
@@ -138,11 +138,8 @@ wil::unique_handle XamlThread::Delete()
 		m_Manager.Close();
 		m_Manager = nullptr;
 
-		using namespace winrt::Windows::Foundation;
-		m_Dispatcher.ShutdownQueueAsync().Completed([](const IAsyncAction &, const AsyncStatus &)
-		{
-			PostQuitMessage(0);
-		});
+		co_await m_Dispatcher.ShutdownQueueAsync();
+		PostQuitMessage(0);
 	});
 
 	return std::move(m_Thread);

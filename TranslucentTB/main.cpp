@@ -1,5 +1,6 @@
 #include "arch.h"
 #include <errhandlingapi.h>
+#include <processthreadsapi.h>
 #include <synchapi.h>
 #include <wil/resource.h>
 #include "winrt.hpp"
@@ -32,10 +33,14 @@ _Use_decl_annotations_ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar
 	HresultErrorCatch(spdlog::level::critical, L"Initialization of Windows Runtime failed.");
 
 	// Run the main program loop. When this method exits, TranslucentTB itself is about to exit.
-	return Application(hInstance, hasPackageIdentity).Run();
+	const auto ret = Application(hInstance, hasPackageIdentity).Run();
 
-	// let the apartment get cleaned up by the system so that our static
-	// COM pointers don't crash when they try to call Release().
+	// why are we brutally terminating you might ask?
+	// Windows.UI.Xaml.dll likes to read null pointers if you exit the app too quickly after
+	// closing a XAML window. While this is not a big deal for the user since we
+	// are about to exit and saved everything, it pollutes telemetry and system crash data.
+	// It's not easily doable to catch SEH exceptions in post-Main DLL unload, so instead just
+	// brutally terminating will work.
+	TerminateProcess(GetCurrentProcess(), ret);
+	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
 }
-
-#pragma endregion

@@ -57,13 +57,13 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 			auto closeRevoker = content.Closed(winrt::auto_revoke, [this]
 			{
 				// Delete the config file to redo the first start next time.
-				std::error_code errc;
 				// getting the config path *should* be thread-safe: nobody ever modifies it in the program lifetime
 				// and Application doesn't vanish from under our feet.
+				std::error_code errc;
 				std::filesystem::remove(m_Config.GetConfigPath(), errc);
 				StdErrorCodeVerify(errc, spdlog::level::warn, L"Failed to delete config file");
 
-				m_DispatcherController.DispatcherQueue().TryEnqueue([this]
+				DispatchToMainThread([this]
 				{
 					Shutdown(1);
 				});
@@ -73,7 +73,7 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 
 			content.DiscordJoinRequested([this]
 			{
-				m_DispatcherController.DispatcherQueue().TryEnqueue([this]
+				DispatchToMainThread([this]
 				{
 					OpenDiscordServer();
 				});
@@ -81,7 +81,7 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 
 			content.ConfigEditRequested([this]
 			{
-				m_DispatcherController.DispatcherQueue().TryEnqueue([this]
+				DispatchToMainThread([this]
 				{
 					EditConfigFile();
 				});
@@ -92,7 +92,7 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 				// remove the close handler because returning from the lambda will make the close event fire.
 				revoker.revoke();
 
-				m_DispatcherController.DispatcherQueue().TryEnqueue([this, hasPackageIdentity, startupState]
+				DispatchToMainThread([this, hasPackageIdentity, startupState]
 				{
 					// This is in a different method because the lambda is freed after the first suspension point,
 					// leading to use-after-free issues. An independent method doesn't have that issue, because
