@@ -1,12 +1,12 @@
 #pragma once
 #include "arch.h"
 #include <cstdint>
-#include <libloaderapi.h>
-#include <string_view>
 #include <windef.h>
 #include <winnt.h>
 
+#include "util/null_terminated_string_view.hpp"
+
 namespace Localization {
-	static constexpr std::wstring_view FAILED_LOADING_RESOURCE = L"[error occured while loading localized string]";
-	std::wstring_view LoadLocalizedString(uint16_t resource, WORD lang = MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL), HINSTANCE hInst = GetModuleHandle(nullptr));
+	static constexpr Util::null_terminated_wstring_view FAILED_LOADING = L"[error occured while loading localized string]";
+	Util::null_terminated_wstring_view LoadLocalizedResourceString(uint16_t resource, HINSTANCE hInst, WORD lang = MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
 }

@@ -3,6 +3,7 @@
 
 #include "application.hpp"
 #include "constants.hpp"
+#include "localization.hpp"
 #include "undoc/dynamicloader.hpp"
 #include "../ProgramLog/log.hpp"
 #include "../ProgramLog/error/win32.hpp"
@@ -41,7 +42,7 @@ void MainAppWindow::RefreshMenu()
 {
 	const auto &cfg = m_App.GetConfigManager().GetConfig();
 
-	// TODO AppearanceMenuRefresh(ID_GROUP_DESKTOP, m_Config.DesktopAppearance, m_Config.UseRegularAppearanceWhenPeeking, false);
+	AppearanceMenuRefresh(ID_GROUP_DESKTOP, cfg.DesktopAppearance);
 	AppearanceMenuRefresh(ID_GROUP_VISIBLE, cfg.VisibleWindowAppearance);
 	AppearanceMenuRefresh(ID_GROUP_MAXIMISED, cfg.MaximisedWindowAppearance);
 	AppearanceMenuRefresh(ID_GROUP_START, cfg.StartOpenedAppearance);
@@ -52,7 +53,7 @@ void MainAppWindow::RefreshMenu()
 	EnableItem(ID_SUBMENU_LOG, ok);
 	CheckItem(ID_SUBMENU_LOG, logsEnabled);
 	EnableItem(ID_OPENLOG, hasFile);
-	SetText(ID_OPENLOG, logText);
+	SetText(ID_OPENLOG, Localization::LoadLocalizedResourceString(logText, hinstance()));
 	CheckRadio(ID_LOG_TRACE, ID_LOG_OFF, levelButton);
 
 	CheckItem(ID_DISABLESAVING, cfg.DisableSaving);
@@ -63,24 +64,28 @@ void MainAppWindow::RefreshMenu()
 
 		CheckItem(ID_AUTOSTART, enabled);
 		EnableItem(ID_AUTOSTART, userModifiable);
-		SetText(ID_AUTOSTART, autostartText);
+		SetText(ID_AUTOSTART, Localization::LoadLocalizedResourceString(autostartText, hinstance()));
 	}
 }
 
-void MainAppWindow::AppearanceMenuRefresh(uint16_t group, const TaskbarAppearance &appearance, bool b, bool controlsEnabled)
+void MainAppWindow::AppearanceMenuRefresh(uint16_t group, const TaskbarAppearance &appearance)
 {
-	CheckItem(ID_TYPE_ACTIONS + group + ID_OFFSET_ENABLED, b);
-
-	EnableItem(ID_TYPE_ACTIONS + group + ID_OFFSET_COLOR, controlsEnabled && b && appearance.Accent != ACCENT_NORMAL);
-	if (controlsEnabled)
+	bool shouldEnableColor = appearance.Accent != ACCENT_NORMAL;
+	if (group != ID_GROUP_DESKTOP)
 	{
-		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_NORMAL, b);
-		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_OPAQUE, b);
-		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_CLEAR, b);
-		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_BLUR, b);
-		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_ACRYLIC, b);
+		const bool enabled = static_cast<const OptionalTaskbarAppearance &>(appearance).Enabled;
+		shouldEnableColor = shouldEnableColor && enabled;
+
+		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_NORMAL, enabled);
+		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_OPAQUE, enabled);
+		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_CLEAR, enabled);
+		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_BLUR, enabled);
+		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_ACRYLIC, enabled);
+
+		CheckItem(ID_TYPE_ACTIONS + group + ID_OFFSET_ENABLED, enabled);
 	}
 
+	EnableItem(ID_TYPE_ACTIONS + group + ID_OFFSET_COLOR, shouldEnableColor);
 	CheckRadio(
 		ID_TYPE_RADIOS + group + ID_OFFSET_NORMAL,
 		ID_TYPE_RADIOS + group + ID_OFFSET_ACRYLIC,
@@ -152,12 +157,12 @@ void MainAppWindow::ClickHandler(unsigned int id)
 	auto &worker = m_App.GetWorker();
 
 	const uint16_t group = id & ID_GROUP_MASK;
+	const uint8_t offset = id & ID_OFFSET_MASK;
 
 	switch (id & ID_TYPE_MASK)
 	{
 	case ID_TYPE_RADIOS:
 	{
-		const uint8_t offset = id & ID_OFFSET_MASK;
 		switch (group)
 		{
 		case ID_GROUP_DESKTOP:

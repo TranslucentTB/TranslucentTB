@@ -18,7 +18,7 @@ _Use_decl_annotations_ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar
 
 	win32::HardenProcess();
 
-	wil::unique_mutex mutex(MUTEX_GUID);
+	wil::unique_mutex mutex(MUTEX_GUID.c_str());
 	if (GetLastError() == ERROR_ALREADY_EXISTS)
 	{
 		// If there already is another instance running, tell it to exit

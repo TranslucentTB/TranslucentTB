@@ -1,11 +1,10 @@
 #pragma once
 #include "arch.h"
-#include <string>
 #include <windef.h>
 #include <wil/resource.h>
 
-#include "../localization.hpp"
 #include "../../ProgramLog/error/win32.hpp"
+#include "util/null_terminated_string_view.hpp"
 #include "window.hpp"
 
 class ContextMenu {
@@ -16,7 +15,7 @@ protected:
 	inline void CheckItem(unsigned int id, bool state) { CheckItem(m_Menu.get(), id, state); }
 	inline void EnableItem(unsigned int id, bool state) { EnableItem(m_Menu.get(), id, state); }
 	inline void CheckRadio(unsigned int first, unsigned int last, unsigned int id) { CheckRadio(m_Menu.get(), first, last, id); }
-	inline void SetText(unsigned int id, uint16_t new_text_resource) { SetText(m_Menu.get(), id, new_text_resource); }
+	inline void SetText(unsigned int id, Util::null_terminated_wstring_view new_text) { SetText(m_Menu.get(), id, new_text); }
 	inline void RemoveItem(unsigned int id) { RemoveItem(m_Menu.get(), id); }
 
 public:
@@ -47,16 +46,15 @@ public:
 		}
 	}
 
-	inline static void SetText(HMENU menu, unsigned int id, uint16_t new_text_resource)
+	inline static void SetText(HMENU menu, unsigned int id, Util::null_terminated_wstring_view new_text)
 	{
-		std::wstring new_text(Localization::LoadLocalizedString(new_text_resource));
 		const MENUITEMINFO item_info = {
 			.cbSize = sizeof(item_info),
 			.fMask = MIIM_STRING,
-			.dwTypeData = new_text.data()
+			.dwTypeData = const_cast<wchar_t *>(new_text.c_str())
 		};
 
-		BOOL ret = SetMenuItemInfo(menu, id, false, &item_info);
+		const BOOL ret = SetMenuItemInfo(menu, id, false, &item_info);
 		if (!ret)
 		{
 			LastErrorHandle(spdlog::level::info, L"Failed to set menu item text.");
