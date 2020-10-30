@@ -50,16 +50,11 @@
     <CppWinRTFastAbi>true</CppWinRTFastAbi>
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
-  </PropertyGroup>
 
-  <PropertyGroup>
     <fmtlib Condition="'$(Configuration)'=='Release'">fmt.lib</fmtlib>
     <fmtlib Condition="'$(Configuration)'=='Debug'">fmtd.lib</fmtlib>
-  </PropertyGroup>
 
-  <PropertyGroup Condition="'$(UsingGameSDK)'==''">
-    <UsingGameSDK>false</UsingGameSDK>
-    <UsingGameSDK Condition="'$(Platform)'=='x64'">true</UsingGameSDK>
+    <UsingGameSDK Condition="'$(UsingGameSDK)'=='' and '$(Platform)'=='x64'">true</UsingGameSDK>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

@@ -93,7 +93,7 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 			// the stack trace in the dump, debugger and telemetry is unaffected by our error handling,
 			// giving us better insight into what went wrong.
 			RoFailFastWithErrorContext(err);
-			__assume(0);
+			__fastfail(FAST_FAIL_FATAL_APP_EXIT);
 		}
 		else
 		{
@@ -102,7 +102,7 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 	}
 
 	RaiseFailFastException(nullptr, nullptr, FAIL_FAST_GENERATE_EXCEPTION_ADDRESS);
-	__assume(0);
+	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
 }
 
 std::thread Error::impl::CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type)
