@@ -1,9 +1,7 @@
 #pragma once
 #include "basexamlpagehost.hpp"
 #include <concepts>
-#include <limits>
 #include <ShObjIdl_core.h>
-#include <string>
 #include <type_traits>
 
 #include "winrt.hpp"
@@ -12,6 +10,7 @@
 #include <winrt/Windows.UI.Xaml.h>
 #include <winrt/Windows.UI.Xaml.Hosting.h>
 #include <winrt/Windows.System.h>
+#include <winrt/TranslucentTB.Xaml.Pages.h>
 #include "redefgetcurrenttime.h"
 
 #include "util/string_macros.hpp"
@@ -40,26 +39,6 @@ private:
 	bool m_PendingSizeUpdate = false;
 	callback_t m_Callback;
 	void *m_CallbackData;
-
-	static constexpr std::wstring_view ExtractTypename()
-	{
-		constexpr std::wstring_view prefix = L"XamlPageHost<struct winrt::";
-		constexpr std::wstring_view suffix = L">::ExtractTypename";
-
-		std::wstring_view funcsig = UTIL_WIDEN(__FUNCSIG__);
-		funcsig.remove_prefix(funcsig.find(prefix) + prefix.length());
-		funcsig.remove_suffix(funcsig.length() - funcsig.rfind(suffix));
-
-		return funcsig;
-	}
-
-	inline static const std::wstring &GetClassName()
-	{
-		static constexpr std::wstring_view type_name = ExtractTypename();
-		static const std::wstring class_name(type_name);
-
-		return class_name;
-	}
 
 	inline LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override
 	{
@@ -251,8 +230,8 @@ private:
 
 public:
 	template<typename... Args>
-	inline XamlPageHost(HINSTANCE hInst, xaml_startup_position position, winrt::Windows::System::DispatcherQueue dispatcher, callback_t callback, void *data, Args&&... args) :
-		BaseXamlPageHost(GetClassName(), hInst),
+	inline XamlPageHost(WindowClass &classRef, xaml_startup_position position, winrt::Windows::System::DispatcherQueue dispatcher, callback_t callback, void *data, Args&&... args) :
+		BaseXamlPageHost(classRef),
 		m_content(std::forward<Args>(args)...),
 		m_Dispatcher(std::move(dispatcher)),
 		m_Callback(callback),

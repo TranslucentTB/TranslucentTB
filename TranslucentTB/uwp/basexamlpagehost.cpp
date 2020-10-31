@@ -149,8 +149,8 @@ void BaseXamlPageHost::Flash() noexcept
 	FlashWindowEx(&fwi);
 }
 
-BaseXamlPageHost::BaseXamlPageHost(Util::null_terminated_wstring_view className, HINSTANCE hInst) :
-	MessageWindow(className, { }, hInst, WS_SYSMENU)
+BaseXamlPageHost::BaseXamlPageHost(WindowClass &classRef) :
+	MessageWindow(classRef, { }, WS_SYSMENU)
 {
 	UpdateFrame();
 

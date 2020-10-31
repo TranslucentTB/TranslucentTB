@@ -11,6 +11,8 @@
 #include <winrt/TranslucentTB.Xaml.Pages.h>
 #include "redefgetcurrenttime.h"
 
+#include "../windows/windowclass.hpp"
+
 enum class xaml_startup_position {
 	center,
 	mouse
@@ -33,7 +35,7 @@ protected:
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void ResizeWindow(int x, int y, int width, int height, bool move, UINT flags = 0);
 	void Flash() noexcept;
-	BaseXamlPageHost(Util::null_terminated_wstring_view className, HINSTANCE hInst);
+	BaseXamlPageHost(WindowClass &classRef);
 
 	inline void Cleanup() noexcept
 	{

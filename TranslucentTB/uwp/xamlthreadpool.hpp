@@ -8,11 +8,12 @@
 #include <winrt/TranslucentTB.Xaml.h>
 
 #include "../../ProgramLog/error/winrt.hpp"
+#include "../windows/windowclass.hpp"
 #include "xamlpagehost.hpp"
 #include "xamlthread.hpp"
 
 class XamlThreadPool {
-	HINSTANCE m_hInst;
+	WindowClass m_WndClass;
 	winrt::TranslucentTB::Xaml::App m_App = nullptr;
 
 	std::vector<std::unique_ptr<XamlThread>> m_Threads;
@@ -22,7 +23,7 @@ public:
 	XamlThreadPool(const XamlThreadPool &) = delete;
 	XamlThreadPool &operator =(const XamlThreadPool &) = delete;
 
-	inline XamlThreadPool(HINSTANCE hInst) noexcept : m_hInst(hInst) { }
+	inline XamlThreadPool(HINSTANCE hInst) noexcept : m_WndClass(MessageWindow::MakeWindowClass(L"XamlPageHost", hInst)) { }
 
 	template<typename T, typename Callback, typename... Args>
 	void CreateXamlWindow(xaml_startup_position pos, Callback &&callback, Args&&... args)
@@ -38,7 +39,7 @@ public:
 
 		std::unique_lock<Util::thread_independent_mutex> guard;
 		XamlThread &thread = GetAvailableThread(guard);
-		thread.CreateXamlWindow<T>(std::move(guard), m_hInst, pos, std::forward<Callback>(callback), std::forward<Args>(args)...);
+		thread.CreateXamlWindow<T>(std::move(guard), m_WndClass, pos, std::forward<Callback>(callback), std::forward<Args>(args)...);
 	}
 
 	~XamlThreadPool();
