@@ -6,7 +6,7 @@
     xmlns:local="using:TranslucentTB.Xaml.Pages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" IsClosable="True">
+    mc:Ignorable="d" IsClosable="True" Width="375">
 
     <local:FramelessPage.TitlebarContent>
         <controls:ChromeButton ToolTipService.ToolTip="Always on top" IsTogglable="True" IsChecked="{x:Bind AlwaysOnTop, Mode = TwoWay}" IsTabStop="True">
@@ -14,7 +14,7 @@
         </controls:ChromeButton>
     </local:FramelessPage.TitlebarContent>
 
-    <StackPanel Padding="15">
+    <StackPanel Padding="12">
         <!--
             HACK: allows ContentDialog localization in .resw, removes the need for explicit XamlRoot
             We insert it here because anywhere else it would throw off StackPanel spacing.
@@ -32,10 +32,10 @@
 
         <ColorPicker x:Name="Picker" IsAlphaEnabled="True" IsMoreButtonVisible="True" />
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
-            <Button Width="100" Click="OkButtonClicked" Style="{ThemeResource AccentButtonStyle}">OK</Button>
-            <Button Width="100" Click="CancelButtonClicked">Cancel</Button>
-            <Button Width="100" Click="ApplyButtonClicked">Apply</Button>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,12,0,0">
+            <Button Width="90" Click="OkButtonClicked" Style="{ThemeResource AccentButtonStyle}">OK</Button>
+            <Button Width="90" Click="CancelButtonClicked">Cancel</Button>
+            <Button Width="90" Click="ApplyButtonClicked">Apply</Button>
         </StackPanel>
     </StackPanel>
 </local:FramelessPage>
