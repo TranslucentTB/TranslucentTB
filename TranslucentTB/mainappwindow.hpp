@@ -30,7 +30,7 @@ private:
 
 	void ClickHandler(unsigned int id) override;
 	TaskbarAppearance &AppearanceForGroup(Config &cfg, uint16_t group) noexcept;
-	void AppearanceMenuHandler(uint8_t offset, TaskbarAppearance &appearance, bool &b);
+	void AppearanceMenuHandler(uint16_t group, uint16_t offset, Config &cfg);
 	void HideTrayHandler();
 	void AutostartMenuHandler();
 

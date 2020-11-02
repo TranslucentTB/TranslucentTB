@@ -191,7 +191,7 @@ void MainAppWindow::ClickHandler(unsigned int id)
 		case ID_GROUP_START:
 		case ID_GROUP_CORTANA:
 		case ID_GROUP_TIMELINE:
-			// TODO
+			AppearanceMenuHandler(group, offset, cfg);
 			break;
 		default:
 			switch (id)
@@ -258,16 +258,35 @@ TaskbarAppearance &MainAppWindow::AppearanceForGroup(Config &cfg, uint16_t group
 	}
 }
 
-void MainAppWindow::AppearanceMenuHandler(uint8_t offset, [[maybe_unused]] TaskbarAppearance &appearance, bool &b)
+void MainAppWindow::AppearanceMenuHandler(uint16_t group, uint16_t offset, Config &cfg)
 {
-	if (offset == ID_OFFSET_ENABLED)
+	auto &appearance = AppearanceForGroup(cfg, group);
+
+	switch (offset)
 	{
-		b = !b;
-		m_App.GetWorker().ConfigurationChanged();
-	}
-	else if (offset == ID_OFFSET_COLOR)
-	{
-		// TODO: color, remove maybe_unused
+	case ID_OFFSET_ENABLED:
+		if (group != ID_GROUP_DESKTOP)
+		{
+			bool &enabled = static_cast<OptionalTaskbarAppearance &>(appearance).Enabled;
+			enabled = !enabled;
+			m_App.GetWorker().ConfigurationChanged();
+		}
+		break;
+
+	case ID_OFFSET_COLOR:
+		using winrt::TranslucentTB::Xaml::Pages::ColorPickerPage;
+		m_App.CreateXamlWindow<ColorPickerPage>(xaml_startup_position::mouse, [this, &appearance](ColorPickerPage &picker)
+		{
+			picker.ChangesCommitted([this, &appearance](const winrt::Windows::UI::Color &color)
+			{
+				m_App.DispatchToMainThread([this, &appearance, color]() mutable
+				{
+					appearance.Color = color;
+					m_App.GetWorker().ConfigurationChanged();
+				});
+			});
+		}, L"TEST", appearance.Color);
+		break;
 	}
 }
 
