@@ -20,18 +20,13 @@ private:
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	void RefreshMenu() override;
-	void AppearanceMenuRefresh(uint16_t group, const TaskbarAppearance &appearance, bool b, bool controlsEnabled);
+	void AppearanceMenuRefresh(uint16_t group, const TaskbarAppearance &appearance);
 
 	// Ok, logs enabled, has file, text, level button
 	std::tuple<bool, bool, bool, uint16_t, unsigned int> GetLogMenu();
 
 	// User modifiable, enabled, text
 	std::tuple<bool, bool, uint16_t> GetAutostartMenu(const StartupManager &manager);
-
-	inline void AppearanceMenuRefresh(uint16_t group, const OptionalTaskbarAppearance &appearance)
-	{
-		AppearanceMenuRefresh(group, appearance, appearance.Enabled, true);
-	}
 
 	void ClickHandler(unsigned int id) override;
 	TaskbarAppearance &AppearanceForGroup(Config &cfg, uint16_t group) noexcept;
