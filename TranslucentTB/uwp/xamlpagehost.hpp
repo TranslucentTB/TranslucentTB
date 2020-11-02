@@ -3,6 +3,7 @@
 #include <concepts>
 #include <ShObjIdl_core.h>
 #include <type_traits>
+#include <windowsx.h>
 
 #include "winrt.hpp"
 #include "undefgetcurrenttime.h"
@@ -15,7 +16,6 @@
 
 #include "util/string_macros.hpp"
 #include "../ProgramLog/error/win32.hpp"
-#include "../tray/contextmenu.hpp"
 #include "undoc/dynamicloader.hpp"
 
 template<typename T>
@@ -29,7 +29,6 @@ private:
 
 	winrt::event_token m_AlwaysOnTopChangedToken;
 	winrt::event_token m_TitleChangedToken;
-	winrt::event_token m_IsClosableChangedToken;
 	typename T::Closed_revoker m_ClosedRevoker;
 	typename T::LayoutUpdated_revoker m_LayoutUpdatedRevoker;
 
@@ -67,6 +66,40 @@ private:
 			}
 
 			return 0;
+
+		case WM_SYSKEYDOWN:
+			if (wParam == VK_SPACE)
+			{
+				m_content.ShowSystemMenu({ 0, 0 });
+				return 0;
+			}
+			break;
+
+		case WM_NCLBUTTONDOWN:
+			m_content.HideSystemMenu();
+			if (wParam == HTCAPTION && !m_content.CanMove())
+			{
+				return 0;
+			}
+			break;
+
+		case WM_NCRBUTTONUP:
+			if (wParam == HTCAPTION)
+			{
+				if (const auto wndRect = rect())
+				{
+					const auto x = GET_X_LPARAM(lParam);
+					const auto y = GET_Y_LPARAM(lParam);
+					const auto scale = GetDpiScale(monitor());
+
+					m_content.ShowSystemMenu({
+						(x - wndRect->left) / scale,
+						(y - wndRect->top) / scale
+					});
+					return 0;
+				}
+			}
+			break;
 		}
 
 		return BaseXamlPageHost::MessageHandler(uMsg, wParam, lParam);
@@ -74,7 +107,7 @@ private:
 
 	inline void OnXamlLayoutChanged(const winrt::Windows::Foundation::IInspectable &, const winrt::Windows::Foundation::IInspectable &)
 	{
-		if (!m_PendingSizeUpdate)
+		if (!m_PendingSizeUpdate && m_SizeUpdater)
 		{
 			m_PendingSizeUpdate = m_Dispatcher.TryEnqueue(winrt::Windows::System::DispatcherQueuePriority::Low, m_SizeUpdater);
 		}
@@ -83,45 +116,43 @@ private:
 	inline void InitialUpdateWindowSize(xaml_startup_position position)
 	{
 		m_LayoutUpdatedRevoker.revoke();
-		const auto guard = wil::scope_exit([this]
-		{
-			m_PendingSizeUpdate = false;
-			m_LayoutUpdatedRevoker = m_content.LayoutUpdated(winrt::auto_revoke, m_LayoutUpdatedHandler);
-		});
 
 		POINT cursor = { 0, 0 };
 		const HMONITOR mon = GetInitialMonitor(cursor, position);
 
 		MONITORINFO info = { sizeof(info) };
-		const auto [width, height] = GetXamlSize(mon, info);
+		const auto [windowSize, dragRegion] = GetXamlSize(mon, info);
 
 		if (const auto wndRect = rect())
 		{
-			int x = wndRect->left, y = wndRect->top;
+			int width = static_cast<int>(windowSize.Width),
+				height = static_cast<int>(windowSize.Height),
+				x = wndRect->left,
+				y = wndRect->top;
+
 			CalculateInitialPosition(x, y, width, height, cursor, info.rcWork, position);
 			ResizeWindow(x, y, width, height, true, SWP_SHOWWINDOW);
 			SetForegroundWindow(m_WindowHandle);
 		}
+
+		PositionDragRegion(dragRegion, SWP_SHOWWINDOW);
+
+		m_LayoutUpdatedRevoker = m_content.LayoutUpdated(winrt::auto_revoke, m_LayoutUpdatedHandler);
+		m_PendingSizeUpdate = false;
 	}
 
 	// This method is in a fairly hot path, especially when using the color picker
 	inline void UpdateWindowSize()
 	{
 		m_LayoutUpdatedRevoker.revoke();
-		const auto guard = wil::scope_exit([this]
-		{
-			m_PendingSizeUpdate = false;
-			if (m_content)
-			{
-				m_LayoutUpdatedRevoker = m_content.LayoutUpdated(winrt::auto_revoke, m_LayoutUpdatedHandler);
-			}
-		});
 
 		if (m_content)
 		{
 			MONITORINFO info = { sizeof(info) };
-			const auto [newWidth, newHeight] = GetXamlSize(monitor(), info);
+			const auto [windowSize, dragRegion] = GetXamlSize(monitor(), info);
 
+			const auto newHeight = static_cast<int>(windowSize.Height);
+			const auto newWidth = static_cast<int>(windowSize.Width);
 			const auto wndRect = rect();
 			if (wndRect && (wndRect->bottom - wndRect->top != newHeight || wndRect->right - wndRect->left != newWidth)) [[unlikely]]
 			{
@@ -129,15 +160,24 @@ private:
 				const bool move = AdjustWindowPosition(x, y, newWidth, newHeight, info.rcWork);
 				ResizeWindow(x, y, newWidth, newHeight, move);
 			}
+
+			PositionDragRegion(dragRegion);
+
+			if (m_LayoutUpdatedHandler)
+			{
+				m_LayoutUpdatedRevoker = m_content.LayoutUpdated(winrt::auto_revoke, m_LayoutUpdatedHandler);
+			}
 		}
+
+		m_PendingSizeUpdate = false;
 	}
 
-	inline std::pair<int, int> GetXamlSize(HMONITOR mon, MONITORINFO &info)
+	inline std::pair<winrt::Windows::Foundation::Size, winrt::Windows::Foundation::Rect> GetXamlSize(HMONITOR mon, MONITORINFO &info)
 	{
 		if (!GetMonitorInfo(mon, &info)) [[unlikely]]
 		{
 			LastErrorHandle(spdlog::level::warn, L"Failed to get monitor info");
-			return { 0, 0 };
+			return { };
 		}
 
 		const auto scale = GetDpiScale(mon);
@@ -150,7 +190,16 @@ private:
 		size = m_content.DesiredSize();
 		m_content.UpdateLayout(); // prevent the call to Measure from firing a LayoutUpdated event
 
-		return { static_cast<int>(size.Width * scale), static_cast<int>(size.Height * scale) };
+		size.Width *= scale;
+		size.Height *= scale;
+
+		winrt::Windows::Foundation::Rect dragRegion = m_content.DragRegion();
+		dragRegion.X *= scale;
+		dragRegion.Y *= scale;
+		dragRegion.Width *= scale;
+		dragRegion.Height *= scale;
+
+		return { size, dragRegion };
 	}
 
 	inline void UpdateTitle(const winrt::Windows::UI::Xaml::DependencyObject &, const winrt::Windows::UI::Xaml::DependencyProperty &)
@@ -170,11 +219,6 @@ private:
 		}
 	}
 
-	inline void UpdateIsClosable(const winrt::Windows::UI::Xaml::DependencyObject &, const winrt::Windows::UI::Xaml::DependencyProperty &)
-	{
-		ContextMenu::EnableItem(GetSystemMenu(m_WindowHandle, false), SC_CLOSE, m_content.IsClosable());
-	}
-
 	inline void UpdateTheme()
 	{
 		if (const auto saudm = DynamicLoader::ShouldAppsUseDarkMode())
@@ -187,13 +231,21 @@ private:
 
 	void OnClose()
 	{
-		// cleanup asap
-		BeforeDelete();
+		m_content.HideSystemMenu();
+		show(SW_HIDE);
 
-		// dispatch the rest because cleaning up the XAML source here makes the XAML framework very angry
+		m_LayoutUpdatedRevoker.revoke();
+		m_LayoutUpdatedHandler = nullptr;
+		m_SizeUpdater = nullptr;
+		m_ClosedRevoker.revoke();
+
+		using winrt::TranslucentTB::Xaml::Pages::FramelessPage;
+		UnregisterPropertyChangedCallback<FramelessPage::TitleProperty>(m_TitleChangedToken);
+		UnregisterPropertyChangedCallback<FramelessPage::AlwaysOnTopProperty>(m_AlwaysOnTopChangedToken);
+
+		// dispatch the deletion because cleaning up the XAML source here makes the XAML framework very angry
 		m_Dispatcher.TryEnqueue(winrt::Windows::System::DispatcherQueuePriority::Low, [this]
 		{
-			BaseXamlPageHost::BeforeDelete();
 			m_Callback(m_CallbackData);
 		});
 	}
@@ -208,30 +260,17 @@ private:
 		}
 	}
 
-	void BeforeDelete()
+public:
+	inline ~XamlPageHost()
 	{
 		show(SW_HIDE);
 		source().Content(nullptr);
-
-		m_LayoutUpdatedRevoker.revoke();
-		m_LayoutUpdatedHandler = nullptr;
-		m_SizeUpdater = nullptr;
-		m_ClosedRevoker.revoke();
-
-		using winrt::TranslucentTB::Xaml::Pages::FramelessPage;
-		UnregisterPropertyChangedCallback<FramelessPage::TitleProperty>(m_TitleChangedToken);
-		UnregisterPropertyChangedCallback<FramelessPage::AlwaysOnTopProperty>(m_AlwaysOnTopChangedToken);
-		UnregisterPropertyChangedCallback<FramelessPage::IsClosableProperty>(m_IsClosableChangedToken);
-
 		m_content = nullptr;
-
-		BaseXamlPageHost::Cleanup();
 	}
 
-public:
 	template<typename... Args>
-	inline XamlPageHost(WindowClass &classRef, xaml_startup_position position, winrt::Windows::System::DispatcherQueue dispatcher, callback_t callback, void *data, Args&&... args) :
-		BaseXamlPageHost(classRef),
+	inline XamlPageHost(WindowClass &classRef, WindowClass &dragRegionClass, xaml_startup_position position, winrt::Windows::System::DispatcherQueue dispatcher, callback_t callback, void *data, Args&&... args) :
+		BaseXamlPageHost(classRef, dragRegionClass),
 		m_content(std::forward<Args>(args)...),
 		m_Dispatcher(std::move(dispatcher)),
 		m_Callback(callback),
@@ -240,10 +279,8 @@ public:
 		UpdateTheme();
 		UpdateTitle(nullptr, nullptr);
 		UpdateAlwaysOnTop(nullptr, nullptr);
-		UpdateIsClosable(nullptr, nullptr);
 
 		using winrt::TranslucentTB::Xaml::Pages::FramelessPage;
-		m_IsClosableChangedToken.value = m_content.RegisterPropertyChangedCallback(FramelessPage::IsClosableProperty(), { this, &XamlPageHost::UpdateIsClosable });
 		m_AlwaysOnTopChangedToken.value = m_content.RegisterPropertyChangedCallback(FramelessPage::AlwaysOnTopProperty(), { this, &XamlPageHost::UpdateAlwaysOnTop });
 		m_TitleChangedToken.value = m_content.RegisterPropertyChangedCallback(FramelessPage::TitleProperty(), { this, &XamlPageHost::UpdateTitle });
 
@@ -267,7 +304,6 @@ public:
 		}
 
 		// TODO:
-		// draggable titlebar
 		// react to dpi change
 		// tab navigation enabled on opening
 	}

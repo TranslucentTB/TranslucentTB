@@ -93,8 +93,8 @@ public:
 		return FindWindowEx(parent, childAfter, className.empty() ? nullptr : className.c_str(), windowName.empty() ? nullptr : windowName.c_str());
 	}
 
-	inline static Window Create(unsigned long dwExStyle, LPCWSTR winClass, HINSTANCE hInstance,
-		Util::null_terminated_wstring_view windowName, unsigned long dwStyle, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT,
+	inline static Window Create(DWORD dwExStyle, LPCWSTR winClass, HINSTANCE hInstance,
+		Util::null_terminated_wstring_view windowName, DWORD dwStyle, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT,
 		int nWidth = CW_USEDEFAULT, int nHeight = CW_USEDEFAULT, Window parent = Window::NullWindow,
 		HMENU hMenu = nullptr, void *lpParam = nullptr) noexcept
 	{
@@ -103,8 +103,8 @@ public:
 	}
 
 #ifdef _TRANSLUCENTTB_EXE
-	inline static Window Create(unsigned long dwExStyle, const WindowClass &winClass,
-		Util::null_terminated_wstring_view windowName, unsigned long dwStyle, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT,
+	inline static Window Create(DWORD dwExStyle, const WindowClass &winClass,
+		Util::null_terminated_wstring_view windowName, DWORD dwStyle, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT,
 		int nWidth = CW_USEDEFAULT, int nHeight = CW_USEDEFAULT, Window parent = Window::NullWindow,
 		HMENU hMenu = nullptr, void *lpParam = nullptr) noexcept
 	{

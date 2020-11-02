@@ -10,6 +10,11 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		FramelessPage();
 
+		virtual bool CanMove() noexcept;
+
+		void ShowSystemMenu(const Windows::Foundation::Point &position);
+		void HideSystemMenu();
+
 		virtual bool RequestClose();
 		virtual Windows::Foundation::Rect DragRegion();
 
@@ -18,6 +23,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void Closed(const event_token &token);
 
 		void CloseButtonClicked(const IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+		void CloseFlyoutClicked(const IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
 
 		DECL_VALUE_DEPENDENCY_PROPERTY(hstring, Title);
 		DECL_REF_DEPENDENCY_PROPERTY(Windows::Foundation::Collections::IObservableVector<Controls::ChromeButton>, TitlebarContent);

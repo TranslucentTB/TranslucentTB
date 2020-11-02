@@ -127,7 +127,7 @@ LRESULT BaseXamlPageHost::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam
 
 void BaseXamlPageHost::ResizeWindow(int x, int y, int width, int height, bool move, UINT flags)
 {
-	if (!SetWindowPos(m_interopWnd, nullptr, 0, 0, width, height, flags | SWP_NOACTIVATE)) [[unlikely]]
+	if (!SetWindowPos(m_interopWnd, nullptr, 0, 0, width, height, flags | SWP_NOACTIVATE | SWP_NOZORDER)) [[unlikely]]
 	{
 		LastErrorHandle(spdlog::level::warn, L"Failed to set interop window position");
 	}
@@ -135,6 +135,36 @@ void BaseXamlPageHost::ResizeWindow(int x, int y, int width, int height, bool mo
 	if (!SetWindowPos(m_WindowHandle, nullptr, x, y, width, height, flags | (move ? 0 : SWP_NOMOVE) | SWP_NOACTIVATE)) [[unlikely]]
 	{
 		LastErrorHandle(spdlog::level::warn, L"Failed to set host window position");
+	}
+}
+
+void BaseXamlPageHost::PositionDragRegion(winrt::Windows::Foundation::Rect position, UINT flags)
+{
+	const auto newX = static_cast<int>(position.X);
+	const auto newY = static_cast<int>(position.Y);
+	const auto newHeight = static_cast<int>(position.Height);
+	const auto newWidth = static_cast<int>(position.Width);
+
+	const auto dragRegionRect = m_DragRegion.rect();
+	const auto wndRect = rect();
+	if (dragRegionRect && wndRect)
+	{
+		const auto x = dragRegionRect->left - wndRect->left;
+		const auto y = dragRegionRect->top - wndRect->top;
+		const auto width = dragRegionRect->right - dragRegionRect->left;
+		const auto height = dragRegionRect->bottom - dragRegionRect->top;
+		if (x != newX || y != newY || height != newHeight || width != newWidth) [[unlikely]]
+		{
+			if (!SetWindowPos(m_DragRegion, HWND_TOP, newX, newY, newWidth, newHeight, flags | SWP_NOACTIVATE)) [[unlikely]]
+			{
+				LastErrorHandle(spdlog::level::warn, L"Failed to set drag region window position");
+			}
+
+			if (!SetLayeredWindowAttributes(m_DragRegion, 0, 255, LWA_ALPHA)) [[unlikely]]
+			{
+				LastErrorHandle(spdlog::level::warn, L"Failed to set drag region window attributes");
+			}
+		}
 	}
 }
 
@@ -149,8 +179,9 @@ void BaseXamlPageHost::Flash() noexcept
 	FlashWindowEx(&fwi);
 }
 
-BaseXamlPageHost::BaseXamlPageHost(WindowClass &classRef) :
-	MessageWindow(classRef, { }, WS_SYSMENU)
+BaseXamlPageHost::BaseXamlPageHost(WindowClass &classRef, WindowClass &dragRegionClass) :
+	MessageWindow(classRef, { }),
+	m_DragRegion(dragRegionClass, m_WindowHandle)
 {
 	UpdateFrame();
 

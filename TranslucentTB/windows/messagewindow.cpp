@@ -5,9 +5,9 @@
 #include "../../ProgramLog/error/win32.hpp"
 #include "../../ProgramLog/error/std.hpp"
 
-void MessageWindow::init(Util::null_terminated_wstring_view windowName, unsigned long style, Window parent)
+void MessageWindow::init(Util::null_terminated_wstring_view windowName, DWORD style, DWORD extended_style, Window parent)
 {
-	m_WindowHandle = Window::Create(0, *m_WindowClass, windowName, style, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, parent);
+	m_WindowHandle = Window::Create(extended_style, *m_WindowClass, windowName, style, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, parent);
 	if (!m_WindowHandle)
 	{
 		LastErrorHandle(spdlog::level::critical, L"Failed to create message window!");
@@ -28,20 +28,20 @@ void MessageWindow::init(Util::null_terminated_wstring_view windowName, unsigned
 	}
 }
 
-MessageWindow::MessageWindow(WindowClass &classRef, Util::null_terminated_wstring_view windowName, unsigned long style, Window parent, const wchar_t *iconResource) :
+MessageWindow::MessageWindow(WindowClass &classRef, Util::null_terminated_wstring_view windowName, DWORD style, DWORD extended_style, Window parent, const wchar_t *iconResource) :
 	m_WindowClass(&classRef, false),
 	m_IconResource(iconResource),
 	m_ProcPage(member_thunk::allocate_page())
 {
-	init(windowName, style, parent);
+	init(windowName, style, extended_style, parent);
 }
 
-MessageWindow::MessageWindow(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName, HINSTANCE hInstance, unsigned long style, Window parent, const wchar_t *iconResource) :
+MessageWindow::MessageWindow(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName, HINSTANCE hInstance, DWORD style, DWORD extended_style, Window parent, const wchar_t *iconResource) :
 	m_WindowClass(new WindowClass(MakeWindowClass(className, hInstance, iconResource)), true),
 	m_IconResource(iconResource),
 	m_ProcPage(member_thunk::allocate_page())
 {
-	init(windowName, style, parent);
+	init(windowName, style, extended_style, parent);
 }
 
 MessageWindow::~MessageWindow()

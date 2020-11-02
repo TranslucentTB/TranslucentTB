@@ -12,6 +12,20 @@
         <AcrylicBrush BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemAltHighColor}" TintOpacity="0.3" FallbackColor="{ThemeResource SystemChromeLowColor}" />
     </Page.Background>
 
+    <FlyoutBase.AttachedFlyout>
+        <MenuFlyout x:Name="SystemMenu">
+            <MenuFlyoutItem Text="Close" IsEnabled="{x:Bind IsClosable, Mode = OneWay}" Click="CloseFlyoutClicked">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE8BB;" />
+                </MenuFlyoutItem.Icon>
+                <MenuFlyoutItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="F4" Modifiers="Menu" />
+                    <KeyboardAccelerator Key="C" />
+                </MenuFlyoutItem.KeyboardAccelerators>
+            </MenuFlyoutItem>
+        </MenuFlyout>
+    </FlyoutBase.AttachedFlyout>
+
     <!-- This relies on the order of controls, be careful -->
     <RelativePanel x:DefaultBindMode="OneWay">
         <ContentPresenter
@@ -33,7 +47,6 @@
             </Border.Background>
         </Border>
         <TextBlock
-            x:Name="TitleText"
             Text="{x:Bind Title}"
             FontSize="12"
             VerticalAlignment="Center"

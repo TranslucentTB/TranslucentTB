@@ -69,6 +69,9 @@
     <ClCompile Include="uwp\xamlthreadpool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="uwp\xamldragregion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\messagewindow.hpp">
@@ -126,6 +129,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="uwp\xamlthreadpool.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="uwp\xamldragregion.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

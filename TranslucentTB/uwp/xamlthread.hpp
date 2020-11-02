@@ -57,18 +57,18 @@ public:
 	}
 
 	template<typename T, typename Callback, typename... Args>
-	void CreateXamlWindow(std::unique_lock<Util::thread_independent_mutex> lock, WindowClass &classRef, xaml_startup_position pos, Callback &&callback, Args&&... args)
+	void CreateXamlWindow(std::unique_lock<Util::thread_independent_mutex> lock, WindowClass &classRef, WindowClass& dragRegionClass, xaml_startup_position pos, Callback &&callback, Args&&... args)
 	{
 		// more than one window per thread is technically doable but impractical,
 		// because XAML Islands has a ton of bugs when hosting more than 1 window per thread
 		assert(m_CurrentWindow == nullptr);
 
-		m_Dispatcher.DispatcherQueue().TryEnqueue([this, &classRef, pos, lock = std::move(lock), callback = std::forward<Callback>(callback), ...args = std::forward<Args>(args)]() mutable
+		m_Dispatcher.DispatcherQueue().TryEnqueue([this, &classRef, &dragRegionClass, pos, lock = std::move(lock), callback = std::forward<Callback>(callback), ...args = std::forward<Args>(args)]() mutable
 		{
 			std::unique_ptr<XamlPageHost<T>> host;
 			try
 			{
-				host = std::make_unique<XamlPageHost<T>>(classRef, pos, m_Dispatcher.DispatcherQueue(), DeletedCallback, this, std::forward<Util::decay_array_t<Args>>(args)...);
+				host = std::make_unique<XamlPageHost<T>>(classRef, dragRegionClass, pos, m_Dispatcher.DispatcherQueue(), DeletedCallback, this, std::forward<Util::decay_array_t<Args>>(args)...);
 			}
 			HresultErrorCatch(spdlog::level::critical, L"Failed to create XAML window");
 

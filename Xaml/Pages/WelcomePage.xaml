@@ -19,7 +19,7 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.ColumnSpan="2" Orientation="Vertical" Spacing="12">
+        <StackPanel x:Name="MessageStackPanel" Grid.ColumnSpan="2" Orientation="Vertical" Spacing="12">
             <TextBlock x:Name="TitleText" Style="{ThemeResource SubheaderTextBlockStyle}" Text="{x:Bind Title}" TextLineBounds="Tight" />
             <RichTextBlock TextWrapping="Wrap" IsTextSelectionEnabled="False">
                 <Paragraph>

@@ -15,6 +15,24 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		InitializeComponent();
 	}
 
+	bool FramelessPage::CanMove() noexcept
+	{
+		return true;
+	}
+
+	void FramelessPage::ShowSystemMenu(const Windows::Foundation::Point &position)
+	{
+		if (CanMove())
+		{
+			SystemMenu().ShowAt(*this, position);
+		}
+	}
+
+	void FramelessPage::HideSystemMenu()
+	{
+		SystemMenu().Hide();
+	}
+
 	bool FramelessPage::RequestClose()
 	{
 		if (IsClosable())
@@ -32,7 +50,12 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		if (!ExpandIntoTitlebar())
 		{
-			return { 0, 0, static_cast<float>(TitleText().ActualWidth()), static_cast<float>(Titlebar().ActualHeight()) };
+			return {
+				0,
+				0,
+				static_cast<float>(ActualWidth() - (CloseButton().ActualWidth() + CustomTitlebarControls().ActualWidth())),
+				static_cast<float>(Titlebar().ActualHeight())
+			};
 		}
 		else
 		{
@@ -58,5 +81,13 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	void FramelessPage::CloseButtonClicked(const IInspectable &, const RoutedEventArgs &)
 	{
 		RequestClose();
+	}
+
+	void FramelessPage::CloseFlyoutClicked(const IInspectable &, const RoutedEventArgs &)
+	{
+		Windows::System::DispatcherQueue::GetForCurrentThread().TryEnqueue(Windows::System::DispatcherQueuePriority::Low, [self = get_strong()]
+		{
+			self->RequestClose();
+		});
 	}
 }

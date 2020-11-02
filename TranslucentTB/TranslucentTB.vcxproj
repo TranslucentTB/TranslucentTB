@@ -27,6 +27,7 @@
     <ClCompile Include="taskbar\taskbarattributeworker.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="uwp\basexamlpagehost.cpp" />
+    <ClCompile Include="uwp\xamldragregion.cpp" />
     <ClCompile Include="uwp\xamlthreadpool.cpp" />
     <ClCompile Include="uwp\xamlthread.cpp" />
     <ClCompile Include="windows\messagewindow.cpp" />
@@ -48,6 +49,7 @@
     <ClInclude Include="tray\traycontextmenu.hpp" />
     <ClInclude Include="taskbar\taskbarattributeworker.hpp" />
     <ClInclude Include="uwp\basexamlpagehost.hpp" />
+    <ClInclude Include="uwp\xamldragregion.hpp" />
     <ClInclude Include="uwp\xamlthreadpool.hpp" />
     <ClInclude Include="uwp\xamlpagehost.hpp" />
     <ClInclude Include="uwp\xamlthread.hpp" />

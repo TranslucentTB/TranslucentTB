@@ -17,7 +17,7 @@ private:
 
 	member_thunk::page<> m_ProcPage;
 
-	void init(Util::null_terminated_wstring_view windowName, unsigned long style, Window parent);
+	void init(Util::null_terminated_wstring_view windowName, DWORD style, DWORD extended_style, Window parent);
 
 	inline static const wchar_t *const DEFAULT_ICON = MAKEINTRESOURCE(IDI_MAINICON);
 
@@ -39,8 +39,8 @@ protected:
 		return DefWindowProc(m_WindowHandle, uMsg, wParam, lParam);
 	}
 
-	MessageWindow(WindowClass &classRef, Util::null_terminated_wstring_view windowName, unsigned long style = 0, Window parent = Window::NullWindow, const wchar_t *iconResource = DEFAULT_ICON);
-	MessageWindow(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName, HINSTANCE hInstance, unsigned long style = 0, Window parent = Window::NullWindow, const wchar_t *iconResource = DEFAULT_ICON);
+	MessageWindow(WindowClass &classRef, Util::null_terminated_wstring_view windowName, DWORD style = 0, DWORD extended_style = 0, Window parent = Window::NullWindow, const wchar_t *iconResource = DEFAULT_ICON);
+	MessageWindow(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName, HINSTANCE hInstance, DWORD style = 0, DWORD extended_style = 0, Window parent = Window::NullWindow, const wchar_t *iconResource = DEFAULT_ICON);
 	~MessageWindow();
 
 	inline MessageWindow(const MessageWindow &) = delete;
