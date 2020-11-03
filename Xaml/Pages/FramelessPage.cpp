@@ -78,16 +78,8 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		m_ClosedHandler.remove(token);
 	}
 
-	void FramelessPage::CloseButtonClicked(const IInspectable &, const RoutedEventArgs &)
+	void FramelessPage::CloseClicked(const IInspectable &, const RoutedEventArgs &)
 	{
 		RequestClose();
-	}
-
-	void FramelessPage::CloseFlyoutClicked(const IInspectable &, const RoutedEventArgs &)
-	{
-		Windows::System::DispatcherQueue::GetForCurrentThread().TryEnqueue(Windows::System::DispatcherQueuePriority::Low, [self = get_strong()]
-		{
-			self->RequestClose();
-		});
 	}
 }

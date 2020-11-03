@@ -14,7 +14,7 @@
 
     <FlyoutBase.AttachedFlyout>
         <MenuFlyout x:Name="SystemMenu">
-            <MenuFlyoutItem Text="Close" IsEnabled="{x:Bind IsClosable, Mode = OneWay}" Click="CloseFlyoutClicked">
+            <MenuFlyoutItem Text="Close" IsEnabled="{x:Bind IsClosable, Mode = OneWay}" Click="CloseClicked">
                 <MenuFlyoutItem.Icon>
                     <FontIcon Glyph="&#xE8BB;" />
                 </MenuFlyoutItem.Icon>
@@ -49,15 +49,13 @@
         <TextBlock
             Text="{x:Bind Title}"
             FontSize="12"
-            VerticalAlignment="Center"
             Padding="9,0"
             TextLineBounds="Tight"
             TextTrimming="CharacterEllipsis"
             Visibility="{x:Bind root:FunctionalConverters.InvertedBoolToVisibility(ExpandIntoTitlebar)}"
             RelativePanel.LeftOf="CustomTitlebarControls"
-            RelativePanel.AlignTopWithPanel="True"
             RelativePanel.AlignLeftWithPanel="True"
-            RelativePanel.AlignBottomWith="Titlebar" />
+            RelativePanel.AlignVerticalCenterWith="Titlebar" />
         <ItemsControl
             x:Name="CustomTitlebarControls"
             ItemsSource="{x:Bind TitlebarContent}"
@@ -73,7 +71,7 @@
         <controls:ChromeButton
             x:Name="CloseButton"
             Visibility="{x:Bind IsClosable}"
-            Click="CloseButtonClicked"
+            Click="CloseClicked"
             Style="{ThemeResource CloseButtonStyle}"
             ToolTipService.ToolTip="Close"
             RelativePanel.AlignTopWithPanel="True"

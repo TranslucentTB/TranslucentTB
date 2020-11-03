@@ -32,6 +32,7 @@ DWORD WINAPI XamlThread::ThreadProc(LPVOID param)
 	}
 
 	delete that;
+	HresultVerify(BufferedPaintUnInit(), spdlog::level::warn, L"Failed to uninitialize buffered paint");
 	winrt::uninit_apartment();
 	return static_cast<DWORD>(msg.wParam);
 }
@@ -74,6 +75,8 @@ void XamlThread::ThreadInit()
 			LastErrorHandle(spdlog::level::warn, L"Failed to hide core window");
 		}
 	}
+
+	HresultVerify(BufferedPaintInit(), spdlog::level::warn, L"Failed to initialize buffered paint");
 }
 
 bool XamlThread::PreTranslateMessage(const MSG &msg)
@@ -130,9 +133,9 @@ XamlThread::XamlThread() :
 
 wil::unique_handle XamlThread::Delete()
 {
-	m_Dispatcher.DispatcherQueue().TryEnqueue([this]() -> winrt::fire_and_forget
+	m_Dispatcher.DispatcherQueue().TryEnqueue(winrt::Windows::System::DispatcherQueuePriority::Low, [this]() -> winrt::fire_and_forget
 	{
-		// only called during destruction of thread pool, so no locking needed
+		// only called during destruction of thread pool, so no locking needed.
 		m_CurrentWindow.reset();
 
 		m_Manager.Close();

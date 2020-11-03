@@ -25,6 +25,8 @@ private:
 	Window m_interopWnd;
 	winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource m_source;
 	winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource::TakeFocusRequested_revoker m_focusRevoker;
+	wil::unique_hbrush m_BackgroundBrush;
+	winrt::Windows::UI::Color m_BackgroundColor = { };
 
 	void UpdateFrame();
 
@@ -38,14 +40,24 @@ protected:
 	void ResizeWindow(int x, int y, int width, int height, bool move, UINT flags = 0);
 	void PositionDragRegion(winrt::Windows::Foundation::Rect position, UINT flags = 0);
 	void Flash() noexcept;
+	bool PaintBackground(HDC dc, const RECT &target, winrt::Windows::UI::Color col);
 	BaseXamlPageHost(WindowClass &classRef, WindowClass &dragRegionClass);
+
+	void Cleanup()
+	{
+		if (m_source)
+		{
+			m_focusRevoker.revoke();
+			m_source.Close();
+			m_source = nullptr;
+			m_BackgroundBrush.reset();
+		}
+	}
 
 public:
 	virtual ~BaseXamlPageHost()
 	{
-		m_focusRevoker.revoke();
-		m_source.Close();
-		m_source = nullptr;
+		Cleanup();
 	}
 
 	constexpr winrt::Windows::UI::Xaml::Hosting::DesktopWindowXamlSource &source() noexcept

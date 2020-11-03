@@ -9,7 +9,9 @@
 #include "undefgetcurrenttime.h"
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.UI.Xaml.h>
+#include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Hosting.h>
+#include <winrt/Windows.UI.Xaml.Media.h>
 #include <winrt/Windows.System.h>
 #include <winrt/TranslucentTB.Xaml.Pages.h>
 #include "redefgetcurrenttime.h"
@@ -36,6 +38,7 @@ private:
 	winrt::Windows::System::DispatcherQueueHandler m_SizeUpdater = { this, &XamlPageHost::UpdateWindowSize };
 
 	bool m_PendingSizeUpdate = false;
+	bool m_EndDragLayoutUpdate = false;
 	callback_t m_Callback;
 	void *m_CallbackData;
 
@@ -59,12 +62,48 @@ private:
 			UpdateTheme();
 			break;
 
+		case WM_PAINT:
+		{
+			const auto brush = m_content.Background().try_as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>();
+			if (brush)
+			{
+				PAINTSTRUCT ps;
+				const auto paint = wil::BeginPaint(m_WindowHandle, &ps);
+				if (paint && PaintBackground(ps.hdc, ps.rcPaint, brush.FallbackColor()))
+				{
+					return 0;
+				}
+			}
+			break;
+		}
+
+
+		case WM_ERASEBKGND:
+		{
+			const auto rect = client_rect();
+			const auto brush = m_content.Background().try_as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>();
+			if (rect && brush)
+			{
+				if (PaintBackground(reinterpret_cast<HDC>(wParam), *rect, brush.FallbackColor()))
+				{
+					return 1;
+				}
+			}
+			break;
+		}
+
 		case WM_CLOSE:
 			if (!m_content.RequestClose())
 			{
 				Flash();
 			}
+			return 0;
 
+		case WM_EXITSIZEMOVE:
+			// some post-DPI change fixups if the size is not divisible by 4
+			m_EndDragLayoutUpdate = true;
+			m_content.InvalidateMeasure();
+			m_content.InvalidateArrange();
 			return 0;
 
 		case WM_SYSKEYDOWN:
@@ -123,19 +162,15 @@ private:
 		MONITORINFO info = { sizeof(info) };
 		const auto [windowSize, dragRegion] = GetXamlSize(mon, info);
 
-		if (const auto wndRect = rect())
-		{
-			int width = static_cast<int>(windowSize.Width),
-				height = static_cast<int>(windowSize.Height),
-				x = wndRect->left,
-				y = wndRect->top;
+		int width = static_cast<int>(windowSize.Width),
+			height = static_cast<int>(windowSize.Height),
+			x = 0,
+			y = 0;
 
-			CalculateInitialPosition(x, y, width, height, cursor, info.rcWork, position);
-			ResizeWindow(x, y, width, height, true, SWP_SHOWWINDOW);
-			SetForegroundWindow(m_WindowHandle);
-		}
-
+		CalculateInitialPosition(x, y, width, height, cursor, info.rcWork, position);
+		ResizeWindow(x, y, width, height, true, SWP_SHOWWINDOW);
 		PositionDragRegion(dragRegion, SWP_SHOWWINDOW);
+		SetForegroundWindow(m_WindowHandle);
 
 		m_LayoutUpdatedRevoker = m_content.LayoutUpdated(winrt::auto_revoke, m_LayoutUpdatedHandler);
 		m_PendingSizeUpdate = false;
@@ -154,10 +189,14 @@ private:
 			const auto newHeight = static_cast<int>(windowSize.Height);
 			const auto newWidth = static_cast<int>(windowSize.Width);
 			const auto wndRect = rect();
-			if (wndRect && (wndRect->bottom - wndRect->top != newHeight || wndRect->right - wndRect->left != newWidth)) [[unlikely]]
+			if (wndRect && (m_EndDragLayoutUpdate || wndRect->bottom - wndRect->top != newHeight || wndRect->right - wndRect->left != newWidth)) [[unlikely]]
 			{
+				bool move = true;
 				int x = wndRect->left, y = wndRect->top;
-				const bool move = AdjustWindowPosition(x, y, newWidth, newHeight, info.rcWork);
+				if (!m_EndDragLayoutUpdate)
+				{
+					move = AdjustWindowPosition(x, y, newWidth, newHeight, info.rcWork);
+				}
 				ResizeWindow(x, y, newWidth, newHeight, move);
 			}
 
@@ -169,6 +208,7 @@ private:
 			}
 		}
 
+		m_EndDragLayoutUpdate = false;
 		m_PendingSizeUpdate = false;
 	}
 
@@ -231,41 +271,41 @@ private:
 
 	void OnClose()
 	{
-		m_content.HideSystemMenu();
-		show(SW_HIDE);
-
-		m_LayoutUpdatedRevoker.revoke();
-		m_LayoutUpdatedHandler = nullptr;
-		m_SizeUpdater = nullptr;
-		m_ClosedRevoker.revoke();
-
-		using winrt::TranslucentTB::Xaml::Pages::FramelessPage;
-		UnregisterPropertyChangedCallback<FramelessPage::TitleProperty>(m_TitleChangedToken);
-		UnregisterPropertyChangedCallback<FramelessPage::AlwaysOnTopProperty>(m_AlwaysOnTopChangedToken);
+		Cleanup();
 
 		// dispatch the deletion because cleaning up the XAML source here makes the XAML framework very angry
 		m_Dispatcher.TryEnqueue(winrt::Windows::System::DispatcherQueuePriority::Low, [this]
 		{
+			BaseXamlPageHost::Cleanup();
 			m_Callback(m_CallbackData);
 		});
 	}
 
-	template<winrt::Windows::UI::Xaml::DependencyProperty(*prop)()>
-	void UnregisterPropertyChangedCallback(winrt::event_token &token)
+	void Cleanup()
 	{
-		if (token)
+		if (m_content)
 		{
-			m_content.UnregisterPropertyChangedCallback(prop(), token.value);
-			token.value = 0;
+			show(SW_HIDE);
+			source().Content(nullptr);
+
+			m_LayoutUpdatedRevoker.revoke();
+			m_LayoutUpdatedHandler = nullptr;
+			m_SizeUpdater = nullptr;
+
+			m_ClosedRevoker.revoke();
+
+			using winrt::TranslucentTB::Xaml::Pages::FramelessPage;
+			m_content.UnregisterPropertyChangedCallback(FramelessPage::TitleProperty(), m_TitleChangedToken.value);
+			m_content.UnregisterPropertyChangedCallback(FramelessPage::AlwaysOnTopProperty(), m_AlwaysOnTopChangedToken.value);
+
+			m_content = nullptr;
 		}
 	}
 
 public:
 	inline ~XamlPageHost()
 	{
-		show(SW_HIDE);
-		source().Content(nullptr);
-		m_content = nullptr;
+		Cleanup();
 	}
 
 	template<typename... Args>
@@ -304,8 +344,8 @@ public:
 		}
 
 		// TODO:
-		// react to dpi change
 		// tab navigation enabled on opening
+		// ^^ if has keyboard focus, closing animation doesn't play
 	}
 
 	inline winrt::TranslucentTB::Xaml::Pages::FramelessPage page() noexcept override

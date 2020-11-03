@@ -10,7 +10,11 @@ using namespace winrt::Windows::UI::Xaml::Hosting;
 void BaseXamlPageHost::UpdateFrame()
 {
 	// Magic that gives us shadows
-	const MARGINS margins = { 1 };
+	// we use the top side because any other side would cause a single line of white pixels to
+	// suddenly flash when resizing the color picker.
+	// can't use 0, that does nothing
+	// or -1: turns it full white.
+	const MARGINS margins = { 0, 0, 1, 0 };
 	HresultVerify(DwmExtendFrameIntoClientArea(m_WindowHandle, &margins), spdlog::level::warn, L"Failed to extend frame into client area");
 }
 
@@ -120,6 +124,14 @@ LRESULT BaseXamlPageHost::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam
 	case WM_SETFOCUS:
 		SetFocus(m_interopWnd);
 		return 0;
+
+	case WM_DPICHANGED:
+	{
+		const auto newRect = reinterpret_cast<RECT *>(lParam);
+
+		ResizeWindow(newRect->left, newRect->top, newRect->right - newRect->left, newRect->bottom - newRect->top, true);
+		return 0;
+	}
 	}
 
 	return MessageWindow::MessageHandler(uMsg, wParam, lParam);
@@ -177,6 +189,49 @@ void BaseXamlPageHost::Flash() noexcept
 	};
 
 	FlashWindowEx(&fwi);
+}
+
+bool BaseXamlPageHost::PaintBackground(HDC dc, const RECT &target, winrt::Windows::UI::Color col)
+{
+	if (!m_BackgroundBrush || m_BackgroundColor != col)
+	{
+		m_BackgroundBrush.reset(CreateSolidBrush(RGB(col.R, col.G, col.B)));
+	}
+
+	if (m_BackgroundBrush)
+	{
+		m_BackgroundColor = col;
+
+		// buffered paints overwrite the titlebar for some reason
+		HDC opaqueDc;
+		BP_PAINTPARAMS params = { sizeof(params), BPPF_NOCLIP | BPPF_ERASE };
+		HPAINTBUFFER buf = BeginBufferedPaint(dc, &target, BPBF_TOPDOWNDIB, &params, &opaqueDc);
+		if (buf && opaqueDc)
+		{
+			if (!FillRect(opaqueDc, &target, m_BackgroundBrush.get()))
+			{
+				LastErrorHandle(spdlog::level::warn, L"Failed to fill rectangle.");
+			}
+
+			HresultVerify(BufferedPaintSetAlpha(buf, nullptr, 255), spdlog::level::warn, L"Failed to set buffered paint alpha");
+
+			const HRESULT hr = EndBufferedPaint(buf, true);
+			if (SUCCEEDED(hr))
+			{
+				return true;
+			}
+			else
+			{
+				HresultHandle(hr, spdlog::level::warn, L"Failed to end buffered paint");
+			}
+		}
+		else
+		{
+			LastErrorHandle(spdlog::level::warn, L"Failed to begin buffered paint");
+		}
+	}
+
+	return false;
 }
 
 BaseXamlPageHost::BaseXamlPageHost(WindowClass &classRef, WindowClass &dragRegionClass) :

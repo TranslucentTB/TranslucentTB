@@ -6,7 +6,7 @@
     xmlns:local="using:TranslucentTB.Xaml.Pages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" IsClosable="True" Width="375">
+    mc:Ignorable="d" IsClosable="True" Width="376">
 
     <local:FramelessPage.TitlebarContent>
         <controls:ChromeButton ToolTipService.ToolTip="Always on top" IsTogglable="True" IsChecked="{x:Bind AlwaysOnTop, Mode = TwoWay}" IsTabStop="True">
@@ -33,9 +33,9 @@
         <ColorPicker x:Name="Picker" IsAlphaEnabled="True" IsMoreButtonVisible="True" />
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,12,0,0">
-            <Button Width="90" Click="OkButtonClicked" Style="{ThemeResource AccentButtonStyle}">OK</Button>
-            <Button Width="90" Click="CancelButtonClicked">Cancel</Button>
-            <Button Width="90" Click="ApplyButtonClicked">Apply</Button>
+            <Button Width="92" Click="OkButtonClicked" Style="{ThemeResource AccentButtonStyle}">OK</Button>
+            <Button Width="92" Click="CancelButtonClicked">Cancel</Button>
+            <Button Width="92" Click="ApplyButtonClicked">Apply</Button>
         </StackPanel>
     </StackPanel>
 </local:FramelessPage>
