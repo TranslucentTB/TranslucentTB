@@ -24,7 +24,10 @@
   <PropertyGroup>
     <WapProjPath Condition="'$(WapProjPath)'==''">$(MSBuildExtensionsPath)\Microsoft\DesktopBridge\</WapProjPath>
 
-    <!-- Workaround https://developercommunity2.visualstudio.com/t/Windows-Application-Packaging-project-co/1239709 -->
+    <!--
+        Workaround for a bug on some VS installs where System.Core.dll is copied to the output.
+        Also reduces the amount of work happening during build.
+    -->
     <AddAdditionalExplicitAssemblyReferences>false</AddAdditionalExplicitAssemblyReferences>
   </PropertyGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
