@@ -194,7 +194,9 @@ int Application::Run()
 		switch (MsgWaitForMultipleObjectsEx(0, nullptr, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE | MWMO_INPUTAVAILABLE))
 		{
 		case WAIT_OBJECT_0:
+#ifndef DO_NOT_USE_GAME_SDK
 			RunDiscordCallbacks();
+#endif
 
 			for (MSG msg; PeekMessage(&msg, 0, 0, 0, PM_REMOVE);)
 			{
