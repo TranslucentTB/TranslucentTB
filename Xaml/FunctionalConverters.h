@@ -1,4 +1,5 @@
 #pragma once
+#include "factory.h"
 
 #include "FunctionalConverters.g.h"
 
@@ -10,9 +11,4 @@ namespace winrt::TranslucentTB::Xaml::implementation
 	};
 }
 
-namespace winrt::TranslucentTB::Xaml::factory_implementation
-{
-	struct FunctionalConverters : FunctionalConvertersT<FunctionalConverters, implementation::FunctionalConverters>
-	{
-	};
-}
+FACTORY(winrt::TranslucentTB::Xaml, FunctionalConverters);

@@ -1,4 +1,5 @@
 #pragma once
+#include "factory.h"
 
 #include "App.g.h"
 #include "App.base.hpp"
@@ -11,9 +12,4 @@ namespace winrt::TranslucentTB::Xaml::implementation
 	};
 }
 
-namespace winrt::TranslucentTB::Xaml::factory_implementation
-{
-	struct App : AppT<App, implementation::App>
-	{
-	};
-}
+FACTORY(winrt::TranslucentTB::Xaml, App);
