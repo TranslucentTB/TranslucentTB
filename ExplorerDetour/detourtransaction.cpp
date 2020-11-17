@@ -150,7 +150,8 @@ DetourResult DetourTransaction::update_all_threads() noexcept
 				return result;
 			}
 		}
-	} 		while (Thread32Next(snapshot.get(), &thread));
+	}
+	while (Thread32Next(snapshot.get(), &thread));
 
 	return { };
 }

@@ -441,7 +441,7 @@ void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 {
 	m_Taskbars.insert_or_assign(mon, MonitorInfo { window });
 
-	if (wil::unique_hhook hook(ExplorerDetour::Inject(window)))
+	if (auto hook = ExplorerDetour::Inject(window))
 	{
 		m_Hooks.push_back(std::move(hook));
 	}
