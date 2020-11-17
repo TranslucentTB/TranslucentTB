@@ -3,6 +3,7 @@
 #include <windef.h>
 
 #include "explorerdetour.hpp"
+#include "util/abort.hpp"
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 {
@@ -15,18 +16,19 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 		// Are we in Explorer?
 		if (ExplorerDetour::IsInExplorer())
 		{
-			// Install the hook, fail otherwise.
-			if (!ExplorerDetour::Install())
-			{
-				return false;
-			}
+			// Install the hook
+			return ExplorerDetour::Install();
 		}
 		break;
 	}
 
 	case DLL_PROCESS_DETACH:
 	{
-		ExplorerDetour::Uninstall();
+		if (!ExplorerDetour::Uninstall())
+		{
+			// state may have been compromised, kill the process
+			Util::QuickAbort();
+		}
 		break;
 	}
 	}

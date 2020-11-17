@@ -21,15 +21,18 @@
     <ClCompile Include="explorerdetour.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="detourtransaction.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="detourtransaction.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="detourexception.hpp">
+    <ClInclude Include="explorerdetour.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="explorerdetour.hpp">
+    <ClInclude Include="detourresult.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

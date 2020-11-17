@@ -439,10 +439,9 @@ bool TaskbarAttributeWorker::IsStartMenuOpened()
 
 void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 {
-	m_Taskbars.insert_or_assign(mon, MonitorInfo{ window });
+	m_Taskbars.insert_or_assign(mon, MonitorInfo { window });
 
-	auto hook = ExplorerDetour::Inject(window);
-	if (hook)
+	if (wil::unique_hhook hook(ExplorerDetour::Inject(window)))
 	{
 		m_Hooks.push_back(std::move(hook));
 	}

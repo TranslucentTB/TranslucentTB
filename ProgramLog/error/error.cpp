@@ -10,6 +10,7 @@
 
 #include "../log.hpp"
 #include "std.hpp"
+#include "util/abort.hpp"
 #include "win32.hpp"
 #include "window.hpp"
 
@@ -93,7 +94,6 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 			// the stack trace in the dump, debugger and telemetry is unaffected by our error handling,
 			// giving us better insight into what went wrong.
 			RoFailFastWithErrorContext(err);
-			__fastfail(FAST_FAIL_FATAL_APP_EXIT);
 		}
 		else
 		{
@@ -101,8 +101,7 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 		}
 	}
 
-	RaiseFailFastException(nullptr, nullptr, FAIL_FAST_GENERATE_EXCEPTION_ADDRESS);
-	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
+	Util::QuickAbort();
 }
 
 std::thread Error::impl::CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type)
