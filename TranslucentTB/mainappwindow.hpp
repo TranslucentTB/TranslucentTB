@@ -7,6 +7,7 @@
 #include <windef.h>
 
 #include "config/config.hpp"
+#include "dynamicloader.hpp"
 #include "resources/ids.h"
 #include "managers/startupmanager.hpp"
 
@@ -37,7 +38,7 @@ private:
 	void Exit();
 
 public:
-	MainAppWindow(Application &app, bool hideIconOverride, bool hideStartup, HINSTANCE hInstance);
+	MainAppWindow(Application &app, bool hideIconOverride, bool hideStartup, HINSTANCE hInstance, DynamicLoader &loader);
 
 	void UpdateTrayVisibility(bool visible);
 	void RemoveHideTrayIconOverride();

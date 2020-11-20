@@ -6,7 +6,6 @@
 #include "constants.hpp"
 #include "../ExplorerDetour/explorerdetour.hpp"
 #include "../../ProgramLog/error/win32.hpp"
-#include "undoc/dynamicloader.hpp"
 #include "undoc/winuser.hpp"
 #include "util/fmt.hpp"
 #include "win32.hpp"
@@ -451,9 +450,9 @@ void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 	}
 }
 
-TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance) :
+TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE swca) :
 	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance),
-	SetWindowCompositionAttribute(DynamicLoader::SetWindowCompositionAttribute()),
+	SetWindowCompositionAttribute(swca),
 	m_PeekActive(false),
 	m_disableAttributeRefreshReply(false),
 	m_CurrentStartMonitor(nullptr),

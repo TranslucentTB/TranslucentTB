@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.hpp" />
+    <ClInclude Include="dynamicloader.hpp" />
     <ClInclude Include="managers\configmanager.hpp" />
     <ClInclude Include="folderwatcher.hpp" />
     <ClInclude Include="localization.hpp" />

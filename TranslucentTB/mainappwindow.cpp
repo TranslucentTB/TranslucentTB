@@ -4,7 +4,6 @@
 #include "application.hpp"
 #include "constants.hpp"
 #include "localization.hpp"
-#include "undoc/dynamicloader.hpp"
 #include "../ProgramLog/log.hpp"
 #include "../ProgramLog/error/win32.hpp"
 
@@ -252,9 +251,7 @@ TaskbarAppearance &MainAppWindow::AppearanceForGroup(Config &cfg, uint16_t group
 	case ID_GROUP_START: return cfg.StartOpenedAppearance;
 	case ID_GROUP_CORTANA: return cfg.CortanaOpenedAppearance;
 	case ID_GROUP_TIMELINE: return cfg.TimelineOpenedAppearance;
-	default:
-		assert(false);
-		__assume(0);
+	default: MessagePrint(spdlog::level::critical, L"Unknown taskbar appearance group");
 	}
 }
 
@@ -341,8 +338,8 @@ void MainAppWindow::Exit()
 	m_App.Shutdown(0);
 }
 
-MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, bool hideStartup, HINSTANCE hInstance) :
-	TrayContextMenu(TRAY_GUID, TRAY_WINDOW, APP_NAME, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance),
+MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, bool hideStartup, HINSTANCE hInstance, DynamicLoader &loader) :
+	TrayContextMenu(TRAY_GUID, TRAY_WINDOW, APP_NAME, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance, loader),
 	m_App(app),
 	m_HideIconOverride(hideIconOverride)
 {

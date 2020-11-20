@@ -3,6 +3,7 @@
 #include <memory>
 #include <windef.h>
 
+#include "dynamicloader.hpp"
 #include "managers/configmanager.hpp"
 #include "mainappwindow.hpp"
 #include "managers/startupmanager.hpp"
@@ -22,6 +23,7 @@ class Application final {
 	std::unique_ptr<discord::Core> m_DiscordCore;
 	void RunDiscordCallbacks();
 #endif
+	DynamicLoader m_Loader;
 
 	ConfigManager m_Config;
 	TaskbarAttributeWorker m_Worker;
@@ -54,7 +56,7 @@ public:
 	template<typename T, typename Callback, typename... Args>
 	void CreateXamlWindow(xaml_startup_position pos, Callback &&callback, Args&&... args)
 	{
-		m_Xaml.CreateXamlWindow<T>(pos, std::forward<Callback>(callback), std::forward<Args>(args)...);
+		m_Xaml.CreateXamlWindow<T>(pos, m_Loader.ShouldAppsUseDarkMode(), std::forward<Callback>(callback), std::forward<Args>(args)...);
 	}
 
 	template<typename Callback>

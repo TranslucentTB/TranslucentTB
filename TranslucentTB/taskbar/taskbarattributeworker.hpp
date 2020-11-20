@@ -147,7 +147,7 @@ private:
 	};
 
 public:
-	TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance);
+	TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE swca);
 
 	inline void ConfigurationChanged()
 	{

@@ -134,6 +134,9 @@
     <ClInclude Include="uwp\xamldragregion.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="dynamicloader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\TranslucentTB.ico">

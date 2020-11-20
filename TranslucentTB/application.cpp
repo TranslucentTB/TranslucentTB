@@ -124,12 +124,12 @@ winrt::fire_and_forget Application::LicenseApprovedCallback(bool hasPackageIdent
 
 Application::Application(HINSTANCE hInst, bool hasPackageIdentity, bool fileExists) :
 	m_Config(hasPackageIdentity, fileExists, ConfigurationChanged, this),
-	m_Worker(m_Config.GetConfig(), hInst),
-	m_AppWindow(*this, !fileExists, !hasPackageIdentity, hInst),
+	m_Worker(m_Config.GetConfig(), hInst, m_Loader.SetWindowCompositionAttribute()),
+	m_AppWindow(*this, !fileExists, !hasPackageIdentity, hInst, m_Loader),
 	m_DispatcherController(UWP::CreateDispatcherController()),
 	m_Xaml(hInst)
 {
-	if (const auto spam = DynamicLoader::SetPreferredAppMode())
+	if (const auto spam = m_Loader.SetPreferredAppMode())
 	{
 		spam(PreferredAppMode::AllowDark);
 	}

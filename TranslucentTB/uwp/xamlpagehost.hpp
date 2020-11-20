@@ -18,13 +18,15 @@
 
 #include "util/string_macros.hpp"
 #include "../ProgramLog/error/win32.hpp"
-#include "undoc/dynamicloader.hpp"
+#include "undoc/uxtheme.hpp"
 
 template<typename T>
 requires std::derived_from<T, winrt::impl::base_one<T, winrt::TranslucentTB::Xaml::Pages::FramelessPage>> // https://github.com/microsoft/cppwinrt/issues/609
 class XamlPageHost final : public BaseXamlPageHost {
 private:
 	using callback_t = std::add_pointer_t<void(void*)>;
+
+	PFN_SHOULD_APPS_USE_DARK_MODE m_Saudm;
 
 	T m_content;
 	winrt::Windows::System::DispatcherQueue m_Dispatcher;
@@ -261,11 +263,11 @@ private:
 
 	inline void UpdateTheme()
 	{
-		if (const auto saudm = DynamicLoader::ShouldAppsUseDarkMode())
+		if (m_Saudm)
 		{
 			// only the last bit has info, the rest is garbage
 			using winrt::Windows::UI::Xaml::ElementTheme;
-			m_content.RequestedTheme((saudm() & 0x1) ? ElementTheme::Dark : ElementTheme::Light);
+			m_content.RequestedTheme((m_Saudm() & 0x1) ? ElementTheme::Dark : ElementTheme::Light);
 		}
 	}
 
@@ -309,8 +311,11 @@ public:
 	}
 
 	template<typename... Args>
-	inline XamlPageHost(WindowClass &classRef, WindowClass &dragRegionClass, xaml_startup_position position, winrt::Windows::System::DispatcherQueue dispatcher, callback_t callback, void *data, Args&&... args) :
+	inline XamlPageHost(WindowClass &classRef, WindowClass &dragRegionClass, xaml_startup_position position,
+		winrt::Windows::System::DispatcherQueue dispatcher, callback_t callback,
+		void *data, PFN_SHOULD_APPS_USE_DARK_MODE saudm, Args&&... args) :
 		BaseXamlPageHost(classRef, dragRegionClass),
+		m_Saudm(saudm),
 		m_content(std::forward<Args>(args)...),
 		m_Dispatcher(std::move(dispatcher)),
 		m_Callback(callback),
@@ -346,6 +351,7 @@ public:
 		// TODO:
 		// tab navigation enabled on opening
 		// ^^ if has keyboard focus, closing animation doesn't play
+		// contentdialog animations not working
 	}
 
 	inline winrt::TranslucentTB::Xaml::Pages::FramelessPage page() noexcept override

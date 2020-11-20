@@ -1,7 +1,6 @@
 #include "messagewindow.hpp"
 #include <member_thunk/member_thunk.hpp>
 
-#include "undoc/dynamicloader.hpp"
 #include "../../ProgramLog/error/win32.hpp"
 #include "../../ProgramLog/error/std.hpp"
 
@@ -20,11 +19,6 @@ void MessageWindow::init(Util::null_terminated_wstring_view windowName, DWORD st
 	if (!SetWindowLongPtr(m_WindowHandle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(proc)))
 	{
 		LastErrorVerify(spdlog::level::critical, L"Failed to update window procedure!");
-	}
-
-	if (const auto admfm = DynamicLoader::AllowDarkModeForWindow())
-	{
-		admfm(m_WindowHandle, true);
 	}
 }
 
