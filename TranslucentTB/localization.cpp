@@ -1,30 +1,31 @@
 #include "localization.hpp"
+#include <libloaderapi.h>
 #include <WinBase.h>
 #include <WinUser.h>
 
 #include "../ProgramLog/error/win32.hpp"
 
-std::wstring_view Localization::LoadLocalizedString(uint16_t resource, WORD lang, HINSTANCE hInst)
+Util::null_terminated_wstring_view Localization::LoadLocalizedResourceString(uint16_t resource, HINSTANCE hInst, WORD lang)
 {
-	HRSRC src = FindResourceEx(hInst, RT_STRING, MAKEINTRESOURCE(resource / 16 + 1), lang);
+	const HRSRC src = FindResourceEx(hInst, RT_STRING, MAKEINTRESOURCE(resource / 16 + 1), lang);
 	if (!src)
 	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to fing string resource.");
-		return FAILED_LOADING_RESOURCE;
+		LastErrorHandle(spdlog::level::warn, L"Failed to find string resource.");
+		return FAILED_LOADING;
 	}
 
-	HGLOBAL res = LoadResource(hInst, src);
-	if (!src)
+	const HGLOBAL res = LoadResource(hInst, src);
+	if (!res)
 	{
 		LastErrorHandle(spdlog::level::warn, L"Failed to load string resource.");
-		return FAILED_LOADING_RESOURCE;
+		return FAILED_LOADING;
 	}
 
 	auto str = static_cast<const wchar_t *>(LockResource(res));
 	if (!str)
 	{
 		LastErrorHandle(spdlog::level::warn, L"Failed to lock string resource.");
-		return FAILED_LOADING_RESOURCE;
+		return FAILED_LOADING;
 	}
 
 	for (int i = 0; i < (resource & 15); i++)
@@ -32,5 +33,13 @@ std::wstring_view Localization::LoadLocalizedString(uint16_t resource, WORD lang
 		str += 1 + static_cast<uint16_t>(*str);
 	}
 
-	return { str + 1, static_cast<uint16_t>(*str) };
+	std::wstring_view resStr { str + 1, static_cast<uint16_t>(*str) };
+	if (!resStr.empty() && resStr.back() == L'\0')
+	{
+		return Util::null_terminated_wstring_view::make_unsafe(resStr.data(), resStr.length() - 1);
+	}
+	else
+	{
+		return FAILED_LOADING;
+	}
 }

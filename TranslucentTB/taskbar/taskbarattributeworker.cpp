@@ -6,7 +6,6 @@
 #include "constants.hpp"
 #include "../ExplorerDetour/explorerdetour.hpp"
 #include "../../ProgramLog/error/win32.hpp"
-#include "undoc/dynamicloader.hpp"
 #include "undoc/winuser.hpp"
 #include "util/fmt.hpp"
 #include "win32.hpp"
@@ -439,10 +438,9 @@ bool TaskbarAttributeWorker::IsStartMenuOpened()
 
 void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 {
-	m_Taskbars.insert_or_assign(mon, MonitorInfo{ window });
+	m_Taskbars.insert_or_assign(mon, MonitorInfo { window });
 
-	auto hook = ExplorerDetour::Inject(window);
-	if (hook)
+	if (auto hook = ExplorerDetour::Inject(window))
 	{
 		m_Hooks.push_back(std::move(hook));
 	}
@@ -452,9 +450,9 @@ void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 	}
 }
 
-TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance) :
+TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE swca) :
 	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance),
-	SetWindowCompositionAttribute(DynamicLoader::SetWindowCompositionAttribute()),
+	SetWindowCompositionAttribute(swca),
 	m_PeekActive(false),
 	m_disableAttributeRefreshReply(false),
 	m_CurrentStartMonitor(nullptr),

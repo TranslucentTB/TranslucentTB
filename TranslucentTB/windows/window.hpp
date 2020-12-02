@@ -2,38 +2,19 @@
 #include "arch.h"
 #include <dwmapi.h>
 #include <errhandlingapi.h>
+#include <filesystem>
+#include <string>
 #include <optional>
 #include <utility>
 #include <windef.h>
 #include <winerror.h>
 #include <winuser.h>
 
-#include "util/null_terminated_string_view.hpp"
-
-#ifdef _TRANSLUCENTTB_EXE
-#include <filesystem>
-#include <string>
-
-#include "../TranslucentTB/windows/windowclass.hpp"
 #include "../ProgramLog/error/win32.hpp"
-#endif
+#include "util/null_terminated_string_view.hpp"
+#include "windowclass.hpp"
 
 class Window {
-private:
-	static constexpr bool is_exception_free_v =
-#ifdef _TRANSLUCENTTB_EXE
-		false;
-#else
-		true;
-#endif
-
-	inline static void handle_error([[maybe_unused]] std::wstring_view err, [[maybe_unused]] HRESULT hr = HRESULT_FROM_WIN32(GetLastError())) noexcept(is_exception_free_v)
-	{
-#ifdef _TRANSLUCENTTB_EXE
-		HresultHandle(hr, spdlog::level::info, err);
-#endif
-	}
-
 	template<DWMWINDOWATTRIBUTE attrib>
 	struct attrib_return_type;
 
@@ -58,12 +39,9 @@ private:
 	};
 
 	template<DWMWINDOWATTRIBUTE attrib>
-	using attrib_return_t = typename attrib_return_type<attrib>::type;
-
-	template<DWMWINDOWATTRIBUTE attrib>
-	inline std::optional<attrib_return_t<attrib>> get_attribute() const noexcept(is_exception_free_v)
+	inline std::optional<typename attrib_return_type<attrib>::type> get_attribute() const
 	{
-		attrib_return_t<attrib> val;
+		typename attrib_return_type<attrib>::type val;
 		const HRESULT hr = DwmGetWindowAttribute(m_WindowHandle, attrib, &val, sizeof(val));
 		if (SUCCEEDED(hr))
 		{
@@ -71,7 +49,7 @@ private:
 		}
 		else
 		{
-			handle_error(L"Failed to get window attribute.", hr);
+			HresultHandle(hr, spdlog::level::info, L"Failed to get window attribute.");
 			return std::nullopt;
 		}
 	}
@@ -93,26 +71,16 @@ public:
 		return FindWindowEx(parent, childAfter, className.empty() ? nullptr : className.c_str(), windowName.empty() ? nullptr : windowName.c_str());
 	}
 
-	inline static Window Create(unsigned long dwExStyle, LPCWSTR winClass, HINSTANCE hInstance,
-		Util::null_terminated_wstring_view windowName, unsigned long dwStyle, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT,
+	inline static Window Create(DWORD dwExStyle, const WindowClass &winClass,
+		Util::null_terminated_wstring_view windowName, DWORD dwStyle, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT,
 		int nWidth = CW_USEDEFAULT, int nHeight = CW_USEDEFAULT, Window parent = Window::NullWindow,
 		HMENU hMenu = nullptr, void *lpParam = nullptr) noexcept
 	{
-		return CreateWindowEx(dwExStyle, winClass, windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
-			parent, hMenu, hInstance, lpParam);
+		return CreateWindowEx(dwExStyle, winClass.atom(), windowName.c_str(), dwStyle, x, y, nWidth, nHeight,
+			parent, hMenu, winClass.hinstance(), lpParam);
 	}
 
-#ifdef _TRANSLUCENTTB_EXE
-	inline static Window Create(unsigned long dwExStyle, const WindowClass &winClass,
-		Util::null_terminated_wstring_view windowName, unsigned long dwStyle, int x = CW_USEDEFAULT, int y = CW_USEDEFAULT,
-		int nWidth = CW_USEDEFAULT, int nHeight = CW_USEDEFAULT, Window parent = Window::NullWindow,
-		HMENU hMenu = nullptr, void *lpParam = nullptr) noexcept
-	{
-		return Create(dwExStyle, winClass.atom(), winClass.hinstance(), windowName, dwStyle, x, y, nWidth, nHeight, parent, hMenu, lpParam);
-	}
-#endif
-
-	inline static std::optional<UINT> RegisterMessage(Util::null_terminated_wstring_view message) noexcept(is_exception_free_v)
+	inline static std::optional<UINT> RegisterMessage(Util::null_terminated_wstring_view message)
 	{
 		const UINT msg = RegisterWindowMessage(message.c_str());
 		if (msg)
@@ -121,7 +89,7 @@ public:
 		}
 		else
 		{
-			handle_error(L"Failed to register window message.");
+			LastErrorHandle(spdlog::level::warn, L"Failed to register window message");
 			return std::nullopt;
 		}
 	}
@@ -143,7 +111,6 @@ public:
 
 	constexpr Window(HWND handle = Window::NullWindow) noexcept : m_WindowHandle(handle) { }
 
-#ifdef _TRANSLUCENTTB_EXE
 	std::optional<std::wstring> title() const;
 
 	std::optional<std::wstring> classname() const;
@@ -154,7 +121,6 @@ public:
 
 	// TODO: this should not return true for the cortana window (and make sure it doesn't for start/action center/tray overflow, tray icons)
 	bool is_user_window() const;
-#endif
 
 	inline bool valid() const noexcept
 	{
@@ -181,7 +147,7 @@ public:
 		return IsWindowVisible(m_WindowHandle);
 	}
 
-	inline bool cloaked() const noexcept(is_exception_free_v)
+	inline bool cloaked() const
 	{
 		const auto attr = get_attribute<DWMWA_CLOAKED>();
 		return attr && *attr;
@@ -207,26 +173,20 @@ public:
 		return GetProp(m_WindowHandle, name.c_str());
 	}
 
-	inline std::optional<LONG_PTR> long_ptr(int index) const noexcept(is_exception_free_v)
+	inline std::optional<LONG_PTR> long_ptr(int index) const
 	{
 		SetLastError(NO_ERROR);
 		const LONG_PTR val = GetWindowLongPtr(m_WindowHandle, index);
-		if (val)
+		if (!val)
 		{
-			return val;
-		}
-		else
-		{
-			if (const DWORD lastErr = GetLastError(); lastErr == NO_ERROR)
+			if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
 			{
-				return val;
-			}
-			else
-			{
-				handle_error(L"Failed to get window pointer", HRESULT_FROM_WIN32(lastErr));
+				HresultHandle(HRESULT_FROM_WIN32(lastErr), spdlog::level::info, L"Failed to get window pointer");
 				return std::nullopt;
 			}
 		}
+
+		return val;
 	}
 
 	inline DWORD thread_id() const noexcept
@@ -248,7 +208,7 @@ public:
 		return pair;
 	}
 
-	inline std::optional<RECT> rect() const noexcept(is_exception_free_v)
+	inline std::optional<RECT> rect() const
 	{
 		RECT result { };
 		if (GetWindowRect(m_WindowHandle, &result))
@@ -257,12 +217,12 @@ public:
 		}
 		else
 		{
-			handle_error(L"Failed to get window region.");
+			LastErrorHandle(spdlog::level::info, L"Failed to get window region.");
 			return std::nullopt;
 		}
 	}
 
-	inline std::optional<RECT> client_rect() const noexcept(is_exception_free_v)
+	inline std::optional<RECT> client_rect() const
 	{
 		RECT result { };
 		if (GetClientRect(m_WindowHandle, &result))
@@ -271,12 +231,12 @@ public:
 		}
 		else
 		{
-			handle_error(L"Failed to get client region.");
+			LastErrorHandle(spdlog::level::info, L"Failed to get client region.");
 			return std::nullopt;
 		}
 	}
 
-	inline std::optional<TITLEBARINFO> titlebar_info() const noexcept(is_exception_free_v)
+	inline std::optional<TITLEBARINFO> titlebar_info() const
 	{
 		TITLEBARINFO info = { sizeof(info) };
 		if (GetTitleBarInfo(m_WindowHandle, &info))
@@ -285,7 +245,7 @@ public:
 		}
 		else
 		{
-			handle_error(L"Failed to get titlebar info.");
+			LastErrorHandle(spdlog::level::info, L"Failed to get titlebar info.");
 			return std::nullopt;
 		}
 	}

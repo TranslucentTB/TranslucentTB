@@ -13,9 +13,8 @@
 #include "error/error.hpp"
 #include "error/winrt.hpp"
 #include "error/std.hpp"
-#include "window.hpp"
 
-std::weak_ptr<lazy_file_sink_st> Log::s_LogSink;
+std::weak_ptr<lazy_file_sink_mt> Log::s_LogSink;
 
 std::time_t Log::GetProcessCreationTime() noexcept
 {
@@ -82,7 +81,7 @@ void Log::LogErrorHandler(const std::string &message)
 	fmt::memory_buffer buf;
 	fmt::format_to(buf, FMT_STRING("An error has been encountered while logging a message.\n\n{}"), message);
 	buf.push_back('\0');
-	MessageBoxExA(Window::NullWindow, buf.data(), UTF8_ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
+	MessageBoxExA(nullptr, buf.data(), UTF8_ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 }
 
 void Log::Initialize(bool hasPackageIdentity)
@@ -99,6 +98,7 @@ void Log::Initialize(bool hasPackageIdentity)
 
 	if (IsDebuggerPresent())
 	{
+		// always single-threaded because OutputDebugString is already thread-safe
 		defaultLogger->sinks().push_back(std::make_shared<sinks::windebug_sink_st>());
 	}
 
@@ -106,7 +106,7 @@ void Log::Initialize(bool hasPackageIdentity)
 
 	if (auto path = GetPath(hasPackageIdentity); !path.empty())
 	{
-		const auto fileLog = std::make_shared<lazy_file_sink_st>(std::move(path));
+		const auto fileLog = std::make_shared<lazy_file_sink_mt>(std::move(path));
 		fileLog->set_level(Config{ }.LogVerbosity);
 		defaultLogger->sinks().push_back(fileLog);
 

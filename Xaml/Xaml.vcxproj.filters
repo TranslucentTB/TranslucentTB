@@ -26,6 +26,7 @@
     <ClInclude Include="App.base.hpp" />
     <ClInclude Include="PropertyChangedBase.hpp" />
     <ClInclude Include="dependencyproperty.h" />
+    <ClInclude Include="factory.h" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Pages\WelcomePage.xaml" />

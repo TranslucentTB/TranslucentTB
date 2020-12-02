@@ -10,8 +10,8 @@
 
 #include "../log.hpp"
 #include "std.hpp"
+#include "util/abort.hpp"
 #include "win32.hpp"
-#include "window.hpp"
 
 bool Error::ShouldLog(spdlog::level::level_enum level)
 {
@@ -93,7 +93,6 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 			// the stack trace in the dump, debugger and telemetry is unaffected by our error handling,
 			// giving us better insight into what went wrong.
 			RoFailFastWithErrorContext(err);
-			__assume(0);
 		}
 		else
 		{
@@ -101,14 +100,13 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 		}
 	}
 
-	RaiseFailFastException(nullptr, nullptr, FAIL_FAST_GENERATE_EXCEPTION_ADDRESS);
-	__assume(0);
+	Util::QuickAbort();
 }
 
 std::thread Error::impl::CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type)
 {
 	return std::thread([title, type, body = fmt::to_string(buf)]() noexcept
 	{
-		MessageBoxEx(Window::NullWindow, body.c_str(), title.c_str(), type | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
+		MessageBoxEx(nullptr, body.c_str(), title.c_str(), type | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 	});
 }

@@ -57,13 +57,13 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 			auto closeRevoker = content.Closed(winrt::auto_revoke, [this]
 			{
 				// Delete the config file to redo the first start next time.
-				std::error_code errc;
 				// getting the config path *should* be thread-safe: nobody ever modifies it in the program lifetime
 				// and Application doesn't vanish from under our feet.
+				std::error_code errc;
 				std::filesystem::remove(m_Config.GetConfigPath(), errc);
 				StdErrorCodeVerify(errc, spdlog::level::warn, L"Failed to delete config file");
 
-				m_DispatcherController.DispatcherQueue().TryEnqueue([this]
+				DispatchToMainThread([this]
 				{
 					Shutdown(1);
 				});
@@ -73,7 +73,7 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 
 			content.DiscordJoinRequested([this]
 			{
-				m_DispatcherController.DispatcherQueue().TryEnqueue([this]
+				DispatchToMainThread([this]
 				{
 					OpenDiscordServer();
 				});
@@ -81,7 +81,7 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 
 			content.ConfigEditRequested([this]
 			{
-				m_DispatcherController.DispatcherQueue().TryEnqueue([this]
+				DispatchToMainThread([this]
 				{
 					EditConfigFile();
 				});
@@ -92,7 +92,7 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 				// remove the close handler because returning from the lambda will make the close event fire.
 				revoker.revoke();
 
-				m_DispatcherController.DispatcherQueue().TryEnqueue([this, hasPackageIdentity, startupState]
+				DispatchToMainThread([this, hasPackageIdentity, startupState]
 				{
 					// This is in a different method because the lambda is freed after the first suspension point,
 					// leading to use-after-free issues. An independent method doesn't have that issue, because
@@ -124,12 +124,12 @@ winrt::fire_and_forget Application::LicenseApprovedCallback(bool hasPackageIdent
 
 Application::Application(HINSTANCE hInst, bool hasPackageIdentity, bool fileExists) :
 	m_Config(hasPackageIdentity, fileExists, ConfigurationChanged, this),
-	m_Worker(m_Config.GetConfig(), hInst),
-	m_AppWindow(*this, !fileExists, !hasPackageIdentity, hInst),
+	m_Worker(m_Config.GetConfig(), hInst, m_Loader.SetWindowCompositionAttribute()),
+	m_AppWindow(*this, !fileExists, !hasPackageIdentity, hInst, m_Loader),
 	m_DispatcherController(UWP::CreateDispatcherController()),
 	m_Xaml(hInst)
 {
-	if (const auto spam = DynamicLoader::SetPreferredAppMode())
+	if (const auto spam = m_Loader.SetPreferredAppMode())
 	{
 		spam(PreferredAppMode::AllowDark);
 	}
@@ -194,7 +194,9 @@ int Application::Run()
 		switch (MsgWaitForMultipleObjectsEx(0, nullptr, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE | MWMO_INPUTAVAILABLE))
 		{
 		case WAIT_OBJECT_0:
+#ifndef DO_NOT_USE_GAME_SDK
 			RunDiscordCallbacks();
+#endif
 
 			for (MSG msg; PeekMessage(&msg, 0, 0, 0, PM_REMOVE);)
 			{

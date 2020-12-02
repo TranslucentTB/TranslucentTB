@@ -3,7 +3,6 @@
 
 #include "appinfo.hpp"
 #include "constants.hpp"
-#include "undoc/dynamicloader.hpp"
 #include "../../ProgramLog/error/errno.hpp"
 #include "../../ProgramLog/error/std.hpp"
 #include "../../ProgramLog/error/win32.hpp"
@@ -11,7 +10,7 @@
 void TrayIcon::LoadThemedIcon()
 {
 	const wchar_t *icon = m_whiteIconResource;
-	if (const auto ssudm = DynamicLoader::ShouldSystemUseDarkMode(); ssudm && !ssudm())
+	if (m_Ssudm && !m_Ssudm())
 	{
 		icon = m_darkIconResource;
 	}
@@ -29,7 +28,7 @@ void TrayIcon::LoadThemedIcon()
 	}
 }
 
-bool TrayIcon::Notify(DWORD message, bool ignoreError)
+bool TrayIcon::Notify(DWORD message)
 {
 	if (Shell_NotifyIcon(message, &m_IconData))
 	{
@@ -37,10 +36,7 @@ bool TrayIcon::Notify(DWORD message, bool ignoreError)
 	}
 	else
 	{
-		if (!ignoreError)
-		{
-			MessagePrint(spdlog::level::info, L"Failed to notify shell.");
-		}
+		MessagePrint(spdlog::level::info, L"Failed to notify shell.");
 
 		return false;
 	}
@@ -62,11 +58,11 @@ LRESULT TrayIcon::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	default:
 		if (uMsg == m_TaskbarCreatedMessage)
 		{
+			// it's not actually showing anymore, explorer restarted
+			m_CurrentlyShowing = false;
+
 			if (m_ShowPreference)
 			{
-				// it's not actually showing anymore, explorer restarted
-				m_CurrentlyShowing = false;
-
 				Show();
 			}
 
@@ -79,7 +75,7 @@ LRESULT TrayIcon::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 TrayIcon::TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view className,
 	Util::null_terminated_wstring_view windowName, const wchar_t *whiteIconResource,
-	const wchar_t *darkIconResource, HINSTANCE hInstance) :
+	const wchar_t *darkIconResource, HINSTANCE hInstance, PFN_SHOULD_SYSTEM_USE_DARK_MODE ssudm) :
 	MessageWindow(className, windowName, hInstance),
 	m_IconData {
 		.cbSize = sizeof(m_IconData),
@@ -93,7 +89,7 @@ TrayIcon::TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view classN
 	m_darkIconResource(darkIconResource),
 	m_ShowPreference(false),
 	m_CurrentlyShowing(false),
-	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED))
+	m_Ssudm(ssudm)
 {
 	if (const errno_t err = wcscpy_s(m_IconData.szTip, windowName.c_str()); !err)
 	{
@@ -108,7 +104,7 @@ TrayIcon::TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view classN
 
 	// Clear icon from a previous instance that didn't cleanly exit.
 	// Errors if instance cleanly exited, so avoid logging it.
-	Notify(NIM_DELETE, true);
+	Shell_NotifyIcon(NIM_DELETE, &m_IconData);
 }
 
 void TrayIcon::Show()

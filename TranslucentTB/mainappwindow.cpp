@@ -3,7 +3,7 @@
 
 #include "application.hpp"
 #include "constants.hpp"
-#include "undoc/dynamicloader.hpp"
+#include "localization.hpp"
 #include "../ProgramLog/log.hpp"
 #include "../ProgramLog/error/win32.hpp"
 
@@ -41,7 +41,7 @@ void MainAppWindow::RefreshMenu()
 {
 	const auto &cfg = m_App.GetConfigManager().GetConfig();
 
-	// TODO AppearanceMenuRefresh(ID_GROUP_DESKTOP, m_Config.DesktopAppearance, m_Config.UseRegularAppearanceWhenPeeking, false);
+	AppearanceMenuRefresh(ID_GROUP_DESKTOP, cfg.DesktopAppearance);
 	AppearanceMenuRefresh(ID_GROUP_VISIBLE, cfg.VisibleWindowAppearance);
 	AppearanceMenuRefresh(ID_GROUP_MAXIMISED, cfg.MaximisedWindowAppearance);
 	AppearanceMenuRefresh(ID_GROUP_START, cfg.StartOpenedAppearance);
@@ -52,7 +52,7 @@ void MainAppWindow::RefreshMenu()
 	EnableItem(ID_SUBMENU_LOG, ok);
 	CheckItem(ID_SUBMENU_LOG, logsEnabled);
 	EnableItem(ID_OPENLOG, hasFile);
-	SetText(ID_OPENLOG, logText);
+	SetText(ID_OPENLOG, Localization::LoadLocalizedResourceString(logText, hinstance()));
 	CheckRadio(ID_LOG_TRACE, ID_LOG_OFF, levelButton);
 
 	CheckItem(ID_DISABLESAVING, cfg.DisableSaving);
@@ -63,24 +63,28 @@ void MainAppWindow::RefreshMenu()
 
 		CheckItem(ID_AUTOSTART, enabled);
 		EnableItem(ID_AUTOSTART, userModifiable);
-		SetText(ID_AUTOSTART, autostartText);
+		SetText(ID_AUTOSTART, Localization::LoadLocalizedResourceString(autostartText, hinstance()));
 	}
 }
 
-void MainAppWindow::AppearanceMenuRefresh(uint16_t group, const TaskbarAppearance &appearance, bool b, bool controlsEnabled)
+void MainAppWindow::AppearanceMenuRefresh(uint16_t group, const TaskbarAppearance &appearance)
 {
-	CheckItem(ID_TYPE_ACTIONS + group + ID_OFFSET_ENABLED, b);
-
-	EnableItem(ID_TYPE_ACTIONS + group + ID_OFFSET_COLOR, controlsEnabled && b && appearance.Accent != ACCENT_NORMAL);
-	if (controlsEnabled)
+	bool shouldEnableColor = appearance.Accent != ACCENT_NORMAL;
+	if (group != ID_GROUP_DESKTOP)
 	{
-		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_NORMAL, b);
-		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_OPAQUE, b);
-		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_CLEAR, b);
-		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_BLUR, b);
-		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_ACRYLIC, b);
+		const bool enabled = static_cast<const OptionalTaskbarAppearance &>(appearance).Enabled;
+		shouldEnableColor = shouldEnableColor && enabled;
+
+		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_NORMAL, enabled);
+		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_OPAQUE, enabled);
+		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_CLEAR, enabled);
+		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_BLUR, enabled);
+		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_ACRYLIC, enabled);
+
+		CheckItem(ID_TYPE_ACTIONS + group + ID_OFFSET_ENABLED, enabled);
 	}
 
+	EnableItem(ID_TYPE_ACTIONS + group + ID_OFFSET_COLOR, shouldEnableColor);
 	CheckRadio(
 		ID_TYPE_RADIOS + group + ID_OFFSET_NORMAL,
 		ID_TYPE_RADIOS + group + ID_OFFSET_ACRYLIC,
@@ -152,12 +156,12 @@ void MainAppWindow::ClickHandler(unsigned int id)
 	auto &worker = m_App.GetWorker();
 
 	const uint16_t group = id & ID_GROUP_MASK;
+	const uint8_t offset = id & ID_OFFSET_MASK;
 
 	switch (id & ID_TYPE_MASK)
 	{
 	case ID_TYPE_RADIOS:
 	{
-		const uint8_t offset = id & ID_OFFSET_MASK;
 		switch (group)
 		{
 		case ID_GROUP_DESKTOP:
@@ -186,7 +190,7 @@ void MainAppWindow::ClickHandler(unsigned int id)
 		case ID_GROUP_START:
 		case ID_GROUP_CORTANA:
 		case ID_GROUP_TIMELINE:
-			// TODO
+			AppearanceMenuHandler(group, offset, cfg);
 			break;
 		default:
 			switch (id)
@@ -219,7 +223,7 @@ void MainAppWindow::ClickHandler(unsigned int id)
 				member_thunk::compact();
 				break;
 			case ID_AUTOSTART:
-				AutostartMenuHandler();
+				AutostartMenuHandler(m_App.GetStartupManager());
 				break;
 			case ID_TIPS:
 				Application::OpenTipsPage();
@@ -247,22 +251,39 @@ TaskbarAppearance &MainAppWindow::AppearanceForGroup(Config &cfg, uint16_t group
 	case ID_GROUP_START: return cfg.StartOpenedAppearance;
 	case ID_GROUP_CORTANA: return cfg.CortanaOpenedAppearance;
 	case ID_GROUP_TIMELINE: return cfg.TimelineOpenedAppearance;
-	default:
-		assert(false);
-		__assume(0);
+	default: MessagePrint(spdlog::level::critical, L"Unknown taskbar appearance group");
 	}
 }
 
-void MainAppWindow::AppearanceMenuHandler(uint8_t offset, [[maybe_unused]] TaskbarAppearance &appearance, bool &b)
+void MainAppWindow::AppearanceMenuHandler(uint16_t group, uint16_t offset, Config &cfg)
 {
-	if (offset == ID_OFFSET_ENABLED)
+	auto &appearance = AppearanceForGroup(cfg, group);
+
+	switch (offset)
 	{
-		b = !b;
-		m_App.GetWorker().ConfigurationChanged();
-	}
-	else if (offset == ID_OFFSET_COLOR)
-	{
-		// TODO: color, remove maybe_unused
+	case ID_OFFSET_ENABLED:
+		if (group != ID_GROUP_DESKTOP)
+		{
+			bool &enabled = static_cast<OptionalTaskbarAppearance &>(appearance).Enabled;
+			enabled = !enabled;
+			m_App.GetWorker().ConfigurationChanged();
+		}
+		break;
+
+	case ID_OFFSET_COLOR:
+		using winrt::TranslucentTB::Xaml::Pages::ColorPickerPage;
+		m_App.CreateXamlWindow<ColorPickerPage>(xaml_startup_position::mouse, [this, &appearance](ColorPickerPage &picker)
+		{
+			picker.ChangesCommitted([this, &appearance](const winrt::Windows::UI::Color &color)
+			{
+				m_App.DispatchToMainThread([this, &appearance, color]() mutable
+				{
+					appearance.Color = color;
+					m_App.GetWorker().ConfigurationChanged();
+				});
+			});
+		}, L"TEST", appearance.Color);
+		break;
 	}
 }
 
@@ -283,9 +304,8 @@ void MainAppWindow::HideTrayHandler()
 	}
 }
 
-void MainAppWindow::AutostartMenuHandler()
+void MainAppWindow::AutostartMenuHandler(StartupManager &manager)
 {
-	auto &manager  = m_App.GetStartupManager();
 	if (const auto state = manager.GetState())
 	{
 		switch (*state)
@@ -301,7 +321,7 @@ void MainAppWindow::AutostartMenuHandler()
 			break;
 
 		case StartupTaskState::DisabledByUser:
-			manager.OpenSettingsPage();
+			StartupManager::OpenSettingsPage();
 			break;
 
 		default:
@@ -317,8 +337,8 @@ void MainAppWindow::Exit()
 	m_App.Shutdown(0);
 }
 
-MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, bool hideStartup, HINSTANCE hInstance) :
-	TrayContextMenu(TRAY_GUID, TRAY_WINDOW, APP_NAME, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance),
+MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, bool hideStartup, HINSTANCE hInstance, DynamicLoader &loader) :
+	TrayContextMenu(TRAY_GUID, TRAY_WINDOW, APP_NAME, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance, loader),
 	m_App(app),
 	m_HideIconOverride(hideIconOverride)
 {

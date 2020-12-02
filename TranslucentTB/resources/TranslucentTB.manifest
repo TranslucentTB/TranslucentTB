@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">
 
   <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
     <application>
@@ -14,25 +14,25 @@
     </dependentAssembly>
   </dependency>
 
-  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+  <asmv3:trustInfo>
     <security>
       <requestedPrivileges>
         <requestedExecutionLevel level="asInvoker" uiAccess="false" />
       </requestedPrivileges>
     </security>
-  </trustInfo>
+  </asmv3:trustInfo>
 
-  <application xmlns="urn:schemas-microsoft-com:asm.v3">
+  <asmv3:application>
     <windowsSettings xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings">
       <ws2:dpiAwareness>PerMonitorV2</ws2:dpiAwareness>
+      <heapType xmlns="http://schemas.microsoft.com/SMI/2020/WindowsSettings">SegmentHeap</heapType>
       <ws2:longPathAware>true</ws2:longPathAware>
     </windowsSettings>
-  </application>
+  </asmv3:application>
 
   <file name="Xaml.dll" hashalg="SHA1" xmlns:winrt="urn:schemas-microsoft-com:winrt.v1">
     <winrt:activatableClass name="TranslucentTB.Xaml.App" threadingModel="both" />
     <winrt:activatableClass name="TranslucentTB.Xaml.Pages.FramelessPage" threadingModel="both" />
-    <winrt:activatableClass name="TranslucentTB.Xaml.Pages.FramelessPageWithMessageDialog" threadingModel="both" />
     <winrt:activatableClass name="TranslucentTB.Xaml.Pages.WelcomePage" threadingModel="both" />
     <winrt:activatableClass name="TranslucentTB.Xaml.Pages.ColorPickerPage" threadingModel="both" />
   </file>

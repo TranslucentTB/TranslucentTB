@@ -3,7 +3,6 @@
 #include <wil/com.h>
 #include <wil/resource.h>
 
-#include "../../ProgramLog/error/win32.hpp"
 #include "win32.hpp"
 
 std::optional<std::wstring> Window::title() const
@@ -26,10 +25,8 @@ std::optional<std::wstring> Window::title() const
 	// We're assuming that a window won't change title between the previous call and this.
 	// But it very well could. It'll either be smaller and waste a bit of RAM, or have
 	// GetWindowText trim it.
-
-	// For the null terminator
 	std::wstring windowTitle;
-	windowTitle.resize(titleSize + 1);
+	windowTitle.resize(titleSize);
 
 	SetLastError(NO_ERROR);
 	const int copiedChars = GetWindowText(m_WindowHandle, windowTitle.data(), titleSize + 1);
@@ -49,10 +46,9 @@ std::optional<std::wstring> Window::title() const
 std::optional<std::wstring> Window::classname() const
 {
 	std::wstring className;
-	className.resize(257);	// According to docs, maximum length of a class name is 256, but it's ambiguous
-							// wether this includes the null terminator or not.
+	className.resize(256);
 
-	const int count = GetClassName(m_WindowHandle, className.data(), static_cast<int>(className.size()));
+	const int count = GetClassName(m_WindowHandle, className.data(), static_cast<int>(className.size()) + 1);
 	if (!count)
 	{
 		LastErrorHandle(spdlog::level::info, L"Getting class name of a window failed.");
@@ -117,17 +113,13 @@ bool Window::is_user_window() const
 {
 	if (valid() && visible() && !cloaked() && ancestor(GA_ROOT) == m_WindowHandle && get(GW_OWNER) == Window::NullWindow)
 	{
-		if (const auto on_desktop = on_current_desktop(); !on_desktop.value_or(false))
+		const auto ex_style = long_ptr(GWL_EXSTYLE);
+		if (ex_style &&
+			(*ex_style & WS_EX_APPWINDOW || !(*ex_style & (WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE))) &&
+			prop(L"ITaskList_Deleted") == nullptr)
 		{
-			return false;
-		}
-
-		if (const auto ex_style = long_ptr(GWL_EXSTYLE))
-		{
-			if (const auto s = *ex_style; s & WS_EX_APPWINDOW || !(s & WS_EX_TOOLWINDOW || s & WS_EX_NOACTIVATE))
-			{
-				return prop(L"ITaskList_Deleted") == nullptr;
-			}
+			// done last because it's expensive due to being reentrant
+			return on_current_desktop().value_or(false);
 		}
 	}
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.201017.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.201017.1\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.201113.7\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.201113.7\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{59F844AA-8D3C-431C-B8CC-57682915F551}</ProjectGuid>
     <ConfigurationType>Application</ConfigurationType>
@@ -12,7 +12,7 @@
       <PreprocessorDefinitions>_TRANSLUCENTTB_EXE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>advapi32.lib;comctl32.lib;coremessaging.lib;dwmapi.lib;mincore.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;user32.lib;$(fmtlib)</AdditionalDependencies>
+      <AdditionalDependencies>advapi32.lib;comctl32.lib;coremessaging.lib;dwmapi.lib;gdi32.lib;mincore.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;user32.lib;uxtheme.lib;$(fmtlib)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(UsingGameSDK)'=='true'">discord_game_sdk.lib;discord_game_sdk_cpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
@@ -27,6 +27,7 @@
     <ClCompile Include="taskbar\taskbarattributeworker.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="uwp\basexamlpagehost.cpp" />
+    <ClCompile Include="uwp\xamldragregion.cpp" />
     <ClCompile Include="uwp\xamlthreadpool.cpp" />
     <ClCompile Include="uwp\xamlthread.cpp" />
     <ClCompile Include="windows\messagewindow.cpp" />
@@ -39,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.hpp" />
+    <ClInclude Include="dynamicloader.hpp" />
     <ClInclude Include="managers\configmanager.hpp" />
     <ClInclude Include="folderwatcher.hpp" />
     <ClInclude Include="localization.hpp" />
@@ -48,6 +50,7 @@
     <ClInclude Include="tray\traycontextmenu.hpp" />
     <ClInclude Include="taskbar\taskbarattributeworker.hpp" />
     <ClInclude Include="uwp\basexamlpagehost.hpp" />
+    <ClInclude Include="uwp\xamldragregion.hpp" />
     <ClInclude Include="uwp\xamlthreadpool.hpp" />
     <ClInclude Include="uwp\xamlpagehost.hpp" />
     <ClInclude Include="uwp\xamlthread.hpp" />
@@ -56,6 +59,7 @@
     <ClInclude Include="tray\contextmenu.hpp" />
     <ClInclude Include="tray\trayicon.hpp" />
     <ClInclude Include="uwp\uwp.hpp" />
+    <ClInclude Include="windows\window.hpp" />
     <ClInclude Include="windows\windowclass.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -74,6 +78,12 @@
     <ProjectReference Include="..\Xaml\Xaml.vcxproj">
       <Project>{9875d8e1-9594-445e-a0e4-07c6027f85e0}</Project>
       <DeploymentContent>true</DeploymentContent>
+
+      <!--
+        Prevent the .pri and .winmd from showing up in the final output.
+        IDK why this doesn't also prevent copying the .dll, but whatever.
+      -->
+      <Private>false</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -85,14 +95,17 @@
     <Image Include="resources\TranslucentTB.white.ico" />
   </ItemGroup>
   <ItemGroup>
+    <Natvis Include="windows\Window.natvis" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.201017.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.201017.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.201017.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.201017.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.201113.7\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.201113.7\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.201113.7\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.201113.7\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
-  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.201017.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.201017.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.201113.7\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.201113.7\build\native\Microsoft.Windows.CppWinRT.targets')" />
 </Project>

@@ -16,6 +16,7 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)appinfo.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arch.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\abort.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\color.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config\config.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config\optionaltaskbarappearance.hpp" />
@@ -23,7 +24,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)config\taskbarappearance.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config\windowfilter.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)constants.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)undoc\dynamicloader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)redefgetcurrenttime.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)undefgetcurrenttime.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)undoc\user32.hpp" />
@@ -32,6 +32,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)util\concepts.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\fmt.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\hash.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\maybe_delete.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\null_terminated_string_view.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\numbers.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\map.hpp" />
@@ -43,13 +44,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)version.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)wilx.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)win32.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)window.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)winrt.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)CppProject.props" />
-  </ItemGroup>
-  <ItemGroup>
-    <Natvis Include="$(MSBuildThisFileDirectory)Window.natvis" />
   </ItemGroup>
 </Project>

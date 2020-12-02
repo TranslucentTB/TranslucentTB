@@ -69,6 +69,9 @@
     <ClCompile Include="uwp\xamlthreadpool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="uwp\xamldragregion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\messagewindow.hpp">
@@ -128,6 +131,15 @@
     <ClInclude Include="uwp\xamlthreadpool.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="uwp\xamldragregion.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\window.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dynamicloader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\TranslucentTB.ico">
@@ -152,6 +164,11 @@
     <Manifest Include="resources\TranslucentTB.manifest">
       <Filter>Resource Files</Filter>
     </Manifest>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="windows\Window.natvis">
+      <Filter>Resource Files</Filter>
+    </Natvis>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

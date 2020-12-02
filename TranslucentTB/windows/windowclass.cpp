@@ -20,6 +20,14 @@ void WindowClass::LoadIcons(const wchar_t *iconResource)
 	}
 }
 
+void WindowClass::Unregister()
+{
+	if (!UnregisterClass(atom(), m_hInstance))
+	{
+		LastErrorHandle(spdlog::level::info, L"Failed to unregister window class.");
+	}
+}
+
 WindowClass::WindowClass(WNDPROC procedure, Util::null_terminated_wstring_view className, const wchar_t *iconResource, HINSTANCE hInstance, unsigned int style, HBRUSH brush, HCURSOR cursor) :
 	m_hInstance(hInstance)
 {
@@ -46,6 +54,7 @@ WindowClass::WindowClass(WNDPROC procedure, Util::null_terminated_wstring_view c
 
 void WindowClass::ChangeIcon(Window window, const wchar_t *iconResource)
 {
+	const auto guard = m_Lock.lock_exclusive();
 	LoadIcons(iconResource);
 
 	SetLastError(NO_ERROR);
@@ -58,16 +67,5 @@ void WindowClass::ChangeIcon(Window window, const wchar_t *iconResource)
 	if (!SetClassLongPtr(window, GCLP_HICONSM, reinterpret_cast<LONG_PTR>(m_hIconSmall.get())))
 	{
 		LastErrorVerify(spdlog::level::warn, L"Failed to change small window class icon.");
-	}
-}
-
-WindowClass::~WindowClass()
-{
-	if (m_Atom != 0)
-	{
-		if (!UnregisterClass(atom(), m_hInstance))
-		{
-			LastErrorHandle(spdlog::level::info, L"Failed to unregister window class.");
-		}
 	}
 }

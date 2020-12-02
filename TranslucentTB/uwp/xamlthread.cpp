@@ -3,7 +3,7 @@
 #include <wil/resource.h>
 #include <winrt/Windows.UI.Core.h>
 
-#include "window.hpp"
+#include "../windows/window.hpp"
 #include "uwp.hpp"
 #include "../../ProgramLog/error/win32.hpp"
 
@@ -32,6 +32,7 @@ DWORD WINAPI XamlThread::ThreadProc(LPVOID param)
 	}
 
 	delete that;
+	HresultVerify(BufferedPaintUnInit(), spdlog::level::warn, L"Failed to uninitialize buffered paint");
 	winrt::uninit_apartment();
 	return static_cast<DWORD>(msg.wParam);
 }
@@ -74,13 +75,15 @@ void XamlThread::ThreadInit()
 			LastErrorHandle(spdlog::level::warn, L"Failed to hide core window");
 		}
 	}
+
+	HresultVerify(BufferedPaintInit(), spdlog::level::warn, L"Failed to initialize buffered paint");
 }
 
 bool XamlThread::PreTranslateMessage(const MSG &msg)
 {
-	// prevent XAML islands from capturing ALT-F4 because of
+	// prevent XAML islands from capturing ALT-{F4,SPACE} because of
 	// https://github.com/microsoft/microsoft-ui-xaml/issues/2408
-	if (msg.message == WM_SYSKEYDOWN && msg.wParam == VK_F4) [[unlikely]]
+	if (msg.message == WM_SYSKEYDOWN && (msg.wParam == VK_F4 || msg.wParam == VK_SPACE)) [[unlikely]]
 	{
 		Window(msg.hwnd).ancestor(GA_ROOT).send_message(msg.message, msg.wParam, msg.lParam);
 		return true;
@@ -130,19 +133,16 @@ XamlThread::XamlThread() :
 
 wil::unique_handle XamlThread::Delete()
 {
-	m_Dispatcher.DispatcherQueue().TryEnqueue([this]
+	m_Dispatcher.DispatcherQueue().TryEnqueue(winrt::Windows::System::DispatcherQueuePriority::Low, [this]() -> winrt::fire_and_forget
 	{
-		// only called during destruction of thread pool, so no locking needed
+		// only called during destruction of thread pool, so no locking needed.
 		m_CurrentWindow.reset();
 
 		m_Manager.Close();
 		m_Manager = nullptr;
 
-		using namespace winrt::Windows::Foundation;
-		m_Dispatcher.ShutdownQueueAsync().Completed([](const IAsyncAction &, const AsyncStatus &)
-		{
-			PostQuitMessage(0);
-		});
+		co_await m_Dispatcher.ShutdownQueueAsync();
+		PostQuitMessage(0);
 	});
 
 	return std::move(m_Thread);

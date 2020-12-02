@@ -12,6 +12,20 @@
         <AcrylicBrush BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemAltHighColor}" TintOpacity="0.3" FallbackColor="{ThemeResource SystemChromeLowColor}" />
     </Page.Background>
 
+    <FlyoutBase.AttachedFlyout>
+        <MenuFlyout x:Name="SystemMenu">
+            <MenuFlyoutItem Text="Close" IsEnabled="{x:Bind IsClosable, Mode = OneWay}" Click="CloseClicked">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE8BB;" />
+                </MenuFlyoutItem.Icon>
+                <MenuFlyoutItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="F4" Modifiers="Menu" />
+                    <KeyboardAccelerator Key="C" />
+                </MenuFlyoutItem.KeyboardAccelerators>
+            </MenuFlyoutItem>
+        </MenuFlyout>
+    </FlyoutBase.AttachedFlyout>
+
     <!-- This relies on the order of controls, be careful -->
     <RelativePanel x:DefaultBindMode="OneWay">
         <ContentPresenter
@@ -23,7 +37,7 @@
             RelativePanel.AlignRightWithPanel="True" />
         <Border
             x:Name="Titlebar"
-            Height="29"
+            Height="{StaticResource TitlebarHeight}"
             Visibility="{x:Bind root:FunctionalConverters.InvertedBoolToVisibility(ExpandIntoTitlebar)}"
             RelativePanel.AlignTopWithPanel="True"
             RelativePanel.AlignLeftWithPanel="True"
@@ -33,17 +47,15 @@
             </Border.Background>
         </Border>
         <TextBlock
-            x:Name="TitleText"
             Text="{x:Bind Title}"
             FontSize="12"
-            VerticalAlignment="Center"
             Padding="9,0"
             TextLineBounds="Tight"
+            TextTrimming="CharacterEllipsis"
             Visibility="{x:Bind root:FunctionalConverters.InvertedBoolToVisibility(ExpandIntoTitlebar)}"
             RelativePanel.LeftOf="CustomTitlebarControls"
-            RelativePanel.AlignTopWithPanel="True"
             RelativePanel.AlignLeftWithPanel="True"
-            RelativePanel.AlignBottomWith="Titlebar" />
+            RelativePanel.AlignVerticalCenterWith="Titlebar" />
         <ItemsControl
             x:Name="CustomTitlebarControls"
             ItemsSource="{x:Bind TitlebarContent}"
@@ -59,7 +71,7 @@
         <controls:ChromeButton
             x:Name="CloseButton"
             Visibility="{x:Bind IsClosable}"
-            Click="CloseButtonClicked"
+            Click="CloseClicked"
             Style="{ThemeResource CloseButtonStyle}"
             ToolTipService.ToolTip="Close"
             RelativePanel.AlignTopWithPanel="True"

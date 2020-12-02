@@ -7,9 +7,9 @@
     xmlns:models="using:TranslucentTB.Xaml.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" Width="635" Height="450" ExpandIntoTitlebar="True">
+    mc:Ignorable="d" Width="636" Height="452" ExpandIntoTitlebar="True">
 
-    <Grid x:Name="RootGrid" Padding="15">
+    <Grid x:Name="RootGrid" Padding="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
@@ -19,7 +19,7 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.ColumnSpan="2" Orientation="Vertical" Spacing="10">
+        <StackPanel x:Name="MessageStackPanel" Grid.ColumnSpan="2" Orientation="Vertical" Spacing="12">
             <TextBlock x:Name="TitleText" Style="{ThemeResource SubheaderTextBlockStyle}" Text="{x:Bind Title}" TextLineBounds="Tight" />
             <RichTextBlock TextWrapping="Wrap" IsTextSelectionEnabled="False">
                 <Paragraph>
@@ -57,7 +57,7 @@
         </StackPanel>
 
         <CheckBox x:Name="StartupCheckbox" Grid.Row="1" Content="Automatically start TranslucentTB at system bootup" IsChecked="True" />
-        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="10">
+        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="12">
             <Button Width="100" Style="{ThemeResource AccentButtonStyle}" Click="AgreeButtonClicked">I agree</Button>
             <Button Width="100" Click="DisagreeButtonClicked">I disagree</Button>
         </StackPanel>

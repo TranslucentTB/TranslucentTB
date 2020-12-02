@@ -1,4 +1,5 @@
 #pragma once
+#include "../factory.h"
 
 #include "FramelessPage.h"
 #include "Pages/ColorPickerPage.g.h"
@@ -9,6 +10,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		ColorPickerPage(const hstring &category, const Windows::UI::Color &currentColor);
 
+		bool CanMove() noexcept override;
 		bool RequestClose() override;
 
 		event_token ChangesCommitted(const ChangesCommittedDelegate &handler);
@@ -30,9 +32,4 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	};
 }
 
-namespace winrt::TranslucentTB::Xaml::Pages::factory_implementation
-{
-	struct ColorPickerPage : ColorPickerPageT<ColorPickerPage, implementation::ColorPickerPage>
-	{
-	};
-}
+FACTORY(winrt::TranslucentTB::Xaml::Pages, ColorPickerPage);

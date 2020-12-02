@@ -15,6 +15,24 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		InitializeComponent();
 	}
 
+	bool FramelessPage::CanMove() noexcept
+	{
+		return true;
+	}
+
+	void FramelessPage::ShowSystemMenu(const Windows::Foundation::Point &position)
+	{
+		if (CanMove())
+		{
+			SystemMenu().ShowAt(*this, position);
+		}
+	}
+
+	void FramelessPage::HideSystemMenu()
+	{
+		SystemMenu().Hide();
+	}
+
 	bool FramelessPage::RequestClose()
 	{
 		if (IsClosable())
@@ -32,7 +50,12 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		if (!ExpandIntoTitlebar())
 		{
-			return { 0, 0, static_cast<float>(TitleText().ActualWidth()), static_cast<float>(Titlebar().ActualHeight()) };
+			return {
+				0,
+				0,
+				static_cast<float>(ActualWidth() - (CloseButton().ActualWidth() + CustomTitlebarControls().ActualWidth())),
+				static_cast<float>(Titlebar().ActualHeight())
+			};
 		}
 		else
 		{
@@ -55,7 +78,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		m_ClosedHandler.remove(token);
 	}
 
-	void FramelessPage::CloseButtonClicked(const IInspectable &, const RoutedEventArgs &)
+	void FramelessPage::CloseClicked(const IInspectable &, const RoutedEventArgs &)
 	{
 		RequestClose();
 	}

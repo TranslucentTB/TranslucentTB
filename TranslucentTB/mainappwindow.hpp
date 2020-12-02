@@ -7,6 +7,7 @@
 #include <windef.h>
 
 #include "config/config.hpp"
+#include "dynamicloader.hpp"
 #include "resources/ids.h"
 #include "managers/startupmanager.hpp"
 
@@ -20,29 +21,24 @@ private:
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	void RefreshMenu() override;
-	void AppearanceMenuRefresh(uint16_t group, const TaskbarAppearance &appearance, bool b, bool controlsEnabled);
+	void AppearanceMenuRefresh(uint16_t group, const TaskbarAppearance &appearance);
 
 	// Ok, logs enabled, has file, text, level button
-	std::tuple<bool, bool, bool, uint16_t, unsigned int> GetLogMenu();
+	static std::tuple<bool, bool, bool, uint16_t, unsigned int> GetLogMenu();
 
 	// User modifiable, enabled, text
-	std::tuple<bool, bool, uint16_t> GetAutostartMenu(const StartupManager &manager);
-
-	inline void AppearanceMenuRefresh(uint16_t group, const OptionalTaskbarAppearance &appearance)
-	{
-		AppearanceMenuRefresh(group, appearance, appearance.Enabled, true);
-	}
+	static std::tuple<bool, bool, uint16_t> GetAutostartMenu(const StartupManager &manager);
 
 	void ClickHandler(unsigned int id) override;
-	TaskbarAppearance &AppearanceForGroup(Config &cfg, uint16_t group) noexcept;
-	void AppearanceMenuHandler(uint8_t offset, TaskbarAppearance &appearance, bool &b);
+	static TaskbarAppearance &AppearanceForGroup(Config &cfg, uint16_t group) noexcept;
+	void AppearanceMenuHandler(uint16_t group, uint16_t offset, Config &cfg);
 	void HideTrayHandler();
-	void AutostartMenuHandler();
+	static void AutostartMenuHandler(StartupManager &manager);
 
 	void Exit();
 
 public:
-	MainAppWindow(Application &app, bool hideIconOverride, bool hideStartup, HINSTANCE hInstance);
+	MainAppWindow(Application &app, bool hideIconOverride, bool hideStartup, HINSTANCE hInstance, DynamicLoader &loader);
 
 	void UpdateTrayVisibility(bool visible);
 	void RemoveHideTrayIconOverride();

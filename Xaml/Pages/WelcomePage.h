@@ -1,4 +1,5 @@
 #pragma once
+#include "../factory.h"
 
 #include "FramelessPage.h"
 #include "Pages/WelcomePage.g.h"
@@ -38,9 +39,4 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	};
 }
 
-namespace winrt::TranslucentTB::Xaml::Pages::factory_implementation
-{
-	struct WelcomePage : WelcomePageT<WelcomePage, implementation::WelcomePage>
-	{
-	};
-}
+FACTORY(winrt::TranslucentTB::Xaml::Pages, WelcomePage);

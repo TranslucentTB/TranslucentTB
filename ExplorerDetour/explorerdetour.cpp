@@ -1,35 +1,31 @@
 #include "explorerdetour.hpp"
 #include <cstdint>
+#include <detours/detours.h>
 #include <wil/win32_helpers.h>
 #include <WinUser.h>
 
 #include "constants.hpp"
-#include "detourexception.hpp"
 #include "detourtransaction.hpp"
-#include "undoc/dynamicloader.hpp"
+#include "util/string_macros.hpp"
 
+wil::unique_hmodule ExplorerDetour::s_User32;
 PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE ExplorerDetour::SetWindowCompositionAttribute;
 UINT ExplorerDetour::s_RequestAttribute;
+wil::unique_hheap ExplorerDetour::s_Heap;
 bool ExplorerDetour::s_DetourInstalled;
 
 BOOL WINAPI ExplorerDetour::SetWindowCompositionAttributeDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data) noexcept
 {
 	if (data->Attrib == WCA_ACCENT_POLICY)
 	{
-		if (const auto worker = Window::Find(WORKER_WINDOW, WORKER_WINDOW))
+		if (const auto worker = FindWindow(WORKER_WINDOW.c_str(), WORKER_WINDOW.c_str()))
 		{
-#ifndef _DEBUG
-			if (worker.send_message(s_RequestAttribute, 0, reinterpret_cast<LPARAM>(hWnd)))
+			// avoid freezing Explorer if our main process is frozen
+			DWORD_PTR result = 0;
+			if (SendMessageTimeout(worker, s_RequestAttribute, 0, reinterpret_cast<LPARAM>(hWnd), SMTO_ABORTIFHUNG | SMTO_BLOCK | SMTO_ERRORONEXIT, 50, &result) && result)
 			{
 				return true;
 			}
-#else
-			// avoid freezing Explorer in debug mode
-			if (DWORD_PTR result; SendMessageTimeout(worker, s_RequestAttribute, 0, reinterpret_cast<LPARAM>(hWnd), SMTO_ABORTIFHUNG, 50, &result) && result)
-			{
-				return true;
-			}
-#endif
 		}
 	}
 
@@ -49,9 +45,18 @@ bool ExplorerDetour::IsInExplorer() noexcept
 
 bool ExplorerDetour::Install() noexcept
 {
+	if (!s_User32)
+	{
+		s_User32.reset(LoadLibraryEx(L"user32.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+		if (!s_User32)
+		{
+			return false;
+		}
+	}
+
 	if (!SetWindowCompositionAttribute)
 	{
-		SetWindowCompositionAttribute = DynamicLoader::SetWindowCompositionAttribute();
+		SetWindowCompositionAttribute = reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(s_User32.get(), UTIL_STRINGIFY_UTF8(SetWindowCompositionAttribute)));
 		if (!SetWindowCompositionAttribute)
 		{
 			return false;
@@ -60,12 +65,17 @@ bool ExplorerDetour::Install() noexcept
 
 	if (!s_RequestAttribute)
 	{
-		const auto message = Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH);
-		if (message)
+		s_RequestAttribute = RegisterWindowMessage(WM_TTBHOOKREQUESTREFRESH.c_str());
+		if (!s_RequestAttribute)
 		{
-			s_RequestAttribute = *message;
+			return false;
 		}
-		else
+	}
+
+	if (!s_Heap)
+	{
+		s_Heap.reset(HeapCreate(HEAP_NO_SERIALIZE, 0, 0));
+		if (!s_Heap)
 		{
 			return false;
 		}
@@ -73,42 +83,49 @@ bool ExplorerDetour::Install() noexcept
 
 	if (!s_DetourInstalled)
 	{
-		try
+		DetourTransaction transaction;
+		if (transaction.begin() &&
+			transaction.update_all_threads() &&
+			transaction.attach(SetWindowCompositionAttribute, SetWindowCompositionAttributeDetour) &&
+			transaction.commit())
 		{
-			DetourTransaction transaction;
-
-			transaction.update_all_threads();
-			transaction.attach(SetWindowCompositionAttribute, SetWindowCompositionAttributeDetour);
-			transaction.commit();
+			s_DetourInstalled = true;
 		}
-		catch (...)
+		else
 		{
 			return false;
 		}
-
-		s_DetourInstalled = true;
 	}
 
 	return true;
 }
 
-void ExplorerDetour::Uninstall()
+bool ExplorerDetour::Uninstall() noexcept
 {
 	if (s_DetourInstalled)
 	{
 		DetourTransaction transaction;
-
-		transaction.update_all_threads();
-		transaction.detach(SetWindowCompositionAttribute, SetWindowCompositionAttributeDetour);
-		transaction.commit();
-
-		s_DetourInstalled = false;
+		if (transaction.begin() &&
+			transaction.update_all_threads() &&
+			transaction.detach(SetWindowCompositionAttribute, SetWindowCompositionAttributeDetour) &&
+			transaction.commit())
+		{
+			s_DetourInstalled = false;
+		}
+		else
+		{
+			return false;
+		}
 	}
+
+	return true;
 }
 
-wil::unique_hhook ExplorerDetour::Inject(Window window) noexcept
+wil::unique_hhook ExplorerDetour::Inject(HWND window) noexcept
 {
-	const auto [tid, pid] = window.thread_process_id();
+	DWORD pid;
+	const DWORD tid = GetWindowThreadProcessId(window, &pid);
+
 	wil::unique_process_handle proc(OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, pid));
 	if (!proc)
 	{

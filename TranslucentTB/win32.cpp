@@ -8,6 +8,7 @@ void win32::HardenProcess()
 	// to enable mitigations for DLL loading.
 	// OK for debug builds because it makes it readable from the log file
 	// but in release we'd rather not.
+	// This entire thing happens before config is loaded, so trace will never log.
 	static constexpr spdlog::level::level_enum level =
 #ifdef _DEBUG
 		spdlog::level::warn;

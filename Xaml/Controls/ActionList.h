@@ -1,4 +1,5 @@
 #pragma once
+#include "../factory.h"
 
 #include "Controls/ActionList.g.h"
 
@@ -13,9 +14,4 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 	};
 }
 
-namespace winrt::TranslucentTB::Xaml::Controls::factory_implementation
-{
-	struct ActionList : ActionListT<ActionList, implementation::ActionList>
-	{
-	};
-}
+FACTORY(winrt::TranslucentTB::Xaml::Controls, ActionList);

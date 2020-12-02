@@ -25,7 +25,7 @@ std::filesystem::path ConfigManager::DetermineConfigPath(bool hasPackageIdentity
 		path = loc.parent_path();
 	}
 
-	path /= CONFIG_FILE;
+	path /= std::wstring_view(CONFIG_FILE);
 	return path;
 }
 

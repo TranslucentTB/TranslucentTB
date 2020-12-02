@@ -25,7 +25,12 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 	Windows::Foundation::Rect WelcomePage::DragRegion()
 	{
-		return { 0, 0, static_cast<float>(ActualWidth()), static_cast<float>(RootGrid().Padding().Top + TitleText().ActualHeight()) };
+		return {
+			0,
+			0,
+			static_cast<float>(ActualWidth()),
+			static_cast<float>(RootGrid().Padding().Top + TitleText().ActualHeight() + (MessageStackPanel().Spacing() / 2))
+		};
 	}
 
 	void WelcomePage::OpenLiberapayLink(const IInspectable &, const RoutedEventArgs &)

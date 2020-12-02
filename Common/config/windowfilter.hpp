@@ -8,7 +8,7 @@
 #include "../win32.hpp"
 
 #ifdef _TRANSLUCENTTB_EXE
-#include "../window.hpp"
+#include "../../TranslucentTB/windows/window.hpp"
 #include "../../ProgramLog/error/std.hpp"
 #endif
 

@@ -7,7 +7,6 @@
 
 #include "appinfo.hpp"
 #include "constants.hpp"
-#include "window.hpp"
 #include "error/error.hpp"
 #include "error/std.hpp"
 #include "error/win32.hpp"
@@ -74,5 +73,5 @@ void lazy_file_sink<Mutex>::write(const T &thing)
 	}
 }
 
-// We don't actually use the multithreaded sink.
-template class lazy_file_sink<spdlog::details::null_mutex>;
+// We don't actually use the singlethreaded sink.
+template class lazy_file_sink<std::mutex>;

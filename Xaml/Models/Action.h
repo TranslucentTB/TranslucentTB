@@ -1,4 +1,5 @@
 #pragma once
+#include "../factory.h"
 #include "../PropertyChangedBase.hpp"
 
 #include "Models/Action.g.h"
@@ -31,9 +32,4 @@ namespace winrt::TranslucentTB::Xaml::Models::implementation
 	};
 }
 
-namespace winrt::TranslucentTB::Xaml::Models::factory_implementation
-{
-	struct Action : ActionT<Action, implementation::Action>
-	{
-	};
-}
+FACTORY(winrt::TranslucentTB::Xaml::Models, Action);

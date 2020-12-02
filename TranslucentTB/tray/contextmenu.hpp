@@ -1,12 +1,11 @@
 #pragma once
 #include "arch.h"
-#include <string>
 #include <windef.h>
 #include <wil/resource.h>
 
-#include "../localization.hpp"
 #include "../../ProgramLog/error/win32.hpp"
-#include "window.hpp"
+#include "util/null_terminated_string_view.hpp"
+#include "../windows/window.hpp"
 
 class ContextMenu {
 private:
@@ -16,14 +15,14 @@ protected:
 	inline void CheckItem(unsigned int id, bool state) { CheckItem(m_Menu.get(), id, state); }
 	inline void EnableItem(unsigned int id, bool state) { EnableItem(m_Menu.get(), id, state); }
 	inline void CheckRadio(unsigned int first, unsigned int last, unsigned int id) { CheckRadio(m_Menu.get(), first, last, id); }
-	inline void SetText(unsigned int id, uint16_t new_text_resource) { SetText(m_Menu.get(), id, new_text_resource); }
+	inline void SetText(unsigned int id, Util::null_terminated_wstring_view new_text) { SetText(m_Menu.get(), id, new_text); }
 	inline void RemoveItem(unsigned int id) { RemoveItem(m_Menu.get(), id); }
+	inline void SetDefaultItem(unsigned int id) { SetDefaultItem(m_Menu.get(), id); }
 
 public:
 	inline static void CheckItem(HMENU menu, unsigned int id, bool state)
 	{
-		const DWORD ret = CheckMenuItem(menu, id, MF_BYCOMMAND | (state ? MF_CHECKED : MF_UNCHECKED));
-		if (ret == -1)
+		if (CheckMenuItem(menu, id, MF_BYCOMMAND | (state ? MF_CHECKED : MF_UNCHECKED)) == -1)
 		{
 			MessagePrint(spdlog::level::info, L"Failed to check/uncheck menu item.");
 		}
@@ -31,8 +30,7 @@ public:
 
 	inline static void EnableItem(HMENU menu, unsigned int id, bool state)
 	{
-		const BOOL ret = EnableMenuItem(menu, id, MF_BYCOMMAND | (state ? MF_ENABLED : MF_GRAYED));
-		if (ret == -1)
+		if (EnableMenuItem(menu, id, MF_BYCOMMAND | (state ? MF_ENABLED : MF_GRAYED)) == -1)
 		{
 			MessagePrint(spdlog::level::info, L"Failed to enable/disable menu item.");
 		}
@@ -40,24 +38,21 @@ public:
 
 	inline static void CheckRadio(HMENU menu, unsigned int first, unsigned int last, unsigned int id)
 	{
-		const BOOL ret = CheckMenuRadioItem(menu, first, last, id, MF_BYCOMMAND);
-		if (!ret)
+		if (!CheckMenuRadioItem(menu, first, last, id, MF_BYCOMMAND))
 		{
 			LastErrorHandle(spdlog::level::info, L"Failed to set menu radio item.");
 		}
 	}
 
-	inline static void SetText(HMENU menu, unsigned int id, uint16_t new_text_resource)
+	inline static void SetText(HMENU menu, unsigned int id, Util::null_terminated_wstring_view new_text)
 	{
-		std::wstring new_text(Localization::LoadLocalizedString(new_text_resource));
 		const MENUITEMINFO item_info = {
 			.cbSize = sizeof(item_info),
 			.fMask = MIIM_STRING,
-			.dwTypeData = new_text.data()
+			.dwTypeData = const_cast<wchar_t *>(new_text.c_str())
 		};
 
-		BOOL ret = SetMenuItemInfo(menu, id, false, &item_info);
-		if (!ret)
+		if (!SetMenuItemInfo(menu, id, false, &item_info))
 		{
 			LastErrorHandle(spdlog::level::info, L"Failed to set menu item text.");
 		}
@@ -65,10 +60,17 @@ public:
 
 	inline static void RemoveItem(HMENU menu, unsigned int id)
 	{
-		const BOOL ret = RemoveMenu(menu, id, MF_BYCOMMAND);
-		if (!ret)
+		if (!RemoveMenu(menu, id, MF_BYCOMMAND))
 		{
 			LastErrorHandle(spdlog::level::info, L"Failed to remove menu item.");
+		}
+	}
+
+	inline static void SetDefaultItem(HMENU menu, unsigned int id)
+	{
+		if (!SetMenuDefaultItem(menu, id, false))
+		{
+			LastErrorHandle(spdlog::level::info, L"Failed to set default menu item.");
 		}
 	}
 

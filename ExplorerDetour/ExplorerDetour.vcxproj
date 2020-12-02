@@ -7,6 +7,7 @@
   <Import Project="..\Common\CppProject.props" />
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
+      <ExceptionHandling>false</ExceptionHandling>
       <PreprocessorDefinitions>EXPLORERDETOUR_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -15,11 +16,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="detourtransaction.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="explorerdetour.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="detourexception.hpp" />
+    <ClInclude Include="detourresult.hpp" />
     <ClInclude Include="detourtransaction.hpp" />
     <ClInclude Include="explorerdetour.hpp" />
   </ItemGroup>
