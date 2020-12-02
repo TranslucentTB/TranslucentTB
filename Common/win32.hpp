@@ -55,10 +55,10 @@ public:
 	// Gets location of the file of a process
 	inline static std::pair<std::filesystem::path, HRESULT> GetProcessFileName(HANDLE process)
 	{
-		DWORD exeLocation_size = wil::max_extended_path_length + 1;
-
 		std::wstring exeLocation;
-		exeLocation.resize(exeLocation_size);
+		exeLocation.resize(wil::max_extended_path_length);
+
+		DWORD exeLocation_size = static_cast<DWORD>(exeLocation.size()) + 1;
 		if (QueryFullProcessImageName(process, 0, exeLocation.data(), &exeLocation_size))
 		{
 			exeLocation.resize(exeLocation_size);
