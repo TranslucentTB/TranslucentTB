@@ -43,8 +43,10 @@ steps:
     platform: $(platform)
     configuration: $(configuration)
 - publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
+  artifact: 'Portable $(platform) $(configuration)'
   displayName: 'Upload portable build'
 - publish: $(Build.SourcesDirectory)\AppPackage\AppPackages
+  artifact: 'MSIX $(platform) $(configuration)'
   displayName: 'Upload MSIX package'
 - task: VSTest@2
   displayName: 'Run unit tests'
