@@ -21,6 +21,9 @@ strategy:
       platform: x64
 
 steps:
+- script: git pull
+  displayName: 'Update vcpkg ports'
+  workingDirectory: C:\vcpkg
 - script: vcpkg integrate install
   displayName: 'Integrate vcpkg'
 - script: vcpkg install --triplet $(platform)-windows fmt spdlog
