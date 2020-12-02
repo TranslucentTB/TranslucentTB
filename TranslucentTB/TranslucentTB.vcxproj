@@ -59,6 +59,7 @@
     <ClInclude Include="tray\contextmenu.hpp" />
     <ClInclude Include="tray\trayicon.hpp" />
     <ClInclude Include="uwp\uwp.hpp" />
+    <ClInclude Include="windows\window.hpp" />
     <ClInclude Include="windows\windowclass.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -92,6 +93,9 @@
     <Image Include="resources\TranslucentTB.black.ico" />
     <Image Include="resources\TranslucentTB.ico" />
     <Image Include="resources\TranslucentTB.white.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="windows\Window.natvis" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

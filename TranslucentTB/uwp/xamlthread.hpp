@@ -1,6 +1,5 @@
 #pragma once
 #include "arch.h"
-#include <atomic>
 #include <cassert>
 #include <functional>
 #include <memory>

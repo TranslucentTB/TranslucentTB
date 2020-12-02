@@ -5,7 +5,7 @@
 
 #include "../../ProgramLog/error/win32.hpp"
 #include "util/null_terminated_string_view.hpp"
-#include "window.hpp"
+#include "../windows/window.hpp"
 
 class ContextMenu {
 private:

@@ -223,7 +223,7 @@ void MainAppWindow::ClickHandler(unsigned int id)
 				member_thunk::compact();
 				break;
 			case ID_AUTOSTART:
-				AutostartMenuHandler();
+				AutostartMenuHandler(m_App.GetStartupManager());
 				break;
 			case ID_TIPS:
 				Application::OpenTipsPage();
@@ -304,9 +304,8 @@ void MainAppWindow::HideTrayHandler()
 	}
 }
 
-void MainAppWindow::AutostartMenuHandler()
+void MainAppWindow::AutostartMenuHandler(StartupManager &manager)
 {
-	auto &manager  = m_App.GetStartupManager();
 	if (const auto state = manager.GetState())
 	{
 		switch (*state)
@@ -322,7 +321,7 @@ void MainAppWindow::AutostartMenuHandler()
 			break;
 
 		case StartupTaskState::DisabledByUser:
-			manager.OpenSettingsPage();
+			StartupManager::OpenSettingsPage();
 			break;
 
 		default:

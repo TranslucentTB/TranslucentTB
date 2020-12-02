@@ -12,7 +12,6 @@
 #include "std.hpp"
 #include "util/abort.hpp"
 #include "win32.hpp"
-#include "window.hpp"
 
 bool Error::ShouldLog(spdlog::level::level_enum level)
 {
@@ -108,6 +107,6 @@ std::thread Error::impl::CreateMessageBoxThread(const fmt::wmemory_buffer &buf, 
 {
 	return std::thread([title, type, body = fmt::to_string(buf)]() noexcept
 	{
-		MessageBoxEx(Window::NullWindow, body.c_str(), title.c_str(), type | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
+		MessageBoxEx(nullptr, body.c_str(), title.c_str(), type | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 	});
 }

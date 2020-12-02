@@ -21,7 +21,7 @@ private:
 	void Unregister();
 
 public:
-	WindowClass(WNDPROC procedure, Util::null_terminated_wstring_view className, const wchar_t *iconResource, HINSTANCE hInstance, unsigned int style = 0, HBRUSH brush = reinterpret_cast<HBRUSH>(COLOR_BACKGROUND), HCURSOR cursor = LoadCursor(nullptr, IDC_ARROW));
+	WindowClass(WNDPROC procedure, Util::null_terminated_wstring_view className, const wchar_t *iconResource, HINSTANCE hInstance, unsigned int style = 0, HBRUSH brush = nullptr, HCURSOR cursor = LoadCursor(nullptr, IDC_ARROW));
 
 	inline LPCWSTR atom() const noexcept { return reinterpret_cast<LPCWSTR>(static_cast<INT_PTR>(m_Atom)); }
 	inline HINSTANCE hinstance() const noexcept { return m_hInstance; }

@@ -13,7 +13,6 @@
 #include "error/error.hpp"
 #include "error/winrt.hpp"
 #include "error/std.hpp"
-#include "window.hpp"
 
 std::weak_ptr<lazy_file_sink_mt> Log::s_LogSink;
 
@@ -82,7 +81,7 @@ void Log::LogErrorHandler(const std::string &message)
 	fmt::memory_buffer buf;
 	fmt::format_to(buf, FMT_STRING("An error has been encountered while logging a message.\n\n{}"), message);
 	buf.push_back('\0');
-	MessageBoxExA(Window::NullWindow, buf.data(), UTF8_ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
+	MessageBoxExA(nullptr, buf.data(), UTF8_ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 }
 
 void Log::Initialize(bool hasPackageIdentity)

@@ -38,7 +38,7 @@ bool Error::MessageFromIRestrictedErrorInfo(fmt::wmemory_buffer &buf, IRestricte
 			}
 			else
 			{
-				fmt::format_to(buf, FMT_STRING(L"[IRestrictedErrorInfo did not return expected HRESULT] expected: {}, actual: {}"), failureCode, errorCode);
+				fmt::format_to(buf, FMT_STRING(L"[IRestrictedErrorInfo did not return expected HRESULT] expected: 0x{:08X}, actual: 0x{:08X}"), failureCode, errorCode);
 			}
 		}
 		else

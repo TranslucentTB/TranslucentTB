@@ -3,7 +3,7 @@
 #include <wil/resource.h>
 #include <winrt/Windows.UI.Core.h>
 
-#include "window.hpp"
+#include "../windows/window.hpp"
 #include "uwp.hpp"
 #include "../../ProgramLog/error/win32.hpp"
 

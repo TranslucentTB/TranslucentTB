@@ -7,7 +7,6 @@
 
 #include "appinfo.hpp"
 #include "constants.hpp"
-#include "window.hpp"
 #include "error/error.hpp"
 #include "error/std.hpp"
 #include "error/win32.hpp"

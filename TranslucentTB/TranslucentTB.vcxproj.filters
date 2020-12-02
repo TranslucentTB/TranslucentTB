@@ -134,6 +134,9 @@
     <ClInclude Include="uwp\xamldragregion.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\window.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="dynamicloader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -161,6 +164,11 @@
     <Manifest Include="resources\TranslucentTB.manifest">
       <Filter>Resource Files</Filter>
     </Manifest>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="windows\Window.natvis">
+      <Filter>Resource Files</Filter>
+    </Natvis>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
