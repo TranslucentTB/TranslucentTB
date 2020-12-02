@@ -24,9 +24,7 @@ steps:
 - script: git pull
   displayName: 'Update vcpkg ports'
   workingDirectory: C:\vcpkg
-- script: vcpkg integrate install
-  displayName: 'Integrate vcpkg'
-- script: vcpkg install --triplet $(platform)-windows fmt spdlog
+- script: vcpkg install --triplet $(platform)-windows discord-game-sdk fmt spdlog
   displayName: 'Install vcpkg dependencies'
 - script: vcpkg install --triplet $(platform)-windows --overlay-ports=$(Build.SourcesDirectory)/ports --head detours gtest member-thunk rapidjson wil
   displayName: 'Install vcpkg head dependencies'
@@ -34,24 +32,19 @@ steps:
   displayName: 'Restore NuGet packages'
   inputs:
     restoreSolution: $(solution)
+- script: vcpkg integrate install
+  displayName: 'Integrate vcpkg'
 - task: VSBuild@1
   displayName: 'Build solution'
   inputs:
     solution: $(solution)
     platform: $(platform)
     configuration: $(configuration)
-- script: $(platform)\$(configuration)\Tests.exe --gtest_output=xml:$(testResultsFile)
+- task: VSTest@2
   displayName: 'Run unit tests'
   condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'))
-- powershell: |
-    $fileExists = Test-Path -Path "$(testResultsFile)"
-    Write-Output "##vso[task.setvariable variable=testsRan]$fileExists"
-  displayName: 'Check if test results are present'
-  condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'))
-- task: PublishTestResults@2
-  displayName: 'Publish test results'
-  condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'), eq(variables['testsRan'], true))
   inputs:
-    testResultsFiles: $(testResultsFile)
-    buildPlatform: $(platform)
-    buildConfiguration: $(configuration)
+    testAssemblyVer2: $(platform)\$(configuration)\Tests.exe
+    runInParallel: true
+    platform: $(platform)
+    configuration: $(configuration)
