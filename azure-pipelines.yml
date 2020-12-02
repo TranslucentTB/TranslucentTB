@@ -3,7 +3,6 @@ pool:
 
 variables:
   solution: $(Build.SourcesDirectory)/TranslucentTB.sln
-  testResultsFile: $(Agent.TempDirectory)/results.xml
 
 strategy:
   matrix:
@@ -43,6 +42,10 @@ steps:
     solution: $(solution)
     platform: $(platform)
     configuration: $(configuration)
+- publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
+  displayName: 'Upload portable build'
+- publish: $(Build.SourcesDirectory)\AppPackage\AppPackages
+  displayName: 'Upload MSIX package'
 - task: VSTest@2
   displayName: 'Run unit tests'
   condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'))
@@ -51,3 +54,4 @@ steps:
     runInParallel: true
     platform: $(platform)
     configuration: $(configuration)
+    testRunTitle: '$(platform) $(configuration)'
