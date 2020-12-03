@@ -1,0 +1,7 @@
+# 32-bits is not supported
+**/Dependencies/ARM
+**/Dependencies/x86
+
+# Not needed in portable build
+AppPackage.build.appxrecipe
+AppxManifest.xml
