@@ -34,7 +34,6 @@
     <ClCompile Include="tray\contextmenu.cpp" />
     <ClCompile Include="tray\trayicon.cpp" />
     <ClCompile Include="uwp\uwp.cpp" />
-    <ClCompile Include="win32.cpp" />
     <ClCompile Include="windows\window.cpp" />
     <ClCompile Include="windows\windowclass.cpp" />
   </ItemGroup>
@@ -78,7 +77,6 @@
     <ProjectReference Include="..\Xaml\Xaml.vcxproj">
       <Project>{9875d8e1-9594-445e-a0e4-07c6027f85e0}</Project>
       <DeploymentContent>true</DeploymentContent>
-
       <!--
         Prevent the .pri and .winmd from showing up in the final output.
         IDK why this doesn't also prevent copying the .dll, but whatever.

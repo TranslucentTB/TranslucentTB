@@ -268,9 +268,4 @@ public:
 	};
 
 	using FilenameSet = std::unordered_set<std::wstring, FilenameHash, FilenameEqual>;
-
-#ifdef _TRANSLUCENTTB_EXE
-	// Applies various settings that make code execution more secure.
-	static void HardenProcess();
-#endif
 };
