@@ -19,3 +19,5 @@ Set-Content $info_file -Value $info_content
 $appx_file = "AppPackage\Package.appxmanifest"
 $appx_content = (Get-Content $appx_file).Replace("1.0.0.0", $appx_short_version)
 Set-Content $appx_file -Value $appx_content
+
+Write-Host "##vso[build.updatebuildnumber]$exe_full_version"
