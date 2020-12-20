@@ -5,8 +5,6 @@
 #include "win32.hpp"
 #include "../ProgramLog/error/win32.hpp"
 
-using namespace winrt::Windows::UI::Xaml::Hosting;
-
 void BaseXamlPageHost::UpdateFrame()
 {
 	// Magic that gives us shadows
@@ -150,7 +148,7 @@ void BaseXamlPageHost::ResizeWindow(int x, int y, int width, int height, bool mo
 	}
 }
 
-void BaseXamlPageHost::PositionDragRegion(winrt::Windows::Foundation::Rect position, UINT flags)
+void BaseXamlPageHost::PositionDragRegion(wf::Rect position, UINT flags)
 {
 	const auto newX = static_cast<int>(position.X);
 	const auto newY = static_cast<int>(position.Y);
@@ -244,13 +242,11 @@ BaseXamlPageHost::BaseXamlPageHost(WindowClass &classRef, WindowClass &dragRegio
 	HresultVerify(nativeSource->AttachToWindow(m_WindowHandle), spdlog::level::critical, L"Failed to attach DesktopWindowXamlSource");
 	HresultVerify(nativeSource->get_WindowHandle(m_interopWnd.put()), spdlog::level::critical, L"Failed to get interop window handle");
 
-	m_focusRevoker = m_source.TakeFocusRequested(winrt::auto_revoke, [](const DesktopWindowXamlSource &sender, const DesktopWindowXamlSourceTakeFocusRequestedEventArgs &args)
+	m_focusRevoker = m_source.TakeFocusRequested(winrt::auto_revoke, [](const wuxh::DesktopWindowXamlSource &sender, const wuxh::DesktopWindowXamlSourceTakeFocusRequestedEventArgs &args)
 	{
-		using winrt::Windows::UI::Xaml::Hosting::XamlSourceFocusNavigationReason;
-
 		const auto request = args.Request();
 		const auto reason = request.Reason();
-		if (reason == XamlSourceFocusNavigationReason::First || reason == XamlSourceFocusNavigationReason::Last)
+		if (reason == wuxh::XamlSourceFocusNavigationReason::First || reason == wuxh::XamlSourceFocusNavigationReason::Last)
 		{
 			// just cycle back to beginning
 			sender.NavigateFocus(request);

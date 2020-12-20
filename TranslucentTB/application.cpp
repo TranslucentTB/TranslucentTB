@@ -146,12 +146,12 @@ Application::Application(HINSTANCE hInst, bool hasPackageIdentity, bool fileExis
 
 void Application::OpenDonationPage()
 {
-	UWP::OpenUri(winrt::Windows::Foundation::Uri(L"https://liberapay.com/" APP_NAME));
+	UWP::OpenUri(wf::Uri(L"https://liberapay.com/" APP_NAME));
 }
 
 void Application::OpenTipsPage()
 {
-	UWP::OpenUri(winrt::Windows::Foundation::Uri(L"https://" APP_NAME ".github.io/tips"));
+	UWP::OpenUri(wf::Uri(L"https://" APP_NAME ".github.io/tips"));
 }
 
 void Application::OpenDiscordServer()
@@ -177,7 +177,7 @@ void Application::OpenDiscordServer()
 		// todo: also fallback
 	}
 #else
-	UWP::OpenUri(winrt::Windows::Foundation::Uri(L"https://discord.gg/" APP_NAME));
+	UWP::OpenUri(wf::Uri(L"https://discord.gg/" APP_NAME));
 #endif
 }
 

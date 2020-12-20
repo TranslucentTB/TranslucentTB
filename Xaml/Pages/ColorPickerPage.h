@@ -1,5 +1,6 @@
 #pragma once
 #include "../factory.h"
+#include "winrt.hpp"
 
 #include "FramelessPage.h"
 #include "Pages/ColorPickerPage.g.h"
@@ -16,12 +17,12 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		event_token ChangesCommitted(const ChangesCommittedDelegate &handler);
 		void ChangesCommitted(const event_token &token);
 
-		void OkButtonClicked(const IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
-		void CancelButtonClicked(const IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
-		void ApplyButtonClicked(const IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+		void OkButtonClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
+		void CancelButtonClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
+		void ApplyButtonClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 
-		void DialogOpened(const IInspectable &sender, const Windows::UI::Xaml::Controls::ContentDialogOpenedEventArgs &args);
-		void DialogClosed(const IInspectable &sender, const Windows::UI::Xaml::Controls::ContentDialogClosedEventArgs &args);
+		void DialogOpened(const IInspectable &sender, const wuxc::ContentDialogOpenedEventArgs &args);
+		void DialogClosed(const IInspectable &sender, const wuxc::ContentDialogClosedEventArgs &args);
 
 	private:
 		fire_and_forget OpenConfirmDialog();

@@ -124,4 +124,7 @@ _Use_decl_annotations_ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar
 	// brutally terminating will work.
 	// Caused specifically by ColorPicker, go figure: https://github.com/microsoft/microsoft-ui-xaml/issues/3541
 	TerminateProcess(GetCurrentProcess(), ret);
+
+	// just in case
+	return ret;
 }

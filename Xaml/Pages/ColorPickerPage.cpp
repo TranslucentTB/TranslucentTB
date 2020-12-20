@@ -7,9 +7,6 @@
 
 #include "appinfo.hpp"
 
-using namespace winrt;
-using namespace Windows::UI::Xaml;
-
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	ColorPickerPage::ColorPickerPage(const hstring &category, const Windows::UI::Color &currentColor)
@@ -57,7 +54,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		m_ChangesCommittedHandler.remove(token);
 	}
 
-	void ColorPickerPage::OkButtonClicked(const IInspectable &, const RoutedEventArgs &)
+	void ColorPickerPage::OkButtonClicked(const IInspectable &, const wux::RoutedEventArgs &)
 	{
 		// A bug in ContentDialog allows you to click the OK and Cancel button
 		// while it's opened. So if we don't cancel it, and the thread is reused,
@@ -69,13 +66,13 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		Close();
 	}
 
-	void ColorPickerPage::CancelButtonClicked(const IInspectable &, const RoutedEventArgs &)
+	void ColorPickerPage::CancelButtonClicked(const IInspectable &, const wux::RoutedEventArgs &)
 	{
 		DismissConfirmDialog();
 		Close();
 	}
 
-	void ColorPickerPage::ApplyButtonClicked(const IInspectable &, const RoutedEventArgs &)
+	void ColorPickerPage::ApplyButtonClicked(const IInspectable &, const wux::RoutedEventArgs &)
 	{
 		DismissConfirmDialog();
 
@@ -83,12 +80,12 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		Picker().PreviousColor(Picker().Color());
 	}
 
-	void ColorPickerPage::DialogOpened(const IInspectable &, const Windows::UI::Xaml::Controls::ContentDialogOpenedEventArgs &)
+	void ColorPickerPage::DialogOpened(const IInspectable &, const wuxc::ContentDialogOpenedEventArgs &)
 	{
 		m_DialogOpened = true;
 	}
 
-	void ColorPickerPage::DialogClosed(const IInspectable &, const Windows::UI::Xaml::Controls::ContentDialogClosedEventArgs &)
+	void ColorPickerPage::DialogClosed(const IInspectable &, const wuxc::ContentDialogClosedEventArgs &)
 	{
 		m_DialogOpened = false;
 	}
@@ -100,10 +97,9 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 		if (const auto self = self_weak.get())
 		{
-			using Windows::UI::Xaml::Controls::ContentDialogResult;
-			if (result != ContentDialogResult::None)
+			if (result != wuxc::ContentDialogResult::None)
 			{
-				if (result == ContentDialogResult::Primary)
+				if (result == wuxc::ContentDialogResult::Primary)
 				{
 					self->m_ChangesCommittedHandler(self->Picker().Color());
 				}

@@ -1,6 +1,7 @@
 #pragma once
 #include "../dependencyproperty.h"
 #include "../factory.h"
+#include "winrt.hpp"
 
 #include "Controls/ChromeButton.g.h"
 
@@ -13,7 +14,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 	{
 		ChromeButton();
 
-		DECL_DEPENDENCY_PROPERTY(Windows::UI::Xaml::Controls::IconElement, Icon);
+		DECL_DEPENDENCY_PROPERTY(wuxc::IconElement, Icon);
 		DECL_DEPENDENCY_PROPERTY(Windows::UI::Color, NormalForeground);
 		DECL_DEPENDENCY_PROPERTY(Windows::UI::Color, NormalBackground);
 		DECL_DEPENDENCY_PROPERTY(Windows::UI::Color, HoverForeground);

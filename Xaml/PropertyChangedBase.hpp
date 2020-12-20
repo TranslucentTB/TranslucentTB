@@ -9,7 +9,7 @@
 template<typename T>
 class PropertyChangedBase {
 public:
-	winrt::event_token PropertyChanged(const winrt::Windows::UI::Xaml::Data::PropertyChangedEventHandler &value)
+	winrt::event_token PropertyChanged(const wux::Data::PropertyChangedEventHandler &value)
 	{
 		return m_propertyChanged.add(value);
 	}
@@ -27,10 +27,10 @@ protected:
 		{
 			value = new_value;
 			name.remove_prefix(name.find_last_of(L':') + 1);
-			m_propertyChanged(*static_cast<T *>(this), winrt::Windows::UI::Xaml::Data::PropertyChangedEventArgs(name));
+			m_propertyChanged(*static_cast<T *>(this), wux::Data::PropertyChangedEventArgs(name));
 		}
 	}
 
 private:
-	winrt::event<winrt::Windows::UI::Xaml::Data::PropertyChangedEventHandler> m_propertyChanged;
+	winrt::event<wux::Data::PropertyChangedEventHandler> m_propertyChanged;
 };

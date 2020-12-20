@@ -1,5 +1,6 @@
 #pragma once
 #include "../factory.h"
+#include "winrt.hpp"
 
 #include "Controls/ActionList.g.h"
 
@@ -9,8 +10,8 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 	{
 		ActionList();
 
-		void ForwardActionKeyDown(const IInspectable &sender, const Windows::UI::Xaml::Input::KeyRoutedEventArgs &args);
-		void ForwardAction(const IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+		void ForwardActionKeyDown(const IInspectable &sender, const wux::Input::KeyRoutedEventArgs &args);
+		void ForwardAction(const IInspectable &sender, const wux::RoutedEventArgs &args);
 	};
 }
 

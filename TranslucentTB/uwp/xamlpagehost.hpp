@@ -36,7 +36,7 @@ private:
 	typename T::Closed_revoker m_ClosedRevoker;
 	typename T::LayoutUpdated_revoker m_LayoutUpdatedRevoker;
 
-	winrt::Windows::Foundation::EventHandler<winrt::Windows::Foundation::IInspectable> m_LayoutUpdatedHandler = { this, &XamlPageHost::OnXamlLayoutChanged };
+	wf::EventHandler<wf::IInspectable> m_LayoutUpdatedHandler = { this, &XamlPageHost::OnXamlLayoutChanged };
 	winrt::Windows::System::DispatcherQueueHandler m_SizeUpdater = { this, &XamlPageHost::UpdateWindowSize };
 
 	bool m_PendingSizeUpdate = false;
@@ -66,7 +66,7 @@ private:
 
 		case WM_PAINT:
 		{
-			const auto brush = m_content.Background().try_as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>();
+			const auto brush = m_content.Background().try_as<wux::Media::AcrylicBrush>();
 			if (brush)
 			{
 				PAINTSTRUCT ps;
@@ -83,7 +83,7 @@ private:
 		case WM_ERASEBKGND:
 		{
 			const auto rect = client_rect();
-			const auto brush = m_content.Background().try_as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>();
+			const auto brush = m_content.Background().try_as<wux::Media::AcrylicBrush>();
 			if (rect && brush)
 			{
 				if (PaintBackground(reinterpret_cast<HDC>(wParam), *rect, brush.FallbackColor()))
@@ -146,7 +146,7 @@ private:
 		return BaseXamlPageHost::MessageHandler(uMsg, wParam, lParam);
 	}
 
-	inline void OnXamlLayoutChanged(const winrt::Windows::Foundation::IInspectable &, const winrt::Windows::Foundation::IInspectable &)
+	inline void OnXamlLayoutChanged(const wf::IInspectable &, const wf::IInspectable &)
 	{
 		if (!m_PendingSizeUpdate && m_SizeUpdater)
 		{
@@ -244,7 +244,7 @@ private:
 		return { size, dragRegion };
 	}
 
-	inline void UpdateTitle(const winrt::Windows::UI::Xaml::DependencyObject &, const winrt::Windows::UI::Xaml::DependencyProperty &)
+	inline void UpdateTitle(const wux::DependencyObject &, const wux::DependencyProperty &)
 	{
 		if (!SetWindowText(m_WindowHandle, m_content.Title().c_str()))
 		{
@@ -252,7 +252,7 @@ private:
 		}
 	}
 
-	inline void UpdateAlwaysOnTop(const winrt::Windows::UI::Xaml::DependencyObject &, const winrt::Windows::UI::Xaml::DependencyProperty &)
+	inline void UpdateAlwaysOnTop(const wux::DependencyObject &, const wux::DependencyProperty &)
 	{
 		const auto wnd = m_content.AlwaysOnTop() ? Window::TopMostWindow : Window::NoTopMostWindow;
 		if (!SetWindowPos(m_WindowHandle, wnd, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE))
@@ -266,8 +266,7 @@ private:
 		if (m_Saudm)
 		{
 			// only the last bit has info, the rest is garbage
-			using winrt::Windows::UI::Xaml::ElementTheme;
-			m_content.RequestedTheme((m_Saudm() & 0x1) ? ElementTheme::Dark : ElementTheme::Light);
+			m_content.RequestedTheme((m_Saudm() & 0x1) ? wux::ElementTheme::Dark : wux::ElementTheme::Light);
 		}
 	}
 
@@ -350,8 +349,8 @@ public:
 
 		// TODO:
 		// tab navigation enabled on opening
-		// ^^ if has keyboard focus, closing animation doesn't play
 		// contentdialog animations not working
+		// shouldn't restore focus if a window is opened as a result of clicking
 	}
 
 	inline winrt::TranslucentTB::Xaml::Pages::FramelessPage page() noexcept override

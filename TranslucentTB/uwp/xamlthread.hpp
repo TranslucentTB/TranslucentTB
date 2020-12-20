@@ -27,7 +27,7 @@ private:
 	wil::unique_handle m_Thread;
 	wil::slim_event_manual_reset m_Ready;
 	winrt::Windows::System::DispatcherQueueController m_Dispatcher;
-	winrt::Windows::UI::Xaml::Hosting::WindowsXamlManager m_Manager;
+	wuxh::WindowsXamlManager m_Manager;
 
 	std::vector<winrt::weak_ref<IDesktopWindowXamlSourceNative2>> m_Sources;
 
@@ -77,6 +77,8 @@ public:
 			std::invoke(std::forward<Callback>(callback), host->content());
 
 			m_CurrentWindow = std::move(host);
+
+			lock.unlock();
 		});
 	}
 

@@ -6,8 +6,6 @@
 #include "../ProgramLog/error/win32.hpp"
 #include "../ProgramLog/error/winrt.hpp"
 
-using namespace winrt::Windows;
-
 bool UWP::HasPackageIdentity() noexcept
 {
 	UINT32 length = 0;
@@ -15,12 +13,12 @@ bool UWP::HasPackageIdentity() noexcept
 	return result != APPMODEL_ERROR_NO_PACKAGE;
 }
 
-Foundation::IAsyncAction UWP::OpenUri(const Foundation::Uri &uri)
+wf::IAsyncAction UWP::OpenUri(const wf::Uri &uri)
 {
 	bool opened;
 	try
 	{
-		opened = co_await System::Launcher::LaunchUriAsync(uri);
+		opened = co_await winrt::Windows::System::Launcher::LaunchUriAsync(uri);
 	}
 	catch (const winrt::hresult_error& err)
 	{

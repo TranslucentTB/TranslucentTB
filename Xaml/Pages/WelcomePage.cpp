@@ -7,9 +7,6 @@
 
 #include "appinfo.hpp"
 
-using namespace winrt;
-using namespace Windows::UI::Xaml;
-
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	WelcomePage::WelcomePage(bool hasPackageIdentity)
@@ -19,11 +16,11 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		Title(L"Welcome to " APP_NAME L"!");
 		if (!hasPackageIdentity)
 		{
-			StartupCheckbox().Visibility(Visibility::Collapsed);
+			StartupCheckbox().Visibility(wux::Visibility::Collapsed);
 		}
 	}
 
-	Windows::Foundation::Rect WelcomePage::DragRegion()
+	wf::Rect WelcomePage::DragRegion()
 	{
 		return {
 			0,
@@ -33,28 +30,28 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		};
 	}
 
-	void WelcomePage::OpenLiberapayLink(const IInspectable &, const RoutedEventArgs &)
+	void WelcomePage::OpenLiberapayLink(const IInspectable &, const wux::RoutedEventArgs &)
 	{
 		m_LiberapayOpenRequestedHandler();
 	}
 
-	void WelcomePage::OpenDiscordLink(const IInspectable &, const RoutedEventArgs &)
+	void WelcomePage::OpenDiscordLink(const IInspectable &, const wux::RoutedEventArgs &)
 	{
 		m_DiscordJoinRequestedHandler();
 	}
 
-	void WelcomePage::EditConfigFile(const IInspectable &, const RoutedEventArgs &)
+	void WelcomePage::EditConfigFile(const IInspectable &, const wux::RoutedEventArgs &)
 	{
 		m_ConfigEditRequestedHandler();
 	}
 
-	void WelcomePage::AgreeButtonClicked(const IInspectable &, const RoutedEventArgs &)
+	void WelcomePage::AgreeButtonClicked(const IInspectable &, const wux::RoutedEventArgs &)
 	{
 		m_LicenseApprovedHandler(StartupCheckbox().IsChecked().Value());
 		Close();
 	}
 
-	void WelcomePage::DisagreeButtonClicked(const IInspectable &, const RoutedEventArgs &)
+	void WelcomePage::DisagreeButtonClicked(const IInspectable &, const wux::RoutedEventArgs &)
 	{
 		Close();
 	}

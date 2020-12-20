@@ -1,5 +1,6 @@
 #pragma once
 #include "factory.h"
+#include "winrt.hpp"
 
 #include "FunctionalConverters.g.h"
 
@@ -7,7 +8,7 @@ namespace winrt::TranslucentTB::Xaml::implementation
 {
 	struct FunctionalConverters
 	{
-		static Windows::UI::Xaml::Visibility InvertedBoolToVisibility(bool value);
+		static wux::Visibility InvertedBoolToVisibility(bool value);
 	};
 }
 

@@ -5,9 +5,6 @@
 #include "Pages/FramelessPage.g.cpp"
 #endif
 
-using namespace winrt;
-using namespace Windows::UI::Xaml;
-
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	FramelessPage::FramelessPage()
@@ -20,7 +17,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		return true;
 	}
 
-	void FramelessPage::ShowSystemMenu(const Windows::Foundation::Point &position)
+	void FramelessPage::ShowSystemMenu(const wf::Point &position)
 	{
 		if (CanMove())
 		{
@@ -46,7 +43,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		}
 	}
 
-	Windows::Foundation::Rect FramelessPage::DragRegion()
+	wf::Rect FramelessPage::DragRegion()
 	{
 		if (!ExpandIntoTitlebar())
 		{
@@ -78,7 +75,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		m_ClosedHandler.remove(token);
 	}
 
-	void FramelessPage::CloseClicked(const IInspectable &, const RoutedEventArgs &)
+	void FramelessPage::CloseClicked(const IInspectable &, const wux::RoutedEventArgs &)
 	{
 		RequestClose();
 	}

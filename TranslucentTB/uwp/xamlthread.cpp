@@ -57,7 +57,7 @@ void XamlThread::ThreadInit()
 
 	try
 	{
-		m_Manager = winrt::Windows::UI::Xaml::Hosting::WindowsXamlManager::InitializeForCurrentThread();
+		m_Manager = wuxh::WindowsXamlManager::InitializeForCurrentThread();
 	}
 	HresultErrorCatch(spdlog::level::critical, L"Failed to create XAML manager");
 

@@ -5,10 +5,6 @@
 #include "Controls/ChromeButton.g.cpp"
 #endif
 
-using namespace winrt;
-using namespace Windows::UI;
-using namespace Windows::UI::Xaml;
-
 namespace winrt::TranslucentTB::Xaml::Controls::implementation
 {
 	ChromeButton::ChromeButton()
