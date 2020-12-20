@@ -14,7 +14,7 @@
         </controls:ChromeButton>
     </local:FramelessPage.TitlebarContent>
 
-    <StackPanel Padding="12">
+    <StackPanel Margin="12">
         <!--
             HACK: allows ContentDialog localization in .resw, removes the need for explicit XamlRoot
             We insert it here because anywhere else it would throw off StackPanel spacing.

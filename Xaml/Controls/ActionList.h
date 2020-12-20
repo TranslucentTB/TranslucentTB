@@ -10,7 +10,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 	{
 		ActionList();
 
-		void ForwardActionKeyDown(const IInspectable &sender, const wux::Input::KeyRoutedEventArgs &args);
+		void ForwardActionKey(const IInspectable &sender, const wux::Input::KeyRoutedEventArgs &args);
 		void ForwardAction(const IInspectable &sender, const wux::RoutedEventArgs &args);
 	};
 }

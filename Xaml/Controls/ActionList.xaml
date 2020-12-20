@@ -11,16 +11,16 @@
     <ItemsControl.ItemTemplate>
         <DataTemplate x:DataType="models:Action" x:DefaultBindMode="OneWay">
             <!-- Fight me -->
-            <ListViewItem Tapped="ForwardAction" KeyDown="ForwardActionKeyDown" Tag="{x:Bind}">
-                <Grid Padding="5,7,0,8">
+            <ListViewItem Tapped="ForwardAction" KeyUp="ForwardActionKey" Tag="{x:Bind}" Padding="0">
+                <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="35" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <ContentPresenter Content="{x:Bind Icon}" Width="20" Height="24" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,6,0,0" />
-                    <StackPanel Grid.Column="1">
-                        <TextBlock FontSize="14" Text="{x:Bind Name}" Foreground="{ThemeResource SystemAccentColor}" />
-                        <TextBlock FontSize="13" Opacity="0.6" Text="{x:Bind Description}" TextWrapping="WrapWholeWords" />
+                    <ContentPresenter Content="{x:Bind Icon}" Width="20" Height="24" VerticalAlignment="Top" Margin="16" />
+                    <StackPanel Grid.Column="1" Margin="0,12">
+                        <TextBlock FontSize="14" Text="{x:Bind Name}" Foreground="{ThemeResource SystemAccentColor}" TextLineBounds="TrimToCapHeight" />
+                        <TextBlock FontSize="13" Opacity="0.6" Text="{x:Bind Description}" />
                     </StackPanel>
                 </Grid>
             </ListViewItem>

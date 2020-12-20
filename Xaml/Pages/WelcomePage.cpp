@@ -25,8 +25,8 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		return {
 			0,
 			0,
-			static_cast<float>(ActualWidth()),
-			static_cast<float>(RootGrid().Padding().Top + TitleText().ActualHeight() + (MessageStackPanel().Spacing() / 2))
+			static_cast<float>(TitleRegion().ActualWidth()),
+			static_cast<float>(TitleRegion().ActualHeight())
 		};
 	}
 

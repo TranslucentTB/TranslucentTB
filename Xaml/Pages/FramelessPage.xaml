@@ -41,11 +41,8 @@
             Visibility="{x:Bind root:FunctionalConverters.InvertedBoolToVisibility(ExpandIntoTitlebar)}"
             RelativePanel.AlignTopWithPanel="True"
             RelativePanel.AlignLeftWithPanel="True"
-            RelativePanel.AlignRightWithPanel="True">
-            <Border.Background>
-                <AcrylicBrush BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemChromeAltHighColor}" TintOpacity="0.7" FallbackColor="{ThemeResource SystemAltHighColor}" />
-            </Border.Background>
-        </Border>
+            RelativePanel.AlignRightWithPanel="True"
+            Background="{ThemeResource TitlebarBackground}" />
         <TextBlock
             Text="{x:Bind Title}"
             FontSize="12"

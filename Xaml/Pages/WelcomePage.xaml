@@ -9,8 +9,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" Width="636" Height="452" ExpandIntoTitlebar="True">
 
-    <Grid x:Name="RootGrid" Padding="12">
+    <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -19,20 +20,15 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel x:Name="MessageStackPanel" Grid.ColumnSpan="2" Orientation="Vertical" Spacing="12">
+        <Border x:Name="TitleRegion" Grid.ColumnSpan="2" Background="{ThemeResource TitlebarBackground}" Padding="12" Margin="0,0,0,12">
             <TextBlock x:Name="TitleText" Style="{ThemeResource SubheaderTextBlockStyle}" Text="{x:Bind Title}" TextLineBounds="Tight" />
-            <RichTextBlock TextWrapping="Wrap" IsTextSelectionEnabled="False">
-                <Paragraph>
-                    By default, TranslucentTB darkens the taskbar a bit when there is a maximised window.
-                    You can alter this behavior, and many other settings, by editing the configuration file now or by using the tray icon (which will appear after accepting the license).
-                </Paragraph>
-                <Paragraph Margin="0,6,0,0">
-                    Before using TranslucentTB, you must agree to
-                    <Hyperlink NavigateUri="https://translucenttb.github.io/privacy-policy" ToolTipService.ToolTip="Click here to open the privacy policy in your browser">our privacy policy</Hyperlink>.
-                    The privacy policy is very short and written to explicitly protect all your personal data.
-                    Press "I agree" below to continue.
-                </Paragraph>
-            </RichTextBlock>
+        </Border>
+
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Vertical" Spacing="12" Margin="12,0">
+            <TextBlock TextWrapping="WrapWholeWords">
+                By default, TranslucentTB darkens the taskbar a bit when there is a maximised window.
+                You can alter this behavior, and many other settings, by editing the configuration file now or by using the tray icon (which will appear after pressing "Continue").
+            </TextBlock>
 
             <controls:ActionList>
                 <models:Action
@@ -56,10 +52,10 @@
             </controls:ActionList>
         </StackPanel>
 
-        <CheckBox x:Name="StartupCheckbox" Grid.Row="1" Content="Automatically start TranslucentTB at system bootup" IsChecked="True" />
-        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="12">
-            <Button Width="100" Style="{ThemeResource AccentButtonStyle}" Click="AgreeButtonClicked">I agree</Button>
-            <Button Width="100" Click="DisagreeButtonClicked">I disagree</Button>
+        <CheckBox x:Name="StartupCheckbox" Grid.Row="2" Content="Automatically start TranslucentTB at system bootup" IsChecked="True" Margin="12" />
+        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="12" Margin="12">
+            <Button Width="100" Style="{ThemeResource AccentButtonStyle}" Click="AgreeButtonClicked">Continue</Button>
+            <Button Width="100" Click="DisagreeButtonClicked">Exit</Button>
         </StackPanel>
     </Grid>
 </local:FramelessPage>
