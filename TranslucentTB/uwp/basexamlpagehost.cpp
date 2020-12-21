@@ -169,45 +169,55 @@ void BaseXamlPageHost::Flash() noexcept
 
 bool BaseXamlPageHost::PaintBackground(HDC dc, const RECT &target, winrt::Windows::UI::Color col)
 {
-	if (!m_BackgroundBrush || m_BackgroundColor != col)
+	if (!m_BackgroundBrush || m_BackgroundColor != col) [[unlikely]]
 	{
 		m_BackgroundBrush.reset(CreateSolidBrush(RGB(col.R, col.G, col.B)));
-	}
-
-	if (m_BackgroundBrush)
-	{
-		m_BackgroundColor = col;
-
-		// buffered paints overwrite the titlebar for some reason
-		HDC opaqueDc;
-		BP_PAINTPARAMS params = { sizeof(params), BPPF_NOCLIP | BPPF_ERASE };
-		HPAINTBUFFER buf = BeginBufferedPaint(dc, &target, BPBF_TOPDOWNDIB, &params, &opaqueDc);
-		if (buf && opaqueDc)
+		if (m_BackgroundBrush)
 		{
-			if (!FillRect(opaqueDc, &target, m_BackgroundBrush.get()))
-			{
-				LastErrorHandle(spdlog::level::warn, L"Failed to fill rectangle.");
-			}
-
-			HresultVerify(BufferedPaintSetAlpha(buf, nullptr, 255), spdlog::level::warn, L"Failed to set buffered paint alpha");
-
-			const HRESULT hr = EndBufferedPaint(buf, true);
-			if (SUCCEEDED(hr))
-			{
-				return true;
-			}
-			else
-			{
-				HresultHandle(hr, spdlog::level::warn, L"Failed to end buffered paint");
-			}
+			m_BackgroundColor = col;
 		}
 		else
 		{
-			LastErrorHandle(spdlog::level::warn, L"Failed to begin buffered paint");
+			MessagePrint(spdlog::level::warn, L"Failed to create background brush");
+			return false;
 		}
 	}
 
-	return false;
+	// buffered paints overwrite the titlebar for some reason
+	HDC opaqueDc = nullptr;
+	BP_PAINTPARAMS params = { sizeof(params), BPPF_NOCLIP | BPPF_ERASE };
+	HPAINTBUFFER buf = BeginBufferedPaint(dc, &target, BPBF_TOPDOWNDIB, &params, &opaqueDc);
+	if (buf && opaqueDc)
+	{
+		if (!FillRect(opaqueDc, &target, m_BackgroundBrush.get())) [[unlikely]]
+		{
+			LastErrorHandle(spdlog::level::warn, L"Failed to fill rectangle.");
+			return false;
+		}
+
+		HRESULT hr = BufferedPaintSetAlpha(buf, nullptr, 255);
+		if (FAILED(hr)) [[unlikely]]
+		{
+			HresultHandle(hr, spdlog::level::warn, L"Failed to set buffered paint alpha");
+			return false;
+		}
+
+		hr = EndBufferedPaint(buf, true);
+		if (SUCCEEDED(hr))
+		{
+			return true;
+		}
+		else
+		{
+			HresultHandle(hr, spdlog::level::warn, L"Failed to end buffered paint");
+			return false;
+		}
+	}
+	else
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to begin buffered paint");
+		return false;
+	}
 }
 
 BaseXamlPageHost::BaseXamlPageHost(WindowClass &classRef, WindowClass &dragRegionClass) :
