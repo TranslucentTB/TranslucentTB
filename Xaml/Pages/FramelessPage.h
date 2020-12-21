@@ -19,6 +19,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 		virtual bool RequestClose();
 		virtual wf::Rect DragRegion();
+		wf::Rect TitlebarButtonsRegion();
 
 		void Close();
 		event_token Closed(const ClosedDelegate &handler);

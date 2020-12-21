@@ -38,7 +38,7 @@ protected:
 
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void ResizeWindow(int x, int y, int width, int height, bool move, UINT flags = 0);
-	void PositionDragRegion(wf::Rect position, UINT flags = 0);
+	void PositionDragRegion(wf::Rect position, wf::Rect buttonsRegion, UINT flags = 0);
 	void Flash() noexcept;
 	bool PaintBackground(HDC dc, const RECT &target, winrt::Windows::UI::Color col);
 	BaseXamlPageHost(WindowClass &classRef, WindowClass &dragRegionClass);

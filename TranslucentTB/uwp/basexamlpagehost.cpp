@@ -148,33 +148,11 @@ void BaseXamlPageHost::ResizeWindow(int x, int y, int width, int height, bool mo
 	}
 }
 
-void BaseXamlPageHost::PositionDragRegion(wf::Rect position, UINT flags)
+void BaseXamlPageHost::PositionDragRegion(wf::Rect position, wf::Rect buttonsRegion, UINT flags)
 {
-	const auto newX = static_cast<int>(position.X);
-	const auto newY = static_cast<int>(position.Y);
-	const auto newHeight = static_cast<int>(position.Height);
-	const auto newWidth = static_cast<int>(position.Width);
-
-	const auto dragRegionRect = m_DragRegion.rect();
-	const auto wndRect = rect();
-	if (dragRegionRect && wndRect)
+	if (const auto wndRect = rect())
 	{
-		const auto x = dragRegionRect->left - wndRect->left;
-		const auto y = dragRegionRect->top - wndRect->top;
-		const auto width = dragRegionRect->right - dragRegionRect->left;
-		const auto height = dragRegionRect->bottom - dragRegionRect->top;
-		if (x != newX || y != newY || height != newHeight || width != newWidth) [[unlikely]]
-		{
-			if (!SetWindowPos(m_DragRegion, HWND_TOP, newX, newY, newWidth, newHeight, flags | SWP_NOACTIVATE)) [[unlikely]]
-			{
-				LastErrorHandle(spdlog::level::warn, L"Failed to set drag region window position");
-			}
-
-			if (!SetLayeredWindowAttributes(m_DragRegion, 0, 255, LWA_ALPHA)) [[unlikely]]
-			{
-				LastErrorHandle(spdlog::level::warn, L"Failed to set drag region window attributes");
-			}
-		}
+		m_DragRegion.Position(*wndRect, position, buttonsRegion, flags);
 	}
 }
 

@@ -2,6 +2,7 @@
 #include "basexamlpagehost.hpp"
 #include <concepts>
 #include <ShObjIdl_core.h>
+#include <tuple>
 #include <type_traits>
 #include <windowsx.h>
 
@@ -162,7 +163,7 @@ private:
 		const HMONITOR mon = GetInitialMonitor(cursor, position);
 
 		MONITORINFO info = { sizeof(info) };
-		const auto [windowSize, dragRegion] = GetXamlSize(mon, info);
+		const auto [windowSize, dragRegion, buttonRegion] = GetXamlSize(mon, info);
 
 		int width = static_cast<int>(windowSize.Width),
 			height = static_cast<int>(windowSize.Height),
@@ -171,7 +172,7 @@ private:
 
 		CalculateInitialPosition(x, y, width, height, cursor, info.rcWork, position);
 		ResizeWindow(x, y, width, height, true, SWP_SHOWWINDOW);
-		PositionDragRegion(dragRegion, SWP_SHOWWINDOW);
+		PositionDragRegion(dragRegion, buttonRegion, SWP_SHOWWINDOW);
 		SetForegroundWindow(m_WindowHandle);
 
 		m_LayoutUpdatedRevoker = m_content.LayoutUpdated(winrt::auto_revoke, m_LayoutUpdatedHandler);
@@ -186,7 +187,7 @@ private:
 		if (m_content)
 		{
 			MONITORINFO info = { sizeof(info) };
-			const auto [windowSize, dragRegion] = GetXamlSize(monitor(), info);
+			const auto [windowSize, dragRegion, buttonRegion] = GetXamlSize(monitor(), info);
 
 			const auto newHeight = static_cast<int>(windowSize.Height);
 			const auto newWidth = static_cast<int>(windowSize.Width);
@@ -202,7 +203,7 @@ private:
 				ResizeWindow(x, y, newWidth, newHeight, move);
 			}
 
-			PositionDragRegion(dragRegion);
+			PositionDragRegion(dragRegion, buttonRegion);
 
 			if (m_LayoutUpdatedHandler)
 			{
@@ -214,7 +215,7 @@ private:
 		m_PendingSizeUpdate = false;
 	}
 
-	inline std::pair<winrt::Windows::Foundation::Size, winrt::Windows::Foundation::Rect> GetXamlSize(HMONITOR mon, MONITORINFO &info)
+	inline std::tuple<wf::Size, wf::Rect, wf::Rect> GetXamlSize(HMONITOR mon, MONITORINFO &info)
 	{
 		if (!GetMonitorInfo(mon, &info)) [[unlikely]]
 		{
@@ -223,7 +224,7 @@ private:
 		}
 
 		const auto scale = GetDpiScale(mon);
-		winrt::Windows::Foundation::Size size = {
+		wf::Size size = {
 			(info.rcWork.right - info.rcWork.left) / scale,
 			(info.rcWork.bottom - info.rcWork.top) / scale
 		};
@@ -235,13 +236,19 @@ private:
 		size.Width *= scale;
 		size.Height *= scale;
 
-		winrt::Windows::Foundation::Rect dragRegion = m_content.DragRegion();
+		wf::Rect dragRegion = m_content.DragRegion();
 		dragRegion.X *= scale;
 		dragRegion.Y *= scale;
 		dragRegion.Width *= scale;
 		dragRegion.Height *= scale;
 
-		return { size, dragRegion };
+		wf::Rect buttonRegion = m_content.TitlebarButtonsRegion();
+		buttonRegion.X *= scale;
+		buttonRegion.Y *= scale;
+		buttonRegion.Width *= scale;
+		buttonRegion.Height *= scale;
+
+		return { size, dragRegion, buttonRegion };
 	}
 
 	inline void UpdateTitle(const wux::DependencyObject &, const wux::DependencyProperty &)
@@ -329,7 +336,7 @@ public:
 		m_TitleChangedToken.value = m_content.RegisterPropertyChangedCallback(FramelessPage::TitleProperty(), { this, &XamlPageHost::UpdateTitle });
 
 		m_ClosedRevoker = m_content.Closed(winrt::auto_revoke, { this, &XamlPageHost::OnClose });
-		m_LayoutUpdatedRevoker = m_content.LayoutUpdated(winrt::auto_revoke, [this, position](const winrt::Windows::Foundation::IInspectable &, const winrt::Windows::Foundation::IInspectable &)
+		m_LayoutUpdatedRevoker = m_content.LayoutUpdated(winrt::auto_revoke, [this, position](const wf::IInspectable &, const wf::IInspectable &)
 		{
 			if (!m_PendingSizeUpdate)
 			{
@@ -350,6 +357,7 @@ public:
 		// TODO:
 		// tab navigation enabled on opening
 		// contentdialog animations not working
+		// no animation when closing through alt-space menu
 		// shouldn't restore focus if a window is opened as a result of clicking
 	}
 

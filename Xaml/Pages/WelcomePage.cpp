@@ -23,8 +23,8 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	wf::Rect WelcomePage::DragRegion()
 	{
 		return {
-			0,
-			0,
+			0.0f,
+			0.0f,
 			static_cast<float>(TitleRegion().ActualWidth()),
 			static_cast<float>(TitleRegion().ActualHeight())
 		};
