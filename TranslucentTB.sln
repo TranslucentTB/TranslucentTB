@@ -20,7 +20,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		update-version.ps1 = update-version.ps1
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExplorerDetour", "ExplorerDetour\ExplorerDetour.vcxproj", "{D0004E78-F00B-4943-B77E-9A278F8BA399}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExplorerHooks", "ExplorerHooks\ExplorerHooks.vcxproj", "{D0004E78-F00B-4943-B77E-9A278F8BA399}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcxitems", "{8A1BAF89-44D0-4BBF-A64D-35E6EBEBED06}"
 EndProject

@@ -3,10 +3,10 @@
 #include <guiddef.h>
 #include <windef.h>
 
-#ifdef EXPLORERDETOUR_EXPORTS
-#define EXPLORERDETOUR_API __declspec(dllexport)
+#ifdef EXPLORERHOOKS_EXPORTS
+#define EXPLORERHOOKS_API __declspec(dllexport)
 #else
-#define EXPLORERDETOUR_API __declspec(dllimport)
+#define EXPLORERHOOKS_API __declspec(dllimport)
 #endif
 
 class ExplorerHooks {
@@ -17,10 +17,10 @@ private:
 
 	static bool IsInExplorer() noexcept;
 
-#ifdef EXPLORERDETOUR_EXPORTS
+#ifdef EXPLORERHOOKS_EXPORTS
 	friend BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept;
 #endif
 
 public:
-	EXPLORERDETOUR_API static HHOOK Inject(HWND window) noexcept;
+	EXPLORERHOOKS_API static HHOOK Inject(HWND window) noexcept;
 };

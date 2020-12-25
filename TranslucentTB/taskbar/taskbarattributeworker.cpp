@@ -4,7 +4,7 @@
 #include <member_thunk/member_thunk.hpp>
 
 #include "constants.hpp"
-#include "../ExplorerDetour/explorerhooks.hpp"
+#include "../ExplorerHooks/explorerhooks.hpp"
 #include "../../ProgramLog/error/win32.hpp"
 #include "undoc/winuser.hpp"
 #include "util/fmt.hpp"

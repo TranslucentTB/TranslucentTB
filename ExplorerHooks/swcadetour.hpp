@@ -17,7 +17,7 @@ private:
 	static void Install() noexcept;
 	static void Uninstall() noexcept;
 
-#ifdef EXPLORERDETOUR_EXPORTS
+#ifdef EXPLORERHOOKS_EXPORTS
 	friend class DetourTransaction;
 	friend BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept;
 #endif

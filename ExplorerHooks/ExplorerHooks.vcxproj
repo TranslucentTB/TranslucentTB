@@ -8,7 +8,7 @@
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
       <ExceptionHandling>false</ExceptionHandling>
-      <PreprocessorDefinitions>EXPLORERDETOUR_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>EXPLORERHOOKS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>detours.lib;kernel32.lib;ole32.lib;synchronization.lib;user32.lib</AdditionalDependencies>

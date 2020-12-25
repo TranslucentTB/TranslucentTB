@@ -66,7 +66,7 @@
     <ResourceCompile Include="resources\language\TranslucentTB.en.rc2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ExplorerDetour\ExplorerDetour.vcxproj">
+    <ProjectReference Include="..\ExplorerHooks\ExplorerHooks.vcxproj">
       <Project>{d0004e78-f00b-4943-b77e-9a278f8ba399}</Project>
       <DeploymentContent>true</DeploymentContent>
     </ProjectReference>

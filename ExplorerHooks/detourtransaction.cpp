@@ -10,13 +10,13 @@
 #include <TlHelp32.h>
 #include <utility>
 
-#include "explorerdetour.hpp"
+#include "swcadetour.hpp"
 #include "util/abort.hpp"
 
 void DetourTransaction::node_deleter::operator()(node *ptr) const noexcept
 {
 	ptr->~node();
-	if (!HeapFree(ExplorerDetour::s_Heap, 0, ptr)) [[unlikely]]
+	if (!HeapFree(SWCADetour::s_Heap, 0, ptr)) [[unlikely]]
 	{
 		Util::QuickAbort();
 	}
@@ -107,7 +107,7 @@ DetourResult DetourTransaction::update_thread(HANDLE hThread) noexcept
 	switch (result)
 	{
 	case NO_ERROR:
-		if (const auto mem = HeapAlloc(ExplorerDetour::s_Heap, 0, sizeof(node)))
+		if (const auto mem = HeapAlloc(SWCADetour::s_Heap, 0, sizeof(node)))
 		{
 			m_Head.reset(new (mem) node
 			{
