@@ -31,6 +31,7 @@ private:
 	void UpdateFrame();
 
 protected:
+	static wf::Rect ScaleRect(wf::Rect rect, float scale);
 	static HMONITOR GetInitialMonitor(POINT &cursor, xaml_startup_position position);
 	static float GetDpiScale(HMONITOR mon);
 	static void CalculateInitialPosition(int &x, int &y, int width, int height, POINT cursor, const RECT &workArea, xaml_startup_position position) noexcept;

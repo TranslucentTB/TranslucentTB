@@ -233,22 +233,14 @@ private:
 		size = m_content.DesiredSize();
 		m_content.UpdateLayout(); // prevent the call to Measure from firing a LayoutUpdated event
 
-		size.Width *= scale;
-		size.Height *= scale;
-
-		wf::Rect dragRegion = m_content.DragRegion();
-		dragRegion.X *= scale;
-		dragRegion.Y *= scale;
-		dragRegion.Width *= scale;
-		dragRegion.Height *= scale;
-
-		wf::Rect buttonRegion = m_content.TitlebarButtonsRegion();
-		buttonRegion.X *= scale;
-		buttonRegion.Y *= scale;
-		buttonRegion.Width *= scale;
-		buttonRegion.Height *= scale;
-
-		return { size, dragRegion, buttonRegion };
+		return {
+			{
+				size.Width * scale,
+				size.Height * scale
+			},
+			ScaleRect(m_content.DragRegion(), scale),
+			ScaleRect(m_content.TitlebarButtonsRegion(), scale)
+		};
 	}
 
 	inline void UpdateTitle(const wux::DependencyObject &, const wux::DependencyProperty &)

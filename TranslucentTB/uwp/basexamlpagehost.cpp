@@ -16,6 +16,16 @@ void BaseXamlPageHost::UpdateFrame()
 	HresultVerify(DwmExtendFrameIntoClientArea(m_WindowHandle, &margins), spdlog::level::warn, L"Failed to extend frame into client area");
 }
 
+wf::Rect BaseXamlPageHost::ScaleRect(wf::Rect rect, float scale)
+{
+	return {
+		rect.X * scale,
+		rect.Y * scale,
+		rect.Width * scale,
+		rect.Height * scale
+	};
+}
+
 HMONITOR BaseXamlPageHost::GetInitialMonitor(POINT &cursor, xaml_startup_position position)
 {
 	if (position == xaml_startup_position::mouse)
