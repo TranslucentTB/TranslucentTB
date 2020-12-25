@@ -52,11 +52,7 @@ private:
 		case WM_SYSCOMMAND:
 			if (wParam == SC_CLOSE)
 			{
-				if (!m_content.RequestClose())
-				{
-					Flash();
-				}
-
+				TryClose();
 				return 0;
 			}
 			break;
@@ -85,21 +81,15 @@ private:
 		{
 			const auto rect = client_rect();
 			const auto brush = m_content.Background().try_as<wux::Media::AcrylicBrush>();
-			if (rect && brush)
+			if (rect && brush && PaintBackground(reinterpret_cast<HDC>(wParam), *rect, brush.FallbackColor()))
 			{
-				if (PaintBackground(reinterpret_cast<HDC>(wParam), *rect, brush.FallbackColor()))
-				{
-					return 1;
-				}
+				return 1;
 			}
 			break;
 		}
 
 		case WM_CLOSE:
-			if (!m_content.RequestClose())
-			{
-				Flash();
-			}
+			TryClose();
 			return 0;
 
 		case WM_EXITSIZEMOVE:
@@ -266,6 +256,19 @@ private:
 		{
 			// only the last bit has info, the rest is garbage
 			m_content.RequestedTheme((m_Saudm() & 0x1) ? wux::ElementTheme::Dark : wux::ElementTheme::Light);
+		}
+	}
+
+	bool TryClose()
+	{
+		if (m_content.RequestClose())
+		{
+			return true;
+		}
+		else
+		{
+			Flash();
+			return false;
 		}
 	}
 
