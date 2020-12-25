@@ -36,6 +36,7 @@ private:
 	const PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SetWindowCompositionAttribute;
 
 	// State
+	bool m_TimelineActive;
 	bool m_PeekActive;
 	bool m_disableAttributeRefreshReply;
 	HMONITOR m_CurrentStartMonitor;
@@ -63,6 +64,8 @@ private:
 	// Messages
 	std::optional<UINT> m_TaskbarCreatedMessage;
 	std::optional<UINT> m_RefreshRequestedMessage;
+	std::optional<UINT> m_TimelineNotificationMessage;
+	std::optional<UINT> m_GetTimelineStatusMessage;
 
 	// Type aliases
 	using taskbar_iterator = decltype(m_Taskbars)::iterator;

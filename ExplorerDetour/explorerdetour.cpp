@@ -1,20 +1,20 @@
 #include "explorerdetour.hpp"
-#include <cstdint>
-#include <detours/detours.h>
-#include <wil/win32_helpers.h>
+#include <heapapi.h>
+#include <libloaderapi.h>
 #include <WinUser.h>
 
 #include "constants.hpp"
 #include "detourtransaction.hpp"
+#include "util/abort.hpp"
 #include "util/string_macros.hpp"
 
-wil::unique_hmodule ExplorerDetour::s_User32;
+HMODULE ExplorerDetour::s_User32;
 PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE ExplorerDetour::SetWindowCompositionAttribute;
 UINT ExplorerDetour::s_RequestAttribute;
-wil::unique_hheap ExplorerDetour::s_Heap;
+HANDLE ExplorerDetour::s_Heap;
 bool ExplorerDetour::s_DetourInstalled;
 
-BOOL WINAPI ExplorerDetour::SetWindowCompositionAttributeDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data) noexcept
+BOOL WINAPI ExplorerDetour::FunctionDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data) noexcept
 {
 	if (data->Attrib == WCA_ACCENT_POLICY)
 	{
@@ -32,52 +32,41 @@ BOOL WINAPI ExplorerDetour::SetWindowCompositionAttributeDetour(HWND hWnd, const
 	return SetWindowCompositionAttribute(hWnd, data);
 }
 
-LRESULT CALLBACK ExplorerDetour::CallWndProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept
-{
-	// Placeholder
-	return CallNextHookEx(nullptr, nCode, wParam, lParam);
-}
-
-bool ExplorerDetour::IsInExplorer() noexcept
-{
-	return DetourFindPayloadEx(EXPLORERDETOUR_PAYLOAD, nullptr);
-}
-
-bool ExplorerDetour::Install() noexcept
+void ExplorerDetour::Install() noexcept
 {
 	if (!s_User32)
 	{
-		s_User32.reset(LoadLibraryEx(L"user32.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
-		if (!s_User32)
+		s_User32 = LoadLibraryEx(L"user32.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+		if (!s_User32) [[unlikely]]
 		{
-			return false;
+			Util::QuickAbort();
 		}
 	}
 
 	if (!SetWindowCompositionAttribute)
 	{
-		SetWindowCompositionAttribute = reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(s_User32.get(), UTIL_STRINGIFY_UTF8(SetWindowCompositionAttribute)));
-		if (!SetWindowCompositionAttribute)
+		SetWindowCompositionAttribute = reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(s_User32, UTIL_STRINGIFY_UTF8(SetWindowCompositionAttribute)));
+		if (!SetWindowCompositionAttribute) [[unlikely]]
 		{
-			return false;
+			Util::QuickAbort();
 		}
 	}
 
 	if (!s_RequestAttribute)
 	{
 		s_RequestAttribute = RegisterWindowMessage(WM_TTBHOOKREQUESTREFRESH.c_str());
-		if (!s_RequestAttribute)
+		if (!s_RequestAttribute) [[unlikely]]
 		{
-			return false;
+			Util::QuickAbort();
 		}
 	}
 
 	if (!s_Heap)
 	{
-		s_Heap.reset(HeapCreate(HEAP_NO_SERIALIZE, 0, 0));
-		if (!s_Heap)
+		s_Heap = HeapCreate(HEAP_NO_SERIALIZE, 0, 0);
+		if (!s_Heap) [[unlikely]]
 		{
-			return false;
+			Util::QuickAbort();
 		}
 	}
 
@@ -86,66 +75,57 @@ bool ExplorerDetour::Install() noexcept
 		DetourTransaction transaction;
 		if (transaction.begin() &&
 			transaction.update_all_threads() &&
-			transaction.attach(SetWindowCompositionAttribute, SetWindowCompositionAttributeDetour) &&
+			transaction.attach(SetWindowCompositionAttribute, FunctionDetour) &&
 			transaction.commit())
 		{
 			s_DetourInstalled = true;
 		}
 		else
 		{
-			return false;
+			Util::QuickAbort();
 		}
 	}
-
-	return true;
 }
 
-bool ExplorerDetour::Uninstall() noexcept
+void ExplorerDetour::Uninstall() noexcept
 {
 	if (s_DetourInstalled)
 	{
 		DetourTransaction transaction;
 		if (transaction.begin() &&
 			transaction.update_all_threads() &&
-			transaction.detach(SetWindowCompositionAttribute, SetWindowCompositionAttributeDetour) &&
+			transaction.detach(SetWindowCompositionAttribute, FunctionDetour) &&
 			transaction.commit())
 		{
 			s_DetourInstalled = false;
 		}
 		else
 		{
-			return false;
+			Util::QuickAbort();
 		}
 	}
 
-	return true;
-}
-
-wil::unique_hhook ExplorerDetour::Inject(HWND window) noexcept
-{
-	DWORD pid;
-	const DWORD tid = GetWindowThreadProcessId(window, &pid);
-
-	wil::unique_process_handle proc(OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, pid));
-	if (!proc)
+	if (s_Heap)
 	{
-		return nullptr;
+		if (HeapDestroy(s_Heap))
+		{
+			s_Heap = nullptr;
+		}
+		else
+		{
+			Util::QuickAbort();
+		}
 	}
 
-	if (!DetourFindRemotePayload(proc.get(), EXPLORERDETOUR_PAYLOAD, nullptr))
+	if (s_User32)
 	{
-		proc.reset(OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_WRITE, false, pid));
-		if (!proc)
+		if (FreeLibrary(s_User32))
 		{
-			return nullptr;
+			s_User32 = nullptr;
 		}
-
-		static constexpr uint32_t content = 0xDEADBEEF;
-		if (!DetourCopyPayloadToProcess(proc.get(), EXPLORERDETOUR_PAYLOAD, &content, sizeof(content)))
+		else
 		{
-			return nullptr;
+			Util::QuickAbort();
 		}
 	}
-
-	return wil::unique_hhook(SetWindowsHookEx(WH_CALLWNDPROC, CallWndProc, wil::GetModuleInstanceHandle(), tid));
 }

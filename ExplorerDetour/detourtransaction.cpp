@@ -1,4 +1,8 @@
 #include "detourtransaction.hpp"
+#include "arch.h"
+#include <windef.h>
+#include <winbase.h>
+#include <handleapi.h>
 #include <detours/detours.h>
 #include <heapapi.h>
 #include <new>
@@ -12,7 +16,15 @@
 void DetourTransaction::node_deleter::operator()(node *ptr) const noexcept
 {
 	ptr->~node();
-	if (!HeapFree(ExplorerDetour::s_Heap.get(), 0, ptr))
+	if (!HeapFree(ExplorerDetour::s_Heap, 0, ptr)) [[unlikely]]
+	{
+		Util::QuickAbort();
+	}
+}
+
+DetourTransaction::node::~node() noexcept
+{
+	if (!CloseHandle(thread)) [[unlikely]]
 	{
 		Util::QuickAbort();
 	}
@@ -88,18 +100,18 @@ DetourResult DetourTransaction::begin() noexcept
 	}
 }
 
-DetourResult DetourTransaction::update_thread(wil::unique_handle hThread) noexcept
+DetourResult DetourTransaction::update_thread(HANDLE hThread) noexcept
 {
-	const LONG result = DetourUpdateThread(hThread.get());
+	const LONG result = DetourUpdateThread(hThread);
 
 	switch (result)
 	{
 	case NO_ERROR:
-		if (const auto mem = HeapAlloc(ExplorerDetour::s_Heap.get(), 0, sizeof(node)))
+		if (const auto mem = HeapAlloc(ExplorerDetour::s_Heap, 0, sizeof(node)))
 		{
 			m_Head.reset(new (mem) node
 			{
-				.thread = std::move(hThread),
+				.thread = hThread,
 				.next = std::move(m_Head)
 			});
 
@@ -107,13 +119,28 @@ DetourResult DetourTransaction::update_thread(wil::unique_handle hThread) noexce
 		}
 		else
 		{
+			if (!CloseHandle(hThread)) [[unlikely]]
+			{
+				Util::QuickAbort();
+			}
+
 			return { L"HeapAlloc failed." };
 		}
 
 	case ERROR_NOT_ENOUGH_MEMORY:
+		if (!CloseHandle(hThread)) [[unlikely]]
+		{
+			Util::QuickAbort();
+		}
+
 		return { result, L"Not enough memory to record identity of thread." };
 
 	default:
+		if (!CloseHandle(hThread)) [[unlikely]]
+		{
+			Util::QuickAbort();
+		}
+
 		return { result, UNKNOWN_ERROR };
 	}
 }
@@ -121,15 +148,20 @@ DetourResult DetourTransaction::update_thread(wil::unique_handle hThread) noexce
 DetourResult DetourTransaction::update_all_threads() noexcept
 {
 	const DWORD pid = GetCurrentProcessId();
-	wil::unique_tool_help_snapshot snapshot(CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, pid));
-	if (!snapshot)
+	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, pid);
+	if (!snapshot) [[unlikely]]
 	{
 		return { L"CreateToolhelp32Snapshot failed." };
 	}
 
 	THREADENTRY32 thread = { sizeof(thread) };
-	if (!Thread32First(snapshot.get(), &thread))
+	if (!Thread32First(snapshot, &thread)) [[unlikely]]
 	{
+		if (!CloseHandle(snapshot)) [[unlikely]]
+		{
+			Util::QuickAbort();
+		}
+
 		return { L"Thread32First failed." };
 	}
 
@@ -138,20 +170,35 @@ DetourResult DetourTransaction::update_all_threads() noexcept
 	{
 		if (thread.th32OwnerProcessID == pid && thread.th32ThreadID != tid)
 		{
-			wil::unique_handle threadHandle(OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME, false, thread.th32ThreadID));
-			if (!threadHandle)
+			const HANDLE threadHandle = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME, false, thread.th32ThreadID);
+			if (!threadHandle) [[unlikely]]
 			{
+				if (!CloseHandle(snapshot)) [[unlikely]]
+				{
+					Util::QuickAbort();
+				}
+
 				return { L"OpenThread failed." };
 			}
 
-			const auto result = update_thread(std::move(threadHandle));
-			if (!result)
+			const auto result = update_thread(threadHandle);
+			if (!result) [[unlikely]]
 			{
+				if (!CloseHandle(snapshot)) [[unlikely]]
+				{
+					Util::QuickAbort();
+				}
+
 				return result;
 			}
 		}
 	}
-	while (Thread32Next(snapshot.get(), &thread));
+	while (Thread32Next(snapshot, &thread));
+
+	if (!CloseHandle(snapshot)) [[unlikely]]
+	{
+		Util::QuickAbort();
+	}
 
 	return { };
 }

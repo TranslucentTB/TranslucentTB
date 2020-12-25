@@ -3,34 +3,30 @@
 #include <windef.h>
 
 #include "explorerdetour.hpp"
-#include "util/abort.hpp"
+#include "explorerhooks.hpp"
+#include "timelinevisibilitymonitor.hpp"
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 {
 	switch (fdwReason)
 	{
 	case DLL_PROCESS_ATTACH:
-	{
+		// ignore errors, worse case scenario we get called for new threads
 		DisableThreadLibraryCalls(hinstDLL);
 
 		// Are we in Explorer?
-		if (ExplorerDetour::IsInExplorer())
+		if (ExplorerHooks::IsInExplorer())
 		{
-			// Install the hook
-			return ExplorerDetour::Install();
+			// Install the things
+			ExplorerDetour::Install();
+			TimelineVisibilityMonitor::Install();
 		}
 		break;
-	}
 
 	case DLL_PROCESS_DETACH:
-	{
-		if (!ExplorerDetour::Uninstall())
-		{
-			// state may have been compromised, kill the process
-			Util::QuickAbort();
-		}
+		TimelineVisibilityMonitor::Uninstall();
+		ExplorerDetour::Uninstall();
 		break;
-	}
 	}
 
 	return true;
