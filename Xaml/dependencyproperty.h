@@ -1,18 +1,20 @@
 #pragma once
 #ifndef __midl
+# include "winrt.hpp"
+# include <winrt/Windows.UI.Xaml.h>
 # include "util/string_macros.hpp"
 # define DEPENDENCY_PROPERTY_FIELD(NAME) s_ ## NAME ## Property_
 # define DECL_DEPENDENCY_PROPERTY(TYPE, NAME) \
 private: \
-	inline static winrt::Windows::UI::Xaml::DependencyProperty DEPENDENCY_PROPERTY_FIELD(NAME) = \
-		winrt::Windows::UI::Xaml::DependencyProperty::Register( \
+	inline static wux::DependencyProperty DEPENDENCY_PROPERTY_FIELD(NAME) = \
+		wux::DependencyProperty::Register( \
 			UTIL_STRINGIFY(NAME), \
 			winrt::xaml_typename<TYPE>(), \
 			winrt::xaml_typename<class_type>(), \
 			nullptr); \
 	\
 public: \
-	static winrt::Windows::UI::Xaml::DependencyProperty NAME ## Property() noexcept \
+	static wux::DependencyProperty NAME ## Property() noexcept \
 	{ \
 		return DEPENDENCY_PROPERTY_FIELD(NAME); \
 	} \

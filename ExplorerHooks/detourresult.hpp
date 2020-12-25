@@ -1,5 +1,6 @@
 #pragma once
 #include "arch.h"
+#include <errhandlingapi.h>
 #include <windef.h>
 #include <winerror.h>
 

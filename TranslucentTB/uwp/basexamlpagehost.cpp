@@ -5,8 +5,6 @@
 #include "win32.hpp"
 #include "../ProgramLog/error/win32.hpp"
 
-using namespace winrt::Windows::UI::Xaml::Hosting;
-
 void BaseXamlPageHost::UpdateFrame()
 {
 	// Magic that gives us shadows
@@ -16,6 +14,16 @@ void BaseXamlPageHost::UpdateFrame()
 	// or -1: turns it full white.
 	const MARGINS margins = { 0, 0, 1, 0 };
 	HresultVerify(DwmExtendFrameIntoClientArea(m_WindowHandle, &margins), spdlog::level::warn, L"Failed to extend frame into client area");
+}
+
+wf::Rect BaseXamlPageHost::ScaleRect(wf::Rect rect, float scale)
+{
+	return {
+		rect.X * scale,
+		rect.Y * scale,
+		rect.Width * scale,
+		rect.Height * scale
+	};
 }
 
 HMONITOR BaseXamlPageHost::GetInitialMonitor(POINT &cursor, xaml_startup_position position)
@@ -150,33 +158,11 @@ void BaseXamlPageHost::ResizeWindow(int x, int y, int width, int height, bool mo
 	}
 }
 
-void BaseXamlPageHost::PositionDragRegion(winrt::Windows::Foundation::Rect position, UINT flags)
+void BaseXamlPageHost::PositionDragRegion(wf::Rect position, wf::Rect buttonsRegion, UINT flags)
 {
-	const auto newX = static_cast<int>(position.X);
-	const auto newY = static_cast<int>(position.Y);
-	const auto newHeight = static_cast<int>(position.Height);
-	const auto newWidth = static_cast<int>(position.Width);
-
-	const auto dragRegionRect = m_DragRegion.rect();
-	const auto wndRect = rect();
-	if (dragRegionRect && wndRect)
+	if (const auto wndRect = rect())
 	{
-		const auto x = dragRegionRect->left - wndRect->left;
-		const auto y = dragRegionRect->top - wndRect->top;
-		const auto width = dragRegionRect->right - dragRegionRect->left;
-		const auto height = dragRegionRect->bottom - dragRegionRect->top;
-		if (x != newX || y != newY || height != newHeight || width != newWidth) [[unlikely]]
-		{
-			if (!SetWindowPos(m_DragRegion, HWND_TOP, newX, newY, newWidth, newHeight, flags | SWP_NOACTIVATE)) [[unlikely]]
-			{
-				LastErrorHandle(spdlog::level::warn, L"Failed to set drag region window position");
-			}
-
-			if (!SetLayeredWindowAttributes(m_DragRegion, 0, 255, LWA_ALPHA)) [[unlikely]]
-			{
-				LastErrorHandle(spdlog::level::warn, L"Failed to set drag region window attributes");
-			}
-		}
+		m_DragRegion.Position(*wndRect, position, buttonsRegion, flags);
 	}
 }
 
@@ -193,45 +179,55 @@ void BaseXamlPageHost::Flash() noexcept
 
 bool BaseXamlPageHost::PaintBackground(HDC dc, const RECT &target, winrt::Windows::UI::Color col)
 {
-	if (!m_BackgroundBrush || m_BackgroundColor != col)
+	if (!m_BackgroundBrush || m_BackgroundColor != col) [[unlikely]]
 	{
 		m_BackgroundBrush.reset(CreateSolidBrush(RGB(col.R, col.G, col.B)));
-	}
-
-	if (m_BackgroundBrush)
-	{
-		m_BackgroundColor = col;
-
-		// buffered paints overwrite the titlebar for some reason
-		HDC opaqueDc;
-		BP_PAINTPARAMS params = { sizeof(params), BPPF_NOCLIP | BPPF_ERASE };
-		HPAINTBUFFER buf = BeginBufferedPaint(dc, &target, BPBF_TOPDOWNDIB, &params, &opaqueDc);
-		if (buf && opaqueDc)
+		if (m_BackgroundBrush)
 		{
-			if (!FillRect(opaqueDc, &target, m_BackgroundBrush.get()))
-			{
-				LastErrorHandle(spdlog::level::warn, L"Failed to fill rectangle.");
-			}
-
-			HresultVerify(BufferedPaintSetAlpha(buf, nullptr, 255), spdlog::level::warn, L"Failed to set buffered paint alpha");
-
-			const HRESULT hr = EndBufferedPaint(buf, true);
-			if (SUCCEEDED(hr))
-			{
-				return true;
-			}
-			else
-			{
-				HresultHandle(hr, spdlog::level::warn, L"Failed to end buffered paint");
-			}
+			m_BackgroundColor = col;
 		}
 		else
 		{
-			LastErrorHandle(spdlog::level::warn, L"Failed to begin buffered paint");
+			MessagePrint(spdlog::level::warn, L"Failed to create background brush");
+			return false;
 		}
 	}
 
-	return false;
+	// buffered paints overwrite the titlebar for some reason
+	HDC opaqueDc = nullptr;
+	BP_PAINTPARAMS params = { sizeof(params), BPPF_NOCLIP | BPPF_ERASE };
+	HPAINTBUFFER buf = BeginBufferedPaint(dc, &target, BPBF_TOPDOWNDIB, &params, &opaqueDc);
+	if (buf && opaqueDc)
+	{
+		if (!FillRect(opaqueDc, &target, m_BackgroundBrush.get())) [[unlikely]]
+		{
+			LastErrorHandle(spdlog::level::warn, L"Failed to fill rectangle.");
+			return false;
+		}
+
+		HRESULT hr = BufferedPaintSetAlpha(buf, nullptr, 255);
+		if (FAILED(hr)) [[unlikely]]
+		{
+			HresultHandle(hr, spdlog::level::warn, L"Failed to set buffered paint alpha");
+			return false;
+		}
+
+		hr = EndBufferedPaint(buf, true);
+		if (SUCCEEDED(hr))
+		{
+			return true;
+		}
+		else
+		{
+			HresultHandle(hr, spdlog::level::warn, L"Failed to end buffered paint");
+			return false;
+		}
+	}
+	else
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to begin buffered paint");
+		return false;
+	}
 }
 
 BaseXamlPageHost::BaseXamlPageHost(WindowClass &classRef, WindowClass &dragRegionClass) :
@@ -244,13 +240,11 @@ BaseXamlPageHost::BaseXamlPageHost(WindowClass &classRef, WindowClass &dragRegio
 	HresultVerify(nativeSource->AttachToWindow(m_WindowHandle), spdlog::level::critical, L"Failed to attach DesktopWindowXamlSource");
 	HresultVerify(nativeSource->get_WindowHandle(m_interopWnd.put()), spdlog::level::critical, L"Failed to get interop window handle");
 
-	m_focusRevoker = m_source.TakeFocusRequested(winrt::auto_revoke, [](const DesktopWindowXamlSource &sender, const DesktopWindowXamlSourceTakeFocusRequestedEventArgs &args)
+	m_focusRevoker = m_source.TakeFocusRequested(winrt::auto_revoke, [](const wuxh::DesktopWindowXamlSource &sender, const wuxh::DesktopWindowXamlSourceTakeFocusRequestedEventArgs &args)
 	{
-		using winrt::Windows::UI::Xaml::Hosting::XamlSourceFocusNavigationReason;
-
 		const auto request = args.Request();
 		const auto reason = request.Reason();
-		if (reason == XamlSourceFocusNavigationReason::First || reason == XamlSourceFocusNavigationReason::Last)
+		if (reason == wuxh::XamlSourceFocusNavigationReason::First || reason == wuxh::XamlSourceFocusNavigationReason::Last)
 		{
 			// just cycle back to beginning
 			sender.NavigateFocus(request);

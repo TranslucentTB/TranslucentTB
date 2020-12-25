@@ -11,12 +11,12 @@ private:
 public:
 	inline StartupManager() noexcept : m_StartupTask(nullptr) { }
 
-	winrt::Windows::Foundation::IAsyncOperation<bool> AcquireTask();
+	wf::IAsyncOperation<bool> AcquireTask();
 
 	std::optional<winrt::Windows::ApplicationModel::StartupTaskState> GetState() const;
-	winrt::Windows::Foundation::IAsyncAction Enable();
+	wf::IAsyncAction Enable();
 	void Disable();
-	static winrt::Windows::Foundation::IAsyncAction OpenSettingsPage();
+	static wf::IAsyncAction OpenSettingsPage();
 
 	inline explicit operator bool() const noexcept
 	{

@@ -36,10 +36,12 @@ private:
 	const PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SetWindowCompositionAttribute;
 
 	// State
+	bool m_TimelineActive;
 	bool m_PeekActive;
 	bool m_disableAttributeRefreshReply;
 	HMONITOR m_CurrentStartMonitor;
 	HMONITOR m_MainTaskbarMonitor;
+	Window m_ForegroundWindow;
 	std::unordered_map<HMONITOR, MonitorInfo> m_Taskbars;
 	std::unordered_set<Window> m_NormalTaskbars;
 	const Config &m_Config;
@@ -63,6 +65,8 @@ private:
 	// Messages
 	std::optional<UINT> m_TaskbarCreatedMessage;
 	std::optional<UINT> m_RefreshRequestedMessage;
+	std::optional<UINT> m_TimelineNotificationMessage;
+	std::optional<UINT> m_GetTimelineStatusMessage;
 
 	// Type aliases
 	using taskbar_iterator = decltype(m_Taskbars)::iterator;
@@ -91,6 +95,7 @@ private:
 	// Other
 	static bool SetOnlyContainsValidWindows(std::unordered_set<Window> &set);
 	static void DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set, bool showInfo = true);
+	static void DumpWindow(fmt::wmemory_buffer &buf, Window window);
 	void CreateAppVisibility();
 	WINEVENTPROC CreateThunk(void (CALLBACK TaskbarAttributeWorker:: *proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD));
 	static wil::unique_hwineventhook CreateHook(DWORD eventMin, DWORD eventMax, WINEVENTPROC proc);
@@ -98,10 +103,16 @@ private:
 	bool IsStartMenuOpened();
 	void InsertTaskbar(HMONITOR mon, Window window);
 
-	inline static HMONITOR GetStartMenuMonitor()
+	inline HMONITOR GetStartMenuMonitor() noexcept
 	{
-		// TODO: should make this more reliable
-		return Window::ForegroundWindow().monitor();
+		// we assume that start is the current foreground window;
+		// haven't seen a case where that wasn't true yet.
+		// NOTE: this only stands *when* we get notified that
+		// start has opened (and as long as it is). when we get
+		// notified that it's closed another window may be the
+		// foreground window already (eg the user dismissed start
+		// by clicking on a window)
+		return m_ForegroundWindow ? m_ForegroundWindow.monitor() : nullptr;
 	}
 
 	inline static wil::unique_hwineventhook CreateHook(DWORD event, WINEVENTPROC proc)

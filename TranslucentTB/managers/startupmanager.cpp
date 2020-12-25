@@ -4,14 +4,11 @@
 #include "../../ProgramLog/error/winrt.hpp"
 #include "../uwp/uwp.hpp"
 
-using namespace winrt::Windows::Foundation;
-using namespace winrt::Windows::ApplicationModel;
-
-IAsyncOperation<bool> StartupManager::AcquireTask() try
+wf::IAsyncOperation<bool> StartupManager::AcquireTask() try
 {
 	if (!m_StartupTask)
 	{
-		m_StartupTask = co_await StartupTask::GetAsync(APP_NAME);
+		m_StartupTask = co_await winrt::Windows::ApplicationModel::StartupTask::GetAsync(APP_NAME);
 	}
 
 	co_return true;
@@ -22,7 +19,7 @@ catch (const winrt::hresult_error &err)
 	co_return false;
 }
 
-std::optional<StartupTaskState> StartupManager::GetState() const
+std::optional<winrt::Windows::ApplicationModel::StartupTaskState> StartupManager::GetState() const
 {
 	if (m_StartupTask)
 	{
@@ -36,10 +33,12 @@ std::optional<StartupTaskState> StartupManager::GetState() const
 	return std::nullopt;
 }
 
-IAsyncAction StartupManager::Enable()
+wf::IAsyncAction StartupManager::Enable()
 {
 	if (m_StartupTask)
 	{
+		using winrt::Windows::ApplicationModel::StartupTaskState;
+
 		StartupTaskState result;
 		try
 		{
@@ -70,8 +69,7 @@ void StartupManager::Disable()
 	}
 }
 
-IAsyncAction StartupManager::OpenSettingsPage()
+wf::IAsyncAction StartupManager::OpenSettingsPage()
 {
-	static const Uri settingsUri { L"ms-settings:startupapps" };
-	return UWP::OpenUri(settingsUri);
+	return UWP::OpenUri(wf::Uri(L"ms-settings:startupapps"));
 }

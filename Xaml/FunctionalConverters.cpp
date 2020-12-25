@@ -5,13 +5,10 @@
 #include "FunctionalConverters.g.cpp"
 #endif
 
-using namespace winrt;
-using namespace Windows::UI::Xaml;
-
 namespace winrt::TranslucentTB::Xaml::implementation
 {
-	Visibility FunctionalConverters::InvertedBoolToVisibility(bool value)
+	wux::Visibility FunctionalConverters::InvertedBoolToVisibility(bool value)
 	{
-		return value ? Visibility::Collapsed : Visibility::Visible;
+		return value ? wux::Visibility::Collapsed : wux::Visibility::Visible;
 	}
 }

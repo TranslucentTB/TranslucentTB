@@ -1,9 +1,6 @@
 #pragma once
-#include "arch.h"
-#include <handleapi.h>
 #include <memory>
 #include <type_traits>
-#include <wil/resource.h>
 
 #include "detourresult.hpp"
 #include "util/concepts.hpp"
@@ -24,8 +21,10 @@ private:
 	using node_ptr = std::unique_ptr<node, node_deleter>;
 
 	struct node {
-		wil::unique_handle thread;
+		HANDLE thread;
 		node_ptr next;
+
+		~node() noexcept;
 	};
 
 	node_ptr m_Head;
@@ -41,7 +40,7 @@ public:
 	DetourTransaction &operator =(const DetourTransaction &) = delete;
 
 	DetourResult begin() noexcept;
-	DetourResult update_thread(wil::unique_handle hThread) noexcept;
+	DetourResult update_thread(HANDLE hThread) noexcept;
 	DetourResult update_all_threads() noexcept;
 	DetourResult commit() noexcept;
 	DetourResult abort() noexcept;

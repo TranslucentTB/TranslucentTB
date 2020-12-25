@@ -1,6 +1,7 @@
 #pragma once
 #include "../factory.h"
 #include "../PropertyChangedBase.hpp"
+#include "winrt.hpp"
 
 #include "Models/Action.g.h"
 
@@ -16,19 +17,19 @@ namespace winrt::TranslucentTB::Xaml::Models::implementation
 		hstring Description();
 		void Description(const hstring &value);
 
-		Windows::UI::Xaml::Controls::IconElement Icon();
-		void Icon(const Windows::UI::Xaml::Controls::IconElement &value);
+		wuxc::IconElement Icon();
+		void Icon(const wuxc::IconElement &value);
 
-		event_token Click(const Windows::UI::Xaml::RoutedEventHandler &value);
+		event_token Click(const wux::RoutedEventHandler &value);
 		void Click(const event_token &token);
 
-		void ForwardClick(const IInspectable &sender, const Windows::UI::Xaml::RoutedEventArgs &args);
+		void ForwardClick(const IInspectable &sender, const wux::RoutedEventArgs &args);
 
 	private:
 		hstring m_name;
 		hstring m_description;
-		Windows::UI::Xaml::Controls::IconElement m_icon = nullptr;
-		event<Windows::UI::Xaml::RoutedEventHandler> m_click;
+		wuxc::IconElement m_icon = nullptr;
+		event<wux::RoutedEventHandler> m_click;
 	};
 }
 

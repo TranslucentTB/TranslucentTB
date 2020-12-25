@@ -19,6 +19,7 @@ namespace TranslucentTB.Xaml.Pages
 
 		overridable Boolean RequestClose();
 		overridable Windows.Foundation.Rect DragRegion { get; };
+		Windows.Foundation.Rect TitlebarButtonsRegion { get; };
 
 		protected void Close();
 		event ClosedDelegate Closed;

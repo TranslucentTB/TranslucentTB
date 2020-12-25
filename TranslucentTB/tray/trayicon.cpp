@@ -48,6 +48,7 @@ LRESULT TrayIcon::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_DPICHANGED:
 	case WM_SETTINGCHANGE:
+	case WM_THEMECHANGED:
 		LoadThemedIcon();
 
 		if (m_CurrentlyShowing)
@@ -89,6 +90,7 @@ TrayIcon::TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view classN
 	m_darkIconResource(darkIconResource),
 	m_ShowPreference(false),
 	m_CurrentlyShowing(false),
+	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED)),
 	m_Ssudm(ssudm)
 {
 	if (const errno_t err = wcscpy_s(m_IconData.szTip, windowName.c_str()); !err)

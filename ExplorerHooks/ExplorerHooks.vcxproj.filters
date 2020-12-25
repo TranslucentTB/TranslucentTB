@@ -18,10 +18,16 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="explorerdetour.cpp">
+    <ClCompile Include="detourtransaction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="detourtransaction.cpp">
+    <ClCompile Include="timelinevisibilitymonitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="explorerhooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="swcadetour.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,10 +35,19 @@
     <ClInclude Include="detourtransaction.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="explorerdetour.hpp">
+    <ClInclude Include="detourresult.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="detourresult.hpp">
+    <ClInclude Include="timelinevisibilitymonitor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="multitaskingviewvisibilitysink.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="explorerhooks.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="swcadetour.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

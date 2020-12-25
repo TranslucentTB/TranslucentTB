@@ -41,8 +41,7 @@ std::filesystem::path Log::GetPath(bool hasPackageIdentity)
 	{
 		try
 		{
-			using namespace winrt::Windows::Storage;
-			path = std::wstring_view(ApplicationData::Current().TemporaryFolder().Path());
+			path = std::wstring_view(winrt::Windows::Storage::ApplicationData::Current().TemporaryFolder().Path());
 		}
 		catch (const winrt::hresult_error &err)
 		{
@@ -86,23 +85,21 @@ void Log::LogErrorHandler(const std::string &message)
 
 void Log::Initialize(bool hasPackageIdentity)
 {
-	using namespace spdlog;
+	spdlog::set_formatter(std::make_unique<spdlog::pattern_formatter>(spdlog::pattern_time_type::utc));
+	spdlog::set_level(spdlog::level::trace);
+	spdlog::flush_on(spdlog::level::off);
+	spdlog::set_error_handler(LogErrorHandler);
 
-	set_formatter(std::make_unique<pattern_formatter>(pattern_time_type::utc));
-	set_level(level::trace);
-	flush_on(level::off);
-	set_error_handler(LogErrorHandler);
-
-	auto defaultLogger = std::make_shared<logger>("");
-	initialize_logger(defaultLogger);
+	auto defaultLogger = std::make_shared<spdlog::logger>("");
+	spdlog::initialize_logger(defaultLogger);
 
 	if (IsDebuggerPresent())
 	{
 		// always single-threaded because OutputDebugString is already thread-safe
-		defaultLogger->sinks().push_back(std::make_shared<sinks::windebug_sink_st>());
+		defaultLogger->sinks().push_back(std::make_shared<spdlog::sinks::windebug_sink_st>());
 	}
 
-	set_default_logger(defaultLogger);
+	spdlog::set_default_logger(defaultLogger);
 
 	if (auto path = GetPath(hasPackageIdentity); !path.empty())
 	{

@@ -5,9 +5,6 @@
 #include "Pages/FramelessPage.g.cpp"
 #endif
 
-using namespace winrt;
-using namespace Windows::UI::Xaml;
-
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	FramelessPage::FramelessPage()
@@ -20,7 +17,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		return true;
 	}
 
-	void FramelessPage::ShowSystemMenu(const Windows::Foundation::Point &position)
+	void FramelessPage::ShowSystemMenu(const wf::Point &position)
 	{
 		if (CanMove())
 		{
@@ -46,13 +43,13 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		}
 	}
 
-	Windows::Foundation::Rect FramelessPage::DragRegion()
+	wf::Rect FramelessPage::DragRegion()
 	{
 		if (!ExpandIntoTitlebar())
 		{
 			return {
-				0,
-				0,
+				0.0f,
+				0.0f,
 				static_cast<float>(ActualWidth() - (CloseButton().ActualWidth() + CustomTitlebarControls().ActualWidth())),
 				static_cast<float>(Titlebar().ActualHeight())
 			};
@@ -60,6 +57,52 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		else
 		{
 			throw hresult_not_implemented(L"A page that uses ExpandIntoTitlebar should override DragRegion.");
+		}
+	}
+
+	wf::Rect FramelessPage::TitlebarButtonsRegion()
+	{
+		const bool closable = IsClosable();
+		const auto titlebarButtons = TitlebarContent();
+		if (!ExpandIntoTitlebar() || (closable == false && (!titlebarButtons || titlebarButtons.Size() == 0)))
+		{
+			return { 0.0f, 0.0f, 0.0f, 0.0f };
+		}
+		else
+		{
+			double height = 0.0f;
+			double width = 0.0f;
+			if (closable)
+			{
+				const auto closeButton = CloseButton();
+
+				if (height == 0.0f)
+				{
+					height = closeButton.ActualHeight();
+				}
+				
+				width += closeButton.ActualWidth();
+			}
+
+			if (titlebarButtons)
+			{
+				for (const auto button : titlebarButtons)
+				{
+					if (height == 0.0f)
+					{
+						height = button.ActualHeight();
+					}
+
+					width += button.ActualWidth();
+				}
+			}
+
+			return {
+				static_cast<float>(ActualWidth() - width),
+				0.0f,
+				static_cast<float>(width),
+				static_cast<float>(height)
+			};
 		}
 	}
 
@@ -78,7 +121,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		m_ClosedHandler.remove(token);
 	}
 
-	void FramelessPage::CloseClicked(const IInspectable &, const RoutedEventArgs &)
+	void FramelessPage::CloseClicked(const IInspectable &, const wux::RoutedEventArgs &)
 	{
 		RequestClose();
 	}

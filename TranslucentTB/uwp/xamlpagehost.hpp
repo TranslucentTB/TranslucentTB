@@ -2,6 +2,7 @@
 #include "basexamlpagehost.hpp"
 #include <concepts>
 #include <ShObjIdl_core.h>
+#include <tuple>
 #include <type_traits>
 #include <windowsx.h>
 
@@ -36,7 +37,7 @@ private:
 	typename T::Closed_revoker m_ClosedRevoker;
 	typename T::LayoutUpdated_revoker m_LayoutUpdatedRevoker;
 
-	winrt::Windows::Foundation::EventHandler<winrt::Windows::Foundation::IInspectable> m_LayoutUpdatedHandler = { this, &XamlPageHost::OnXamlLayoutChanged };
+	wf::EventHandler<wf::IInspectable> m_LayoutUpdatedHandler = { this, &XamlPageHost::OnXamlLayoutChanged };
 	winrt::Windows::System::DispatcherQueueHandler m_SizeUpdater = { this, &XamlPageHost::UpdateWindowSize };
 
 	bool m_PendingSizeUpdate = false;
@@ -66,7 +67,7 @@ private:
 
 		case WM_PAINT:
 		{
-			const auto brush = m_content.Background().try_as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>();
+			const auto brush = m_content.Background().try_as<wux::Media::AcrylicBrush>();
 			if (brush)
 			{
 				PAINTSTRUCT ps;
@@ -83,7 +84,7 @@ private:
 		case WM_ERASEBKGND:
 		{
 			const auto rect = client_rect();
-			const auto brush = m_content.Background().try_as<winrt::Windows::UI::Xaml::Media::AcrylicBrush>();
+			const auto brush = m_content.Background().try_as<wux::Media::AcrylicBrush>();
 			if (rect && brush)
 			{
 				if (PaintBackground(reinterpret_cast<HDC>(wParam), *rect, brush.FallbackColor()))
@@ -146,7 +147,7 @@ private:
 		return BaseXamlPageHost::MessageHandler(uMsg, wParam, lParam);
 	}
 
-	inline void OnXamlLayoutChanged(const winrt::Windows::Foundation::IInspectable &, const winrt::Windows::Foundation::IInspectable &)
+	inline void OnXamlLayoutChanged(const wf::IInspectable &, const wf::IInspectable &)
 	{
 		if (!m_PendingSizeUpdate && m_SizeUpdater)
 		{
@@ -162,7 +163,7 @@ private:
 		const HMONITOR mon = GetInitialMonitor(cursor, position);
 
 		MONITORINFO info = { sizeof(info) };
-		const auto [windowSize, dragRegion] = GetXamlSize(mon, info);
+		const auto [windowSize, dragRegion, buttonRegion] = GetXamlSize(mon, info);
 
 		int width = static_cast<int>(windowSize.Width),
 			height = static_cast<int>(windowSize.Height),
@@ -171,7 +172,7 @@ private:
 
 		CalculateInitialPosition(x, y, width, height, cursor, info.rcWork, position);
 		ResizeWindow(x, y, width, height, true, SWP_SHOWWINDOW);
-		PositionDragRegion(dragRegion, SWP_SHOWWINDOW);
+		PositionDragRegion(dragRegion, buttonRegion, SWP_SHOWWINDOW);
 		SetForegroundWindow(m_WindowHandle);
 
 		m_LayoutUpdatedRevoker = m_content.LayoutUpdated(winrt::auto_revoke, m_LayoutUpdatedHandler);
@@ -186,7 +187,7 @@ private:
 		if (m_content)
 		{
 			MONITORINFO info = { sizeof(info) };
-			const auto [windowSize, dragRegion] = GetXamlSize(monitor(), info);
+			const auto [windowSize, dragRegion, buttonRegion] = GetXamlSize(monitor(), info);
 
 			const auto newHeight = static_cast<int>(windowSize.Height);
 			const auto newWidth = static_cast<int>(windowSize.Width);
@@ -202,7 +203,7 @@ private:
 				ResizeWindow(x, y, newWidth, newHeight, move);
 			}
 
-			PositionDragRegion(dragRegion);
+			PositionDragRegion(dragRegion, buttonRegion);
 
 			if (m_LayoutUpdatedHandler)
 			{
@@ -214,7 +215,7 @@ private:
 		m_PendingSizeUpdate = false;
 	}
 
-	inline std::pair<winrt::Windows::Foundation::Size, winrt::Windows::Foundation::Rect> GetXamlSize(HMONITOR mon, MONITORINFO &info)
+	inline std::tuple<wf::Size, wf::Rect, wf::Rect> GetXamlSize(HMONITOR mon, MONITORINFO &info)
 	{
 		if (!GetMonitorInfo(mon, &info)) [[unlikely]]
 		{
@@ -223,7 +224,7 @@ private:
 		}
 
 		const auto scale = GetDpiScale(mon);
-		winrt::Windows::Foundation::Size size = {
+		wf::Size size = {
 			(info.rcWork.right - info.rcWork.left) / scale,
 			(info.rcWork.bottom - info.rcWork.top) / scale
 		};
@@ -232,19 +233,17 @@ private:
 		size = m_content.DesiredSize();
 		m_content.UpdateLayout(); // prevent the call to Measure from firing a LayoutUpdated event
 
-		size.Width *= scale;
-		size.Height *= scale;
-
-		winrt::Windows::Foundation::Rect dragRegion = m_content.DragRegion();
-		dragRegion.X *= scale;
-		dragRegion.Y *= scale;
-		dragRegion.Width *= scale;
-		dragRegion.Height *= scale;
-
-		return { size, dragRegion };
+		return {
+			{
+				size.Width * scale,
+				size.Height * scale
+			},
+			ScaleRect(m_content.DragRegion(), scale),
+			ScaleRect(m_content.TitlebarButtonsRegion(), scale)
+		};
 	}
 
-	inline void UpdateTitle(const winrt::Windows::UI::Xaml::DependencyObject &, const winrt::Windows::UI::Xaml::DependencyProperty &)
+	inline void UpdateTitle(const wux::DependencyObject &, const wux::DependencyProperty &)
 	{
 		if (!SetWindowText(m_WindowHandle, m_content.Title().c_str()))
 		{
@@ -252,7 +251,7 @@ private:
 		}
 	}
 
-	inline void UpdateAlwaysOnTop(const winrt::Windows::UI::Xaml::DependencyObject &, const winrt::Windows::UI::Xaml::DependencyProperty &)
+	inline void UpdateAlwaysOnTop(const wux::DependencyObject &, const wux::DependencyProperty &)
 	{
 		const auto wnd = m_content.AlwaysOnTop() ? Window::TopMostWindow : Window::NoTopMostWindow;
 		if (!SetWindowPos(m_WindowHandle, wnd, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE))
@@ -266,8 +265,7 @@ private:
 		if (m_Saudm)
 		{
 			// only the last bit has info, the rest is garbage
-			using winrt::Windows::UI::Xaml::ElementTheme;
-			m_content.RequestedTheme((m_Saudm() & 0x1) ? ElementTheme::Dark : ElementTheme::Light);
+			m_content.RequestedTheme((m_Saudm() & 0x1) ? wux::ElementTheme::Dark : wux::ElementTheme::Light);
 		}
 	}
 
@@ -330,7 +328,7 @@ public:
 		m_TitleChangedToken.value = m_content.RegisterPropertyChangedCallback(FramelessPage::TitleProperty(), { this, &XamlPageHost::UpdateTitle });
 
 		m_ClosedRevoker = m_content.Closed(winrt::auto_revoke, { this, &XamlPageHost::OnClose });
-		m_LayoutUpdatedRevoker = m_content.LayoutUpdated(winrt::auto_revoke, [this, position](const winrt::Windows::Foundation::IInspectable &, const winrt::Windows::Foundation::IInspectable &)
+		m_LayoutUpdatedRevoker = m_content.LayoutUpdated(winrt::auto_revoke, [this, position](const wf::IInspectable &, const wf::IInspectable &)
 		{
 			if (!m_PendingSizeUpdate)
 			{
@@ -350,8 +348,8 @@ public:
 
 		// TODO:
 		// tab navigation enabled on opening
-		// ^^ if has keyboard focus, closing animation doesn't play
 		// contentdialog animations not working
+		// no animation when closing through alt-space menu
 	}
 
 	inline winrt::TranslucentTB::Xaml::Pages::FramelessPage page() noexcept override

@@ -44,7 +44,7 @@ public:
 	// Stored by TaskbarAttributeWorker, but only 1 instance
 	inline PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SetWindowCompositionAttribute() const
 	{
-		const auto fn = reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(m_User32.get(), "SetWindowCompositionAttribute"));
+		const auto fn = reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(m_User32.get(), UTIL_STRINGIFY_UTF8(SetWindowCompositionAttribute)));
 		if (!fn)
 		{
 			LastErrorHandle(spdlog::level::critical, L"Failed to get address of SetWindowCompositionAttribute");

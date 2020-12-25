@@ -5,9 +5,6 @@
 #include "Models/Action.g.cpp"
 #endif
 
-using namespace winrt;
-using namespace Windows::UI::Xaml;
-
 namespace winrt::TranslucentTB::Xaml::Models::implementation
 {
 	hstring Action::Name()
@@ -30,17 +27,17 @@ namespace winrt::TranslucentTB::Xaml::Models::implementation
 		compare_assign(m_description, value, PROP_NAME);
 	}
 
-	Windows::UI::Xaml::Controls::IconElement Action::Icon()
+	wuxc::IconElement Action::Icon()
 	{
 		return m_icon;
 	}
 
-	void Action::Icon(const Windows::UI::Xaml::Controls::IconElement &value)
+	void Action::Icon(const wuxc::IconElement &value)
 	{
 		compare_assign(m_icon, value, PROP_NAME);
 	}
 
-	event_token Action::Click(const RoutedEventHandler &value)
+	event_token Action::Click(const wux::RoutedEventHandler &value)
 	{
 		return m_click.add(value);
 	}
@@ -50,7 +47,7 @@ namespace winrt::TranslucentTB::Xaml::Models::implementation
 		m_click.remove(token);
 	}
 
-	void Action::ForwardClick(const IInspectable &sender, const RoutedEventArgs &args)
+	void Action::ForwardClick(const IInspectable &sender, const wux::RoutedEventArgs &args)
 	{
 		m_click(sender, args);
 	}

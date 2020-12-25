@@ -38,7 +38,6 @@ protected:
 
 					ShowAtCursor(m_WindowHandle);
 					post_message(WM_NULL);
-					ReturnFocus();
 				}
 
 				return 0;

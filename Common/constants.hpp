@@ -23,11 +23,14 @@ static constexpr GUID TRAY_GUID = { 0x974A6DD7, 0x6BBD, 0x4B9A, { 0x9F, 0x11, 0x
 // Message sent by explorer when the taskbar is created
 static constexpr Util::null_terminated_wstring_view WM_TASKBARCREATED = L"TaskbarCreated";
 
-// Message sent to the main thread when configuration is changed
-static constexpr Util::null_terminated_wstring_view WM_FILECHANGED = L"TTB_FileChanged";
-
-// Send by the hook to the worker when the taskbar is trying to change its composition attribute
+// Sent by the hook to the worker when the taskbar is trying to change its composition attribute
 static constexpr Util::null_terminated_wstring_view WM_TTBHOOKREQUESTREFRESH = L"TTBHook_RequestAttributeRefresh";
+
+// Sent by the hook to the worker when Timeline closes/opens
+static constexpr Util::null_terminated_wstring_view WM_TTBHOOKTIMELINENOTIFICATION = L"TTBHook_TimelineNotification";
+
+// Sent by the worker to the hook to get the current Timeline status
+static constexpr Util::null_terminated_wstring_view WM_TTBHOOKGETTIMELINESTATUS = L"TTBHook_GetTimelineStatus";
 
 #pragma endregion
 
@@ -38,6 +41,9 @@ static constexpr Util::null_terminated_wstring_view TRAY_WINDOW = L"TrayWindow";
 
 // Window class and title used by our attribute worker
 static constexpr Util::null_terminated_wstring_view WORKER_WINDOW = L"TTBWorkerWindow";
+
+// Window class and title used by the Timeline monitor
+static constexpr Util::null_terminated_wstring_view HOOK_MONITOR_WINDOW = L"TTBHook_TimelineMonitor";
 
 // Window class for taskbar on primary monitor
 static constexpr Util::null_terminated_wstring_view TASKBAR = L"Shell_TrayWnd";

@@ -5,6 +5,6 @@
 
 namespace UWP {
 	bool HasPackageIdentity() noexcept;
-	winrt::Windows::Foundation::IAsyncAction OpenUri(const winrt::Windows::Foundation::Uri &uri);
+	wf::IAsyncAction OpenUri(const wf::Uri &uri);
 	winrt::Windows::System::DispatcherQueueController CreateDispatcherController();
 };
