@@ -358,7 +358,6 @@ public:
 		// tab navigation enabled on opening
 		// contentdialog animations not working
 		// no animation when closing through alt-space menu
-		// shouldn't restore focus if a window is opened as a result of clicking
 	}
 
 	inline winrt::TranslucentTB::Xaml::Pages::FramelessPage page() noexcept override
