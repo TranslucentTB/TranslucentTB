@@ -67,9 +67,27 @@ void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG 
 
 void TaskbarAttributeWorker::OnForegroundWindowChange(DWORD, HWND hwnd, LONG idObject, LONG, DWORD, DWORD)
 {
-	if (Window window(hwnd); idObject == OBJID_WINDOW && window.valid())
+	if (idObject == OBJID_WINDOW)
 	{
-		// placeholder
+		Window window(hwnd);
+		if (window.valid())
+		{
+			m_ForegroundWindow = window;
+		}
+		else
+		{
+			// uh?
+			m_ForegroundWindow = Window::NullWindow;
+		}
+
+		if (Error::ShouldLog(spdlog::level::debug))
+		{
+			static constexpr std::wstring_view CHANGED_FOREGROUND_WINDOW = L"Changed foreground window to ";
+			fmt::wmemory_buffer buf;
+			buf.append(CHANGED_FOREGROUND_WINDOW.data(), CHANGED_FOREGROUND_WINDOW.data() + CHANGED_FOREGROUND_WINDOW.length());
+			DumpWindow(buf, m_ForegroundWindow);
+			MessagePrint(spdlog::level::debug, buf);
+		}
 	}
 }
 
@@ -207,45 +225,40 @@ void TaskbarAttributeWorker::ShowAeroPeekButton(Window taskbar, bool show)
 
 void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance config)
 {
-	if (config.Accent == ACCENT_NORMAL)
+	if (config.Accent != ACCENT_NORMAL)
+	{
+		m_NormalTaskbars.erase(window);
+
+		if (config.Accent == ACCENT_ENABLE_ACRYLICBLURBEHIND && config.Color.A == 0)
+		{
+			// Acrylic mode doesn't likes a completely 0 opacity
+			config.Color.A = 1;
+		}
+
+		ACCENT_POLICY policy = {
+			config.Accent,
+			2,
+			config.Color.ToABGR(),
+			0
+		};
+
+		const WINDOWCOMPOSITIONATTRIBDATA data = {
+			WCA_ACCENT_POLICY,
+			&policy,
+			sizeof(policy)
+		};
+
+		if (!SetWindowCompositionAttribute(window, &data)) [[unlikely]]
+		{
+			LastErrorHandle(spdlog::level::warn, L"Failed to set window composition attribute");
+		}
+	}
+	else if (const auto [it, inserted] = m_NormalTaskbars.insert(window); inserted)
 	{
 		// Without this guard, we get reentrancy: sending WM_THEMECHANGED causes a window's
 		// state be changed, so the notification is processed and this is called, sending
 		// again the same message, and so on.
-		if (!m_NormalTaskbars.contains(window))
-		{
-			m_NormalTaskbars.insert(window);
-			window.send_message(WM_THEMECHANGED);
-		}
-		return;
-	}
-	else
-	{
-		m_NormalTaskbars.erase(window);
-	}
-
-	if (config.Accent == ACCENT_ENABLE_ACRYLICBLURBEHIND && config.Color.A == 0)
-	{
-		// Acrylic mode doesn't likes a completely 0 opacity
-		config.Color.A = 1;
-	}
-
-	ACCENT_POLICY policy = {
-		config.Accent,
-		2,
-		config.Color.ToABGR(),
-		0
-	};
-
-	const WINDOWCOMPOSITIONATTRIBDATA data = {
-		WCA_ACCENT_POLICY,
-		&policy,
-		sizeof(policy)
-	};
-
-	if (!SetWindowCompositionAttribute(window, &data))
-	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to set window composition attribute");
+		window.send_message(WM_THEMECHANGED);
 	}
 }
 
@@ -352,20 +365,8 @@ void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::
 			buf.clear();
 			if (showInfo)
 			{
-				std::wstring title, className, fileName;
-				if (auto titleOpt = window.title())
-				{
-					title = std::move(*titleOpt);
-					if (auto classNameOpt = window.classname())
-					{
-						className = std::move(*classNameOpt);
-						if (const auto fileOpt = window.file())
-						{
-							fileName = fileOpt->filename().native();
-						}
-					}
-				}
-				fmt::format_to(buf, FMT_STRING(L"{}{} [{}] [{}] [{}]"), prefix, static_cast<void *>(window.handle()), title, className, fileName);
+				buf.append(prefix.data(), prefix.data() + prefix.length());
+				DumpWindow(buf, window);
 			}
 			else
 			{
@@ -378,6 +379,32 @@ void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::
 	{
 		fmt::format_to(buf, FMT_STRING(L"{}[none]"), prefix);
 		MessagePrint(spdlog::level::off, buf);
+	}
+}
+
+void TaskbarAttributeWorker::DumpWindow(fmt::wmemory_buffer &buf, Window window)
+{
+	if (window)
+	{
+		std::wstring title, className, fileName;
+		if (auto titleOpt = window.title())
+		{
+			title = std::move(*titleOpt);
+			if (auto classNameOpt = window.classname())
+			{
+				className = std::move(*classNameOpt);
+				if (const auto fileOpt = window.file())
+				{
+					fileName = fileOpt->filename().native();
+				}
+			}
+		}
+		fmt::format_to(buf, FMT_STRING(L"{} [{}] [{}] [{}]"), static_cast<void *>(window.handle()), title, className, fileName);
+	}
+	else
+	{
+		static constexpr std::wstring_view null = L"0x0";
+		buf.append(null.data(), null.data() + null.length());
 	}
 }
 
@@ -512,7 +539,7 @@ void TaskbarAttributeWorker::DumpState()
 {
 	MessagePrint(spdlog::level::off, L"===== Begin TaskbarAttributeWorker state dump =====");
 
-	Util::small_wmemory_buffer<60> buf;
+	fmt::wmemory_buffer buf;
 	for (const auto &[monitor, info] : m_Taskbars)
 	{
 		buf.clear();
@@ -531,13 +558,13 @@ void TaskbarAttributeWorker::DumpState()
 	MessagePrint(spdlog::level::off, buf);
 
 	buf.clear();
-	fmt::format_to(buf, FMT_STRING(L"Worker handles requests from hooks: {}"), !m_disableAttributeRefreshReply);
+	fmt::format_to(buf, FMT_STRING(L"User is using Timeline: {}"), m_TimelineActive);
 	MessagePrint(spdlog::level::off, buf);
 
 	if (m_CurrentStartMonitor != nullptr)
 	{
 		buf.clear();
-		fmt::format_to(buf, FMT_STRING(L"Start menu is opened on monitor: {}"), static_cast<void *>(m_CurrentStartMonitor));
+		fmt::format_to(buf, FMT_STRING(L"Start menu is opened: true [monitor {}]"), static_cast<void*>(m_CurrentStartMonitor));
 		MessagePrint(spdlog::level::off, buf);
 	}
 	else
@@ -545,8 +572,14 @@ void TaskbarAttributeWorker::DumpState()
 		MessagePrint(spdlog::level::off, L"Start menu is opened: false");
 	}
 
+	static constexpr std::wstring_view CURRENT_FOREGROUND_WINDOW = L"Current foreground window: ";
 	buf.clear();
-	fmt::format_to(buf, FMT_STRING(L"Main taskbar is on monitor: {}"), static_cast<void *>(m_MainTaskbarMonitor));
+	buf.append(CURRENT_FOREGROUND_WINDOW.data(), CURRENT_FOREGROUND_WINDOW.data() + CURRENT_FOREGROUND_WINDOW.length());
+	DumpWindow(buf, m_ForegroundWindow);
+	MessagePrint(spdlog::level::off, buf);
+
+	buf.clear();
+	fmt::format_to(buf, FMT_STRING(L"Worker handles requests from hooks: {}"), !m_disableAttributeRefreshReply);
 	MessagePrint(spdlog::level::off, buf);
 
 	MessagePrint(spdlog::level::off, L"Taskbars currently using normal appearance:");
@@ -564,6 +597,7 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 	m_TimelineActive = false;
 	m_CurrentStartMonitor = nullptr;
 	m_MainTaskbarMonitor = nullptr;
+	m_ForegroundWindow = Window::NullWindow;
 
 	if (rehook)
 	{
@@ -605,6 +639,7 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 		m_TimelineActive = hookWnd.send_message(*m_GetTimelineStatusMessage);
 	}
 
+	m_ForegroundWindow = Window::ForegroundWindow();
 	if (IsStartMenuOpened())
 	{
 		m_CurrentStartMonitor = GetStartMenuMonitor();
