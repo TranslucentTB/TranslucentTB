@@ -50,7 +50,6 @@ public:
 
 		if (!m_FileList.empty())
 		{
-
 			if (const auto file = window.file())
 			{
 				try

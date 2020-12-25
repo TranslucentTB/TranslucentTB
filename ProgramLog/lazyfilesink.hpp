@@ -17,6 +17,7 @@ enum class lazy_sink_state {
 template<typename Mutex>
 class lazy_file_sink final : public spdlog::sinks::base_sink<Mutex> {
 	using path_getter_t = std::add_pointer_t<std::filesystem::path()>;
+
 public:
 	explicit lazy_file_sink(std::filesystem::path path) : m_File(std::move(path)), m_Tried(false) { }
 

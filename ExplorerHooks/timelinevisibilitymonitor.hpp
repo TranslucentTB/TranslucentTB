@@ -17,6 +17,8 @@ class TimelineVisibilityMonitor {
 	static HANDLE s_hThread;
 	static wil::com_ptr_nothrow<IMultitaskingViewVisibilityService> s_ViewService;
 
+	static HRESULT LoadViewService() noexcept;
+
 	static DWORD WINAPI ThreadProc(LPVOID) noexcept;
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
 

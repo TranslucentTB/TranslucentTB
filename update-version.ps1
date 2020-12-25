@@ -1,5 +1,3 @@
-$ErrorActionPreference = "Stop"
-
 $tag = git describe --abbrev=0 --tags
 $tag_commas = $tag.Replace(".", ",")
 $tag_hash = git show-ref -s $tag
@@ -20,4 +18,4 @@ $appx_file = "AppPackage\Package.appxmanifest"
 $appx_content = (Get-Content $appx_file).Replace("1.0.0.0", $appx_short_version)
 Set-Content $appx_file -Value $appx_content
 
-Write-Host "##vso[build.updatebuildnumber]$exe_full_version"
+Write-Output "##vso[build.updatebuildnumber]$exe_full_version"

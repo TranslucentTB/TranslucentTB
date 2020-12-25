@@ -20,23 +20,14 @@ ATOM TimelineVisibilityMonitor::s_WindowClassAtom;
 HANDLE TimelineVisibilityMonitor::s_hThread;
 wil::com_ptr_nothrow<IMultitaskingViewVisibilityService> TimelineVisibilityMonitor::s_ViewService;
 
-DWORD WINAPI TimelineVisibilityMonitor::ThreadProc(LPVOID) noexcept
+HRESULT TimelineVisibilityMonitor::LoadViewService() noexcept
 {
-	s_ThreadRunning = true;
-
-	HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-	if (FAILED(hr)) [[unlikely]]
-	{
-		Util::QuickAbort();
-	}
-
-	wil::unique_couninitialize_call coUninit;
-
 	// if we get injected at process creation, it's possible the immersive shell isn't ready yet.
 	// try until it is ready. if after 10 seconds the class is still not registered, it's most likely
 	// an issue other than process init not being done.
 	wil::com_ptr_nothrow<IServiceProvider> servProv;
 	uint8_t attempts = 0;
+	HRESULT hr = S_OK;
 	do
 	{
 		hr = CoCreateInstance(CLSID_ImmersiveShell, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(servProv.put()));
@@ -52,12 +43,27 @@ DWORD WINAPI TimelineVisibilityMonitor::ThreadProc(LPVOID) noexcept
 	}
 	while (hr == REGDB_E_CLASSNOTREG && attempts < 20);
 
+	if (SUCCEEDED(hr))
+	{
+		hr = servProv->QueryService(SID_MultitaskingViewVisibilityService, s_ViewService.put());
+	}
+
+	return hr;
+}
+
+DWORD WINAPI TimelineVisibilityMonitor::ThreadProc(LPVOID) noexcept
+{
+	s_ThreadRunning = true;
+
+	HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 	if (FAILED(hr)) [[unlikely]]
 	{
 		Util::QuickAbort();
 	}
 
-	hr = servProv->QueryService(SID_MultitaskingViewVisibilityService, s_ViewService.put());
+	wil::unique_couninitialize_call coUninit;
+
+	hr = LoadViewService();
 	if (FAILED(hr)) [[unlikely]]
 	{
 		Util::QuickAbort();
@@ -69,7 +75,7 @@ DWORD WINAPI TimelineVisibilityMonitor::ThreadProc(LPVOID) noexcept
 		Util::QuickAbort();
 	}
 
-	DWORD token;
+	DWORD token = 0;
 	hr = s_ViewService->Register(sink.get(), &token);
 	if (FAILED(hr)) [[unlikely]]
 	{
@@ -111,7 +117,6 @@ DWORD WINAPI TimelineVisibilityMonitor::ThreadProc(LPVOID) noexcept
 	}
 
 	s_ViewService.reset();
-	servProv.reset();
 	coUninit.reset();
 
 	s_ThreadCleanupDone.SetEvent();
