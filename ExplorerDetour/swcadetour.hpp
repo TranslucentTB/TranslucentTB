@@ -4,7 +4,7 @@
 
 #include "undoc/user32.hpp"
 
-class ExplorerDetour {
+class SWCADetour {
 private:
 	static HMODULE s_User32;
 	static PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SetWindowCompositionAttribute;

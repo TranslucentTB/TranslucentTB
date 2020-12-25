@@ -1,4 +1,4 @@
-#include "explorerdetour.hpp"
+#include "swcadetour.hpp"
 #include <heapapi.h>
 #include <libloaderapi.h>
 #include <WinUser.h>
@@ -8,13 +8,13 @@
 #include "util/abort.hpp"
 #include "util/string_macros.hpp"
 
-HMODULE ExplorerDetour::s_User32;
-PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE ExplorerDetour::SetWindowCompositionAttribute;
-UINT ExplorerDetour::s_RequestAttribute;
-HANDLE ExplorerDetour::s_Heap;
-bool ExplorerDetour::s_DetourInstalled;
+HMODULE SWCADetour::s_User32;
+PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SWCADetour::SetWindowCompositionAttribute;
+UINT SWCADetour::s_RequestAttribute;
+HANDLE SWCADetour::s_Heap;
+bool SWCADetour::s_DetourInstalled;
 
-BOOL WINAPI ExplorerDetour::FunctionDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data) noexcept
+BOOL WINAPI SWCADetour::FunctionDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data) noexcept
 {
 	if (data->Attrib == WCA_ACCENT_POLICY)
 	{
@@ -32,7 +32,7 @@ BOOL WINAPI ExplorerDetour::FunctionDetour(HWND hWnd, const WINDOWCOMPOSITIONATT
 	return SetWindowCompositionAttribute(hWnd, data);
 }
 
-void ExplorerDetour::Install() noexcept
+void SWCADetour::Install() noexcept
 {
 	if (!s_User32)
 	{
@@ -87,7 +87,7 @@ void ExplorerDetour::Install() noexcept
 	}
 }
 
-void ExplorerDetour::Uninstall() noexcept
+void SWCADetour::Uninstall() noexcept
 {
 	if (s_DetourInstalled)
 	{

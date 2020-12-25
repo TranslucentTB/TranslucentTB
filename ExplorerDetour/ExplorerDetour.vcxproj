@@ -18,14 +18,14 @@
   <ItemGroup>
     <ClCompile Include="detourtransaction.cpp" />
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="explorerdetour.cpp" />
+    <ClCompile Include="swcadetour.cpp" />
     <ClCompile Include="explorerhooks.cpp" />
     <ClCompile Include="timelinevisibilitymonitor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="detourresult.hpp" />
     <ClInclude Include="detourtransaction.hpp" />
-    <ClInclude Include="explorerdetour.hpp" />
+    <ClInclude Include="swcadetour.hpp" />
     <ClInclude Include="explorerhooks.hpp" />
     <ClInclude Include="multitaskingviewvisibilitysink.hpp" />
     <ClInclude Include="timelinevisibilitymonitor.hpp" />

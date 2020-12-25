@@ -18,9 +18,6 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="explorerdetour.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="detourtransaction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -30,12 +27,12 @@
     <ClCompile Include="explorerhooks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="swcadetour.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="detourtransaction.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="explorerdetour.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="detourresult.hpp">
@@ -48,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="explorerhooks.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="swcadetour.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

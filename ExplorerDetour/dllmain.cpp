@@ -2,8 +2,8 @@
 #include <libloaderapi.h>
 #include <windef.h>
 
-#include "explorerdetour.hpp"
 #include "explorerhooks.hpp"
+#include "swcadetour.hpp"
 #include "timelinevisibilitymonitor.hpp"
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
@@ -18,14 +18,14 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 		if (ExplorerHooks::IsInExplorer())
 		{
 			// Install the things
-			ExplorerDetour::Install();
+			SWCADetour::Install();
 			TimelineVisibilityMonitor::Install();
 		}
 		break;
 
 	case DLL_PROCESS_DETACH:
 		TimelineVisibilityMonitor::Uninstall();
-		ExplorerDetour::Uninstall();
+		SWCADetour::Uninstall();
 		break;
 	}
 
