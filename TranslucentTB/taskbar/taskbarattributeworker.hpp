@@ -52,7 +52,7 @@ private:
 	wil::unique_hwineventhook m_CloakUncloakHook;
 	wil::unique_hwineventhook m_MinimizeRestoreHook;
 	wil::unique_hwineventhook m_ResizeMoveHook;
-	wil::unique_hwineventhook m_ShowHideHook;
+	wil::unique_hwineventhook m_ShowHideHook; // todo: doesn't seem to react correctly to the discord window being shown
 	wil::unique_hwineventhook m_CreateDestroyHook;
 	wil::unique_hwineventhook m_ForegroundChangeHook;
 	wil::unique_hwineventhook m_TitleChangeHook;
