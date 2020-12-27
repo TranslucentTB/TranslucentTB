@@ -64,7 +64,8 @@ void XamlThread::ThreadInit()
 	Window coreWin;
 	try
 	{
-		winrt::check_hresult(winrt::Windows::UI::Core::CoreWindow::GetForCurrentThread().as<ICoreWindowInterop>()->get_WindowHandle(coreWin.put()));
+		const auto coreInterop = winrt::Windows::UI::Core::CoreWindow::GetForCurrentThread().as<ICoreWindowInterop>();
+		winrt::check_hresult(coreInterop->get_WindowHandle(coreWin.put()));
 	}
 	HresultErrorCatch(spdlog::level::warn, L"Failed to get core window handle");
 

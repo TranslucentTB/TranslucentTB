@@ -33,6 +33,7 @@ HRESULT TimelineVisibilityMonitor::LoadViewService() noexcept
 		hr = CoCreateInstance(CLSID_ImmersiveShell, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(servProv.put()));
 		if (SUCCEEDED(hr))
 		{
+			hr = servProv->QueryService(SID_MultitaskingViewVisibilityService, s_ViewService.put());
 			break;
 		}
 		else
@@ -42,11 +43,6 @@ HRESULT TimelineVisibilityMonitor::LoadViewService() noexcept
 		}
 	}
 	while (hr == REGDB_E_CLASSNOTREG && attempts < 20);
-
-	if (SUCCEEDED(hr))
-	{
-		hr = servProv->QueryService(SID_MultitaskingViewVisibilityService, s_ViewService.put());
-	}
 
 	return hr;
 }
