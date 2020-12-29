@@ -12,8 +12,8 @@
       <DisableSpecificWarnings>4389;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalDependencies Condition="'$(Configuration)'=='Release'">gtest.lib;gtest_main.lib;gmock.lib</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(Configuration)'=='Debug'">gtestd.lib;gtest_maind.lib;gmockd.lib</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)'=='Release'">gtest.lib;gtest_main.lib</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)'=='Debug'">gtestd.lib;gtest_maind.lib</AdditionalDependencies>
       <AdditionalDependencies>ole32.lib;version.lib;%(AdditionalDependencies);$(fmtlib)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
@@ -31,6 +31,7 @@
     <ResourceCompile Include="Tests.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="testingdata.hpp" />
     <ClInclude Include="win32version.h" />
   </ItemGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

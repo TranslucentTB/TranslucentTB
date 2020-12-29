@@ -76,14 +76,20 @@ TEST(Util_Color_FromString, ParsesColor)
 	}
 }
 
-TEST(Util_Color_FromString, ThrowsWhenColorDoesntStartsWithPrefix)
+TEST(Util_Color_FromString, ThrowsWhenInvalidColor)
 {
-	ASSERT_THROW(Util::Color::FromString(L"FFFFFF"), std::invalid_argument);
-}
+	static constexpr std::wstring_view cases[] = {
+		L"FFFFFF",
+		L"#FFFFFFF",
+		L"#",
+		L"",
+		L"  \n \t \r #   \n"
+	};
 
-TEST(Util_Color_FromString, ThrowsWhenColorIsNotValidCharacterCount)
-{
-	ASSERT_THROW(Util::Color::FromString(L"#FFFFFFF"), std::invalid_argument);
+	for (const auto &testCase : cases)
+	{
+		ASSERT_THROW(Util::Color::FromString(testCase), std::invalid_argument);
+	}
 }
 
 TEST(Util_Color_ToWinRT, ConvertsToSameColor)

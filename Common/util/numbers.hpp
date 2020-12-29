@@ -33,6 +33,11 @@ namespace Util {
 	{
 		TrimInplace(number);
 
+		if (number.empty())
+		{
+			throw std::invalid_argument("Cannot convert empty string to number");
+		}
+
 		if (number.length() > 2 && number[0] == L'0' && (number[1] == L'x' || number[1] == L'X'))
 		{
 			number.remove_prefix(2);

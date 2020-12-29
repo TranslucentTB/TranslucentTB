@@ -28,5 +28,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="win32version.h" />
+    <ClInclude Include="testingdata.hpp" />
   </ItemGroup>
 </Project>

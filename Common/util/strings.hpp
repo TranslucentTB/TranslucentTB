@@ -80,43 +80,4 @@ namespace Util {
 			str.erase();
 		}
 	}
-
-	// Checks if a string begins with any of the strings in the second parameter.
-	template<class T = std::initializer_list<std::wstring_view>>
-	constexpr bool StringBeginsWithOneOf(std::wstring_view string, const T &strings_to_test) noexcept
-	{
-		return std::any_of(std::begin(strings_to_test), std::end(strings_to_test), [string](const auto &a) noexcept -> bool
-		{
-			return string.starts_with(a);
-		});
-	}
-
-	// Removes a string at the beginning of another string.
-	constexpr std::wstring_view RemovePrefix(std::wstring_view str, std::wstring_view prefix)
-	{
-		if (str.starts_with(prefix))
-		{
-			str.remove_prefix(prefix.length());
-		}
-
-		return str;
-	}
-
-	// Removes a string at the beginning of another string.
-	constexpr void RemovePrefixInplace(std::wstring_view &str, std::wstring_view prefix)
-	{
-		if (str.starts_with(prefix))
-		{
-			str.remove_prefix(prefix.length());
-		}
-	}
-
-	// Removes a string at the beginning of another string.
-	inline void RemovePrefixInplace(std::wstring &str, std::wstring_view prefix)
-	{
-		if (str.starts_with(prefix))
-		{
-			str.erase(0, prefix.length());
-		}
-	}
 }
