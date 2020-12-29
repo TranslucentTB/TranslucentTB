@@ -1,0 +1,17 @@
+#pragma code_page(65001)
+
+#ifdef APSTUDIO_INVOKED
+#error Please edit this file manually.
+#endif
+
+#include <ddeml.h>
+#include <winres.h>
+#include "win32version.h"
+
+LANGUAGE LANG_INVARIANT, SUBLANG_NEUTRAL
+
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION EXPECTED_FILE_VERSION
+	PRODUCTVERSION EXPECTED_FILE_VERSION
+{
+}

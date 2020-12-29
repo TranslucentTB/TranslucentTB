@@ -1,267 +1,152 @@
+#include <compare>
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
 
 #include "win32.hpp"
-
-using namespace testing;
+#include "win32version.h"
 
 // to allow ASSERT_EQ with RECT
 static bool operator==(const RECT &left, const RECT &right) noexcept
 {
+	// make sure there's no padding
+	static_assert(sizeof(RECT) == 4 * sizeof(LONG));
+
 	return std::memcmp(&left, &right, sizeof(RECT)) == 0;
+}
+
+namespace {
+	static constexpr std::pair<std::wstring_view, std::wstring_view> differentContentCases[] = {
+		{ L"foo", L"foobar" },
+		{ L"FOOBAR", L"FOO" },
+		{ L"foo", L"foobar" },
+		{ L"FOOBAR", L"FOO" },
+		{ L"foo", L"bar" },
+		{ L"FOO", L"BAR" }
+	};
+
+	static constexpr std::pair<std::wstring_view, std::wstring_view> sameContentCases[] = {
+		{ L"foo", L"FOO" },
+		{ L"FOOBAR", L"foobar" },
+		{ L"foo", L"foo" },
+		{ L"\u00EB", L"\u00CB" },
+		{ L"aAa\u00CB\u00EB\u00CBAaA", L"AaA\u00EB\u00CB\u00EBaAa" }
+	};
+}
+
+TEST(win32_GetExeLocation, GetsCorrectFileName)
+{
+	const auto [location, hr] = win32::GetExeLocation();
+
+	ASSERT_TRUE(SUCCEEDED(hr));
+	ASSERT_EQ(location.filename(), L"Tests.exe");
+}
+
+TEST(win32_GetFixedFileVersion, GetsCorrectFileVersion)
+{
+	static constexpr Version expected = { EXPECTED_FILE_VERSION };
+
+	const auto [location, hr] = win32::GetExeLocation();
+	ASSERT_TRUE(SUCCEEDED(hr));
+
+	const auto [version, hr2] = win32::GetFixedFileVersion(location);
+	ASSERT_TRUE(SUCCEEDED(hr2));
+	ASSERT_EQ(version, expected);
 }
 
 TEST(win32_RectFitsInRect, FalseWhenBiggerInnerRect)
 {
-	const RECT a = { 2, 2, 3, 3 };
-	const RECT b = { 0, 0, 4, 4 };
+	static constexpr std::pair<RECT, RECT> biggerBounds[] = {
+		{ { 2, 2, 3, 3 }, { 0, 0, 4, 4 } },
+		{ { 1, 1, 4, 4 }, { 0, 2, 3, 3 } },
+		{ { 1, 1, 4, 4 }, { 2, 2, 5, 3 } },
+		{ { 1, 1, 4, 4 }, { 2, 0, 3, 3 } },
+		{ { 1, 1, 4, 4 }, { 2, 2, 3, 5 } }
+	};
 
-	ASSERT_THAT(win32::RectFitsInRect(a, b), IsFalse());
-}
-
-TEST(win32_RectFitsInRect, FalseWhenBiggerLeftBound)
-{
-	const RECT a = { 1, 1, 4, 4 };
-	const RECT b = { 0, 2, 3, 3 };
-
-	ASSERT_THAT(win32::RectFitsInRect(a, b), IsFalse());
-}
-
-TEST(win32_RectFitsInRect, FalseWhenBiggerRightBound)
-{
-	const RECT a = { 1, 1, 4, 4 };
-	const RECT b = { 2, 2, 5, 3 };
-
-	ASSERT_THAT(win32::RectFitsInRect(a, b), IsFalse());
-}
-
-TEST(win32_RectFitsInRect, FalseWhenBiggerTopBound)
-{
-	const RECT a = { 1, 1, 4, 4 };
-	const RECT b = { 2, 0, 3, 3 };
-
-	ASSERT_THAT(win32::RectFitsInRect(a, b), IsFalse());
-}
-
-TEST(win32_RectFitsInRect, FalseWhenBiggerBottomBound)
-{
-	const RECT a = { 1, 1, 4, 4 };
-	const RECT b = { 2, 2, 3, 5 };
-
-	ASSERT_THAT(win32::RectFitsInRect(a, b), IsFalse());
+	for (const auto &rects : biggerBounds)
+	{
+		ASSERT_FALSE(win32::RectFitsInRect(rects.first, rects.second));
+	}
 }
 
 TEST(win32_RectFitsInRect, TrueWhenSmallerInnerRect)
 {
-	const RECT a = { 0, 0, 4, 4 };
-	const RECT b = { 2, 2, 3, 3 };
-
-	ASSERT_THAT(win32::RectFitsInRect(a, b), IsTrue());
-}
-
-TEST(win32_RectFitsInRect, TrueWhenSameLeftBound)
-{
-	const RECT a = { 0, 0, 3, 3 };
-	const RECT b = { 0, 1, 2, 2 };
-
-	ASSERT_THAT(win32::RectFitsInRect(a, b), IsTrue());
-}
-
-TEST(win32_RectFitsInRect, TrueWhenSameRightBound)
-{
-	const RECT a = { 0, 0, 3, 3 };
-	const RECT b = { 1, 1, 3, 2 };
-
-	ASSERT_THAT(win32::RectFitsInRect(a, b), IsTrue());
-}
-
-TEST(win32_RectFitsInRect, TrueWhenSameTopBound)
-{
-	const RECT a = { 0, 0, 3, 3 };
-	const RECT b = { 1, 0, 2, 2 };
-
-	ASSERT_THAT(win32::RectFitsInRect(a, b), IsTrue());
-}
-
-TEST(win32_RectFitsInRect, TrueWhenSameBottomBound)
-{
-	const RECT a = { 0, 0, 3, 3 };
-	const RECT b = { 1, 1, 2, 3 };
-
-	ASSERT_THAT(win32::RectFitsInRect(a, b), IsTrue());
-}
-
-TEST(win32_RectFitsInRect, TrueWhenSameBounds)
-{
-	const RECT a = { 0, 0, 1, 1 };
-
-	ASSERT_THAT(win32::RectFitsInRect(a, a), IsTrue());
-}
-
-TEST(win32_OffsetRect, SupportsNegativeXOffset)
-{
-	RECT r = {
-		.left = 10,
-		.top = 10,
-		.right = 20,
-		.bottom = 20
-	};
-	const RECT expected = {
-		.left = 5,
-		.top = 10,
-		.right = 15,
-		.bottom = 20
+	static constexpr std::pair<RECT, RECT> smallerBounds[] = {
+		{ { 0, 0, 4, 4 }, { 2, 2, 3, 3 } },
+		{ { 0, 0, 3, 3 }, { 0, 1, 2, 2 } },
+		{ { 0, 0, 3, 3 }, { 1, 1, 3, 2 } },
+		{ { 0, 0, 3, 3 }, { 1, 0, 2, 2 } },
+		{ { 0, 0, 3, 3 }, { 1, 1, 2, 3 } },
+		{ { 0, 0, 1, 1 }, { 0, 0, 1, 1 } }
 	};
 
-	win32::OffsetRect(r, -5, 0);
-	ASSERT_EQ(r, expected);
+	for (const auto &rects : smallerBounds)
+	{
+		ASSERT_TRUE(win32::RectFitsInRect(rects.first, rects.second));
+	}
 }
 
-TEST(win32_OffsetRect, SupportsNegativeYOffset)
+TEST(win32_OffsetRect, SupportsXOffset)
 {
-	RECT r = {
-		.left = 10,
-		.top = 10,
-		.right = 20,
-		.bottom = 20
-	};
-	const RECT expected = {
-		.left = 10,
-		.top = 5,
-		.right = 20,
-		.bottom = 15
+	static constexpr std::tuple<RECT, RECT, int> cases[] = {
+		{ { 10, 10, 20, 20 }, { 5, 10, 15, 20 }, -5 },
+		{ { 10, 10, 20, 20 }, { 15, 10, 25, 20 }, 5 },
+		{ { 10, 10, 20, 20 }, { 10, 10, 20, 20 }, 0 }
 	};
 
-	win32::OffsetRect(r, 0, -5);
-	ASSERT_EQ(r, expected);
+	for (auto [initial, expected, offset] : cases)
+	{
+		win32::OffsetRect(initial, offset, 0);
+		ASSERT_EQ(initial, expected);
+	}
 }
 
-TEST(win32_OffsetRect, SupportsPositiveXOffset)
+TEST(win32_OffsetRect, SupportsYOffset)
 {
-	RECT r = {
-		.left = 10,
-		.top = 10,
-		.right = 20,
-		.bottom = 20
-	};
-	const RECT expected = {
-		.left = 15,
-		.top = 10,
-		.right = 25,
-		.bottom = 20
+	static constexpr std::tuple<RECT, RECT, int> cases[] = {
+		{ { 10, 10, 20, 20 }, { 10, 5, 20, 15 }, -5 },
+		{ { 10, 10, 20, 20 }, { 10, 15, 20, 25 }, 5 },
+		{ { 10, 10, 20, 20 }, { 10, 10, 20, 20 }, 0 }
 	};
 
-	win32::OffsetRect(r, 5, 0);
-	ASSERT_EQ(r, expected);
+	for (auto [initial, expected, offset] : cases)
+	{
+		win32::OffsetRect(initial, 0, offset);
+		ASSERT_EQ(initial, expected);
+	}
 }
 
-TEST(win32_OffsetRect, SupportsPositiveYOffset)
+TEST(win32_IsSameFilename, ReturnsFalse)
 {
-	RECT r = {
-		.left = 10,
-		.top = 10,
-		.right = 20,
-		.bottom = 20
-	};
-	const RECT expected = {
-		.left = 10,
-		.top = 15,
-		.right = 20,
-		.bottom = 25
-	};
-
-	win32::OffsetRect(r, 0, 5);
-	ASSERT_EQ(r, expected);
+	for (const auto &testCase : differentContentCases)
+	{
+		ASSERT_FALSE(win32::IsSameFilename(testCase.first, testCase.second));
+	}
 }
 
-TEST(win32_OffsetRect, SupportsZeroOffset)
+TEST(win32_IsSameFilename, ReturnsTrue)
 {
-	RECT r = {
-		.left = 10,
-		.top = 10,
-		.right = 20,
-		.bottom = 20
-	};
-	const RECT expected = r;
-
-	win32::OffsetRect(r, 0, 0);
-	ASSERT_EQ(r, expected);
+	for (const auto &testCase : sameContentCases)
+	{
+		ASSERT_TRUE(win32::IsSameFilename(testCase.first, testCase.second));
+	}
 }
 
-TEST(win32_IsSameFilename, FalseWhenLengthDifferent)
-{
-	ASSERT_THAT(win32::IsSameFilename(L"foo", L"foobar"), IsFalse());
-	ASSERT_THAT(win32::IsSameFilename(L"FOOBAR", L"FOO"), IsFalse());
-}
-
-TEST(win32_IsSameFilename, FalseWhenContentDifferent)
-{
-	ASSERT_THAT(win32::IsSameFilename(L"foo", L"bar"), IsFalse());
-	ASSERT_THAT(win32::IsSameFilename(L"FOO", L"BAR"), IsFalse());
-}
-
-TEST(win32_IsSameFilename, TrueWhenCaseDifferent)
-{
-	ASSERT_THAT(win32::IsSameFilename(L"foo", L"FOO"), IsTrue());
-	ASSERT_THAT(win32::IsSameFilename(L"FOOBAR", L"foobar"), IsTrue());
-}
-
-TEST(win32_IsSameFilename, TrueWhenContentSame)
-{
-	ASSERT_THAT(win32::IsSameFilename(L"foo", L"foo"), IsTrue());
-}
-
-TEST(win32_IsSameFilename, HandlesNonAsciiCharacters)
-{
-	ASSERT_THAT(win32::IsSameFilename(L"\u00EB", L"\u00CB"), IsTrue());
-}
-
-TEST(win32_IsSameFilename, HandlesMixedCharacters)
-{
-	ASSERT_THAT(win32::IsSameFilename(L"aAa\u00CB\u00EB\u00CBAaA", L"AaA\u00EB\u00CB\u00EBaAa"), IsTrue());
-}
-
-TEST(win32_FilenameHash, DifferentWhenLengthDifferent)
+TEST(win32_FilenameHash, DifferentHash)
 {
 	const win32::FilenameHash hasher;
 
-	ASSERT_NE(hasher(L"foo"), hasher(L"foobar"));
-	ASSERT_NE(hasher(L"FOOBAR"), hasher(L"FOO"));
+	for (const auto &testCase : differentContentCases)
+	{
+		ASSERT_NE(hasher(testCase.first), hasher(testCase.second));
+	}
 }
 
-TEST(win32_FilenameHash, DifferentWhenContentDifferent)
+TEST(win32_FilenameHash, SameHash)
 {
 	const win32::FilenameHash hasher;
 
-	ASSERT_NE(hasher(L"foo"), hasher(L"bar"));
-	ASSERT_NE(hasher(L"FOO"), hasher(L"BAR"));
-}
-
-TEST(win32_FilenameHash, SameWhenCaseDifferent)
-{
-	const win32::FilenameHash hasher;
-
-	ASSERT_EQ(hasher(L"foo"), hasher(L"FOO"));
-	ASSERT_EQ(hasher(L"FOOBAR"), hasher(L"foobar"));
-}
-
-TEST(win32_FilenameHash, SameWhenContentSame)
-{
-	const win32::FilenameHash hasher;
-
-	ASSERT_EQ(hasher(L"foo"), hasher(L"foo"));
-}
-
-TEST(win32_FilenameHash, HandlesNonAsciiCharacters)
-{
-	const win32::FilenameHash hasher;
-
-	ASSERT_EQ(hasher(L"\u00EB"), hasher(L"\u00CB"));
-}
-
-TEST(win32_FilenameHash, HandlesMixedCharacters)
-{
-	const win32::FilenameHash hasher;
-
-	ASSERT_EQ(hasher(L"aAa\u00CB\u00EB\u00CBAaA"), hasher(L"AaA\u00EB\u00CB\u00EBaAa"));
+	for (const auto &testCase : sameContentCases)
+	{
+		ASSERT_EQ(hasher(testCase.first), hasher(testCase.second));
+	}
 }

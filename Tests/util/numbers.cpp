@@ -1,49 +1,98 @@
 #include <cstdint>
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include <span>
 
 #include "util/numbers.hpp"
 
-using namespace testing;
+namespace {
+	static constexpr wchar_t numbers[] = {
+		L'0', L'1', L'2', L'3', L'4', L'5', L'6', L'7', L'8', L'9'
+	};
+
+	static constexpr wchar_t uppercaseAlphabet[] = {
+		L'A', L'B', L'C', L'D', L'E', L'F', L'G', L'H', L'I',
+		L'J', L'K', L'L', L'M', L'N', L'O', L'P', L'Q', L'R',
+		L'S', L'T', L'U', L'V', L'W', L'X', L'Y', L'Z'
+	};
+
+	static constexpr wchar_t lowercaseAlphabet[] = {
+		L'a', L'b', L'c', L'd', L'e', L'f', L'g', L'h', L'i',
+		L'j', L'k', L'l', L'm', L'n', L'o', L'p', L'q', L'r',
+		L's', L't', L'u', L'v', L'w', L'x', L'y', L'z'
+	};
+}
 
 TEST(Util_IsDecimalDigit, ReturnsFalseWhenNotDigit)
 {
-	ASSERT_THAT(Util::impl::IsDecimalDigit(L'a'), IsFalse());
+	for (const auto &letter : uppercaseAlphabet)
+	{
+		ASSERT_FALSE(Util::impl::IsDecimalDigit(letter));
+	}
+
+	for (const auto &letter : lowercaseAlphabet)
+	{
+		ASSERT_FALSE(Util::impl::IsDecimalDigit(letter));
+	}
 }
 
 TEST(Util_IsDecimalDigit, ReturnsTrueWhenDigit)
 {
-	ASSERT_THAT(Util::impl::IsDecimalDigit(L'5'), IsTrue());
+	for (const auto &number : numbers)
+	{
+		ASSERT_TRUE(Util::impl::IsDecimalDigit(number));
+	}
 }
 
-TEST(Util_IsUpperHexDigit, ReturnsFalseWhenNotDigit)
+TEST(Util_IsUpperHexDigit, ReturnsFalseWhenNotUpperCaseDigit)
 {
-	ASSERT_THAT(Util::impl::IsUpperHexDigit(L'R'), IsFalse());
-}
+	for (const auto &number : numbers)
+	{
+		ASSERT_FALSE(Util::impl::IsUpperHexDigit(number));
+	}
 
-TEST(Util_IsUpperHexDigit, ReturnsFalseWhenLowerCaseDigit)
-{
-	ASSERT_THAT(Util::impl::IsUpperHexDigit(L'f'), IsFalse());
+	for (const auto &letter : std::span(uppercaseAlphabet).subspan(6))
+	{
+		ASSERT_FALSE(Util::impl::IsUpperHexDigit(letter));
+	}
+
+	for (const auto &letter : lowercaseAlphabet)
+	{
+		ASSERT_FALSE(Util::impl::IsUpperHexDigit(letter));
+	}
 }
 
 TEST(Util_IsUpperHexDigit, ReturnsTrueWhenUpperCaseDigit)
 {
-	ASSERT_THAT(Util::impl::IsUpperHexDigit(L'F'), IsTrue());
+	for (const auto &letter : std::span(uppercaseAlphabet).subspan(0, 6))
+	{
+		ASSERT_TRUE(Util::impl::IsUpperHexDigit(letter));
+	}
 }
 
-TEST(Util_IsLowerHexDigit, ReturnsFalseWhenNotDigit)
+TEST(Util_IsLowerHexDigit, ReturnsFalseWhenNotLowerCaseDigit)
 {
-	ASSERT_THAT(Util::impl::IsLowerHexDigit(L'r'), IsFalse());
-}
+	for (const auto &number : numbers)
+	{
+		ASSERT_FALSE(Util::impl::IsLowerHexDigit(number));
+	}
 
-TEST(Util_IsLowerHexDigit, ReturnsFalseWhenUpperCaseDigit)
-{
-	ASSERT_THAT(Util::impl::IsLowerHexDigit(L'F'), IsFalse());
+	for (const auto &letter : uppercaseAlphabet)
+	{
+		ASSERT_FALSE(Util::impl::IsLowerHexDigit(letter));
+	}
+
+	for (const auto &letter : std::span(lowercaseAlphabet).subspan(6))
+	{
+		ASSERT_FALSE(Util::impl::IsLowerHexDigit(letter));
+	}
 }
 
 TEST(Util_IsLowerHexDigit, ReturnsTrueWhenLowerCaseDigit)
 {
-	ASSERT_THAT(Util::impl::IsLowerHexDigit(L'f'), IsTrue());
+	for (const auto &letter : std::span(lowercaseAlphabet).subspan(0, 6))
+	{
+		ASSERT_TRUE(Util::impl::IsLowerHexDigit(letter));
+	}
 }
 
 TEST(Util_ParseHexNumber, ThrowsWhenInputNotANumber)
@@ -56,54 +105,25 @@ TEST(Util_ParseHexNumber, ThrowsOnOverflow)
 	ASSERT_THROW(Util::ParseHexNumber<uint8_t>(L"100"), std::out_of_range);
 }
 
-TEST(Util_ParseHexNumber, ReturnsCorrectValueWhenLowerCaseDigits)
+TEST(Util_ParseHexNumber, ReturnsCorrectValue)
 {
-	ASSERT_EQ(Util::ParseHexNumber<uint8_t>(L"af"), 0xAF);
-}
+	static constexpr std::pair<std::wstring_view, uint64_t> cases[] = {
+		{ L"af", 0xAF },
+		{ L"AF", 0xAF },
+		{ L"aF", 0xAF },
+		{ L"0xAF", 0xAF },
+		{ L"0XAF", 0xAF },
+		{ L"0xFFFFFFFFFFFFFFFA", 0xFFFFFFFFFFFFFFFA },
+		{ L"0xFFFFFFFFFFFFFFFF", 0xFFFFFFFFFFFFFFFF },
+		{ L"0x0", 0x0 },
+		{ L"A", 0xA },
+		{ L" \t \n 10  \r ", 0x10 }
+	};
 
-TEST(Util_ParseHexNumber, ReturnsCorrectValueWhenUpperCaseDigits)
-{
-	ASSERT_EQ(Util::ParseHexNumber<uint8_t>(L"AF"), 0xAF);
-}
-
-TEST(Util_ParseHexNumber, ReturnsCorrectValueWhenMixedCaseDigits)
-{
-	ASSERT_EQ(Util::ParseHexNumber<uint8_t>(L"aF"), 0xAF);
-}
-
-TEST(Util_ParseHexNumber, ReturnsCorrectValueWhenLowerCasePrefixed)
-{
-	ASSERT_EQ(Util::ParseHexNumber<uint8_t>(L"0xAF"), 0xAF);
-}
-
-TEST(Util_ParseHexNumber, ReturnsCorrectValueWhenUpperCasePrefixed)
-{
-	ASSERT_EQ(Util::ParseHexNumber<uint8_t>(L"0XAF"), 0xAF);
-}
-
-TEST(Util_ParseHexNumber, HandlesVeryLargeNumber)
-{
-	ASSERT_EQ(Util::ParseHexNumber<uint64_t>(L"0xFFFFFFFFFFFFFFFA"), 0xFFFFFFFFFFFFFFFA);
-}
-
-TEST(Util_ParseHexNumber, HandlesMaximumValue)
-{
-	ASSERT_EQ(Util::ParseHexNumber<uint64_t>(L"0xFFFFFFFFFFFFFFFF"), 0xFFFFFFFFFFFFFFFF);
-}
-
-TEST(Util_ParseHexNumber, HandlesMinimumValue)
-{
-	ASSERT_EQ(Util::ParseHexNumber<uint64_t>(L"0x0"), 0x0);
-}
-
-TEST(Util_ParseHexNumber, HandlesOneDigit)
-{
-	ASSERT_EQ(Util::ParseHexNumber<uint8_t>(L"A"), 0xA);
-}
-
-TEST(Util_ParseHexNumber, TrimsInput)
-{
-	ASSERT_EQ(Util::ParseHexNumber(L" \t \n 10  \r "), 0x10);
+	for (const auto &testCase : cases)
+	{
+		ASSERT_EQ(Util::ParseHexNumber<uint64_t>(testCase.first), testCase.second);
+	}
 }
 
 TEST(Util_ExpandOneHexDigitByte, ExpandsByte)

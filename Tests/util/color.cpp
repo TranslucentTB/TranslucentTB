@@ -1,10 +1,7 @@
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
 
 #include "util/color.hpp"
 #include "util/to_string_view.hpp"
-
-using namespace testing;
 
 TEST(Util_Color_Constructor, DefaultConstructorIsTransparentBlack)
 {
@@ -48,48 +45,35 @@ TEST(Util_Color_ToABGR, ReturnsCorrectValue)
 
 TEST(Util_Color_ToString, ReturnsCorrectString)
 {
-	fmt::wmemory_buffer buf;
-	Util::Color(0xDE, 0xAD, 0xBE, 0xEF).ToString(buf);
-	ASSERT_EQ(Util::ToStringView(buf), L"#DEADBEEF");
+	static constexpr std::pair<Util::Color, std::wstring_view> cases[] = {
+		{ { 0xDE, 0xAD, 0xBE, 0xEF }, L"#DEADBEEF" },
+		{ { 0x00, 0x00, 0xFF, 0x00 }, L"#0000FF00" },
+		{ { 0x00, 0x00, 0x00, 0x00 }, L"#00000000" },
+		{ { 0xFF, 0xFF, 0xFF, 0xFF }, L"#FFFFFFFF" },
+	};
+
+	for (const auto &testCase : cases)
+	{
+		fmt::wmemory_buffer buf;
+		testCase.first.ToString(buf);
+		ASSERT_EQ(Util::ToStringView(buf), testCase.second);
+	}
 }
 
-TEST(Util_Color_ToString, PadsLeftRight)
+TEST(Util_Color_FromString, ParsesColor)
 {
-	fmt::wmemory_buffer buf;
-	Util::Color(0x00, 0x00, 0xFF, 0x00).ToString(buf);
-	ASSERT_EQ(Util::ToStringView(buf), L"#0000FF00");
-}
+	static constexpr std::pair<std::wstring_view, Util::Color> cases[] = {
+		{ L"#FAF", { 0xFF, 0xAA, 0xFF } },
+		{ L"#DEAD", { 0xDD, 0xEE, 0xAA, 0xDD } },
+		{ L"#C0FFEE", { 0xC0, 0xFF, 0xEE } },
+		{ L"#DEADBEEF", { 0xDE, 0xAD, 0xBE, 0xEF } },
+		{ L"   #FFFFFF \t \n", { 0xFF, 0xFF, 0xFF }}
+	};
 
-TEST(Util_Color_ToString, TransparentBlackColor)
-{
-	fmt::wmemory_buffer buf;
-	Util::Color(0x00, 0x00, 0x00, 0x00).ToString(buf);
-	ASSERT_EQ(Util::ToStringView(buf), L"#00000000");
-}
-
-TEST(Util_Color_FromString, Parses3DigitColor)
-{
-	ASSERT_EQ(Util::Color::FromString(L"#FAF"), Util::Color(0xFF, 0xAA, 0xFF));
-}
-
-TEST(Util_Color_FromString, Parses4DigitColor)
-{
-	ASSERT_EQ(Util::Color::FromString(L"#DEAD"), Util::Color(0xDD, 0xEE, 0xAA, 0xDD));
-}
-
-TEST(Util_Color_FromString, Parses6DigitColor)
-{
-	ASSERT_EQ(Util::Color::FromString(L"#C0FFEE"), Util::Color(0xC0, 0xFF, 0xEE));
-}
-
-TEST(Util_Color_FromString, Parses8DigitColor)
-{
-	ASSERT_EQ(Util::Color::FromString(L"#DEADBEEF"), Util::Color(0xDE, 0xAD, 0xBE, 0xEF));
-}
-
-TEST(Util_Color_FromString, TrimsInput)
-{
-	ASSERT_EQ(Util::Color::FromString(L"   #FFFFFF \t \n"), Util::Color(0xFF, 0xFF, 0xFF));
+	for (const auto &testCase : cases)
+	{
+		ASSERT_EQ(Util::Color::FromString(testCase.first), testCase.second);
+	}
 }
 
 TEST(Util_Color_FromString, ThrowsWhenColorDoesntStartsWithPrefix)
@@ -112,10 +96,10 @@ TEST(Util_Color_ToWinRT, ConvertsToSameColor)
 
 TEST(Util_Color_Equality, ReturnsTrueWhenSame)
 {
-	ASSERT_THAT(Util::Color(0xDE, 0xAD, 0xBE, 0xEF) == Util::Color(0xDE, 0xAD, 0xBE, 0xEF), IsTrue());
+	ASSERT_EQ(Util::Color(0xDE, 0xAD, 0xBE, 0xEF), Util::Color(0xDE, 0xAD, 0xBE, 0xEF));
 }
 
 TEST(Util_Color_Equality, ReturnsFalseWhenDifferent)
 {
-	ASSERT_THAT(Util::Color(0xDE, 0xAD, 0xBE, 0xEF) == Util::Color(0xC0, 0xFF, 0xEE, 0x00), IsFalse());
+	ASSERT_NE(Util::Color(0xDE, 0xAD, 0xBE, 0xEF), Util::Color(0xC0, 0xFF, 0xEE, 0x00));
 }

@@ -159,7 +159,7 @@ TEST(Util_RemovePrefixInplace_StringView, DoesNotChangesVariableWhenPrefixAbsent
 	ASSERT_EQ(str, L"foobar");
 }
 
-TEST(Util_RemovePrefixInplace_StringView, ChangesVariableToNullWhenInputEqualsPrefix)
+TEST(Util_RemovePrefixInplace_StringView, ChangesVariableToEmptyStringWhenInputEqualsPrefix)
 {
 	std::wstring_view str = L"foobar";
 	Util::RemovePrefixInplace(str, L"foobar");
@@ -180,7 +180,7 @@ TEST(Util_RemovePrefixInplace_String, DoesNotChangesVariableWhenPrefixAbsent)
 	ASSERT_EQ(str, L"foobar");
 }
 
-TEST(Util_RemovePrefixInplace_String, ChangesVariableToNullWhenInputEqualsPrefix)
+TEST(Util_RemovePrefixInplace_String, ChangesVariableToEmptyStringWhenInputEqualsPrefix)
 {
 	std::wstring str = L"foobar";
 	Util::RemovePrefixInplace(str, L"foobar");

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.201113.7\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.201113.7\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
@@ -14,7 +14,7 @@
     <Link>
       <AdditionalDependencies Condition="'$(Configuration)'=='Release'">gtest.lib;gtest_main.lib;gmock.lib</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Configuration)'=='Debug'">gtestd.lib;gtest_maind.lib;gmockd.lib</AdditionalDependencies>
-      <AdditionalDependencies>ole32.lib;%(AdditionalDependencies);$(fmtlib)</AdditionalDependencies>
+      <AdditionalDependencies>ole32.lib;version.lib;%(AdditionalDependencies);$(fmtlib)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -26,6 +26,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Tests.rc2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="win32version.h" />
   </ItemGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

@@ -1,5 +1,6 @@
 #pragma once
 #include "arch.h"
+#include <compare>
 #include <cstdint>
 #include <fmt/format.h>
 #include <string>
@@ -27,4 +28,6 @@ struct Version {
 	{
 		return { version.Major, version.Minor, version.Build, version.Revision };
 	}
+
+	auto operator<=>(const Version &) const = default;
 };
