@@ -1,4 +1,6 @@
+#include <algorithm>
 #include <gtest/gtest.h>
+#include <vector>
 
 #include "../testingdata.hpp"
 #include "util/strings.hpp"
@@ -38,13 +40,12 @@ TEST(Util_IsAscii, ReturnsFalseWhenNotAscii)
 
 TEST(Util_AsciiToUpper, ReturnsUppercaseAsciiFromLowercase)
 {
-	static_assert(std::size(lowercaseAlphabet) == std::size(uppercaseAlphabet));
-
-	std::pair<wchar_t, wchar_t> alphabet[std::size(lowercaseAlphabet)];
-	for (std::size_t i = 0; i < std::size(lowercaseAlphabet); ++i)
+	std::vector<std::pair<wchar_t, wchar_t>> alphabet;
+	alphabet.reserve(26);
+	std::ranges::transform(lowercaseAlphabet, uppercaseAlphabet, std::back_inserter(alphabet), [](wchar_t lower, wchar_t upper)
 	{
-		alphabet[i] = { lowercaseAlphabet[i], uppercaseAlphabet[i] };
-	}
+		return std::make_pair(lower, upper);
+	});
 
 	for (const auto &[lower, upper] : alphabet)
 	{

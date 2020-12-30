@@ -1,6 +1,6 @@
 #include <cstdint>
 #include <gtest/gtest.h>
-#include <span>
+#include <ranges>
 
 #include "../testingdata.hpp"
 #include "util/numbers.hpp"
@@ -33,7 +33,7 @@ TEST(Util_IsUpperHexDigit, ReturnsFalseWhenNotUpperCaseDigit)
 		ASSERT_FALSE(Util::impl::IsUpperHexDigit(number));
 	}
 
-	for (const auto &letter : std::span(uppercaseAlphabet).subspan(6))
+	for (const auto &letter : uppercaseAlphabet | std::views::drop(6))
 	{
 		ASSERT_FALSE(Util::impl::IsUpperHexDigit(letter));
 	}
@@ -46,7 +46,7 @@ TEST(Util_IsUpperHexDigit, ReturnsFalseWhenNotUpperCaseDigit)
 
 TEST(Util_IsUpperHexDigit, ReturnsTrueWhenUpperCaseDigit)
 {
-	for (const auto &letter : std::span(uppercaseAlphabet).subspan(0, 6))
+	for (const auto &letter : uppercaseAlphabet | std::views::take(6))
 	{
 		ASSERT_TRUE(Util::impl::IsUpperHexDigit(letter));
 	}
@@ -64,7 +64,7 @@ TEST(Util_IsLowerHexDigit, ReturnsFalseWhenNotLowerCaseDigit)
 		ASSERT_FALSE(Util::impl::IsLowerHexDigit(letter));
 	}
 
-	for (const auto &letter : std::span(lowercaseAlphabet).subspan(6))
+	for (const auto &letter : lowercaseAlphabet | std::views::drop(6))
 	{
 		ASSERT_FALSE(Util::impl::IsLowerHexDigit(letter));
 	}
@@ -72,7 +72,7 @@ TEST(Util_IsLowerHexDigit, ReturnsFalseWhenNotLowerCaseDigit)
 
 TEST(Util_IsLowerHexDigit, ReturnsTrueWhenLowerCaseDigit)
 {
-	for (const auto &letter : std::span(lowercaseAlphabet).subspan(0, 6))
+	for (const auto &letter : lowercaseAlphabet | std::views::take(6))
 	{
 		ASSERT_TRUE(Util::impl::IsLowerHexDigit(letter));
 	}
