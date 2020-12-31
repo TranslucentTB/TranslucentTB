@@ -6,6 +6,8 @@
 [![Total downloads](https://img.shields.io/github/downloads/TranslucentTB/TranslucentTB/total.svg)](https://github.com/TranslucentTB/TranslucentTB/releases)
 [![Build status](https://ci.appveyor.com/api/projects/status/9yym3vr6s5gc7vk3/branch/release?svg=true)](https://ci.appveyor.com/project/sylveon/translucenttb/branch/release)
 
+> [**With regards to the malware allegations**, we have an Issue explaining our permissions use.](https://github.com/TranslucentTB/TranslucentTB/issues/350)
+
 A lightweight (uses a few MB of RAM and almost no CPU) utility that makes the Windows taskbar translucent/transparent on Windows 10.
 
 You can see examples of the customizations you can make in the images below:
