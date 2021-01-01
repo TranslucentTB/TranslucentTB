@@ -97,8 +97,8 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <OptimizeReferences>true</OptimizeReferences>
 
-      <!-- Disable PDB paths -->
-      <AdditionalOptions>/pdbaltpath:%_PDB% %(AdditionalOptions)</AdditionalOptions>
+      <!-- Disable PDB paths and strip timestamps from output -->
+      <AdditionalOptions>/pdbaltpath:%_PDB% /Brepro %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
 
