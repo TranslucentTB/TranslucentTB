@@ -3,7 +3,6 @@
 #include <processthreadsapi.h>
 #include <synchapi.h>
 #include <WinUser.h>
-#include <wil/win32_helpers.h>
 
 #include "constants.hpp"
 #include "multitaskingviewvisibilitysink.hpp"
@@ -13,7 +12,7 @@
 
 std::atomic<bool> TimelineVisibilityMonitor::s_ThreadRunning = false;
 wil::slim_event_manual_reset TimelineVisibilityMonitor::s_ThreadCleanupDone;
-wil::slim_event_manual_reset TimelineVisibilityMonitor::s_ThreadInfinitePostCleanupWait;
+HANDLE TimelineVisibilityMonitor::s_ThreadInfinitePostCleanupWait;
 UINT TimelineVisibilityMonitor::s_TimelineNotification;
 UINT TimelineVisibilityMonitor::s_GetTimelineStatus;
 ATOM TimelineVisibilityMonitor::s_WindowClassAtom;
@@ -47,7 +46,7 @@ HRESULT TimelineVisibilityMonitor::LoadViewService() noexcept
 	return hr;
 }
 
-DWORD WINAPI TimelineVisibilityMonitor::ThreadProc(LPVOID) noexcept
+DWORD WINAPI TimelineVisibilityMonitor::ThreadProc(LPVOID lpParameter) noexcept
 {
 	s_ThreadRunning = true;
 
@@ -80,7 +79,7 @@ DWORD WINAPI TimelineVisibilityMonitor::ThreadProc(LPVOID) noexcept
 
 	sink.reset(); // we don't need the sink anymore
 
-	HWND window = CreateWindowEx(WS_EX_NOREDIRECTIONBITMAP, reinterpret_cast<LPCWSTR>(s_WindowClassAtom), HOOK_MONITOR_WINDOW.c_str(), 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, wil::GetModuleInstanceHandle(), nullptr);
+	HWND window = CreateWindowEx(WS_EX_NOREDIRECTIONBITMAP, reinterpret_cast<LPCWSTR>(s_WindowClassAtom), HOOK_MONITOR_WINDOW.c_str(), 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, reinterpret_cast<HINSTANCE>(lpParameter), nullptr);
 	if (!window) [[unlikely]]
 	{
 		Util::QuickAbort();
@@ -114,6 +113,7 @@ DWORD WINAPI TimelineVisibilityMonitor::ThreadProc(LPVOID) noexcept
 
 	s_ViewService.reset();
 	coUninit.reset();
+	s_ThreadRunning = false;
 
 	s_ThreadCleanupDone.SetEvent();
 
@@ -122,7 +122,7 @@ DWORD WINAPI TimelineVisibilityMonitor::ThreadProc(LPVOID) noexcept
 	// cleaning up thread-local structures in a lock, resulting in an abandonned lock.
 	// so once the CRT is unloaded, it deadlocks the GUI thread.
 	// this is just an event that we never signal.
-	if (!s_ThreadInfinitePostCleanupWait.wait()) [[unlikely]]
+	if (WaitForSingleObject(s_ThreadInfinitePostCleanupWait, INFINITE) != WAIT_OBJECT_0) [[unlikely]]
 	{
 		Util::QuickAbort();
 	}
@@ -151,7 +151,7 @@ LRESULT CALLBACK TimelineVisibilityMonitor::WindowProc(HWND hwnd, UINT uMsg, WPA
 	}
 }
 
-void TimelineVisibilityMonitor::Install() noexcept
+void TimelineVisibilityMonitor::Install(HINSTANCE hInst) noexcept
 {
 	if (!s_TimelineNotification)
 	{
@@ -176,7 +176,7 @@ void TimelineVisibilityMonitor::Install() noexcept
 		const WNDCLASSEX wndClass = {
 			.cbSize = sizeof(wndClass),
 			.lpfnWndProc = WindowProc,
-			.hInstance = wil::GetModuleInstanceHandle(),
+			.hInstance = hInst,
 			.lpszClassName = HOOK_MONITOR_WINDOW.c_str()
 		};
 
@@ -187,9 +187,18 @@ void TimelineVisibilityMonitor::Install() noexcept
 		}
 	}
 
+	if (!s_ThreadInfinitePostCleanupWait)
+	{
+		s_ThreadInfinitePostCleanupWait = CreateEvent(nullptr, true, false, nullptr);
+		if (!s_ThreadInfinitePostCleanupWait)
+		{
+			Util::QuickAbort();
+		}
+	}
+
 	if (!s_hThread)
 	{
-		s_hThread = CreateThread(nullptr, 0, ThreadProc, nullptr, 0, nullptr);
+		s_hThread = CreateThread(nullptr, 0, ThreadProc, hInst, 0, nullptr);
 		if (!s_hThread) [[unlikely]]
 		{
 			Util::QuickAbort();
@@ -197,7 +206,7 @@ void TimelineVisibilityMonitor::Install() noexcept
 	}
 }
 
-void TimelineVisibilityMonitor::Uninstall() noexcept
+void TimelineVisibilityMonitor::Uninstall(HINSTANCE hInst) noexcept
 {
 	if (s_hThread)
 	{
@@ -249,9 +258,21 @@ void TimelineVisibilityMonitor::Uninstall() noexcept
 		}
 	}
 
+	if (s_ThreadInfinitePostCleanupWait)
+	{
+		if (CloseHandle(s_ThreadInfinitePostCleanupWait))
+		{
+			s_ThreadInfinitePostCleanupWait = nullptr;
+		}
+		else
+		{
+			Util::QuickAbort();
+		}
+	}
+
 	if (s_WindowClassAtom)
 	{
-		if (UnregisterClass(reinterpret_cast<LPCWSTR>(s_WindowClassAtom), wil::GetModuleInstanceHandle()))
+		if (UnregisterClass(reinterpret_cast<LPCWSTR>(s_WindowClassAtom), hInst))
 		{
 			s_WindowClassAtom = 0;
 		}

@@ -19,12 +19,12 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 		{
 			// Install the things
 			SWCADetour::Install();
-			TimelineVisibilityMonitor::Install();
+			TimelineVisibilityMonitor::Install(hinstDLL);
 		}
 		break;
 
 	case DLL_PROCESS_DETACH:
-		TimelineVisibilityMonitor::Uninstall();
+		TimelineVisibilityMonitor::Uninstall(hinstDLL);
 		SWCADetour::Uninstall();
 		break;
 	}

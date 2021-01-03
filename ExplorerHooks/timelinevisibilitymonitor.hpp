@@ -10,7 +10,7 @@
 class TimelineVisibilityMonitor {
 	static std::atomic<bool> s_ThreadRunning;
 	static wil::slim_event_manual_reset s_ThreadCleanupDone;
-	static wil::slim_event_manual_reset s_ThreadInfinitePostCleanupWait;
+	static HANDLE s_ThreadInfinitePostCleanupWait;
 	static UINT s_TimelineNotification;
 	static UINT s_GetTimelineStatus;
 	static ATOM s_WindowClassAtom;
@@ -19,11 +19,11 @@ class TimelineVisibilityMonitor {
 
 	static HRESULT LoadViewService() noexcept;
 
-	static DWORD WINAPI ThreadProc(LPVOID) noexcept;
+	static DWORD WINAPI ThreadProc(LPVOID lpParameter) noexcept;
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
 
-	static void Install() noexcept;
-	static void Uninstall() noexcept;
+	static void Install(HINSTANCE hInst) noexcept;
+	static void Uninstall(HINSTANCE hInst) noexcept;
 
 #ifdef EXPLORERHOOKS_EXPORTS
 	friend class MultitaskingViewVisibilitySink;
