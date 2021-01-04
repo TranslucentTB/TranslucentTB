@@ -9,7 +9,7 @@
     mc:Ignorable="d">
 
     <Page.Background>
-        <AcrylicBrush BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemAltHighColor}" TintOpacity="0.3" FallbackColor="{ThemeResource SystemChromeLowColor}" />
+        <AcrylicBrush BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemAltHighColor}" TintOpacity="0.5" FallbackColor="{ThemeResource SystemChromeLowColor}" />
     </Page.Background>
 
     <FlyoutBase.AttachedFlyout>
