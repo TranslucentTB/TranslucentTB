@@ -76,7 +76,7 @@ public:
 		RapidJSONHelper::Deserialize(obj, CortanaOpenedAppearance, CORTANA_KEY);
 		RapidJSONHelper::Deserialize(obj, TimelineOpenedAppearance, TIMELINE_KEY);
 		RapidJSONHelper::Deserialize(obj, Whitelist, WHITELIST_KEY);
-		RapidJSONHelper::Deserialize(obj, Blacklist, BLACKLIST_KEY);
+		RapidJSONHelper::Deserialize(obj, IgnoredWindows, IGNORED_WINDOWS_KEY);
 		RapidJSONHelper::Deserialize(obj, HideTray, TRAY_KEY);
 		RapidJSONHelper::Deserialize(obj, DisableSaving, SAVING_KEY);
 		RapidJSONHelper::Deserialize(obj, LogVerbosity, LOG_KEY, LOG_MAP);
