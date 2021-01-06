@@ -311,7 +311,7 @@ void TaskbarAttributeWorker::InsertWindow(Window window, bool refresh)
 	// changing, it means m_Taskbars is cleared while we still
 	// have an iterator to it. Acquiring the iterator after the
 	// call to on_current_desktop resolves this issue.
-	const bool windowMatches = (window.is_user_window() || m_Config.Whitelist.IsFiltered(window)) && !m_Config.Blacklist.IsFiltered(window);
+	const bool windowMatches = (window.is_user_window() || m_Config.Whitelist.IsFiltered(window)) && !m_Config.IgnoredWindows.IsFiltered(window);
 	const HMONITOR mon = window.monitor();
 
 	for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)

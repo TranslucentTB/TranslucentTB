@@ -7,8 +7,11 @@
 #include <rapidjson/encodings.h>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace RapidJSONHelper {
+	using value_t = rapidjson::GenericValue<rapidjson::UTF16LE<>>;
+
 	struct DeserializationError {
 		const std::wstring what;
 	};
@@ -23,22 +26,19 @@ namespace RapidJSONHelper {
 		L"number"
 	};
 
+	constexpr bool IsType(rapidjson::Type a, rapidjson::Type b) noexcept
+	{
+		return a == b ||
+			(a == rapidjson::Type::kFalseType && b == rapidjson::Type::kTrueType) ||
+			(a == rapidjson::Type::kTrueType && b == rapidjson::Type::kFalseType);
+	}
+
 	inline void EnsureType(rapidjson::Type expected, rapidjson::Type actual, std::wstring_view obj)
 	{
-		if (expected == rapidjson::Type::kTrueType)
-		{
-			expected = rapidjson::Type::kFalseType;
-		}
-
-		if (actual == rapidjson::Type::kTrueType)
-		{
-			actual = rapidjson::Type::kFalseType;
-		}
-
-		if (actual != expected)
+		if (!IsType(expected, actual)) [[unlikely]]
 		{
 			throw DeserializationError {
-				fmt::format(FMT_STRING(L"Expected {} but found {} while deserializing key \"{}\""), TYPE_NAMES[expected], TYPE_NAMES[actual], obj)
+				fmt::format(FMT_STRING(L"Expected {} but found {} while deserializing {}"), TYPE_NAMES.at(expected), TYPE_NAMES.at(actual), obj)
 			};
 		}
 	}
@@ -48,14 +48,14 @@ namespace RapidJSONHelper {
 		assert(str.length() <= std::numeric_limits<rapidjson::SizeType>::max());
 	}
 
-	inline std::wstring_view ValueToStringView(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &val)
+	inline std::wstring_view ValueToStringView(const value_t &val)
 	{
 		assert(val.GetType() == rapidjson::Type::kStringType); // caller should have already ensured
 
 		return { val.GetString(), val.GetStringLength() };
 	}
 
-	inline rapidjson::GenericValue<rapidjson::UTF16LE<>> StringViewToValue(std::wstring_view str)
+	inline value_t StringViewToValue(std::wstring_view str)
 	{
 		AssertLength(str);
 		return { str.data(), static_cast<rapidjson::SizeType>(str.length()) };
@@ -83,16 +83,15 @@ namespace RapidJSONHelper {
 	}
 
 	template<class Writer, class T, std::size_t size>
+	requires std::is_enum_v<T>
 	inline void Serialize(Writer &writer, const T &member, std::wstring_view key, const std::array<std::wstring_view, size> &arr)
 	{
-		if (member >= 0 && member <= size - 1)
-		{
-			WriteKey(writer, key);
-			WriteString(writer, arr[member]);
-		}
+		WriteKey(writer, key);
+		WriteString(writer, arr.at(static_cast<std::size_t>(member)));
 	}
 
 	template<class Writer, class T>
+	requires std::is_class_v<T>
 	inline void Serialize(Writer &writer, const T &member, std::wstring_view key)
 	{
 		WriteKey(writer, key);

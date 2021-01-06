@@ -22,7 +22,7 @@ public:
 		SerializeStringSet(writer, m_FileList, FILE_KEY);
 	}
 
-	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &obj)
+	inline void Deserialize(const RapidJSONHelper::value_t &obj)
 	{
 		DeserializeStringSet(obj, m_ClassList, CLASS_KEY);
 		DeserializeStringSet(obj, m_TitleList, TITLE_KEY);
@@ -87,8 +87,8 @@ public:
 #endif
 
 private:
-	template<typename Writer, typename T, typename Hash, typename Equal, typename Alloc>
-	inline static void SerializeStringSet(Writer &writer, const std::unordered_set<T, Hash, Equal, Alloc> &set, std::wstring_view key)
+	template<typename Writer, typename Hash, typename Equal, typename Alloc>
+	inline static void SerializeStringSet(Writer &writer, const std::unordered_set<std::wstring, Hash, Equal, Alloc> &set, std::wstring_view key)
 	{
 		RapidJSONHelper::WriteKey(writer, key);
 		writer.StartArray();
@@ -99,8 +99,8 @@ private:
 		writer.EndArray();
 	}
 
-	template<typename T, typename Hash, typename Equal, typename Alloc>
-	inline static void DeserializeStringSet(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &obj, std::unordered_set<T, Hash, Equal, Alloc> &set, std::wstring_view key)
+	template<typename Hash, typename Equal, typename Alloc>
+	inline static void DeserializeStringSet(const RapidJSONHelper::value_t &obj, std::unordered_set<std::wstring, Hash, Equal, Alloc> &set, std::wstring_view key)
 	{
 		if (const auto it = obj.FindMember(RapidJSONHelper::StringViewToValue(key)); it != obj.MemberEnd())
 		{

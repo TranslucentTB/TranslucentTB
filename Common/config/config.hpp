@@ -32,38 +32,24 @@
 class Config {
 public:
 	// Appearances
-	TaskbarAppearance DesktopAppearance;
-	OptionalTaskbarAppearance VisibleWindowAppearance;
-	OptionalTaskbarAppearance MaximisedWindowAppearance;
-	OptionalTaskbarAppearance StartOpenedAppearance;
-	OptionalTaskbarAppearance CortanaOpenedAppearance;
-	OptionalTaskbarAppearance TimelineOpenedAppearance;
+	TaskbarAppearance DesktopAppearance = { ACCENT_ENABLE_TRANSPARENTGRADIENT, { } };
+	OptionalTaskbarAppearance VisibleWindowAppearance = { ACCENT_ENABLE_BLURBEHIND, { }, false };
+	OptionalTaskbarAppearance MaximisedWindowAppearance = { ACCENT_ENABLE_BLURBEHIND, { }, true };
+	OptionalTaskbarAppearance StartOpenedAppearance = { ACCENT_NORMAL, { }, true };
+	OptionalTaskbarAppearance CortanaOpenedAppearance = { ACCENT_NORMAL, { }, true };
+	OptionalTaskbarAppearance TimelineOpenedAppearance = { ACCENT_NORMAL, { }, true };
 
 	// Advanced
 	WindowFilter Whitelist;
-	WindowFilter Blacklist;
-	bool HideTray;
-	bool DisableSaving;
-	spdlog::level::level_enum LogVerbosity;
-
-	// Default-init with default settings
-	inline Config() noexcept :
-		DesktopAppearance { ACCENT_ENABLE_TRANSPARENTGRADIENT, { } },
-		VisibleWindowAppearance { ACCENT_ENABLE_TRANSPARENTGRADIENT, { }, false },
-		MaximisedWindowAppearance { ACCENT_ENABLE_BLURBEHIND, { 0x00, 0x00, 0x00, 0xAA }, true },
-		StartOpenedAppearance { ACCENT_NORMAL, { }, true },
-		CortanaOpenedAppearance { ACCENT_NORMAL, { }, true },
-		TimelineOpenedAppearance { ACCENT_NORMAL, { }, true },
-		Whitelist(),
-		Blacklist(),
-		HideTray(false),
-		DisableSaving(false),
+	WindowFilter IgnoredWindows;
+	bool HideTray = false;
+	bool DisableSaving = false;
+	spdlog::level::level_enum LogVerbosity =
 #ifdef _DEBUG
-		LogVerbosity(spdlog::level::debug)
+		spdlog::level::debug;
 #else
-		LogVerbosity(spdlog::level::warn)
+		spdlog::level::warn;
 #endif
-	{ }
 
 	template<class Writer>
 	inline void Serialize(Writer &writer) const
@@ -75,13 +61,13 @@ public:
 		RapidJSONHelper::Serialize(writer, CortanaOpenedAppearance, CORTANA_KEY);
 		RapidJSONHelper::Serialize(writer, TimelineOpenedAppearance, TIMELINE_KEY);
 		RapidJSONHelper::Serialize(writer, Whitelist, WHITELIST_KEY);
-		RapidJSONHelper::Serialize(writer, Blacklist, BLACKLIST_KEY);
+		RapidJSONHelper::Serialize(writer, IgnoredWindows, IGNORED_WINDOWS_KEY);
 		RapidJSONHelper::Serialize(writer, HideTray, TRAY_KEY);
 		RapidJSONHelper::Serialize(writer, DisableSaving, SAVING_KEY);
 		RapidJSONHelper::Serialize(writer, LogVerbosity, LOG_KEY, LOG_MAP);
 	}
 
-	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &obj)
+	inline void Deserialize(const RapidJSONHelper::value_t &obj)
 	{
 		RapidJSONHelper::Deserialize(obj, DesktopAppearance, DESKTOP_KEY);
 		RapidJSONHelper::Deserialize(obj, VisibleWindowAppearance, VISIBLE_KEY);
@@ -107,19 +93,19 @@ public:
 			{
 				using namespace rapidjson;
 
-				char buffer[256];
+				char buffer[1024];
 				FileWriteStream filestream(pfile.get(), buffer, std::size(buffer));
 
-				using OutputStream = EncodedOutputStream<UTF16LE<>, FileWriteStream>;
+				using OutputStream = EncodedOutputStream<UTF8<>, FileWriteStream>;
 				OutputStream out(filestream, true);
 
-				static constexpr std::wstring_view comment = L"// See https://" APP_NAME L".github.io/config for more info\n";
-				for (const wchar_t c : comment)
+				static constexpr std::string_view comment = "// See https://" UTF8_APP_NAME ".github.io/config for more information\n";
+				for (const char c : comment)
 				{
 					out.Put(c);
 				}
 
-				PrettyWriter<OutputStream, UTF16LE<>, UTF16LE<>> writer(out);
+				PrettyWriter<OutputStream, UTF16LE<>> writer(out);
 
 				writer.StartObject();
 				Serialize(writer);
@@ -142,7 +128,7 @@ public:
 		{
 			using namespace rapidjson;
 
-			char buffer[256];
+			char buffer[1024];
 			FileReadStream filestream(pfile.get(), buffer, std::size(buffer));
 
 			AutoUTFInputStream<uint32_t, FileReadStream> in(filestream);
@@ -202,7 +188,7 @@ private:
 	static constexpr std::wstring_view CORTANA_KEY = L"cortana_opened_appearance";
 	static constexpr std::wstring_view TIMELINE_KEY = L"timeline_opened_appearance";
 	static constexpr std::wstring_view WHITELIST_KEY = L"whitelist";
-	static constexpr std::wstring_view BLACKLIST_KEY = L"blacklist";
+	static constexpr std::wstring_view IGNORED_WINDOWS_KEY = L"ignored_windows";
 	static constexpr std::wstring_view TRAY_KEY = L"hide_tray";
 	static constexpr std::wstring_view SAVING_KEY = L"disable_saving";
 	static constexpr std::wstring_view LOG_KEY = L"verbosity";

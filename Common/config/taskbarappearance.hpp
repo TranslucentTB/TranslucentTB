@@ -28,7 +28,7 @@ struct TaskbarAppearance {
 		RapidJSONHelper::WriteString(writer, Util::ToStringView(buf));
 	}
 
-	void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &obj)
+	void Deserialize(const RapidJSONHelper::value_t &obj)
 	{
 		RapidJSONHelper::Deserialize(obj, Accent, ACCENT_KEY, ACCENT_MAP);
 
@@ -45,7 +45,7 @@ struct TaskbarAppearance {
 			catch (...)
 			{
 				throw RapidJSONHelper::DeserializationError {
-					fmt::format(FMT_STRING(L"Found invalid color string \"{}\" while deserializing key \"{}\""), colorStr, COLOR_KEY)
+					fmt::format(FMT_STRING(L"Found invalid string \"{}\" while deserializing {}"), colorStr, COLOR_KEY)
 				};
 			}
 		}

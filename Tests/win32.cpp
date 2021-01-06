@@ -36,7 +36,7 @@ TEST(win32_GetExeLocation, GetsCorrectFileName)
 {
 	const auto [location, hr] = win32::GetExeLocation();
 
-	ASSERT_TRUE(SUCCEEDED(hr));
+	ASSERT_HRESULT_SUCCEEDED(hr);
 	ASSERT_EQ(location.filename(), L"Tests.exe");
 }
 
@@ -45,10 +45,10 @@ TEST(win32_GetFixedFileVersion, GetsCorrectFileVersion)
 	static constexpr Version expected = { EXPECTED_FILE_VERSION };
 
 	const auto [location, hr] = win32::GetExeLocation();
-	ASSERT_TRUE(SUCCEEDED(hr));
+	ASSERT_HRESULT_SUCCEEDED(hr);
 
 	const auto [version, hr2] = win32::GetFixedFileVersion(location);
-	ASSERT_TRUE(SUCCEEDED(hr2));
+	ASSERT_HRESULT_SUCCEEDED(hr2);
 	ASSERT_EQ(version, expected);
 }
 

@@ -14,7 +14,7 @@ struct OptionalTaskbarAppearance : TaskbarAppearance {
 		TaskbarAppearance::Serialize(writer);
 	}
 
-	void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &obj)
+	void Deserialize(const RapidJSONHelper::value_t &obj)
 	{
 		RapidJSONHelper::Deserialize(obj, Enabled, ENABLED_KEY);
 		TaskbarAppearance::Deserialize(obj);
