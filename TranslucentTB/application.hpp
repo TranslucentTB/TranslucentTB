@@ -1,6 +1,8 @@
 #pragma once
 #include "arch.h"
+#include <filesystem>
 #include <memory>
+#include <optional>
 #include <windef.h>
 
 #include "dynamicloader.hpp"
@@ -35,10 +37,10 @@ class Application final {
 
 	void CreateWelcomePage(bool hasPackageIdentity);
 	winrt::fire_and_forget LicenseApprovedCallback(bool hasPackageIdentity, bool startupState);
-	Application(HINSTANCE hInst, bool hasPackageIdentity, bool fileExists);
+	Application(HINSTANCE hInst, std::optional<std::filesystem::path> storageFolder, bool fileExists);
 
 public:
-	Application(HINSTANCE hInst, bool hasPackageIdentity) : Application(hInst, hasPackageIdentity, false) { }
+	Application(HINSTANCE hInst, std::optional<std::filesystem::path> storageFolder) : Application(hInst, std::move(storageFolder), false) { }
 
 	static void OpenDonationPage();
 	static void OpenTipsPage();

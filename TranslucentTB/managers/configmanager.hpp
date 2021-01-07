@@ -11,7 +11,7 @@
 class ConfigManager {
 	using callback_t = std::add_pointer_t<void(void *, const Config &)>;
 
-	static std::filesystem::path DetermineConfigPath(bool hasPackageIdentity);
+	static std::filesystem::path DetermineConfigPath(const std::optional<std::filesystem::path> &storageFolder);
 	static void WatcherCallback(void *context, DWORD, std::wstring_view fileName);
 
 	std::filesystem::path m_ConfigPath;
@@ -22,7 +22,7 @@ class ConfigManager {
 	void *m_Context;
 
 public:
-	ConfigManager(bool hasPackageIdentity, bool &fileExists, callback_t callback, void *context);
+	ConfigManager(const std::optional<std::filesystem::path> &storageFolder, bool &fileExists, callback_t callback, void *context);
 
 	void UpdateVerbosity();
 

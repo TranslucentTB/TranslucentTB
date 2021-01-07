@@ -75,6 +75,7 @@
     <ClCompile>
       <!-- Warnings and errors -->
       <TreatWarningAsError>true</TreatWarningAsError>
+      <UseFullPaths>false</UseFullPaths>
 
       <!-- Security -->
       <ControlFlowGuard>Guard</ControlFlowGuard>
@@ -123,9 +124,12 @@
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalOptions>/ZH:SHA_256 %(AdditionalOptions)</AdditionalOptions>
+
+      <!-- PCH -->
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
-      <SDLCheck>true</SDLCheck>
 
       <!-- Language version and conformance -->
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -135,7 +139,6 @@
       <!-- Warnings and errors -->
       <WarningLevel>Level4</WarningLevel>
       <DisableSpecificWarnings>4275;4505;5054;5105</DisableSpecificWarnings>
-      <UseFullPaths>false</UseFullPaths>
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
 
       <!-- Discord GameSDK -->

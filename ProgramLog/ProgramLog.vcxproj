@@ -27,6 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="api.h" />
+    <ClInclude Include="debugsink.hpp" />
     <ClInclude Include="error\errno.hpp" />
     <ClInclude Include="error\error.hpp" />
     <ClInclude Include="error\rapidjson.hpp" />

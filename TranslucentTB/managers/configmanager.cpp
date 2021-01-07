@@ -1,22 +1,16 @@
 #include "configmanager.hpp"
-#include "winrt.hpp"
-#include <winrt/Windows.Storage.h>
 
 #include "constants.hpp"
 #include "../../ProgramLog/error/win32.hpp"
 #include "../../ProgramLog/error/winrt.hpp"
 #include "../../ProgramLog/log.hpp"
 
-std::filesystem::path ConfigManager::DetermineConfigPath(bool hasPackageIdentity)
+std::filesystem::path ConfigManager::DetermineConfigPath(const std::optional<std::filesystem::path> &storageFolder)
 {
 	std::filesystem::path path;
-	if (hasPackageIdentity)
+	if (storageFolder)
 	{
-		try
-		{
-			path = std::wstring_view(winrt::Windows::Storage::ApplicationData::Current().RoamingFolder().Path());
-		}
-		HresultErrorCatch(spdlog::level::critical, L"Getting application folder paths failed!");
+		path = *storageFolder / L"RoamingState";
 	}
 	else
 	{
@@ -41,8 +35,8 @@ void ConfigManager::WatcherCallback(void *context, DWORD, std::wstring_view file
 	}
 }
 
-ConfigManager::ConfigManager(bool hasPackageIdentity, bool &fileExists, callback_t callback, void *context) :
-	m_ConfigPath(DetermineConfigPath(hasPackageIdentity)),
+ConfigManager::ConfigManager(const std::optional<std::filesystem::path> &storageFolder, bool &fileExists, callback_t callback, void *context) :
+	m_ConfigPath(DetermineConfigPath(storageFolder)),
 	m_Config(Config::Load(m_ConfigPath, fileExists)),
 	// dirty trick to set log verbosity asap
 	m_Watcher((UpdateVerbosity(), m_ConfigPath.parent_path()), false, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE, WatcherCallback, this),

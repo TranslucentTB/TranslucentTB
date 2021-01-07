@@ -15,12 +15,7 @@
 
 bool Error::ShouldLog(spdlog::level::level_enum level)
 {
-	if (level == spdlog::level::err || level == spdlog::level::critical)
-	{
-		return true;
-	}
-
-	if (IsDebuggerPresent())
+	if (level == spdlog::level::err || level == spdlog::level::critical || IsDebuggerPresent())
 	{
 		return true;
 	}
@@ -54,8 +49,13 @@ template<>
 void Error::impl::Handle<spdlog::level::err>(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function, HRESULT, IRestrictedErrorInfo*)
 {
 	fmt::wmemory_buffer buf;
-	GetLogMessage(buf, message, error_message);
-	Log(buf, spdlog::level::err, file, line, function);
+
+	// allow calls to err handling without needing to initialize logging
+	if (Log::IsInitialized())
+	{
+		GetLogMessage(buf, message, error_message);
+		Log(buf, spdlog::level::err, file, line, function);
+	}
 
 	if (!IsDebuggerPresent())
 	{
@@ -74,8 +74,14 @@ template<>
 void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function, HRESULT err, IRestrictedErrorInfo *errInfo)
 {
 	fmt::wmemory_buffer buf;
-	GetLogMessage(buf, message, error_message);
-	Log(buf, spdlog::level::critical, file, line, function);
+
+	// allow calls to critical handling without needing to initialize logging
+	const bool initialized = Log::IsInitialized();
+	if (initialized)
+	{
+		GetLogMessage(buf, message, error_message);
+		Log(buf, spdlog::level::critical, file, line, function);
+	}
 
 	if (!IsDebuggerPresent())
 	{
@@ -94,7 +100,7 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 			// giving us better insight into what went wrong.
 			RoFailFastWithErrorContext(err);
 		}
-		else
+		else if (initialized)
 		{
 			HresultHandle(hr, spdlog::level::warn, L"Failed to set restricted error info");
 		}

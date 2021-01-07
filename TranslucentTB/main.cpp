@@ -96,8 +96,8 @@ void HardenProcess()
 
 _Use_decl_annotations_ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 {
-	const bool hasPackageIdentity = UWP::HasPackageIdentity();
-	Log::Initialize(hasPackageIdentity);
+	auto storageFolder = UWP::GetAppStorageFolder();
+	Log::Initialize(storageFolder);
 	HardenProcess();
 
 	wil::unique_mutex mutex(MUTEX_GUID.c_str());
@@ -114,7 +114,7 @@ _Use_decl_annotations_ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar
 	HresultErrorCatch(spdlog::level::critical, L"Initialization of Windows Runtime failed.");
 
 	// Run the main program loop. When this method exits, TranslucentTB itself is about to exit.
-	const auto ret = Application(hInstance, hasPackageIdentity).Run();
+	const auto ret = Application(hInstance, std::move(storageFolder)).Run();
 
 	// why are we brutally terminating you might ask?
 	// Windows.UI.Xaml.dll likes to read null pointers if you exit the app too quickly after

@@ -122,10 +122,10 @@ winrt::fire_and_forget Application::LicenseApprovedCallback(bool hasPackageIdent
 	m_AppWindow.RemoveHideTrayIconOverride();
 }
 
-Application::Application(HINSTANCE hInst, bool hasPackageIdentity, bool fileExists) :
-	m_Config(hasPackageIdentity, fileExists, ConfigurationChanged, this),
+Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> storageFolder, bool fileExists) :
+	m_Config(storageFolder, fileExists, ConfigurationChanged, this),
 	m_Worker(m_Config.GetConfig(), hInst, m_Loader.SetWindowCompositionAttribute()),
-	m_AppWindow(*this, !fileExists, !hasPackageIdentity, hInst, m_Loader),
+	m_AppWindow(*this, !fileExists, !storageFolder.has_value(), hInst, m_Loader),
 	m_DispatcherController(UWP::CreateDispatcherController()),
 	m_Xaml(hInst)
 {
@@ -136,9 +136,9 @@ Application::Application(HINSTANCE hInst, bool hasPackageIdentity, bool fileExis
 
 	if (!fileExists)
 	{
-		CreateWelcomePage(hasPackageIdentity);
+		CreateWelcomePage(storageFolder.has_value());
 	}
-	else if (hasPackageIdentity)
+	else if (storageFolder)
 	{
 		m_Startup.AcquireTask();
 	}

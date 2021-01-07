@@ -2,15 +2,63 @@
 #include <Windows.h>
 #include <appmodel.h>
 #include <DispatcherQueue.h>
+#include <ShlObj_core.h>
+#include <wil/resource.h>
 
 #include "../ProgramLog/error/win32.hpp"
 #include "../ProgramLog/error/winrt.hpp"
 
-bool UWP::HasPackageIdentity() noexcept
+std::optional<std::wstring> UWP::GetPackageFamilyName()
 {
+	static constexpr std::wstring_view FAILED_TO_GET = L"Failed to get package family name";
+
 	UINT32 length = 0;
-	const LONG result = GetCurrentPackageId(&length, nullptr);
-	return result != APPMODEL_ERROR_NO_PACKAGE;
+	LONG result = GetCurrentPackageFamilyName(&length, nullptr);
+	if (result != ERROR_INSUFFICIENT_BUFFER) [[unlikely]]
+	{
+		if (result == APPMODEL_ERROR_NO_PACKAGE)
+		{
+			return std::nullopt;
+		}
+		else
+		{
+			HresultHandle(HRESULT_FROM_WIN32(result), spdlog::level::critical, FAILED_TO_GET);
+		}
+	}
+
+	std::wstring familyName;
+	familyName.resize(length - 1);
+
+	result = GetCurrentPackageFamilyName(&length, familyName.data());
+	if (result != ERROR_SUCCESS) [[unlikely]]
+	{
+		HresultHandle(HRESULT_FROM_WIN32(result), spdlog::level::critical, FAILED_TO_GET);
+	}
+
+	familyName.resize(length - 1);
+	return familyName;
+}
+
+std::optional<std::filesystem::path> UWP::GetAppStorageFolder()
+{
+	if (const auto familyName = UWP::GetPackageFamilyName())
+	{
+		wil::unique_cotaskmem_string appdata;
+		HresultVerify(
+			SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_NO_PACKAGE_REDIRECTION, nullptr, appdata.put()),
+			spdlog::level::critical,
+			L"Failed to get local app data folder"
+		);
+
+		std::filesystem::path storage = appdata.get();
+		storage /= L"Packages";
+		storage /= *familyName;
+		return std::move(storage);
+	}
+	else
+	{
+		return std::nullopt;
+	}
 }
 
 wf::IAsyncAction UWP::OpenUri(const wf::Uri &uri)

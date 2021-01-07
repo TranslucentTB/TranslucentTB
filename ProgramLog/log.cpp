@@ -3,22 +3,24 @@
 #include <debugapi.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/logger.h>
-#include <spdlog/sinks/msvc_sink.h>
-#include <wil/resource.h>
 #include "winrt.hpp"
-#include <winrt/Windows.Storage.h>
 
 #include "appinfo.hpp"
 #include "config/config.hpp"
+#include "debugsink.hpp"
 #include "error/error.hpp"
 #include "error/winrt.hpp"
 #include "error/std.hpp"
+#include "util/fmt.hpp"
+#include "util/to_string_view.hpp"
 
+bool Log::s_LogInitialized = false;
 std::weak_ptr<lazy_file_sink_mt> Log::s_LogSink;
 
 std::time_t Log::GetProcessCreationTime() noexcept
 {
-	if (FILETIME creationTime, exitTime, kernelTime, userTime; GetProcessTimes(GetCurrentProcess(), &creationTime, &exitTime, &kernelTime, &userTime))
+	FILETIME creationTime, exitTime, kernelTime, userTime;
+	if (GetProcessTimes(GetCurrentProcess(), &creationTime, &exitTime, &kernelTime, &userTime))
 	{
 		using winrt::clock;
 		return clock::to_time_t(clock::from_file_time(creationTime));
@@ -31,48 +33,29 @@ std::time_t Log::GetProcessCreationTime() noexcept
 	}
 }
 
-std::filesystem::path Log::GetPath(bool hasPackageIdentity)
+std::filesystem::path Log::GetPath(const std::optional<std::filesystem::path> &storageFolder)
 {
-	static constexpr std::wstring_view FAILED_TO_GET_PATH = L"Failed to get log file path.";
-
 	std::filesystem::path path;
-	fmt::wmemory_buffer buf;
-	if (hasPackageIdentity)
+	if (storageFolder)
 	{
-		try
-		{
-			path = std::wstring_view(winrt::Windows::Storage::ApplicationData::Current().TemporaryFolder().Path());
-		}
-		catch (const winrt::hresult_error &err)
-		{
-			HresultErrorHandleWithBuffer(buf, err, spdlog::level::trace, FAILED_TO_GET_PATH);
-			HandlePathError(Util::ToStringView(buf));
-
-			return { };
-		}
+		path = *storageFolder / L"TempState";
 	}
 	else
 	{
 		std::error_code code;
 		path = std::filesystem::temp_directory_path(code);
-		if (code)
+		if (code) [[unlikely]]
 		{
-			StdErrorCodeHandleWithBuffer(buf, code, spdlog::level::trace, FAILED_TO_GET_PATH);
-			HandlePathError(Util::ToStringView(buf));
+			StdErrorCodeHandle(code, spdlog::level::err, L"Failed to get log file path. Logs won't be available during this session");
 
 			return { };
 		}
 	}
 
+	Util::small_wmemory_buffer<25> buf;
 	fmt::format_to(buf, FMT_STRING(L"{}.log"), GetProcessCreationTime());
-	return path / Util::ToStringView(buf);
-}
-
-void Log::HandlePathError(std::wstring_view err)
-{
-	fmt::wmemory_buffer buf;
-	fmt::format_to(buf, FMT_STRING(L"Failed to get log file path. Logs won't be available during this session.\n\n{}"), err);
-	Error::impl::CreateMessageBoxThread(buf, ERROR_TITLE, MB_ICONWARNING).detach();
+	path /= Util::ToStringView(buf);
+	return path;
 }
 
 void Log::LogErrorHandler(const std::string &message)
@@ -83,30 +66,25 @@ void Log::LogErrorHandler(const std::string &message)
 	MessageBoxExA(nullptr, buf.data(), UTF8_ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 }
 
-void Log::Initialize(bool hasPackageIdentity)
+void Log::Initialize(const std::optional<std::filesystem::path> &storageFolder)
 {
+	auto defaultLogger = std::make_shared<spdlog::logger>("", std::make_shared<debug_sink>());
+
+	if (auto path = GetPath(storageFolder); !path.empty())
+	{
+		auto fileLog = std::make_shared<lazy_file_sink_mt>(std::move(path));
+		fileLog->set_level(Config{ }.LogVerbosity);
+		s_LogSink = fileLog;
+
+		defaultLogger->sinks().push_back(std::move(fileLog));
+	}
+
 	spdlog::set_formatter(std::make_unique<spdlog::pattern_formatter>(spdlog::pattern_time_type::utc));
 	spdlog::set_level(spdlog::level::trace);
 	spdlog::flush_on(spdlog::level::off);
 	spdlog::set_error_handler(LogErrorHandler);
-
-	auto defaultLogger = std::make_shared<spdlog::logger>("");
 	spdlog::initialize_logger(defaultLogger);
+	spdlog::set_default_logger(std::move(defaultLogger));
 
-	if (IsDebuggerPresent())
-	{
-		// always single-threaded because OutputDebugString is already thread-safe
-		defaultLogger->sinks().push_back(std::make_shared<spdlog::sinks::windebug_sink_st>());
-	}
-
-	spdlog::set_default_logger(defaultLogger);
-
-	if (auto path = GetPath(hasPackageIdentity); !path.empty())
-	{
-		const auto fileLog = std::make_shared<lazy_file_sink_mt>(std::move(path));
-		fileLog->set_level(Config{ }.LogVerbosity);
-		defaultLogger->sinks().push_back(fileLog);
-
-		s_LogSink = fileLog;
-	}
+	s_LogInitialized = true;
 }
