@@ -15,3 +15,10 @@ static constexpr wchar_t lowercaseAlphabet[] = {
 	L'j', L'k', L'l', L'm', L'n', L'o', L'p', L'q', L'r',
 	L's', L't', L'u', L'v', L'w', L'x', L'y', L'z'
 };
+
+static constexpr wchar_t specialCharacters[] = {
+	L' ', L'!', L'"', L'#', L'$', L'%', L'&', L'\'', L'(',
+	L')', L'*', L'+', L',', L'-', L'.', L'/', L':', L';',
+	L'<', L'=', L'>', L'?', L'@', L'[', L'\\', L']', L'^',
+	L'_', L'`', L'{', L'|', L'}', L'~'
+};
