@@ -8,31 +8,31 @@
 #include "multitaskingviewvisibilitysink.hpp"
 #include "undoc/explorer.hpp"
 #include "util/abort.hpp"
-#include "wilx.hpp"
+
+using Microsoft::WRL::ComPtr;
 
 std::atomic<bool> TimelineVisibilityMonitor::s_ThreadRunning = false;
-wil::slim_event_manual_reset TimelineVisibilityMonitor::s_ThreadCleanupDone;
-HANDLE TimelineVisibilityMonitor::s_ThreadInfinitePostCleanupWait;
+HANDLE TimelineVisibilityMonitor::s_ThreadCleanupEvent;
 UINT TimelineVisibilityMonitor::s_TimelineNotification;
 UINT TimelineVisibilityMonitor::s_GetTimelineStatus;
 ATOM TimelineVisibilityMonitor::s_WindowClassAtom;
 HANDLE TimelineVisibilityMonitor::s_hThread;
-wil::com_ptr_nothrow<IMultitaskingViewVisibilityService> TimelineVisibilityMonitor::s_ViewService;
+ComPtr<IMultitaskingViewVisibilityService> TimelineVisibilityMonitor::s_ViewService;
 
 HRESULT TimelineVisibilityMonitor::LoadViewService() noexcept
 {
 	// if we get injected at process creation, it's possible the immersive shell isn't ready yet.
 	// try until it is ready. if after 10 seconds the class is still not registered, it's most likely
 	// an issue other than process init not being done.
-	wil::com_ptr_nothrow<IServiceProvider> servProv;
+	ComPtr<IServiceProvider> servProv;
 	uint8_t attempts = 0;
 	HRESULT hr = S_OK;
 	do
 	{
-		hr = CoCreateInstance(CLSID_ImmersiveShell, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(servProv.put()));
+		hr = CoCreateInstance(CLSID_ImmersiveShell, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(servProv.ReleaseAndGetAddressOf()));
 		if (SUCCEEDED(hr))
 		{
-			hr = servProv->QueryService(SID_MultitaskingViewVisibilityService, s_ViewService.put());
+			hr = servProv->QueryService(SID_MultitaskingViewVisibilityService, s_ViewService.ReleaseAndGetAddressOf());
 			break;
 		}
 		else
@@ -46,38 +46,29 @@ HRESULT TimelineVisibilityMonitor::LoadViewService() noexcept
 	return hr;
 }
 
+HRESULT TimelineVisibilityMonitor::RegisterSink(DWORD &cookie) noexcept
+{
+	if (const auto sink = Microsoft::WRL::Make<MultitaskingViewVisibilitySink>())
+	{
+		return s_ViewService->Register(sink.Get(), &cookie);
+	}
+	else
+	{
+		return E_OUTOFMEMORY;
+	}
+}
+
 DWORD WINAPI TimelineVisibilityMonitor::ThreadProc(LPVOID lpParameter) noexcept
 {
 	s_ThreadRunning = true;
 
-	HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-	if (FAILED(hr)) [[unlikely]]
+	DWORD cookie = 0;
+	if (FAILED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED)) ||
+		FAILED(LoadViewService()) ||
+		FAILED(RegisterSink(cookie))) [[unlikely]]
 	{
 		Util::QuickAbort();
 	}
-
-	wil::unique_couninitialize_call coUninit;
-
-	hr = LoadViewService();
-	if (FAILED(hr)) [[unlikely]]
-	{
-		Util::QuickAbort();
-	}
-
-	wil::com_ptr_nothrow<MultitaskingViewVisibilitySink> sink(Microsoft::WRL::Make<MultitaskingViewVisibilitySink>());
-	if (!sink) [[unlikely]]
-	{
-		Util::QuickAbort();
-	}
-
-	DWORD token = 0;
-	hr = s_ViewService->Register(sink.get(), &token);
-	if (FAILED(hr)) [[unlikely]]
-	{
-		Util::QuickAbort();
-	}
-
-	sink.reset(); // we don't need the sink anymore
 
 	HWND window = CreateWindowEx(WS_EX_NOREDIRECTIONBITMAP, reinterpret_cast<LPCWSTR>(s_WindowClassAtom), HOOK_MONITOR_WINDOW.c_str(), 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, reinterpret_cast<HINSTANCE>(lpParameter), nullptr);
 	if (!window) [[unlikely]]
@@ -105,29 +96,28 @@ DWORD WINAPI TimelineVisibilityMonitor::ThreadProc(LPVOID lpParameter) noexcept
 		Util::QuickAbort();
 	}
 
-	hr = s_ViewService->Unregister(token);
-	if (FAILED(hr)) [[unlikely]]
+	if (FAILED(s_ViewService->Unregister(cookie))) [[unlikely]]
 	{
 		Util::QuickAbort();
 	}
 
-	s_ViewService.reset();
-	coUninit.reset();
+	s_ViewService.Reset();
+	CoUninitialize();
 	s_ThreadRunning = false;
 
-	s_ThreadCleanupDone.SetEvent();
+	if (!SetEvent(s_ThreadCleanupEvent))
+	{
+		Util::QuickAbort();
+	}
 
-	// wait forever
+	// suspend this thread
 	// if we just return, the code in Uninstall might terminate the thread while the CRT is
 	// cleaning up thread-local structures in a lock, resulting in an abandonned lock.
 	// so once the CRT is unloaded, it deadlocks the GUI thread.
-	// this is just an event that we never signal.
-	if (WaitForSingleObject(s_ThreadInfinitePostCleanupWait, INFINITE) != WAIT_OBJECT_0) [[unlikely]]
-	{
-		Util::QuickAbort();
-	}
+	SuspendThread(GetCurrentThread());
 
-	return static_cast<DWORD>(msg.wParam);
+	// if SuspendThread fails or the thread somehow gets resumed, something is very wrong.
+	Util::QuickAbort();
 }
 
 LRESULT CALLBACK TimelineVisibilityMonitor::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
@@ -148,6 +138,37 @@ LRESULT CALLBACK TimelineVisibilityMonitor::WindowProc(HWND hwnd, UINT uMsg, WPA
 	else
 	{
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
+	}
+}
+
+bool TimelineVisibilityMonitor::SignalWatcherThreadAndWait(DWORD tid) noexcept
+{
+	// signal the thread and wait for its cleanup to be done
+	return tid &&
+		PostThreadMessage(tid, WM_QUIT, 0, 0) &&
+		WaitForSingleObject(s_ThreadCleanupEvent, INFINITE) == WAIT_OBJECT_0;
+}
+
+bool TimelineVisibilityMonitor::EndWatcherThread() noexcept
+{
+	// check if the thread is still alive
+	const DWORD waitResult = WaitForSingleObject(s_hThread, 0);
+	if (waitResult == WAIT_TIMEOUT)
+	{
+		// if the DLL gets unloaded before the thread began
+		// executing, we still need to terminate it.
+		if (s_ThreadRunning && !SignalWatcherThreadAndWait(GetThreadId(s_hThread)))
+		{
+			return false;
+		}
+
+		// terminate it
+		return TerminateThread(s_hThread, 0);
+	}
+	else 
+	{
+		// WaitForSingleObject failed if != WAIT_OBJECT_0
+		return waitResult == WAIT_OBJECT_0;
 	}
 }
 
@@ -187,10 +208,10 @@ void TimelineVisibilityMonitor::Install(HINSTANCE hInst) noexcept
 		}
 	}
 
-	if (!s_ThreadInfinitePostCleanupWait)
+	if (!s_ThreadCleanupEvent)
 	{
-		s_ThreadInfinitePostCleanupWait = CreateEvent(nullptr, true, false, nullptr);
-		if (!s_ThreadInfinitePostCleanupWait)
+		s_ThreadCleanupEvent = CreateEvent(nullptr, true, false, nullptr);
+		if (!s_ThreadCleanupEvent)
 		{
 			Util::QuickAbort();
 		}
@@ -210,45 +231,7 @@ void TimelineVisibilityMonitor::Uninstall(HINSTANCE hInst) noexcept
 {
 	if (s_hThread)
 	{
-		// check if the thread is still alive
-		const DWORD waitResult = WaitForSingleObject(s_hThread, 0);
-		if (waitResult == WAIT_TIMEOUT)
-		{
-			// if the DLL gets unloaded before the thread began
-			// executing, we still need to terminate it.
-			if (s_ThreadRunning)
-			{
-				// signal the thread and wait for its cleanup to be done
-				const DWORD tid = GetThreadId(s_hThread);
-				if (!tid) [[unlikely]]
-				{
-					Util::QuickAbort();
-				}
-
-				if (!PostThreadMessage(tid, WM_QUIT, 0, 0)) [[unlikely]]
-				{
-					Util::QuickAbort();
-				}
-
-				if (!s_ThreadCleanupDone.wait()) [[unlikely]]
-				{
-					Util::QuickAbort();
-				}
-			}
-
-			// terminate it
-			if (!TerminateThread(s_hThread, 0)) [[unlikely]]
-			{
-				Util::QuickAbort();
-			}
-		}
-		else if (waitResult != WAIT_OBJECT_0)
-		{
-			// WaitForSingleObject failed
-			Util::QuickAbort();
-		}
-
-		if (CloseHandle(s_hThread))
+		if (EndWatcherThread() && CloseHandle(s_hThread))
 		{
 			s_hThread = nullptr;
 		}
@@ -258,11 +241,11 @@ void TimelineVisibilityMonitor::Uninstall(HINSTANCE hInst) noexcept
 		}
 	}
 
-	if (s_ThreadInfinitePostCleanupWait)
+	if (s_ThreadCleanupEvent)
 	{
-		if (CloseHandle(s_ThreadInfinitePostCleanupWait))
+		if (CloseHandle(s_ThreadCleanupEvent))
 		{
-			s_ThreadInfinitePostCleanupWait = nullptr;
+			s_ThreadCleanupEvent = nullptr;
 		}
 		else
 		{

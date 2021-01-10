@@ -75,7 +75,6 @@
     <ClCompile>
       <!-- Warnings and errors -->
       <TreatWarningAsError>true</TreatWarningAsError>
-      <UseFullPaths>false</UseFullPaths>
 
       <!-- Security -->
       <ControlFlowGuard>Guard</ControlFlowGuard>
@@ -85,6 +84,10 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>true</OmitFramePointers>
       <Optimization>MaxSpeed</Optimization>
+
+      <!-- Trim the prefix from embedded file paths -->
+      <AdditionalOptions>/d1trimfile:"$(SolutionDir)\" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(VcpkgRoot)'!=''">/d1trimfile:"$(VcpkgRoot)installed\$(VcpkgTriplet)\include\\" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <!-- Warnings and errors -->
@@ -140,6 +143,7 @@
       <WarningLevel>Level4</WarningLevel>
       <DisableSpecificWarnings>4275;4505;5054;5105</DisableSpecificWarnings>
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <UseFullPaths>true</UseFullPaths>
 
       <!-- Discord GameSDK -->
       <PreprocessorDefinitions Condition="'$(UsingGameSDK)'!='true'">DO_NOT_USE_GAME_SDK;%(PreprocessorDefinitions)</PreprocessorDefinitions>

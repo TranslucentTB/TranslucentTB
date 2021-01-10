@@ -38,7 +38,7 @@ namespace Error {
 #define LastErrorHandle(level_, message_) do { \
 	const HRESULT hr_ = HRESULT_FROM_WIN32(GetLastError()); \
 	HresultHandle(hr_, (level_), (message_)); \
-} while(0)
+} while (0)
 
 #define LastErrorVerify(level_, message_) do { \
 	if (const DWORD lastErr_ = GetLastError(); lastErr_ != NO_ERROR) [[unlikely]] \
