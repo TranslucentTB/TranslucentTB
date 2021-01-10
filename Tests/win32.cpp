@@ -20,7 +20,9 @@ namespace {
 		{ L"foo", L"foobar" },
 		{ L"FOOBAR", L"FOO" },
 		{ L"foo", L"bar" },
-		{ L"FOO", L"BAR" }
+		{ L"FOO", L"BAR" },
+		{ L"foo bar", L"foobar" },
+		{ L"\u00E9", L"\u00EB" }
 	};
 
 	static constexpr std::pair<std::wstring_view, std::wstring_view> sameContentCases[] = {

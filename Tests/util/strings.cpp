@@ -31,11 +31,17 @@ TEST(Util_IsAscii, ReturnsTrueWhenAscii)
 	{
 		ASSERT_TRUE(Util::IsAscii(letter));
 	}
+
+	for (const auto &character : specialCharacters)
+	{
+		ASSERT_TRUE(Util::IsAscii(character));
+	}
 }
 
 TEST(Util_IsAscii, ReturnsFalseWhenNotAscii)
 {
 	ASSERT_FALSE(Util::IsAscii(L'\u00CB'));
+	ASSERT_FALSE(Util::IsAscii(L'\u0125'));
 }
 
 TEST(Util_AsciiToUpper, ReturnsUppercaseAsciiFromLowercase)
@@ -58,6 +64,19 @@ TEST(Util_AsciiToUpper, ReturnsUppercaseAsciiFromUppercase)
 	for (const auto &letter : uppercaseAlphabet)
 	{
 		ASSERT_EQ(Util::AsciiToUpper(letter), letter);
+	}
+}
+
+TEST(Util_AsciiToUpper, DoesNotChangesOtherCharacters)
+{
+	for (const auto &number : numbers)
+	{
+		ASSERT_EQ(Util::AsciiToUpper(number), number);
+	}
+
+	for (const auto &character : specialCharacters)
+	{
+		ASSERT_EQ(Util::AsciiToUpper(character), character);
 	}
 }
 
