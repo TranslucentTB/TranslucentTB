@@ -18,7 +18,7 @@ void TaskbarAttributeWorker::OnAeroPeekEnterExit(DWORD event, HWND, LONG, LONG, 
 
 void TaskbarAttributeWorker::OnWindowStateChange(DWORD, HWND hwnd, LONG idObject, LONG, DWORD, DWORD)
 {
-	if (Window window(hwnd); idObject == OBJID_WINDOW && window.valid())
+	if (const Window window(hwnd); idObject == OBJID_WINDOW && window.valid())
 	{
 		InsertWindow(window, true);
 	}

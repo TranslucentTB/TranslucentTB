@@ -68,7 +68,7 @@
                 <models:Action
                     Name="Edit the configuration file"
                     Click="EditConfigFile"
-                    Description="You can always do this by clicking 'Advanced > Edit settings' in the tray icon's context menu&#10;Changes are automatically reloaded as you edit the file">
+                    Description="You can always do this by clicking 'Advanced > Edit settings' in the tray icon's context menu&#10;Changes are automatically reloaded as you save the file">
                     <PathIcon Data="{StaticResource EditIcon}" />
                 </models:Action>
             </controls:ActionList>

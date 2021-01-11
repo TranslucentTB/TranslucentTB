@@ -130,7 +130,10 @@ LRESULT BaseXamlPageHost::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam
 		return 0;
 
 	case WM_SETFOCUS:
-		SetFocus(m_interopWnd);
+		if (!SetFocus(m_interopWnd))
+		{
+			LastErrorHandle(spdlog::level::info, L"Failed to set focus to Island host");
+		}
 		return 0;
 
 	case WM_DPICHANGED:
