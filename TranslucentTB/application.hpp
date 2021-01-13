@@ -4,6 +4,11 @@
 #include <memory>
 #include <optional>
 #include <windef.h>
+#include "winrt.hpp"
+#include "undefgetcurrenttime.h"
+#include <winrt/Windows.UI.Xaml.Hosting.h>
+#include "redefgetcurrenttime.h"
+#include <winrt/TranslucentTB.Xaml.h>
 
 #include "dynamicloader.hpp"
 #include "managers/configmanager.hpp"
@@ -18,6 +23,7 @@
 
 class Application final {
 	static void ConfigurationChanged(void *context, const Config &cfg);
+	static winrt::TranslucentTB::Xaml::App CreateXamlApp();
 
 #ifndef DO_NOT_USE_GAME_SDK
 	static std::unique_ptr<discord::Core> CreateDiscordCore();
@@ -25,14 +31,18 @@ class Application final {
 	std::unique_ptr<discord::Core> m_DiscordCore;
 	void RunDiscordCallbacks();
 #endif
+
 	DynamicLoader m_Loader;
 
 	ConfigManager m_Config;
 	TaskbarAttributeWorker m_Worker;
 	StartupManager m_Startup;
-	MainAppWindow m_AppWindow;
 
 	winrt::Windows::System::DispatcherQueueController m_DispatcherController;
+	winrt::TranslucentTB::Xaml::App m_XamlApp;
+	wuxh::WindowsXamlManager m_XamlManager;
+	MainAppWindow m_AppWindow;
+
 	XamlThreadPool m_Xaml;
 
 	void CreateWelcomePage(bool hasPackageIdentity);

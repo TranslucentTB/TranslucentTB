@@ -280,7 +280,10 @@ private:
 		m_Dispatcher.TryEnqueue(winrt::Windows::System::DispatcherQueuePriority::Low, [this]
 		{
 			BaseXamlPageHost::Cleanup();
-			m_Callback(m_CallbackData);
+			if (m_Callback)
+			{
+				m_Callback(m_CallbackData);
+			}
 		});
 	}
 

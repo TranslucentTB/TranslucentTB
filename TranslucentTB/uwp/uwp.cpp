@@ -1,12 +1,15 @@
 #include "uwp.hpp"
 #include <Windows.h>
 #include <appmodel.h>
+#include <CoreWindow.h>
 #include <DispatcherQueue.h>
 #include <ShlObj_core.h>
 #include <wil/resource.h>
+#include <winrt/Windows.UI.Core.h>
 
 #include "../ProgramLog/error/win32.hpp"
 #include "../ProgramLog/error/winrt.hpp"
+#include "../windows/window.hpp"
 
 std::optional<std::wstring> UWP::GetPackageFamilyName()
 {
@@ -92,3 +95,30 @@ winrt::Windows::System::DispatcherQueueController UWP::CreateDispatcherControlle
 	HresultVerify(CreateDispatcherQueueController(options, controller.put()), spdlog::level::critical, L"Failed to create dispatcher!");
 	return { controller.detach(), winrt::take_ownership_from_abi };
 }
+
+void UWP::HideCoreWindow()
+{
+	Window coreWin;
+	try
+	{
+		const auto coreInterop = winrt::Windows::UI::Core::CoreWindow::GetForCurrentThread().as<ICoreWindowInterop>();
+		winrt::check_hresult(coreInterop->get_WindowHandle(coreWin.put()));
+	}
+	HresultErrorCatch(spdlog::level::warn, L"Failed to get core window handle");
+
+	if (coreWin)
+	{
+		if (!coreWin.show(SW_HIDE))
+		{
+			LastErrorHandle(spdlog::level::warn, L"Failed to hide core window");
+		}
+	}
+}
+
+wuxh::WindowsXamlManager UWP::CreateXamlManager() try
+{
+	const auto manager = wuxh::WindowsXamlManager::InitializeForCurrentThread();
+	HideCoreWindow();
+	return manager;
+}
+HresultErrorCatch(spdlog::level::critical, L"Failed to create Xaml manager");

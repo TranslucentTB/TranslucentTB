@@ -1,7 +1,5 @@
 #include "xamlthread.hpp"
-#include <CoreWindow.h>
 #include <wil/resource.h>
-#include <winrt/Windows.UI.Core.h>
 
 #include "../windows/window.hpp"
 #include "uwp.hpp"
@@ -54,28 +52,7 @@ void XamlThread::ThreadInit()
 	HresultErrorCatch(spdlog::level::critical, L"Failed to initialize thread apartment");
 
 	m_Dispatcher = UWP::CreateDispatcherController();
-
-	try
-	{
-		m_Manager = wuxh::WindowsXamlManager::InitializeForCurrentThread();
-	}
-	HresultErrorCatch(spdlog::level::critical, L"Failed to create XAML manager");
-
-	Window coreWin;
-	try
-	{
-		const auto coreInterop = winrt::Windows::UI::Core::CoreWindow::GetForCurrentThread().as<ICoreWindowInterop>();
-		winrt::check_hresult(coreInterop->get_WindowHandle(coreWin.put()));
-	}
-	HresultErrorCatch(spdlog::level::warn, L"Failed to get core window handle");
-
-	if (coreWin)
-	{
-		if (!coreWin.show(SW_HIDE))
-		{
-			LastErrorHandle(spdlog::level::warn, L"Failed to hide core window");
-		}
-	}
+	m_Manager = UWP::CreateXamlManager();
 
 	HresultVerify(BufferedPaintInit(), spdlog::level::warn, L"Failed to initialize buffered paint");
 }

@@ -15,6 +15,12 @@ void Application::ConfigurationChanged(void *context, const Config &cfg)
 	that->m_AppWindow.UpdateTrayVisibility(!cfg.HideTray);
 }
 
+winrt::TranslucentTB::Xaml::App Application::CreateXamlApp() try
+{
+	return { };
+}
+HresultErrorCatch(spdlog::level::critical, L"Failed to create Xaml app");
+
 #ifndef DO_NOT_USE_GAME_SDK
 std::unique_ptr<discord::Core> Application::CreateDiscordCore()
 {
@@ -125,8 +131,10 @@ winrt::fire_and_forget Application::LicenseApprovedCallback(bool hasPackageIdent
 Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> storageFolder, bool fileExists) :
 	m_Config(storageFolder, fileExists, ConfigurationChanged, this),
 	m_Worker(m_Config.GetConfig(), hInst, m_Loader.SetWindowCompositionAttribute()),
-	m_AppWindow(*this, !fileExists, !storageFolder.has_value(), hInst, m_Loader),
 	m_DispatcherController(UWP::CreateDispatcherController()),
+	m_XamlApp(CreateXamlApp()),
+	m_XamlManager(UWP::CreateXamlManager()),
+	m_AppWindow(*this, !fileExists, !storageFolder.has_value(), hInst, m_Loader),
 	m_Xaml(hInst)
 {
 	if (const auto spam = m_Loader.SetPreferredAppMode())

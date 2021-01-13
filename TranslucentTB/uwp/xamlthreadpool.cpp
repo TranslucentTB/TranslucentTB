@@ -44,5 +44,4 @@ XamlThreadPool::~XamlThreadPool()
 	}
 
 	threads.clear();
-	m_App = nullptr;
 }
