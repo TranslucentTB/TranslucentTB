@@ -16,17 +16,17 @@ void TaskbarAttributeWorker::OnAeroPeekEnterExit(DWORD event, HWND, LONG, LONG, 
 	RefreshAllAttributes();
 }
 
-void TaskbarAttributeWorker::OnWindowStateChange(DWORD, HWND hwnd, LONG idObject, LONG, DWORD, DWORD)
+void TaskbarAttributeWorker::OnWindowStateChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD)
 {
-	if (const Window window(hwnd); idObject == OBJID_WINDOW && window.valid())
+	if (const Window window(hwnd); idObject == OBJID_WINDOW && idChild == CHILDID_SELF && window.valid())
 	{
 		InsertWindow(window, true);
 	}
 }
 
-void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG idObject, LONG, DWORD, DWORD)
+void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD)
 {
-	if (const Window window(hwnd); idObject == OBJID_WINDOW)
+	if (const Window window(hwnd); idObject == OBJID_WINDOW && idChild == CHILDID_SELF)
 	{
 		if (event == EVENT_OBJECT_CREATE && window.valid())
 		{
@@ -56,7 +56,22 @@ void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG 
 					refresher.disarm();
 					return;
 				}
-				else if (it->second.MaximisedWindows.erase(window) > 0 || it->second.NormalWindows.erase(window) > 0)
+
+				bool erased = false;
+				if (it->second.MaximisedWindows.erase(window) > 0)
+				{
+					LogWindowRemovalDestroyed(L"maximised", window, it->first);
+					erased = true;
+				}
+
+				if (it->second.NormalWindows.erase(window) > 0)
+				{
+					LogWindowRemovalDestroyed(L"normal", window, it->first);
+					erased = true;
+				}
+
+				// only refresh the taskbar once in the case the window is in both
+				if (erased)
 				{
 					refresher.refresh(it);
 				}
@@ -65,9 +80,9 @@ void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG 
 	}
 }
 
-void TaskbarAttributeWorker::OnForegroundWindowChange(DWORD, HWND hwnd, LONG idObject, LONG, DWORD, DWORD)
+void TaskbarAttributeWorker::OnForegroundWindowChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD)
 {
-	if (idObject == OBJID_WINDOW)
+	if (idObject == OBJID_WINDOW && idChild == CHILDID_SELF)
 	{
 		Window window(hwnd);
 		if (window.valid())
@@ -311,7 +326,7 @@ void TaskbarAttributeWorker::InsertWindow(Window window, bool refresh)
 	// changing, it means m_Taskbars is cleared while we still
 	// have an iterator to it. Acquiring the iterator after the
 	// call to on_current_desktop resolves this issue.
-	const bool windowMatches = (window.is_user_window() || m_Config.Whitelist.IsFiltered(window)) && !m_Config.IgnoredWindows.IsFiltered(window);
+	const bool windowMatches = window.is_user_window() && !m_Config.IgnoredWindows.IsFiltered(window);
 	const HMONITOR mon = window.monitor();
 
 	for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
@@ -323,26 +338,84 @@ void TaskbarAttributeWorker::InsertWindow(Window window, bool refresh)
 		{
 			if (windowMatches && window.maximised())
 			{
-				maximised.insert(window);
-				normal.erase(window);
+				if (normal.erase(window) > 0)
+				{
+					LogWindowRemoval(L"normal", window, mon);
+				}
+
+				LogWindowInsertion(maximised.insert(window), L"maximised", mon);
 
 				refresher(it);
 				continue;
 			}
 			else if (windowMatches && !window.minimised())
 			{
-				maximised.erase(window);
-				normal.insert(window);
+				if (maximised.erase(window) > 0)
+				{
+					LogWindowRemoval(L"maximised", window, mon);
+				}
+
+				LogWindowInsertion(normal.insert(window), L"normal", mon);
 
 				refresher(it);
 				continue;
 			}
+
+			// fall out the if if the window is minimized
 		}
 
-		if (maximised.erase(window) > 0 || normal.erase(window) > 0)
+		bool erased = false;
+		if (maximised.erase(window) > 0)
+		{
+			LogWindowRemoval(L"maximised", window, mon);
+			erased = true;
+		}
+
+		if (normal.erase(window) > 0)
+		{
+			LogWindowRemoval(L"normal", window, mon);
+			erased = true;
+		}
+
+		// only refresh the taskbar once in the case the window is in both
+		if (erased)
 		{
 			refresher(it);
 		}
+	}
+}
+
+void TaskbarAttributeWorker::LogWindowInsertion(const std::pair<std::unordered_set<Window>::iterator, bool> &result, std::wstring_view state, HMONITOR mon)
+{
+	if (result.second && Error::ShouldLog(spdlog::level::debug))
+	{
+		fmt::wmemory_buffer buf;
+		fmt::format_to(buf, FMT_STRING(L"Inserting {} window "), state);
+		DumpWindow(buf, *result.first);
+		fmt::format_to(buf, FMT_STRING(L" to monitor {}"), static_cast<void *>(mon));
+		MessagePrint(spdlog::level::debug, buf);
+	}
+}
+
+void TaskbarAttributeWorker::LogWindowRemoval(std::wstring_view state, Window window, HMONITOR mon)
+{
+	if (Error::ShouldLog(spdlog::level::debug))
+	{
+		fmt::wmemory_buffer buf;
+		fmt::format_to(buf, FMT_STRING(L"Removing {} window "), state);
+		DumpWindow(buf, window);
+		fmt::format_to(buf, FMT_STRING(L" from monitor {}"), static_cast<void *>(mon));
+		MessagePrint(spdlog::level::debug, buf);
+	}
+}
+
+void TaskbarAttributeWorker::LogWindowRemovalDestroyed(std::wstring_view state, Window window, HMONITOR mon)
+{
+	if (Error::ShouldLog(spdlog::level::debug))
+	{
+		fmt::wmemory_buffer buf;
+		fmt::format_to(buf, FMT_STRING(L"Removing {} window {} [window destroyed] from monitor {}"), state, static_cast<void *>(window.handle()), static_cast<void *>(mon));
+		MessagePrint(spdlog::level::debug, buf);
 	}
 }
 
@@ -514,6 +587,9 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_Config(cfg),
 	m_ThunkPage(member_thunk::allocate_page()),
 	m_PeekUnpeekHook(CreateHook(EVENT_SYSTEM_PEEKSTART, EVENT_SYSTEM_PEEKEND, CreateThunk(&TaskbarAttributeWorker::OnAeroPeekEnterExit))),
+	m_CloakUncloakHook(CreateHook(EVENT_OBJECT_CLOAKED, EVENT_OBJECT_UNCLOAKED, CreateThunk(&TaskbarAttributeWorker::WindowInsertRemove<EVENT_OBJECT_UNCLOAKED, EVENT_OBJECT_CLOAKED>))),
+	m_MinimizeRestoreHook(CreateHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, CreateThunk(&TaskbarAttributeWorker::WindowInsertRemove<EVENT_SYSTEM_MINIMIZEEND, EVENT_SYSTEM_MINIMIZESTART>))),
+	m_ShowHideHook(CreateHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, CreateThunk(&TaskbarAttributeWorker::WindowInsertRemove<EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE>))),
 	m_CreateDestroyHook(CreateHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, CreateThunk(&TaskbarAttributeWorker::OnWindowCreateDestroy))),
 	m_ForegroundChangeHook(CreateHook(EVENT_SYSTEM_FOREGROUND, CreateThunk(&TaskbarAttributeWorker::OnForegroundWindowChange))),
 	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED)),
@@ -522,12 +598,8 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_GetTimelineStatusMessage(Window::RegisterMessage(WM_TTBHOOKGETTIMELINESTATUS))
 {
 	const auto stateThunk = CreateThunk(&TaskbarAttributeWorker::OnWindowStateChange);
-	m_CloakUncloakHook = CreateHook(EVENT_OBJECT_CLOAKED, EVENT_OBJECT_UNCLOAKED, stateThunk);
-	m_MinimizeRestoreHook = CreateHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, stateThunk);
 	m_ResizeMoveHook = CreateHook(EVENT_OBJECT_LOCATIONCHANGE, stateThunk);
-	m_ShowHideHook = CreateHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, stateThunk);
 	m_TitleChangeHook = CreateHook(EVENT_OBJECT_NAMECHANGE, stateThunk);
-
 	m_ThunkPage.mark_executable();
 
 	CreateAppVisibility();

@@ -72,7 +72,10 @@ public:
 			}
 			HresultErrorCatch(spdlog::level::critical, L"Failed to create XAML window");
 
-			m_Sources.push_back(host->source().try_as<IDesktopWindowXamlSourceNative2>());
+			if (const auto source = host->source().try_as<IDesktopWindowXamlSourceNative2>())
+			{
+				m_Sources.push_back(source);
+			}
 
 			std::invoke(std::forward<Callback>(callback), host->content());
 

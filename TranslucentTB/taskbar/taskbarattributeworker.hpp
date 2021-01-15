@@ -72,10 +72,47 @@ private:
 	using taskbar_iterator = decltype(m_Taskbars)::iterator;
 
 	// Callbacks
+	template<DWORD insert, DWORD remove>
+	void CALLBACK WindowInsertRemove(DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD)
+	{
+		if (const Window window(hwnd); idObject == OBJID_WINDOW && idChild == CHILDID_SELF)
+		{
+			if (event == insert && window.valid())
+			{
+				InsertWindow(window, true);
+			}
+			else if (event == remove)
+			{
+				AttributeRefresher refresher(*this);
+				for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
+				{
+					bool erased = false;
+					if (it->second.MaximisedWindows.erase(window) > 0)
+					{
+						LogWindowRemoval(L"maximised", window, it->first);
+						erased = true;
+					}
+
+					if (it->second.NormalWindows.erase(window) > 0)
+					{
+						LogWindowRemoval(L"normal", window, it->first);
+						erased = true;
+					}
+
+					// only refresh the taskbar once in the case the window is in both
+					if (erased)
+					{
+						refresher.refresh(it);
+					}
+				}
+			}
+		}
+	}
+
 	void CALLBACK OnAeroPeekEnterExit(DWORD event, HWND, LONG, LONG, DWORD, DWORD);
-	void CALLBACK OnWindowStateChange(DWORD, HWND hwnd, LONG idObject, LONG, DWORD, DWORD);
-	void CALLBACK OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD idEventThread, DWORD dwmsEventTime);
-	void CALLBACK OnForegroundWindowChange(DWORD, HWND hwnd, LONG idObject, LONG, DWORD, DWORD);
+	void CALLBACK OnWindowStateChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
+	void CALLBACK OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
+	void CALLBACK OnForegroundWindowChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
 	void OnStartVisibilityChange(bool state);
 	LRESULT OnRequestAttributeRefresh(LPARAM lParam);
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
@@ -93,6 +130,9 @@ private:
 	void InsertWindow(Window window, bool refresh);
 
 	// Other
+	static void LogWindowInsertion(const std::pair<std::unordered_set<Window>::iterator, bool> &result, std::wstring_view state, HMONITOR mon);
+	static void LogWindowRemoval(std::wstring_view state, Window window, HMONITOR mon);
+	static void LogWindowRemovalDestroyed(std::wstring_view state, Window window, HMONITOR mon);
 	static bool SetOnlyContainsValidWindows(std::unordered_set<Window> &set);
 	static void DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set, bool showInfo = true);
 	static void DumpWindow(fmt::wmemory_buffer &buf, Window window);

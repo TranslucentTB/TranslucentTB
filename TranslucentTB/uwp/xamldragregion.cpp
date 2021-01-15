@@ -6,11 +6,10 @@
 
 void XamlDragRegion::HandleClick(UINT msg, LPARAM lParam) noexcept
 {
-	const POINT clientPt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-	POINT screenPt = clientPt;
-	if (ClientToScreen(m_WindowHandle, &screenPt))
+	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+	if (ClientToScreen(m_WindowHandle, &pt))
 	{
-		ancestor(GA_PARENT).send_message(msg, HTCAPTION, MAKELPARAM(screenPt.x, screenPt.y));
+		ancestor(GA_PARENT).send_message(msg, HTCAPTION, MAKELPARAM(pt.x, pt.y));
 	}
 }
 
