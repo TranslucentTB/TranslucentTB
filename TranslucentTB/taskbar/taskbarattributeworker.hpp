@@ -73,41 +73,7 @@ private:
 
 	// Callbacks
 	template<DWORD insert, DWORD remove>
-	void CALLBACK WindowInsertRemove(DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD)
-	{
-		if (const Window window(hwnd); idObject == OBJID_WINDOW && idChild == CHILDID_SELF)
-		{
-			if (event == insert && window.valid())
-			{
-				InsertWindow(window, true);
-			}
-			else if (event == remove)
-			{
-				AttributeRefresher refresher(*this);
-				for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
-				{
-					bool erased = false;
-					if (it->second.MaximisedWindows.erase(window) > 0)
-					{
-						LogWindowRemoval(L"maximised", window, it->first);
-						erased = true;
-					}
-
-					if (it->second.NormalWindows.erase(window) > 0)
-					{
-						LogWindowRemoval(L"normal", window, it->first);
-						erased = true;
-					}
-
-					// only refresh the taskbar once in the case the window is in both
-					if (erased)
-					{
-						refresher.refresh(it);
-					}
-				}
-			}
-		}
-	}
+	void CALLBACK WindowInsertRemove(DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
 
 	void CALLBACK OnAeroPeekEnterExit(DWORD event, HWND, LONG, LONG, DWORD, DWORD);
 	void CALLBACK OnWindowStateChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
