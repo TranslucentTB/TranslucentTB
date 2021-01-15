@@ -19,6 +19,9 @@
 
 class TaskbarAttributeWorker final : public MessageWindow {
 private:
+	class AttributeRefresher;
+	friend AttributeRefresher;
+
 	struct MonitorInfo {
 		Window TaskbarWindow;
 		std::unordered_set<Window> MaximisedWindows;
@@ -92,13 +95,18 @@ private:
 	void RefreshAttribute(taskbar_iterator taskbar);
 	void RefreshAllAttributes();
 
-	// State
-	void InsertWindow(Window window, bool refresh);
-
-	// Other
+	// Log
 	static void LogWindowInsertion(const std::pair<std::unordered_set<Window>::iterator, bool> &result, std::wstring_view state, HMONITOR mon);
 	static void LogWindowRemoval(std::wstring_view state, Window window, HMONITOR mon);
 	static void LogWindowRemovalDestroyed(std::wstring_view state, Window window, HMONITOR mon);
+
+	// State
+	void InsertWindow(Window window, bool refresh);
+
+	template<void(*logger)(std::wstring_view, Window, HMONITOR) = LogWindowRemoval>
+	void RemoveWindow(Window window, taskbar_iterator it, AttributeRefresher &refresher);
+
+	// Other
 	static bool SetOnlyContainsValidWindows(std::unordered_set<Window> &set);
 	static void DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set, bool showInfo = true);
 	static void DumpWindow(fmt::wmemory_buffer &buf, Window window);
@@ -125,43 +133,6 @@ private:
 	{
 		return CreateHook(event, event, proc);
 	}
-
-	friend class AttributeRefresher;
-
-	class AttributeRefresher {
-	private:
-		TaskbarAttributeWorker &m_Worker;
-		taskbar_iterator m_MainMonIt;
-
-	public:
-		AttributeRefresher(TaskbarAttributeWorker &worker) noexcept : m_Worker(worker), m_MainMonIt(m_Worker.m_Taskbars.end()) { }
-
-		AttributeRefresher(const AttributeRefresher &) = delete;
-		AttributeRefresher &operator =(const AttributeRefresher &) = delete;
-
-		void refresh(taskbar_iterator it)
-		{
-			if (it->first == m_Worker.m_MainTaskbarMonitor)
-			{
-				assert(m_MainMonIt == m_Worker.m_Taskbars.end());
-				m_MainMonIt = it;
-			}
-			else
-			{
-				m_Worker.RefreshAttribute(it);
-			}
-		}
-
-		void disarm() noexcept { m_MainMonIt = m_Worker.m_Taskbars.end(); }
-
-		~AttributeRefresher() noexcept(false)
-		{
-			if (m_MainMonIt != m_Worker.m_Taskbars.end())
-			{
-				m_Worker.RefreshAttribute(m_MainMonIt);
-			}
-		}
-	};
 
 public:
 	TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE swca);

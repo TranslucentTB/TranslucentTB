@@ -10,6 +10,45 @@
 #include "util/fmt.hpp"
 #include "win32.hpp"
 
+class TaskbarAttributeWorker::AttributeRefresher {
+private:
+	TaskbarAttributeWorker &m_Worker;
+	taskbar_iterator m_MainMonIt;
+	bool m_Refresh;
+
+public:
+	AttributeRefresher(TaskbarAttributeWorker &worker, bool refresh = true) noexcept : m_Worker(worker), m_MainMonIt(m_Worker.m_Taskbars.end()), m_Refresh(refresh) { }
+
+	AttributeRefresher(const AttributeRefresher &) = delete;
+	AttributeRefresher& operator =(const AttributeRefresher &) = delete;
+
+	void refresh(taskbar_iterator it)
+	{
+		if (m_Refresh)
+		{
+			if (it->first == m_Worker.m_MainTaskbarMonitor)
+			{
+				assert(m_MainMonIt == m_Worker.m_Taskbars.end());
+				m_MainMonIt = it;
+			}
+			else
+			{
+				m_Worker.RefreshAttribute(it);
+			}
+		}
+	}
+
+	void disarm() noexcept { m_MainMonIt = m_Worker.m_Taskbars.end(); }
+
+	~AttributeRefresher() noexcept(false)
+	{
+		if (m_Refresh && m_MainMonIt != m_Worker.m_Taskbars.end())
+		{
+			m_Worker.RefreshAttribute(m_MainMonIt);
+		}
+	}
+};
+
 template<DWORD insert, DWORD remove>
 void TaskbarAttributeWorker::WindowInsertRemove(DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD)
 {
@@ -24,24 +63,7 @@ void TaskbarAttributeWorker::WindowInsertRemove(DWORD event, HWND hwnd, LONG idO
 			AttributeRefresher refresher(*this);
 			for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
 			{
-				bool erased = false;
-				if (it->second.MaximisedWindows.erase(window) > 0)
-				{
-					LogWindowRemoval(L"maximised", window, it->first);
-					erased = true;
-				}
-
-				if (it->second.NormalWindows.erase(window) > 0)
-				{
-					LogWindowRemoval(L"normal", window, it->first);
-					erased = true;
-				}
-
-				// only refresh the taskbar once in the case the window is in both
-				if (erased)
-				{
-					refresher.refresh(it);
-				}
+				RemoveWindow(window, it, refresher);
 			}
 		}
 	}
@@ -94,24 +116,7 @@ void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG 
 					return;
 				}
 
-				bool erased = false;
-				if (it->second.MaximisedWindows.erase(window) > 0)
-				{
-					LogWindowRemovalDestroyed(L"maximised", window, it->first);
-					erased = true;
-				}
-
-				if (it->second.NormalWindows.erase(window) > 0)
-				{
-					LogWindowRemovalDestroyed(L"normal", window, it->first);
-					erased = true;
-				}
-
-				// only refresh the taskbar once in the case the window is in both
-				if (erased)
-				{
-					refresher.refresh(it);
-				}
+				RemoveWindow<LogWindowRemovalDestroyed>(window, it, refresher);
 			}
 		}
 	}
@@ -337,91 +342,6 @@ void TaskbarAttributeWorker::RefreshAllAttributes()
 	}
 }
 
-void TaskbarAttributeWorker::InsertWindow(Window window, bool refresh)
-{
-	if (window.classname() == CORE_WINDOW) [[unlikely]]
-	{
-		// Windows.UI.Core.CoreWindow is always shell UI stuff
-		// that we either have a dynamic mode for or should ignore.
-		// so just skip it.
-		return;
-	}
-
-	AttributeRefresher attrRefresher(*this);
-	const auto refresher = [&attrRefresher, refresh](taskbar_iterator it)
-	{
-		if (refresh)
-		{
-			attrRefresher.refresh(it);
-		}
-	};
-
-	// Note: The checks are done before iterating because
-	// some methods (most notably Window::on_current_desktop)
-	// will trigger a Windows internal message loop,
-	// which pumps messages to the worker. When the DPI is
-	// changing, it means m_Taskbars is cleared while we still
-	// have an iterator to it. Acquiring the iterator after the
-	// call to on_current_desktop resolves this issue.
-	const bool windowMatches = window.is_user_window() && !m_Config.IgnoredWindows.IsFiltered(window);
-	const HMONITOR mon = window.monitor();
-
-	for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
-	{
-		auto &maximised = it->second.MaximisedWindows;
-		auto &normal = it->second.NormalWindows;
-
-		if (it->first == mon)
-		{
-			if (windowMatches && window.maximised())
-			{
-				if (normal.erase(window) > 0)
-				{
-					LogWindowRemoval(L"normal", window, mon);
-				}
-
-				LogWindowInsertion(maximised.insert(window), L"maximised", mon);
-
-				refresher(it);
-				continue;
-			}
-			else if (windowMatches && !window.minimised())
-			{
-				if (maximised.erase(window) > 0)
-				{
-					LogWindowRemoval(L"maximised", window, mon);
-				}
-
-				LogWindowInsertion(normal.insert(window), L"normal", mon);
-
-				refresher(it);
-				continue;
-			}
-
-			// fall out the if if the window is minimized
-		}
-
-		bool erased = false;
-		if (maximised.erase(window) > 0)
-		{
-			LogWindowRemoval(L"maximised", window, mon);
-			erased = true;
-		}
-
-		if (normal.erase(window) > 0)
-		{
-			LogWindowRemoval(L"normal", window, mon);
-			erased = true;
-		}
-
-		// only refresh the taskbar once in the case the window is in both
-		if (erased)
-		{
-			refresher(it);
-		}
-	}
-}
-
 void TaskbarAttributeWorker::LogWindowInsertion(const std::pair<std::unordered_set<Window>::iterator, bool> &result, std::wstring_view state, HMONITOR mon)
 {
 	if (result.second && Error::ShouldLog(spdlog::level::debug))
@@ -453,6 +373,90 @@ void TaskbarAttributeWorker::LogWindowRemovalDestroyed(std::wstring_view state, 
 		fmt::wmemory_buffer buf;
 		fmt::format_to(buf, FMT_STRING(L"Removing {} window {} [window destroyed] from monitor {}"), state, static_cast<void *>(window.handle()), static_cast<void *>(mon));
 		MessagePrint(spdlog::level::debug, buf);
+	}
+}
+
+void TaskbarAttributeWorker::InsertWindow(Window window, bool refresh)
+{
+	if (window.classname() == CORE_WINDOW) [[unlikely]]
+	{
+		// Windows.UI.Core.CoreWindow is always shell UI stuff
+		// that we either have a dynamic mode for or should ignore.
+		// so just skip it.
+		return;
+	}
+
+	AttributeRefresher refresher(*this, refresh);
+
+	// Note: The checks are done before iterating because
+	// some methods (most notably Window::on_current_desktop)
+	// will trigger a Windows internal message loop,
+	// which pumps messages to the worker. When the DPI is
+	// changing, it means m_Taskbars is cleared while we still
+	// have an iterator to it. Acquiring the iterator after the
+	// call to on_current_desktop resolves this issue.
+	const bool windowMatches = window.is_user_window() && !m_Config.IgnoredWindows.IsFiltered(window);
+	const HMONITOR mon = window.monitor();
+
+	for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
+	{
+		auto &maximised = it->second.MaximisedWindows;
+		auto &normal = it->second.NormalWindows;
+
+		if (it->first == mon)
+		{
+			if (windowMatches && window.maximised())
+			{
+				if (normal.erase(window) > 0)
+				{
+					LogWindowRemoval(L"normal", window, mon);
+				}
+
+				LogWindowInsertion(maximised.insert(window), L"maximised", mon);
+
+				refresher.refresh(it);
+				continue;
+			}
+			else if (windowMatches && !window.minimised())
+			{
+				if (maximised.erase(window) > 0)
+				{
+					LogWindowRemoval(L"maximised", window, mon);
+				}
+
+				LogWindowInsertion(normal.insert(window), L"normal", mon);
+
+				refresher.refresh(it);
+				continue;
+			}
+
+			// fall out the if if the window is minimized
+		}
+
+		RemoveWindow(window, it, refresher);
+	}
+}
+
+template<void(*logger)(std::wstring_view, Window, HMONITOR)>
+void TaskbarAttributeWorker::RemoveWindow(Window window, taskbar_iterator it, AttributeRefresher& refresher)
+{
+	bool erased = false;
+	if (it->second.MaximisedWindows.erase(window) > 0)
+	{
+		logger(L"maximised", window, it->first);
+		erased = true;
+	}
+
+	if (it->second.NormalWindows.erase(window) > 0)
+	{
+		logger(L"normal", window, it->first);
+		erased = true;
+	}
+
+	// only refresh the taskbar once in the case the window is in both
+	if (erased)
+	{
+		refresher.refresh(it);
 	}
 }
 
