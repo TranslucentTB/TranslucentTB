@@ -2,12 +2,15 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <concepts>
 #include <fmt/format.h>
 #include <rapidjson/document.h>
 #include <rapidjson/encodings.h>
 #include <string>
 #include <string_view>
 #include <type_traits>
+
+#include "../util/to_string_view.hpp"
 
 namespace RapidJSONHelper {
 	using value_t = rapidjson::GenericValue<rapidjson::UTF16LE<>>;
@@ -75,18 +78,20 @@ namespace RapidJSONHelper {
 		writer.String(str.data(), static_cast<rapidjson::SizeType>(str.length()));
 	}
 
-	template<class Writer>
-	inline void Serialize(Writer &writer, bool value, std::wstring_view key)
+	// prevent this overload from being picked on stuff implicitly convertible to bool
+	template<class Writer, std::same_as<bool> T>
+	inline void Serialize(Writer &writer, T value, std::wstring_view key)
 	{
 		WriteKey(writer, key);
 		writer.Bool(value);
 	}
 
-	template<class Writer>
-	inline void Serialize(Writer &writer, std::wstring_view value, std::wstring_view key)
+	template<class Writer, typename T>
+	requires Util::is_convertible_to_wstring_view_v<T>
+	inline void Serialize(Writer &writer, const T &value, std::wstring_view key)
 	{
 		WriteKey(writer, key);
-		WriteString(writer, value);
+		WriteString(writer, Util::ToStringView(value));
 	}
 
 	template<class Writer, class T, std::size_t size>
@@ -101,7 +106,8 @@ namespace RapidJSONHelper {
 	}
 
 	template<class Writer, class T>
-	requires std::is_class_v<T>
+	// prevent ambiguous overload errors
+	requires (std::is_class_v<T> && !Util::is_convertible_to_wstring_view_v<T>)
 	inline void Serialize(Writer &writer, const T &member, std::wstring_view key)
 	{
 		WriteKey(writer, key);
