@@ -82,12 +82,22 @@ namespace RapidJSONHelper {
 		writer.Bool(value);
 	}
 
+	template<class Writer>
+	inline void Serialize(Writer &writer, std::wstring_view value, std::wstring_view key)
+	{
+		WriteKey(writer, key);
+		WriteString(writer, value);
+	}
+
 	template<class Writer, class T, std::size_t size>
 	requires std::is_enum_v<T>
 	inline void Serialize(Writer &writer, const T &member, std::wstring_view key, const std::array<std::wstring_view, size> &arr)
 	{
-		WriteKey(writer, key);
-		WriteString(writer, arr.at(static_cast<std::size_t>(member)));
+		if (const auto i = static_cast<std::size_t>(member); i < size)
+		{
+			WriteKey(writer, key);
+			WriteString(writer, arr[i]);
+		}
 	}
 
 	template<class Writer, class T>
