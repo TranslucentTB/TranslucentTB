@@ -108,6 +108,7 @@ public:
 				PrettyWriter<OutputStream, UTF16LE<>> writer(out);
 
 				writer.StartObject();
+				RapidJSONHelper::Serialize(writer, L"https://sylveon.dev/" APP_NAME "/schema", L"$schema");
 				Serialize(writer);
 				writer.EndObject();
 
@@ -183,7 +184,7 @@ private:
 
 	static constexpr std::wstring_view DESKTOP_KEY = L"desktop_appearance";
 	static constexpr std::wstring_view VISIBLE_KEY = L"visible_window_appearance";
-	static constexpr std::wstring_view MAXIMISED_KEY = L"maximised_window_appearance";
+	static constexpr std::wstring_view MAXIMISED_KEY = L"maximized_window_appearance";
 	static constexpr std::wstring_view START_KEY = L"start_opened_appearance";
 	static constexpr std::wstring_view CORTANA_KEY = L"cortana_opened_appearance";
 	static constexpr std::wstring_view TIMELINE_KEY = L"timeline_opened_appearance";

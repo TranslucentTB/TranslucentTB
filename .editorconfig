@@ -11,7 +11,7 @@ tab_width = 4
 [*.{appxmanifest,config,filters,props,vcxitems,vcxproj,wapproj}]
 insert_final_newline = false
 
-[*.{appxmanifest,config,filters,manifest,md,natvis,props,vcxitems,vcxproj,wapproj,yml}]
+[*.{appxmanifest,config,filters,json,manifest,md,natvis,props,vcxitems,vcxproj,wapproj,yml}]
 indent_style = spaces
 indent_size = 2
 

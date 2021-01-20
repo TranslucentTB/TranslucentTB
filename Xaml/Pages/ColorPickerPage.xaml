@@ -14,7 +14,12 @@
         </controls:ChromeButton>
     </local:FramelessPage.TitlebarContent>
 
-    <StackPanel Margin="12">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
         <!--
             HACK: allows ContentDialog localization in .resw, removes the need for explicit XamlRoot
             We insert it here because anywhere else it would throw off StackPanel spacing.
@@ -30,12 +35,14 @@
             Opened="DialogOpened"
             Closed="DialogClosed" />
 
-        <ColorPicker x:Name="Picker" IsAlphaEnabled="True" IsMoreButtonVisible="True" />
+        <ScrollViewer>
+            <ColorPicker x:Name="Picker" IsAlphaEnabled="True" IsMoreButtonVisible="True" Margin="12,12,12,0" />
+        </ScrollViewer>
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,12,0,0">
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="12">
             <Button Width="92" Click="OkButtonClicked" Style="{ThemeResource AccentButtonStyle}">OK</Button>
             <Button Width="92" Click="CancelButtonClicked">Cancel</Button>
             <Button Width="92" Click="ApplyButtonClicked">Apply</Button>
         </StackPanel>
-    </StackPanel>
+    </Grid>
 </local:FramelessPage>

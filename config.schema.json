@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema#",
+  "title": "TranslucentTB Settings Schema",
+  "definitions": {
+    "TaskbarAppearance": {
+      "properties": {
+        "accent": {
+          "enum": [
+            "normal",
+            "opaque",
+            "clear",
+            "blur",
+            "acrylic"
+          ],
+          "type": "string"
+        },
+        "color": {
+          "default": "#",
+          "pattern": "^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
+          "type": "string",
+          "format": "color"
+        }
+      },
+      "type": "object"
+    },
+    "OptionalTaskbarAppearance": {
+      "allOf": [
+        {
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        {
+          "$ref": "#/definitions/TaskbarAppearance"
+        }
+      ]
+    }
+  },
+  "properties": {
+    "desktop_appearance": {
+      "$ref": "#/definitions/TaskbarAppearance"
+    },
+    "visible_window_appearance": {
+      "$ref": "#/definitions/OptionalTaskbarAppearance"
+    },
+    "maximized_window_appearance": {
+      "$ref": "#/definitions/OptionalTaskbarAppearance"
+    },
+    "start_opened_appearance": {
+      "$ref": "#/definitions/OptionalTaskbarAppearance"
+    },
+    "search_opened_appearance": {
+      "$ref": "#/definitions/OptionalTaskbarAppearance"
+    },
+    "timeline_opened_appearance": {
+      "$ref": "#/definitions/OptionalTaskbarAppearance"
+    },
+    "ignored_windows": {
+      "properties": {
+        "window_class": {
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "type": "array"
+        },
+        "window_title": {
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "type": "array"
+        },
+        "process_name": {
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "hide_tray": {
+      "type": "boolean"
+    },
+    "disable_saving": {
+      "type": "boolean"
+    },
+    "verbosity": {
+      "enum": [
+        "trace",
+        "debug",
+        "info",
+        "warn",
+        "err",
+        "critical",
+        "off"
+      ],
+      "type": "string"
+    }
+  },
+  "type": "object"
+}
