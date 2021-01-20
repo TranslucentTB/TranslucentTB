@@ -55,6 +55,9 @@
     <fmtlib Condition="'$(Configuration)'=='Debug'">fmtd.lib</fmtlib>
 
     <UsingGameSDK Condition="'$(UsingGameSDK)'=='' and '$(Platform)'=='x64'">true</UsingGameSDK>
+
+    <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'!=''">/tr $(CertificateTimestampServer) /td sha256</SignToolAdditionalArguments>
+    <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'==''"></SignToolAdditionalArguments>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -122,6 +125,17 @@
       <!-- Windows requires NEON on any ARM processor, see https://docs.microsoft.com/cpp/build/overview-of-arm-abi-conventions -->
       <PreprocessorDefinitions>RAPIDJSON_NEON;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(CertificateThumbprint)'!=''">
+    <ClCompile>
+      <PreprocessorDefinitions>SIGNED_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <CustomBuildStep>
+      <Command>signtool.exe sign $(SignToolAdditionalArguments) /fd sha256 /sha1 $(CertificateThumbprint) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>
+      <Message>Signing $(TargetPath)</Message>
+      <Outputs>$(OutDir)sign\$(ProjectName)-sign.out</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
 
   <ItemDefinitionGroup Label="Globals">

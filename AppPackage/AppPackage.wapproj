@@ -35,10 +35,18 @@
     <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
-    <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
     <EntryPointProjectUniqueName>..\TranslucentTB\TranslucentTB.vcxproj</EntryPointProjectUniqueName>
     <AppxBundlePlatforms>x64|arm64</AppxBundlePlatforms>
     <DebuggerType>NativeOnly</DebuggerType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CertificateThumbprint)'!=''">
+    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+    <PackageCertificateThumbprint>$(CertificateThumbprint)</PackageCertificateThumbprint>
+    <AppxPackageSigningTimestampServerUrl Condition="'$(CertificateTimestampServer)'!=''">$(CertificateTimestampServer)</AppxPackageSigningTimestampServerUrl>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CertificateThumbprint)'==''">
+    <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">

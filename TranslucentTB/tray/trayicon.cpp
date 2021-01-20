@@ -81,10 +81,9 @@ TrayIcon::TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view classN
 	m_IconData {
 		.cbSize = sizeof(m_IconData),
 		.hWnd = m_WindowHandle,
-		.uFlags = NIF_MESSAGE | NIF_GUID,
+		.uFlags = NIF_MESSAGE,
 		.uCallbackMessage = TRAY_CALLBACK,
-		.uVersion = NOTIFYICON_VERSION_4,
-		.guidItem = iconId
+		.uVersion = NOTIFYICON_VERSION_4
 	},
 	m_whiteIconResource(whiteIconResource),
 	m_darkIconResource(darkIconResource),
@@ -101,6 +100,14 @@ TrayIcon::TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view classN
 	{
 		ErrnoTHandle(err, spdlog::level::warn, L"Failed to copy tray icon tooltip text.");
 	}
+
+#ifdef SIGNED_BUILD
+	m_IconData.uFlags |= NIF_GUID;
+	m_IconData.guidItem = iconId;
+#else
+	// good enough method to get an unique id
+	m_IconData.uID = iconId.Data1;
+#endif
 
 	LoadThemedIcon();
 
