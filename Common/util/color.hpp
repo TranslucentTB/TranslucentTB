@@ -56,25 +56,25 @@ namespace Util {
 				const uint8_t g = Util::ExpandOneHexDigitByte((col & 0xF0) >> 4);
 				const uint8_t b = Util::ExpandOneHexDigitByte(col & 0xF);
 
-				return Color{ r, g, b };
+				return Color { r, g, b };
 			}
 			else if (str.length() == 4)
 			{
-				const uint16_t col = Util::ParseHexNumber<uint16_t>(str) & 0xFFFF;
+				const auto col = Util::ParseHexNumber<uint16_t>(str);
 				const uint8_t r = Util::ExpandOneHexDigitByte((col & 0xF000) >> 12);
 				const uint8_t g = Util::ExpandOneHexDigitByte((col & 0xF00) >> 8);
 				const uint8_t b = Util::ExpandOneHexDigitByte((col & 0xF0) >> 4);
 				const uint8_t a = Util::ExpandOneHexDigitByte(col & 0xF);
 
-				return Color{ r, g, b, a };
+				return Color { r, g, b, a };
 			}
 			else if (str.length() == 6)
 			{
-				return Color{ Util::ParseHexNumber<uint32_t>(str) << 8 | 0xFF };
+				return Color { Util::ParseHexNumber<uint32_t>(str) << 8 | 0xFF };
 			}
 			else if (str.length() == 8)
 			{
-				return Color{ Util::ParseHexNumber<uint32_t>(str) };
+				return Color { Util::ParseHexNumber<uint32_t>(str) };
 			}
 			else
 			{

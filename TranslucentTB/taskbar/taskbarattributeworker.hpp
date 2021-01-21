@@ -29,11 +29,16 @@ private:
 	};
 
 	// todo:
-	// better aero peek support: detect current peeked to window and include in calculation
-	// dynamic cortana and task view
+	// not sure if possible - better aero peek support: detect current peeked to window and include in calculation
+	// dynamic cortana using foreground window
+	// check timeline's behavior on multi-mon
 	// close if explorer crashes twice in 30 seconds
 	// make sure opening start while already opened on other monitor works
-	// hook more things to make sure we dont miss anything
+	// - notification for owner changes
+	// - notification for extended style changes
+	// - notification for property changes: this is what is making the discord window not being correctly accounted for after restoring from tray
+	// 	   for some reason it shows itself (which we do capture) and then unsets ITaskList_Deleted (which we don't capture)
+	// - handle cases where we dont get EVENT_SYSTEM_FOREGROUND when unminimizing a window
 
 	// The magic function that does the thing
 	const PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SetWindowCompositionAttribute;
@@ -55,10 +60,11 @@ private:
 	wil::unique_hwineventhook m_CloakUncloakHook;
 	wil::unique_hwineventhook m_MinimizeRestoreHook;
 	wil::unique_hwineventhook m_ResizeMoveHook;
-	wil::unique_hwineventhook m_ShowHideHook; // todo: doesn't seem to react correctly to the discord window being shown
+	wil::unique_hwineventhook m_ShowHideHook;
 	wil::unique_hwineventhook m_CreateDestroyHook;
 	wil::unique_hwineventhook m_ForegroundChangeHook;
 	wil::unique_hwineventhook m_TitleChangeHook;
+	wil::unique_hwineventhook m_ParentChangeHook;
 	std::vector<wil::unique_hhook> m_Hooks;
 
 	// IAppVisibility
@@ -72,7 +78,7 @@ private:
 	std::optional<UINT> m_GetTimelineStatusMessage;
 
 	// Type aliases
-	using taskbar_iterator = decltype(m_Taskbars)::iterator;
+	using taskbar_iterator = std::unordered_map<HMONITOR, MonitorInfo>::iterator;
 
 	// Callbacks
 	template<DWORD insert, DWORD remove>
