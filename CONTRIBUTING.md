@@ -38,7 +38,16 @@ You also need to install the following individual components:
 - .NET Framework 4.6.2 SDK
 - .NET Framework 4.6.2 targeting pack
 
-You also need the [Clang compiler for Windows version 7 or above](http://releases.llvm.org/download.html), the [LLVM Compiler Toolchain Visual Studio addon](https://marketplace.visualstudio.com/items?itemName=LLVMExtensions.llvm-toolchain) and [Inno Setup](http://jrsoftware.org/isdl.php).
+You also need the [Clang compiler for Windows version 7 or above](http://releases.llvm.org/download.html), the [LLVM Compiler Toolchain Visual Studio addon](https://marketplace.visualstudio.com/items?itemName=LLVMExtensions.llvm-toolchain), [Inno Setup](http://jrsoftware.org/isdl.php) and [vcpkg](https://github.com/microsoft/vcpkg).
+
+Once you have that installed, Open a terminal and execute these lines
+```sh
+cd path\to\TranslucentTB
+vcpkg install --triplet x64-windows fmt spdlog discord-game-sdk
+vcpkg install --triplet x64-windows --overlay-ports=ports --head detours gtest member-thunk rapidjson wil
+vcpkg integrate install
+```
+`gtest` can be skipped if you don't intend to run the unit tests.
 
 <!-- markdownlint-disable MD033 -->
 Once you have that installed, open `TranslucentTB.sln`, and press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to build the solution.
