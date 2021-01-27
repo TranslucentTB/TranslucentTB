@@ -44,7 +44,7 @@ Once you have that installed, Open a terminal and execute these lines
 ```sh
 cd path\to\TranslucentTB
 vcpkg install --triplet x64-windows fmt spdlog discord-game-sdk
-vcpkg install --triplet x64-windows --overlay-ports=.\ports --head detours gtest member-thunk rapidjson wil
+vcpkg install --triplet x64-windows --overlay-ports=ports --head detours gtest member-thunk rapidjson wil
 vcpkg integrate install
 ```
 `gtest` can be skipped if you don't intend to run the unit tests.
