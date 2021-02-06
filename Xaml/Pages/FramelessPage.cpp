@@ -12,8 +12,17 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		InitializeComponent();
 	}
 
-	bool FramelessPage::CanMove() noexcept
+	bool FramelessPage::CanMove()
 	{
+		// block moving if a ContentDialog is opened
+		for (const auto popup : wux::Media::VisualTreeHelper::GetOpenPopupsForXamlRoot(XamlRoot()))
+		{
+			if (popup.Child().try_as<wuxc::ContentDialog>())
+			{
+				return false;
+			}
+		}
+
 		return true;
 	}
 
@@ -80,7 +89,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 				{
 					height = closeButton.ActualHeight();
 				}
-				
+
 				width += closeButton.ActualWidth();
 			}
 

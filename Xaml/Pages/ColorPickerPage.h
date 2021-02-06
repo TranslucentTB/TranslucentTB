@@ -11,7 +11,6 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		ColorPickerPage(const hstring &category, const Windows::UI::Color &currentColor);
 
-		bool CanMove() noexcept override;
 		bool RequestClose() override;
 
 		event_token ChangesCommitted(const ChangesCommittedDelegate &handler);
