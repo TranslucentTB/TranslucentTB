@@ -108,10 +108,7 @@ void UWP::HideCoreWindow()
 
 	if (coreWin)
 	{
-		if (!coreWin.show(SW_HIDE))
-		{
-			LastErrorHandle(spdlog::level::warn, L"Failed to hide core window");
-		}
+		coreWin.show(SW_HIDE);
 	}
 }
 
