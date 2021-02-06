@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2019-09/schema#",
   "title": "TranslucentTB Settings Schema",
-  "definitions": {
+  "$defs": {
     "TaskbarAppearance": {
       "properties": {
         "accent": {
@@ -15,7 +15,6 @@
           "type": "string"
         },
         "color": {
-          "default": "#",
           "pattern": "^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
           "type": "string",
           "format": "color"
@@ -34,29 +33,29 @@
           "type": "object"
         },
         {
-          "$ref": "#/definitions/TaskbarAppearance"
+          "$ref": "#/$defs/TaskbarAppearance"
         }
       ]
     }
   },
   "properties": {
     "desktop_appearance": {
-      "$ref": "#/definitions/TaskbarAppearance"
+      "$ref": "#/$defs/TaskbarAppearance"
     },
     "visible_window_appearance": {
-      "$ref": "#/definitions/OptionalTaskbarAppearance"
+      "$ref": "#/$defs/OptionalTaskbarAppearance"
     },
     "maximized_window_appearance": {
-      "$ref": "#/definitions/OptionalTaskbarAppearance"
+      "$ref": "#/$defs/OptionalTaskbarAppearance"
     },
     "start_opened_appearance": {
-      "$ref": "#/definitions/OptionalTaskbarAppearance"
+      "$ref": "#/$defs/OptionalTaskbarAppearance"
     },
     "search_opened_appearance": {
-      "$ref": "#/definitions/OptionalTaskbarAppearance"
+      "$ref": "#/$defs/OptionalTaskbarAppearance"
     },
     "timeline_opened_appearance": {
-      "$ref": "#/definitions/OptionalTaskbarAppearance"
+      "$ref": "#/$defs/OptionalTaskbarAppearance"
     },
     "ignored_windows": {
       "properties": {
