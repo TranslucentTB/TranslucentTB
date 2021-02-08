@@ -19,6 +19,9 @@
     <ClCompile Include="util\color.cpp">
       <Filter>Util Tests</Filter>
     </ClCompile>
+    <ClCompile Include="config\rapidjsonhelper.cpp">
+      <Filter>Config Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

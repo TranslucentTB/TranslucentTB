@@ -20,34 +20,51 @@ struct TaskbarAppearance {
 	template<class Writer>
 	inline void Serialize(Writer &writer) const
 	{
-		RapidJSONHelper::Serialize(writer, Accent, ACCENT_KEY, ACCENT_MAP);
+		rjh::Serialize(writer, Accent, ACCENT_KEY, ACCENT_MAP);
 
-		RapidJSONHelper::WriteKey(writer, COLOR_KEY);
 		Util::small_wmemory_buffer<9> buf;
 		Color.ToString(buf);
-		RapidJSONHelper::WriteString(writer, Util::ToStringView(buf));
+		rjh::Serialize(writer, buf, COLOR_KEY);
 	}
 
-	void Deserialize(const RapidJSONHelper::value_t &obj)
+	void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view))
 	{
-		RapidJSONHelper::Deserialize(obj, Accent, ACCENT_KEY, ACCENT_MAP);
+		rjh::EnsureType(rj::Type::kObjectType, obj.GetType(), L"root node");
 
-		if (const auto it = obj.FindMember(RapidJSONHelper::StringViewToValue(COLOR_KEY)); it != obj.MemberEnd())
+		for (auto it = obj.MemberBegin(); it != obj.MemberEnd(); ++it)
 		{
-			const auto &color = it->value;
-			RapidJSONHelper::EnsureType(rapidjson::Type::kStringType, color.GetType(), COLOR_KEY);
+			rjh::EnsureType(rj::Type::kStringType, it->name.GetType(), L"member name");
 
-			const auto colorStr = RapidJSONHelper::ValueToStringView(color);
+			InnerDeserialize(rjh::ValueToStringView(it->name), it->value, unknownKeyCallback);
+		}
+	}
+
+protected:
+	void InnerDeserialize(std::wstring_view key, const rjh::value_t &val, void (*unknownKeyCallback)(std::wstring_view))
+	{
+		if (key == ACCENT_KEY)
+		{
+			rjh::Deserialize(val, Accent, key, ACCENT_MAP);
+		}
+		else if (key == COLOR_KEY)
+		{
+			rjh::EnsureType(rj::Type::kStringType, val.GetType(), key);
+
+			const auto colorStr = rjh::ValueToStringView(val);
 			try
 			{
 				Color = Util::Color::FromString(colorStr);
 			}
 			catch (...)
 			{
-				throw RapidJSONHelper::DeserializationError {
-					fmt::format(FMT_STRING(L"Found invalid string \"{}\" while deserializing {}"), colorStr, COLOR_KEY)
+				throw rjh::DeserializationError {
+					fmt::format(FMT_STRING(L"Found invalid string \"{}\" while deserializing {}"), colorStr, key)
 				};
 			}
+		}
+		else if (unknownKeyCallback)
+		{
+			unknownKeyCallback(key);
 		}
 	}
 

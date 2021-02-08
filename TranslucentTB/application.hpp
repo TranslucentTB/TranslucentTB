@@ -56,7 +56,6 @@ public:
 	static void OpenTipsPage();
 
 	void OpenDiscordServer();
-	void EditConfigFile();
 
 	constexpr ConfigManager &GetConfigManager() noexcept { return m_Config; }
 	constexpr StartupManager &GetStartupManager() noexcept { return m_Startup; }

@@ -12,8 +12,10 @@
 
 #include "../util/to_string_view.hpp"
 
-namespace RapidJSONHelper {
-	using value_t = rapidjson::GenericValue<rapidjson::UTF16LE<>>;
+namespace rj = rapidjson;
+
+namespace rjh {
+	using value_t = rj::GenericValue<rj::UTF16LE<>>;
 
 	struct DeserializationError {
 		const std::wstring what;
@@ -29,14 +31,14 @@ namespace RapidJSONHelper {
 		L"number"
 	};
 
-	constexpr bool IsType(rapidjson::Type a, rapidjson::Type b) noexcept
+	constexpr bool IsType(rj::Type a, rj::Type b) noexcept
 	{
 		return a == b ||
-			(a == rapidjson::Type::kFalseType && b == rapidjson::Type::kTrueType) ||
-			(a == rapidjson::Type::kTrueType && b == rapidjson::Type::kFalseType);
+			(a == rj::Type::kFalseType && b == rj::Type::kTrueType) ||
+			(a == rj::Type::kTrueType && b == rj::Type::kFalseType);
 	}
 
-	inline void EnsureType(rapidjson::Type expected, rapidjson::Type actual, std::wstring_view obj)
+	inline void EnsureType(rj::Type expected, rj::Type actual, std::wstring_view obj)
 	{
 		if (!IsType(expected, actual)) [[unlikely]]
 		{
@@ -48,12 +50,12 @@ namespace RapidJSONHelper {
 
 	inline void AssertLength(std::wstring_view str)
 	{
-		assert(str.length() <= std::numeric_limits<rapidjson::SizeType>::max());
+		assert(str.length() <= std::numeric_limits<rj::SizeType>::max());
 	}
 
 	inline std::wstring_view ValueToStringView(const value_t &val)
 	{
-		assert(val.GetType() == rapidjson::Type::kStringType); // caller should have already ensured
+		assert(val.GetType() == rj::Type::kStringType); // caller should have already ensured
 
 		return { val.GetString(), val.GetStringLength() };
 	}
@@ -61,21 +63,21 @@ namespace RapidJSONHelper {
 	inline value_t StringViewToValue(std::wstring_view str)
 	{
 		AssertLength(str);
-		return { str.data(), static_cast<rapidjson::SizeType>(str.length()) };
+		return { str.data(), static_cast<rj::SizeType>(str.length()) };
 	}
 
 	template<class Writer>
 	inline void WriteKey(Writer &writer, std::wstring_view key)
 	{
 		AssertLength(key);
-		writer.Key(key.data(), static_cast<rapidjson::SizeType>(key.length()));
+		writer.Key(key.data(), static_cast<rj::SizeType>(key.length()));
 	}
 
 	template<class Writer>
 	inline void WriteString(Writer &writer, std::wstring_view str)
 	{
 		AssertLength(str);
-		writer.String(str.data(), static_cast<rapidjson::SizeType>(str.length()));
+		writer.String(str.data(), static_cast<rj::SizeType>(str.length()));
 	}
 
 	// prevent this overload from being picked on stuff implicitly convertible to bool
@@ -116,49 +118,38 @@ namespace RapidJSONHelper {
 		writer.EndObject();
 	}
 
-	// TODO: write unit test
-	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &obj, bool &member, std::wstring_view key)
+	inline void Deserialize(const value_t &obj, bool &member, std::wstring_view key)
 	{
-		if (const auto it = obj.FindMember(StringViewToValue(key)); it != obj.MemberEnd())
-		{
-			const auto &value = it->value;
-			EnsureType(rapidjson::Type::kFalseType, value.GetType(), key);
+		EnsureType(rj::Type::kFalseType, obj.GetType(), key);
 
-			member = value.GetBool();
-		}
+		member = obj.GetBool();
 	}
 
-	template<class T, std::size_t size>
-	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &obj, T &member, std::wstring_view key, const std::array<std::wstring_view, size> &arr)
+	template<typename T, std::size_t size>
+	requires std::is_enum_v<T>
+	inline void Deserialize(const value_t &obj, T &member, std::wstring_view key, const std::array<std::wstring_view, size> &arr)
 	{
-		if (const auto it = obj.FindMember(StringViewToValue(key)); it != obj.MemberEnd())
-		{
-			const auto &value = it->value;
-			EnsureType(rapidjson::Type::kStringType, value.GetType(), key);
+		EnsureType(rj::Type::kStringType, obj.GetType(), key);
 
-			const auto str = ValueToStringView(value);
-			if (const auto it2 = std::find(arr.begin(), arr.end(), str); it2 != arr.end())
-			{
-				member = static_cast<T>(it2 - arr.begin());
-			}
-			else
-			{
-				throw RapidJSONHelper::DeserializationError {
-					fmt::format(FMT_STRING(L"Found invalid enum string \"{}\" while deserializing key \"{}\""), str, key)
-				};
-			}
+		const auto str = ValueToStringView(obj);
+		if (const auto it = std::ranges::find(arr.begin(), arr.end(), str); it != arr.end())
+		{
+			member = static_cast<T>(it - arr.begin());
+		}
+		else
+		{
+			throw rjh::DeserializationError {
+				fmt::format(FMT_STRING(L"Found invalid enum string \"{}\" while deserializing key \"{}\""), str, key)
+			};
 		}
 	}
 
 	template<class T>
-	inline void Deserialize(const rapidjson::GenericValue<rapidjson::UTF16LE<>> &obj, T &member, std::wstring_view key)
+	requires std::is_class_v<T>
+	inline void Deserialize(const value_t &obj, T &member, std::wstring_view key, void (*unknownKeyCallback)(std::wstring_view))
 	{
-		if (const auto it = obj.FindMember(StringViewToValue(key)); it != obj.MemberEnd())
-		{
-			const auto &value = it->value;
-			EnsureType(rapidjson::Type::kObjectType, value.GetType(), key);
+		EnsureType(rj::Type::kObjectType, obj.GetType(), key);
 
-			member.Deserialize(value);
-		}
+		member.Deserialize(obj, unknownKeyCallback);
 	}
 }

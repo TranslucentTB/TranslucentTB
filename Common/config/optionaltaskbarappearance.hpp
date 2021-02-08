@@ -10,14 +10,28 @@ struct OptionalTaskbarAppearance : TaskbarAppearance {
 	template <typename Writer>
 	inline void Serialize(Writer &writer) const
 	{
-		RapidJSONHelper::Serialize(writer, Enabled, ENABLED_KEY);
+		rjh::Serialize(writer, Enabled, ENABLED_KEY);
 		TaskbarAppearance::Serialize(writer);
 	}
 
-	void Deserialize(const RapidJSONHelper::value_t &obj)
+	void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view))
 	{
-		RapidJSONHelper::Deserialize(obj, Enabled, ENABLED_KEY);
-		TaskbarAppearance::Deserialize(obj);
+		rjh::EnsureType(rj::Type::kObjectType, obj.GetType(), L"root node");
+
+		for (auto it = obj.MemberBegin(); it != obj.MemberEnd(); ++it)
+		{
+			rjh::EnsureType(rj::Type::kStringType, it->name.GetType(), L"member name");
+
+			const auto key = rjh::ValueToStringView(it->name);
+			if (key == ENABLED_KEY)
+			{
+				rjh::Deserialize(it->value, Enabled, key);
+			}
+			else
+			{
+				InnerDeserialize(key, it->value, unknownKeyCallback);
+			}
+		}
 	}
 
 private:

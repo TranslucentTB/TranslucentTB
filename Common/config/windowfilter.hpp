@@ -5,6 +5,7 @@
 #include <string_view>
 #include <unordered_set>
 
+#include "rapidjsonhelper.hpp"
 #include "../win32.hpp"
 
 #ifdef _TRANSLUCENTTB_EXE
@@ -22,11 +23,32 @@ public:
 		SerializeStringSet(writer, m_FileList, FILE_KEY);
 	}
 
-	inline void Deserialize(const RapidJSONHelper::value_t &obj)
+	inline void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view))
 	{
-		DeserializeStringSet(obj, m_ClassList, CLASS_KEY);
-		DeserializeStringSet(obj, m_TitleList, TITLE_KEY);
-		DeserializeStringSet(obj, m_FileList, FILE_KEY);
+		rjh::EnsureType(rj::Type::kObjectType, obj.GetType(), L"root node");
+
+		for (auto it = obj.MemberBegin(); it != obj.MemberEnd(); ++it)
+		{
+			rjh::EnsureType(rj::Type::kStringType, it->name.GetType(), L"member name");
+
+			const auto key = rjh::ValueToStringView(it->name);
+			if (key == CLASS_KEY)
+			{
+				DeserializeStringSet(it->value, m_ClassList, key);
+			}
+			else if (key == TITLE_KEY)
+			{
+				DeserializeStringSet(it->value, m_TitleList, key);
+			}
+			else if(key == FILE_KEY)
+			{
+				DeserializeStringSet(it->value, m_FileList, key);
+			}
+			else if (unknownKeyCallback)
+			{
+				unknownKeyCallback(key);
+			}
+		}
 	}
 
 #ifdef _TRANSLUCENTTB_EXE
@@ -90,28 +112,24 @@ private:
 	template<typename Writer, typename Hash, typename Equal, typename Alloc>
 	inline static void SerializeStringSet(Writer &writer, const std::unordered_set<std::wstring, Hash, Equal, Alloc> &set, std::wstring_view key)
 	{
-		RapidJSONHelper::WriteKey(writer, key);
+		rjh::WriteKey(writer, key);
 		writer.StartArray();
 		for (const std::wstring &str : set)
 		{
-			RapidJSONHelper::WriteString(writer, str);
+			rjh::WriteString(writer, str);
 		}
 		writer.EndArray();
 	}
 
 	template<typename Hash, typename Equal, typename Alloc>
-	inline static void DeserializeStringSet(const RapidJSONHelper::value_t &obj, std::unordered_set<std::wstring, Hash, Equal, Alloc> &set, std::wstring_view key)
+	inline static void DeserializeStringSet(const rjh::value_t &arr, std::unordered_set<std::wstring, Hash, Equal, Alloc> &set, std::wstring_view key)
 	{
-		if (const auto it = obj.FindMember(RapidJSONHelper::StringViewToValue(key)); it != obj.MemberEnd())
-		{
-			const auto &array = it->value;
-			RapidJSONHelper::EnsureType(rapidjson::Type::kArrayType, array.GetType(), key);
+		rjh::EnsureType(rj::Type::kArrayType, arr.GetType(), key);
 
-			for (const auto &elem : array.GetArray())
-			{
-				RapidJSONHelper::EnsureType(rapidjson::Type::kStringType, elem.GetType(), L"array element");
-				set.emplace(RapidJSONHelper::ValueToStringView(elem));
-			}
+		for (const auto &elem : arr.GetArray())
+		{
+			rjh::EnsureType(rj::Type::kStringType, elem.GetType(), L"array element");
+			set.emplace(rjh::ValueToStringView(elem));
 		}
 	}
 

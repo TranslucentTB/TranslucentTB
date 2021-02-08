@@ -7,8 +7,12 @@
 #include "config/config.hpp"
 #include "../folderwatcher.hpp"
 
-// TODO: move Config::Load and Config::Save in ConfigManager?
 class ConfigManager {
+	// we use settings.json because it makes VS Code automatically recognize
+	// the file as JSON with comments
+	static constexpr std::wstring_view CONFIG_FILE = L"settings.json";
+	static constexpr std::wstring_view SCHEMA_KEY = L"$schema";
+
 	using callback_t = std::add_pointer_t<void(void *, const Config &)>;
 
 	static std::filesystem::path DetermineConfigPath(const std::optional<std::filesystem::path> &storageFolder);
@@ -21,23 +25,21 @@ class ConfigManager {
 	callback_t m_Callback;
 	void *m_Context;
 
+	bool TryOpenConfigAsJson() noexcept;
+	void SaveToFile(FILE *f) const;
+	bool LoadFromFile(FILE *f);
+	bool Load();
+
 public:
 	ConfigManager(const std::optional<std::filesystem::path> &storageFolder, bool &fileExists, callback_t callback, void *context);
 
 	void UpdateVerbosity();
+	void EditConfigFile();
+	void DeleteConfigFile();
+	void SaveConfig() const;
 
 	constexpr Config &GetConfig() noexcept
 	{
 		return m_Config;
-	}
-
-	constexpr const std::filesystem::path &GetConfigPath() const noexcept
-	{
-		return m_ConfigPath;
-	}
-
-	inline void SaveConfig()
-	{
-		GetConfig().Save(m_ConfigPath);
 	}
 };

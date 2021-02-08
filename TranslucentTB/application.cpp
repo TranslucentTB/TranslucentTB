@@ -62,15 +62,9 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 		{
 			auto closeRevoker = content.Closed(winrt::auto_revoke, [this]
 			{
-				// Delete the config file to redo the first start next time.
-				// getting the config path *should* be thread-safe: nobody ever modifies it in the program lifetime
-				// and Application doesn't vanish from under our feet.
-				std::error_code errc;
-				std::filesystem::remove(m_Config.GetConfigPath(), errc);
-				StdErrorCodeVerify(errc, spdlog::level::warn, L"Failed to delete config file");
-
 				DispatchToMainThread([this]
 				{
+					m_Config.DeleteConfigFile();
 					Shutdown(1);
 				});
 			});
@@ -89,7 +83,7 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 			{
 				DispatchToMainThread([this]
 				{
-					EditConfigFile();
+					m_Config.EditConfigFile();
 				});
 			});
 
@@ -187,12 +181,6 @@ void Application::OpenDiscordServer()
 #else
 	UWP::OpenUri(wf::Uri(L"https://discord.gg/" APP_NAME));
 #endif
-}
-
-void Application::EditConfigFile()
-{
-	m_Config.SaveConfig();
-	HresultVerify(win32::EditFile(m_Config.GetConfigPath()), spdlog::level::err, L"Failed to open configuration file.");
 }
 
 int Application::Run()

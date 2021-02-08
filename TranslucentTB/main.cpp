@@ -28,6 +28,11 @@ void HardenProcess()
 		spdlog::level::trace;
 #endif
 
+	if (!SetSearchPathMode(BASE_SEARCH_PATH_ENABLE_SAFE_SEARCHMODE | BASE_SEARCH_PATH_PERMANENT))
+	{
+		LastErrorHandle(level, L"Couldn't enable safe DLL search mode.");
+	}
+
 	if (!HeapSetInformation(nullptr, HeapEnableTerminationOnCorruption, nullptr, 0))
 	{
 		LastErrorHandle(level, L"Couldn't enable termination on heap corruption.");

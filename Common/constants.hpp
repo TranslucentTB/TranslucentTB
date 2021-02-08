@@ -7,9 +7,6 @@
 
 #pragma region App
 
-// Config file name
-static constexpr Util::null_terminated_wstring_view CONFIG_FILE = L"config.json";
-
 // Mutex name for app uniqueness
 static constexpr Util::null_terminated_wstring_view MUTEX_GUID = L"344635E9-9AE4-4E60-B128-D53E25AB70A7";
 

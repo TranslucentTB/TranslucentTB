@@ -10,25 +10,6 @@
 #include "taskbarappearance.hpp"
 #include "windowfilter.hpp"
 
-
-#ifdef _TRANSLUCENTTB_EXE
-#include <cerrno>
-#include <cstdio>
-#include <filesystem>
-#include <rapidjson/encodedstream.h>
-#include <rapidjson/error/error.h>
-#include <rapidjson/filereadstream.h>
-#include <rapidjson/filewritestream.h>
-#include <rapidjson/prettywriter.h>
-#include <share.h>
-#include <wil/resource.h>
-
-#include "../appinfo.hpp"
-#include "../../ProgramLog/error/errno.hpp"
-#include "../../ProgramLog/error/rapidjson.hpp"
-#include "../../ProgramLog/error/std.hpp"
-#endif
-
 class Config {
 public:
 	// Appearances
@@ -40,7 +21,6 @@ public:
 	OptionalTaskbarAppearance TimelineOpenedAppearance = { ACCENT_NORMAL, { }, true };
 
 	// Advanced
-	WindowFilter Whitelist;
 	WindowFilter IgnoredWindows;
 	bool HideTray = false;
 	bool DisableSaving = false;
@@ -54,122 +34,73 @@ public:
 	template<class Writer>
 	inline void Serialize(Writer &writer) const
 	{
-		RapidJSONHelper::Serialize(writer, DesktopAppearance, DESKTOP_KEY);
-		RapidJSONHelper::Serialize(writer, VisibleWindowAppearance, VISIBLE_KEY);
-		RapidJSONHelper::Serialize(writer, MaximisedWindowAppearance, MAXIMISED_KEY);
-		RapidJSONHelper::Serialize(writer, StartOpenedAppearance, START_KEY);
-		RapidJSONHelper::Serialize(writer, CortanaOpenedAppearance, CORTANA_KEY);
-		RapidJSONHelper::Serialize(writer, TimelineOpenedAppearance, TIMELINE_KEY);
-		RapidJSONHelper::Serialize(writer, Whitelist, WHITELIST_KEY);
-		RapidJSONHelper::Serialize(writer, IgnoredWindows, IGNORED_WINDOWS_KEY);
-		RapidJSONHelper::Serialize(writer, HideTray, TRAY_KEY);
-		RapidJSONHelper::Serialize(writer, DisableSaving, SAVING_KEY);
-		RapidJSONHelper::Serialize(writer, LogVerbosity, LOG_KEY, LOG_MAP);
+		rjh::Serialize(writer, DesktopAppearance, DESKTOP_KEY);
+		rjh::Serialize(writer, VisibleWindowAppearance, VISIBLE_KEY);
+		rjh::Serialize(writer, MaximisedWindowAppearance, MAXIMISED_KEY);
+		rjh::Serialize(writer, StartOpenedAppearance, START_KEY);
+		rjh::Serialize(writer, CortanaOpenedAppearance, CORTANA_KEY);
+		rjh::Serialize(writer, TimelineOpenedAppearance, TIMELINE_KEY);
+		rjh::Serialize(writer, IgnoredWindows, IGNORED_WINDOWS_KEY);
+		rjh::Serialize(writer, HideTray, TRAY_KEY);
+		rjh::Serialize(writer, DisableSaving, SAVING_KEY);
+		rjh::Serialize(writer, LogVerbosity, LOG_KEY, LOG_MAP);
 	}
 
-	inline void Deserialize(const RapidJSONHelper::value_t &obj)
+	inline void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view) = nullptr)
 	{
-		RapidJSONHelper::Deserialize(obj, DesktopAppearance, DESKTOP_KEY);
-		RapidJSONHelper::Deserialize(obj, VisibleWindowAppearance, VISIBLE_KEY);
-		RapidJSONHelper::Deserialize(obj, MaximisedWindowAppearance, MAXIMISED_KEY);
-		RapidJSONHelper::Deserialize(obj, StartOpenedAppearance, START_KEY);
-		RapidJSONHelper::Deserialize(obj, CortanaOpenedAppearance, CORTANA_KEY);
-		RapidJSONHelper::Deserialize(obj, TimelineOpenedAppearance, TIMELINE_KEY);
-		RapidJSONHelper::Deserialize(obj, Whitelist, WHITELIST_KEY);
-		RapidJSONHelper::Deserialize(obj, IgnoredWindows, IGNORED_WINDOWS_KEY);
-		RapidJSONHelper::Deserialize(obj, HideTray, TRAY_KEY);
-		RapidJSONHelper::Deserialize(obj, DisableSaving, SAVING_KEY);
-		RapidJSONHelper::Deserialize(obj, LogVerbosity, LOG_KEY, LOG_MAP);
-	}
+		rjh::EnsureType(rj::Type::kObjectType, obj.GetType(), L"root node");
 
-#ifdef _TRANSLUCENTTB_EXE
-	inline void Save(const std::filesystem::path &file, bool ignoreDisabledSaving = false)
-	{
-		if (ignoreDisabledSaving || !DisableSaving)
+		for (auto it = obj.MemberBegin(); it != obj.MemberEnd(); ++it)
 		{
-			wil::unique_file pfile;
-			const errno_t err = _wfopen_s(pfile.put(), file.c_str(), L"wbS");
-			if (err == 0)
+			rjh::EnsureType(rj::Type::kStringType, it->name.GetType(), L"member name");
+
+			const auto key = rjh::ValueToStringView(it->name);
+			if (key == DESKTOP_KEY)
 			{
-				using namespace rapidjson;
-
-				char buffer[1024];
-				FileWriteStream filestream(pfile.get(), buffer, std::size(buffer));
-
-				using OutputStream = EncodedOutputStream<UTF8<>, FileWriteStream>;
-				OutputStream out(filestream, true);
-
-				static constexpr std::string_view comment = "// See https://" UTF8_APP_NAME ".github.io/config for more information\n";
-				for (const char c : comment)
-				{
-					out.Put(c);
-				}
-
-				PrettyWriter<OutputStream, UTF16LE<>> writer(out);
-
-				writer.StartObject();
-				RapidJSONHelper::Serialize(writer, L"https://sylveon.dev/" APP_NAME "/schema", L"$schema");
-				Serialize(writer);
-				writer.EndObject();
-
-				writer.Flush();
+				rjh::Deserialize(it->value, DesktopAppearance, key, unknownKeyCallback);
 			}
-			else
+			else if (key == VISIBLE_KEY)
 			{
-				ErrnoTHandle(err, spdlog::level::err, L"Failed to save configuration!");
+				rjh::Deserialize(it->value, VisibleWindowAppearance, key, unknownKeyCallback);
+			}
+			else if (key == MAXIMISED_KEY)
+			{
+				rjh::Deserialize(it->value, MaximisedWindowAppearance, key, unknownKeyCallback);
+			}
+			else if (key == START_KEY)
+			{
+				rjh::Deserialize(it->value, StartOpenedAppearance, key, unknownKeyCallback);
+			}
+			else if (key == CORTANA_KEY)
+			{
+				rjh::Deserialize(it->value, CortanaOpenedAppearance, key, unknownKeyCallback);
+			}
+			else if (key == TIMELINE_KEY)
+			{
+				rjh::Deserialize(it->value, TimelineOpenedAppearance, key, unknownKeyCallback);
+			}
+			else if (key == IGNORED_WINDOWS_KEY)
+			{
+				rjh::Deserialize(it->value, IgnoredWindows, key, unknownKeyCallback);
+			}
+			else if (key == TRAY_KEY)
+			{
+				rjh::Deserialize(it->value, HideTray, key);
+			}
+			else if (key == SAVING_KEY)
+			{
+				rjh::Deserialize(it->value, DisableSaving, key);
+			}
+			else if (key == LOG_KEY)
+			{
+				rjh::Deserialize(it->value, LogVerbosity, key, LOG_MAP);
+			}
+			else if (unknownKeyCallback)
+			{
+				unknownKeyCallback(key);
 			}
 		}
 	}
-
-	inline static Config Load(const std::filesystem::path &file, bool &fileExists)
-	{
-		fileExists = true;
-		wil::unique_file pfile(_wfsopen(file.c_str(), L"rbS", _SH_DENYNO));
-		if (pfile)
-		{
-			using namespace rapidjson;
-
-			char buffer[1024];
-			FileReadStream filestream(pfile.get(), buffer, std::size(buffer));
-
-			AutoUTFInputStream<uint32_t, FileReadStream> in(filestream);
-
-			GenericDocument<UTF16LE<>> doc;
-			if (const ParseResult result = doc.ParseStream<kParseCommentsFlag, AutoUTF<uint32_t>>(in))
-			{
-				static constexpr std::wstring_view ERR_MSG = L"Failed to deserialize JSON document";
-				try
-				{
-					RapidJSONHelper::EnsureType(rapidjson::Type::kObjectType, doc.GetType(), L"root node");
-
-					Config cfg;
-					cfg.Deserialize(doc);
-					return cfg;
-				}
-				HelperDeserializationErrorCatch(spdlog::level::err, ERR_MSG)
-				StdSystemErrorCatch(spdlog::level::err, ERR_MSG);
-			}
-			else
-			{
-				ParseErrorCodeHandle(result.Code(), spdlog::level::err, L"Failed to parse configuration!");
-			}
-		}
-		else
-		{
-			// It's not an error for the config file to not exist.
-			if (const errno_t err = errno; err == ENOENT)
-			{
-				fileExists = false;
-			}
-			else
-			{
-				ErrnoTHandle(err, spdlog::level::err, L"Failed to load configuration!");
-			}
-		}
-
-		return { };
-	}
-#endif
 
 private:
 	static constexpr std::array<std::wstring_view, spdlog::level::off + 1> LOG_MAP = {
@@ -188,7 +119,6 @@ private:
 	static constexpr std::wstring_view START_KEY = L"start_opened_appearance";
 	static constexpr std::wstring_view CORTANA_KEY = L"cortana_opened_appearance";
 	static constexpr std::wstring_view TIMELINE_KEY = L"timeline_opened_appearance";
-	static constexpr std::wstring_view WHITELIST_KEY = L"whitelist";
 	static constexpr std::wstring_view IGNORED_WINDOWS_KEY = L"ignored_windows";
 	static constexpr std::wstring_view TRAY_KEY = L"hide_tray";
 	static constexpr std::wstring_view SAVING_KEY = L"disable_saving";

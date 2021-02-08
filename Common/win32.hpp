@@ -1,5 +1,6 @@
 #pragma once
 #include "arch.h"
+#include <bit>
 #include <windef.h>
 #include <cstddef>
 #include <cstdint>
@@ -80,7 +81,7 @@ public:
 	{
 		SHELLEXECUTEINFO info = {
 			.cbSize = sizeof(info),
-			.fMask = SEE_MASK_CLASSNAME,
+			.fMask = SEE_MASK_CLASSNAME | SEE_MASK_FLAG_NO_UI,
 			.lpVerb = L"open",
 			.lpFile = file.c_str(),
 			.nShow = SW_SHOW,
@@ -203,6 +204,12 @@ public:
 		{
 			throw std::system_error(static_cast<int>(GetLastError()), std::system_category(), "Failed to compare strings");
 		}
+	}
+
+	inline static bool IsFileEmpty(HANDLE hFile)
+	{
+		LARGE_INTEGER size;
+		return GetFileSizeEx(hFile, &size) && std::bit_cast<int64_t>(size) == 0;
 	}
 
 	struct FilenameEqual {

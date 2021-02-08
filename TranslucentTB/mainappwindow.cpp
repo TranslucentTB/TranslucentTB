@@ -199,7 +199,7 @@ void MainAppWindow::ClickHandler(unsigned int id)
 				HresultVerify(win32::EditFile(Log::GetSink()->file()), spdlog::level::err, L"Failed to open log file.");
 				break;
 			case ID_EDITSETTINGS:
-				m_App.EditConfigFile();
+				cfgManager.EditConfigFile();
 				break;
 			case ID_RETURNTODEFAULTSETTINGS:
 				cfg = { };
