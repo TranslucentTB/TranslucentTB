@@ -19,11 +19,6 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		Picker().Color(currentColor);
 	}
 
-	bool ColorPickerPage::CanMove() noexcept
-	{
-		return !m_DialogOpened;
-	}
-
 	bool ColorPickerPage::RequestClose()
 	{
 		if (m_DialogOpened)

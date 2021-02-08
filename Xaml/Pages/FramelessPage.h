@@ -12,7 +12,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		FramelessPage();
 
-		virtual bool CanMove() noexcept;
+		bool CanMove();
 
 		void ShowSystemMenu(const wf::Point &position);
 		void HideSystemMenu();

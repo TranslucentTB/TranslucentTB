@@ -10,9 +10,7 @@ namespace TranslucentTB.Xaml.Pages
 	{
 		FramelessPage();
 
-		// https://github.com/microsoft/cppwinrt/issues/782
-		// [noexcept]
-		overridable Boolean CanMove { get; };
+		Boolean CanMove { get; };
 
 		void ShowSystemMenu(Windows.Foundation.Point position);
 		void HideSystemMenu();
