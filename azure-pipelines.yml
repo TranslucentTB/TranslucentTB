@@ -25,6 +25,9 @@ steps:
 - script: git pull
   displayName: 'Update vcpkg ports'
   workingDirectory: C:\vcpkg
+- script: .\bootstrap-vcpkg.bat
+  displayName: 'Bootstrap vcpkg'
+  workingDirectory: C:\vcpkg
 - script: vcpkg install --triplet $(platform)-windows discord-game-sdk
   displayName: 'Install Discord Game SDK'
   condition: and(succeeded(), eq(variables['platform'], 'x64'))
