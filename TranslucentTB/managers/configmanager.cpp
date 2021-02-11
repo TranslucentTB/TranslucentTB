@@ -51,9 +51,9 @@ void ConfigManager::WatcherCallback(void *context, DWORD, std::wstring_view file
 
 bool ConfigManager::TryOpenConfigAsJson() noexcept
 {
-	// TODO: add error logging
 	wil::unique_hkey key;
-	if (SUCCEEDED(AssocQueryKey(ASSOCF_VERIFY, ASSOCKEY_SHELLEXECCLASS, L".json", L"open", key.put())))
+	const HRESULT hr = AssocQueryKey(ASSOCF_VERIFY | ASSOCF_INIT_IGNOREUNKNOWN, ASSOCKEY_SHELLEXECCLASS, L".json", L"open", key.put());
+	if (SUCCEEDED(hr))
 	{
 		SHELLEXECUTEINFO info = {
 			.cbSize = sizeof(info),
@@ -64,10 +64,21 @@ bool ConfigManager::TryOpenConfigAsJson() noexcept
 			.hkeyClass = key.get()
 		};
 
-		return ShellExecuteEx(&info);
+		const bool success = ShellExecuteEx(&info);
+		if (!success)
+		{
+			LastErrorHandle(spdlog::level::warn, L"Failed to launch JSON file editor");
+		}
+
+		return success;
 	}
 	else
 	{
+		if (hr != HRESULT_FROM_WIN32(ERROR_NO_ASSOCIATION))
+		{
+			HresultHandle(hr, spdlog::level::warn, L"Failed to query for .json file association");
+		}
+
 		return false;
 	}
 }
