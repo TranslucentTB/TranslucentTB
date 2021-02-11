@@ -28,17 +28,22 @@ private:
 		std::unordered_set<Window> NormalWindows;
 	};
 
-	// todo:
-	// not sure if possible - better aero peek support: detect current peeked to window and include in calculation
-	// dynamic cortana using foreground window
-	// check timeline's behavior on multi-mon
-	// close if explorer crashes twice in 30 seconds
-	// make sure opening start while already opened on other monitor works
+	// fixme before release:
+	// - dynamic cortana using foreground window
+	// - close if explorer crashes twice in 30 seconds
+	// - make sure opening start while already opened on other monitor works
+
+	// future improvements:
+	// - better aero peek support: detect current peeked to window and include in calculation
 	// - notification for owner changes
 	// - notification for extended style changes
 	// - notification for property changes: this is what is making the discord window not being correctly accounted for after restoring from tray
 	// 	   for some reason it shows itself (which we do capture) and then unsets ITaskList_Deleted (which we don't capture)
 	// - handle cases where we dont get EVENT_SYSTEM_FOREGROUND when unminimizing a window
+	// - add an option for peek to consider main monitor only or all monitors
+	// 	   if yes, should always refresh peek whenever anything changes
+	// 	   and need some custom logic to check all monitors
+	// - make settings optional so that they stack on top of each other?
 
 	// The magic function that does the thing
 	const PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SetWindowCompositionAttribute;

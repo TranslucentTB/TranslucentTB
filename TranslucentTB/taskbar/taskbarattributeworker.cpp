@@ -17,7 +17,8 @@ private:
 	bool m_Refresh;
 
 public:
-	AttributeRefresher(TaskbarAttributeWorker &worker, bool refresh = true) noexcept : m_Worker(worker), m_MainMonIt(m_Worker.m_Taskbars.end()), m_Refresh(refresh) { }
+	AttributeRefresher(TaskbarAttributeWorker &worker, bool refresh = true) noexcept :
+		m_Worker(worker), m_MainMonIt(m_Worker.m_Taskbars.end()), m_Refresh(refresh) { }
 
 	AttributeRefresher(const AttributeRefresher &) = delete;
 	AttributeRefresher& operator =(const AttributeRefresher &) = delete;
@@ -232,6 +233,7 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 		return m_Config.TimelineOpenedAppearance;
 	}
 
+	// Timeline is ignored by peek, so shall we
 	if (m_PeekActive)
 	{
 		return m_Config.DesktopAppearance;
@@ -263,20 +265,34 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 
 void TaskbarAttributeWorker::ShowAeroPeekButton(Window taskbar, bool show)
 {
-	// todo: make lazy. weirdly cpu intensive
-	// missing all error handling
-	const Window peek = taskbar.find_child(L"TrayNotifyWnd").find_child(L"TrayShowDesktopButtonWClass");
+	const Window peek = taskbar
+		.find_child(L"TrayNotifyWnd")
+		.find_child(L"TrayShowDesktopButtonWClass");
 
-	if (show)
+	if (peek)
 	{
-		SetWindowLong(peek, GWL_EXSTYLE, GetWindowLong(peek, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+		if (const auto styleOpt = peek.get_long_ptr(GWL_EXSTYLE))
+		{
+			const LONG_PTR style = *styleOpt;
+			if (show)
+			{
+				peek.set_long_ptr(GWL_EXSTYLE, style & ~WS_EX_LAYERED);
+			}
+			else
+			{
+				peek.set_long_ptr(GWL_EXSTYLE, style | WS_EX_LAYERED);
+
+				// Non-zero alpha makes the button still interactible, even if practically invisible.
+				if (!SetLayeredWindowAttributes(peek, 0, 1, LWA_ALPHA))
+				{
+					LastErrorHandle(spdlog::level::warn, L"Failed to set peek button layered attributes");
+				}
+			}
+		}
 	}
 	else
 	{
-		SetWindowLong(peek, GWL_EXSTYLE, GetWindowLong(peek, GWL_EXSTYLE) | WS_EX_LAYERED);
-
-		// Non-zero alpha makes the button still interactible, even if practically invisible.
-		SetLayeredWindowAttributes(peek, 0, 1, LWA_ALPHA);
+		MessagePrint(spdlog::level::info, L"Can't find peek button handle");
 	}
 }
 
@@ -327,9 +343,10 @@ void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
 	// ShowAeroPeekButton triggers Windows internal message loop,
 	// do not pass any member of taskbar map by reference.
 	// See comment in InsertWindow.
+	// Ignore changes when peek is active
 	if (taskbar->first == m_MainTaskbarMonitor && !m_PeekActive)
 	{
-		ShowAeroPeekButton(taskbar->second.TaskbarWindow, /*TODO: cfg.ShowPeek*/false);
+		ShowAeroPeekButton(taskbar->second.TaskbarWindow, cfg.ShowPeek);
 	}
 }
 
@@ -618,7 +635,7 @@ void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 }
 
 TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE swca) :
-	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance),
+	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance, WS_POPUP),
 	SetWindowCompositionAttribute(swca),
 	m_PeekActive(false),
 	m_TimelineActive(false),

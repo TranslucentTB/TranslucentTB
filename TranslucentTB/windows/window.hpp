@@ -173,7 +173,7 @@ public:
 		return GetProp(m_WindowHandle, name.c_str());
 	}
 
-	inline std::optional<LONG_PTR> long_ptr(int index) const
+	inline std::optional<LONG_PTR> get_long_ptr(int index) const
 	{
 		SetLastError(NO_ERROR);
 		const LONG_PTR val = GetWindowLongPtr(m_WindowHandle, index);
@@ -182,6 +182,23 @@ public:
 			if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
 			{
 				HresultHandle(HRESULT_FROM_WIN32(lastErr), spdlog::level::info, L"Failed to get window pointer");
+				return std::nullopt;
+			}
+		}
+
+		return val;
+	}
+
+	template<spdlog::level::level_enum level = spdlog::level::info>
+	inline std::optional<LONG_PTR> set_long_ptr(int index, LONG_PTR value) const
+	{
+		SetLastError(NO_ERROR);
+		const LONG_PTR val = SetWindowLongPtr(m_WindowHandle, index, value);
+		if (!val)
+		{
+			if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
+			{
+				HresultHandle(HRESULT_FROM_WIN32(lastErr), level, L"Failed to set window pointer");
 				return std::nullopt;
 			}
 		}

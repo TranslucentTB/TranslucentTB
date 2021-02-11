@@ -18,6 +18,9 @@
           "pattern": "^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
           "type": "string",
           "format": "color"
+        },
+        "show_peek": {
+          "type": "boolean"
         }
       },
       "type": "object"

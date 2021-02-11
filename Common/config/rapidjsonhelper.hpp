@@ -4,13 +4,16 @@
 #include <cassert>
 #include <concepts>
 #include <fmt/format.h>
+#include <optional>
 #include <rapidjson/document.h>
 #include <rapidjson/encodings.h>
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <utility>
 
 #include "../util/to_string_view.hpp"
+#include "../util/type_traits.hpp"
 
 namespace rj = rapidjson;
 
@@ -109,13 +112,22 @@ namespace rjh {
 
 	template<class Writer, class T>
 	// prevent ambiguous overload errors
-	requires (std::is_class_v<T> && !Util::is_convertible_to_wstring_view_v<T>)
+	requires (std::is_class_v<T> && !Util::is_convertible_to_wstring_view_v<T> && !Util::is_optional_v<T>)
 	inline void Serialize(Writer &writer, const T &member, std::wstring_view key)
 	{
 		WriteKey(writer, key);
 		writer.StartObject();
 		member.Serialize(writer);
 		writer.EndObject();
+	}
+
+	template<class Writer, class T, typename... Args>
+	void Serialize(Writer &writer, const std::optional<T> &member, std::wstring_view key, Args &&...args)
+	{
+		if (member)
+		{
+			Serialize(writer, *member, key, std::forward<Args>(args)...);
+		}
 	}
 
 	inline void Deserialize(const value_t &obj, bool &member, std::wstring_view key)
@@ -145,11 +157,18 @@ namespace rjh {
 	}
 
 	template<class T>
-	requires std::is_class_v<T>
+	// prevent ambiguous overload errors
+	requires (std::is_class_v<T> && !Util::is_optional_v<T>)
 	inline void Deserialize(const value_t &obj, T &member, std::wstring_view key, void (*unknownKeyCallback)(std::wstring_view))
 	{
 		EnsureType(rj::Type::kObjectType, obj.GetType(), key);
 
 		member.Deserialize(obj, unknownKeyCallback);
+	}
+
+	template<typename T, typename... Args>
+	void Deserialize(const value_t &obj, std::optional<T> &member, std::wstring_view key, Args &&...args)
+	{
+		Deserialize(obj, member.emplace(), key, std::forward<Args>(args)...);
 	}
 }

@@ -220,7 +220,7 @@ void ConfigManager::SaveConfig() const
 		SaveToFile(file.get());
 
 		file.reset();
-		if (!ReplaceFile(m_ConfigPath.c_str(), tempFile.c_str(), nullptr, REPLACEFILE_WRITE_THROUGH | REPLACEFILE_IGNORE_MERGE_ERRORS, nullptr, nullptr))
+		if (!MoveFileEx(tempFile.c_str(), m_ConfigPath.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
 		{
 			LastErrorHandle(spdlog::level::err, L"Failed to move temporary configuration file");
 		}

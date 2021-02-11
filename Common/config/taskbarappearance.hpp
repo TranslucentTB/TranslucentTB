@@ -16,6 +16,7 @@
 struct TaskbarAppearance {
 	ACCENT_STATE Accent;
 	Util::Color Color;
+	bool ShowPeek;
 
 	template<class Writer>
 	inline void Serialize(Writer &writer) const
@@ -25,6 +26,8 @@ struct TaskbarAppearance {
 		Util::small_wmemory_buffer<9> buf;
 		Color.ToString(buf);
 		rjh::Serialize(writer, buf, COLOR_KEY);
+
+		rjh::Serialize(writer, ShowPeek, SHOW_PEEK_KEY);
 	}
 
 	void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view))
@@ -62,6 +65,10 @@ protected:
 				};
 			}
 		}
+		else if (key == SHOW_PEEK_KEY)
+		{
+			rjh::Deserialize(val, ShowPeek, key);
+		}
 		else if (unknownKeyCallback)
 		{
 			unknownKeyCallback(key);
@@ -79,4 +86,5 @@ private:
 
 	static constexpr std::wstring_view ACCENT_KEY = L"accent";
 	static constexpr std::wstring_view COLOR_KEY = L"color";
+	static constexpr std::wstring_view SHOW_PEEK_KEY = L"show_peek";
 };

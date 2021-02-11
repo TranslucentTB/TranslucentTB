@@ -1,7 +1,5 @@
 #pragma once
 #include <array>
-#include <rapidjson/document.h>
-#include <rapidjson/encodings.h>
 #include <spdlog/common.h>
 #include <string_view>
 
@@ -13,12 +11,12 @@
 class Config {
 public:
 	// Appearances
-	TaskbarAppearance DesktopAppearance = { ACCENT_ENABLE_TRANSPARENTGRADIENT, { } };
-	OptionalTaskbarAppearance VisibleWindowAppearance = { ACCENT_ENABLE_BLURBEHIND, { }, false };
-	OptionalTaskbarAppearance MaximisedWindowAppearance = { ACCENT_ENABLE_BLURBEHIND, { }, true };
-	OptionalTaskbarAppearance StartOpenedAppearance = { ACCENT_NORMAL, { }, true };
-	OptionalTaskbarAppearance CortanaOpenedAppearance = { ACCENT_NORMAL, { }, true };
-	OptionalTaskbarAppearance TimelineOpenedAppearance = { ACCENT_NORMAL, { }, true };
+	TaskbarAppearance DesktopAppearance = { ACCENT_ENABLE_TRANSPARENTGRADIENT, { }, false };
+	OptionalTaskbarAppearance VisibleWindowAppearance = { ACCENT_ENABLE_BLURBEHIND, { }, true, false };
+	OptionalTaskbarAppearance MaximisedWindowAppearance = { ACCENT_ENABLE_BLURBEHIND, { }, true, true };
+	OptionalTaskbarAppearance StartOpenedAppearance = { ACCENT_NORMAL, { }, true, true };
+	OptionalTaskbarAppearance CortanaOpenedAppearance = { ACCENT_NORMAL, { }, true, true };
+	OptionalTaskbarAppearance TimelineOpenedAppearance = { ACCENT_NORMAL, { }, false, true };
 
 	// Advanced
 	WindowFilter IgnoredWindows;

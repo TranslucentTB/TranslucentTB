@@ -6,7 +6,7 @@
 
 void MessageWindow::init(Util::null_terminated_wstring_view windowName, DWORD style, DWORD extended_style, Window parent)
 {
-	m_WindowHandle = Window::Create(extended_style, *m_WindowClass, windowName, style, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, parent);
+	m_WindowHandle = Window::Create(extended_style, *m_WindowClass, windowName, style, 0, 0, 0, 0, parent);
 	if (!m_WindowHandle)
 	{
 		LastErrorHandle(spdlog::level::critical, L"Failed to create message window!");
@@ -15,11 +15,7 @@ void MessageWindow::init(Util::null_terminated_wstring_view windowName, DWORD st
 	const auto proc = m_ProcPage.make_thunk<WNDPROC>(this, &MessageWindow::MessageHandler);
 	m_ProcPage.mark_executable();
 
-	SetLastError(NO_ERROR);
-	if (!SetWindowLongPtr(m_WindowHandle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(proc)))
-	{
-		LastErrorVerify(spdlog::level::critical, L"Failed to update window procedure!");
-	}
+	set_long_ptr<spdlog::level::critical>(GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(proc));
 }
 
 MessageWindow::MessageWindow(WindowClass &classRef, Util::null_terminated_wstring_view windowName, DWORD style, DWORD extended_style, Window parent, const wchar_t *iconResource) :

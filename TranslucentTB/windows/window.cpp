@@ -113,7 +113,7 @@ bool Window::is_user_window() const
 {
 	if (valid() && visible() && !cloaked() && ancestor(GA_ROOT) == m_WindowHandle && get(GW_OWNER) == Window::NullWindow)
 	{
-		const auto ex_style = long_ptr(GWL_EXSTYLE);
+		const auto ex_style = get_long_ptr(GWL_EXSTYLE);
 		if (ex_style &&
 			(*ex_style & WS_EX_APPWINDOW || !(*ex_style & (WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE))) &&
 			prop(L"ITaskList_Deleted") == nullptr)

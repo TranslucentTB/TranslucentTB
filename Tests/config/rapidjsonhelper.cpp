@@ -228,6 +228,28 @@ TEST(RapidJSONHelper_Serialize, WritesObject)
 	rjh::Serialize(writerMock, objectMock, testKey);
 }
 
+TEST(RapidJSONHelper_Serialize, WritesOptional)
+{
+	std::optional<std::wstring> opt(testObj);
+
+	WriterMock mock;
+	EXPECT_CALL(mock, Key).With(SameString(testKey));
+	EXPECT_CALL(mock, String).With(SameString(testObj));
+
+	rjh::Serialize(mock, opt, testKey);
+}
+
+TEST(RapidJSONHelper_Serialize, IgnoresEmptyOptional)
+{
+	std::optional<std::wstring> opt;
+
+	WriterMock mock;
+	EXPECT_CALL(mock, Key).Times(0);
+	EXPECT_CALL(mock, String).Times(0);
+
+	rjh::Serialize(mock, opt, testKey);
+}
+
 TEST(RapidJSONHelper_Deserialize, DeserializesBool)
 {
 	for (const bool expected : { true, false })
@@ -275,4 +297,13 @@ TEST(RapidJSONHelper_Deserialize, DeserializesClass)
 	EXPECT_CALL(mock, Deserialize(testing::Ref(value), UnknownKeyCallback));
 	
 	rjh::Deserialize(value, mock, testObj, UnknownKeyCallback);
+}
+
+TEST(RapidJSONHelper_Deserialize, DeserializesOptional)
+{
+	const rjh::value_t value(true);
+	std::optional<bool> opt;
+	rjh::Deserialize(value, opt, testObj);
+
+	ASSERT_TRUE(opt.value_or(false));
 }
