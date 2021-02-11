@@ -271,17 +271,14 @@ void TaskbarAttributeWorker::ShowAeroPeekButton(Window taskbar, bool show)
 
 	if (peek)
 	{
-		if (const auto styleOpt = peek.get_long_ptr(GWL_EXSTYLE))
+		if (const auto style = peek.get_long_ptr(GWL_EXSTYLE))
 		{
-			const LONG_PTR style = *styleOpt;
-			if (show)
-			{
-				peek.set_long_ptr(GWL_EXSTYLE, style & ~WS_EX_LAYERED);
-			}
-			else
-			{
-				peek.set_long_ptr(GWL_EXSTYLE, style | WS_EX_LAYERED);
+			const bool success = SetNewWindowExStyle(peek, *style, show
+				? (*style & ~WS_EX_LAYERED)
+				: (*style | WS_EX_LAYERED));
 
+			if (!show && success)
+			{
 				// Non-zero alpha makes the button still interactible, even if practically invisible.
 				if (!SetLayeredWindowAttributes(peek, 0, 1, LWA_ALPHA))
 				{
@@ -474,6 +471,18 @@ void TaskbarAttributeWorker::RemoveWindow(Window window, taskbar_iterator it, At
 	if (erased)
 	{
 		refresher.refresh(it);
+	}
+}
+
+bool TaskbarAttributeWorker::SetNewWindowExStyle(Window wnd, LONG_PTR oldStyle, LONG_PTR newStyle)
+{
+	if (oldStyle != newStyle)
+	{
+		return wnd.set_long_ptr(GWL_EXSTYLE, newStyle).has_value();
+	}
+	else
+	{
+		return true;
 	}
 }
 
