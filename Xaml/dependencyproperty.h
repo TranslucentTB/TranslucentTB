@@ -4,6 +4,21 @@
 # include <winrt/Windows.UI.Xaml.h>
 # include "util/string_macros.hpp"
 # define DEPENDENCY_PROPERTY_FIELD(NAME) s_ ## NAME ## Property_
+# define DECL_DEPENDENCY_PROPERTY_FUNCS(TYPE, NAME, FIELD) \
+	static wux::DependencyProperty NAME ## Property() noexcept \
+	{ \
+		return FIELD; \
+	} \
+	\
+	TYPE NAME() \
+	{ \
+		return winrt::unbox_value<TYPE>(GetValue(FIELD)); \
+	} \
+	\
+	void NAME(const TYPE &value_) \
+	{ \
+		SetValue(FIELD, winrt::box_value(value_)); \
+	}
 # define DECL_DEPENDENCY_PROPERTY(TYPE, NAME) \
 private: \
 	inline static wux::DependencyProperty DEPENDENCY_PROPERTY_FIELD(NAME) = \
@@ -14,20 +29,7 @@ private: \
 			nullptr); \
 	\
 public: \
-	static wux::DependencyProperty NAME ## Property() noexcept \
-	{ \
-		return DEPENDENCY_PROPERTY_FIELD(NAME); \
-	} \
-	\
-	TYPE NAME() \
-	{ \
-		return winrt::unbox_value<TYPE>(GetValue(DEPENDENCY_PROPERTY_FIELD(NAME))); \
-	} \
-	\
-	void NAME(const TYPE &value_) \
-	{ \
-		SetValue(DEPENDENCY_PROPERTY_FIELD(NAME), winrt::box_value(value_)); \
-	}
+	DECL_DEPENDENCY_PROPERTY_FUNCS(TYPE, NAME, DEPENDENCY_PROPERTY_FIELD(NAME))
 #else
 # define DECL_DEPENDENCY_PROPERTY(TYPE, NAME) \
 	TYPE NAME; \

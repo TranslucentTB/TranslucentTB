@@ -1,4 +1,5 @@
 #pragma once
+#include "../event.h"
 #include "../factory.h"
 #include "winrt.hpp"
 
@@ -20,17 +21,10 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void AgreeButtonClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void DisagreeButtonClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 
-		event_token LiberapayOpenRequested(const LiberapayOpenDelegate &handler);
-		void LiberapayOpenRequested(const event_token &token);
-
-		event_token DiscordJoinRequested(const DiscordJoinDelegate &handler);
-		void DiscordJoinRequested(const event_token &token);
-
-		event_token ConfigEditRequested(const ConfigEditDelegate &handler);
-		void ConfigEditRequested(const event_token &token);
-
-		event_token LicenseApproved(const LicenseApprovedDelegate &handler);
-		void LicenseApproved(const event_token &token);
+		DECL_EVENT_FUNCS(LiberapayOpenDelegate, LiberapayOpenRequested, m_LiberapayOpenRequestedHandler);
+		DECL_EVENT_FUNCS(DiscordJoinDelegate, DiscordJoinRequested, m_DiscordJoinRequestedHandler);
+		DECL_EVENT_FUNCS(ConfigEditDelegate, ConfigEditRequested, m_ConfigEditRequestedHandler);
+		DECL_EVENT_FUNCS(LicenseApprovedDelegate, LicenseApproved, m_LicenseApprovedHandler);
 
 	private:
 		event<LiberapayOpenDelegate> m_LiberapayOpenRequestedHandler;

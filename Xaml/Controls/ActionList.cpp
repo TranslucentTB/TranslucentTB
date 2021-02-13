@@ -16,9 +16,9 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 
 	void ActionList::ForwardActionKey(const IInspectable &sender, const wux::Input::KeyRoutedEventArgs &args)
 	{
-		using Windows::System::VirtualKey;
+		using enum Windows::System::VirtualKey;
 
-		if (args.Key() == VirtualKey::Enter || args.Key() == VirtualKey::Space)
+		if (args.Key() == Enter || args.Key() == Space)
 		{
 			ForwardAction(sender, args);
 			args.Handled(true);

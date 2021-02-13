@@ -1,4 +1,5 @@
 #pragma once
+#include "../event.h"
 #include "../factory.h"
 #include "../PropertyChangedBase.hpp"
 #include "winrt.hpp"
@@ -11,23 +12,15 @@ namespace winrt::TranslucentTB::Xaml::Models::implementation
 	{
 		Action() = default;
 
-		hstring Name();
-		void Name(const hstring &value);
+		DECL_PROPERTY_CHANGED_PROP(hstring, Name);
+		DECL_PROPERTY_CHANGED_PROP(hstring, Description);
+		DECL_PROPERTY_CHANGED_FUNCS(wuxc::IconElement, Icon, m_icon);
 
-		hstring Description();
-		void Description(const hstring &value);
-
-		wuxc::IconElement Icon();
-		void Icon(const wuxc::IconElement &value);
-
-		event_token Click(const wux::RoutedEventHandler &value);
-		void Click(const event_token &token);
+		DECL_EVENT_FUNCS(wux::RoutedEventHandler, Click, m_click);
 
 		void ForwardClick(const IInspectable &sender, const wux::RoutedEventArgs &args);
 
 	private:
-		hstring m_name;
-		hstring m_description;
 		wuxc::IconElement m_icon = nullptr;
 		event<wux::RoutedEventHandler> m_click;
 	};

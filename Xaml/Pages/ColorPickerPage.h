@@ -1,4 +1,5 @@
 #pragma once
+#include "../event.h"
 #include "../factory.h"
 #include "winrt.hpp"
 
@@ -13,8 +14,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 		bool RequestClose() override;
 
-		event_token ChangesCommitted(const ChangesCommittedDelegate &handler);
-		void ChangesCommitted(const event_token &token);
+		DECL_EVENT_FUNCS(ChangesCommittedDelegate, ChangesCommitted, m_ChangesCommittedHandler);
 
 		void OkButtonClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void CancelButtonClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);

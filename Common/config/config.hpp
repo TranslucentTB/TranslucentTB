@@ -115,7 +115,7 @@ private:
 	static constexpr std::wstring_view VISIBLE_KEY = L"visible_window_appearance";
 	static constexpr std::wstring_view MAXIMISED_KEY = L"maximized_window_appearance";
 	static constexpr std::wstring_view START_KEY = L"start_opened_appearance";
-	static constexpr std::wstring_view CORTANA_KEY = L"cortana_opened_appearance";
+	static constexpr std::wstring_view CORTANA_KEY = L"search_opened_appearance";
 	static constexpr std::wstring_view TIMELINE_KEY = L"timeline_opened_appearance";
 	static constexpr std::wstring_view IGNORED_WINDOWS_KEY = L"ignored_windows";
 	static constexpr std::wstring_view TRAY_KEY = L"hide_tray";

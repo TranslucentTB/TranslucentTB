@@ -39,16 +39,6 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		}
 	}
 
-	event_token ColorPickerPage::ChangesCommitted(const ChangesCommittedDelegate &handler)
-	{
-		return m_ChangesCommittedHandler.add(handler);
-	}
-
-	void ColorPickerPage::ChangesCommitted(const event_token &token)
-	{
-		m_ChangesCommittedHandler.remove(token);
-	}
-
 	void ColorPickerPage::OkButtonClicked(const IInspectable &, const wux::RoutedEventArgs &)
 	{
 		// A bug in ContentDialog allows you to click the OK and Cancel button

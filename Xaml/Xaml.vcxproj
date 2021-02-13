@@ -117,6 +117,7 @@
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="dependencyproperty.h" />
+    <ClInclude Include="event.h" />
     <ClInclude Include="factory.h" />
     <ClInclude Include="Pages\ColorPickerPage.h">
       <DependentUpon>Pages\ColorPickerPage.xaml</DependentUpon>
