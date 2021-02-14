@@ -272,7 +272,7 @@ void MainAppWindow::AppearanceMenuHandler(uint16_t group, uint16_t offset, Confi
 
 	case ID_OFFSET_COLOR:
 		using winrt::TranslucentTB::Xaml::Pages::ColorPickerPage;
-		m_App.CreateXamlWindow<ColorPickerPage>(xaml_startup_position::mouse, [this, &appearance](ColorPickerPage &picker)
+		m_App.CreateXamlWindow<ColorPickerPage>(xaml_startup_position::mouse, [this, &appearance](const ColorPickerPage &picker)
 		{
 			picker.ChangesCommitted([this, &appearance](const winrt::Windows::UI::Color &color)
 			{
