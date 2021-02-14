@@ -61,7 +61,7 @@ public:
 		Cleanup();
 	}
 
-	constexpr wuxh::DesktopWindowXamlSource &source() noexcept
+	constexpr const wuxh::DesktopWindowXamlSource &source() noexcept
 	{
 		return m_source;
 	}

@@ -363,7 +363,7 @@ public:
 		return m_content;
 	}
 
-	inline constexpr T &content() noexcept
+	inline constexpr const T &content() noexcept
 	{
 		return m_content;
 	}

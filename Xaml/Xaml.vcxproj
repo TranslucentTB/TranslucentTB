@@ -76,6 +76,10 @@
     <ClCompile Include="Models\Action.cpp">
       <DependentUpon>Models\Action.idl</DependentUpon>
     </ClCompile>
+    <ClCompile Include="StyleResources.cpp">
+      <DependentUpon>StyleResources.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -139,6 +143,10 @@
       <DependentUpon>Models\Action.idl</DependentUpon>
     </ClInclude>
     <ClInclude Include="PropertyChangedBase.hpp" />
+    <ClInclude Include="StyleResources.h">
+      <DependentUpon>StyleResources.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl">
@@ -167,6 +175,9 @@
       <SubType>Code</SubType>
     </Midl>
     <Midl Include="Models\Action.idl" />
+    <Midl Include="StyleResources.idl">
+      <SubType>Designer</SubType>
+    </Midl>
   </ItemGroup>
   <Target Name="PlaceAppXbfAtRootOfResourceTree" DependsOnTargets="GetPackagingOutputs">
     <ItemGroup>

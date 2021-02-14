@@ -42,5 +42,6 @@
   <ItemGroup>
     <Midl Include="Models\Action.idl" />
     <Midl Include="FunctionalConverters.idl" />
+    <Midl Include="StyleResources.idl" />
   </ItemGroup>
 </Project>
