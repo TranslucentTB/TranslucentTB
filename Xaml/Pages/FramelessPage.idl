@@ -24,6 +24,7 @@ namespace TranslucentTB.Xaml.Pages
 
 		DECL_DEPENDENCY_PROPERTY(String, Title);
 		DECL_DEPENDENCY_PROPERTY(IObservableVector<TranslucentTB.Xaml.Controls.ChromeButton>, TitlebarContent);
+		DECL_DEPENDENCY_PROPERTY(IObservableVector<Windows.UI.Xaml.Controls.MenuFlyoutItemBase>, SystemMenuContent);
 		DECL_DEPENDENCY_PROPERTY(Windows.UI.Xaml.UIElement, UserContent);
 		DECL_DEPENDENCY_PROPERTY(Boolean, ExpandIntoTitlebar);
 		DECL_DEPENDENCY_PROPERTY(Boolean, IsClosable);

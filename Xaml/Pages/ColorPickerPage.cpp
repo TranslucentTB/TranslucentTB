@@ -12,6 +12,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	ColorPickerPage::ColorPickerPage(const hstring &category, const Windows::UI::Color &currentColor)
 	{
 		TitlebarContent(single_threaded_observable_vector<Controls::ChromeButton>());
+		SystemMenuContent(single_threaded_observable_vector<wuxc::MenuFlyoutItemBase>());
 		InitializeComponent();
 
 		Title(category + L" - Color picker - " APP_NAME);
