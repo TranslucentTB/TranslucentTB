@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <algorithm>
 
 #include "StyleResources.h"
 #if __has_include("StyleResources.g.cpp")
@@ -18,7 +19,33 @@ namespace winrt::TranslucentTB::Xaml::implementation
 	{
 		if (const auto source = d.try_as<wux::FrameworkElement>())
 		{
-			CloneResourceDictionary(e.NewValue().as<wux::ResourceDictionary>(), source.Resources());
+			wfc::IVector<wux::ResourceDictionary> mergedDicts(nullptr);
+			if (const auto resources = source.Resources())
+			{
+				mergedDicts = resources.MergedDictionaries();
+			}
+
+			if (mergedDicts)
+			{
+				const auto beginIt = begin(mergedDicts);
+				const auto endIt = end(mergedDicts);
+				const auto it = std::ranges::find_if(beginIt, endIt, [](const wux::ResourceDictionary &resDict)
+				{
+					return resDict.try_as<IStyleResourceDictionary>() != nullptr;
+				});
+
+				if (it != endIt)
+				{
+					mergedDicts.RemoveAt(it - beginIt);
+				}
+
+				if (const auto newVal = e.NewValue().try_as<wux::ResourceDictionary>())
+				{
+					const auto clonedRes = winrt::make<StyleResourceDictionary>();
+					CloneResourceDictionary(newVal, clonedRes);
+					mergedDicts.Append(clonedRes);
+				}
+			}
 		}
 	}
 

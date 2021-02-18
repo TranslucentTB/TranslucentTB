@@ -5,6 +5,15 @@
 
 namespace winrt::TranslucentTB::Xaml::implementation
 {
+	// ResourceDictionary with marker interface to be able to find out the MergedDictionary we inserted
+	MIDL_INTERFACE("A240AC45-8961-4B2F-9259-7F9C8740BFFC") IStyleResourceDictionary : IUnknown
+	{
+	};
+
+	struct StyleResourceDictionary : wux::ResourceDictionaryT<StyleResourceDictionary, IStyleResourceDictionary>
+	{
+	};
+
 	struct StyleResources
 	{
 		static wux::DependencyProperty ResourcesProperty() noexcept
@@ -14,12 +23,22 @@ namespace winrt::TranslucentTB::Xaml::implementation
 
 		static wux::ResourceDictionary GetResources(const wux::DependencyObject &obj)
 		{
-			return obj.GetValue(m_ResourcesProperty).as<wux::ResourceDictionary>();
+			if (obj)
+			{
+				return obj.GetValue(m_ResourcesProperty).as<wux::ResourceDictionary>();
+			}
+			else
+			{
+				return nullptr;
+			}
 		}
 
 		static void SetResources(const wux::DependencyObject &obj, const wux::ResourceDictionary &value)
 		{
-			obj.SetValue(m_ResourcesProperty, value);
+			if (obj)
+			{
+				obj.SetValue(m_ResourcesProperty, value);
+			}
 		}
 
 	private:
