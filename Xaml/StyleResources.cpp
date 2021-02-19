@@ -36,7 +36,7 @@ namespace winrt::TranslucentTB::Xaml::implementation
 
 				if (it != endIt)
 				{
-					mergedDicts.RemoveAt(it - beginIt);
+					mergedDicts.RemoveAt(static_cast<uint32_t>(it - beginIt));
 				}
 
 				if (const auto newVal = e.NewValue().try_as<wux::ResourceDictionary>())
