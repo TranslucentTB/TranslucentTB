@@ -23,10 +23,11 @@
   </asmv3:trustInfo>
 
   <asmv3:application>
-    <windowsSettings xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings">
-      <ws2:dpiAwareness>PerMonitorV2</ws2:dpiAwareness>
-      <heapType xmlns="http://schemas.microsoft.com/SMI/2020/WindowsSettings">SegmentHeap</heapType>
-      <ws2:longPathAware>true</ws2:longPathAware>
+    <windowsSettings xmlns:ws2016="http://schemas.microsoft.com/SMI/2016/WindowsSettings" xmlns:ws2019="http://schemas.microsoft.com/SMI/2019/WindowsSettings" xmlns:ws2020="http://schemas.microsoft.com/SMI/2020/WindowsSettings">
+      <ws2019:activeCodePage>UTF-8</ws2019:activeCodePage>
+      <ws2016:dpiAwareness>PerMonitorV2</ws2016:dpiAwareness>
+      <ws2020:heapType>SegmentHeap</ws2020:heapType>
+      <ws2016:longPathAware>true</ws2016:longPathAware>
     </windowsSettings>
   </asmv3:application>
 
