@@ -15,7 +15,7 @@
   <Applications>
     <Application Id="TranslucentTB" Executable="TranslucentTB.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements DisplayName="TranslucentTB" Description="A lightweight utility that makes the Windows taskbar translucent/transparent" BackgroundColor="transparent" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square71x71Logo="Assets\SmallTile.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.jpeg" Square71x71Logo="Assets\SmallTile.png">
           <uap:ShowNameOnTiles>
             <uap:ShowOn Tile="square150x150Logo" />
             <uap:ShowOn Tile="wide310x150Logo" />

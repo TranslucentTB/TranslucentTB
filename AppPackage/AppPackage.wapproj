@@ -63,7 +63,9 @@
     <Content Include="Assets\Square44x44Logo.targetsize-256.png" />
     <Content Include="Assets\Square44x44Logo.targetsize-256_altform-lightunplated.png" />
     <Content Include="Assets\StoreLogo.scale-400.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-400.png" />
+    <Content Include="Assets\Wide310x150Logo.scale-150.jpeg" />
+    <Content Include="Assets\Wide310x150Logo.scale-200.jpeg" />
+    <Content Include="Assets\Wide310x150Logo.scale-400.jpeg" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TranslucentTB\TranslucentTB.vcxproj" />
