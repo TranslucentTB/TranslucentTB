@@ -8,7 +8,11 @@
 void BaseXamlPageHost::UpdateFrame()
 {
 	// Magic that gives us shadows
-	const MARGINS margins = { -1 };
+	// we use the top side because any other side would cause a single line of white pixels to
+	// suddenly flash when resizing the color picker.
+	// can't use 0, that does nothing
+	// or -1: turns it full white.
+	const MARGINS margins = { 0, 0, 1, 0 };
 	HresultVerify(DwmExtendFrameIntoClientArea(m_WindowHandle, &margins), spdlog::level::info, L"Failed to extend frame into client area");
 }
 
