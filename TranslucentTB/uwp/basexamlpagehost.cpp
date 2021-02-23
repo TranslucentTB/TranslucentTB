@@ -8,12 +8,8 @@
 void BaseXamlPageHost::UpdateFrame()
 {
 	// Magic that gives us shadows
-	// we use the top side because any other side would cause a single line of white pixels to
-	// suddenly flash when resizing the color picker.
-	// can't use 0, that does nothing
-	// or -1: turns it full white.
-	const MARGINS margins = { 0, 0, 1, 0 };
-	HresultVerify(DwmExtendFrameIntoClientArea(m_WindowHandle, &margins), spdlog::level::warn, L"Failed to extend frame into client area");
+	const MARGINS margins = { -1 };
+	HresultVerify(DwmExtendFrameIntoClientArea(m_WindowHandle, &margins), spdlog::level::info, L"Failed to extend frame into client area");
 }
 
 wf::Rect BaseXamlPageHost::ScaleRect(wf::Rect rect, float scale)
@@ -32,7 +28,7 @@ HMONITOR BaseXamlPageHost::GetInitialMonitor(POINT &cursor, xaml_startup_positio
 	{
 		if (!GetCursorPos(&cursor))
 		{
-			LastErrorHandle(spdlog::level::warn, L"Failed to get cursor position");
+			LastErrorHandle(spdlog::level::info, L"Failed to get cursor position");
 		}
 	}
 
@@ -48,7 +44,7 @@ float BaseXamlPageHost::GetDpiScale(HMONITOR mon)
 	}
 	else
 	{
-		HresultHandle(hr, spdlog::level::warn, L"Failed to get monitor DPI");
+		HresultHandle(hr, spdlog::level::info, L"Failed to get monitor DPI");
 		return 1.0f;
 	}
 }
@@ -153,12 +149,12 @@ void BaseXamlPageHost::ResizeWindow(int x, int y, int width, int height, bool mo
 	flags |= SWP_NOACTIVATE | SWP_NOZORDER;
 	if (!SetWindowPos(m_interopWnd, nullptr, 0, 0, width, height, flags)) [[unlikely]]
 	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to set interop window position");
+		LastErrorHandle(spdlog::level::info, L"Failed to set interop window position");
 	}
 
 	if (!SetWindowPos(m_WindowHandle, nullptr, x, y, width, height, flags | (move ? 0 : SWP_NOMOVE))) [[unlikely]]
 	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to set host window position");
+		LastErrorHandle(spdlog::level::info, L"Failed to set host window position");
 	}
 }
 
@@ -192,7 +188,7 @@ bool BaseXamlPageHost::PaintBackground(HDC dc, const RECT &target, winrt::Window
 		}
 		else
 		{
-			MessagePrint(spdlog::level::warn, L"Failed to create background brush");
+			MessagePrint(spdlog::level::info, L"Failed to create background brush");
 			return false;
 		}
 	}
@@ -200,36 +196,33 @@ bool BaseXamlPageHost::PaintBackground(HDC dc, const RECT &target, winrt::Window
 	// buffered paints overwrite the titlebar for some reason
 	HDC opaqueDc = nullptr;
 	BP_PAINTPARAMS params = { sizeof(params), BPPF_NOCLIP | BPPF_ERASE };
-	HPAINTBUFFER buf = BeginBufferedPaint(dc, &target, BPBF_TOPDOWNDIB, &params, &opaqueDc);
-	if (buf && opaqueDc)
+	if (const HPAINTBUFFER buf = BeginBufferedPaint(dc, &target, BPBF_TOPDOWNDIB, &params, &opaqueDc))
 	{
+		bool updateTarget = false;
+		const auto guard = wil::scope_exit([buf, &updateTarget]
+		{
+			HresultVerify(EndBufferedPaint(buf, updateTarget), spdlog::level::info, L"Failed to end buffered paint");
+		});
+
 		if (!FillRect(opaqueDc, &target, m_BackgroundBrush.get())) [[unlikely]]
 		{
-			LastErrorHandle(spdlog::level::warn, L"Failed to fill rectangle.");
+			LastErrorHandle(spdlog::level::info, L"Failed to fill rectangle.");
 			return false;
 		}
 
-		HRESULT hr = BufferedPaintSetAlpha(buf, nullptr, 255);
+		const HRESULT hr = BufferedPaintSetAlpha(buf, nullptr, 255);
 		if (FAILED(hr)) [[unlikely]]
 		{
-			HresultHandle(hr, spdlog::level::warn, L"Failed to set buffered paint alpha");
+			HresultHandle(hr, spdlog::level::info, L"Failed to set buffered paint alpha");
 			return false;
 		}
 
-		hr = EndBufferedPaint(buf, true);
-		if (SUCCEEDED(hr))
-		{
-			return true;
-		}
-		else
-		{
-			HresultHandle(hr, spdlog::level::warn, L"Failed to end buffered paint");
-			return false;
-		}
+		updateTarget = true;
+		return true;
 	}
 	else
 	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to begin buffered paint");
+		LastErrorHandle(spdlog::level::info, L"Failed to begin buffered paint");
 		return false;
 	}
 }
