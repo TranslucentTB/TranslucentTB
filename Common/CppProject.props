@@ -143,7 +143,7 @@
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <SDLCheck>true</SDLCheck>
-      <AdditionalOptions>/ZH:SHA_256 /utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/ZH:SHA_256 /utf-8 /Zc:__cplusplus /Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
 
       <!-- PCH -->
