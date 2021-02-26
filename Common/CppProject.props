@@ -58,6 +58,8 @@
 
     <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'!=''">/tr $(CertificateTimestampServer) /td sha256</SignToolAdditionalArguments>
     <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'==''"></SignToolAdditionalArguments>
+
+    <VcpkgOSTarget>windows-ttb</VcpkgOSTarget>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
