@@ -79,6 +79,9 @@
       <!-- Warnings and errors -->
       <TreatWarningAsError>true</TreatWarningAsError>
 
+      <!-- Security -->
+      <ControlFlowGuard>Guard</ControlFlowGuard>
+
       <!-- Optimization -->
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -142,7 +145,6 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>/ZH:SHA_256 /utf-8 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <ControlFlowGuard>Guard</ControlFlowGuard>
 
       <!-- PCH -->
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
