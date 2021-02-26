@@ -1,5 +1,5 @@
 set(BASE_C_FLAGS "/GS /guard:cf /fp:precise /Qspectre /sdl /ZH:SHA_256 /FC")
-set(BASE_CXX_FLAGS "/Zc:preprocessor /permissive- /Zc:wchar_t /Zc:forScope /Zc:inline /GR- /std:c++latest /Zc:__cplusplus /Zc:externConstexpr")
+set(BASE_CXX_FLAGS "/Zc:preprocessor /wd5105 /permissive- /Zc:wchar_t /Zc:forScope /Zc:inline /GR- /std:c++latest /Zc:__cplusplus /Zc:externConstexpr")
 
 set(VCPKG_C_FLAGS_RELEASE "/GL /Oy")
 set(VCPKG_CXX_FLAGS_RELEASE "${VCPKG_C_FLAGS_RELEASE}")
