@@ -244,20 +244,14 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 		return m_Config.StartOpenedAppearance;
 	}
 
-	if (m_Config.MaximisedWindowAppearance.Enabled)
+	if (m_Config.MaximisedWindowAppearance.Enabled && SetContainsValidWindows(taskbar->second.MaximisedWindows))
 	{
-		if (!SetOnlyContainsValidWindows(taskbar->second.MaximisedWindows))
-		{
-			return m_Config.MaximisedWindowAppearance;
-		}
+		return m_Config.MaximisedWindowAppearance;
 	}
 
-	if (m_Config.VisibleWindowAppearance.Enabled)
+	if (m_Config.VisibleWindowAppearance.Enabled && (SetContainsValidWindows(taskbar->second.MaximisedWindows) || SetContainsValidWindows(taskbar->second.NormalWindows)))
 	{
-		if (!SetOnlyContainsValidWindows(taskbar->second.MaximisedWindows) || !SetOnlyContainsValidWindows(taskbar->second.NormalWindows))
-		{
-			return m_Config.VisibleWindowAppearance;
-		}
+		return m_Config.VisibleWindowAppearance;
 	}
 
 	return m_Config.DesktopAppearance;
@@ -325,10 +319,9 @@ void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance confi
 	}
 	else if (const auto [it, inserted] = m_NormalTaskbars.insert(window); inserted)
 	{
-		// Without this guard, we get reentrancy: sending WM_THEMECHANGED causes a window's
-		// state be changed, so the notification is processed and this is called, sending
-		// again the same message, and so on.
-		window.send_message(WM_THEMECHANGED);
+		// If this is in response to a window being moved, we send the message way too often
+		// and Explorer doesn't like that too much.
+		window.send_message(WM_DWMCOMPOSITIONCHANGED, 1, 0);
 	}
 }
 
@@ -486,13 +479,13 @@ bool TaskbarAttributeWorker::SetNewWindowExStyle(Window wnd, LONG_PTR oldStyle, 
 	}
 }
 
-bool TaskbarAttributeWorker::SetOnlyContainsValidWindows(std::unordered_set<Window> &set)
+bool TaskbarAttributeWorker::SetContainsValidWindows(std::unordered_set<Window> &set)
 {
 	std::erase_if(set, [](Window wnd)
 	{
 		return !wnd.valid();
 	});
-	return set.empty();
+	return !set.empty();
 }
 
 void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set, bool showInfo)

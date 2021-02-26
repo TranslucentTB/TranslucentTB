@@ -144,6 +144,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>/ZH:SHA_256 /utf-8 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <GuardEHContMetadata>true</GuardEHContMetadata>
 
       <!-- PCH -->
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
