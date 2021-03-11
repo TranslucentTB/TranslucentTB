@@ -30,7 +30,6 @@ DWORD WINAPI XamlThread::ThreadProc(LPVOID param)
 	}
 
 	delete that;
-	HresultVerify(BufferedPaintUnInit(), spdlog::level::warn, L"Failed to uninitialize buffered paint");
 	winrt::uninit_apartment();
 	return static_cast<DWORD>(msg.wParam);
 }
@@ -53,8 +52,6 @@ void XamlThread::ThreadInit()
 
 	m_Dispatcher = UWP::CreateDispatcherController();
 	m_Manager = UWP::CreateXamlManager();
-
-	HresultVerify(BufferedPaintInit(), spdlog::level::warn, L"Failed to initialize buffered paint");
 }
 
 bool XamlThread::PreTranslateMessage(const MSG &msg)

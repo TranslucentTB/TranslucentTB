@@ -197,36 +197,13 @@ bool BaseXamlPageHost::PaintBackground(HDC dc, const RECT &target, winrt::Window
 		}
 	}
 
-	// buffered paints overwrite the titlebar for some reason
-	HDC opaqueDc = nullptr;
-	BP_PAINTPARAMS params = { sizeof(params), BPPF_NOCLIP | BPPF_ERASE };
-	if (const HPAINTBUFFER buf = BeginBufferedPaint(dc, &target, BPBF_TOPDOWNDIB, &params, &opaqueDc))
+	if (FillRect(dc, &target, m_BackgroundBrush.get()))
 	{
-		bool updateTarget = false;
-		const auto guard = wil::scope_exit([buf, &updateTarget]
-		{
-			HresultVerify(EndBufferedPaint(buf, updateTarget), spdlog::level::info, L"Failed to end buffered paint");
-		});
-
-		if (!FillRect(opaqueDc, &target, m_BackgroundBrush.get())) [[unlikely]]
-		{
-			LastErrorHandle(spdlog::level::info, L"Failed to fill rectangle.");
-			return false;
-		}
-
-		const HRESULT hr = BufferedPaintSetAlpha(buf, nullptr, 255);
-		if (FAILED(hr)) [[unlikely]]
-		{
-			HresultHandle(hr, spdlog::level::info, L"Failed to set buffered paint alpha");
-			return false;
-		}
-
-		updateTarget = true;
 		return true;
 	}
 	else
 	{
-		LastErrorHandle(spdlog::level::info, L"Failed to begin buffered paint");
+		LastErrorHandle(spdlog::level::info, L"Failed to fill rectangle.");
 		return false;
 	}
 }
