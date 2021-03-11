@@ -175,7 +175,7 @@
       <PreprocessorDefinitions>SPDLOG_DISABLE_DEFAULT_LOGGER;SPDLOG_FMT_EXTERNAL;SPDLOG_NO_NAME;SPDLOG_NO_THREAD_ID;SPDLOG_NO_TLS;SPDLOG_WCHAR_TO_UTF8_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
       <!-- wil -->
-      <PreprocessorDefinitions>RESULT_SUPPRESS_STATIC_INITIALIZERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RESULT_SUPPRESS_STATIC_INITIALIZERS;WIL_LOCK_EXCEPTION_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
       <!-- Windows -->
       <PreprocessorDefinitions>_HIDE_GLOBAL_ASYNC_STATUS;STRICT_TYPED_ITEMIDS;NOMINMAX;_WINDOWS;WIN32_LEAN_AND_MEAN;WINRT_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>

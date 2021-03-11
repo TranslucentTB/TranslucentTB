@@ -11,7 +11,7 @@
       <PreprocessorDefinitions>EXPLORERHOOKS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>detours.lib;kernel32.lib;ole32.lib;synchronization.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>detours.lib;kernel32.lib;ole32.lib;user32.lib</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
