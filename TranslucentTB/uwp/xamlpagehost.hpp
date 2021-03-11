@@ -63,8 +63,7 @@ private:
 
 		case WM_PAINT:
 		{
-			const auto brush = m_content.Background().try_as<wux::Media::AcrylicBrush>();
-			if (brush)
+			if (const auto brush = m_content.Background().try_as<wux::Media::AcrylicBrush>())
 			{
 				PAINTSTRUCT ps;
 				const auto paint = wil::BeginPaint(m_WindowHandle, &ps);
