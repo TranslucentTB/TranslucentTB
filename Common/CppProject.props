@@ -60,7 +60,6 @@
     <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'==''"></SignToolAdditionalArguments>
 
     <VcpkgOSTarget>windows-ttb</VcpkgOSTarget>
-    <TtbTrueVcpkgRoot Condition="'$(VcpkgRoot)'!=''">$([System.IO.Path]::GetFullPath($(VcpkgRoot))</TtbTrueVcpkgRoot>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -90,7 +89,7 @@
 
       <!-- Trim the prefix from embedded file paths -->
       <AdditionalOptions>/d1trimfile:"$(SolutionDir)\" %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(TtbTrueVcpkgRoot)'!=''">/d1trimfile:"$(TtbTrueVcpkgRoot)installed\$(VcpkgTriplet)\include\\" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(VcpkgRoot)'!=''">/d1trimfile:"$([System.IO.Path]::GetFullPath($(VcpkgRoot)))installed\$(VcpkgTriplet)\include\\" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <!-- Warnings and errors -->
