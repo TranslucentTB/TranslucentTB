@@ -28,11 +28,11 @@ public:
 	{ }
 
 	template<typename T, typename Callback, typename... Args>
-	void CreateXamlWindow(xaml_startup_position pos, PFN_SHOULD_APPS_USE_DARK_MODE saudm, Callback &&callback, Args&&... args)
+	void CreateXamlWindow(xaml_startup_position pos, Callback &&callback, Args&&... args)
 	{
 		std::unique_lock<Util::thread_independent_mutex> guard;
 		XamlThread &thread = GetAvailableThread(guard);
-		thread.CreateXamlWindow<T>(std::move(guard), m_WndClass, m_DragRegionClass, pos, saudm, std::forward<Callback>(callback), std::forward<Args>(args)...);
+		thread.CreateXamlWindow<T>(std::move(guard), m_WndClass, m_DragRegionClass, pos, std::forward<Callback>(callback), std::forward<Args>(args)...);
 	}
 
 	~XamlThreadPool();

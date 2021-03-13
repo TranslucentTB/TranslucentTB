@@ -4,6 +4,7 @@
 
 #include "win32.hpp"
 #include "../ProgramLog/error/win32.hpp"
+#include "../uwp/uwp.hpp"
 
 void BaseXamlPageHost::UpdateFrame()
 {
@@ -122,6 +123,17 @@ LRESULT BaseXamlPageHost::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam
 {
 	switch (uMsg)
 	{
+	case WM_SETTINGCHANGE:
+	case WM_THEMECHANGED:
+		if (const auto coreWin = UWP::GetCoreWindow())
+		{
+			// forward theme changes to the fake core window
+			// so that they propagate to our islands
+			coreWin.send_message(uMsg, wParam, lParam);
+		}
+
+		break;
+
 	case WM_NCCALCSIZE:
 		return 0;
 

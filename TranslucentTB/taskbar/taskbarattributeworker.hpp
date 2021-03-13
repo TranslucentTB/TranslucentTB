@@ -12,9 +12,11 @@
 
 #include "config/config.hpp"
 #include "config/taskbarappearance.hpp"
+#include "../dynamicloader.hpp"
 #include "launchervisibilitysink.hpp"
 #include "../windows/messagewindow.hpp"
 #include "undoc/user32.hpp"
+#include "undoc/uxtheme.hpp"
 #include "wilx.hpp"
 
 class TaskbarAttributeWorker final : public MessageWindow {
@@ -47,8 +49,10 @@ private:
 
 	// The magic function that does the thing
 	const PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SetWindowCompositionAttribute;
+	const PFN_SHOULD_SYSTEM_USE_DARK_MODE ShouldSystemUseDarkMode;
 
 	// State
+	bool m_PowerSaver;
 	bool m_TimelineActive;
 	bool m_PeekActive;
 	bool m_disableAttributeRefreshReply;
@@ -71,6 +75,7 @@ private:
 	wil::unique_hwineventhook m_TitleChangeHook;
 	wil::unique_hwineventhook m_ParentChangeHook;
 	std::vector<wil::unique_hhook> m_Hooks;
+	wil::unique_hpowernotify m_PowerSaverHook;
 
 	// IAppVisibility
 	wil::com_ptr<IAppVisibility> m_IAV;
@@ -147,7 +152,7 @@ private:
 	}
 
 public:
-	TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE swca);
+	TaskbarAttributeWorker(const Config& cfg, HINSTANCE hInstance, DynamicLoader &loader);
 
 	inline void ConfigurationChanged()
 	{

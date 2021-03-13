@@ -124,7 +124,7 @@ winrt::fire_and_forget Application::LicenseApprovedCallback(bool hasPackageIdent
 
 Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> storageFolder, bool fileExists) :
 	m_Config(storageFolder, fileExists, ConfigurationChanged, this),
-	m_Worker(m_Config.GetConfig(), hInst, m_Loader.SetWindowCompositionAttribute()),
+	m_Worker(m_Config.GetConfig(), hInst, m_Loader),
 	m_DispatcherController(UWP::CreateDispatcherController()),
 	m_XamlApp(CreateXamlApp()),
 	m_XamlManager(UWP::CreateXamlManager()),

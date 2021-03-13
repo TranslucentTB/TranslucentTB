@@ -49,6 +49,7 @@ LRESULT TrayIcon::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_DPICHANGED:
 	case WM_SETTINGCHANGE:
 	case WM_THEMECHANGED:
+	case WM_DISPLAYCHANGE:
 		LoadThemedIcon();
 
 		if (m_CurrentlyShowing)

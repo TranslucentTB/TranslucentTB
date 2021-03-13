@@ -200,6 +200,24 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 		ResetState();
 		return 0;
 	}
+	else if (uMsg == WM_POWERBROADCAST && wParam == PBT_POWERSETTINGCHANGE)
+	{
+		const auto broadcast = reinterpret_cast<POWERBROADCAST_SETTING *>(lParam);
+		if (broadcast->PowerSetting == GUID_POWER_SAVING_STATUS && broadcast->DataLength == sizeof(DWORD))
+		{
+			m_PowerSaver = *reinterpret_cast<DWORD *>(&broadcast->Data);
+			RefreshAllAttributes();
+
+			return TRUE;
+		}
+	}
+	else if (uMsg == WM_SETTINGCHANGE || uMsg == WM_THEMECHANGED)
+	{
+		if (m_PowerSaver)
+		{
+			RefreshAllAttributes();
+		}
+	}
 	else if (uMsg == m_RefreshRequestedMessage)
 	{
 		if (!m_disableAttributeRefreshReply)
@@ -220,14 +238,24 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 
 		return 0;
 	}
-	else
-	{
-		return MessageWindow::MessageHandler(uMsg, wParam, lParam);
-	}
+
+	return MessageWindow::MessageHandler(uMsg, wParam, lParam);
 }
 
 TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) const
 {
+	if (m_PowerSaver)
+	{
+		// default to black unless light mode is enabled
+		Util::Color color;
+		if (ShouldSystemUseDarkMode && !ShouldSystemUseDarkMode())
+		{
+			color = { 0xFF, 0xFF, 0xFF };
+		}
+
+		return { ACCENT_ENABLE_GRADIENT, color, true };
+	}
+
 	if (m_Config.TimelineOpenedAppearance.Enabled && m_TimelineActive)
 	{
 		return m_Config.TimelineOpenedAppearance;
@@ -636,9 +664,10 @@ void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 	}
 }
 
-TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE swca) :
+TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, DynamicLoader &loader) :
 	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance, WS_POPUP),
-	SetWindowCompositionAttribute(swca),
+	SetWindowCompositionAttribute(loader.SetWindowCompositionAttribute()),
+	ShouldSystemUseDarkMode(loader.ShouldSystemUseDarkMode()),
 	m_PeekActive(false),
 	m_TimelineActive(false),
 	m_disableAttributeRefreshReply(false),
@@ -662,6 +691,12 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_TitleChangeHook = CreateHook(EVENT_OBJECT_NAMECHANGE, stateThunk);
 	m_ParentChangeHook = CreateHook(EVENT_OBJECT_PARENTCHANGE, stateThunk);
 	m_ThunkPage.mark_executable();
+
+	m_PowerSaverHook.reset(RegisterPowerSettingNotification(m_WindowHandle, &GUID_POWER_SAVING_STATUS, DEVICE_NOTIFY_WINDOW_HANDLE));
+	if (!m_PowerSaverHook)
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to create power saver notification handle");
+	}
 
 	CreateAppVisibility();
 
@@ -715,6 +750,10 @@ void TaskbarAttributeWorker::DumpState()
 	fmt::format_to(buf, FMT_STRING(L"Worker handles requests from hooks: {}"), !m_disableAttributeRefreshReply);
 	MessagePrint(spdlog::level::off, buf);
 
+	buf.clear();
+	fmt::format_to(buf, FMT_STRING(L"Power saver is active: {}"), m_PowerSaver);
+	MessagePrint(spdlog::level::off, buf);
+
 	MessagePrint(spdlog::level::off, L"Taskbars currently using normal appearance:");
 	DumpWindowSet(L"    ", m_NormalTaskbars, false);
 
@@ -726,6 +765,7 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 	MessagePrint(spdlog::level::debug, L"Resetting worker state");
 
 	// Clear state
+	m_PowerSaver = false;
 	m_PeekActive = false;
 	m_TimelineActive = false;
 	m_CurrentStartMonitor = nullptr;
@@ -764,6 +804,16 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 	// This might race but it's not an issue because
 	// it'll race on a single thread and only ends up
 	// doing something twice.
+
+	SYSTEM_POWER_STATUS powerStatus;
+	if (GetSystemPowerStatus(&powerStatus))
+	{
+		m_PowerSaver = powerStatus.SystemStatusFlag;
+	}
+	else
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to verify system power status");
+	}
 
 	// TODO: check if aero peek is active
 

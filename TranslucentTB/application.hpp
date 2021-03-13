@@ -67,7 +67,7 @@ public:
 	template<typename T, typename Callback, typename... Args>
 	void CreateXamlWindow(xaml_startup_position pos, Callback &&callback, Args&&... args)
 	{
-		m_Xaml.CreateXamlWindow<T>(pos, m_Loader.ShouldAppsUseDarkMode(), std::forward<Callback>(callback), std::forward<Args>(args)...);
+		m_Xaml.CreateXamlWindow<T>(pos, std::forward<Callback>(callback), std::forward<Args>(args)...);
 	}
 
 	template<typename Callback>

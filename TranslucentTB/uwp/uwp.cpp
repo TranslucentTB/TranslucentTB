@@ -9,7 +9,6 @@
 
 #include "../ProgramLog/error/win32.hpp"
 #include "../ProgramLog/error/winrt.hpp"
-#include "../windows/window.hpp"
 
 std::optional<std::wstring> UWP::GetPackageFamilyName()
 {
@@ -96,7 +95,7 @@ winrt::Windows::System::DispatcherQueueController UWP::CreateDispatcherControlle
 	return { controller.detach(), winrt::take_ownership_from_abi };
 }
 
-void UWP::HideCoreWindow()
+Window UWP::GetCoreWindow()
 {
 	Window coreWin;
 	try
@@ -106,7 +105,12 @@ void UWP::HideCoreWindow()
 	}
 	HresultErrorCatch(spdlog::level::warn, L"Failed to get core window handle");
 
-	if (coreWin)
+	return coreWin;
+}
+
+void UWP::HideCoreWindow()
+{
+	if (auto coreWin = GetCoreWindow())
 	{
 		coreWin.show(SW_HIDE);
 	}

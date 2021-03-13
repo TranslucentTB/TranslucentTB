@@ -12,7 +12,7 @@
 class DynamicLoader {
 	wil::unique_hmodule m_User32, m_UxTheme;
 
-	PFN_SHOULD_APPS_USE_DARK_MODE m_Saudm = nullptr;
+	PFN_SHOULD_SYSTEM_USE_DARK_MODE m_Ssudm = nullptr;
 
 public:
 	inline DynamicLoader()
@@ -26,10 +26,10 @@ public:
 		m_UxTheme.reset(LoadLibraryEx(L"uxtheme.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
 		if (m_UxTheme)
 		{
-			m_Saudm = reinterpret_cast<PFN_SHOULD_APPS_USE_DARK_MODE>(GetProcAddress(m_UxTheme.get(), MAKEINTRESOURCEA(132)));
-			if (!m_Saudm)
+			m_Ssudm = reinterpret_cast<PFN_SHOULD_SYSTEM_USE_DARK_MODE>(GetProcAddress(m_UxTheme.get(), MAKEINTRESOURCEA(138)));
+			if (!m_Ssudm)
 			{
-				LastErrorHandle(spdlog::level::warn, L"Failed to get address of ShouldAppsUseDarkMode");
+				LastErrorHandle(spdlog::level::warn, L"Failed to get address of ShouldSystemUseDarkMode");
 			}
 		}
 		else
@@ -91,28 +91,9 @@ public:
 		}
 	}
 
-	// Stored in TrayIcon, but only 1 TrayIcon instance
-	inline PFN_SHOULD_SYSTEM_USE_DARK_MODE ShouldSystemUseDarkMode() const
+	// Stored in TrayIcon and TaskbarAttributeWorker
+	constexpr PFN_SHOULD_SYSTEM_USE_DARK_MODE ShouldSystemUseDarkMode() const noexcept
 	{
-		if (m_UxTheme)
-		{
-			const auto fn = reinterpret_cast<PFN_SHOULD_SYSTEM_USE_DARK_MODE>(GetProcAddress(m_UxTheme.get(), MAKEINTRESOURCEA(138)));
-			if (!fn)
-			{
-				LastErrorHandle(spdlog::level::warn, L"Failed to get address of ShouldSystemUseDarkMode");
-			}
-
-			return fn;
-		}
-		else
-		{
-			return nullptr;
-		}
-	}
-
-	// Stored in each XamlPageHost
-	constexpr PFN_SHOULD_APPS_USE_DARK_MODE ShouldAppsUseDarkMode() const noexcept
-	{
-		return m_Saudm;
+		return m_Ssudm;
 	}
 };
