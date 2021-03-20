@@ -1,5 +1,4 @@
 #include "taskbarattributeworker.hpp"
-#include <algorithm>
 #include <functional>
 #include <member_thunk/member_thunk.hpp>
 
@@ -73,6 +72,8 @@ void TaskbarAttributeWorker::WindowInsertRemove(DWORD event, HWND hwnd, LONG idO
 void TaskbarAttributeWorker::OnAeroPeekEnterExit(DWORD event, HWND, LONG, LONG, DWORD, DWORD)
 {
 	m_PeekActive = event == EVENT_SYSTEM_PEEKSTART;
+	MessagePrint(spdlog::level::debug, m_PeekActive ? L"Aero Peek entered" : L"Aero Peek exited");
+
 	RefreshAllAttributes();
 }
 
