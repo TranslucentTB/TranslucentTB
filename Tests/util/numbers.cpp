@@ -7,20 +7,21 @@
 
 TEST(Util_IsDecimalDigit, ReturnsFalseWhenNotDigit)
 {
-	for (const auto &letter : uppercaseAlphabet)
+	for (const auto [upper, lower] : alphabet)
 	{
-		ASSERT_FALSE(Util::impl::IsDecimalDigit(letter));
+		ASSERT_FALSE(Util::impl::IsDecimalDigit(upper));
+		ASSERT_FALSE(Util::impl::IsDecimalDigit(lower));
 	}
 
-	for (const auto &letter : lowercaseAlphabet)
+	for (const auto character : specialCharacters)
 	{
-		ASSERT_FALSE(Util::impl::IsDecimalDigit(letter));
+		ASSERT_FALSE(Util::impl::IsDecimalDigit(character));
 	}
 }
 
 TEST(Util_IsDecimalDigit, ReturnsTrueWhenDigit)
 {
-	for (const auto &number : numbers)
+	for (const auto number : numbers)
 	{
 		ASSERT_TRUE(Util::impl::IsDecimalDigit(number));
 	}
@@ -28,25 +29,30 @@ TEST(Util_IsDecimalDigit, ReturnsTrueWhenDigit)
 
 TEST(Util_IsUpperHexDigit, ReturnsFalseWhenNotUpperCaseDigit)
 {
-	for (const auto &number : numbers)
+	for (const auto number : numbers)
 	{
 		ASSERT_FALSE(Util::impl::IsUpperHexDigit(number));
 	}
 
-	for (const auto &letter : uppercaseAlphabet | std::views::drop(6))
+	for (const auto letter : alphabet | std::views::elements<0> | std::views::drop(6))
 	{
 		ASSERT_FALSE(Util::impl::IsUpperHexDigit(letter));
 	}
 
-	for (const auto &letter : lowercaseAlphabet)
+	for (const auto letter : alphabet | std::views::elements<1>)
 	{
 		ASSERT_FALSE(Util::impl::IsUpperHexDigit(letter));
+	}
+
+	for (const auto character : specialCharacters)
+	{
+		ASSERT_FALSE(Util::impl::IsUpperHexDigit(character));
 	}
 }
 
 TEST(Util_IsUpperHexDigit, ReturnsTrueWhenUpperCaseDigit)
 {
-	for (const auto &letter : uppercaseAlphabet | std::views::take(6))
+	for (const auto letter : alphabet | std::views::elements<0> | std::views::take(6))
 	{
 		ASSERT_TRUE(Util::impl::IsUpperHexDigit(letter));
 	}
@@ -54,25 +60,30 @@ TEST(Util_IsUpperHexDigit, ReturnsTrueWhenUpperCaseDigit)
 
 TEST(Util_IsLowerHexDigit, ReturnsFalseWhenNotLowerCaseDigit)
 {
-	for (const auto &number : numbers)
+	for (const auto number : numbers)
 	{
 		ASSERT_FALSE(Util::impl::IsLowerHexDigit(number));
 	}
 
-	for (const auto &letter : uppercaseAlphabet)
+	for (const auto letter : alphabet | std::views::elements<0>)
 	{
 		ASSERT_FALSE(Util::impl::IsLowerHexDigit(letter));
 	}
 
-	for (const auto &letter : lowercaseAlphabet | std::views::drop(6))
+	for (const auto letter : alphabet | std::views::elements<1> | std::views::drop(6))
 	{
 		ASSERT_FALSE(Util::impl::IsLowerHexDigit(letter));
+	}
+
+	for (const auto character : specialCharacters)
+	{
+		ASSERT_FALSE(Util::impl::IsLowerHexDigit(character));
 	}
 }
 
 TEST(Util_IsLowerHexDigit, ReturnsTrueWhenLowerCaseDigit)
 {
-	for (const auto &letter : lowercaseAlphabet | std::views::take(6))
+	for (const auto letter : alphabet | std::views::elements<1> | std::views::take(6))
 	{
 		ASSERT_TRUE(Util::impl::IsLowerHexDigit(letter));
 	}

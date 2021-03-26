@@ -1,19 +1,18 @@
 #pragma once
+#include <tuple>
 
 static constexpr wchar_t numbers[] = {
 	L'0', L'1', L'2', L'3', L'4', L'5', L'6', L'7', L'8', L'9'
 };
 
-static constexpr wchar_t uppercaseAlphabet[] = {
-	L'A', L'B', L'C', L'D', L'E', L'F', L'G', L'H', L'I',
-	L'J', L'K', L'L', L'M', L'N', L'O', L'P', L'Q', L'R',
-	L'S', L'T', L'U', L'V', L'W', L'X', L'Y', L'Z'
-};
-
-static constexpr wchar_t lowercaseAlphabet[] = {
-	L'a', L'b', L'c', L'd', L'e', L'f', L'g', L'h', L'i',
-	L'j', L'k', L'l', L'm', L'n', L'o', L'p', L'q', L'r',
-	L's', L't', L'u', L'v', L'w', L'x', L'y', L'z'
+static constexpr std::tuple<wchar_t, wchar_t> alphabet[] = {
+	{ L'A', L'a'}, { L'B', L'b'}, { L'C', L'c'}, { L'D', L'd'},
+	{ L'E', L'e'}, { L'F', L'f'}, { L'G', L'g'}, { L'H', L'h'},
+	{ L'I', L'i'}, { L'J', L'j'}, { L'K', L'k'}, { L'L', L'l'},
+	{ L'M', L'm'}, { L'N', L'n'}, { L'O', L'o'}, { L'P', L'p'},
+	{ L'Q', L'q'}, { L'R', L'r'}, { L'S', L's'}, { L'T', L't'},
+	{ L'U', L'u'}, { L'V', L'v'}, { L'W', L'w'}, { L'X', L'x'},
+	{ L'Y', L'y'}, { L'Z', L'z'}
 };
 
 static constexpr wchar_t specialCharacters[] = {
