@@ -27,16 +27,16 @@ namespace winrt::TranslucentTB::Xaml::implementation
 
 			if (mergedDicts)
 			{
-				const auto beginIt = begin(mergedDicts);
-				const auto endIt = end(mergedDicts);
-				const auto it = std::ranges::find_if(beginIt, endIt, [](const wux::ResourceDictionary &resDict)
+				const auto begin = mergedDicts.begin();
+				const auto end = mergedDicts.end();
+				const auto it = std::ranges::find_if(begin, end, [](const wux::ResourceDictionary &resDict)
 				{
 					return resDict.try_as<IStyleResourceDictionary>() != nullptr;
 				});
 
-				if (it != endIt)
+				if (it != end)
 				{
-					mergedDicts.RemoveAt(static_cast<uint32_t>(it - beginIt));
+					mergedDicts.RemoveAt(static_cast<uint32_t>(it - begin));
 				}
 
 				if (const auto newVal = e.NewValue().try_as<wux::ResourceDictionary>())

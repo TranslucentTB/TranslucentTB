@@ -1,5 +1,5 @@
 #include "pch.h"
-#include <algorithm>
+#include <ranges>
 
 #include "FramelessPage.h"
 #if __has_include("Pages/FramelessPage.g.cpp")
@@ -149,18 +149,15 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 			if (content && content.Size() > 0)
 			{
 				menuItems.InsertAt(0, wuxc::MenuFlyoutSeparator());
-				std::ranges::for_each(
-					std::make_reverse_iterator(end(content)),
-					std::make_reverse_iterator(begin(content)),
-					[&menuItems, &needsMergeStyle](const auto &newItem)
+				for (const auto newItem : content | std::views::reverse)
+				{
+					if (newItem.try_as<wuxc::ToggleMenuFlyoutItem>())
 					{
-						if (newItem.try_as<wuxc::ToggleMenuFlyoutItem>())
-						{
-							needsMergeStyle = true;
-						}
+						needsMergeStyle = true;
+					}
 
-						menuItems.InsertAt(0, newItem);
-					});
+					menuItems.InsertAt(0, newItem);
+				}
 			}
 
 			closeItem.Style(needsMergeStyle ? LookupStyle(winrt::box_value(L"MergeIconsMenuFlyoutItem")) : nullptr);
