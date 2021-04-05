@@ -27,21 +27,14 @@ XamlThreadPool::~XamlThreadPool()
 	std::vector<wil::unique_handle> threads;
 	threads.reserve(m_Threads.size());
 
-	for (auto it = m_Threads.begin(); it != m_Threads.end();)
+	for (auto &xamlThread : m_Threads)
 	{
-		threads.push_back(it->get()->Delete());
-		static_cast<void>(it->release());
-
-		it = m_Threads.erase(it);
+		threads.push_back(xamlThread->Delete());
+		static_cast<void>(xamlThread.release());
 	}
 
-	// verify this shady cast is actually doable...
-	static_assert(sizeof(decltype(threads)::value_type) == sizeof(HANDLE));
-
-	if (WaitForMultipleObjects(wil::safe_cast<DWORD>(threads.size()), reinterpret_cast<HANDLE *>(threads.data()), true, INFINITE) == WAIT_FAILED)
+	if (WaitForMultipleObjects(wil::safe_cast<DWORD>(threads.size()), threads.data()->addressof(), true, INFINITE) == WAIT_FAILED)
 	{
 		LastErrorHandle(spdlog::level::warn, L"Failed to wait for thread termination");
 	}
-
-	threads.clear();
 }
