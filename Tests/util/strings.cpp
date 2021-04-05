@@ -1,6 +1,5 @@
-#include <algorithm>
 #include <gtest/gtest.h>
-#include <vector>
+#include <ranges>
 
 #include "../testingdata.hpp"
 #include "util/strings.hpp"
@@ -17,22 +16,18 @@ namespace {
 
 TEST(Util_IsAscii, ReturnsTrueWhenAscii)
 {
-	for (const auto &number : numbers)
+	for (const auto number : numbers)
 	{
 		ASSERT_TRUE(Util::IsAscii(number));
 	}
 
-	for (const auto &letter : uppercaseAlphabet)
+	for (const auto [upper, lower] : alphabet)
 	{
-		ASSERT_TRUE(Util::IsAscii(letter));
+		ASSERT_TRUE(Util::IsAscii(upper));
+		ASSERT_TRUE(Util::IsAscii(lower));
 	}
 
-	for (const auto &letter : lowercaseAlphabet)
-	{
-		ASSERT_TRUE(Util::IsAscii(letter));
-	}
-
-	for (const auto &character : specialCharacters)
+	for (const auto character : specialCharacters)
 	{
 		ASSERT_TRUE(Util::IsAscii(character));
 	}
@@ -46,14 +41,7 @@ TEST(Util_IsAscii, ReturnsFalseWhenNotAscii)
 
 TEST(Util_AsciiToUpper, ReturnsUppercaseAsciiFromLowercase)
 {
-	std::vector<std::pair<wchar_t, wchar_t>> alphabet;
-	alphabet.reserve(26);
-	std::ranges::transform(lowercaseAlphabet, uppercaseAlphabet, std::back_inserter(alphabet), [](wchar_t lower, wchar_t upper)
-	{
-		return std::make_pair(lower, upper);
-	});
-
-	for (const auto &[lower, upper] : alphabet)
+	for (const auto [upper, lower] : alphabet)
 	{
 		ASSERT_EQ(Util::AsciiToUpper(lower), upper);
 	}
@@ -61,7 +49,7 @@ TEST(Util_AsciiToUpper, ReturnsUppercaseAsciiFromLowercase)
 
 TEST(Util_AsciiToUpper, ReturnsUppercaseAsciiFromUppercase)
 {
-	for (const auto &letter : uppercaseAlphabet)
+	for (const auto letter : alphabet | std::views::elements<0>)
 	{
 		ASSERT_EQ(Util::AsciiToUpper(letter), letter);
 	}
@@ -69,12 +57,12 @@ TEST(Util_AsciiToUpper, ReturnsUppercaseAsciiFromUppercase)
 
 TEST(Util_AsciiToUpper, DoesNotChangesOtherCharacters)
 {
-	for (const auto &number : numbers)
+	for (const auto number : numbers)
 	{
 		ASSERT_EQ(Util::AsciiToUpper(number), number);
 	}
 
-	for (const auto &character : specialCharacters)
+	for (const auto character : specialCharacters)
 	{
 		ASSERT_EQ(Util::AsciiToUpper(character), character);
 	}
