@@ -40,13 +40,13 @@
             Closed="DialogClosed" />
 
         <ScrollViewer>
-            <ColorPicker x:Name="Picker" IsAlphaEnabled="True" IsMoreButtonVisible="True" Margin="12,12,12,0" />
+            <ColorPicker x:Name="Picker" IsAlphaEnabled="True" IsMoreButtonVisible="True" Margin="12,12,12,0" ColorChanged="PickerColorChanged" />
         </ScrollViewer>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="12">
             <Button Width="92" Click="OkButtonClicked" Style="{ThemeResource AccentButtonStyle}">OK</Button>
             <Button Width="92" Click="CancelButtonClicked">Cancel</Button>
-            <Button Width="92" Click="ApplyButtonClicked">Apply</Button>
+            <Button Width="92" Click="ApplyButtonClicked" IsEnabled="{x:Bind ColorHasBeenChanged, Mode = OneWay}">Apply</Button>
         </StackPanel>
     </Grid>
 </local:FramelessPage>

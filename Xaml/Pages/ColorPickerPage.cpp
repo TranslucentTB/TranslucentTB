@@ -18,6 +18,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		Title(category + L" - Color picker - " APP_NAME);
 		Picker().PreviousColor(currentColor);
 		Picker().Color(currentColor);
+		ColorHasBeenChanged(false);
 	}
 
 	bool ColorPickerPage::RequestClose()
@@ -64,6 +65,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 		m_ChangesCommittedHandler(Picker().Color());
 		Picker().PreviousColor(Picker().Color());
+		ColorHasBeenChanged(false);
 	}
 
 	void ColorPickerPage::DialogOpened(const IInspectable &, const wuxc::ContentDialogOpenedEventArgs &)
@@ -74,6 +76,11 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	void ColorPickerPage::DialogClosed(const IInspectable &, const wuxc::ContentDialogClosedEventArgs &)
 	{
 		m_DialogOpened = false;
+	}
+
+	void ColorPickerPage::PickerColorChanged(const wuxc::ColorPicker &, const wuxc::ColorChangedEventArgs &)
+	{
+		ColorHasBeenChanged(true);
 	}
 
 	fire_and_forget ColorPickerPage::OpenConfirmDialog()

@@ -4,9 +4,11 @@ namespace TranslucentTB.Xaml.Pages
 {
 	delegate void ChangesCommittedDelegate(Windows.UI.Color newColor);
 
-	runtimeclass ColorPickerPage : FramelessPage
+	runtimeclass ColorPickerPage : FramelessPage, Windows.UI.Xaml.Data.INotifyPropertyChanged
 	{
 		ColorPickerPage(String category, Windows.UI.Color currentColor);
 		event ChangesCommittedDelegate ChangesCommitted;
+
+		Boolean ColorHasBeenChanged { get; };
 	}
 }
