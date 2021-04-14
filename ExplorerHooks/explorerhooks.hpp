@@ -9,7 +9,8 @@ private:
 
 	static LRESULT CALLBACK CallWndProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
 
-	static bool IsInExplorer() noexcept;
+	static void *FindExplorerPayload() noexcept;
+	static void FreeExplorerPayload(void *payload) noexcept;
 
 public:
 #ifdef EXPLORERHOOKS_EXPORTS

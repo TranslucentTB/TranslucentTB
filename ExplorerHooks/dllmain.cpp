@@ -6,6 +6,8 @@
 #include "swcadetour.hpp"
 #include "timelinevisibilitymonitor.hpp"
 
+void *payload = nullptr;
+
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 {
 	switch (fdwReason)
@@ -15,7 +17,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 		DisableThreadLibraryCalls(hinstDLL);
 
 		// Are we in Explorer?
-		if (ExplorerHooks::IsInExplorer())
+		payload = ExplorerHooks::FindExplorerPayload();
+		if (payload)
 		{
 			// Install the things
 			SWCADetour::Install();
@@ -24,8 +27,14 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 		break;
 
 	case DLL_PROCESS_DETACH:
-		TimelineVisibilityMonitor::Uninstall(hinstDLL);
-		SWCADetour::Uninstall();
+		if (payload)
+		{
+			TimelineVisibilityMonitor::Uninstall(hinstDLL);
+			SWCADetour::Uninstall();
+
+			ExplorerHooks::FreeExplorerPayload(payload);
+			payload = nullptr;
+		}
 		break;
 	}
 

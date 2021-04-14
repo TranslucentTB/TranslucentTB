@@ -7,15 +7,25 @@
 #include <wil/win32_helpers.h>
 #include <WinUser.h>
 
+#include "util/abort.hpp"
+
 LRESULT CALLBACK ExplorerHooks::CallWndProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept
 {
 	// Placeholder
 	return CallNextHookEx(nullptr, nCode, wParam, lParam);
 }
 
-bool ExplorerHooks::IsInExplorer() noexcept
+void *ExplorerHooks::FindExplorerPayload() noexcept
 {
 	return DetourFindPayloadEx(EXPLORER_PAYLOAD, nullptr);
+}
+
+void ExplorerHooks::FreeExplorerPayload(void *payload) noexcept
+{
+	if (!DetourFreePayload(payload))
+	{
+		Util::QuickAbort();
+	}
 }
 
 HHOOK ExplorerHooks::Inject(HWND window) noexcept
