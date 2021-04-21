@@ -7,7 +7,7 @@
 
 namespace winrt::TranslucentTB::Xaml::implementation
 {
-	wux::Visibility FunctionalConverters::InvertedBoolToVisibility(bool value)
+	wux::Visibility FunctionalConverters::InvertedBoolToVisibility(bool value) noexcept
 	{
 		return value ? wux::Visibility::Collapsed : wux::Visibility::Visible;
 	}

@@ -8,7 +8,7 @@ namespace winrt::TranslucentTB::Xaml::implementation
 {
 	struct FunctionalConverters
 	{
-		static wux::Visibility InvertedBoolToVisibility(bool value);
+		static wux::Visibility InvertedBoolToVisibility(bool value) noexcept;
 	};
 }
 

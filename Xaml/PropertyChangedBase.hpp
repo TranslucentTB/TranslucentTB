@@ -14,7 +14,7 @@
 	\
 	void NAME(const TYPE &value) \
 	{ \
-		compare_assign(FIELD, value, UTIL_STRINGIFY(NAME));	\
+		compare_assign(FIELD, value, UTIL_STRINGIFY(NAME)); \
 	}
 
 #define DECL_PROPERTY_CHANGED_PROP(TYPE, NAME) \

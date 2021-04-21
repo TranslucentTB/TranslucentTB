@@ -178,7 +178,7 @@
       <PreprocessorDefinitions>RESULT_SUPPRESS_STATIC_INITIALIZERS;WIL_LOCK_EXCEPTION_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
       <!-- Windows -->
-      <PreprocessorDefinitions>_HIDE_GLOBAL_ASYNC_STATUS;STRICT_TYPED_ITEMIDS;NOMINMAX;_WINDOWS;WIN32_LEAN_AND_MEAN;WINRT_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_HIDE_GLOBAL_ASYNC_STATUS;STRICT_TYPED_ITEMIDS;NOMINMAX;_WINDOWS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ResourceCompile>
       <NullTerminateStrings>true</NullTerminateStrings>
