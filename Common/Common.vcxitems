@@ -16,6 +16,7 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)appinfo.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arch.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)config\experimentaloptions.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)undoc\explorer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\abort.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\color.hpp" />

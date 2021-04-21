@@ -2,7 +2,9 @@
 #include <array>
 #include <spdlog/common.h>
 #include <string_view>
+#include <optional>
 
+#include "experimentaloptions.hpp"
 #include "optionaltaskbarappearance.hpp"
 #include "rapidjsonhelper.hpp"
 #include "taskbarappearance.hpp"
@@ -28,6 +30,7 @@ public:
 #else
 		spdlog::level::warn;
 #endif
+	std::optional<ExperimentalOptions> Experimental;
 
 	template<class Writer>
 	inline void Serialize(Writer &writer) const
@@ -42,6 +45,7 @@ public:
 		rjh::Serialize(writer, HideTray, TRAY_KEY);
 		rjh::Serialize(writer, DisableSaving, SAVING_KEY);
 		rjh::Serialize(writer, LogVerbosity, LOG_KEY, LOG_MAP);
+		rjh::Serialize(writer, Experimental, EXPERIMENTAL_KEY);
 	}
 
 	inline void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view) = nullptr)
@@ -93,6 +97,10 @@ public:
 			{
 				rjh::Deserialize(it->value, LogVerbosity, key, LOG_MAP);
 			}
+			else if (key == EXPERIMENTAL_KEY)
+			{
+				rjh::Deserialize(it->value, Experimental, key, unknownKeyCallback);
+			}
 			else if (unknownKeyCallback)
 			{
 				unknownKeyCallback(key);
@@ -101,7 +109,7 @@ public:
 	}
 
 private:
-	static constexpr std::array<std::wstring_view, spdlog::level::off + 1> LOG_MAP = {
+	static constexpr std::array<std::wstring_view, spdlog::level::n_levels> LOG_MAP = {
 		L"trace",
 		L"debug",
 		L"info",
@@ -121,4 +129,5 @@ private:
 	static constexpr std::wstring_view TRAY_KEY = L"hide_tray";
 	static constexpr std::wstring_view SAVING_KEY = L"disable_saving";
 	static constexpr std::wstring_view LOG_KEY = L"verbosity";
+	static constexpr std::wstring_view EXPERIMENTAL_KEY = L"experimental";
 };
