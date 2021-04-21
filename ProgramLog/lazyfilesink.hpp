@@ -23,17 +23,7 @@ public:
 
 	const std::filesystem::path &file() const noexcept { return m_File; }
 
-	lazy_sink_state state() const noexcept
-	{
-		if (m_Tried)
-		{
-			return m_Handle
-				? lazy_sink_state::opened
-				: lazy_sink_state::failed;
-		}
-
-		return lazy_sink_state::nothing_logged;
-	}
+	lazy_sink_state state();
 
 protected:
 	void sink_it_(const spdlog::details::log_msg &msg) override;

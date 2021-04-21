@@ -14,6 +14,23 @@
 #include "util/to_string_view.hpp"
 
 template<typename Mutex>
+lazy_sink_state lazy_file_sink<Mutex>::state()
+{
+	std::scoped_lock guard(this->mutex_);
+
+	if (m_Tried)
+	{
+		return m_Handle
+			? lazy_sink_state::opened
+			: lazy_sink_state::failed;
+	}
+	else
+	{
+		return lazy_sink_state::nothing_logged;
+	}
+}
+
+template<typename Mutex>
 void lazy_file_sink<Mutex>::sink_it_(const spdlog::details::log_msg &msg)
 {
 	open();
@@ -69,7 +86,7 @@ void lazy_file_sink<Mutex>::write(const T &thing)
 
 	if (bytesWritten != thing.size())
 	{
-		MessagePrint(spdlog::level::trace, L"Wrote less characters than there is in log entry.");
+		MessagePrint(spdlog::level::trace, L"Wrote less characters than there is in log entry?");
 	}
 }
 

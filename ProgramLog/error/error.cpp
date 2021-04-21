@@ -15,14 +15,15 @@
 
 bool Error::ShouldLog(spdlog::level::level_enum level)
 {
-	if (level == spdlog::level::err || level == spdlog::level::critical || IsDebuggerPresent())
+	if (level == spdlog::level::err || level == spdlog::level::critical)
 	{
 		return true;
 	}
 
+	// implicitly checks if logging is initialized.
 	if (const auto sink = Log::GetSink())
 	{
-		return sink->should_log(level);
+		return sink->should_log(level) || IsDebuggerPresent();
 	}
 
 	return false;

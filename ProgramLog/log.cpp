@@ -14,7 +14,7 @@
 #include "util/fmt.hpp"
 #include "util/to_string_view.hpp"
 
-bool Log::s_LogInitialized = false;
+std::atomic<Log::InitStatus> Log::s_LogInitStatus = Log::InitStatus::NotInitialized;
 std::weak_ptr<lazy_file_sink_mt> Log::s_LogSink;
 
 std::time_t Log::GetProcessCreationTime() noexcept
@@ -66,25 +66,50 @@ void Log::LogErrorHandler(const std::string &message)
 	MessageBoxExA(nullptr, buf.data(), UTF8_ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 }
 
+bool Log::IsInitialized() noexcept
+{
+	return s_LogInitStatus == InitStatus::Initialized;
+}
+
+std::shared_ptr<lazy_file_sink_mt> Log::GetSink() noexcept
+{
+	if (IsInitialized())
+	{
+		return s_LogSink.lock();
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
 void Log::Initialize(const std::optional<std::filesystem::path> &storageFolder)
 {
-	auto defaultLogger = std::make_shared<spdlog::logger>("", std::make_shared<debug_sink>());
-
-	if (auto path = GetPath(storageFolder); !path.empty())
+	auto expected = InitStatus::NotInitialized;
+	if (s_LogInitStatus.compare_exchange_strong(expected, InitStatus::Initializing))
 	{
-		auto fileLog = std::make_shared<lazy_file_sink_mt>(std::move(path));
-		fileLog->set_level(Config{ }.LogVerbosity);
-		s_LogSink = fileLog;
+		auto defaultLogger = std::make_shared<spdlog::logger>("", std::make_shared<debug_sink>());
 
-		defaultLogger->sinks().push_back(std::move(fileLog));
+		if (auto path = GetPath(storageFolder); !path.empty())
+		{
+			auto fileLog = std::make_shared<lazy_file_sink_mt>(std::move(path));
+			fileLog->set_level(Config { }.LogVerbosity);
+			s_LogSink = fileLog;
+
+			defaultLogger->sinks().push_back(std::move(fileLog));
+		}
+
+		spdlog::set_formatter(std::make_unique<spdlog::pattern_formatter>(spdlog::pattern_time_type::utc));
+		spdlog::set_level(spdlog::level::trace);
+		spdlog::flush_on(spdlog::level::off);
+		spdlog::set_error_handler(LogErrorHandler);
+		spdlog::initialize_logger(defaultLogger);
+		spdlog::set_default_logger(std::move(defaultLogger));
+
+		s_LogInitStatus = InitStatus::Initialized;
 	}
-
-	spdlog::set_formatter(std::make_unique<spdlog::pattern_formatter>(spdlog::pattern_time_type::utc));
-	spdlog::set_level(spdlog::level::trace);
-	spdlog::flush_on(spdlog::level::off);
-	spdlog::set_error_handler(LogErrorHandler);
-	spdlog::initialize_logger(defaultLogger);
-	spdlog::set_default_logger(std::move(defaultLogger));
-
-	s_LogInitialized = true;
+	else
+	{
+		throw std::logic_error("Log::Initialize should only be called once");
+	}
 }
