@@ -8,6 +8,8 @@
 #include <type_traits>
 #include <wil/resource.h>
 
+#include "api.h"
+
 enum class lazy_sink_state {
 	opened,
 	nothing_logged,
@@ -23,7 +25,7 @@ public:
 
 	const std::filesystem::path &file() const noexcept { return m_File; }
 
-	lazy_sink_state state();
+	PROGRAMLOG_API lazy_sink_state state();
 
 protected:
 	void sink_it_(const spdlog::details::log_msg &msg) override;
