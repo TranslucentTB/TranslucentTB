@@ -11,9 +11,9 @@
 #include "api.h"
 
 enum class lazy_sink_state {
-	opened,
-	nothing_logged,
-	failed
+	opened = 0,
+	nothing_logged = 1,
+	failed = 2
 };
 
 template<typename Mutex>

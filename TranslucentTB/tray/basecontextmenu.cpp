@@ -132,7 +132,7 @@ void BaseContextMenu::CleanupClassicContextMenu()
 	m_Items.clear();
 }
 
-void BaseContextMenu::ShowClassicContextMenu(const wuxc::MenuFlyout &flyout)
+void BaseContextMenu::ShowClassicContextMenu(const wuxc::MenuFlyout &flyout, POINT pt)
 {
 	const auto guard = wil::scope_exit([this]
 	{

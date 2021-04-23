@@ -38,6 +38,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void SetStartupState(const wf::IReference<Windows::ApplicationModel::StartupTaskState> &state);
 
 		DECL_PROPERTY_CHANGED_FUNCS(bool, ShowStartup, m_ShowStartup);
+		DECL_PROPERTY_CHANGED_FUNCS(Models::Primitives::LogSinkState, SinkState, m_SinkState);
 
 		void AppearanceClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void ColorClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
@@ -83,6 +84,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		event<ExitRequestedDelegate> m_ExitRequestedDelegate;
 
 		bool m_ShowStartup = false;
+		Models::Primitives::LogSinkState m_SinkState = Models::Primitives::LogSinkState::Failed;
 	};
 }
 

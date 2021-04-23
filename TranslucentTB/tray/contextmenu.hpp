@@ -55,7 +55,7 @@ protected:
 				}
 				else
 				{
-					ShowClassicContextMenu(flyout);
+					ShowClassicContextMenu(flyout, pt);
 				}
 			}
 		}

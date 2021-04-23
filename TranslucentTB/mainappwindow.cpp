@@ -53,13 +53,11 @@ void MainAppWindow::RefreshMenu()
 	if (const auto sink = Log::GetSink())
 	{
 		trayPage.SetLogLevel(static_cast<txmp::LogLevel>(sink->level()));
-		// TODO: enable open logs if sink->state() == lazy_sink_state::opened
-		// TODO: enable log level submenu if sink->state() != lazy_sink_state::failed
+		trayPage.SinkState(static_cast<txmp::LogSinkState>(sink->state()));
 	}
 	else
 	{
-		// TODO: disable open logs
-		// TODO: disable log level submenu
+		trayPage.SinkState(txmp::LogSinkState::Failed);
 	}
 
 	trayPage.SetDisableSavingSettings(settings.DisableSaving);

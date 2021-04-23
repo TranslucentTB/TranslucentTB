@@ -1,4 +1,5 @@
 import "Models/Primitives/LogLevel.idl";
+import "Models/Primitives/LogSinkState.idl";
 import "Models/Primitives/TaskbarAppearance.idl";
 import "Models/Primitives/TaskbarState.idl";
 import "Pages/FlyoutPage.idl";
@@ -51,5 +52,6 @@ namespace TranslucentTB.Xaml.Pages
 		void SetStartupState(Windows.Foundation.IReference<Windows.ApplicationModel.StartupTaskState> state);
 
 		Boolean ShowStartup;
+		TranslucentTB.Xaml.Models.Primitives.LogSinkState SinkState;
 	}
 }

@@ -52,5 +52,6 @@
     <Midl Include="Models\Primitives\OptionalTaskbarAppearance.idl" />
     <Midl Include="Models\Primitives\TaskbarState.idl" />
     <Midl Include="Models\Primitives\LogLevel.idl" />
+    <Midl Include="Models\Primitives\LogSinkState.idl" />
   </ItemGroup>
 </Project>

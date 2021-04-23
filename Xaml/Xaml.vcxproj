@@ -212,6 +212,9 @@
     <Midl Include="Models\Primitives\LogLevel.idl">
       <SubType>Designer</SubType>
     </Midl>
+    <Midl Include="Models\Primitives\LogSinkState.idl">
+      <SubType>Designer</SubType>
+    </Midl>
     <Midl Include="Models\Primitives\OptionalTaskbarAppearance.idl">
       <SubType>Designer</SubType>
     </Midl>

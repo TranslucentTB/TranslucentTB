@@ -50,7 +50,7 @@ private:
 	void CleanupClassicContextMenu();
 
 protected:
-	void ShowClassicContextMenu(const wuxc::MenuFlyout &flyout);
+	void ShowClassicContextMenu(const wuxc::MenuFlyout &flyout, POINT pt);
 
 	// pass by ref to update the caller's value to represent the new window rect
 	// if it needed adjustment

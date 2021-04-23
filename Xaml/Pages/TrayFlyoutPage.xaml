@@ -6,6 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:TranslucentTB.Xaml.Controls"
     xmlns:local="using:TranslucentTB.Xaml.Pages"
+    xmlns:root="using:TranslucentTB.Xaml"
     xmlns:primitives="using:TranslucentTB.Xaml.Models.Primitives"
     mc:Ignorable="d" x:DefaultBindMode="OneWay">
     <ToolTipService.ToolTip>
@@ -251,8 +252,8 @@
             </MenuFlyoutSubItem>
             <MenuFlyoutSeparator />
             <MenuFlyoutSubItem Text="Advanced" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
-                <MenuFlyoutItem Text="Open log file" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="OpenLogFileClicked" />
-                <MenuFlyoutSubItem x:Name="LogLevelSubMenu" Text="Log verbosity" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
+                <MenuFlyoutItem Text="Open log file" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="OpenLogFileClicked" IsEnabled="{x:Bind root:FunctionalConverters.IsSameLogSinkState(SinkState, primitives:LogSinkState.Opened)}" />
+                <MenuFlyoutSubItem x:Name="LogLevelSubMenu" Text="Log verbosity" Style="{StaticResource MergeIconsMenuFlyoutSubItem}" IsEnabled="{x:Bind root:FunctionalConverters.IsDifferentLogSinkState(SinkState, primitives:LogSinkState.Failed)}">
                     <controls:RadioMenuFlyoutItem Text="Trace" GroupName="LogLevel" Click="LogLevelClicked">
                         <controls:RadioMenuFlyoutItem.Tag>
                             <primitives:LogLevel>Trace</primitives:LogLevel>
@@ -290,7 +291,7 @@
                         </controls:RadioMenuFlyoutItem.Tag>
                     </controls:RadioMenuFlyoutItem>
                 </MenuFlyoutSubItem>
-                <MenuFlyoutItem Text="Dump dynamic state to log" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="DumpDynamicStateClicked" />
+                <MenuFlyoutItem Text="Dump dynamic state to log" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="DumpDynamicStateClicked" IsEnabled="{x:Bind root:FunctionalConverters.IsDifferentLogSinkState(SinkState, primitives:LogSinkState.Failed)}" />
                 <MenuFlyoutSeparator />
                 <MenuFlyoutItem Text="Edit settings" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="EditSettingsClicked">
                     <MenuFlyoutItem.Icon>
