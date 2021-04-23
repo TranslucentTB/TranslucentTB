@@ -36,12 +36,6 @@
     <ClCompile Include="taskbar\taskbarattributeworker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="localization.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tray\contextmenu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="mainappwindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -69,6 +63,12 @@
     <ClCompile Include="uwp\xamldragregion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tray\basecontextmenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="localization.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\messagewindow.hpp">
@@ -90,9 +90,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="uwp\xamlpagehost.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="localization.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tray\contextmenu.hpp">
@@ -135,6 +132,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dynamicloader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tray\basecontextmenu.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="localization.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

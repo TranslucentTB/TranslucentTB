@@ -45,7 +45,7 @@ void ConfigManager::WatcherCallback(void *context, DWORD, std::wstring_view file
 
 		that->Load();
 		that->UpdateVerbosity();
-		that->m_Callback(that->m_Context, that->m_Config);
+		that->m_Callback(that->m_Context);
 	}
 }
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <type_traits>
 #include "winrt.hpp"
 #include <winrt/Windows.UI.Xaml.Data.h>
 
@@ -7,7 +8,7 @@
 
 #define PROPERTY_CHANGED_FIELD(NAME) m_ ## NAME ## Property_
 #define DECL_PROPERTY_CHANGED_FUNCS(TYPE, NAME, FIELD) \
-	TYPE NAME() \
+	TYPE NAME() const noexcept(std::is_nothrow_copy_constructible_v<TYPE>) \
 	{ \
 		return FIELD; \
 	}\

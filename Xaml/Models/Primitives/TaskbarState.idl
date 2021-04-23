@@ -1,0 +1,12 @@
+namespace TranslucentTB.Xaml.Models.Primitives
+{
+	enum TaskbarState
+	{
+		Desktop,
+		VisibleWindow,
+		MaximisedWindow,
+		StartOpened,
+		CortanaOpened,
+		TimelineOpened
+	};
+}

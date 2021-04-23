@@ -13,7 +13,7 @@ class ConfigManager {
 	static constexpr std::wstring_view CONFIG_FILE = L"settings.json";
 	static constexpr std::wstring_view SCHEMA_KEY = L"$schema";
 
-	using callback_t = std::add_pointer_t<void(void *, const Config &)>;
+	using callback_t = std::add_pointer_t<void(void *)>;
 
 	static std::filesystem::path DetermineConfigPath(const std::optional<std::filesystem::path> &storageFolder);
 	static void WatcherCallback(void *context, DWORD, std::wstring_view fileName);

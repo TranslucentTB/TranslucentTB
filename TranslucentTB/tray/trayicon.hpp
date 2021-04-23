@@ -7,7 +7,7 @@
 
 #include "undoc/uxtheme.hpp"
 
-class TrayIcon : public MessageWindow {
+class TrayIcon : public virtual MessageWindow {
 private:
 	NOTIFYICONDATA m_IconData;
 
@@ -40,13 +40,14 @@ protected:
 		Shell_NotifyIcon(NIM_SETFOCUS, &m_IconData);
 	}
 
+	std::optional<RECT> GetTrayRect();
+
 public:
-	TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view className,
-		Util::null_terminated_wstring_view windowName, const wchar_t *whiteIconResource,
-		const wchar_t *darkIconResource, HINSTANCE hInstance, PFN_SHOULD_SYSTEM_USE_DARK_MODE ssudm);
+	TrayIcon(const GUID &iconId, const wchar_t *whiteIconResource,
+		const wchar_t *darkIconResource, PFN_SHOULD_SYSTEM_USE_DARK_MODE ssudm);
 
 	void Show();
 	void Hide();
 
-	~TrayIcon();
+	virtual ~TrayIcon() noexcept(false) = 0;
 };

@@ -4,6 +4,7 @@
 #include "application.hpp"
 #include "constants.hpp"
 #include "localization.hpp"
+#include "resources/ids.h"
 #include "../ProgramLog/log.hpp"
 #include "../ProgramLog/error/win32.hpp"
 
@@ -39,264 +40,149 @@ LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void MainAppWindow::RefreshMenu()
 {
-	const auto &cfg = m_App.GetConfigManager().GetConfig();
+	const auto &trayPage = page();
+	const auto &settings = m_App.GetConfigManager().GetConfig();
 
-	AppearanceMenuRefresh(ID_GROUP_DESKTOP, cfg.DesktopAppearance);
-	AppearanceMenuRefresh(ID_GROUP_VISIBLE, cfg.VisibleWindowAppearance);
-	AppearanceMenuRefresh(ID_GROUP_MAXIMISED, cfg.MaximisedWindowAppearance);
-	AppearanceMenuRefresh(ID_GROUP_START, cfg.StartOpenedAppearance);
-	AppearanceMenuRefresh(ID_GROUP_CORTANA, cfg.CortanaOpenedAppearance);
-	AppearanceMenuRefresh(ID_GROUP_TIMELINE, cfg.TimelineOpenedAppearance);
+	trayPage.SetTaskbarSettings(txmp::TaskbarState::Desktop, settings.DesktopAppearance);
+	trayPage.SetTaskbarSettings(txmp::TaskbarState::VisibleWindow, txmp::OptionalTaskbarAppearance(settings.VisibleWindowAppearance));
+	trayPage.SetTaskbarSettings(txmp::TaskbarState::MaximisedWindow, txmp::OptionalTaskbarAppearance(settings.MaximisedWindowAppearance));
+	trayPage.SetTaskbarSettings(txmp::TaskbarState::StartOpened, txmp::OptionalTaskbarAppearance(settings.StartOpenedAppearance));
+	trayPage.SetTaskbarSettings(txmp::TaskbarState::CortanaOpened, txmp::OptionalTaskbarAppearance(settings.CortanaOpenedAppearance));
+	trayPage.SetTaskbarSettings(txmp::TaskbarState::TimelineOpened, txmp::OptionalTaskbarAppearance(settings.TimelineOpenedAppearance));
 
-	const auto [ok, logsEnabled, hasFile, logText, levelButton] = GetLogMenu();
-	EnableItem(ID_SUBMENU_LOG, ok);
-	CheckItem(ID_SUBMENU_LOG, logsEnabled);
-	EnableItem(ID_OPENLOG, hasFile);
-	SetText(ID_OPENLOG, Localization::LoadLocalizedResourceString(logText, hinstance()));
-	CheckRadio(ID_LOG_TRACE, ID_LOG_OFF, levelButton);
-
-	CheckItem(ID_DISABLESAVING, cfg.DisableSaving);
-
-	if (const auto &manager = m_App.GetStartupManager())
-	{
-		const auto [userModifiable, enabled, autostartText] = GetAutostartMenu(manager);
-
-		CheckItem(ID_AUTOSTART, enabled);
-		EnableItem(ID_AUTOSTART, userModifiable);
-		SetText(ID_AUTOSTART, Localization::LoadLocalizedResourceString(autostartText, hinstance()));
-	}
-}
-
-void MainAppWindow::AppearanceMenuRefresh(uint16_t group, const TaskbarAppearance &appearance)
-{
-	bool shouldEnableColor = appearance.Accent != ACCENT_NORMAL;
-	if (group != ID_GROUP_DESKTOP)
-	{
-		const bool enabled = static_cast<const OptionalTaskbarAppearance &>(appearance).Enabled;
-		shouldEnableColor = shouldEnableColor && enabled;
-
-		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_NORMAL, enabled);
-		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_OPAQUE, enabled);
-		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_CLEAR, enabled);
-		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_BLUR, enabled);
-		EnableItem(ID_TYPE_RADIOS + group + ID_OFFSET_ACRYLIC, enabled);
-
-		CheckItem(ID_TYPE_ACTIONS + group + ID_OFFSET_ENABLED, enabled);
-	}
-
-	EnableItem(ID_TYPE_ACTIONS + group + ID_OFFSET_COLOR, shouldEnableColor);
-	CheckRadio(
-		ID_TYPE_RADIOS + group + ID_OFFSET_NORMAL,
-		ID_TYPE_RADIOS + group + ID_OFFSET_ACRYLIC,
-		ID_TYPE_RADIOS + group + appearance.Accent
-	);
-}
-
-#pragma warning(push)
-#pragma warning(disable: 4244)
-std::tuple<bool, bool, bool, uint16_t, unsigned int> MainAppWindow::GetLogMenu()
-{
 	if (const auto sink = Log::GetSink())
 	{
-		if (const auto state = sink->state(); state != lazy_sink_state::failed)
-		{
-			const bool opened = state == lazy_sink_state::opened;
-			const auto level = sink->level();
-			return {
-				true,
-				level != spdlog::level::off,
-				opened,
-				opened ? IDS_OPENLOG_NORMAL : IDS_OPENLOG_EMPTY,
-				level + ID_RADIOS_LOG
-			};
-		}
-	}
-
-	return { false, false, false, IDS_OPENLOG_ERROR, 0 };
-}
-
-std::tuple<bool, bool, uint16_t> MainAppWindow::GetAutostartMenu(const StartupManager &manager)
-{
-	if (const auto state = manager.GetState())
-	{
-		switch (*state)
-		{
-			using winrt::Windows::ApplicationModel::StartupTaskState;
-
-		case StartupTaskState::Disabled:
-			return { true, false, IDS_AUTOSTART_NORMAL };
-
-		case StartupTaskState::DisabledByPolicy:
-			return { false, false, IDS_AUTOSTART_DISABLED_GPEDIT };
-
-		case StartupTaskState::DisabledByUser:
-			return { true, false, IDS_AUTOSTART_DISABLED_SETTINGS };
-
-		case StartupTaskState::Enabled:
-			return { true, true, IDS_AUTOSTART_NORMAL };
-
-		case StartupTaskState::EnabledByPolicy:
-			return { false, true, IDS_AUTOSTART_ENABLED_GPEDIT };
-
-		default:
-			return { false, false, IDS_AUTOSTART_UNKNOWN };
-		}
+		trayPage.SetLogLevel(static_cast<txmp::LogLevel>(sink->level()));
+		// TODO: enable open logs if sink->state() == lazy_sink_state::opened
+		// TODO: enable log level submenu if sink->state() != lazy_sink_state::failed
 	}
 	else
 	{
-		return { false, false, IDS_AUTOSTART_ERROR };
+		// TODO: disable open logs
+		// TODO: disable log level submenu
 	}
+
+	trayPage.SetDisableSavingSettings(settings.DisableSaving);
+
+	const auto state = m_App.GetStartupManager().GetState();
+	trayPage.SetStartupState(state ? wf::IReference(*state) : nullptr);
 }
-#pragma warning(pop)
 
-void MainAppWindow::ClickHandler(unsigned int id)
+void MainAppWindow::RegisterMenuHandlers()
 {
-	auto &cfgManager = m_App.GetConfigManager();
-	auto &cfg = cfgManager.GetConfig();
-	auto &worker = m_App.GetWorker();
+	const auto &menu = page();
+	m_TaskbarSettingsChangedRevoker = menu.TaskbarSettingsChanged(winrt::auto_revoke, { this, &MainAppWindow::TaskbarSettingsChanged });
+	m_ColorRequestedRevoker = menu.ColorRequested(winrt::auto_revoke, { this, &MainAppWindow::ColorRequested });
 
-	const uint16_t group = id & ID_GROUP_MASK;
-	const uint8_t offset = id & ID_OFFSET_MASK;
+	m_OpenLogFileRequestedRevoker = menu.OpenLogFileRequested(winrt::auto_revoke, { this, &MainAppWindow::OpenLogFileRequested });
+	m_LogLevelChangedRevoker = menu.LogLevelChanged(winrt::auto_revoke, { this, &MainAppWindow::LogLevelChanged });
+	m_DumpDynamicStateRequestedRevoker = menu.DumpDynamicStateRequested(winrt::auto_revoke, { this, &MainAppWindow::DumpDynamicStateRequested });
+	m_EditSettingsRequestedRevoker = menu.EditSettingsRequested(winrt::auto_revoke, { this, &MainAppWindow::EditSettingsRequested });
+	m_ResetDynamicStateRequestedRevoker = menu.ResetDynamicStateRequested(winrt::auto_revoke, { this, &MainAppWindow::ResetDynamicStateRequested });
+	m_DisableSavingSettingsChangedRevoker = menu.DisableSavingSettingsChanged(winrt::auto_revoke, { this, &MainAppWindow::DisableSavingSettingsChanged });
+	m_HideTrayRequestedRevoker = menu.HideTrayRequested(winrt::auto_revoke, { this, &MainAppWindow::HideTrayRequested });
+	m_ResetDynamicStateRequestedRevoker = menu.ResetDynamicStateRequested(winrt::auto_revoke, { this, &MainAppWindow::ResetDynamicStateRequested });
+	m_CompactThunkHeapRequestedRevoker = menu.CompactThunkHeapRequested(winrt::auto_revoke, MainAppWindow::CompactThunkHeapRequested);
 
-	switch (id & ID_TYPE_MASK)
+	m_StartupStateChangedRevoker = menu.StartupStateChanged(winrt::auto_revoke, { this, &MainAppWindow::StartupStateChanged });
+	m_TipsAndTricksRequestedRevoker = menu.TipsAndTricksRequested(winrt::auto_revoke, MainAppWindow::TipsAndTricksRequested);
+	m_AboutRequestedRevoker = menu.AboutRequested(winrt::auto_revoke, { this, &MainAppWindow::AboutRequested });
+	m_ExitRequestedRevoker = menu.ExitRequested(winrt::auto_revoke, { this, &MainAppWindow::Exit });
+}
+
+void MainAppWindow::TaskbarSettingsChanged(const txmp::TaskbarState &state, const txmp::TaskbarAppearance &appearance)
+{
+	auto &config = GetConfigForState(state);
+
+	// restore color because the context menu doesn't transmit that info
+	appearance.Color(config.Color);
+
+	if (const auto optAppearance = appearance.try_as<txmp::OptionalTaskbarAppearance>())
 	{
-	case ID_TYPE_RADIOS:
-	{
-		switch (group)
+		if (state == txmp::TaskbarState::Desktop)
 		{
-		case ID_GROUP_DESKTOP:
-		case ID_GROUP_VISIBLE:
-		case ID_GROUP_MAXIMISED:
-		case ID_GROUP_START:
-		case ID_GROUP_CORTANA:
-		case ID_GROUP_TIMELINE:
-			AppearanceForGroup(cfg, group).Accent = static_cast<ACCENT_STATE>(offset);
-			worker.ConfigurationChanged();
-			break;
-		case ID_GROUP_LOG:
-			cfg.LogVerbosity = static_cast<spdlog::level::level_enum>(offset);
-			cfgManager.UpdateVerbosity();
-			break;
+			throw std::invalid_argument("Desktop appearance is not optional");
 		}
-		break;
+
+		static_cast<OptionalTaskbarAppearance &>(config) = optAppearance;
+	}
+	else
+	{
+		config = appearance;
 	}
 
-	case ID_TYPE_ACTIONS:
-		switch (group)
+	m_App.GetWorker().ConfigurationChanged();
+}
+
+void MainAppWindow::ColorRequested(const txmp::TaskbarState &state)
+{
+	auto &appearance = GetConfigForState(state);
+
+	using winrt::TranslucentTB::Xaml::Pages::ColorPickerPage;
+	m_App.CreateXamlWindow<ColorPickerPage>(xaml_startup_position::mouse, [this, &appearance](const ColorPickerPage &picker)
+	{
+		picker.ChangesCommitted([this, &appearance](const winrt::Windows::UI::Color &color)
 		{
-		case ID_GROUP_DESKTOP:
-		case ID_GROUP_VISIBLE:
-		case ID_GROUP_MAXIMISED:
-		case ID_GROUP_START:
-		case ID_GROUP_CORTANA:
-		case ID_GROUP_TIMELINE:
-			AppearanceMenuHandler(group, offset, cfg);
-			break;
-		default:
-			switch (id)
+			m_App.DispatchToMainThread([this, &appearance, color]() mutable
 			{
-			case ID_OPENLOG:
-				HresultVerify(win32::EditFile(Log::GetSink()->file()), spdlog::level::err, L"Failed to open log file.");
-				break;
-			case ID_EDITSETTINGS:
-				cfgManager.EditConfigFile();
-				break;
-			case ID_RETURNTODEFAULTSETTINGS:
-				cfg = { };
-				cfgManager.UpdateVerbosity();
-				UpdateTrayVisibility(!cfg.HideTray);
-				worker.ConfigurationChanged();
-				break;
-			case ID_DISABLESAVING:
-				cfg.DisableSaving = !cfg.DisableSaving;
-				break;
-			case ID_HIDETRAY:
-				HideTrayHandler();
-				break;
-			case ID_DUMPWORKER:
-				worker.DumpState();
-				break;
-			case ID_RESETWORKER:
-				worker.ResetState();
-				break;
-			case ID_COMPACTHEAP:
-				member_thunk::compact();
-				break;
-			case ID_AUTOSTART:
-				AutostartMenuHandler(m_App.GetStartupManager());
-				break;
-			case ID_TIPS:
-				Application::OpenTipsPage();
-				break;
-			case ID_ABOUT:
-				MessageBox(nullptr, L"TODO", L"TODO", 0); // TODO
-				break;
-			case ID_EXIT:
-				Exit();
-				break;
-			}
-			break;
-		}
-		break;
-	}
-}
-
-TaskbarAppearance &MainAppWindow::AppearanceForGroup(Config &cfg, uint16_t group) noexcept
-{
-	switch (group)
-	{
-	case ID_GROUP_DESKTOP: return cfg.DesktopAppearance;
-	case ID_GROUP_VISIBLE: return cfg.VisibleWindowAppearance;
-	case ID_GROUP_MAXIMISED: return cfg.MaximisedWindowAppearance;
-	case ID_GROUP_START: return cfg.StartOpenedAppearance;
-	case ID_GROUP_CORTANA: return cfg.CortanaOpenedAppearance;
-	case ID_GROUP_TIMELINE: return cfg.TimelineOpenedAppearance;
-	default: MessagePrint(spdlog::level::critical, L"Unknown taskbar appearance group");
-	}
-}
-
-void MainAppWindow::AppearanceMenuHandler(uint16_t group, uint16_t offset, Config &cfg)
-{
-	auto &appearance = AppearanceForGroup(cfg, group);
-
-	switch (offset)
-	{
-	case ID_OFFSET_ENABLED:
-		if (group != ID_GROUP_DESKTOP)
-		{
-			bool &enabled = static_cast<OptionalTaskbarAppearance &>(appearance).Enabled;
-			enabled = !enabled;
-			m_App.GetWorker().ConfigurationChanged();
-		}
-		break;
-
-	case ID_OFFSET_COLOR:
-		using winrt::TranslucentTB::Xaml::Pages::ColorPickerPage;
-		m_App.CreateXamlWindow<ColorPickerPage>(xaml_startup_position::mouse, [this, &appearance](const ColorPickerPage &picker)
-		{
-			picker.ChangesCommitted([this, &appearance](const winrt::Windows::UI::Color &color)
-			{
-				m_App.DispatchToMainThread([this, &appearance, color]() mutable
-				{
-					appearance.Color = color;
-					m_App.GetWorker().ConfigurationChanged();
-				});
+				appearance.Color = color;
+				m_App.GetWorker().ConfigurationChanged();
 			});
-		}, L"TEST", appearance.Color);
-		break;
+		});
+	}, L"TEST", appearance.Color);
+	// TODO: use a localized string
+}
+
+void MainAppWindow::OpenLogFileRequested()
+{
+	if (const auto sink = Log::GetSink())
+	{
+		HresultVerify(win32::EditFile(sink->file()), spdlog::level::err, L"Failed to open log file.");
 	}
 }
 
-void MainAppWindow::HideTrayHandler()
+void MainAppWindow::LogLevelChanged(const txmp::LogLevel &level)
+{
+	const auto spdlogLevel = static_cast<spdlog::level::level_enum>(level);
+
+	auto &configManager = m_App.GetConfigManager();
+	configManager.GetConfig().LogVerbosity = spdlogLevel;
+	configManager.UpdateVerbosity();
+}
+
+void MainAppWindow::DumpDynamicStateRequested()
+{
+	m_App.GetWorker().DumpState();
+}
+
+void MainAppWindow::EditSettingsRequested()
+{
+	m_App.GetConfigManager().EditConfigFile();
+}
+
+void MainAppWindow::ResetSettingsRequested()
+{
+	auto &manager = m_App.GetConfigManager();
+	manager.GetConfig() = { };
+
+	manager.UpdateVerbosity();
+	m_App.GetWorker().ConfigurationChanged();
+	ConfigurationChanged();
+}
+
+void MainAppWindow::DisableSavingSettingsChanged(bool disabled) noexcept
+{
+	m_App.GetConfigManager().GetConfig().DisableSaving = disabled;
+}
+
+void MainAppWindow::HideTrayRequested()
 {
 	if (MessageBoxEx(
 			Window::NullWindow,
-			L"This change is temporary and will be lost the next time TranslucentTB is started.\n\n"
-			L"To make this permanent, edit the configuration file using \"Advanced\" > \"Edit settings\".\n\n"
-			L"Are you sure you want to proceed?",
+			Localization::LoadLocalizedResourceString(IDS_HIDETRAY_DIALOG, hinstance()).c_str(),
 			APP_NAME,
 			MB_YESNO | MB_ICONINFORMATION | MB_SETFOREGROUND,
-			MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL)
+			MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)
 		) == IDYES)
 	{
 		m_HideIconOverride = true;
@@ -304,23 +190,34 @@ void MainAppWindow::HideTrayHandler()
 	}
 }
 
-void MainAppWindow::AutostartMenuHandler(StartupManager &manager)
+void MainAppWindow::ResetDynamicStateRequested()
 {
+	m_App.GetWorker().ResetState();
+}
+
+void MainAppWindow::CompactThunkHeapRequested()
+{
+	member_thunk::compact();
+}
+
+void MainAppWindow::StartupStateChanged()
+{
+	auto &manager = m_App.GetStartupManager();
 	if (const auto state = manager.GetState())
 	{
 		switch (*state)
 		{
-			using winrt::Windows::ApplicationModel::StartupTaskState;
+			using enum winrt::Windows::ApplicationModel::StartupTaskState;
 
-		case StartupTaskState::Disabled:
+		case Disabled:
 			manager.Enable();
 			break;
 
-		case StartupTaskState::Enabled:
+		case Enabled:
 			manager.Disable();
 			break;
 
-		case StartupTaskState::DisabledByUser:
+		case DisabledByUser:
 			StartupManager::OpenSettingsPage();
 			break;
 
@@ -331,24 +228,37 @@ void MainAppWindow::AutostartMenuHandler(StartupManager &manager)
 	}
 }
 
+void MainAppWindow::TipsAndTricksRequested()
+{
+	Application::OpenTipsPage();
+}
+
+void MainAppWindow::AboutRequested()
+{
+	//m_App.CreateXamlWindow<winrt::TranslucentTB::Xaml::Pages::AboutPage>(xaml_startup_position::center, [](const auto &) { });
+}
+
 void MainAppWindow::Exit()
 {
 	m_App.GetConfigManager().SaveConfig();
 	m_App.Shutdown(0);
 }
 
-MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, bool hideStartup, HINSTANCE hInstance, DynamicLoader &loader) :
-	TrayContextMenu(TRAY_GUID, TRAY_WINDOW, APP_NAME, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), MAKEINTRESOURCE(IDR_TRAY_MENU), hInstance, loader),
-	m_App(app),
-	m_HideIconOverride(hideIconOverride)
+TaskbarAppearance &MainAppWindow::GetConfigForState(const txmp::TaskbarState &state)
 {
-	if (hideStartup)
+	auto &config = m_App.GetConfigManager().GetConfig();
+	switch (state)
 	{
-		RemoveItem(ID_AUTOSTART);
-	}
+		using enum txmp::TaskbarState;
 
-	// Shows the tray icon if not disabled.
-	UpdateTrayVisibility(!m_App.GetConfigManager().GetConfig().HideTray);
+	case Desktop: return config.DesktopAppearance;
+	case VisibleWindow: return config.VisibleWindowAppearance;
+	case MaximisedWindow: return config.MaximisedWindowAppearance;
+	case StartOpened: return config.StartOpenedAppearance;
+	case CortanaOpened: return config.CortanaOpenedAppearance;
+	case TimelineOpened: return config.TimelineOpenedAppearance;
+	default: throw std::invalid_argument("Unknown taskbar state");
+	}
 }
 
 void MainAppWindow::UpdateTrayVisibility(bool visible)
@@ -361,6 +271,27 @@ void MainAppWindow::UpdateTrayVisibility(bool visible)
 	{
 		Hide();
 	}
+}
+
+MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, bool showStartup, HINSTANCE hInstance, DynamicLoader &loader) :
+	// make the window topmost so that the context menu shows correctly
+	MessageWindow(TRAY_WINDOW, APP_NAME, hInstance, WS_POPUP, WS_EX_TOPMOST),
+	TrayContextMenu(TRAY_GUID, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), loader),
+	m_App(app),
+	m_HideIconOverride(hideIconOverride)
+{
+	page().ShowStartup(showStartup);
+	RegisterMenuHandlers();
+
+	ConfigurationChanged();
+}
+
+void MainAppWindow::ConfigurationChanged()
+{
+	const Config &config = m_App.GetConfigManager().GetConfig();
+
+	UpdateTrayVisibility(!config.HideTray);
+	ShouldUseXamlContextMenu(config.Experimental.value_or(ExperimentalOptions { }).UseXamlContextMenu.value_or(false));
 }
 
 void MainAppWindow::RemoveHideTrayIconOverride()

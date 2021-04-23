@@ -8,11 +8,11 @@
 #include "../ProgramLog/error/win32.hpp"
 #include "uwp/uwp.hpp"
 
-void Application::ConfigurationChanged(void *context, const Config &cfg)
+void Application::ConfigurationChanged(void *context)
 {
 	const auto that = static_cast<Application *>(context);
 	that->m_Worker.ConfigurationChanged();
-	that->m_AppWindow.UpdateTrayVisibility(!cfg.HideTray);
+	that->m_AppWindow.ConfigurationChanged();
 }
 
 winrt::TranslucentTB::Xaml::App Application::CreateXamlApp() try
@@ -128,7 +128,7 @@ Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> s
 	m_DispatcherController(UWP::CreateDispatcherController()),
 	m_XamlApp(CreateXamlApp()),
 	m_XamlManager(UWP::CreateXamlManager()),
-	m_AppWindow(*this, !fileExists, !storageFolder.has_value(), hInst, m_Loader),
+	m_AppWindow(*this, !fileExists, storageFolder.has_value(), hInst, m_Loader),
 	m_Xaml(hInst)
 {
 	if (const auto spam = m_Loader.SetPreferredAppMode())
@@ -198,8 +198,11 @@ int Application::Run()
 			{
 				if (msg.message != WM_QUIT)
 				{
-					TranslateMessage(&msg);
-					DispatchMessage(&msg);
+					if (!m_AppWindow.PreTranslateMessage(msg))
+					{
+						TranslateMessage(&msg);
+						DispatchMessage(&msg);
+					}
 				}
 				else
 				{

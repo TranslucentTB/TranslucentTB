@@ -52,8 +52,24 @@
       <DependentUpon>Controls\ChromeButton.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="Controls\RadioMenuFlyoutItem.cpp">
+      <DependentUpon>Controls\RadioMenuFlyoutItem.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Models\Primitives\OptionalTaskbarAppearance.cpp">
+      <DependentUpon>Models\Primitives\OptionalTaskbarAppearance.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Models\Primitives\TaskbarAppearance.cpp">
+      <DependentUpon>Models\Primitives\TaskbarAppearance.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="Pages\ColorPickerPage.cpp">
       <DependentUpon>Pages\ColorPickerPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Pages\FlyoutPage.cpp">
+      <DependentUpon>Pages\FlyoutPage.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="Pages\FramelessPage.cpp">
@@ -62,6 +78,10 @@
     </ClCompile>
     <ClCompile Include="FunctionalConverters.cpp">
       <DependentUpon>FunctionalConverters.idl</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="Pages\TrayFlyoutPage.cpp">
+      <DependentUpon>Pages\TrayFlyoutPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -100,6 +120,9 @@
     <Page Include="Pages\FramelessPage.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Pages\TrayFlyoutPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Pages\WelcomePage.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -118,11 +141,27 @@
       <DependentUpon>Controls\ChromeButton.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="Controls\RadioMenuFlyoutItem.h">
+      <DependentUpon>Controls\RadioMenuFlyoutItem.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="dependencyproperty.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="factory.h" />
+    <ClInclude Include="Models\Primitives\OptionalTaskbarAppearance.h">
+      <DependentUpon>Models\Primitives\OptionalTaskbarAppearance.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Models\Primitives\TaskbarAppearance.h">
+      <DependentUpon>Models\Primitives\TaskbarAppearance.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="Pages\ColorPickerPage.h">
       <DependentUpon>Pages\ColorPickerPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Pages\FlyoutPage.h">
+      <DependentUpon>Pages\FlyoutPage.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="Pages\FramelessPage.h">
@@ -132,6 +171,10 @@
     <ClInclude Include="FunctionalConverters.h">
       <DependentUpon>FunctionalConverters.idl</DependentUpon>
     </ClInclude>
+    <ClInclude Include="Pages\TrayFlyoutPage.h">
+      <DependentUpon>Pages\TrayFlyoutPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="pch.h" />
     <ClInclude Include="Pages\WelcomePage.h">
       <DependentUpon>Pages\WelcomePage.xaml</DependentUpon>
@@ -140,6 +183,7 @@
     <ClInclude Include="Models\Action.h">
       <DependentUpon>Models\Action.idl</DependentUpon>
     </ClInclude>
+    <ClInclude Include="property.h" />
     <ClInclude Include="PropertyChangedBase.hpp" />
     <ClInclude Include="StyleResources.h">
       <DependentUpon>StyleResources.idl</DependentUpon>
@@ -159,15 +203,40 @@
       <DependentUpon>Controls\ChromeButton.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
+    <Midl Include="Controls\RadioMenuFlyoutItem.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\AccentState.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\LogLevel.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\OptionalTaskbarAppearance.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\TaskbarAppearance.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\TaskbarState.idl">
+      <SubType>Designer</SubType>
+    </Midl>
     <Midl Include="Pages\ColorPickerPage.idl">
       <DependentUpon>Pages\ColorPickerPage.xaml</DependentUpon>
       <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="Pages\FlyoutPage.idl">
+      <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Pages\FramelessPage.idl">
       <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
     <Midl Include="FunctionalConverters.idl" />
+    <Midl Include="Pages\TrayFlyoutPage.idl">
+      <DependentUpon>Pages\TrayFlyoutPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
     <Midl Include="Pages\WelcomePage.idl">
       <DependentUpon>Pages\WelcomePage.xaml</DependentUpon>
       <SubType>Code</SubType>

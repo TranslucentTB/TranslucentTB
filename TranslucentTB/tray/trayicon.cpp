@@ -75,15 +75,38 @@ LRESULT TrayIcon::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return MessageWindow::MessageHandler(uMsg, wParam, lParam);
 }
 
-TrayIcon::TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view className,
-	Util::null_terminated_wstring_view windowName, const wchar_t *whiteIconResource,
-	const wchar_t *darkIconResource, HINSTANCE hInstance, PFN_SHOULD_SYSTEM_USE_DARK_MODE ssudm) :
-	MessageWindow(className, windowName, hInstance),
+std::optional<RECT> TrayIcon::GetTrayRect()
+{
+	NOTIFYICONIDENTIFIER id = { sizeof(id) };
+#ifdef SIGNED_BUILD
+	id.guidItem = m_IconData.guidItem;
+#else
+	id.hWnd = m_IconData.hWnd;
+	id.uID = m_IconData.uID;
+	id.guidItem = GUID_NULL;
+#endif
+
+	RECT rect{};
+	const HRESULT hr = Shell_NotifyIconGetRect(&id, &rect);
+	if (SUCCEEDED(hr))
+	{
+		return rect;
+	}
+	else
+	{
+		HresultHandle(hr, spdlog::level::warn, L"Failed to get tray rect");
+		return std::nullopt;
+	}
+}
+
+TrayIcon::TrayIcon(const GUID &iconId, const wchar_t *whiteIconResource,
+	const wchar_t *darkIconResource, PFN_SHOULD_SYSTEM_USE_DARK_MODE ssudm) :
 	m_IconData {
 		.cbSize = sizeof(m_IconData),
 		.hWnd = m_WindowHandle,
-		.uFlags = NIF_MESSAGE,
+		.uFlags = NIF_MESSAGE | NIF_TIP,
 		.uCallbackMessage = TRAY_CALLBACK,
+		.szTip = APP_NAME,
 		.uVersion = NOTIFYICON_VERSION_4
 	},
 	m_whiteIconResource(whiteIconResource),
@@ -93,15 +116,6 @@ TrayIcon::TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view classN
 	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED)),
 	m_Ssudm(ssudm)
 {
-	if (const errno_t err = wcscpy_s(m_IconData.szTip, windowName.c_str()); !err)
-	{
-		m_IconData.uFlags |= NIF_TIP | NIF_SHOWTIP;
-	}
-	else
-	{
-		ErrnoTHandle(err, spdlog::level::warn, L"Failed to copy tray icon tooltip text.");
-	}
-
 #ifdef SIGNED_BUILD
 	m_IconData.uFlags |= NIF_GUID;
 	m_IconData.guidItem = iconId;
@@ -112,9 +126,12 @@ TrayIcon::TrayIcon(const GUID &iconId, Util::null_terminated_wstring_view classN
 
 	LoadThemedIcon();
 
+#ifdef SIGNED_BUILD
 	// Clear icon from a previous instance that didn't cleanly exit.
 	// Errors if instance cleanly exited, so avoid logging it.
+	// Only works when using GUIDs.
 	Shell_NotifyIcon(NIM_DELETE, &m_IconData);
+#endif
 }
 
 void TrayIcon::Show()
@@ -136,7 +153,7 @@ void TrayIcon::Hide()
 	}
 }
 
-TrayIcon::~TrayIcon()
+TrayIcon::~TrayIcon() noexcept(false)
 {
 	Hide();
 }

@@ -615,7 +615,7 @@ void TaskbarAttributeWorker::ReturnToStock()
 	auto mainMonIt = m_Taskbars.end();
 	for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
 	{
-		SetAttribute(it->second.TaskbarWindow, { ACCENT_NORMAL });
+		SetAttribute(it->second.TaskbarWindow, { ACCENT_NORMAL, { 0, 0, 0, 0 }, true });
 
 		if (it->first == m_MainTaskbarMonitor)
 		{

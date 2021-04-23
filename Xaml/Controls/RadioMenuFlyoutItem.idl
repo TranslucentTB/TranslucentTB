@@ -1,0 +1,11 @@
+#include "..\dependencyproperty.h"
+
+namespace TranslucentTB.Xaml.Controls
+{
+	unsealed runtimeclass RadioMenuFlyoutItem : Windows.UI.Xaml.Controls.ToggleMenuFlyoutItem
+	{
+		RadioMenuFlyoutItem();
+
+		DECL_DEPENDENCY_PROPERTY(String, GroupName);
+	}
+}

@@ -13,12 +13,12 @@
 class Config {
 public:
 	// Appearances
-	TaskbarAppearance DesktopAppearance = { ACCENT_ENABLE_TRANSPARENTGRADIENT, { }, false };
-	OptionalTaskbarAppearance VisibleWindowAppearance = { ACCENT_ENABLE_BLURBEHIND, { }, true, false };
-	OptionalTaskbarAppearance MaximisedWindowAppearance = { ACCENT_ENABLE_BLURBEHIND, { }, true, true };
-	OptionalTaskbarAppearance StartOpenedAppearance = { ACCENT_NORMAL, { }, true, true };
-	OptionalTaskbarAppearance CortanaOpenedAppearance = { ACCENT_NORMAL, { }, true, true };
-	OptionalTaskbarAppearance TimelineOpenedAppearance = { ACCENT_NORMAL, { }, false, true };
+	TaskbarAppearance DesktopAppearance = { ACCENT_ENABLE_TRANSPARENTGRADIENT, { 0, 0, 0, 0 }, false };
+	OptionalTaskbarAppearance VisibleWindowAppearance = { false, ACCENT_ENABLE_BLURBEHIND, { 0, 0, 0, 0 }, true };
+	OptionalTaskbarAppearance MaximisedWindowAppearance = { true, ACCENT_ENABLE_BLURBEHIND, { 0, 0, 0, 0 }, true };
+	OptionalTaskbarAppearance StartOpenedAppearance = { true, ACCENT_NORMAL, { 0, 0, 0, 0 }, true };
+	OptionalTaskbarAppearance CortanaOpenedAppearance = { true, ACCENT_NORMAL, { 0, 0, 0, 0 }, true };
+	OptionalTaskbarAppearance TimelineOpenedAppearance = { true, ACCENT_NORMAL, { 0, 0, 0, 0 }, false };
 
 	// Advanced
 	WindowFilter IgnoredWindows;

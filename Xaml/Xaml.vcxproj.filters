@@ -28,6 +28,7 @@
     <ClInclude Include="dependencyproperty.h" />
     <ClInclude Include="factory.h" />
     <ClInclude Include="event.h" />
+    <ClInclude Include="property.h" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Pages\WelcomePage.xaml" />
@@ -35,6 +36,7 @@
     <Page Include="Controls\ChromeButton.xaml" />
     <Page Include="Controls\ActionList.xaml" />
     <Page Include="Pages\ColorPickerPage.xaml" />
+    <Page Include="Pages\TrayFlyoutPage.xaml" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
@@ -42,6 +44,13 @@
   <ItemGroup>
     <Midl Include="Models\Action.idl" />
     <Midl Include="FunctionalConverters.idl" />
+    <Midl Include="Controls\RadioMenuFlyoutItem.idl" />
     <Midl Include="StyleResources.idl" />
+    <Midl Include="Pages\FlyoutPage.idl" />
+    <Midl Include="Models\Primitives\AccentState.idl" />
+    <Midl Include="Models\Primitives\TaskbarAppearance.idl" />
+    <Midl Include="Models\Primitives\OptionalTaskbarAppearance.idl" />
+    <Midl Include="Models\Primitives\TaskbarState.idl" />
+    <Midl Include="Models\Primitives\LogLevel.idl" />
   </ItemGroup>
 </Project>

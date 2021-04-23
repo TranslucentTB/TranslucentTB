@@ -1,19 +1,31 @@
 #pragma once
 #include "contextmenu.hpp"
-#include "../dynamicloader.hpp"
 #include "trayicon.hpp"
+#include <windowsx.h>
 
-class TrayContextMenu : public TrayIcon, public ContextMenu {
-protected:
-	inline TrayContextMenu(const GUID &iconId, Util::null_terminated_wstring_view className,
-		Util::null_terminated_wstring_view windowName, const wchar_t *whiteIconResource, const wchar_t *darkIconResource,
-		const wchar_t *menuResource, HINSTANCE hInstance, DynamicLoader &loader) :
-		TrayIcon(iconId, className, windowName, whiteIconResource, darkIconResource, hInstance, loader.ShouldSystemUseDarkMode()),
-		ContextMenu(menuResource, hInstance)
+#include "../dynamicloader.hpp"
+#include "../uwp/uwp.hpp"
+
+template<typename T>
+class TrayContextMenu : public TrayIcon, public ContextMenu<T> {
+private:
+	static constexpr POINT PointFromParam(WPARAM wParam) noexcept
 	{
-		if (const auto admfm = loader.AllowDarkModeForWindow())
+		return {
+			.x = GET_X_LPARAM(wParam),
+			.y = GET_Y_LPARAM(wParam)
+		};
+	}
+
+protected:
+	template<typename... Args>
+	inline TrayContextMenu(const GUID &iconId, const wchar_t *whiteIconResource, const wchar_t *darkIconResource, DynamicLoader &loader, Args&&... args) :
+		TrayIcon(iconId, whiteIconResource, darkIconResource, loader.ShouldSystemUseDarkMode()),
+		ContextMenu<T>(std::forward<Args>(args)...)
+	{
+		if (const auto admfw = loader.AllowDarkModeForWindow())
 		{
-			admfm(m_WindowHandle, true);
+			admfw(m_WindowHandle, true);
 		}
 	}
 
@@ -21,31 +33,55 @@ protected:
 	{
 		switch (uMsg)
 		{
-		case WM_INITMENU:
-			RefreshMenu();
-			return 0;
+		case WM_SETTINGCHANGE:
+		case WM_THEMECHANGED:
+			if (const auto coreWin = UWP::GetCoreWindow())
+			{
+				// forward theme changes to the fake core window
+				// so that they propagate to our islands
+				coreWin.send_message(uMsg, wParam, lParam);
+			}
+
+			break;
 
 		default:
 			if (uMsg == TRAY_CALLBACK)
 			{
-				const UINT message = LOWORD(lParam);
-				if (message == WM_CONTEXTMENU || message == WM_LBUTTONDOWN)
+				switch (LOWORD(lParam))
 				{
+				case WM_CONTEXTMENU:
+				case WM_LBUTTONUP:
+				case NIN_KEYSELECT:
+				case NIN_SELECT:
 					if (!SetForegroundWindow(m_WindowHandle))
 					{
 						MessagePrint(spdlog::level::info, L"Failed to set window as foreground window.");
 					}
 
-					ShowAtCursor(m_WindowHandle);
-					post_message(WM_NULL);
-				}
+					if (const auto rect = GetTrayRect())
+					{
+						this->RefreshMenu();
+						this->ShowAt(*rect, PointFromParam(wParam));
+						post_message(WM_NULL);
+					}
 
-				return 0;
+					return 0;
+
+				case NIN_POPUPOPEN:
+					if (const auto rect = GetTrayRect())
+					{
+						this->ShowTooltip(*rect);
+					}
+					return 0;
+
+				case NIN_POPUPCLOSE:
+					this->HideTooltip();
+					return 0;
+				}
 			}
-			else
-			{
-				return TrayIcon::MessageHandler(uMsg, wParam, lParam);
-			}
+				
 		}
+
+		return TrayIcon::MessageHandler(uMsg, wParam, lParam);
 	}
 };

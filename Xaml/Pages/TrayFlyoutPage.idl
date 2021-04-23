@@ -1,0 +1,55 @@
+import "Models/Primitives/LogLevel.idl";
+import "Models/Primitives/TaskbarAppearance.idl";
+import "Models/Primitives/TaskbarState.idl";
+import "Pages/FlyoutPage.idl";
+
+namespace TranslucentTB.Xaml.Pages
+{
+	delegate void TaskbarSettingsChangedDelegate(TranslucentTB.Xaml.Models.Primitives.TaskbarState state, TranslucentTB.Xaml.Models.Primitives.TaskbarAppearance appearance);
+	delegate void ColorRequestedDelegate(TranslucentTB.Xaml.Models.Primitives.TaskbarState state);
+
+	delegate void OpenLogFileRequestedDelegate();
+	delegate void LogLevelChangedDelegate(TranslucentTB.Xaml.Models.Primitives.LogLevel level);
+	delegate void DumpDynamicStateRequestedDelegate();
+	delegate void EditSettingsRequestedDelegate();
+	delegate void ResetSettingsRequestedDelegate();
+	delegate void DisableSavingSettingsChangedDelegate(Boolean disabled);
+	delegate void HideTrayRequestedDelegate();
+	delegate void ResetDynamicStateRequestedDelegate();
+	delegate void CompactThunkHeapRequestedDelegate();
+
+	delegate void StartupStateChangedDelegate();
+	delegate void TipsAndTricksRequestedDelegate();
+	delegate void AboutRequestedDelegate();
+	delegate void ExitRequestedDelegate();
+
+	runtimeclass TrayFlyoutPage : FlyoutPage, Windows.UI.Xaml.Data.INotifyPropertyChanged
+	{
+		TrayFlyoutPage();
+
+		event TaskbarSettingsChangedDelegate TaskbarSettingsChanged;
+		event ColorRequestedDelegate ColorRequested;
+
+		event OpenLogFileRequestedDelegate OpenLogFileRequested;
+		event LogLevelChangedDelegate LogLevelChanged;
+		event DumpDynamicStateRequestedDelegate DumpDynamicStateRequested;
+		event EditSettingsRequestedDelegate EditSettingsRequested;
+		event ResetSettingsRequestedDelegate ResetSettingsRequested;
+		event DisableSavingSettingsChangedDelegate DisableSavingSettingsChanged;
+		event HideTrayRequestedDelegate HideTrayRequested;
+		event ResetDynamicStateRequestedDelegate ResetDynamicStateRequested;
+		event CompactThunkHeapRequestedDelegate CompactThunkHeapRequested;
+
+		event StartupStateChangedDelegate StartupStateChanged;
+		event TipsAndTricksRequestedDelegate TipsAndTricksRequested;
+		event AboutRequestedDelegate AboutRequested;
+		event ExitRequestedDelegate ExitRequested;
+
+		void SetTaskbarSettings(TranslucentTB.Xaml.Models.Primitives.TaskbarState state, TranslucentTB.Xaml.Models.Primitives.TaskbarAppearance appearance);
+		void SetLogLevel(TranslucentTB.Xaml.Models.Primitives.LogLevel level);
+		void SetDisableSavingSettings(Boolean disabled);
+		void SetStartupState(Windows.Foundation.IReference<Windows.ApplicationModel.StartupTaskState> state);
+
+		Boolean ShowStartup;
+	}
+}

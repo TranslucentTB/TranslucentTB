@@ -7,6 +7,12 @@
 #include <string_view>
 #include <windef.h>
 
+#if __has_include(<winrt/TranslucentTB.Xaml.Models.Primitives.h>)
+#define HAS_WINRT_CONFIG
+#include "../winrt.hpp"
+#include <winrt/TranslucentTB.Xaml.Models.Primitives.h>
+#endif
+
 #include "rapidjsonhelper.hpp"
 #include "../undoc/user32.hpp"
 #include "../util/color.hpp"
@@ -14,9 +20,16 @@
 #include "../util/to_string_view.hpp"
 
 struct TaskbarAppearance {
-	ACCENT_STATE Accent;
-	Util::Color Color;
-	bool ShowPeek;
+	ACCENT_STATE Accent = ACCENT_NORMAL;
+	Util::Color Color = { 0, 0, 0, 0 };
+	bool ShowPeek = true;
+
+	constexpr TaskbarAppearance() noexcept = default;
+	constexpr TaskbarAppearance(ACCENT_STATE accent, Util::Color color, bool showPeek) noexcept :
+		Accent(accent),
+		Color(color),
+		ShowPeek(showPeek)
+	{ }
 
 	template<class Writer>
 	inline void Serialize(Writer &writer) const
@@ -41,6 +54,19 @@ struct TaskbarAppearance {
 			InnerDeserialize(rjh::ValueToStringView(it->name), it->value, unknownKeyCallback);
 		}
 	}
+
+#ifdef HAS_WINRT_CONFIG
+	TaskbarAppearance(const txmp::TaskbarAppearance &winrtObj) noexcept :
+		Accent(static_cast<ACCENT_STATE>(winrtObj.Accent())),
+		Color(winrtObj.Color()),
+		ShowPeek(winrtObj.ShowPeek())
+	{ }
+
+	operator txmp::TaskbarAppearance() const
+	{
+		return { static_cast<txmp::AccentState>(Accent), Color, ShowPeek };
+	}
+#endif
 
 protected:
 	void InnerDeserialize(std::wstring_view key, const rjh::value_t &val, void (*unknownKeyCallback)(std::wstring_view))

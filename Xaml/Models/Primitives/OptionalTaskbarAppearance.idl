@@ -1,0 +1,13 @@
+import "Models/Primitives/TaskbarAppearance.idl";
+
+namespace TranslucentTB.Xaml.Models.Primitives
+{
+	runtimeclass OptionalTaskbarAppearance : TaskbarAppearance
+	{
+		OptionalTaskbarAppearance();
+		OptionalTaskbarAppearance(Boolean enabled, AccentState accent, Windows.UI.Color color, Boolean showPeek);
+
+		[noexcept]
+		Boolean Enabled;
+	}
+}

@@ -22,7 +22,7 @@
 #endif
 
 class Application final {
-	static void ConfigurationChanged(void *context, const Config &cfg);
+	static void ConfigurationChanged(void *context);
 	static winrt::TranslucentTB::Xaml::App CreateXamlApp();
 
 #ifndef DO_NOT_USE_GAME_SDK

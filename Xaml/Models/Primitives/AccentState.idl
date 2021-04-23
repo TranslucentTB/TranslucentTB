@@ -1,0 +1,11 @@
+namespace TranslucentTB.Xaml.Models.Primitives
+{
+	enum AccentState
+	{
+		Normal = 0,
+		Opaque = 1,
+		Clear = 2,
+		Blur = 3,
+		Acrylic = 4
+	};
+}

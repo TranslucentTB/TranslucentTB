@@ -19,19 +19,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="application.cpp" />
+    <ClCompile Include="localization.cpp" />
     <ClCompile Include="managers\configmanager.cpp" />
     <ClCompile Include="folderwatcher.cpp" />
-    <ClCompile Include="localization.cpp" />
     <ClCompile Include="mainappwindow.cpp" />
     <ClCompile Include="managers\startupmanager.cpp" />
     <ClCompile Include="taskbar\taskbarattributeworker.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="tray\basecontextmenu.cpp" />
     <ClCompile Include="uwp\basexamlpagehost.cpp" />
     <ClCompile Include="uwp\xamldragregion.cpp" />
     <ClCompile Include="uwp\xamlthreadpool.cpp" />
     <ClCompile Include="uwp\xamlthread.cpp" />
     <ClCompile Include="windows\messagewindow.cpp" />
-    <ClCompile Include="tray\contextmenu.cpp" />
     <ClCompile Include="tray\trayicon.cpp" />
     <ClCompile Include="uwp\uwp.cpp" />
     <ClCompile Include="windows\window.cpp" />
@@ -40,12 +40,13 @@
   <ItemGroup>
     <ClInclude Include="application.hpp" />
     <ClInclude Include="dynamicloader.hpp" />
+    <ClInclude Include="localization.hpp" />
     <ClInclude Include="managers\configmanager.hpp" />
     <ClInclude Include="folderwatcher.hpp" />
-    <ClInclude Include="localization.hpp" />
     <ClInclude Include="mainappwindow.hpp" />
     <ClInclude Include="managers\startupmanager.hpp" />
     <ClInclude Include="taskbar\launchervisibilitysink.hpp" />
+    <ClInclude Include="tray\basecontextmenu.hpp" />
     <ClInclude Include="tray\traycontextmenu.hpp" />
     <ClInclude Include="taskbar\taskbarattributeworker.hpp" />
     <ClInclude Include="uwp\basexamlpagehost.hpp" />
