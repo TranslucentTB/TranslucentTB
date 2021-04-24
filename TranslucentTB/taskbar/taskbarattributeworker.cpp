@@ -26,14 +26,14 @@ public:
 	{
 		if (m_Refresh)
 		{
-			if (it->first == m_Worker.m_MainTaskbarMonitor)
+			if (IsMainTaskbar(it->second.TaskbarWindow))
 			{
 				assert(m_MainMonIt == m_Worker.m_Taskbars.end());
 				m_MainMonIt = it;
 			}
 			else
 			{
-				m_Worker.RefreshAttribute(it);
+				m_Worker.RefreshAttribute(it, false);
 			}
 		}
 	}
@@ -44,7 +44,7 @@ public:
 	{
 		if (m_Refresh && m_MainMonIt != m_Worker.m_Taskbars.end())
 		{
-			m_Worker.RefreshAttribute(m_MainMonIt);
+			m_Worker.RefreshAttribute(m_MainMonIt, true);
 		}
 	}
 };
@@ -177,6 +177,17 @@ void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 	}
 }
 
+LRESULT TaskbarAttributeWorker::OnPowerBroadcast(const POWERBROADCAST_SETTING *settings)
+{
+	if (settings && settings->PowerSetting == GUID_POWER_SAVING_STATUS && settings->DataLength == sizeof(DWORD))
+	{
+		m_PowerSaver = *reinterpret_cast<const DWORD *>(&settings->Data);
+		RefreshAllAttributes();
+	}
+
+	return TRUE;
+}
+
 LRESULT TaskbarAttributeWorker::OnRequestAttributeRefresh(LPARAM lParam)
 {
 	const Window window = reinterpret_cast<HWND>(lParam);
@@ -194,25 +205,22 @@ LRESULT TaskbarAttributeWorker::OnRequestAttributeRefresh(LPARAM lParam)
 
 LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (uMsg == m_TaskbarCreatedMessage || uMsg == WM_DISPLAYCHANGE)
+	if (uMsg == m_TaskbarCreatedMessage || uMsg == WM_DISPLAYCHANGE || uMsg == WM_SETTINGCHANGE)
 	{
-		MessagePrint(spdlog::level::debug, uMsg == WM_DISPLAYCHANGE ? L"Monitor configuration change detected, refreshing..." : L"Main taskbar got created, refreshing...");
+		MessagePrint(spdlog::level::debug, uMsg == WM_DISPLAYCHANGE
+			? L"Monitor configuration change detected, refreshing..."
+			: uMsg == WM_SETTINGCHANGE
+				? L"System settings change detected, refreshing..."
+				: L"Main taskbar got created, refreshing...");
 
 		ResetState();
 		return 0;
 	}
 	else if (uMsg == WM_POWERBROADCAST && wParam == PBT_POWERSETTINGCHANGE)
 	{
-		const auto broadcast = reinterpret_cast<POWERBROADCAST_SETTING *>(lParam);
-		if (broadcast->PowerSetting == GUID_POWER_SAVING_STATUS && broadcast->DataLength == sizeof(DWORD))
-		{
-			m_PowerSaver = *reinterpret_cast<DWORD *>(&broadcast->Data);
-			RefreshAllAttributes();
-
-			return TRUE;
-		}
+		OnPowerBroadcast(reinterpret_cast<const POWERBROADCAST_SETTING *>(lParam));
 	}
-	else if (uMsg == WM_SETTINGCHANGE || uMsg == WM_THEMECHANGED)
+	else if (uMsg == WM_THEMECHANGED)
 	{
 		if (m_PowerSaver)
 		{
@@ -354,7 +362,7 @@ void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance confi
 	}
 }
 
-void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
+void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar, std::optional<bool> isMainOpt)
 {
 	const auto &cfg = GetConfig(taskbar);
 	SetAttribute(taskbar->second.TaskbarWindow, cfg);
@@ -363,7 +371,8 @@ void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
 	// do not pass any member of taskbar map by reference.
 	// See comment in InsertWindow.
 	// Ignore changes when peek is active
-	if (taskbar->first == m_MainTaskbarMonitor && !m_PeekActive)
+	const bool isMain = isMainOpt ? *isMainOpt : IsMainTaskbar(taskbar->second.TaskbarWindow);
+	if (isMain && !m_PeekActive)
 	{
 		ShowAeroPeekButton(taskbar->second.TaskbarWindow, cfg.ShowPeek);
 	}
@@ -496,6 +505,11 @@ void TaskbarAttributeWorker::RemoveWindow(Window window, taskbar_iterator it, At
 	}
 }
 
+bool TaskbarAttributeWorker::IsMainTaskbar(Window wnd) noexcept
+{
+	return wnd.monitor() == MonitorFromPoint({ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
+}
+
 bool TaskbarAttributeWorker::SetNewWindowExStyle(Window wnd, LONG_PTR oldStyle, LONG_PTR newStyle)
 {
 	if (oldStyle != newStyle)
@@ -617,7 +631,7 @@ void TaskbarAttributeWorker::ReturnToStock()
 	{
 		SetAttribute(it->second.TaskbarWindow, { ACCENT_NORMAL, { 0, 0, 0, 0 }, true });
 
-		if (it->first == m_MainTaskbarMonitor)
+		if (IsMainTaskbar(it->second.TaskbarWindow))
 		{
 			mainMonIt = it;
 		}
@@ -673,7 +687,6 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_TimelineActive(false),
 	m_disableAttributeRefreshReply(false),
 	m_CurrentStartMonitor(nullptr),
-	m_MainTaskbarMonitor(nullptr),
 	m_Config(cfg),
 	m_ThunkPage(member_thunk::allocate_page()),
 	m_PeekUnpeekHook(CreateHook(EVENT_SYSTEM_PEEKSTART, EVENT_SYSTEM_PEEKEND, CreateThunk(&TaskbarAttributeWorker::OnAeroPeekEnterExit))),
@@ -770,7 +783,6 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 	m_PeekActive = false;
 	m_TimelineActive = false;
 	m_CurrentStartMonitor = nullptr;
-	m_MainTaskbarMonitor = nullptr;
 	m_ForegroundWindow = Window::NullWindow;
 
 	if (rehook)
@@ -784,8 +796,7 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 
 		if (const Window main_taskbar = Window::Find(TASKBAR))
 		{
-			m_MainTaskbarMonitor = main_taskbar.monitor();
-			InsertTaskbar(m_MainTaskbarMonitor, main_taskbar);
+			InsertTaskbar(main_taskbar.monitor(), main_taskbar);
 		}
 
 		for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))
@@ -838,7 +849,7 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 	RefreshAllAttributes();
 }
 
-TaskbarAttributeWorker::~TaskbarAttributeWorker()
+TaskbarAttributeWorker::~TaskbarAttributeWorker() noexcept(false)
 {
 	ReturnToStock();
 }

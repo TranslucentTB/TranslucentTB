@@ -57,7 +57,6 @@ private:
 	bool m_PeekActive;
 	bool m_disableAttributeRefreshReply;
 	HMONITOR m_CurrentStartMonitor;
-	HMONITOR m_MainTaskbarMonitor;
 	Window m_ForegroundWindow;
 	std::unordered_map<HMONITOR, MonitorInfo> m_Taskbars;
 	std::unordered_set<Window> m_NormalTaskbars;
@@ -99,6 +98,7 @@ private:
 	void CALLBACK OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
 	void CALLBACK OnForegroundWindowChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
 	void OnStartVisibilityChange(bool state);
+	LRESULT OnPowerBroadcast(const POWERBROADCAST_SETTING *settings);
 	LRESULT OnRequestAttributeRefresh(LPARAM lParam);
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
@@ -108,7 +108,7 @@ private:
 	// Attribute
 	void ShowAeroPeekButton(Window taskbar, bool show);
 	void SetAttribute(Window window, TaskbarAppearance config);
-	void RefreshAttribute(taskbar_iterator taskbar);
+	void RefreshAttribute(taskbar_iterator taskbar, std::optional<bool> isMainOpt = std::nullopt);
 	void RefreshAllAttributes();
 
 	// Log
@@ -123,6 +123,7 @@ private:
 	void RemoveWindow(Window window, taskbar_iterator it, AttributeRefresher &refresher);
 
 	// Other
+	static bool IsMainTaskbar(Window wnd) noexcept;
 	static bool SetNewWindowExStyle(Window wnd, LONG_PTR oldStyle, LONG_PTR newStyle);
 	static bool SetContainsValidWindows(std::unordered_set<Window> &set);
 	static void DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set, bool showInfo = true);
@@ -162,5 +163,5 @@ public:
 	void DumpState();
 	void ResetState(bool rehook = true);
 
-	~TaskbarAttributeWorker();
+	~TaskbarAttributeWorker() noexcept(false);
 };

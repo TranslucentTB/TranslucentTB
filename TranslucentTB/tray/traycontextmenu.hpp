@@ -79,7 +79,6 @@ protected:
 					return 0;
 				}
 			}
-				
 		}
 
 		return TrayIcon::MessageHandler(uMsg, wParam, lParam);
