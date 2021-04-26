@@ -54,6 +54,8 @@ class Window {
 		}
 	}
 
+	static std::optional<std::filesystem::path> TryGetNtImageName(DWORD pid);
+
 protected:
 	HWND m_WindowHandle;
 

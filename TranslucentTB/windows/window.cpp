@@ -3,7 +3,40 @@
 #include <wil/com.h>
 #include <wil/resource.h>
 
+#include "undoc/winternl.hpp"
 #include "win32.hpp"
+
+std::optional<std::filesystem::path> Window::TryGetNtImageName(DWORD pid)
+{
+	static const auto NtQuerySystemInformation = []() noexcept -> PFN_NT_QUERY_SYSTEM_INFORMATION
+	{
+		const auto ntdll = GetModuleHandle(L"ntdll.dll");
+		return ntdll ? reinterpret_cast<PFN_NT_QUERY_SYSTEM_INFORMATION>(GetProcAddress(ntdll, "NtQuerySystemInformation")) : nullptr;
+	}();
+
+	if (NtQuerySystemInformation)
+	{
+		SYSTEM_PROCESS_ID_INFORMATION pidInfo = {
+			.ProcessId = reinterpret_cast<PVOID>(pid)
+		};
+
+		if (NtQuerySystemInformation(static_cast<SYSTEM_INFORMATION_CLASS>(SystemProcessIdInformation), &pidInfo, sizeof(pidInfo), nullptr) == STATUS_INFO_LENGTH_MISMATCH_UNDOC)
+		{
+			std::wstring buf;
+			buf.resize(pidInfo.ImageName.MaximumLength / 2);
+			pidInfo.ImageName.Buffer = buf.data();
+
+			// hopefully the process didn't die midway through this lol
+			if (NT_SUCCESS(NtQuerySystemInformation(static_cast<SYSTEM_INFORMATION_CLASS>(SystemProcessIdInformation), &pidInfo, sizeof(pidInfo), nullptr)))
+			{
+				buf.resize(pidInfo.ImageName.Length / 2);
+				return std::move(buf);
+			}
+		}
+	}
+
+	return std::nullopt;
+}
 
 std::optional<std::wstring> Window::title() const
 {
@@ -61,21 +94,30 @@ std::optional<std::wstring> Window::classname() const
 
 std::optional<std::filesystem::path> Window::file() const
 {
-	const wil::unique_process_handle processHandle(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, process_id()));
-	if (!processHandle)
-	{
-		LastErrorHandle(spdlog::level::info, L"Getting process handle of a window failed.");
-		return std::nullopt;
-	}
+	const auto pid = process_id();
 
-	auto [loc, hr] = win32::GetProcessFileName(processHandle.get());
-	if (FAILED(hr))
+	if (auto imageName = TryGetNtImageName(pid))
 	{
-		HresultHandle(hr, spdlog::level::info, L"Getting file name of a window failed.");
-		return std::nullopt;
+		return { std::move(*imageName) };
 	}
+	else
+	{
+		const wil::unique_process_handle processHandle(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid));
+		if (!processHandle)
+		{
+			LastErrorHandle(spdlog::level::info, L"Getting process handle of a window failed.");
+			return std::nullopt;
+		}
 
-	return { std::move(loc) };
+		auto [loc, hr] = win32::GetProcessFileName(processHandle.get());
+		if (FAILED(hr))
+		{
+			HresultHandle(hr, spdlog::level::info, L"Getting file name of a window failed.");
+			return std::nullopt;
+		}
+
+		return { std::move(loc) };
+	}
 }
 
 std::optional<bool> Window::on_current_desktop() const
