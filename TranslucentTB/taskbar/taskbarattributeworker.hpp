@@ -98,6 +98,7 @@ private:
 	void CALLBACK OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
 	void CALLBACK OnForegroundWindowChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
 	void OnStartVisibilityChange(bool state);
+	LRESULT OnSystemSettingsChange(UINT uiAction, std::wstring_view changedParameter);
 	LRESULT OnPowerBroadcast(const POWERBROADCAST_SETTING *settings);
 	LRESULT OnRequestAttributeRefresh(LPARAM lParam);
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;

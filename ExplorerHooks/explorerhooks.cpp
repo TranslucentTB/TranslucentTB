@@ -30,7 +30,7 @@ void ExplorerHooks::FreeExplorerPayload(void *payload) noexcept
 
 HHOOK ExplorerHooks::Inject(HWND window) noexcept
 {
-	DWORD pid;
+	DWORD pid = 0;
 	const DWORD tid = GetWindowThreadProcessId(window, &pid);
 
 	wil::unique_process_handle proc(OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, pid));

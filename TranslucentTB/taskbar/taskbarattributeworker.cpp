@@ -177,6 +177,21 @@ void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 	}
 }
 
+LRESULT TaskbarAttributeWorker::OnSystemSettingsChange(UINT uiAction, std::wstring_view)
+{
+	if (uiAction == SPI_SETWORKAREA)
+	{
+		MessagePrint(spdlog::level::debug, L"Work area change detected, refreshing...");
+		ResetState();
+	}
+	else if (m_PowerSaver)
+	{
+		RefreshAllAttributes();
+	}
+
+	return 0;
+}
+
 LRESULT TaskbarAttributeWorker::OnPowerBroadcast(const POWERBROADCAST_SETTING *settings)
 {
 	if (settings && settings->PowerSetting == GUID_POWER_SAVING_STATUS && settings->DataLength == sizeof(DWORD))
@@ -205,20 +220,22 @@ LRESULT TaskbarAttributeWorker::OnRequestAttributeRefresh(LPARAM lParam)
 
 LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (uMsg == m_TaskbarCreatedMessage || uMsg == WM_DISPLAYCHANGE || uMsg == WM_SETTINGCHANGE)
+	if (uMsg == WM_SETTINGCHANGE)
+	{
+		return OnSystemSettingsChange(static_cast<UINT>(wParam), lParam ? reinterpret_cast<const wchar_t *>(lParam) : std::wstring_view { });
+	}
+	else if (uMsg == m_TaskbarCreatedMessage || uMsg == WM_DISPLAYCHANGE)
 	{
 		MessagePrint(spdlog::level::debug, uMsg == WM_DISPLAYCHANGE
 			? L"Monitor configuration change detected, refreshing..."
-			: uMsg == WM_SETTINGCHANGE
-				? L"System settings change detected, refreshing..."
-				: L"Main taskbar got created, refreshing...");
+			: L"Main taskbar got created, refreshing...");
 
 		ResetState();
 		return 0;
 	}
 	else if (uMsg == WM_POWERBROADCAST && wParam == PBT_POWERSETTINGCHANGE)
 	{
-		OnPowerBroadcast(reinterpret_cast<const POWERBROADCAST_SETTING *>(lParam));
+		return OnPowerBroadcast(reinterpret_cast<const POWERBROADCAST_SETTING *>(lParam));
 	}
 	else if (uMsg == WM_THEMECHANGED)
 	{
