@@ -17,6 +17,7 @@ std::optional<std::filesystem::path> Window::TryGetNtImageName(DWORD pid)
 	if (NtQuerySystemInformation)
 	{
 		SYSTEM_PROCESS_ID_INFORMATION pidInfo = {
+#pragma warning(suppress: 4312) // intentional, the structure uses a pointer to store PIDs
 			.ProcessId = reinterpret_cast<PVOID>(pid)
 		};
 
