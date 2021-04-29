@@ -8,6 +8,19 @@
 #include "win32.hpp"
 #include "../ProgramLog/error/win32.hpp"
 
+UINT BaseContextMenu::GetNextClickableId() noexcept
+{
+	// skip over 0 because TrackPopupMenu returning 0 means the menu was dismissed
+	// or an error occured. We don't want to trigger an entry when the menu is dismissed,
+	// and we can't distinguish menu dismisses from proper clicks.
+	if (m_ContextMenuClickableId == 0)
+	{
+		m_ContextMenuClickableId = 1;
+	}
+
+	return m_ContextMenuClickableId++;
+}
+
 wil::unique_hmenu BaseContextMenu::BuildContextMenuInner(const wfc::IVector<wuxc::MenuFlyoutItemBase> &items)
 {
 	wil::unique_hmenu menu(CreatePopupMenu());
@@ -35,7 +48,7 @@ wil::unique_hmenu BaseContextMenu::BuildContextMenuInner(const wfc::IVector<wuxc
 
 				itemInfo.fMask = MIIM_DATA | MIIM_ID | MIIM_STATE | MIIM_STRING;
 				itemInfo.fState = menuItem.IsEnabled() ? MFS_ENABLED : MFS_DISABLED;
-				itemInfo.wID = m_ContextMenuClickableId++;
+				itemInfo.wID = GetNextClickableId();
 				itemInfo.dwTypeData = const_cast<wchar_t *>(menuText.c_str());
 				itemInfo.dwItemData = reinterpret_cast<ULONG_PTR>(winrt::get_abi(menuItem));
 
@@ -143,12 +156,12 @@ void BaseContextMenu::ShowClassicContextMenu(const wuxc::MenuFlyout &flyout, POI
 	{
 		SetLastError(NO_ERROR);
 		const unsigned int item = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, 0, m_WindowHandle, nullptr);
-		const DWORD lastErr = GetLastError();
-		if (lastErr == NO_ERROR)
+		if (item)
 		{
 			TriggerClassicContextMenuItem(item);
 		}
-		else
+		// can return 0 if the menu is dismissed
+		else if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
 		{
 			HresultHandle(HRESULT_FROM_WIN32(lastErr), spdlog::level::warn, L"Failed to open context menu.");
 		}

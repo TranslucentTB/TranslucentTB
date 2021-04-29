@@ -44,6 +44,7 @@ private:
 		}
 	}
 
+	UINT GetNextClickableId() noexcept;
 	wil::unique_hmenu BuildContextMenuInner(const wfc::IVector<wuxc::MenuFlyoutItemBase> &items);
 	HMENU BuildClassicContextMenu(const wuxc::MenuFlyout &flyout);
 	void TriggerClassicContextMenuItem(UINT item);
