@@ -55,7 +55,7 @@
             RelativePanel.AlignVerticalCenterWith="Titlebar" />
         <ItemsControl
             x:Name="CustomTitlebarControls"
-            ItemsSource="{x:Bind TitlebarContent}"
+            ItemsSource="{x:Bind TitlebarContent, Mode = OneTime}"
             IsTabStop="False"
             RelativePanel.AlignTopWithPanel="True"
             RelativePanel.LeftOf="CloseButton">

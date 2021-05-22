@@ -69,7 +69,7 @@ private:
 	void UpdateTrayVisibility(bool visible);
 
 public:
-	MainAppWindow(Application &app, bool hideIconOverride, bool showStartup, HINSTANCE hInstance, DynamicLoader &loader);
+	MainAppWindow(Application &app, bool hideIconOverride, bool hasPackageIdentity, HINSTANCE hInstance, DynamicLoader &loader);
 
 	void ConfigurationChanged();
 	void RemoveHideTrayIconOverride();

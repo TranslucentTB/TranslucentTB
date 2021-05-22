@@ -12,8 +12,8 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	struct TrayFlyoutPage : TrayFlyoutPageT<TrayFlyoutPage>, PropertyChangedBase<TrayFlyoutPage>
 	{
-		TrayFlyoutPage();
-		
+		TrayFlyoutPage(bool hasPackageIdentity);
+
 		DECL_EVENT_FUNCS(TaskbarSettingsChangedDelegate, TaskbarSettingsChanged, m_TaskbarSettingsChangedDelegate);
 		DECL_EVENT_FUNCS(ColorRequestedDelegate, ColorRequested, m_ColorRequestedDelegate);
 
@@ -26,7 +26,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		DECL_EVENT_FUNCS(HideTrayRequestedDelegate, HideTrayRequested, m_HideTrayRequestedDelegate);
 		DECL_EVENT_FUNCS(ResetDynamicStateRequestedDelegate, ResetDynamicStateRequested, m_ResetDynamicStateRequestedDelegate);
 		DECL_EVENT_FUNCS(CompactThunkHeapRequestedDelegate, CompactThunkHeapRequested, m_CompactThunkHeapRequestedDelegate);
-		
+
 		DECL_EVENT_FUNCS(StartupStateChangedDelegate, StartupStateChanged, m_StartupStateChangedDelegate);
 		DECL_EVENT_FUNCS(TipsAndTricksRequestedDelegate, TipsAndTricksRequested, m_TipsAndTricksRequestedDelegate);
 		DECL_EVENT_FUNCS(AboutRequestedDelegate, AboutRequested, m_AboutRequestedDelegate);
@@ -37,7 +37,6 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void SetDisableSavingSettings(const bool &disabled);
 		void SetStartupState(const wf::IReference<Windows::ApplicationModel::StartupTaskState> &state);
 
-		DECL_PROPERTY_CHANGED_FUNCS(bool, ShowStartup, m_ShowStartup);
 		DECL_PROPERTY_CHANGED_FUNCS(Models::Primitives::LogSinkState, SinkState, m_SinkState);
 
 		void AppearanceClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
@@ -83,7 +82,6 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		event<AboutRequestedDelegate> m_AboutRequestedDelegate;
 		event<ExitRequestedDelegate> m_ExitRequestedDelegate;
 
-		bool m_ShowStartup = false;
 		Models::Primitives::LogSinkState m_SinkState = Models::Primitives::LogSinkState::Failed;
 	};
 }

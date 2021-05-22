@@ -8,9 +8,14 @@
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
-	TrayFlyoutPage::TrayFlyoutPage()
+	TrayFlyoutPage::TrayFlyoutPage(bool hasPackageIdentity)
 	{
 		InitializeComponent();
+
+		if (!hasPackageIdentity)
+		{
+			StartupState().Visibility(wux::Visibility::Collapsed);
+		}
 	}
 
 	void TrayFlyoutPage::SetTaskbarSettings(const Models::Primitives::TaskbarState &state, const Models::Primitives::TaskbarAppearance &appearance)
@@ -39,7 +44,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 						// so manually uncheck it instead.
 						radioItem->ProgrammaticUncheck();
 					}
-					
+
 					radioItem->IsEnabled(enabled);
 				}
 				else if (const auto toggleItem = item.try_as<wuxc::ToggleMenuFlyoutItem>())

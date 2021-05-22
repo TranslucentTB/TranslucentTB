@@ -28,24 +28,34 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void CloseClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void SystemMenuOpening(const IInspectable &sender, const IInspectable &args);
 
-		DECL_DEPENDENCY_PROPERTY(hstring, Title);
-		DECL_DEPENDENCY_PROPERTY(wfc::IObservableVector<Controls::ChromeButton>, TitlebarContent);
-		DECL_DEPENDENCY_PROPERTY_FUNCS(wfc::IObservableVector<wuxc::MenuFlyoutItemBase>, SystemMenuContent, s_SystemMenuContentProperty);
+		DECL_DEPENDENCY_PROPERTY_WITH_DEFAULT(hstring, Title, box_value(L""));
 		DECL_DEPENDENCY_PROPERTY(wux::UIElement, UserContent);
-		DECL_DEPENDENCY_PROPERTY(bool, ExpandIntoTitlebar);
-		DECL_DEPENDENCY_PROPERTY(bool, IsClosable);
-		DECL_DEPENDENCY_PROPERTY(bool, AlwaysOnTop);
+		DECL_DEPENDENCY_PROPERTY_WITH_DEFAULT(bool, ExpandIntoTitlebar, box_value(false));
+		DECL_DEPENDENCY_PROPERTY_WITH_DEFAULT(bool, IsClosable, box_value(true));
+		DECL_DEPENDENCY_PROPERTY_WITH_DEFAULT(bool, AlwaysOnTop, box_value(false));
+
+		wfc::IObservableVector<Controls::ChromeButton> TitlebarContent() noexcept
+		{
+			return m_TitlebarContent;
+		}
+
+		wfc::IObservableVector<wuxc::MenuFlyoutItemBase> SystemMenuContent() noexcept
+		{
+			return m_SystemMenuContent;
+		}
 
 	private:
 		void SystemMenuChanged(const wfc::IObservableVector<wuxc::MenuFlyoutItemBase> &sender, const wfc::IVectorChangedEventArgs &event);
 
 		event<ClosedDelegate> m_ClosedHandler;
-		bool m_NeedsSystemMenuRefresh = true;
+
+		wfc::IObservableVector<Controls::ChromeButton> m_TitlebarContent = single_threaded_observable_vector<Controls::ChromeButton>();
+
+		bool m_NeedsSystemMenuRefresh = false;
 		wfc::IObservableVector<wuxc::MenuFlyoutItemBase>::VectorChanged_revoker m_SystemMenuChangedRevoker;
+		wfc::IObservableVector<wuxc::MenuFlyoutItemBase> m_SystemMenuContent = single_threaded_observable_vector<wuxc::MenuFlyoutItemBase>();
 
 		static wux::Style LookupStyle(const IInspectable &key);
-		static void SystemMenuContentChanged(const Windows::UI::Xaml::DependencyObject &d, const Windows::UI::Xaml::DependencyPropertyChangedEventArgs &e);
-		static wux::DependencyProperty s_SystemMenuContentProperty;
 	};
 }
 

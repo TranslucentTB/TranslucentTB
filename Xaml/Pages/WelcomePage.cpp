@@ -5,15 +5,12 @@
 #include "Pages/WelcomePage.g.cpp"
 #endif
 
-#include "appinfo.hpp"
-
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	WelcomePage::WelcomePage(bool hasPackageIdentity)
 	{
 		InitializeComponent();
 
-		Title(L"Welcome to " APP_NAME L"!");
 		if (!hasPackageIdentity)
 		{
 			StartupCheckbox().Visibility(wux::Visibility::Collapsed);

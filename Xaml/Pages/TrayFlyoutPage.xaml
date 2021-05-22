@@ -305,7 +305,7 @@
                 <MenuFlyoutItem Text="Reset dynamic state" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ResetDynamicStateClicked" />
                 <MenuFlyoutItem Text="Compact thunk heap" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="CompactThunkHeapClicked" />
             </MenuFlyoutSubItem>
-            <ToggleMenuFlyoutItem x:Name="StartupState" Text="Open at boot" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Visibility="{x:Bind ShowStartup, Mode = OneWay}" Click="StartupClicked" />
+            <ToggleMenuFlyoutItem x:Name="StartupState" Text="Open at boot" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="StartupClicked" />
             <MenuFlyoutItem Text="Tips and tricks" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="TipsAndTricksClicked" />
             <MenuFlyoutItem Text="About TranslucentTB" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="AboutClicked" />
             <MenuFlyoutItem Text="Exit" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ExitClicked" />

@@ -7,7 +7,7 @@
     xmlns:models="using:TranslucentTB.Xaml.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" Width="636" Height="500" ExpandIntoTitlebar="True" IsClosable="True">
+    mc:Ignorable="d" Width="636" Height="500" ExpandIntoTitlebar="True" IsClosable="True" Title="Welcome to TranslucentTB!">
 
     <local:FramelessPage.Resources>
         <!-- Use white no matter the theme -->
@@ -68,7 +68,7 @@
                 <models:Action
                     Name="Edit the configuration file"
                     Click="EditConfigFile"
-                    Description="You can always do this by clicking 'Advanced > Edit settings' in the tray icon's context menu&#10;Changes are automatically reloaded as you save the file">
+                    Description="You can always do this by clicking 'Advanced > Edit settings' in the tray icon's context menu&#10;Changes are automatically reloaded when you save the file">
                     <PathIcon Data="{StaticResource EditIcon}" />
                 </models:Action>
             </controls:ActionList>

@@ -8,15 +8,10 @@
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
-	wux::DependencyProperty FramelessPage::s_SystemMenuContentProperty =
-		wux::DependencyProperty::Register(
-			L"SystemMenuContent",
-			winrt::xaml_typename<wfc::IObservableVector<wuxc::MenuFlyoutItemBase>>(),
-			winrt::xaml_typename<class_type>(),
-			wux::PropertyMetadata(nullptr, SystemMenuContentChanged));
-
 	FramelessPage::FramelessPage()
 	{
+		m_SystemMenuChangedRevoker = m_SystemMenuContent.VectorChanged(winrt::auto_revoke, { get_weak(), &FramelessPage::SystemMenuChanged });
+
 		InitializeComponent();
 	}
 
@@ -80,8 +75,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	wf::Rect FramelessPage::TitlebarButtonsRegion()
 	{
 		const bool closable = IsClosable();
-		const auto titlebarButtons = TitlebarContent();
-		if (!ExpandIntoTitlebar() || (closable == false && (!titlebarButtons || titlebarButtons.Size() == 0)))
+		if (!ExpandIntoTitlebar() || (closable == false && m_TitlebarContent.Size() == 0))
 		{
 			return { 0.0f, 0.0f, 0.0f, 0.0f };
 		}
@@ -101,17 +95,14 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 				width += closeButton.ActualWidth();
 			}
 
-			if (titlebarButtons)
+			for (const auto button : m_TitlebarContent)
 			{
-				for (const auto button : titlebarButtons)
+				if (height == 0.0f)
 				{
-					if (height == 0.0f)
-					{
-						height = button.ActualHeight();
-					}
-
-					width += button.ActualWidth();
+					height = button.ActualHeight();
 				}
+
+				width += button.ActualWidth();
 			}
 
 			return {
@@ -145,11 +136,10 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 			menuItems.Append(closeItem);
 
 			bool needsMergeStyle = false;
-			const auto content = SystemMenuContent();
-			if (content && content.Size() > 0)
+			if (m_SystemMenuContent.Size() > 0)
 			{
 				menuItems.InsertAt(0, wuxc::MenuFlyoutSeparator());
-				for (const auto newItem : content | std::views::reverse)
+				for (const auto newItem : m_SystemMenuContent | std::views::reverse)
 				{
 					if (newItem.try_as<wuxc::ToggleMenuFlyoutItem>())
 					{
@@ -174,19 +164,5 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	wux::Style FramelessPage::LookupStyle(const IInspectable &key)
 	{
 		return wux::Application::Current().Resources().TryLookup(key).try_as<wux::Style>();
-	}
-
-	void FramelessPage::SystemMenuContentChanged(const Windows::UI::Xaml::DependencyObject &d, const Windows::UI::Xaml::DependencyPropertyChangedEventArgs &e)
-	{
-		if (const auto page = d.try_as<FramelessPage>())
-		{
-			page->m_NeedsSystemMenuRefresh = true;
-
-			page->m_SystemMenuChangedRevoker.revoke();
-			if (const auto vector = e.NewValue().try_as<wfc::IObservableVector<wuxc::MenuFlyoutItemBase>>())
-			{
-				page->m_SystemMenuChangedRevoker = vector.VectorChanged(winrt::auto_revoke, { page->get_weak(), &FramelessPage::SystemMenuChanged });
-			}
-		}
 	}
 }

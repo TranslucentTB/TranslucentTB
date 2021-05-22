@@ -271,14 +271,13 @@ void MainAppWindow::UpdateTrayVisibility(bool visible)
 	}
 }
 
-MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, bool showStartup, HINSTANCE hInstance, DynamicLoader &loader) :
+MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, bool hasPackageIdentity, HINSTANCE hInstance, DynamicLoader &loader) :
 	// make the window topmost so that the context menu shows correctly
 	MessageWindow(TRAY_WINDOW, APP_NAME, hInstance, WS_POPUP, WS_EX_TOPMOST),
-	TrayContextMenu(TRAY_GUID, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), loader),
+	TrayContextMenu(TRAY_GUID, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), loader, hasPackageIdentity),
 	m_App(app),
 	m_HideIconOverride(hideIconOverride)
 {
-	page().ShowStartup(showStartup);
 	RegisterMenuHandlers();
 
 	ConfigurationChanged();

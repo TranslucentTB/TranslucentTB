@@ -335,7 +335,6 @@ public:
 
 		// TODO:
 		// tab navigation enabled on opening
-		// contentdialog animations not working
 		// no animation when closing through alt-space menu
 	}
 

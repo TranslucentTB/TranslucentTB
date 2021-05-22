@@ -10,7 +10,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 	{
 		RadioMenuFlyoutItem();
 
-		DECL_DEPENDENCY_PROPERTY(hstring, GroupName);
+		DECL_DEPENDENCY_PROPERTY_WITH_DEFAULT(hstring, GroupName, box_value(L""));
 
 		void ProgrammaticUncheck();
 

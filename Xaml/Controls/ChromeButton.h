@@ -21,7 +21,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 		DECL_DEPENDENCY_PROPERTY(Windows::UI::Color, HoverBackground);
 		DECL_DEPENDENCY_PROPERTY(Windows::UI::Color, PressedForeground);
 		DECL_DEPENDENCY_PROPERTY(Windows::UI::Color, PressedBackground);
-		DECL_DEPENDENCY_PROPERTY(bool, IsTogglable);
+		DECL_DEPENDENCY_PROPERTY_WITH_DEFAULT(bool, IsTogglable, box_value(false));
 
 		void OnToggle();
 	};
