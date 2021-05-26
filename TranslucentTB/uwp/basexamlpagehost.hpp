@@ -67,4 +67,5 @@ public:
 	}
 
 	virtual winrt::TranslucentTB::Xaml::Pages::FramelessPage page() noexcept = 0;
+	virtual bool TryClose() = 0;
 };

@@ -242,19 +242,6 @@ private:
 		}
 	}
 
-	bool TryClose()
-	{
-		if (m_content.RequestClose())
-		{
-			return true;
-		}
-		else
-		{
-			Flash();
-			return false;
-		}
-	}
-
 	void OnClose()
 	{
 		Cleanup();
@@ -346,5 +333,18 @@ public:
 	inline constexpr const T &content() noexcept
 	{
 		return m_content;
+	}
+
+	bool TryClose() override
+	{
+		if (!m_content || m_content.RequestClose())
+		{
+			return true;
+		}
+		else
+		{
+			Flash();
+			return false;
+		}
 	}
 };

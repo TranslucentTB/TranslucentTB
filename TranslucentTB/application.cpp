@@ -224,7 +224,33 @@ int Application::Run()
 
 winrt::fire_and_forget Application::Shutdown(int exitCode)
 {
-	// todo: close all xaml
-	co_await m_DispatcherController.ShutdownQueueAsync();
-	PostQuitMessage(exitCode);
+	bool canExit = true;
+	for (const auto &thread : m_Xaml.GetThreads())
+	{
+		const auto guard = thread->Lock();
+		if (const auto &window = thread->GetCurrentWindow(); window && window->page())
+		{
+			// Checking if the window can be closed requires to be on the same thread, so
+			// switch to that thread.
+			co_await thread->GetDispatcher();
+			if (!window->TryClose())
+			{
+				canExit = false;
+
+				// bring attention to the window that couldn't be closed.
+				SetForegroundWindow(window->handle());
+			}
+		}
+	}
+
+	if (canExit)
+	{
+		// go back to the main thread for exiting
+		co_await m_DispatcherController.DispatcherQueue();
+
+		co_await m_DispatcherController.ShutdownQueueAsync();
+
+		// exit
+		PostQuitMessage(exitCode);
+	}
 }

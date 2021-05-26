@@ -123,6 +123,16 @@ LRESULT BaseXamlPageHost::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam
 {
 	switch (uMsg)
 	{
+	case WM_QUERYENDSESSION:
+		if (!TryClose())
+		{
+			return 0;
+		}
+		else
+		{
+			return 1;
+		}
+
 	case WM_SETTINGCHANGE:
 	case WM_THEMECHANGED:
 		if (const auto coreWin = UWP::GetCoreWindow())

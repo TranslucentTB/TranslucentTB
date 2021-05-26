@@ -56,6 +56,11 @@ public:
 		return m_CurrentWindow == nullptr;
 	}
 
+	const std::unique_ptr<BaseXamlPageHost> &GetCurrentWindow() const
+	{
+		return m_CurrentWindow;
+	}
+
 	template<typename T, typename Callback, typename... Args>
 	void CreateXamlWindow(std::unique_lock<Util::thread_independent_mutex> lock, WindowClass &classRef, WindowClass& dragRegionClass, xaml_startup_position pos, Callback &&callback, Args&&... args)
 	{
@@ -86,4 +91,9 @@ public:
 	}
 
 	wil::unique_handle Delete();
+
+	winrt::Windows::System::DispatcherQueue GetDispatcher() const
+	{
+		return m_Dispatcher.DispatcherQueue();
+	}
 };

@@ -5,6 +5,7 @@
 #include "constants.hpp"
 #include "../ExplorerHooks/explorerhooks.hpp"
 #include "../../ProgramLog/error/win32.hpp"
+#include "undoc/user32.hpp"
 #include "undoc/winuser.hpp"
 #include "util/fmt.hpp"
 #include "win32.hpp"

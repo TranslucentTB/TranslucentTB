@@ -36,4 +36,9 @@ public:
 	}
 
 	~XamlThreadPool();
+
+	const std::vector<std::unique_ptr<XamlThread>> &GetThreads() const
+	{
+		return m_Threads;
+	}
 };
