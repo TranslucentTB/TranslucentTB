@@ -85,6 +85,7 @@ private:
 	std::optional<UINT> m_RefreshRequestedMessage;
 	std::optional<UINT> m_TimelineNotificationMessage;
 	std::optional<UINT> m_GetTimelineStatusMessage;
+	std::optional<UINT> m_StartVisibilityChangeMessage;
 
 	// Type aliases
 	using taskbar_iterator = std::unordered_map<HMONITOR, MonitorInfo>::iterator;

@@ -265,6 +265,12 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 
 		return 0;
 	}
+	else if (uMsg == m_StartVisibilityChangeMessage)
+	{
+		OnStartVisibilityChange(wParam);
+
+		return 0;
+	}
 
 	return MessageWindow::MessageHandler(uMsg, wParam, lParam);
 }
@@ -604,19 +610,22 @@ void TaskbarAttributeWorker::DumpWindow(fmt::wmemory_buffer &buf, Window window)
 
 void TaskbarAttributeWorker::CreateAppVisibility()
 {
-	try
+	if (m_StartVisibilityChangeMessage)
 	{
-		m_IAV = wil::CoCreateInstance<IAppVisibility>(CLSID_AppVisibility);
-	}
-	catch (const wil::ResultException &err)
-	{
-		ResultExceptionHandle(err, spdlog::level::warn, L"Failed to create app visibility instance.");
-		return;
-	}
+		try
+		{
+			m_IAV = wil::CoCreateInstance<IAppVisibility>(CLSID_AppVisibility);
+		}
+		catch (const wil::ResultException &err)
+		{
+			ResultExceptionHandle(err, spdlog::level::warn, L"Failed to create app visibility instance.");
+			return;
+		}
 
-	const auto av_sink = winrt::make_self<LauncherVisibilitySink<&TaskbarAttributeWorker::OnStartVisibilityChange, TaskbarAttributeWorker>>(this);
-	m_IAVECookie.associate(m_IAV.get());
-	HresultVerify(m_IAV->Advise(av_sink.get(), m_IAVECookie.put()), spdlog::level::warn, L"Failed to register app visibility sink.");
+		const auto av_sink = winrt::make_self<LauncherVisibilitySink>(*this, *m_StartVisibilityChangeMessage);
+		m_IAVECookie.associate(m_IAV.get());
+		HresultVerify(m_IAV->Advise(av_sink.get(), m_IAVECookie.put()), spdlog::level::warn, L"Failed to register app visibility sink.");
+	}
 }
 
 WINEVENTPROC TaskbarAttributeWorker::CreateThunk(void(CALLBACK TaskbarAttributeWorker:: *proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD))
@@ -716,7 +725,8 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED)),
 	m_RefreshRequestedMessage(Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH)),
 	m_TimelineNotificationMessage(Window::RegisterMessage(WM_TTBHOOKTIMELINENOTIFICATION)),
-	m_GetTimelineStatusMessage(Window::RegisterMessage(WM_TTBHOOKGETTIMELINESTATUS))
+	m_GetTimelineStatusMessage(Window::RegisterMessage(WM_TTBHOOKGETTIMELINESTATUS)),
+	m_StartVisibilityChangeMessage(Window::RegisterMessage(WM_TTBSTARTVISIBILITYCHANGE))
 {
 	const auto stateThunk = CreateThunk(&TaskbarAttributeWorker::OnWindowStateChange);
 	m_ResizeMoveHook = CreateHook(EVENT_OBJECT_LOCATIONCHANGE, stateThunk);

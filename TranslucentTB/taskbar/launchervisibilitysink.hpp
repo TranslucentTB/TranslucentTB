@@ -1,21 +1,18 @@
 #pragma once
 #include "arch.h"
 #include <ShObjIdl.h>
-#include <type_traits>
 #include "winrt.hpp"
 
-template<auto Callback, typename T>
-class LauncherVisibilitySink : public winrt::implements<LauncherVisibilitySink<Callback, T>, IAppVisibilityEvents> {
-	T* context;
+#include "../windows/window.hpp"
 
-	IFACEMETHODIMP LauncherVisibilityChange(BOOL currentVisibleState) noexcept override try
+class LauncherVisibilitySink : public winrt::implements<LauncherVisibilitySink, IAppVisibilityEvents> {
+	Window m_Wnd;
+	UINT m_Msg;
+
+	IFACEMETHODIMP LauncherVisibilityChange(BOOL currentVisibleState) noexcept override
 	{
-		std::invoke(Callback, context, currentVisibleState);
+		m_Wnd.send_message(m_Msg, currentVisibleState);
 		return S_OK;
-	}
-	catch (...)
-	{
-		return winrt::to_hresult();
 	}
 
 	IFACEMETHODIMP AppVisibilityOnMonitorChanged(HMONITOR, MONITOR_APP_VISIBILITY, MONITOR_APP_VISIBILITY) noexcept override
@@ -24,5 +21,5 @@ class LauncherVisibilitySink : public winrt::implements<LauncherVisibilitySink<C
 	}
 
 public:
-	constexpr LauncherVisibilitySink(T* context) noexcept : context(context) { }
+	LauncherVisibilitySink(Window wnd, UINT msg) noexcept : m_Wnd(wnd), m_Msg(msg) { }
 };

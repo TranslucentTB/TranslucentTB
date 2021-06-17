@@ -29,6 +29,9 @@ static constexpr Util::null_terminated_wstring_view WM_TTBHOOKTIMELINENOTIFICATI
 // Sent by the worker to the hook to get the current Timeline status
 static constexpr Util::null_terminated_wstring_view WM_TTBHOOKGETTIMELINESTATUS = L"TTBHook_GetTimelineStatus";
 
+// Sent by LauncherVisibilitySink when the start menu opens/closes 
+static constexpr Util::null_terminated_wstring_view WM_TTBSTARTVISIBILITYCHANGE = L"TTB_StartVisibilityChange";
+
 #pragma endregion
 
 #pragma region Window classes
