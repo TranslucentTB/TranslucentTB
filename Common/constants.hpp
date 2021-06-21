@@ -29,8 +29,11 @@ static constexpr Util::null_terminated_wstring_view WM_TTBHOOKTIMELINENOTIFICATI
 // Sent by the worker to the hook to get the current Timeline status
 static constexpr Util::null_terminated_wstring_view WM_TTBHOOKGETTIMELINESTATUS = L"TTBHook_GetTimelineStatus";
 
-// Sent by LauncherVisibilitySink when the start menu opens/closes 
+// Sent by LauncherVisibilitySink when the start menu opens/closes
 static constexpr Util::null_terminated_wstring_view WM_TTBSTARTVISIBILITYCHANGE = L"TTB_StartVisibilityChange";
+
+// Sent by TaskbarAttributeWorker to itself to switch back to main thread
+static constexpr Util::null_terminated_wstring_view WM_TTBSEARCHVISIBILITYCHANGE = L"TTB_SearchVisibilityChange";
 
 #pragma endregion
 

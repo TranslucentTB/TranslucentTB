@@ -8,6 +8,8 @@
 
 static constexpr CLSID CLSID_ImmersiveShell = { 0xC2F03A33, 0x21F5, 0x47FA, { 0xB4, 0xBB, 0x15, 0x63, 0x62, 0xA2, 0xF2, 0x39 } };
 static constexpr GUID SID_MultitaskingViewVisibilityService = { 0x785702DD, 0xB8EF, 0x469F, { 0x8C, 0x19, 0xE9, 0x1B, 0x5F, 0x4C, 0xA5, 0x64 } };
+static constexpr wchar_t SEH_Cortana[] = L"Windows.Internal.ShellExperience.Cortana";
+static constexpr wchar_t SEH_SearchApp[] = L"Windows.Internal.ShellExperience.SearchApp";
 
 enum MULTITASKING_VIEW_TYPES : INT {
 	MVT_NONE = 0x0,

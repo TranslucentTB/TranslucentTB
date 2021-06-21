@@ -9,6 +9,8 @@
 #include <vector>
 #include <wil/com.h>
 #include <wil/resource.h>
+#include "winrt.hpp"
+#include <winrt/Windows.Internal.Shell.Experience.h> // this is evil >:3
 
 #include "config/config.hpp"
 #include "config/taskbarappearance.hpp"
@@ -57,7 +59,7 @@ private:
 	bool m_PeekActive;
 	bool m_disableAttributeRefreshReply;
 	HMONITOR m_CurrentStartMonitor;
-	Window m_ForegroundWindow;
+	HMONITOR m_CurrentSearchMonitor;
 	std::unordered_map<HMONITOR, MonitorInfo> m_Taskbars;
 	std::unordered_set<Window> m_NormalTaskbars;
 	const Config &m_Config;
@@ -70,7 +72,6 @@ private:
 	wil::unique_hwineventhook m_ResizeMoveHook;
 	wil::unique_hwineventhook m_ShowHideHook;
 	wil::unique_hwineventhook m_CreateDestroyHook;
-	wil::unique_hwineventhook m_ForegroundChangeHook;
 	wil::unique_hwineventhook m_TitleChangeHook;
 	wil::unique_hwineventhook m_ParentChangeHook;
 	std::vector<wil::unique_hhook> m_Hooks;
@@ -80,12 +81,18 @@ private:
 	wil::com_ptr<IAppVisibility> m_IAV;
 	wilx::unique_app_visibility_token m_IAVECookie;
 
+	// CortanaExperienceManager
+	winrt::Windows::Internal::Shell::Experience::CortanaExperienceManager m_SearchManager;
+	winrt::Windows::Internal::Shell::Experience::CortanaExperienceManager::SuggestionsShown_revoker m_SuggestionsShownRevoker;
+	winrt::Windows::Internal::Shell::Experience::CortanaExperienceManager::SuggestionsHidden_revoker m_SuggestionsHiddenRevoker;
+
 	// Messages
 	std::optional<UINT> m_TaskbarCreatedMessage;
 	std::optional<UINT> m_RefreshRequestedMessage;
 	std::optional<UINT> m_TimelineNotificationMessage;
 	std::optional<UINT> m_GetTimelineStatusMessage;
 	std::optional<UINT> m_StartVisibilityChangeMessage;
+	std::optional<UINT> m_SearchVisibilityChangeMessage;
 
 	// Type aliases
 	using taskbar_iterator = std::unordered_map<HMONITOR, MonitorInfo>::iterator;
@@ -97,8 +104,8 @@ private:
 	void CALLBACK OnAeroPeekEnterExit(DWORD event, HWND, LONG, LONG, DWORD, DWORD);
 	void CALLBACK OnWindowStateChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
 	void CALLBACK OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
-	void CALLBACK OnForegroundWindowChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
 	void OnStartVisibilityChange(bool state);
+	void OnSearchVisibilityChange(bool state);
 	LRESULT OnSystemSettingsChange(UINT uiAction, std::wstring_view changedParameter);
 	LRESULT OnPowerBroadcast(const POWERBROADCAST_SETTING *settings);
 	LRESULT OnRequestAttributeRefresh(LPARAM lParam);
@@ -131,13 +138,15 @@ private:
 	static void DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set, bool showInfo = true);
 	static void DumpWindow(fmt::wmemory_buffer &buf, Window window);
 	void CreateAppVisibility();
+	void CreateSearchManager();
 	WINEVENTPROC CreateThunk(void (CALLBACK TaskbarAttributeWorker:: *proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD));
 	static wil::unique_hwineventhook CreateHook(DWORD eventMin, DWORD eventMax, WINEVENTPROC proc);
 	void ReturnToStock();
-	bool IsStartMenuOpened();
+	bool IsStartMenuOpened() const;
+	bool IsSearchOpened() const;
 	void InsertTaskbar(HMONITOR mon, Window window);
 
-	inline HMONITOR GetStartMenuMonitor() noexcept
+	inline static HMONITOR GetStartMenuMonitor() noexcept
 	{
 		// we assume that start is the current foreground window;
 		// haven't seen a case where that wasn't true yet.
@@ -146,7 +155,13 @@ private:
 		// notified that it's closed another window may be the
 		// foreground window already (eg the user dismissed start
 		// by clicking on a window)
-		return m_ForegroundWindow ? m_ForegroundWindow.monitor() : nullptr;
+		return Window::ForegroundWindow().monitor();
+	}
+
+	inline static HMONITOR GetSearchMonitor() noexcept
+	{
+		// same assumption for search
+		return Window::ForegroundWindow().monitor();
 	}
 
 	inline static wil::unique_hwineventhook CreateHook(DWORD event, WINEVENTPROC proc)

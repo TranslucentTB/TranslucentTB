@@ -124,6 +124,18 @@ public:
 		}
 	}
 
+	inline static bool IsAtLeastBuild(uint32_t buildNumber)
+	{
+		OSVERSIONINFOEX versionInfo = { sizeof(versionInfo), 10, 0, buildNumber };
+
+		DWORDLONG mask = 0;
+		VER_SET_CONDITION(mask, VER_MAJORVERSION, VER_GREATER_EQUAL);
+		VER_SET_CONDITION(mask, VER_MINORVERSION, VER_GREATER_EQUAL);
+		VER_SET_CONDITION(mask, VER_BUILDNUMBER, VER_GREATER_EQUAL);
+
+		return VerifyVersionInfo(&versionInfo, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, mask);
+	}
+
 	// Gets the language-neutral FileVersion of a PE binary.
 	inline static std::pair<Version, HRESULT> GetFixedFileVersion(const std::filesystem::path &file)
 	{
