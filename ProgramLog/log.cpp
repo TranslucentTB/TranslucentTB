@@ -44,7 +44,11 @@ std::filesystem::path Log::GetPath(const std::optional<std::filesystem::path> &s
 	{
 		std::error_code code;
 		path = std::filesystem::temp_directory_path(code);
-		if (code) [[unlikely]]
+		if (!code)
+		{
+			path /= APP_NAME;
+		}
+		else
 		{
 			StdErrorCodeHandle(code, spdlog::level::err, L"Failed to get log file path. Logs won't be available during this session");
 

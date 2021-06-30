@@ -61,14 +61,23 @@ void lazy_file_sink<Mutex>::open()
 {
 	if (!std::exchange(m_Tried, true))
 	{
-		m_Handle.reset(CreateFile(m_File.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, nullptr));
-		if (m_Handle)
+		std::error_code err;
+		std::filesystem::create_directories(m_File.parent_path(), err);
+		if (!err)
 		{
-			write(UTF8_BOM);
+			m_Handle.reset(CreateFile(m_File.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, nullptr));
+			if (m_Handle)
+			{
+				write(UTF8_BOM);
+			}
+			else
+			{
+				LastErrorHandle(spdlog::level::err, L"Failed to create log file. Logs won't be available during this session.");
+			}
 		}
 		else
 		{
-			LastErrorHandle(spdlog::level::err, L"Failed to create log file. Logs won't be available during this session.");
+			StdErrorCodeHandle(err, spdlog::level::err, L"Failed to create log directory. Logs won't be available during this session.");
 		}
 	}
 }
