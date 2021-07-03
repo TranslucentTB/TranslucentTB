@@ -21,7 +21,7 @@
     <ClCompile Include="detourtransaction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="timelinevisibilitymonitor.cpp">
+    <ClCompile Include="taskviewvisibilitymonitor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="explorerhooks.cpp">
@@ -38,7 +38,7 @@
     <ClInclude Include="detourresult.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="timelinevisibilitymonitor.hpp">
+    <ClInclude Include="taskviewvisibilitymonitor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="multitaskingviewvisibilitysink.hpp">

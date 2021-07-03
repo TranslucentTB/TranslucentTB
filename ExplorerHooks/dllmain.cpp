@@ -4,7 +4,7 @@
 
 #include "explorerhooks.hpp"
 #include "swcadetour.hpp"
-#include "timelinevisibilitymonitor.hpp"
+#include "taskviewvisibilitymonitor.hpp"
 
 void *payload = nullptr;
 
@@ -22,14 +22,14 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 		{
 			// Install the things
 			SWCADetour::Install();
-			TimelineVisibilityMonitor::Install(hinstDLL);
+			TaskViewVisibilityMonitor::Install(hinstDLL);
 		}
 		break;
 
 	case DLL_PROCESS_DETACH:
 		if (payload)
 		{
-			TimelineVisibilityMonitor::Uninstall(hinstDLL);
+			TaskViewVisibilityMonitor::Uninstall(hinstDLL);
 			SWCADetour::Uninstall();
 
 			ExplorerHooks::FreeExplorerPayload(payload);

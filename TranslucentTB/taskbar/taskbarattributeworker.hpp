@@ -33,9 +33,8 @@ private:
 	};
 
 	// fixme before release:
-	// - dynamic cortana using foreground window
+	// - dynamic search on windows 11
 	// - close if explorer crashes twice in 30 seconds
-	// - make sure opening start while already opened on other monitor works
 
 	// future improvements:
 	// - better aero peek support: detect current peeked to window and include in calculation
@@ -55,7 +54,7 @@ private:
 
 	// State
 	bool m_PowerSaver;
-	bool m_TimelineActive;
+	bool m_TaskViewActive;
 	bool m_PeekActive;
 	bool m_disableAttributeRefreshReply;
 	HMONITOR m_CurrentStartMonitor;
@@ -89,8 +88,8 @@ private:
 	// Messages
 	std::optional<UINT> m_TaskbarCreatedMessage;
 	std::optional<UINT> m_RefreshRequestedMessage;
-	std::optional<UINT> m_TimelineNotificationMessage;
-	std::optional<UINT> m_GetTimelineStatusMessage;
+	std::optional<UINT> m_TaskViewVisibilityChangeMessage;
+	std::optional<UINT> m_IsTaskViewOpenedMessage;
 	std::optional<UINT> m_StartVisibilityChangeMessage;
 	std::optional<UINT> m_SearchVisibilityChangeMessage;
 
@@ -105,6 +104,7 @@ private:
 	void CALLBACK OnWindowStateChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
 	void CALLBACK OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
 	void OnStartVisibilityChange(bool state);
+	void OnTaskViewVisibilityChange(bool state);
 	void OnSearchVisibilityChange(bool state);
 	LRESULT OnSystemSettingsChange(UINT uiAction, std::wstring_view changedParameter);
 	LRESULT OnPowerBroadcast(const POWERBROADCAST_SETTING *settings);

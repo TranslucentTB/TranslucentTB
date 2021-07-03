@@ -170,7 +170,7 @@
             </MenuFlyoutSubItem>
             <MenuFlyoutSubItem Text="Search opened" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
                 <MenuFlyoutSubItem.Tag>
-                    <primitives:TaskbarState>CortanaOpened</primitives:TaskbarState>
+                    <primitives:TaskbarState>SearchOpened</primitives:TaskbarState>
                 </MenuFlyoutSubItem.Tag>
                 <MenuFlyoutSubItem.Icon>
                     <FontIcon Glyph="&#xE721;" />
@@ -211,7 +211,7 @@
             </MenuFlyoutSubItem>
             <MenuFlyoutSubItem Text="Task View opened" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
                 <MenuFlyoutSubItem.Tag>
-                    <primitives:TaskbarState>TimelineOpened</primitives:TaskbarState>
+                    <primitives:TaskbarState>TaskViewOpened</primitives:TaskbarState>
                 </MenuFlyoutSubItem.Tag>
                 <MenuFlyoutSubItem.Icon>
                     <FontIcon Glyph="&#xE7C4;" />

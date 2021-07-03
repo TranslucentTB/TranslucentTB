@@ -1,4 +1,4 @@
-#include "timelinevisibilitymonitor.hpp"
+#include "taskviewvisibilitymonitor.hpp"
 #include <combaseapi.h>
 #include <processthreadsapi.h>
 #include <synchapi.h>
@@ -11,15 +11,15 @@
 
 using Microsoft::WRL::ComPtr;
 
-std::atomic<bool> TimelineVisibilityMonitor::s_ThreadRunning = false;
-HANDLE TimelineVisibilityMonitor::s_ThreadCleanupEvent;
-UINT TimelineVisibilityMonitor::s_TimelineNotification;
-UINT TimelineVisibilityMonitor::s_GetTimelineStatus;
-ATOM TimelineVisibilityMonitor::s_WindowClassAtom;
-HANDLE TimelineVisibilityMonitor::s_hThread;
-ComPtr<IMultitaskingViewVisibilityService> TimelineVisibilityMonitor::s_ViewService;
+std::atomic<bool> TaskViewVisibilityMonitor::s_ThreadRunning = false;
+HANDLE TaskViewVisibilityMonitor::s_ThreadCleanupEvent;
+UINT TaskViewVisibilityMonitor::s_TaskViewVisibilityChangeMessage;
+UINT TaskViewVisibilityMonitor::s_IsTaskViewOpenedMessage;
+ATOM TaskViewVisibilityMonitor::s_WindowClassAtom;
+HANDLE TaskViewVisibilityMonitor::s_hThread;
+ComPtr<IMultitaskingViewVisibilityService> TaskViewVisibilityMonitor::s_ViewService;
 
-HRESULT TimelineVisibilityMonitor::LoadViewService() noexcept
+HRESULT TaskViewVisibilityMonitor::LoadViewService() noexcept
 {
 	// if we get injected at process creation, it's possible the immersive shell isn't ready yet.
 	// try until it is ready. if after 10 seconds the class is still not registered, it's most likely
@@ -46,7 +46,7 @@ HRESULT TimelineVisibilityMonitor::LoadViewService() noexcept
 	return hr;
 }
 
-HRESULT TimelineVisibilityMonitor::RegisterSink(DWORD &cookie) noexcept
+HRESULT TaskViewVisibilityMonitor::RegisterSink(DWORD &cookie) noexcept
 {
 	if (const auto sink = Microsoft::WRL::Make<MultitaskingViewVisibilitySink>())
 	{
@@ -58,7 +58,7 @@ HRESULT TimelineVisibilityMonitor::RegisterSink(DWORD &cookie) noexcept
 	}
 }
 
-DWORD WINAPI TimelineVisibilityMonitor::ThreadProc(LPVOID lpParameter) noexcept
+DWORD WINAPI TaskViewVisibilityMonitor::ThreadProc(LPVOID lpParameter) noexcept
 {
 	s_ThreadRunning = true;
 
@@ -70,7 +70,7 @@ DWORD WINAPI TimelineVisibilityMonitor::ThreadProc(LPVOID lpParameter) noexcept
 		Util::QuickAbort();
 	}
 
-	HWND window = CreateWindowEx(WS_EX_NOREDIRECTIONBITMAP, reinterpret_cast<LPCWSTR>(s_WindowClassAtom), HOOK_MONITOR_WINDOW.c_str(), 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, reinterpret_cast<HINSTANCE>(lpParameter), nullptr);
+	HWND window = CreateWindowEx(WS_EX_NOREDIRECTIONBITMAP, reinterpret_cast<LPCWSTR>(s_WindowClassAtom), TTBHOOK_TASKVIEWMONITOR.c_str(), 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, reinterpret_cast<HINSTANCE>(lpParameter), nullptr);
 	if (!window) [[unlikely]]
 	{
 		Util::QuickAbort();
@@ -120,9 +120,9 @@ DWORD WINAPI TimelineVisibilityMonitor::ThreadProc(LPVOID lpParameter) noexcept
 	Util::QuickAbort();
 }
 
-LRESULT CALLBACK TimelineVisibilityMonitor::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
+LRESULT CALLBACK TaskViewVisibilityMonitor::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 {
-	if (uMsg == s_GetTimelineStatus)
+	if (uMsg == s_IsTaskViewOpenedMessage)
 	{
 		MULTITASKING_VIEW_TYPES flags = MVT_NONE;
 		const HRESULT hr = s_ViewService->IsViewVisible(MVT_ALL_UP_VIEW, &flags);
@@ -141,7 +141,7 @@ LRESULT CALLBACK TimelineVisibilityMonitor::WindowProc(HWND hwnd, UINT uMsg, WPA
 	}
 }
 
-bool TimelineVisibilityMonitor::SignalWatcherThreadAndWait(DWORD tid) noexcept
+bool TaskViewVisibilityMonitor::SignalWatcherThreadAndWait(DWORD tid) noexcept
 {
 	// signal the thread and wait for its cleanup to be done
 	return tid &&
@@ -149,7 +149,7 @@ bool TimelineVisibilityMonitor::SignalWatcherThreadAndWait(DWORD tid) noexcept
 		WaitForSingleObject(s_ThreadCleanupEvent, INFINITE) == WAIT_OBJECT_0;
 }
 
-bool TimelineVisibilityMonitor::EndWatcherThread() noexcept
+bool TaskViewVisibilityMonitor::EndWatcherThread() noexcept
 {
 	// check if the thread is still alive
 	const DWORD waitResult = WaitForSingleObject(s_hThread, 0);
@@ -165,28 +165,28 @@ bool TimelineVisibilityMonitor::EndWatcherThread() noexcept
 		// terminate it
 		return TerminateThread(s_hThread, 0);
 	}
-	else 
+	else
 	{
 		// WaitForSingleObject failed if != WAIT_OBJECT_0
 		return waitResult == WAIT_OBJECT_0;
 	}
 }
 
-void TimelineVisibilityMonitor::Install(HINSTANCE hInst) noexcept
+void TaskViewVisibilityMonitor::Install(HINSTANCE hInst) noexcept
 {
-	if (!s_TimelineNotification)
+	if (!s_TaskViewVisibilityChangeMessage)
 	{
-		s_TimelineNotification = RegisterWindowMessage(WM_TTBHOOKTIMELINENOTIFICATION.c_str());
-		if (!s_TimelineNotification) [[unlikely]]
+		s_TaskViewVisibilityChangeMessage = RegisterWindowMessage(WM_TTBHOOKTASKVIEWVISIBILITYCHANGE.c_str());
+		if (!s_TaskViewVisibilityChangeMessage) [[unlikely]]
 		{
 			Util::QuickAbort();
 		}
 	}
 
-	if (!s_GetTimelineStatus)
+	if (!s_IsTaskViewOpenedMessage)
 	{
-		s_GetTimelineStatus = RegisterWindowMessage(WM_TTBHOOKGETTIMELINESTATUS.c_str());
-		if (!s_GetTimelineStatus) [[unlikely]]
+		s_IsTaskViewOpenedMessage = RegisterWindowMessage(WM_TTBHOOKISTASKVIEWOPENED.c_str());
+		if (!s_IsTaskViewOpenedMessage) [[unlikely]]
 		{
 			Util::QuickAbort();
 		}
@@ -198,7 +198,7 @@ void TimelineVisibilityMonitor::Install(HINSTANCE hInst) noexcept
 			.cbSize = sizeof(wndClass),
 			.lpfnWndProc = WindowProc,
 			.hInstance = hInst,
-			.lpszClassName = HOOK_MONITOR_WINDOW.c_str()
+			.lpszClassName = TTBHOOK_TASKVIEWMONITOR.c_str()
 		};
 
 		s_WindowClassAtom = RegisterClassEx(&wndClass);
@@ -227,7 +227,7 @@ void TimelineVisibilityMonitor::Install(HINSTANCE hInst) noexcept
 	}
 }
 
-void TimelineVisibilityMonitor::Uninstall(HINSTANCE hInst) noexcept
+void TaskViewVisibilityMonitor::Uninstall(HINSTANCE hInst) noexcept
 {
 	if (s_hThread)
 	{

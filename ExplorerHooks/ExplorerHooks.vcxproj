@@ -20,7 +20,7 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="swcadetour.cpp" />
     <ClCompile Include="explorerhooks.cpp" />
-    <ClCompile Include="timelinevisibilitymonitor.cpp" />
+    <ClCompile Include="taskviewvisibilitymonitor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="detourresult.hpp" />
@@ -28,6 +28,6 @@
     <ClInclude Include="swcadetour.hpp" />
     <ClInclude Include="explorerhooks.hpp" />
     <ClInclude Include="multitaskingviewvisibilitysink.hpp" />
-    <ClInclude Include="timelinevisibilitymonitor.hpp" />
+    <ClInclude Include="taskviewvisibilitymonitor.hpp" />
   </ItemGroup>
 </Project>

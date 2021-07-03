@@ -6,11 +6,11 @@
 
 #include "undoc/explorer.hpp"
 
-class TimelineVisibilityMonitor {
+class TaskViewVisibilityMonitor {
 	static std::atomic<bool> s_ThreadRunning;
 	static HANDLE s_ThreadCleanupEvent;
-	static UINT s_TimelineNotification;
-	static UINT s_GetTimelineStatus;
+	static UINT s_TaskViewVisibilityChangeMessage;
+	static UINT s_IsTaskViewOpenedMessage;
 	static ATOM s_WindowClassAtom;
 	static HANDLE s_hThread;
 	static Microsoft::WRL::ComPtr<IMultitaskingViewVisibilityService> s_ViewService;

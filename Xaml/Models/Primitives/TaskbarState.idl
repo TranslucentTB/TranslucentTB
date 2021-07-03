@@ -6,7 +6,7 @@ namespace TranslucentTB.Xaml.Models.Primitives
 		VisibleWindow,
 		MaximisedWindow,
 		StartOpened,
-		CortanaOpened,
-		TimelineOpened
+		SearchOpened,
+		TaskViewOpened
 	};
 }

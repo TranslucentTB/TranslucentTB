@@ -121,7 +121,6 @@ public:
 
 	std::optional<bool> on_current_desktop() const;
 
-	// TODO: this should not return true for the cortana window (and make sure it doesn't for start/action center/tray overflow, tray icons)
 	bool is_user_window() const;
 
 	inline bool valid() const noexcept

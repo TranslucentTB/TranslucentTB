@@ -16,9 +16,9 @@ bool SWCADetour::s_DetourInstalled;
 
 BOOL WINAPI SWCADetour::FunctionDetour(HWND hWnd, const WINDOWCOMPOSITIONATTRIBDATA *data) noexcept
 {
-	if (data->Attrib == WCA_ACCENT_POLICY)
+	if (data && data->Attrib == WCA_ACCENT_POLICY)
 	{
-		if (const auto worker = FindWindow(WORKER_WINDOW.c_str(), WORKER_WINDOW.c_str()))
+		if (const auto worker = FindWindow(TTB_WORKERWINDOW.c_str(), TTB_WORKERWINDOW.c_str()))
 		{
 			// avoid freezing Explorer if our main process is frozen
 			DWORD_PTR result = 0;

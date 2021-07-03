@@ -23,11 +23,11 @@ static constexpr Util::null_terminated_wstring_view WM_TASKBARCREATED = L"Taskba
 // Sent by the hook to the worker when the taskbar is trying to change its composition attribute
 static constexpr Util::null_terminated_wstring_view WM_TTBHOOKREQUESTREFRESH = L"TTBHook_RequestAttributeRefresh";
 
-// Sent by the hook to the worker when Timeline closes/opens
-static constexpr Util::null_terminated_wstring_view WM_TTBHOOKTIMELINENOTIFICATION = L"TTBHook_TimelineNotification";
+// Sent by the hook to the worker when Task View closes/opens
+static constexpr Util::null_terminated_wstring_view WM_TTBHOOKTASKVIEWVISIBILITYCHANGE = L"TTBHook_TaskViewVisibilityChange";
 
-// Sent by the worker to the hook to get the current Timeline status
-static constexpr Util::null_terminated_wstring_view WM_TTBHOOKGETTIMELINESTATUS = L"TTBHook_GetTimelineStatus";
+// Sent by the worker to the hook to get the current Task View status
+static constexpr Util::null_terminated_wstring_view WM_TTBHOOKISTASKVIEWOPENED = L"TTBHook_IsTaskViewOpened";
 
 // Sent by LauncherVisibilitySink when the start menu opens/closes
 static constexpr Util::null_terminated_wstring_view WM_TTBSTARTVISIBILITYCHANGE = L"TTB_StartVisibilityChange";
@@ -43,10 +43,10 @@ static constexpr Util::null_terminated_wstring_view WM_TTBSEARCHVISIBILITYCHANGE
 static constexpr Util::null_terminated_wstring_view TRAY_WINDOW = L"TrayWindow";
 
 // Window class and title used by our attribute worker
-static constexpr Util::null_terminated_wstring_view WORKER_WINDOW = L"TTBWorkerWindow";
+static constexpr Util::null_terminated_wstring_view TTB_WORKERWINDOW = L"TTB_WorkerWindow";
 
-// Window class and title used by the Timeline monitor
-static constexpr Util::null_terminated_wstring_view HOOK_MONITOR_WINDOW = L"TTBHook_TimelineMonitor";
+// Window class and title used by the Task View monitor
+static constexpr Util::null_terminated_wstring_view TTBHOOK_TASKVIEWMONITOR = L"TTBHook_TaskViewMonitor";
 
 // Window class for taskbar on primary monitor
 static constexpr Util::null_terminated_wstring_view TASKBAR = L"Shell_TrayWnd";

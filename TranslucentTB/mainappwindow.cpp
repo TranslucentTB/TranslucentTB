@@ -47,8 +47,8 @@ void MainAppWindow::RefreshMenu()
 	trayPage.SetTaskbarSettings(txmp::TaskbarState::VisibleWindow, txmp::OptionalTaskbarAppearance(settings.VisibleWindowAppearance));
 	trayPage.SetTaskbarSettings(txmp::TaskbarState::MaximisedWindow, txmp::OptionalTaskbarAppearance(settings.MaximisedWindowAppearance));
 	trayPage.SetTaskbarSettings(txmp::TaskbarState::StartOpened, txmp::OptionalTaskbarAppearance(settings.StartOpenedAppearance));
-	trayPage.SetTaskbarSettings(txmp::TaskbarState::CortanaOpened, txmp::OptionalTaskbarAppearance(settings.CortanaOpenedAppearance));
-	trayPage.SetTaskbarSettings(txmp::TaskbarState::TimelineOpened, txmp::OptionalTaskbarAppearance(settings.TimelineOpenedAppearance));
+	trayPage.SetTaskbarSettings(txmp::TaskbarState::SearchOpened, txmp::OptionalTaskbarAppearance(settings.SearchOpenedAppearance));
+	trayPage.SetTaskbarSettings(txmp::TaskbarState::TaskViewOpened, txmp::OptionalTaskbarAppearance(settings.TaskViewOpenedAppearance));
 
 	if (const auto sink = Log::GetSink())
 	{
@@ -233,7 +233,7 @@ void MainAppWindow::TipsAndTricksRequested()
 
 void MainAppWindow::AboutRequested()
 {
-	//m_App.CreateXamlWindow<winrt::TranslucentTB::Xaml::Pages::AboutPage>(xaml_startup_position::center, [](const auto &) { });
+	m_App.CreateXamlWindow<winrt::TranslucentTB::Xaml::Pages::AboutPage>(xaml_startup_position::center, [](const auto &) { });
 }
 
 void MainAppWindow::Exit()
@@ -253,8 +253,8 @@ TaskbarAppearance &MainAppWindow::GetConfigForState(const txmp::TaskbarState &st
 	case VisibleWindow: return config.VisibleWindowAppearance;
 	case MaximisedWindow: return config.MaximisedWindowAppearance;
 	case StartOpened: return config.StartOpenedAppearance;
-	case CortanaOpened: return config.CortanaOpenedAppearance;
-	case TimelineOpened: return config.TimelineOpenedAppearance;
+	case SearchOpened: return config.SearchOpenedAppearance;
+	case TaskViewOpened: return config.TaskViewOpenedAppearance;
 	default: throw std::invalid_argument("Unknown taskbar state");
 	}
 }

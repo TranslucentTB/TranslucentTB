@@ -17,8 +17,8 @@ public:
 	OptionalTaskbarAppearance VisibleWindowAppearance = { false, ACCENT_ENABLE_BLURBEHIND, { 0, 0, 0, 0 }, true };
 	OptionalTaskbarAppearance MaximisedWindowAppearance = { true, ACCENT_ENABLE_BLURBEHIND, { 0, 0, 0, 0 }, true };
 	OptionalTaskbarAppearance StartOpenedAppearance = { true, ACCENT_NORMAL, { 0, 0, 0, 0 }, true };
-	OptionalTaskbarAppearance CortanaOpenedAppearance = { true, ACCENT_NORMAL, { 0, 0, 0, 0 }, true };
-	OptionalTaskbarAppearance TimelineOpenedAppearance = { true, ACCENT_NORMAL, { 0, 0, 0, 0 }, false };
+	OptionalTaskbarAppearance SearchOpenedAppearance = { true, ACCENT_NORMAL, { 0, 0, 0, 0 }, true };
+	OptionalTaskbarAppearance TaskViewOpenedAppearance = { true, ACCENT_NORMAL, { 0, 0, 0, 0 }, false };
 
 	// Advanced
 	WindowFilter IgnoredWindows;
@@ -39,8 +39,8 @@ public:
 		rjh::Serialize(writer, VisibleWindowAppearance, VISIBLE_KEY);
 		rjh::Serialize(writer, MaximisedWindowAppearance, MAXIMISED_KEY);
 		rjh::Serialize(writer, StartOpenedAppearance, START_KEY);
-		rjh::Serialize(writer, CortanaOpenedAppearance, CORTANA_KEY);
-		rjh::Serialize(writer, TimelineOpenedAppearance, TIMELINE_KEY);
+		rjh::Serialize(writer, SearchOpenedAppearance, SEARCH_KEY);
+		rjh::Serialize(writer, TaskViewOpenedAppearance, TASKVIEW_KEY);
 		rjh::Serialize(writer, IgnoredWindows, IGNORED_WINDOWS_KEY);
 		rjh::Serialize(writer, HideTray, TRAY_KEY);
 		rjh::Serialize(writer, DisableSaving, SAVING_KEY);
@@ -73,13 +73,13 @@ public:
 			{
 				rjh::Deserialize(it->value, StartOpenedAppearance, key, unknownKeyCallback);
 			}
-			else if (key == CORTANA_KEY)
+			else if (key == SEARCH_KEY)
 			{
-				rjh::Deserialize(it->value, CortanaOpenedAppearance, key, unknownKeyCallback);
+				rjh::Deserialize(it->value, SearchOpenedAppearance, key, unknownKeyCallback);
 			}
-			else if (key == TIMELINE_KEY)
+			else if (key == TASKVIEW_KEY)
 			{
-				rjh::Deserialize(it->value, TimelineOpenedAppearance, key, unknownKeyCallback);
+				rjh::Deserialize(it->value, TaskViewOpenedAppearance, key, unknownKeyCallback);
 			}
 			else if (key == IGNORED_WINDOWS_KEY)
 			{
@@ -123,8 +123,8 @@ private:
 	static constexpr std::wstring_view VISIBLE_KEY = L"visible_window_appearance";
 	static constexpr std::wstring_view MAXIMISED_KEY = L"maximized_window_appearance";
 	static constexpr std::wstring_view START_KEY = L"start_opened_appearance";
-	static constexpr std::wstring_view CORTANA_KEY = L"search_opened_appearance";
-	static constexpr std::wstring_view TIMELINE_KEY = L"timeline_opened_appearance";
+	static constexpr std::wstring_view SEARCH_KEY = L"search_opened_appearance";
+	static constexpr std::wstring_view TASKVIEW_KEY = L"task_view_opened_appearance";
 	static constexpr std::wstring_view IGNORED_WINDOWS_KEY = L"ignored_windows";
 	static constexpr std::wstring_view TRAY_KEY = L"hide_tray";
 	static constexpr std::wstring_view SAVING_KEY = L"disable_saving";

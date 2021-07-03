@@ -4,16 +4,16 @@
 #include <wrl/implements.h>
 
 #include "constants.hpp"
-#include "timelinevisibilitymonitor.hpp"
+#include "taskviewvisibilitymonitor.hpp"
 #include "undoc/explorer.hpp"
 
 class MultitaskingViewVisibilitySink : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, IMultitaskingViewVisibilityNotification> {
 	void NotifyWorker(bool opened) const noexcept
 	{
-		if (const auto worker = FindWindow(WORKER_WINDOW.c_str(), WORKER_WINDOW.c_str()))
+		if (const auto worker = FindWindow(TTB_WORKERWINDOW.c_str(), TTB_WORKERWINDOW.c_str()))
 		{
 			// avoid freezing Explorer if our main process is frozen
-			SendMessageTimeout(worker, TimelineVisibilityMonitor::s_TimelineNotification, opened, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK | SMTO_ERRORONEXIT, 50, nullptr);
+			SendMessageTimeout(worker, TaskViewVisibilityMonitor::s_TaskViewVisibilityChangeMessage, opened, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK | SMTO_ERRORONEXIT, 50, nullptr);
 		}
 	}
 

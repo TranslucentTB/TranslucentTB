@@ -57,7 +57,7 @@
     "search_opened_appearance": {
       "$ref": "#/$defs/OptionalTaskbarAppearance"
     },
-    "timeline_opened_appearance": {
+    "task_view_opened_appearance": {
       "$ref": "#/$defs/OptionalTaskbarAppearance"
     },
     "ignored_windows": {

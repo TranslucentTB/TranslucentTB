@@ -155,6 +155,14 @@ void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 	}
 }
 
+void TaskbarAttributeWorker::OnTaskViewVisibilityChange(bool state)
+{
+	m_TaskViewActive = state;
+	MessagePrint(spdlog::level::debug, m_TaskViewActive ? L"Task View opened" : L"Task View closed");
+
+	RefreshAllAttributes();
+}
+
 void TaskbarAttributeWorker::OnSearchVisibilityChange(bool state)
 {
 	HMONITOR mon = nullptr;
@@ -247,30 +255,16 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 	else if (uMsg == m_TaskbarCreatedMessage)
 	{
 		MessagePrint(spdlog::level::debug, L"Main taskbar got created, refreshing...");
-
-		// gotta recreate this because the server died
-		CreateSearchManager();
-
 		ResetState();
 		return 0;
 	}
-	else if (uMsg == m_RefreshRequestedMessage)
+	else if (uMsg == m_RefreshRequestedMessage && !m_disableAttributeRefreshReply)
 	{
-		if (!m_disableAttributeRefreshReply)
-		{
-			return OnRequestAttributeRefresh(lParam);
-		}
-		else
-		{
-			return 0;
-		}
+		return OnRequestAttributeRefresh(lParam);
 	}
-	else if (uMsg == m_TimelineNotificationMessage)
+	else if (uMsg == m_TaskViewVisibilityChangeMessage)
 	{
-		m_TimelineActive = wParam;
-		MessagePrint(spdlog::level::debug, m_TimelineActive ? L"Timeline opened" : L"Timeline closed");
-
-		RefreshAllAttributes();
+		OnTaskViewVisibilityChange(wParam);
 		return 0;
 	}
 	else if (uMsg == m_StartVisibilityChangeMessage)
@@ -301,20 +295,20 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 		return { ACCENT_ENABLE_GRADIENT, color, true };
 	}
 
-	if (m_Config.TimelineOpenedAppearance.Enabled && m_TimelineActive)
+	if (m_Config.TaskViewOpenedAppearance.Enabled && m_TaskViewActive)
 	{
-		return m_Config.TimelineOpenedAppearance;
+		return m_Config.TaskViewOpenedAppearance;
 	}
 
-	// Timeline is ignored by peek, so shall we
+	// Task View is ignored by peek, so shall we
 	if (m_PeekActive)
 	{
 		return m_Config.DesktopAppearance;
 	}
 
-	if (m_Config.CortanaOpenedAppearance.Enabled && m_CurrentSearchMonitor == taskbar->first)
+	if (m_Config.SearchOpenedAppearance.Enabled && m_CurrentSearchMonitor == taskbar->first)
 	{
-		return m_Config.CortanaOpenedAppearance;
+		return m_Config.SearchOpenedAppearance;
 	}
 
 	if (m_Config.StartOpenedAppearance.Enabled && m_CurrentStartMonitor == taskbar->first)
@@ -766,11 +760,11 @@ void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 }
 
 TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, DynamicLoader &loader) :
-	MessageWindow(WORKER_WINDOW, WORKER_WINDOW, hInstance, WS_POPUP),
+	MessageWindow(TTB_WORKERWINDOW, TTB_WORKERWINDOW, hInstance, WS_POPUP),
 	SetWindowCompositionAttribute(loader.SetWindowCompositionAttribute()),
 	ShouldSystemUseDarkMode(loader.ShouldSystemUseDarkMode()),
 	m_PeekActive(false),
-	m_TimelineActive(false),
+	m_TaskViewActive(false),
 	m_disableAttributeRefreshReply(false),
 	m_CurrentStartMonitor(nullptr),
 	m_CurrentSearchMonitor(nullptr),
@@ -784,8 +778,8 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_SearchManager(nullptr),
 	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED)),
 	m_RefreshRequestedMessage(Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH)),
-	m_TimelineNotificationMessage(Window::RegisterMessage(WM_TTBHOOKTIMELINENOTIFICATION)),
-	m_GetTimelineStatusMessage(Window::RegisterMessage(WM_TTBHOOKGETTIMELINESTATUS)),
+	m_TaskViewVisibilityChangeMessage(Window::RegisterMessage(WM_TTBHOOKTASKVIEWVISIBILITYCHANGE)),
+	m_IsTaskViewOpenedMessage(Window::RegisterMessage(WM_TTBHOOKISTASKVIEWOPENED)),
 	m_StartVisibilityChangeMessage(Window::RegisterMessage(WM_TTBSTARTVISIBILITYCHANGE)),
 	m_SearchVisibilityChangeMessage(Window::RegisterMessage(WM_TTBSEARCHVISIBILITYCHANGE))
 {
@@ -802,7 +796,6 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	}
 
 	CreateAppVisibility();
-	CreateSearchManager();
 
 	ResetState();
 }
@@ -830,7 +823,7 @@ void TaskbarAttributeWorker::DumpState()
 	MessagePrint(spdlog::level::off, buf);
 
 	buf.clear();
-	fmt::format_to(buf, FMT_STRING(L"User is using Timeline: {}"), m_TimelineActive);
+	fmt::format_to(buf, FMT_STRING(L"User is using Task View: {}"), m_TaskViewActive);
 	MessagePrint(spdlog::level::off, buf);
 
 	if (m_CurrentStartMonitor != nullptr)
@@ -876,7 +869,7 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 	// Clear state
 	m_PowerSaver = false;
 	m_PeekActive = false;
-	m_TimelineActive = false;
+	m_TaskViewActive = false;
 	m_CurrentStartMonitor = nullptr;
 	m_CurrentSearchMonitor = nullptr;
 
@@ -898,6 +891,8 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 		{
 			InsertTaskbar(secondtaskbar.monitor(), secondtaskbar);
 		}
+
+		CreateSearchManager();
 	}
 	else
 	{
@@ -924,9 +919,9 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 
 	// TODO: check if aero peek is active
 
-	if (const auto hookWnd = Window::Find(HOOK_MONITOR_WINDOW, HOOK_MONITOR_WINDOW); hookWnd && m_GetTimelineStatusMessage)
+	if (const auto hookWnd = Window::Find(TTBHOOK_TASKVIEWMONITOR, TTBHOOK_TASKVIEWMONITOR); hookWnd && m_IsTaskViewOpenedMessage)
 	{
-		m_TimelineActive = hookWnd.send_message(*m_GetTimelineStatusMessage);
+		m_TaskViewActive = hookWnd.send_message(*m_IsTaskViewOpenedMessage);
 	}
 
 	if (IsStartMenuOpened())
