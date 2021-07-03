@@ -233,7 +233,7 @@ void MainAppWindow::TipsAndTricksRequested()
 
 void MainAppWindow::AboutRequested()
 {
-	m_App.CreateXamlWindow<winrt::TranslucentTB::Xaml::Pages::AboutPage>(xaml_startup_position::center, [](const auto &) { });
+	//m_App.CreateXamlWindow<winrt::TranslucentTB::Xaml::Pages::AboutPage>(xaml_startup_position::center, [](const auto &) { });
 }
 
 void MainAppWindow::Exit()
