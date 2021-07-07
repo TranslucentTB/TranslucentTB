@@ -8,6 +8,7 @@
 #include <winrt/TranslucentTB.Xaml.Pages.h>
 #include "redefgetcurrenttime.h"
 
+#include "win32.hpp"
 #include "../ProgramLog/error/win32.hpp"
 
 template<typename T>
@@ -16,7 +17,7 @@ class ContextMenu : public BaseContextMenu {
 private:
 	T m_Page;
 
-	bool m_UseXamlContextMenu = false;
+	bool m_UseXamlContextMenu;
 
 protected:
 	constexpr const T &page() const noexcept
@@ -25,7 +26,7 @@ protected:
 	}
 
 	template<typename... Args>
-	ContextMenu(Args&&... args) : m_Page(std::forward<Args>(args)...)
+	ContextMenu(Args&&... args) : m_Page(std::forward<Args>(args)...), m_UseXamlContextMenu(win32::IsAtLeastBuild(22000))
 	{
 		source().Content(m_Page);
 	}
@@ -70,11 +71,6 @@ protected:
 	void HideTooltip()
 	{
 		m_Page.SetTooltipVisible(false);
-	}
-
-	constexpr void ShouldUseXamlContextMenu(bool value) noexcept
-	{
-		m_UseXamlContextMenu = value;
 	}
 
 	~ContextMenu()

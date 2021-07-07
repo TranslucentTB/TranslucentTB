@@ -288,7 +288,6 @@ void MainAppWindow::ConfigurationChanged()
 	const Config &config = m_App.GetConfigManager().GetConfig();
 
 	UpdateTrayVisibility(!config.HideTray);
-	ShouldUseXamlContextMenu(config.Experimental.value_or(ExperimentalOptions { }).UseXamlContextMenu.value_or(false));
 }
 
 void MainAppWindow::RemoveHideTrayIconOverride()
