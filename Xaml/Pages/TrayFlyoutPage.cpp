@@ -18,12 +18,12 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		}
 	}
 
-	void TrayFlyoutPage::SetTaskbarSettings(const Models::Primitives::TaskbarState &state, const Models::Primitives::TaskbarAppearance &appearance)
+	void TrayFlyoutPage::SetTaskbarSettings(const txmp::TaskbarState &state, const txmp::TaskbarAppearance &appearance)
 	{
 		if (const auto submenu = GetSubMenuForState(state))
 		{
 			bool enabled = true;
-			if (const auto optAppearance = appearance.try_as<Models::Primitives::OptionalTaskbarAppearance>())
+			if (const auto optAppearance = appearance.try_as<txmp::OptionalTaskbarAppearance>())
 			{
 				enabled = optAppearance.Enabled();
 			}
@@ -33,7 +33,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 				const auto tag = item.Tag();
 				if (const auto radioItem = item.try_as<Controls::implementation::RadioMenuFlyoutItem>())
 				{
-					if (tag.try_as<Models::Primitives::AccentState>() == appearance.Accent())
+					if (tag.try_as<txmp::AccentState>() == appearance.Accent())
 					{
 						radioItem->IsChecked(true);
 					}
@@ -62,19 +62,19 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 				}
 				else if (tag.try_as<hstring>() == L"Color")
 				{
-					item.IsEnabled(enabled && appearance.Accent() != Models::Primitives::AccentState::Normal);
+					item.IsEnabled(enabled && appearance.Accent() != txmp::AccentState::Normal);
 				}
 			}
 		}
 	}
 
-	void TrayFlyoutPage::SetLogLevel(const Models::Primitives::LogLevel &level)
+	void TrayFlyoutPage::SetLogLevel(const txmp::LogLevel &level)
 	{
 		for (const auto item : LogLevelSubMenu().Items())
 		{
 			if (const auto radioItem = item.try_as<Controls::implementation::RadioMenuFlyoutItem>())
 			{
-				if (radioItem->Tag().try_as<Models::Primitives::LogLevel>() == level)
+				if (radioItem->Tag().try_as<txmp::LogLevel>() == level)
 				{
 					radioItem->IsChecked(true);
 				}
@@ -118,7 +118,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		{
 			if (const auto submenu = GetItemParent(item))
 			{
-				if (const auto tag = submenu.Tag().try_as<Models::Primitives::TaskbarState>())
+				if (const auto tag = submenu.Tag().try_as<txmp::TaskbarState>())
 				{
 					const auto appearance = BuildAppearanceFromSubMenu(submenu);
 
@@ -128,7 +128,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 					// the accent to the value that the clicked item is tagged with.
 					if (const auto radioItem = item.try_as<Controls::RadioMenuFlyoutItem>())
 					{
-						if (const auto accent = radioItem.Tag().try_as<Models::Primitives::AccentState>())
+						if (const auto accent = radioItem.Tag().try_as<txmp::AccentState>())
 						{
 							appearance.Accent(*accent);
 						}
@@ -146,7 +146,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		{
 			if (const auto submenu = GetItemParent(item))
 			{
-				if (const auto tag = submenu.Tag().try_as<Models::Primitives::TaskbarState>())
+				if (const auto tag = submenu.Tag().try_as<txmp::TaskbarState>())
 				{
 					m_ColorRequestedDelegate(*tag);
 				}
@@ -163,7 +163,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		if (const auto item = sender.try_as<wuxc::MenuFlyoutItemBase>())
 		{
-			if (const auto tag = item.Tag().try_as<Models::Primitives::LogLevel>())
+			if (const auto tag = item.Tag().try_as<txmp::LogLevel>())
 			{
 				m_LogLevelChangedDelegate(*tag);
 			}
@@ -261,7 +261,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		return nullptr;
 	}
 
-	Models::Primitives::TaskbarAppearance TrayFlyoutPage::BuildAppearanceFromSubMenu(const wuxc::MenuFlyoutSubItem &menu)
+	txmp::TaskbarAppearance TrayFlyoutPage::BuildAppearanceFromSubMenu(const wuxc::MenuFlyoutSubItem &menu)
 	{
 		std::optional<bool> enabled;
 		for (const auto item : menu.Items())
@@ -275,10 +275,10 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 			}
 		}
 
-		Models::Primitives::TaskbarAppearance appearance(nullptr);
+		txmp::TaskbarAppearance appearance(nullptr);
 		if (enabled)
 		{
-			Models::Primitives::OptionalTaskbarAppearance optAppearance;
+			txmp::OptionalTaskbarAppearance optAppearance;
 			optAppearance.Enabled(*enabled);
 			appearance = std::move(optAppearance);
 		}
@@ -294,7 +294,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 			{
 				if (radioItem.IsChecked())
 				{
-					if (const auto accent = tag.try_as<Models::Primitives::AccentState>())
+					if (const auto accent = tag.try_as<txmp::AccentState>())
 					{
 						appearance.Accent(*accent);
 					}
@@ -312,13 +312,13 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		return appearance;
 	}
 
-	wuxc::MenuFlyoutSubItem TrayFlyoutPage::GetSubMenuForState(Models::Primitives::TaskbarState state)
+	wuxc::MenuFlyoutSubItem TrayFlyoutPage::GetSubMenuForState(txmp::TaskbarState state)
 	{
 		for (const wuxc::MenuFlyoutItemBase item : ContextMenu().Items())
 		{
 			if (const auto submenu = item.try_as<wuxc::MenuFlyoutSubItem>())
 			{
-				const auto tag = submenu.Tag().try_as<Models::Primitives::TaskbarState>();
+				const auto tag = submenu.Tag().try_as<txmp::TaskbarState>();
 				if (tag == state)
 				{
 					return submenu;

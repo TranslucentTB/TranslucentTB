@@ -32,12 +32,12 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		DECL_EVENT_FUNCS(AboutRequestedDelegate, AboutRequested, m_AboutRequestedDelegate);
 		DECL_EVENT_FUNCS(ExitRequestedDelegate, ExitRequested, m_ExitRequestedDelegate);
 
-		void SetTaskbarSettings(const Models::Primitives::TaskbarState &state, const Models::Primitives::TaskbarAppearance &appearance);
-		void SetLogLevel(const Models::Primitives::LogLevel &level);
+		void SetTaskbarSettings(const txmp::TaskbarState &state, const txmp::TaskbarAppearance &appearance);
+		void SetLogLevel(const txmp::LogLevel &level);
 		void SetDisableSavingSettings(const bool &disabled);
 		void SetStartupState(const wf::IReference<Windows::ApplicationModel::StartupTaskState> &state);
 
-		DECL_PROPERTY_CHANGED_FUNCS(Models::Primitives::LogSinkState, SinkState, m_SinkState);
+		DECL_PROPERTY_CHANGED_FUNCS(txmp::LogSinkState, SinkState, m_SinkState);
 
 		void AppearanceClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void ColorClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
@@ -61,8 +61,8 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		static wuxc::MenuFlyoutSubItem GetContainingSubMenu(const wuxc::MenuFlyoutItemBase &item, const wuxc::MenuFlyoutSubItem &subItem);
 		wuxc::MenuFlyoutSubItem GetItemParent(const wuxc::MenuFlyoutItemBase &item);
 
-		static Models::Primitives::TaskbarAppearance BuildAppearanceFromSubMenu(const wuxc::MenuFlyoutSubItem &menu);
-		wuxc::MenuFlyoutSubItem GetSubMenuForState(Models::Primitives::TaskbarState state);
+		static txmp::TaskbarAppearance BuildAppearanceFromSubMenu(const wuxc::MenuFlyoutSubItem &menu);
+		wuxc::MenuFlyoutSubItem GetSubMenuForState(txmp::TaskbarState state);
 
 		event<TaskbarSettingsChangedDelegate> m_TaskbarSettingsChangedDelegate;
 		event<ColorRequestedDelegate> m_ColorRequestedDelegate;
@@ -82,7 +82,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		event<AboutRequestedDelegate> m_AboutRequestedDelegate;
 		event<ExitRequestedDelegate> m_ExitRequestedDelegate;
 
-		Models::Primitives::LogSinkState m_SinkState = Models::Primitives::LogSinkState::Failed;
+		txmp::LogSinkState m_SinkState = txmp::LogSinkState::Failed;
 	};
 }
 

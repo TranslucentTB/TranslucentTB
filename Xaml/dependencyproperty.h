@@ -38,8 +38,14 @@ private: \
 	\
 public: \
 	DECL_DEPENDENCY_PROPERTY_FUNCS(TYPE, NAME, DEPENDENCY_PROPERTY_FIELD(NAME))
+# define DECL_DEPENDENCY_PROPERTY_WITH_METADATA(TYPE, NAME, METADATA) \
+private: \
+	DECL_DEPENDENCY_PROPERTY_FIELD(TYPE, NAME, METADATA) \
+	\
+public: \
+	DECL_DEPENDENCY_PROPERTY_FUNCS(TYPE, NAME, DEPENDENCY_PROPERTY_FIELD(NAME))
 #else
 # define DECL_DEPENDENCY_PROPERTY(TYPE, NAME) \
 	TYPE NAME; \
-	static Windows.UI.Xaml.DependencyProperty NAME ## Property { get; }
+	[noexcept] static Windows.UI.Xaml.DependencyProperty NAME ## Property { get; }
 #endif
