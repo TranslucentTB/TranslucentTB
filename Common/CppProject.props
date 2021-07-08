@@ -42,7 +42,7 @@
     <PlatformToolset>v142</PlatformToolset>
     <VCProjectVersion>16.0</VCProjectVersion>
     <MinimumVisualStudioVersion>16.8</MinimumVisualStudioVersion>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.22000.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformMinVersion>10.0.18362.0</WindowsTargetPlatformMinVersion>
 
     <!-- WinRT -->

@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "../Controls/RadioMenuFlyoutItem.h"
 
 #include "TrayFlyoutPage.h"
 #if __has_include("Pages/TrayFlyoutPage.g.cpp")
@@ -31,21 +30,14 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 			for (const auto item : submenu.Items())
 			{
 				const auto tag = item.Tag();
-				if (const auto radioItem = item.try_as<Controls::implementation::RadioMenuFlyoutItem>())
+				if (const auto radioItem = item.try_as<muxc::RadioMenuFlyoutItem>())
 				{
 					if (tag.try_as<txmp::AccentState>() == appearance.Accent())
 					{
-						radioItem->IsChecked(true);
-					}
-					else
-					{
-						// workaround for bug in classical context menu where the previous item isn't
-						// unchecked correctly because VisualTreeHelper::GetParent returns null.
-						// so manually uncheck it instead.
-						radioItem->ProgrammaticUncheck();
+						radioItem.IsChecked(true);
 					}
 
-					radioItem->IsEnabled(enabled);
+					radioItem.IsEnabled(enabled);
 				}
 				else if (const auto toggleItem = item.try_as<wuxc::ToggleMenuFlyoutItem>())
 				{
@@ -72,18 +64,11 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		for (const auto item : LogLevelSubMenu().Items())
 		{
-			if (const auto radioItem = item.try_as<Controls::implementation::RadioMenuFlyoutItem>())
+			if (const auto radioItem = item.try_as<muxc::RadioMenuFlyoutItem>())
 			{
-				if (radioItem->Tag().try_as<txmp::LogLevel>() == level)
+				if (radioItem.Tag().try_as<txmp::LogLevel>() == level)
 				{
-					radioItem->IsChecked(true);
-				}
-				else
-				{
-					// workaround for bug in classical context menu where the previous item isn't
-					// unchecked correctly because VisualTreeHelper::GetParent returns null.
-					// so manually uncheck it instead.
-					radioItem->ProgrammaticUncheck();
+					radioItem.IsChecked(true);
 				}
 			}
 		}
@@ -120,21 +105,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 			{
 				if (const auto tag = submenu.Tag().try_as<txmp::TaskbarState>())
 				{
-					const auto appearance = BuildAppearanceFromSubMenu(submenu);
-
-					// workaround for bug in classical context menu where the previous item isn't
-					// unchecked correctly because VisualTreeHelper::GetParent returns null.
-					// so if the user clicked on a radio flyout item, then force
-					// the accent to the value that the clicked item is tagged with.
-					if (const auto radioItem = item.try_as<Controls::RadioMenuFlyoutItem>())
-					{
-						if (const auto accent = radioItem.Tag().try_as<txmp::AccentState>())
-						{
-							appearance.Accent(*accent);
-						}
-					}
-
-					m_TaskbarSettingsChangedDelegate(*tag, appearance);
+					m_TaskbarSettingsChangedDelegate(*tag, BuildAppearanceFromSubMenu(submenu));
 				}
 			}
 		}
@@ -290,7 +261,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		for (const auto item : menu.Items())
 		{
 			const auto tag = item.Tag();
-			if (const auto radioItem = item.try_as<Controls::RadioMenuFlyoutItem>())
+			if (const auto radioItem = item.try_as<muxc::RadioMenuFlyoutItem>())
 			{
 				if (radioItem.IsChecked())
 				{

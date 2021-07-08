@@ -65,6 +65,7 @@
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
+        <!-- Needs to be ThemeResource to allow pages who derive to customize style -->
         <controls:ChromeButton
             x:Name="CloseButton"
             Visibility="{x:Bind IsClosable}"

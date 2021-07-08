@@ -1,6 +1,6 @@
 #include "basecontextmenu.hpp"
 #include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
-#include <winrt/TranslucentTB.Xaml.Controls.h>
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.UI.Xaml.Automation.Peers.h>
 #include <winrt/Windows.UI.Xaml.Automation.Provider.h>
@@ -52,15 +52,15 @@ wil::unique_hmenu BaseContextMenu::BuildContextMenuInner(const wfc::IVector<wuxc
 				itemInfo.dwTypeData = const_cast<wchar_t *>(menuText.c_str());
 				itemInfo.dwItemData = reinterpret_cast<ULONG_PTR>(winrt::get_abi(menuItem));
 
-				if (const auto toggleItem = menuItem.try_as<wuxc::ToggleMenuFlyoutItem>())
+				if (const auto radioItem = menuItem.try_as<muxc::RadioMenuFlyoutItem>())
+				{
+					itemInfo.fState |= radioItem.IsChecked() ? MFS_CHECKED : MFS_UNCHECKED;
+					itemInfo.fMask |= MIIM_FTYPE;
+					itemInfo.fType = MFT_RADIOCHECK;
+				}
+				else if (const auto toggleItem = menuItem.try_as<wuxc::ToggleMenuFlyoutItem>())
 				{
 					itemInfo.fState |= toggleItem.IsChecked() ? MFS_CHECKED : MFS_UNCHECKED;
-
-					if (const auto radioItem = toggleItem.try_as<winrt::TranslucentTB::Xaml::Controls::RadioMenuFlyoutItem>())
-					{
-						itemInfo.fMask |= MIIM_FTYPE;
-						itemInfo.fType = MFT_RADIOCHECK;
-					}
 				}
 			}
 			else if (const auto subItem = item.try_as<wuxc::MenuFlyoutSubItem>())
@@ -123,6 +123,8 @@ void BaseContextMenu::TriggerClassicContextMenuItem(UINT item)
 
 		if (menuItem)
 		{
+			// muxc::RadioMenuFlyoutItem secretely inherits from wuxc::ToggleMenuFlyoutItem,
+			// so try_as succeeds and the automation peer works still.
 			if (const auto toggleItem = menuItem.try_as<wuxc::ToggleMenuFlyoutItem>())
 			{
 				wux::Automation::Peers::ToggleMenuFlyoutItemAutomationPeer(toggleItem).Toggle();
