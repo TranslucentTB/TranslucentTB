@@ -18,7 +18,7 @@
         <ToggleMenuFlyoutItem Text="Always on top" IsChecked="{x:Bind AlwaysOnTop, Mode = TwoWay}" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" />
     </local:FramelessPage.SystemMenuContent>
 
-    <Grid>
+    <Grid Background="{StaticResource LayerFillColorDefaultBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />

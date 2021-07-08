@@ -6,11 +6,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
-
-    <Page.Background>
-        <AcrylicBrush BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemAltHighColor}" TintOpacity="0.5" FallbackColor="{ThemeResource SystemChromeLowColor}" />
-    </Page.Background>
+    xmlns:muxcWindows11Present="using:Microsoft.UI.Xaml.Controls?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 14)"
+    xmlns:windows11NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract, 14)"
+    mc:Ignorable="d"
+    muxcWindows11Present:BackdropMaterial.ApplyToRootOrPageBackground="True"
+    windows11NotPresent:Background="{StaticResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
 
     <FlyoutBase.AttachedFlyout>
         <MenuFlyout x:Name="SystemMenu" Opening="SystemMenuOpening">
@@ -41,8 +41,7 @@
             Visibility="{x:Bind root:FunctionalConverters.InvertedBoolToVisibility(ExpandIntoTitlebar)}"
             RelativePanel.AlignTopWithPanel="True"
             RelativePanel.AlignLeftWithPanel="True"
-            RelativePanel.AlignRightWithPanel="True"
-            Background="{ThemeResource TitlebarBackground}" />
+            RelativePanel.AlignRightWithPanel="True" />
         <TextBlock
             Text="{x:Bind Title}"
             FontSize="12"
