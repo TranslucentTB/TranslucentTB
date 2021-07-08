@@ -11,7 +11,7 @@
 
     <local:FramelessPage.Resources>
         <!-- Use white no matter the theme -->
-        <Style x:Key="CloseButtonStyle" TargetType="controls:ChromeButton">
+        <Style x:Key="CloseButtonStyle" BasedOn="{StaticResource ChromeButtonStyle}" TargetType="controls:ChromeButton">
             <Setter Property="NormalForeground" Value="White" />
             <Setter Property="NormalBackground" Value="#00E81123" />
             <Setter Property="HoverForeground" Value="White" />

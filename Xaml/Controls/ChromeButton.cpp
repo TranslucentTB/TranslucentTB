@@ -9,7 +9,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 {
 	ChromeButton::ChromeButton()
 	{
-		InitializeComponent();
+		DefaultStyleKey(box_value(name_of<class_type>()));
 	}
 
 	void ChromeButton::OnToggle()

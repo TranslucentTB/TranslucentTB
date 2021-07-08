@@ -1,159 +1,176 @@
-<ToggleButton
-    x:Class="TranslucentTB.Xaml.Controls.ChromeButton"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:local="using:TranslucentTB.Xaml.Controls"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" IsTabStop="False" Width="44" Height="{StaticResource TitlebarHeight}">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:TranslucentTB.Xaml.Controls">
 
-    <ToggleButton.Template>
-        <ControlTemplate TargetType="local:ChromeButton" x:DefaultBindMode="OneWay">
-            <ContentPresenter
-                HorizontalContentAlignment="Center"
-                VerticalContentAlignment="Center"
-                Content="{x:Bind Icon}">
-                <ContentPresenter.Foreground>
-                    <SolidColorBrush x:Name="ForegroundBrush" />
-                </ContentPresenter.Foreground>
-                <ContentPresenter.Background>
-                    <SolidColorBrush x:Name="BackgroundBrush" />
-                </ContentPresenter.Background>
+    <x:Double x:Key="TitlebarHeight">28</x:Double>
 
-                <!--
-                    FIXME: Neither TemplateBinding nor x:Bind work here: https://github.com/microsoft/microsoft-ui-xaml/issues/2572
-                    Binding is not supported in setters, however x:Bind is, but it's not working due to the issue above.
-                    Using animations with 0 duration for now, should be replaced with setters once the issue is fixed.
-                -->
-                <VisualStateManager.VisualStateGroups>
-                    <VisualStateGroup>
-                        <VisualStateGroup.Transitions>
-                            <!--
-                                Don't use a setter here, because setters run after the VisualState's animations.
-                            -->
-                            <VisualTransition From="PointerOver" To="Normal">
-                                <Storyboard>
-                                    <ColorAnimation
-                                        Storyboard.TargetName="ForegroundBrush"
-                                        Storyboard.TargetProperty="Color"
-                                        To="{Binding NormalForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                        Duration="0" />
-                                    <ColorAnimation
-                                        Storyboard.TargetName="BackgroundBrush"
-                                        Storyboard.TargetProperty="Color"
-                                        To="{Binding NormalBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                        Duration="0:0:0.15" />
-                                </Storyboard>
-                            </VisualTransition>
-                            <VisualTransition From="Normal" To="PointerOver">
-                                <Storyboard>
-                                    <ColorAnimation
-                                        Storyboard.TargetName="ForegroundBrush"
-                                        Storyboard.TargetProperty="Color"
-                                        To="{Binding HoverForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                        Duration="0" />
-                                    <ColorAnimation
-                                        Storyboard.TargetName="BackgroundBrush"
-                                        Storyboard.TargetProperty="Color"
-                                        To="{Binding HoverBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                        Duration="0:0:0.05" />
-                                </Storyboard>
-                            </VisualTransition>
-                        </VisualStateGroup.Transitions>
+    <Style BasedOn="{StaticResource ChromeButtonStyle}" TargetType="controls:ChromeButton" />
 
-                        <VisualState x:Name="Normal">
-                            <Storyboard>
-                                <ColorAnimation
-                                    Storyboard.TargetName="ForegroundBrush"
-                                    Storyboard.TargetProperty="Color"
-                                    To="{Binding NormalForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                    Duration="0" />
-                                <ColorAnimation
-                                    Storyboard.TargetName="BackgroundBrush"
-                                    Storyboard.TargetProperty="Color"
-                                    To="{Binding NormalBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                    Duration="0" />
-                            </Storyboard>
-                        </VisualState>
+    <Style x:Key="CloseButtonStyle" BasedOn="{StaticResource ChromeButtonStyle}" TargetType="controls:ChromeButton">
+        <Setter Property="NormalForeground" Value="{ThemeResource SystemBaseHighColor}" />
+        <Setter Property="NormalBackground" Value="#00E81123" />
+        <Setter Property="HoverForeground" Value="White" />
+        <Setter Property="HoverBackground" Value="#FFE81123" />
+        <Setter Property="PressedForeground" Value="White" />
+        <Setter Property="PressedBackground" Value="#99E81123" />
+    </Style>
 
-                        <VisualState x:Name="PointerOver">
-                            <Storyboard>
-                                <ColorAnimation
-                                    Storyboard.TargetName="ForegroundBrush"
-                                    Storyboard.TargetProperty="Color"
-                                    To="{Binding HoverForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                    Duration="0" />
-                                <ColorAnimation
-                                    Storyboard.TargetName="BackgroundBrush"
-                                    Storyboard.TargetProperty="Color"
-                                    To="{Binding HoverBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                    Duration="0" />
-                            </Storyboard>
-                        </VisualState>
+    <Style x:Key="ChromeButtonStyle" TargetType="controls:ChromeButton">
+        <Setter Property="NormalForeground" Value="{ThemeResource SystemBaseHighColor}" />
+        <Setter Property="NormalBackground" Value="#007F7F7F" />
+        <Setter Property="HoverForeground" Value="{ThemeResource SystemBaseHighColor}" />
+        <Setter Property="HoverBackground" Value="#347F7F7F" />
+        <Setter Property="PressedForeground" Value="{ThemeResource SystemBaseHighColor}" />
+        <Setter Property="PressedBackground" Value="#6A7F7F7F" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Width" Value="44" />
+        <Setter Property="Height" Value="{StaticResource TitlebarHeight}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:ChromeButton">
+                    <ContentPresenter
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Content="{TemplateBinding Icon}">
+                        <ContentPresenter.Foreground>
+                            <SolidColorBrush x:Name="ForegroundBrush" />
+                        </ContentPresenter.Foreground>
+                        <ContentPresenter.Background>
+                            <SolidColorBrush x:Name="BackgroundBrush" />
+                        </ContentPresenter.Background>
 
-                        <VisualState x:Name="Pressed">
-                            <Storyboard>
-                                <ColorAnimation
-                                    Storyboard.TargetName="ForegroundBrush"
-                                    Storyboard.TargetProperty="Color"
-                                    To="{Binding PressedForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                    Duration="0" />
-                                <ColorAnimation
-                                    Storyboard.TargetName="BackgroundBrush"
-                                    Storyboard.TargetProperty="Color"
-                                    To="{Binding PressedBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                    Duration="0" />
-                            </Storyboard>
-                        </VisualState>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup>
+                                <VisualStateGroup.Transitions>
+                                    <!--
+                                        Don't use a setter here, because setters run after the VisualState's animations.
+                                        TemplateBindings also don't work here, go figure.
+                                    -->
+                                    <VisualTransition From="PointerOver" To="Normal">
+                                        <Storyboard>
+                                            <ColorAnimation
+                                                Storyboard.TargetName="ForegroundBrush"
+                                                Storyboard.TargetProperty="Color"
+                                                To="{Binding NormalForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
+                                                Duration="0" />
+                                            <ColorAnimation
+                                                Storyboard.TargetName="BackgroundBrush"
+                                                Storyboard.TargetProperty="Color"
+                                                To="{Binding NormalBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
+                                                Duration="0:0:0.15" />
+                                        </Storyboard>
+                                    </VisualTransition>
+                                    <VisualTransition From="Normal" To="PointerOver">
+                                        <Storyboard>
+                                            <ColorAnimation
+                                                Storyboard.TargetName="ForegroundBrush"
+                                                Storyboard.TargetProperty="Color"
+                                                To="{Binding HoverForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
+                                                Duration="0" />
+                                            <ColorAnimation
+                                                Storyboard.TargetName="BackgroundBrush"
+                                                Storyboard.TargetProperty="Color"
+                                                To="{Binding HoverBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
+                                                Duration="0:0:0.05" />
+                                        </Storyboard>
+                                    </VisualTransition>
+                                </VisualStateGroup.Transitions>
 
-                        <VisualState x:Name="Checked">
-                            <Storyboard>
-                                <ColorAnimation
-                                    Storyboard.TargetName="ForegroundBrush"
-                                    Storyboard.TargetProperty="Color"
-                                    To="{Binding HoverForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                    Duration="0" />
-                                <ColorAnimation
-                                    Storyboard.TargetName="BackgroundBrush"
-                                    Storyboard.TargetProperty="Color"
-                                    To="{Binding HoverBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                    Duration="0" />
-                            </Storyboard>
-                        </VisualState>
+                                <VisualState x:Name="Normal">
+                                    <Storyboard>
+                                        <ColorAnimation
+                                            Storyboard.TargetName="ForegroundBrush"
+                                            Storyboard.TargetProperty="Color"
+                                            To="{Binding NormalForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
+                                            Duration="0" />
+                                        <ColorAnimation
+                                            Storyboard.TargetName="BackgroundBrush"
+                                            Storyboard.TargetProperty="Color"
+                                            To="{Binding NormalBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
+                                            Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
 
-                        <VisualState x:Name="CheckedPointerOver">
-                            <Storyboard>
-                                <ColorAnimation
-                                    Storyboard.TargetName="ForegroundBrush"
-                                    Storyboard.TargetProperty="Color"
-                                    To="{Binding HoverForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                    Duration="0" />
-                                <ColorAnimation
-                                    Storyboard.TargetName="BackgroundBrush"
-                                    Storyboard.TargetProperty="Color"
-                                    To="{Binding HoverBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                    Duration="0" />
-                            </Storyboard>
-                        </VisualState>
+                                <VisualState x:Name="PointerOver">
+                                    <Storyboard>
+                                        <ColorAnimation
+                                            Storyboard.TargetName="ForegroundBrush"
+                                            Storyboard.TargetProperty="Color"
+                                            To="{Binding HoverForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
+                                            Duration="0" />
+                                        <ColorAnimation
+                                            Storyboard.TargetName="BackgroundBrush"
+                                            Storyboard.TargetProperty="Color"
+                                            To="{Binding HoverBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
+                                            Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
 
-                        <VisualState x:Name="CheckedPressed">
-                            <Storyboard>
-                                <ColorAnimation
-                                    Storyboard.TargetName="ForegroundBrush"
-                                    Storyboard.TargetProperty="Color"
-                                    To="{Binding PressedForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                    Duration="0" />
-                                <ColorAnimation
-                                    Storyboard.TargetName="BackgroundBrush"
-                                    Storyboard.TargetProperty="Color"
-                                    To="{Binding PressedBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                    Duration="0" />
-                            </Storyboard>
-                        </VisualState>
-                    </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-            </ContentPresenter>
-        </ControlTemplate>
-    </ToggleButton.Template>
+                                <VisualState x:Name="Pressed">
+                                    <Storyboard>
+                                        <ColorAnimation
+                                            Storyboard.TargetName="ForegroundBrush"
+                                            Storyboard.TargetProperty="Color"
+                                            To="{Binding PressedForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
+                                            Duration="0" />
+                                        <ColorAnimation
+                                            Storyboard.TargetName="BackgroundBrush"
+                                            Storyboard.TargetProperty="Color"
+                                            To="{Binding PressedBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
+                                            Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
 
-</ToggleButton>
+                                <VisualState x:Name="Checked">
+                                    <Storyboard>
+                                        <ColorAnimation
+                                            Storyboard.TargetName="ForegroundBrush"
+                                            Storyboard.TargetProperty="Color"
+                                            To="{Binding HoverForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
+                                            Duration="0" />
+                                        <ColorAnimation
+                                            Storyboard.TargetName="BackgroundBrush"
+                                            Storyboard.TargetProperty="Color"
+                                            To="{Binding HoverBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
+                                            Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
+
+                                <VisualState x:Name="CheckedPointerOver">
+                                    <Storyboard>
+                                        <ColorAnimation
+                                            Storyboard.TargetName="ForegroundBrush"
+                                            Storyboard.TargetProperty="Color"
+                                            To="{Binding HoverForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
+                                            Duration="0" />
+                                        <ColorAnimation
+                                            Storyboard.TargetName="BackgroundBrush"
+                                            Storyboard.TargetProperty="Color"
+                                            To="{Binding HoverBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
+                                            Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
+
+                                <VisualState x:Name="CheckedPressed">
+                                    <Storyboard>
+                                        <ColorAnimation
+                                            Storyboard.TargetName="ForegroundBrush"
+                                            Storyboard.TargetProperty="Color"
+                                            To="{Binding PressedForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
+                                            Duration="0" />
+                                        <ColorAnimation
+                                            Storyboard.TargetName="BackgroundBrush"
+                                            Storyboard.TargetProperty="Color"
+                                            To="{Binding PressedBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
+                                            Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </ContentPresenter>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

@@ -5,12 +5,10 @@
 
 #include "Controls/ChromeButton.g.h"
 
-// FIXME: ugly workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/2429
-using namespace winrt::TranslucentTB::Xaml::implementation;
-
 namespace winrt::TranslucentTB::Xaml::Controls::implementation
 {
-	struct ChromeButton : ChromeButtonT<ChromeButton>
+	// Explicitly use ChromeButton_base because the XAML compiler generates an empty .xaml.g.h
+	struct ChromeButton : ChromeButton_base<ChromeButton>
 	{
 		ChromeButton();
 
