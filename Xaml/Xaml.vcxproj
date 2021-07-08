@@ -198,6 +198,15 @@
     <Midl Include="Models\Primitives\AccentState.idl">
       <SubType>Designer</SubType>
     </Midl>
+    <Midl Include="Models\Primitives\ColorChannel.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\ColorRepresentation.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\HsvColor.idl">
+      <SubType>Designer</SubType>
+    </Midl>
     <Midl Include="Models\Primitives\LogLevel.idl">
       <SubType>Designer</SubType>
     </Midl>

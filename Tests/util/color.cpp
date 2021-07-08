@@ -3,6 +3,53 @@
 #include "util/color.hpp"
 #include "util/to_string_view.hpp"
 
+TEST(Util_HsvColor_Constructor, DefaultConstructorIsTransparentBlack)
+{
+	const Util::HsvColor col;
+	ASSERT_EQ(col.H, 0.0);
+	ASSERT_EQ(col.S, 0.0);
+	ASSERT_EQ(col.V, 0.0);
+	ASSERT_EQ(col.A, 0.0);
+}
+
+TEST(Util_HsvColor_Constructor, ConstructorFromHSVUsesFullAlpha)
+{
+	const Util::HsvColor col = { 67.0, 0.68, 0.69 };
+	ASSERT_EQ(col.H, 67.0);
+	ASSERT_EQ(col.S, 0.68);
+	ASSERT_EQ(col.V, 0.69);
+	ASSERT_EQ(col.A, 1.0);
+}
+
+TEST(Util_HsvColor_Constructor, ConstructorFromHSVAGivesCorrectValue)
+{
+	const Util::HsvColor col = { 67.0, 0.68, 0.69, 0.70 };
+	ASSERT_EQ(col.H, 67.0);
+	ASSERT_EQ(col.S, 0.68);
+	ASSERT_EQ(col.V, 0.69);
+	ASSERT_EQ(col.A, 0.70);
+}
+
+TEST(Util_HsvColor_Constructor, ConstructorFromWinRTGivesCorrectValue)
+{
+	const Util::HsvColor col = txmp::HsvColor { 67.0, 0.68, 0.69, 0.70 };
+	ASSERT_EQ(col.H, 67.0);
+	ASSERT_EQ(col.S, 0.68);
+	ASSERT_EQ(col.V, 0.69);
+	ASSERT_EQ(col.A, 0.70);
+}
+
+TEST(Util_HsvColor_ToWinRT, ConvertsToSameColor)
+{
+	const txmp::HsvColor convertedCol = Util::HsvColor { 67.0, 0.68, 0.69, 0.70 };
+	const txmp::HsvColor originalCol = { .H = 67.0, .S = 0.68, .V = 0.69, .A = 0.70 };
+
+	ASSERT_EQ(convertedCol.H, originalCol.H);
+	ASSERT_EQ(convertedCol.S, originalCol.S);
+	ASSERT_EQ(convertedCol.V, originalCol.V);
+	ASSERT_EQ(convertedCol.A, originalCol.A);
+}
+
 TEST(Util_Color_Constructor, DefaultConstructorIsTransparentBlack)
 {
 	ASSERT_EQ(Util::Color(), Util::Color(0x00, 0x00, 0x00, 0x00));
@@ -41,6 +88,23 @@ TEST(Util_Color_ToRGBA, ReturnsCorrectValue)
 TEST(Util_Color_ToABGR, ReturnsCorrectValue)
 {
 	ASSERT_EQ(Util::Color(0xDE, 0xAD, 0xBE, 0xEF).ToABGR(), 0xEFBEADDE);
+}
+
+TEST(Util_Color_ToHSV, ReturnsCorrectValue)
+{
+	static constexpr std::pair<Util::Color, Util::HsvColor> cases[] = {
+		{ { 170, 204, 153, 255 }, { 100.0, 0.25, 0.80, 1.0 } },
+		{ { 255, 105, 180, 255 }, { 330.0, 0.58823529411764708, 1.0, 1.0 } }
+	};
+
+	for (const auto &testCase : cases)
+	{
+		const auto result = testCase.first.ToHSV();
+		ASSERT_DOUBLE_EQ(result.H, testCase.second.H);
+		ASSERT_DOUBLE_EQ(result.S, testCase.second.S);
+		ASSERT_DOUBLE_EQ(result.V, testCase.second.V);
+		ASSERT_DOUBLE_EQ(result.A, testCase.second.A);
+	}
 }
 
 TEST(Util_Color_ToString, ReturnsCorrectString)
@@ -89,6 +153,34 @@ TEST(Util_Color_FromString, ThrowsWhenInvalidColor)
 	for (const auto &testCase : cases)
 	{
 		ASSERT_THROW(Util::Color::FromString(testCase), std::invalid_argument);
+	}
+}
+
+TEST(Util_Color_FromHSV, ReturnsCorrectValue)
+{
+	static constexpr std::pair<std::tuple<double, double, double>, Util::Color> cases[] = {
+		{ { 0.0, 1.0, 1.0 }, { 0xFF, 0x00, 0x00 } },
+		{ { 0.0, 0.0, 1.0 }, { 0xFF, 0xFF, 0xFF } }
+	};
+
+	for (const auto &testCase : cases)
+	{
+		const auto [h, s, v] = testCase.first;
+		ASSERT_EQ(Util::Color::FromHSV(h, s, v), testCase.second);
+	}
+}
+
+TEST(Util_Color_FromHSV, ThrowsWhenInvalidHue)
+{
+	static constexpr double cases[] = {
+		-0.1,
+		360.1,
+		1337
+	};
+
+	for (const auto &testCase : cases)
+	{
+		ASSERT_THROW(Util::Color::FromHSV(testCase, 0.0, 0.0), std::out_of_range);
 	}
 }
 

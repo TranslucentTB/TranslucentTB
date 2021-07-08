@@ -1,0 +1,10 @@
+namespace TranslucentTB.Xaml.Models.Primitives
+{
+	struct HsvColor
+	{
+		Double H;
+		Double S;
+		Double V;
+		Double A;
+	};
+}

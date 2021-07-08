@@ -1,0 +1,10 @@
+namespace TranslucentTB.Xaml.Models.Primitives
+{
+	enum ColorChannel
+	{
+		Alpha,
+		Channel1,
+		Channel2,
+		Channel3
+	};
+}
