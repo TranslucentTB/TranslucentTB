@@ -6,6 +6,7 @@
 #include <string>
 #include <string_view>
 #include "../winrt.hpp"
+#include <winrt/Windows.Foundation.Numerics.h>
 #include <winrt/Windows.UI.h>
 
 #include "numbers.hpp"
@@ -31,6 +32,16 @@ namespace Util {
 			return { .H = H, .S = S, .V = V, .A = A };
 		}
 #endif
+
+		constexpr operator wf::Numerics::float4() const noexcept
+		{
+			return {
+				static_cast<float>(H),
+				static_cast<float>(S),
+				static_cast<float>(V),
+				static_cast<float>(A)
+			};
+		}
 	};
 
 	struct Color {
@@ -38,7 +49,7 @@ namespace Util {
 
 		constexpr Color() noexcept : R(0), G(0), B(0), A(0) { }
 		constexpr Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) noexcept : R(r), G(g), B(b), A(a) { }
-		constexpr Color(winrt::Windows::UI::Color col) noexcept : R(col.R), G(col.G), B(col.B), A(col.A) { }
+		constexpr Color(winrt::Windows::UI::Color col) noexcept : Color(std::bit_cast<Color>(std::rotr(std::bit_cast<uint32_t>(col), 8))) { }
 		constexpr explicit Color(uint32_t col) noexcept : Color(std::bit_cast<Color>(SwapBytes(col))) { }
 
 		constexpr uint32_t ToRGBA() const noexcept
@@ -49,6 +60,16 @@ namespace Util {
 		constexpr uint32_t ToABGR() const noexcept
 		{
 			return std::bit_cast<uint32_t>(*this);
+		}
+
+		constexpr Color Premultiply() const noexcept
+		{
+			return {
+				FastPremultiply(R, A),
+				FastPremultiply(G, A),
+				FastPremultiply(B, A),
+				A
+			};
 		}
 
 		inline HsvColor ToHSV() const
@@ -93,7 +114,7 @@ namespace Util {
 			fmt::format_to(buf, FMT_STRING(L"#{:08X}"), ToRGBA());
 		}
 
-		constexpr static Color FromString(std::wstring_view str)
+		constexpr static Color FromString(std::wstring_view str, bool allowNoPrefix = false)
 		{
 			Util::TrimInplace(str);
 
@@ -101,7 +122,7 @@ namespace Util {
 			{
 				str.remove_prefix(1);
 			}
-			else
+			else if (!allowNoPrefix)
 			{
 				throw std::invalid_argument("Not a valid color");
 			}
@@ -204,7 +225,7 @@ namespace Util {
 
 		constexpr operator winrt::Windows::UI::Color() const noexcept
 		{
-			return { .A = A, .R = R, .G = G, .B = B };
+			return std::bit_cast<winrt::Windows::UI::Color>(std::rotl(ToABGR(), 8));
 		}
 
 		constexpr bool operator ==(Color other) const noexcept
@@ -213,6 +234,12 @@ namespace Util {
 		}
 
 	private:
+		static constexpr uint8_t FastPremultiply(uint8_t x, uint8_t frac) noexcept
+		{
+			// magic that avoids a division.
+			return static_cast<uint8_t>(static_cast<uint32_t>(x * frac * 0x8081) >> 23);
+		}
+
 		static constexpr uint32_t SwapBytes(uint32_t num) noexcept
 		{
 			return (num >> 24) | ((num & 0xFF0000) >> 8) | ((num & 0xFF00) << 8) | (num << 24);

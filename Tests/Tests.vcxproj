@@ -36,6 +36,12 @@
     <ClInclude Include="testingdata.hpp" />
     <ClInclude Include="win32version.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Xaml\Xaml.vcxproj">
+      <Project>{9875d8e1-9594-445e-a0e4-07c6027f85e0}</Project>
+      <DeploymentContent>false</DeploymentContent>
+    </ProjectReference>
+  </ItemGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>

@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <ranges>
 
 #include "util/color.hpp"
 #include "util/to_string_view.hpp"
@@ -50,6 +51,17 @@ TEST(Util_HsvColor_ToWinRT, ConvertsToSameColor)
 	ASSERT_EQ(convertedCol.A, originalCol.A);
 }
 
+TEST(Util_HsvColor_ToFloat4, ConvertsToSameColor)
+{
+	const wf::Numerics::float4 convertedCol = Util::HsvColor { 67.0, 0.68, 0.69, 0.70 };
+	const wf::Numerics::float4 originalCol = { 67.0f, 0.68f, 0.69f, 0.70f };
+
+	ASSERT_EQ(convertedCol.x, originalCol.x);
+	ASSERT_EQ(convertedCol.y, originalCol.y);
+	ASSERT_EQ(convertedCol.z, originalCol.z);
+	ASSERT_EQ(convertedCol.w, originalCol.w);
+}
+
 TEST(Util_Color_Constructor, DefaultConstructorIsTransparentBlack)
 {
 	ASSERT_EQ(Util::Color(), Util::Color(0x00, 0x00, 0x00, 0x00));
@@ -90,6 +102,22 @@ TEST(Util_Color_ToABGR, ReturnsCorrectValue)
 	ASSERT_EQ(Util::Color(0xDE, 0xAD, 0xBE, 0xEF).ToABGR(), 0xEFBEADDE);
 }
 
+TEST(Util_Color_Premultiply, ReturnsCorrectValue)
+{
+	// [0, 255)
+	for (int i : std::views::iota(0, 256))
+	{
+		for (int j : std::views::iota(0, 256))
+		{
+			const auto color = static_cast<uint8_t>(i);
+			const auto alpha = static_cast<uint8_t>(j);
+
+			const auto expected = static_cast<uint8_t>(color * alpha / 255);
+			ASSERT_EQ(Util::Color(color, 0, 255, alpha).Premultiply(), Util::Color(expected, 0, alpha, alpha));
+		}
+	}
+}
+
 TEST(Util_Color_ToHSV, ReturnsCorrectValue)
 {
 	static constexpr std::pair<Util::Color, Util::HsvColor> cases[] = {
@@ -126,17 +154,27 @@ TEST(Util_Color_ToString, ReturnsCorrectString)
 
 TEST(Util_Color_FromString, ParsesColor)
 {
-	static constexpr std::pair<std::wstring_view, Util::Color> cases[] = {
-		{ L"#FAF", { 0xFF, 0xAA, 0xFF } },
-		{ L"#DEAD", { 0xDD, 0xEE, 0xAA, 0xDD } },
-		{ L"#C0FFEE", { 0xC0, 0xFF, 0xEE } },
-		{ L"#DEADBEEF", { 0xDE, 0xAD, 0xBE, 0xEF } },
-		{ L"   #FFFFFF \t \n", { 0xFF, 0xFF, 0xFF }}
+	static constexpr std::tuple<std::wstring_view, bool, Util::Color> cases[] = {
+		{ L"#FAF", false, { 0xFF, 0xAA, 0xFF } },
+		{ L"#DEAD", false, { 0xDD, 0xEE, 0xAA, 0xDD } },
+		{ L"#C0FFEE", false, { 0xC0, 0xFF, 0xEE } },
+		{ L"#DEADBEEF", false, { 0xDE, 0xAD, 0xBE, 0xEF } },
+		{ L"   #FFFFFF \t \n", false, { 0xFF, 0xFF, 0xFF } },
+		{ L"#FAF", true, { 0xFF, 0xAA, 0xFF } },
+		{ L"#DEAD", true, { 0xDD, 0xEE, 0xAA, 0xDD } },
+		{ L"#C0FFEE", true, { 0xC0, 0xFF, 0xEE } },
+		{ L"#DEADBEEF", true, { 0xDE, 0xAD, 0xBE, 0xEF } },
+		{ L"   #FFFFFF \t \n", true, { 0xFF, 0xFF, 0xFF } },
+		{ L"FAF", true, { 0xFF, 0xAA, 0xFF } },
+		{ L"DEAD", true, { 0xDD, 0xEE, 0xAA, 0xDD } },
+		{ L"C0FFEE", true, { 0xC0, 0xFF, 0xEE } },
+		{ L"DEADBEEF", true, { 0xDE, 0xAD, 0xBE, 0xEF } },
+		{ L"   FFFFFF \t \n", true, { 0xFF, 0xFF, 0xFF } }
 	};
 
-	for (const auto &testCase : cases)
+	for (const auto [str, allowNoPrefix, expected] : cases)
 	{
-		ASSERT_EQ(Util::Color::FromString(testCase.first), testCase.second);
+		ASSERT_EQ(Util::Color::FromString(str, allowNoPrefix), expected);
 	}
 }
 
