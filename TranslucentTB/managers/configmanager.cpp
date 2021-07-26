@@ -17,6 +17,7 @@
 #include "../../ProgramLog/error/win32.hpp"
 #include "../../ProgramLog/error/winrt.hpp"
 #include "../../ProgramLog/log.hpp"
+#include "config/rapidjsonhelper.hpp"
 #include "win32.hpp"
 
 std::filesystem::path ConfigManager::DetermineConfigPath(const std::optional<std::filesystem::path> &storageFolder)

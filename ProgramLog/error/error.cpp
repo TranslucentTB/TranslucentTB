@@ -114,6 +114,9 @@ std::thread Error::impl::CreateMessageBoxThread(const fmt::wmemory_buffer &buf, 
 {
 	return std::thread([title, type, body = fmt::to_string(buf)]() noexcept
 	{
+#ifdef _DEBUG
+		SetThreadDescription(GetCurrentThread(), APP_NAME L" Message Box Thread"); // ignore error
+#endif
 		MessageBoxEx(nullptr, body.c_str(), title.c_str(), type | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 	});
 }

@@ -4,6 +4,7 @@
 #include <synchapi.h>
 #include <WinUser.h>
 
+#include "appinfo.hpp"
 #include "constants.hpp"
 #include "multitaskingviewvisibilitysink.hpp"
 #include "undoc/explorer.hpp"
@@ -224,6 +225,15 @@ void TaskViewVisibilityMonitor::Install(HINSTANCE hInst) noexcept
 		{
 			Util::QuickAbort();
 		}
+#ifdef _DEBUG
+		else
+		{
+			if (FAILED(SetThreadDescription(s_hThread, APP_NAME L" Task View Visibility Monitor Thread"))) [[unlikely]]
+			{
+				Util::QuickAbort();
+			}
+		}
+#endif
 	}
 }
 

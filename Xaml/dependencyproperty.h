@@ -47,5 +47,7 @@ public: \
 #else
 # define DECL_DEPENDENCY_PROPERTY(TYPE, NAME) \
 	TYPE NAME; \
-	[noexcept] static Windows.UI.Xaml.DependencyProperty NAME ## Property { get; }
+	\
+	[noexcept] \
+	static Windows.UI.Xaml.DependencyProperty NAME ## Property { get; }
 #endif

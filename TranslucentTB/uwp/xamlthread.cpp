@@ -103,6 +103,10 @@ XamlThread::XamlThread() :
 		LastErrorHandle(spdlog::level::critical, L"Failed to create XAML thread");
 	}
 
+#ifdef _DEBUG
+	HresultVerify(SetThreadDescription(m_Thread.get(), APP_NAME L" XAML Island Thread"), spdlog::level::info, L"Failed to set thread description");
+#endif
+
 	m_Ready.wait();
 }
 
