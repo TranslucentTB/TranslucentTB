@@ -1,0 +1,17 @@
+namespace TranslucentTB.Xaml
+{
+	static runtimeclass RelativeAncestor
+	{
+		[noexcept]
+		static Object AncestorProperty { get; };
+
+		static Object GetAncestor(Windows.UI.Xaml.FrameworkElement obj);
+		static void SetAncestor(Windows.UI.Xaml.FrameworkElement obj, Object value);
+
+		[noexcept]
+		static Object AncestorTypeProperty { get; };
+
+		static Windows.UI.Xaml.Interop.TypeName GetAncestorType(Windows.UI.Xaml.FrameworkElement obj);
+		static void SetAncestorType(Windows.UI.Xaml.FrameworkElement obj, Windows.UI.Xaml.Interop.TypeName value);
+	}
+}

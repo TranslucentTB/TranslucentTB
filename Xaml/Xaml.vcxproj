@@ -93,6 +93,10 @@
     <ClCompile Include="Models\Action.cpp">
       <DependentUpon>Models\Action.idl</DependentUpon>
     </ClCompile>
+    <ClCompile Include="RelativeAncestor.cpp">
+      <DependentUpon>RelativeAncestor.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="StyleResources.cpp">
       <DependentUpon>StyleResources.idl</DependentUpon>
       <SubType>Code</SubType>
@@ -183,6 +187,10 @@
     </ClInclude>
     <ClInclude Include="property.h" />
     <ClInclude Include="PropertyChangedBase.hpp" />
+    <ClInclude Include="RelativeAncestor.h">
+      <DependentUpon>RelativeAncestor.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="StyleResources.h">
       <DependentUpon>StyleResources.idl</DependentUpon>
       <SubType>Code</SubType>
@@ -248,6 +256,9 @@
       <SubType>Code</SubType>
     </Midl>
     <Midl Include="Models\Action.idl" />
+    <Midl Include="RelativeAncestor.idl">
+      <SubType>Designer</SubType>
+    </Midl>
     <Midl Include="StyleResources.idl">
       <SubType>Designer</SubType>
     </Midl>

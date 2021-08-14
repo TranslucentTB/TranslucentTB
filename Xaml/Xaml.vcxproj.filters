@@ -57,5 +57,6 @@
     <Midl Include="Models\Primitives\HsvColor.idl" />
     <Midl Include="Models\Primitives\ColorRepresentation.idl" />
     <Midl Include="Controls\ChromeButton.idl" />
+    <Midl Include="RelativeAncestor.idl" />
   </ItemGroup>
 </Project>
