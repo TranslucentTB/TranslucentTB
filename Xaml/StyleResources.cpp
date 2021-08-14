@@ -11,8 +11,8 @@ namespace winrt::TranslucentTB::Xaml::implementation
 	wux::DependencyProperty StyleResources::m_ResourcesProperty =
 		wux::DependencyProperty::RegisterAttached(
 			L"Resources",
-			winrt::xaml_typename<wux::ResourceDictionary>(),
-			winrt::xaml_typename<winrt::TranslucentTB::Xaml::StyleResources>(),
+			xaml_typename<wux::ResourceDictionary>(),
+			xaml_typename<TranslucentTB::Xaml::StyleResources>(),
 			wux::PropertyMetadata(nullptr, OnResourcesChanged));
 
 	void StyleResources::OnResourcesChanged(const wux::DependencyObject &d, const wux::DependencyPropertyChangedEventArgs &e)

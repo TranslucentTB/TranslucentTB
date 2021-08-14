@@ -1,5 +1,6 @@
 #pragma once
 #include "arch.h"
+#include <array>
 #include <member_thunk/page.hpp>
 #include <optional>
 #include <ShObjIdl.h>
@@ -10,6 +11,7 @@
 #include <wil/com.h>
 #include <wil/resource.h>
 #include "winrt.hpp"
+#include <winrt/TranslucentTB.Xaml.Models.Primitives.h>
 #include <winrt/Windows.Internal.Shell.Experience.h> // this is evil >:3
 
 #include "config/config.hpp"
@@ -19,6 +21,7 @@
 #include "../windows/messagewindow.hpp"
 #include "undoc/user32.hpp"
 #include "undoc/uxtheme.hpp"
+#include "util/color.hpp"
 #include "wilx.hpp"
 
 class TaskbarAttributeWorker final : public MessageWindow {
@@ -114,6 +117,9 @@ private:
 	// Config
 	TaskbarAppearance GetConfig(taskbar_iterator taskbar) const;
 
+	// Color previews
+	std::array<std::optional<Util::Color>, 6> m_ColorPreviews;
+
 	// Attribute
 	void ShowAeroPeekButton(Window taskbar, bool show);
 	void SetAttribute(Window window, TaskbarAppearance config);
@@ -146,6 +152,19 @@ private:
 	bool IsSearchOpened() const;
 	void InsertTaskbar(HMONITOR mon, Window window);
 
+	inline TaskbarAppearance WithPreview(txmp::TaskbarState state, const TaskbarAppearance &appearance) const
+	{
+		const auto &preview = m_ColorPreviews.at(static_cast<std::size_t>(state));
+		if (preview)
+		{
+			return { appearance.Accent, *preview, appearance.ShowPeek };
+		}
+		else
+		{
+			return appearance;
+		}
+	}
+
 	inline static HMONITOR GetStartMenuMonitor() noexcept
 	{
 		// we assume that start is the current foreground window;
@@ -170,11 +189,23 @@ private:
 	}
 
 public:
-	TaskbarAttributeWorker(const Config& cfg, HINSTANCE hInstance, DynamicLoader &loader);
+	TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, DynamicLoader &loader);
 
 	inline void ConfigurationChanged()
 	{
 		RefreshAllAttributes();
+	}
+
+	void ApplyColorPreview(txmp::TaskbarState state, Util::Color color)
+	{
+		m_ColorPreviews.at(static_cast<std::size_t>(state)) = color;
+		ConfigurationChanged();
+	}
+
+	inline void RemoveColorPreview(txmp::TaskbarState state)
+	{
+		m_ColorPreviews.at(static_cast<std::size_t>(state)).reset();
+		ConfigurationChanged();
 	}
 
 	void DumpState();

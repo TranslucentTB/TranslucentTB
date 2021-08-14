@@ -1,7 +1,11 @@
 #pragma once
 #include "winrt.hpp"
 
-#define DECL_EVENT_FUNCS(TYPE, NAME, FIELD) \
+#define DECL_EVENT(TYPE, NAME, FIELD) \
+private: \
+	winrt::event<TYPE> FIELD; \
+\
+public: \
 	winrt::event_token NAME(const TYPE &handler_) \
 	{ \
 		return FIELD.add(handler_); \

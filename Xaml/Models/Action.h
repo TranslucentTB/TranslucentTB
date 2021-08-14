@@ -16,13 +16,12 @@ namespace winrt::TranslucentTB::Xaml::Models::implementation
 		DECL_PROPERTY_CHANGED_PROP(hstring, Description);
 		DECL_PROPERTY_CHANGED_FUNCS(wuxc::IconElement, Icon, m_icon);
 
-		DECL_EVENT_FUNCS(wux::RoutedEventHandler, Click, m_click);
+		DECL_EVENT(wux::RoutedEventHandler, Click, m_click);
 
 		void ForwardClick(const IInspectable &sender, const wux::RoutedEventArgs &args);
 
 	private:
 		wuxc::IconElement m_icon = nullptr;
-		event<wux::RoutedEventHandler> m_click;
 	};
 }
 

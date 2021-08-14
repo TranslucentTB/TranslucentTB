@@ -13,7 +13,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		FramelessPage();
 
-		bool CanMove();
+		virtual bool CanMove() noexcept;
 
 		void ShowSystemMenu(const wf::Point &position);
 		void HideSystemMenu();
@@ -23,7 +23,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		wf::Rect TitlebarButtonsRegion();
 
 		void Close();
-		DECL_EVENT_FUNCS(ClosedDelegate, Closed, m_ClosedHandler);
+		DECL_EVENT(ClosedDelegate, Closed, m_ClosedHandler);
 
 		void CloseClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void SystemMenuOpening(const IInspectable &sender, const IInspectable &args);
@@ -44,15 +44,15 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 			return m_SystemMenuContent;
 		}
 
+		~FramelessPage();
+
 	private:
 		void SystemMenuChanged(const wfc::IObservableVector<wuxc::MenuFlyoutItemBase> &sender, const wfc::IVectorChangedEventArgs &event);
-
-		event<ClosedDelegate> m_ClosedHandler;
 
 		wfc::IObservableVector<Controls::ChromeButton> m_TitlebarContent = single_threaded_observable_vector<Controls::ChromeButton>();
 
 		bool m_NeedsSystemMenuRefresh = false;
-		wfc::IObservableVector<wuxc::MenuFlyoutItemBase>::VectorChanged_revoker m_SystemMenuChangedRevoker;
+		event_token m_SystemMenuChangedToken;
 		wfc::IObservableVector<wuxc::MenuFlyoutItemBase> m_SystemMenuContent = single_threaded_observable_vector<wuxc::MenuFlyoutItemBase>();
 
 		static wux::Style LookupStyle(const IInspectable &key);

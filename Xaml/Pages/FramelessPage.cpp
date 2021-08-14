@@ -10,22 +10,13 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	FramelessPage::FramelessPage()
 	{
-		m_SystemMenuChangedRevoker = m_SystemMenuContent.VectorChanged(winrt::auto_revoke, { get_weak(), &FramelessPage::SystemMenuChanged });
+		m_SystemMenuChangedToken = m_SystemMenuContent.VectorChanged({ get_weak(), &FramelessPage::SystemMenuChanged });
 
 		InitializeComponent();
 	}
 
-	bool FramelessPage::CanMove()
+	bool FramelessPage::CanMove() noexcept
 	{
-		// block moving if a ContentDialog is opened
-		for (const auto popup : wux::Media::VisualTreeHelper::GetOpenPopupsForXamlRoot(XamlRoot()))
-		{
-			if (popup.Child().try_as<wuxc::ContentDialog>())
-			{
-				return false;
-			}
-		}
-
 		return true;
 	}
 
@@ -154,6 +145,11 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 			m_NeedsSystemMenuRefresh = false;
 		}
+	}
+
+	FramelessPage::~FramelessPage()
+	{
+		m_SystemMenuContent.VectorChanged(m_SystemMenuChangedToken);
 	}
 
 	void FramelessPage::SystemMenuChanged(const wfc::IObservableVector<wuxc::MenuFlyoutItemBase> &, const wfc::IVectorChangedEventArgs &)

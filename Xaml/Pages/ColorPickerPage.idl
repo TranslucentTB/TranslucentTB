@@ -1,14 +1,15 @@
+import "Models/Primitives/TaskbarState.idl";
 import "Pages/FramelessPage.idl";
 
 namespace TranslucentTB.Xaml.Pages
 {
+	delegate void ColorChangedDelegate(Windows.UI.Color previewColor);
 	delegate void ChangesCommittedDelegate(Windows.UI.Color newColor);
 
-	runtimeclass ColorPickerPage : FramelessPage, Windows.UI.Xaml.Data.INotifyPropertyChanged
+	runtimeclass ColorPickerPage : FramelessPage
 	{
-		ColorPickerPage(String category, Windows.UI.Color currentColor);
+		ColorPickerPage(TranslucentTB.Xaml.Models.Primitives.TaskbarState state, Windows.UI.Color currentColor);
+		event ColorChangedDelegate ColorChanged;
 		event ChangesCommittedDelegate ChangesCommitted;
-
-		Boolean ColorHasBeenChanged { get; };
 	}
 }

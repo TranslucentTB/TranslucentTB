@@ -28,7 +28,7 @@ public: \
 template<typename T>
 class PropertyChangedBase {
 public:
-	DECL_EVENT_FUNCS(wux::Data::PropertyChangedEventHandler, PropertyChanged, m_propertyChanged);
+	DECL_EVENT(wux::Data::PropertyChangedEventHandler, PropertyChanged, m_propertyChanged);
 
 protected:
 	template<typename U>
@@ -40,7 +40,4 @@ protected:
 			m_propertyChanged(*static_cast<T *>(this), wux::Data::PropertyChangedEventArgs(name));
 		}
 	}
-
-private:
-	winrt::event<wux::Data::PropertyChangedEventHandler> m_propertyChanged;
 };

@@ -14,23 +14,23 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		TrayFlyoutPage(bool hasPackageIdentity);
 
-		DECL_EVENT_FUNCS(TaskbarSettingsChangedDelegate, TaskbarSettingsChanged, m_TaskbarSettingsChangedDelegate);
-		DECL_EVENT_FUNCS(ColorRequestedDelegate, ColorRequested, m_ColorRequestedDelegate);
+		DECL_EVENT(TaskbarSettingsChangedDelegate, TaskbarSettingsChanged, m_TaskbarSettingsChangedDelegate);
+		DECL_EVENT(ColorRequestedDelegate, ColorRequested, m_ColorRequestedDelegate);
 
-		DECL_EVENT_FUNCS(OpenLogFileRequestedDelegate, OpenLogFileRequested, m_OpenLogFileRequestedDelegate);
-		DECL_EVENT_FUNCS(LogLevelChangedDelegate, LogLevelChanged, m_LogLevelChangedDelegate);
-		DECL_EVENT_FUNCS(DumpDynamicStateRequestedDelegate, DumpDynamicStateRequested, m_DumpDynamicStateRequestedDelegate);
-		DECL_EVENT_FUNCS(EditSettingsRequestedDelegate, EditSettingsRequested, m_EditSettingsRequestedDelegate);
-		DECL_EVENT_FUNCS(ResetSettingsRequestedDelegate, ResetSettingsRequested, m_ResetSettingsRequestedDelegate);
-		DECL_EVENT_FUNCS(DisableSavingSettingsChangedDelegate, DisableSavingSettingsChanged, m_DisableSavingSettingsChangedDelegate);
-		DECL_EVENT_FUNCS(HideTrayRequestedDelegate, HideTrayRequested, m_HideTrayRequestedDelegate);
-		DECL_EVENT_FUNCS(ResetDynamicStateRequestedDelegate, ResetDynamicStateRequested, m_ResetDynamicStateRequestedDelegate);
-		DECL_EVENT_FUNCS(CompactThunkHeapRequestedDelegate, CompactThunkHeapRequested, m_CompactThunkHeapRequestedDelegate);
+		DECL_EVENT(OpenLogFileRequestedDelegate, OpenLogFileRequested, m_OpenLogFileRequestedDelegate);
+		DECL_EVENT(LogLevelChangedDelegate, LogLevelChanged, m_LogLevelChangedDelegate);
+		DECL_EVENT(DumpDynamicStateRequestedDelegate, DumpDynamicStateRequested, m_DumpDynamicStateRequestedDelegate);
+		DECL_EVENT(EditSettingsRequestedDelegate, EditSettingsRequested, m_EditSettingsRequestedDelegate);
+		DECL_EVENT(ResetSettingsRequestedDelegate, ResetSettingsRequested, m_ResetSettingsRequestedDelegate);
+		DECL_EVENT(DisableSavingSettingsChangedDelegate, DisableSavingSettingsChanged, m_DisableSavingSettingsChangedDelegate);
+		DECL_EVENT(HideTrayRequestedDelegate, HideTrayRequested, m_HideTrayRequestedDelegate);
+		DECL_EVENT(ResetDynamicStateRequestedDelegate, ResetDynamicStateRequested, m_ResetDynamicStateRequestedDelegate);
+		DECL_EVENT(CompactThunkHeapRequestedDelegate, CompactThunkHeapRequested, m_CompactThunkHeapRequestedDelegate);
 
-		DECL_EVENT_FUNCS(StartupStateChangedDelegate, StartupStateChanged, m_StartupStateChangedDelegate);
-		DECL_EVENT_FUNCS(TipsAndTricksRequestedDelegate, TipsAndTricksRequested, m_TipsAndTricksRequestedDelegate);
-		DECL_EVENT_FUNCS(AboutRequestedDelegate, AboutRequested, m_AboutRequestedDelegate);
-		DECL_EVENT_FUNCS(ExitRequestedDelegate, ExitRequested, m_ExitRequestedDelegate);
+		DECL_EVENT(StartupStateChangedDelegate, StartupStateChanged, m_StartupStateChangedDelegate);
+		DECL_EVENT(TipsAndTricksRequestedDelegate, TipsAndTricksRequested, m_TipsAndTricksRequestedDelegate);
+		DECL_EVENT(AboutRequestedDelegate, AboutRequested, m_AboutRequestedDelegate);
+		DECL_EVENT(ExitRequestedDelegate, ExitRequested, m_ExitRequestedDelegate);
 
 		void SetTaskbarSettings(const txmp::TaskbarState &state, const txmp::TaskbarAppearance &appearance);
 		void SetLogLevel(const txmp::LogLevel &level);
@@ -63,24 +63,6 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 		static txmp::TaskbarAppearance BuildAppearanceFromSubMenu(const wuxc::MenuFlyoutSubItem &menu);
 		wuxc::MenuFlyoutSubItem GetSubMenuForState(txmp::TaskbarState state);
-
-		event<TaskbarSettingsChangedDelegate> m_TaskbarSettingsChangedDelegate;
-		event<ColorRequestedDelegate> m_ColorRequestedDelegate;
-
-		event<OpenLogFileRequestedDelegate> m_OpenLogFileRequestedDelegate;
-		event<LogLevelChangedDelegate> m_LogLevelChangedDelegate;
-		event<DumpDynamicStateRequestedDelegate> m_DumpDynamicStateRequestedDelegate;
-		event<EditSettingsRequestedDelegate> m_EditSettingsRequestedDelegate;
-		event<ResetSettingsRequestedDelegate> m_ResetSettingsRequestedDelegate;
-		event<DisableSavingSettingsChangedDelegate> m_DisableSavingSettingsChangedDelegate;
-		event<HideTrayRequestedDelegate> m_HideTrayRequestedDelegate;
-		event<ResetDynamicStateRequestedDelegate> m_ResetDynamicStateRequestedDelegate;
-		event<CompactThunkHeapRequestedDelegate> m_CompactThunkHeapRequestedDelegate;
-
-		event<StartupStateChangedDelegate> m_StartupStateChangedDelegate;
-		event<TipsAndTricksRequestedDelegate> m_TipsAndTricksRequestedDelegate;
-		event<AboutRequestedDelegate> m_AboutRequestedDelegate;
-		event<ExitRequestedDelegate> m_ExitRequestedDelegate;
 
 		txmp::LogSinkState m_SinkState = txmp::LogSinkState::Failed;
 	};

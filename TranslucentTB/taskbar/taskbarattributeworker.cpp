@@ -297,36 +297,36 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 
 	if (m_Config.TaskViewOpenedAppearance.Enabled && m_TaskViewActive)
 	{
-		return m_Config.TaskViewOpenedAppearance;
+		return WithPreview(txmp::TaskbarState::TaskViewOpened, m_Config.TaskViewOpenedAppearance);
 	}
 
 	// Task View is ignored by peek, so shall we
 	if (m_PeekActive)
 	{
-		return m_Config.DesktopAppearance;
+		return WithPreview(txmp::TaskbarState::Desktop, m_Config.DesktopAppearance);
 	}
 
 	if (m_Config.SearchOpenedAppearance.Enabled && m_CurrentSearchMonitor == taskbar->first)
 	{
-		return m_Config.SearchOpenedAppearance;
+		return WithPreview(txmp::TaskbarState::SearchOpened, m_Config.SearchOpenedAppearance);
 	}
 
 	if (m_Config.StartOpenedAppearance.Enabled && m_CurrentStartMonitor == taskbar->first)
 	{
-		return m_Config.StartOpenedAppearance;
+		return WithPreview(txmp::TaskbarState::StartOpened, m_Config.StartOpenedAppearance);
 	}
 
 	if (m_Config.MaximisedWindowAppearance.Enabled && SetContainsValidWindows(taskbar->second.MaximisedWindows))
 	{
-		return m_Config.MaximisedWindowAppearance;
+		return WithPreview(txmp::TaskbarState::MaximisedWindow, m_Config.MaximisedWindowAppearance);
 	}
 
 	if (m_Config.VisibleWindowAppearance.Enabled && (SetContainsValidWindows(taskbar->second.MaximisedWindows) || SetContainsValidWindows(taskbar->second.NormalWindows)))
 	{
-		return m_Config.VisibleWindowAppearance;
+		return WithPreview(txmp::TaskbarState::VisibleWindow, m_Config.VisibleWindowAppearance);
 	}
 
-	return m_Config.DesktopAppearance;
+	return WithPreview(txmp::TaskbarState::Desktop, m_Config.DesktopAppearance);
 }
 
 void TaskbarAttributeWorker::ShowAeroPeekButton(Window taskbar, bool show)
@@ -576,7 +576,7 @@ void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::
 			buf.clear();
 			if (showInfo)
 			{
-				buf.append(prefix.data(), prefix.data() + prefix.length());
+				buf.append(prefix);
 				DumpWindow(buf, window);
 			}
 			else
@@ -614,8 +614,8 @@ void TaskbarAttributeWorker::DumpWindow(fmt::wmemory_buffer &buf, Window window)
 	}
 	else
 	{
-		static constexpr std::wstring_view null = L"0x0";
-		buf.append(null.data(), null.data() + null.length());
+		static constexpr std::wstring_view NULL_WINDOW = L"0x0";
+		buf.append(NULL_WINDOW);
 	}
 }
 

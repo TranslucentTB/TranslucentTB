@@ -97,7 +97,7 @@ void MainAppWindow::TaskbarSettingsChanged(const txmp::TaskbarState &state, cons
 
 	if (const auto optAppearance = appearance.try_as<txmp::OptionalTaskbarAppearance>())
 	{
-		if (state == txmp::TaskbarState::Desktop)
+		if (state == txmp::TaskbarState::Desktop) [[unlikely]]
 		{
 			throw std::invalid_argument("Desktop appearance is not optional");
 		}
@@ -117,18 +117,35 @@ void MainAppWindow::ColorRequested(const txmp::TaskbarState &state)
 	auto &appearance = GetConfigForState(state);
 
 	using winrt::TranslucentTB::Xaml::Pages::ColorPickerPage;
-	m_App.CreateXamlWindow<ColorPickerPage>(xaml_startup_position::mouse, [this, &appearance](const ColorPickerPage &picker)
+	m_App.CreateXamlWindow<ColorPickerPage>(xaml_startup_position::mouse, [this, &appearance, state](const ColorPickerPage &picker)
 	{
-		picker.ChangesCommitted([this, &appearance](const winrt::Windows::UI::Color &color)
+		auto closeRevoker = picker.Closed(winrt::auto_revoke, [this, state]
 		{
-			m_App.DispatchToMainThread([this, &appearance, color]() mutable
+			m_App.DispatchToMainThread([this, state]
 			{
-				appearance.Color = color;
-				m_App.GetWorker().ConfigurationChanged();
+				m_App.GetWorker().RemoveColorPreview(state);
 			});
 		});
-	}, L"TEST", appearance.Color);
-	// TODO: use a localized string
+
+		picker.ChangesCommitted([this, state, &appearance, revoker = std::move(closeRevoker)](const winrt::Windows::UI::Color &color) mutable
+		{
+			revoker.revoke(); // we're already doing this.
+
+			m_App.DispatchToMainThread([this, state, color, &appearance]() mutable
+			{
+				appearance.Color = color;
+				m_App.GetWorker().RemoveColorPreview(state); // remove color preview implicitly refreshes config
+			});
+		});
+
+		picker.ColorChanged([this, state](const winrt::Windows::UI::Color &color)
+		{
+			m_App.DispatchToMainThread([this, state, color]
+			{
+				m_App.GetWorker().ApplyColorPreview(state, color);
+			});
+		});
+	}, state, appearance.Color);
 }
 
 void MainAppWindow::OpenLogFileRequested()

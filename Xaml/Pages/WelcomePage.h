@@ -21,16 +21,10 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void AgreeButtonClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void DisagreeButtonClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 
-		DECL_EVENT_FUNCS(LiberapayOpenDelegate, LiberapayOpenRequested, m_LiberapayOpenRequestedHandler);
-		DECL_EVENT_FUNCS(DiscordJoinDelegate, DiscordJoinRequested, m_DiscordJoinRequestedHandler);
-		DECL_EVENT_FUNCS(ConfigEditDelegate, ConfigEditRequested, m_ConfigEditRequestedHandler);
-		DECL_EVENT_FUNCS(LicenseApprovedDelegate, LicenseApproved, m_LicenseApprovedHandler);
-
-	private:
-		event<LiberapayOpenDelegate> m_LiberapayOpenRequestedHandler;
-		event<DiscordJoinDelegate> m_DiscordJoinRequestedHandler;
-		event<ConfigEditDelegate> m_ConfigEditRequestedHandler;
-		event<LicenseApprovedDelegate> m_LicenseApprovedHandler;
+		DECL_EVENT(LiberapayOpenDelegate, LiberapayOpenRequested, m_LiberapayOpenRequestedHandler);
+		DECL_EVENT(DiscordJoinDelegate, DiscordJoinRequested, m_DiscordJoinRequestedHandler);
+		DECL_EVENT(ConfigEditDelegate, ConfigEditRequested, m_ConfigEditRequestedHandler);
+		DECL_EVENT(LicenseApprovedDelegate, LicenseApproved, m_LicenseApprovedHandler);
 	};
 }
 

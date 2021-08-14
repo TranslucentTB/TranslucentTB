@@ -1,5 +1,6 @@
 #pragma once
 #include "factory.h"
+#include "winrt.hpp"
 
 #include "StyleResources.g.h"
 

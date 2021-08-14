@@ -29,7 +29,8 @@
             We insert it here because anywhere else it would throw off StackPanel spacing.
         -->
         <ContentDialog
-            x:Name="Dialog"
+            x:Name="ConfirmCloseDialog"
+            x:Load="False"
             d:Visibility="Collapsed"
             Content="Do you want to save changes to the color?"
             PrimaryButtonText="Yes"
