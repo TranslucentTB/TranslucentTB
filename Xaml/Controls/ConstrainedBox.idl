@@ -1,0 +1,12 @@
+#include "..\dependencyproperty.h"
+
+namespace TranslucentTB.Xaml.Controls
+{
+    runtimeclass ConstrainedBox : Windows.UI.Xaml.Controls.ContentPresenter
+    {
+        ConstrainedBox();
+
+		DECL_DEPENDENCY_PROPERTY(Int32, MultipleX);
+		DECL_DEPENDENCY_PROPERTY(Int32, MultipleY);
+    }
+}

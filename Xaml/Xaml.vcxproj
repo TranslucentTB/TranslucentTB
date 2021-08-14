@@ -55,6 +55,10 @@
       <DependentUpon>Controls\ChromeButton.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="Controls\ConstrainedBox.cpp">
+      <DependentUpon>Controls\ConstrainedBox.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="Models\Primitives\OptionalTaskbarAppearance.cpp">
       <DependentUpon>Models\Primitives\OptionalTaskbarAppearance.idl</DependentUpon>
       <SubType>Code</SubType>
@@ -147,6 +151,10 @@
       <DependentUpon>Controls\ChromeButton.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="Controls\ConstrainedBox.h">
+      <DependentUpon>Controls\ConstrainedBox.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="dependencyproperty.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="factory.h" />
@@ -206,6 +214,9 @@
       <SubType>Code</SubType>
     </Midl>
     <Midl Include="Controls\ChromeButton.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Controls\ConstrainedBox.idl">
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Models\Primitives\AccentState.idl">

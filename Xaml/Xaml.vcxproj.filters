@@ -58,5 +58,6 @@
     <Midl Include="Models\Primitives\ColorRepresentation.idl" />
     <Midl Include="Controls\ChromeButton.idl" />
     <Midl Include="RelativeAncestor.idl" />
+    <Midl Include="Controls\ConstrainedBox.idl" />
   </ItemGroup>
 </Project>
