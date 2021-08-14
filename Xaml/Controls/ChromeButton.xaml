@@ -25,6 +25,8 @@
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Width" Value="44" />
         <Setter Property="Height" Value="{StaticResource TitlebarHeight}" />
+        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+        <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:ChromeButton">

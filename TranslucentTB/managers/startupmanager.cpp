@@ -69,7 +69,7 @@ void StartupManager::Disable()
 	}
 }
 
-wf::IAsyncAction StartupManager::OpenSettingsPage()
+void StartupManager::OpenSettingsPage()
 {
-	return UWP::OpenUri(wf::Uri(L"ms-settings:startupapps"));
+	UWP::OpenUri(wf::Uri(L"ms-settings:startupapps"));
 }

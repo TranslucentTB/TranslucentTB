@@ -23,6 +23,7 @@ namespace Util {
 
 		constexpr HsvColor() noexcept : H(0), S(0), V(0), A(0) { }
 		constexpr HsvColor(double h, double s, double v, double a = 1.0) noexcept : H(h), S(s), V(v), A(a) { }
+		constexpr HsvColor(const wf::Numerics::float4 &col) noexcept : H(col.x), S(col.y), V(col.z), A(col.w) { }
 
 #ifdef HAS_WINRT_COLOR
 		constexpr HsvColor(txmp::HsvColor col) noexcept : H(col.H), S(col.S), V(col.V), A(col.A) { }
@@ -231,6 +232,15 @@ namespace Util {
 		constexpr bool operator ==(Color other) const noexcept
 		{
 			return ToABGR() == other.ToABGR();
+		}
+
+		bool IsDarkColor() const noexcept
+		{
+			const double rg = R <= 10 ? R / 3294.0 : std::pow((R / 269.0) + 0.0513, 2.4);
+			const double gg = G <= 10 ? G / 3294.0 : std::pow((G / 269.0) + 0.0513, 2.4);
+			const double bg = B <= 10 ? B / 3294.0 : std::pow((B / 269.0) + 0.0513, 2.4);
+
+			return (0.2126 * rg) + (0.7152 * gg) + (0.0722 * bg) <= 0.5;
 		}
 
 	private:

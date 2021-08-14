@@ -16,6 +16,6 @@ void Error::MessageFromStdErrorCode(fmt::wmemory_buffer &buf, const std::error_c
 	else
 	{
 		static constexpr std::wstring_view UNKNOWN_ERROR = L"Unknown error";
-		buf.append(UNKNOWN_ERROR.data(), UNKNOWN_ERROR.data() + UNKNOWN_ERROR.length());
+		buf.append(UNKNOWN_ERROR);
 	}
 }

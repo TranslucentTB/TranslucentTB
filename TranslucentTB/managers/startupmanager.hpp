@@ -16,7 +16,7 @@ public:
 	std::optional<winrt::Windows::ApplicationModel::StartupTaskState> GetState() const;
 	wf::IAsyncAction Enable();
 	void Disable();
-	static wf::IAsyncAction OpenSettingsPage();
+	static void OpenSettingsPage();
 
 	inline explicit operator bool() const noexcept
 	{

@@ -16,7 +16,7 @@ void Error::MessageFromErrno(fmt::wmemory_buffer &buf, errno_t err)
 	{
 		err_buf.clear();
 		static constexpr std::wstring_view ERRNO_FAILED = L"[failed to get message for errno_t]";
-		err_buf.append(ERRNO_FAILED.data(), ERRNO_FAILED.data() + ERRNO_FAILED.length());
+		err_buf.append(ERRNO_FAILED);
 	}
 
 	auto str = Util::ToStringView(err_buf);

@@ -51,7 +51,7 @@ bool Error::MessageFromIRestrictedErrorInfo(fmt::wmemory_buffer &buf, IRestricte
 	else
 	{
 		static constexpr std::wstring_view INFO_NULL = L"[IRestrictedErrorInfo was null]";
-		buf.append(INFO_NULL.data(), INFO_NULL.data() + INFO_NULL.length());
+		buf.append(INFO_NULL);
 	}
 
 	return false;

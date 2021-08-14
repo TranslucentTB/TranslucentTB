@@ -10,7 +10,7 @@
     xmlns:windows11NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract, 14)"
     mc:Ignorable="d"
     muxcWindows11Present:BackdropMaterial.ApplyToRootOrPageBackground="True"
-    windows11NotPresent:Background="{StaticResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
+    windows11NotPresent:Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
 
     <FlyoutBase.AttachedFlyout>
         <MenuFlyout x:Name="SystemMenu" Opening="SystemMenuOpening">

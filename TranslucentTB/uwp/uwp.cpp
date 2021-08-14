@@ -5,6 +5,7 @@
 #include <DispatcherQueue.h>
 #include <ShlObj_core.h>
 #include <wil/resource.h>
+#include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.UI.Core.h>
 
 #include "../ProgramLog/error/win32.hpp"
@@ -63,14 +64,14 @@ std::optional<std::filesystem::path> UWP::GetAppStorageFolder()
 	}
 }
 
-wf::IAsyncAction UWP::OpenUri(const wf::Uri &uri)
+winrt::fire_and_forget UWP::OpenUri(const wf::Uri &uri)
 {
 	bool opened;
 	try
 	{
 		opened = co_await winrt::Windows::System::Launcher::LaunchUriAsync(uri);
 	}
-	catch (const winrt::hresult_error& err)
+	catch (const winrt::hresult_error &err)
 	{
 		HresultErrorHandle(err, spdlog::level::err, L"Failed to launch uri.");
 		co_return;

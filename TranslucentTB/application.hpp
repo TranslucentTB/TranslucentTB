@@ -70,9 +70,9 @@ public:
 		m_Xaml.CreateXamlWindow<T>(pos, std::forward<Callback>(callback), std::forward<Args>(args)...);
 	}
 
-	template<typename Callback>
-	void DispatchToMainThread(Callback &&callback)
+	void DispatchToMainThread(const winrt::Windows::System::DispatcherQueueHandler &callback,
+		winrt::Windows::System::DispatcherQueuePriority priority = winrt::Windows::System::DispatcherQueuePriority::Normal)
 	{
-		m_DispatcherController.DispatcherQueue().TryEnqueue(std::forward<Callback>(callback));
+		m_DispatcherController.DispatcherQueue().TryEnqueue(priority, callback);
 	}
 };
