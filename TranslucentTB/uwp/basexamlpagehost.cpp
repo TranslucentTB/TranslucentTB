@@ -240,7 +240,7 @@ BaseXamlPageHost::BaseXamlPageHost(WindowClass &classRef, WindowClass &dragRegio
 	HresultVerify(nativeSource->AttachToWindow(m_WindowHandle), spdlog::level::critical, L"Failed to attach DesktopWindowXamlSource");
 	HresultVerify(nativeSource->get_WindowHandle(m_interopWnd.put()), spdlog::level::critical, L"Failed to get interop window handle");
 
-	m_focusRevoker = m_source.TakeFocusRequested(winrt::auto_revoke, [](const wuxh::DesktopWindowXamlSource &sender, const wuxh::DesktopWindowXamlSourceTakeFocusRequestedEventArgs &args)
+	m_focusToken = m_source.TakeFocusRequested([](const wuxh::DesktopWindowXamlSource &sender, const wuxh::DesktopWindowXamlSourceTakeFocusRequestedEventArgs &args)
 	{
 		const auto request = args.Request();
 		const auto reason = request.Reason();

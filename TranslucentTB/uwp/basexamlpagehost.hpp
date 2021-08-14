@@ -24,7 +24,7 @@ private:
 	XamlDragRegion m_DragRegion;
 	Window m_interopWnd;
 	wuxh::DesktopWindowXamlSource m_source;
-	wuxh::DesktopWindowXamlSource::TakeFocusRequested_revoker m_focusRevoker;
+	winrt::event_token m_focusToken;
 	wil::unique_hbrush m_BackgroundBrush;
 	winrt::Windows::UI::Color m_BackgroundColor = { };
 
@@ -48,11 +48,17 @@ protected:
 	{
 		if (m_source)
 		{
-			m_focusRevoker.revoke();
+			if (m_focusToken)
+			{
+				m_source.TakeFocusRequested(m_focusToken);
+				m_focusToken.value = 0;
+			}
+			
 			m_source.Close();
 			m_source = nullptr;
-			m_BackgroundBrush.reset();
 		}
+
+		m_BackgroundBrush.reset();
 	}
 
 public:

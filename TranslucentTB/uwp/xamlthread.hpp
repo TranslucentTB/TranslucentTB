@@ -5,7 +5,6 @@
 #include <memory>
 #include <mutex>
 #include <utility>
-#include <vector>
 #include <windef.h>
 #include <WinBase.h>
 #include <wil/resource.h>
@@ -29,7 +28,7 @@ private:
 	winrt::Windows::System::DispatcherQueueController m_Dispatcher;
 	wuxh::WindowsXamlManager m_Manager;
 
-	std::vector<winrt::weak_ref<IDesktopWindowXamlSourceNative2>> m_Sources;
+	winrt::com_ptr<IDesktopWindowXamlSourceNative2> m_Source;
 
 	Util::thread_independent_mutex m_CurrentWindowLock;
 	std::unique_ptr<BaseXamlPageHost> m_CurrentWindow;
@@ -77,10 +76,7 @@ public:
 			}
 			HresultErrorCatch(spdlog::level::critical, L"Failed to create XAML window");
 
-			if (const auto source = host->source().try_as<IDesktopWindowXamlSourceNative2>())
-			{
-				m_Sources.push_back(source);
-			}
+			m_Source = host->source().try_as<IDesktopWindowXamlSourceNative2>();
 
 			std::invoke(std::forward<Callback>(callback), host->content());
 
@@ -95,5 +91,22 @@ public:
 	winrt::Windows::System::DispatcherQueue GetDispatcher() const
 	{
 		return m_Dispatcher.DispatcherQueue();
+	}
+
+	~XamlThread()
+	{
+		if (m_Manager)
+		{
+			m_Manager.Close();
+			m_Manager = nullptr;
+		}
+
+		// let the XAML framework cleanup
+		MSG msg{};
+		while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
 	}
 };

@@ -38,8 +38,12 @@ void XamlThread::DeletedCallback(void *data)
 {
 	const auto that = static_cast<XamlThread *>(data);
 
-	std::scoped_lock guard(that->m_CurrentWindowLock);
-	that->m_CurrentWindow.reset();
+	{
+		std::scoped_lock guard(that->m_CurrentWindowLock);
+		that->m_CurrentWindow.reset();
+	}
+
+	that->m_Source = nullptr;
 }
 
 void XamlThread::ThreadInit()
@@ -64,29 +68,20 @@ bool XamlThread::PreTranslateMessage(const MSG &msg)
 		return true;
 	}
 
-	for (auto it = m_Sources.begin(); it != m_Sources.end();)
+	if (m_Source)
 	{
-		if (const auto source = it->get())
+		BOOL result;
+		const HRESULT hr = m_Source->PreTranslateMessage(&msg, &result);
+		if (SUCCEEDED(hr))
 		{
-			BOOL result;
-			const HRESULT hr = source->PreTranslateMessage(&msg, &result);
-			if (SUCCEEDED(hr))
+			if (result)
 			{
-				if (result)
-				{
-					return result;
-				}
+				return result;
 			}
-			else
-			{
-				HresultHandle(hr, spdlog::level::warn, L"Failed to pre-translate message");
-			}
-
-			++it;
 		}
 		else
 		{
-			it = m_Sources.erase(it);
+			HresultHandle(hr, spdlog::level::warn, L"Failed to pre-translate message");
 		}
 	}
 
@@ -117,10 +112,13 @@ wil::unique_handle XamlThread::Delete()
 		// only called during destruction of thread pool, so no locking needed.
 		m_CurrentWindow.reset();
 
+		m_Source = nullptr;
 		m_Manager.Close();
 		m_Manager = nullptr;
 
 		co_await m_Dispatcher.ShutdownQueueAsync();
+
+		// important: don't access captures after the first suspension point.
 		PostQuitMessage(0);
 	});
 
