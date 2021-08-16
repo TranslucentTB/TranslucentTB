@@ -5,19 +5,26 @@
 #include <utility>
 #include "winrt.hpp"
 #include "undefgetcurrenttime.h"
-#include <winrt/TranslucentTB.Xaml.Pages.h>
+#include <winrt/Windows.UI.Xaml.Controls.h>
 #include "redefgetcurrenttime.h"
 
 #include "win32.hpp"
 #include "../ProgramLog/error/win32.hpp"
 
 template<typename T>
-requires std::derived_from<T, winrt::impl::base_one<T, winrt::TranslucentTB::Xaml::Pages::FlyoutPage>> // https://github.com/microsoft/cppwinrt/issues/609
 class ContextMenu : public BaseContextMenu {
 private:
 	T m_Page;
 
 	bool m_UseXamlContextMenu;
+
+	void ShowTooltip(bool visible)
+	{
+		if (const auto tooltip = wuxc::ToolTipService::GetToolTip(m_Page).try_as<wuxc::ToolTip>())
+		{
+			tooltip.IsOpen(visible);
+		}
+	}
 
 protected:
 	constexpr const T &page() const noexcept
@@ -33,31 +40,21 @@ protected:
 
 	void ShowAt(RECT rect, POINT pt)
 	{
-		if (const auto monitor = MoveHiddenWindow(rect))
+		if (const auto flyout = m_Page.ContextFlyout().try_as<wuxc::MenuFlyout>())
 		{
-			if (const auto flyout = m_Page.ContextFlyout().try_as<wuxc::MenuFlyout>())
+			if (m_UseXamlContextMenu)
 			{
-				if (m_UseXamlContextMenu)
-				{
-					UINT dpiX, dpiY;
-					if (const HRESULT hr = GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY); SUCCEEDED(hr))
-					{
-						const float scaleFactor = static_cast<float>(dpiX) / USER_DEFAULT_SCREEN_DPI;
+				MoveHiddenWindow(rect);
+				const float scaleFactor = static_cast<float>(GetDpiForWindow(m_WindowHandle)) / USER_DEFAULT_SCREEN_DPI;
 
-						flyout.ShowAt(m_Page, {
-							(pt.x - rect.left) / scaleFactor,
-							(pt.y - rect.top) / scaleFactor
-						});
-					}
-					else
-					{
-						HresultHandle(hr, spdlog::level::warn, L"Failed to get monitor DPI");
-					}
-				}
-				else
-				{
-					ShowClassicContextMenu(flyout, pt);
-				}
+				flyout.ShowAt(m_Page, {
+					(pt.x - rect.left) / scaleFactor,
+					(pt.y - rect.top) / scaleFactor
+				});
+			}
+			else
+			{
+				ShowClassicContextMenu(flyout, pt);
 			}
 		}
 	}
@@ -65,12 +62,12 @@ protected:
 	void ShowTooltip(RECT rect)
 	{
 		MoveHiddenWindow(rect);
-		m_Page.SetTooltipVisible(true);
+		ShowTooltip(true);
 	}
 
 	void HideTooltip()
 	{
-		m_Page.SetTooltipVisible(false);
+		ShowTooltip(false);
 	}
 
 	~ContextMenu()

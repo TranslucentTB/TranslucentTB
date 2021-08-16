@@ -4,7 +4,6 @@
 #include "../PropertyChangedBase.hpp"
 #include "winrt.hpp"
 
-#include "FlyoutPage.h"
 #include "Models/Primitives/TaskbarAppearance.h"
 #include "Pages/TrayFlyoutPage.g.h"
 

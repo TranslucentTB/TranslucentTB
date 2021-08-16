@@ -71,10 +71,6 @@
       <DependentUpon>Pages\ColorPickerPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
-    <ClCompile Include="Pages\FlyoutPage.cpp">
-      <DependentUpon>Pages\FlyoutPage.idl</DependentUpon>
-      <SubType>Code</SubType>
-    </ClCompile>
     <ClCompile Include="Pages\FramelessPage.cpp">
       <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -170,10 +166,6 @@
       <DependentUpon>Pages\ColorPickerPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
-    <ClInclude Include="Pages\FlyoutPage.h">
-      <DependentUpon>Pages\FlyoutPage.idl</DependentUpon>
-      <SubType>Code</SubType>
-    </ClInclude>
     <ClInclude Include="Pages\FramelessPage.h">
       <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -249,9 +241,6 @@
     <Midl Include="Pages\ColorPickerPage.idl">
       <DependentUpon>Pages\ColorPickerPage.xaml</DependentUpon>
       <SubType>Code</SubType>
-    </Midl>
-    <Midl Include="Pages\FlyoutPage.idl">
-      <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Pages\FramelessPage.idl">
       <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>

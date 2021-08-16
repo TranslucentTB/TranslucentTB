@@ -1,9 +1,0 @@
-namespace TranslucentTB.Xaml.Pages
-{
-	unsealed runtimeclass FlyoutPage : Windows.UI.Xaml.Controls.Page
-	{
-		FlyoutPage();
-
-		void SetTooltipVisible(Boolean visible);
-	}
-}

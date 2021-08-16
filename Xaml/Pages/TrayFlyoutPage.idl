@@ -2,7 +2,6 @@ import "Models/Primitives/LogLevel.idl";
 import "Models/Primitives/LogSinkState.idl";
 import "Models/Primitives/TaskbarAppearance.idl";
 import "Models/Primitives/TaskbarState.idl";
-import "Pages/FlyoutPage.idl";
 
 namespace TranslucentTB.Xaml.Pages
 {
@@ -24,7 +23,7 @@ namespace TranslucentTB.Xaml.Pages
 	delegate void AboutRequestedDelegate();
 	delegate void ExitRequestedDelegate();
 
-	runtimeclass TrayFlyoutPage : FlyoutPage, Windows.UI.Xaml.Data.INotifyPropertyChanged
+	runtimeclass TrayFlyoutPage : Windows.UI.Xaml.Controls.Page, Windows.UI.Xaml.Data.INotifyPropertyChanged
 	{
 		TrayFlyoutPage(Boolean hasPackageIdentity);
 

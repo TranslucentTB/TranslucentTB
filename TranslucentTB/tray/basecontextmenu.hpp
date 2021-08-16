@@ -55,7 +55,7 @@ protected:
 
 	// pass by ref to update the caller's value to represent the new window rect
 	// if it needed adjustment
-	HMONITOR MoveHiddenWindow(RECT &rect);
+	void MoveHiddenWindow(RECT &rect);
 
 	virtual void RefreshMenu() = 0;
 

@@ -170,7 +170,7 @@ void BaseContextMenu::ShowClassicContextMenu(const wuxc::MenuFlyout &flyout, POI
 	}
 }
 
-HMONITOR BaseContextMenu::MoveHiddenWindow(RECT &rect)
+void BaseContextMenu::MoveHiddenWindow(RECT &rect)
 {
 	HMONITOR mon = MonitorFromRect(&rect, MONITOR_DEFAULTTONULL);
 	MONITORINFO info = { sizeof(info) };
@@ -194,12 +194,6 @@ HMONITOR BaseContextMenu::MoveHiddenWindow(RECT &rect)
 		{
 			LastErrorHandle(spdlog::level::warn, L"Failed to resize interop window");
 		}
-
-		return mon;
-	}
-	else
-	{
-		return nullptr;
 	}
 }
 
