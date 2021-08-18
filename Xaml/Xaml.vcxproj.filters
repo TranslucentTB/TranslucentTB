@@ -58,6 +58,7 @@
     <Midl Include="Controls\ChromeButton.idl" />
     <Midl Include="Models\Primitives\IColorPalette.idl" />
     <Midl Include="Controls\UniformGrid.idl" />
+    <Midl Include="Converters\ColorToDisplayNameConverter.idl" />
     <Midl Include="RelativeAncestor.idl" />
     <Midl Include="Models\FluentColorPalette.idl" />
     <Midl Include="Controls\ConstrainedBox.idl" />

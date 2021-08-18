@@ -63,6 +63,10 @@
       <DependentUpon>Controls\UniformGrid.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="Converters\ColorToDisplayNameConverter.cpp">
+      <DependentUpon>Converters\ColorToDisplayNameConverter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="Models\FluentColorPalette.cpp">
       <DependentUpon>Models\FluentColorPalette.idl</DependentUpon>
       <SubType>Code</SubType>
@@ -163,6 +167,10 @@
       <DependentUpon>Controls\UniformGrid.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="Converters\ColorToDisplayNameConverter.h">
+      <DependentUpon>Converters\ColorToDisplayNameConverter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="dependencyproperty.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="factory.h" />
@@ -228,6 +236,9 @@
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Controls\UniformGrid.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Converters\ColorToDisplayNameConverter.idl">
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Models\FluentColorPalette.idl">
