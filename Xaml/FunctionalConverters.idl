@@ -5,6 +5,9 @@ namespace TranslucentTB.Xaml
 	static runtimeclass FunctionalConverters
 	{
 		[noexcept]
+		static Boolean InvertedBool(Boolean value);
+
+		[noexcept]
 		static Windows.UI.Xaml.Visibility InvertedBoolToVisibility(Boolean value);
 
 		[noexcept]

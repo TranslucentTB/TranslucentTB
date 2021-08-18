@@ -9,6 +9,7 @@ namespace winrt::TranslucentTB::Xaml::implementation
 {
 	struct FunctionalConverters
 	{
+		static bool InvertedBool(bool value) noexcept;
 		static wux::Visibility InvertedBoolToVisibility(bool value) noexcept;
 		static bool IsSameLogSinkState(txmp::LogSinkState a, txmp::LogSinkState b) noexcept;
 		static bool IsDifferentLogSinkState(txmp::LogSinkState a, txmp::LogSinkState b) noexcept;
