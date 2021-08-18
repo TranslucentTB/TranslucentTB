@@ -641,35 +641,53 @@ void TaskbarAttributeWorker::CreateAppVisibility()
 
 void TaskbarAttributeWorker::CreateSearchManager() try
 {
-	m_SuggestionsHiddenRevoker.revoke();
-	m_SuggestionsShownRevoker.revoke();
+	UnregisterSearchCallbacks();
+
 	m_SearchManager = nullptr;
 
 	if (m_SearchVisibilityChangeMessage)
 	{
 		using winrt::Windows::Internal::Shell::Experience::IShellExperienceManagerFactory;
-		using winrt::Windows::Internal::Shell::Experience::CortanaExperienceManager;
+		using winrt::Windows::Internal::Shell::Experience::ICortanaExperienceManager;
 
 		auto serviceManager = wil::CoCreateInstance<IServiceProvider>(CLSID_ImmersiveShell, CLSCTX_LOCAL_SERVER);
 
 		IShellExperienceManagerFactory factory(nullptr);
 		winrt::check_hresult(serviceManager->QueryService(winrt::guid_of<IShellExperienceManagerFactory>(), winrt::guid_of<IShellExperienceManagerFactory>(), winrt::put_abi(factory)));
 
-		m_SearchManager = factory.GetExperienceManager(win32::IsAtLeastBuild(19041) ? SEH_SearchApp : SEH_Cortana).as<CortanaExperienceManager>();
+		m_SearchManager = factory.GetExperienceManager(win32::IsAtLeastBuild(19041) ? SEH_SearchApp : SEH_Cortana).as<ICortanaExperienceManager>();
 
-		m_SuggestionsShownRevoker = m_SearchManager.SuggestionsShown(winrt::auto_revoke, [this](const CortanaExperienceManager &, const wf::IInspectable &)
+		m_SuggestionsShownToken = m_SearchManager.SuggestionsShown([this](const ICortanaExperienceManager &, const wf::IInspectable &)
 		{
 			send_message(*m_SearchVisibilityChangeMessage, true);
 		});
 
-		m_SuggestionsHiddenRevoker = m_SearchManager.SuggestionsHidden(winrt::auto_revoke, [this](const CortanaExperienceManager &, const wf::IInspectable &)
+		m_SuggestionsHiddenToken = m_SearchManager.SuggestionsHidden([this](const ICortanaExperienceManager &, const wf::IInspectable &)
 		{
 			send_message(*m_SearchVisibilityChangeMessage, false);
 		});
 	}
 }
 ResultExceptionCatch(spdlog::level::warn, L"Failed to create immersive shell service provider")
-HresultErrorCatch(spdlog::level::warn, L"Failed to query for CortanaExperienceManager");
+HresultErrorCatch(spdlog::level::warn, L"Failed to query for ICortanaExperienceManager");
+
+void TaskbarAttributeWorker::UnregisterSearchCallbacks() noexcept
+{
+	if (m_SearchManager)
+	{
+		if (m_SuggestionsShownToken)
+		{
+			m_SearchManager.SuggestionsShown(m_SuggestionsShownToken);
+			m_SuggestionsShownToken = { };
+		}
+
+		if (m_SuggestionsHiddenToken)
+		{
+			m_SearchManager.SuggestionsHidden(m_SuggestionsHiddenToken);
+			m_SuggestionsHiddenToken = { };
+		}
+	}
+}
 
 WINEVENTPROC TaskbarAttributeWorker::CreateThunk(void(CALLBACK TaskbarAttributeWorker:: *proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD))
 {
@@ -945,5 +963,6 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 
 TaskbarAttributeWorker::~TaskbarAttributeWorker() noexcept(false)
 {
+	UnregisterSearchCallbacks();
 	ReturnToStock();
 }

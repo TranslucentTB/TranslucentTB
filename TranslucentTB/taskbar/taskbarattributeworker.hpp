@@ -83,10 +83,9 @@ private:
 	wil::com_ptr<IAppVisibility> m_IAV;
 	wilx::unique_app_visibility_token m_IAVECookie;
 
-	// CortanaExperienceManager
-	winrt::Windows::Internal::Shell::Experience::CortanaExperienceManager m_SearchManager;
-	winrt::Windows::Internal::Shell::Experience::CortanaExperienceManager::SuggestionsShown_revoker m_SuggestionsShownRevoker;
-	winrt::Windows::Internal::Shell::Experience::CortanaExperienceManager::SuggestionsHidden_revoker m_SuggestionsHiddenRevoker;
+	// ICortanaExperienceManager
+	winrt::Windows::Internal::Shell::Experience::ICortanaExperienceManager m_SearchManager;
+	winrt::event_token m_SuggestionsShownToken, m_SuggestionsHiddenToken;
 
 	// Messages
 	std::optional<UINT> m_TaskbarCreatedMessage;
@@ -145,6 +144,7 @@ private:
 	static void DumpWindow(fmt::wmemory_buffer &buf, Window window);
 	void CreateAppVisibility();
 	void CreateSearchManager();
+	void UnregisterSearchCallbacks() noexcept;
 	WINEVENTPROC CreateThunk(void (CALLBACK TaskbarAttributeWorker:: *proc)(DWORD, HWND, LONG, LONG, DWORD, DWORD));
 	static wil::unique_hwineventhook CreateHook(DWORD eventMin, DWORD eventMax, WINEVENTPROC proc);
 	void ReturnToStock();
