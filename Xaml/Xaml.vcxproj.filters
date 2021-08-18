@@ -38,6 +38,7 @@
     <Page Include="Pages\ColorPickerPage.xaml" />
     <Page Include="Pages\TrayFlyoutPage.xaml" />
     <Page Include="Themes\Generic.xaml" />
+    <Page Include="Controls\FocusBorderColorSpectrum.xaml" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
@@ -65,5 +66,6 @@
     <Midl Include="Converters\ThicknessFilterConverter.idl" />
     <Midl Include="Models\Primitives\ThicknessFilterKind.idl" />
     <Midl Include="Controls\ConstrainedBox.idl" />
+    <Midl Include="Controls\FocusBorderColorSpectrum.idl" />
   </ItemGroup>
 </Project>
