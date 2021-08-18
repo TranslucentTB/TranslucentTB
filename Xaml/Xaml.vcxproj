@@ -67,6 +67,10 @@
       <DependentUpon>Converters\ColorToDisplayNameConverter.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="Converters\ContrastBrushConverter.cpp">
+      <DependentUpon>Converters\ContrastBrushConverter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="Models\FluentColorPalette.cpp">
       <DependentUpon>Models\FluentColorPalette.idl</DependentUpon>
       <SubType>Code</SubType>
@@ -171,6 +175,10 @@
       <DependentUpon>Converters\ColorToDisplayNameConverter.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="Converters\ContrastBrushConverter.h">
+      <DependentUpon>Converters\ContrastBrushConverter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="dependencyproperty.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="factory.h" />
@@ -239,6 +247,9 @@
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Converters\ColorToDisplayNameConverter.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Converters\ContrastBrushConverter.idl">
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Models\FluentColorPalette.idl">

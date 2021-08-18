@@ -55,6 +55,7 @@
     <Midl Include="Models\Primitives\ColorChannel.idl" />
     <Midl Include="Models\Primitives\HsvColor.idl" />
     <Midl Include="Models\Primitives\ColorRepresentation.idl" />
+    <Midl Include="Converters\ContrastBrushConverter.idl" />
     <Midl Include="Controls\ChromeButton.idl" />
     <Midl Include="Models\Primitives\IColorPalette.idl" />
     <Midl Include="Controls\UniformGrid.idl" />

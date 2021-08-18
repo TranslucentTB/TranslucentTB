@@ -1,0 +1,10 @@
+namespace TranslucentTB.Xaml.Converters
+{
+	runtimeclass ContrastBrushConverter : Windows.UI.Xaml.Data.IValueConverter
+	{
+		ContrastBrushConverter();
+
+		[noexcept]
+		UInt8 AlphaThreshold;
+	}
+}
