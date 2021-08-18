@@ -59,6 +59,10 @@
       <DependentUpon>Controls\ConstrainedBox.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="Controls\UniformGrid.cpp">
+      <DependentUpon>Controls\UniformGrid.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="Models\Primitives\OptionalTaskbarAppearance.cpp">
       <DependentUpon>Models\Primitives\OptionalTaskbarAppearance.idl</DependentUpon>
       <SubType>Code</SubType>
@@ -151,6 +155,10 @@
       <DependentUpon>Controls\ConstrainedBox.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="Controls\UniformGrid.h">
+      <DependentUpon>Controls\UniformGrid.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="dependencyproperty.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="factory.h" />
@@ -209,6 +217,9 @@
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Controls\ConstrainedBox.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Controls\UniformGrid.idl">
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Models\Primitives\AccentState.idl">
