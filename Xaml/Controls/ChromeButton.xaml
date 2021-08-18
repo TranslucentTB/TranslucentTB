@@ -1,8 +1,10 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:controls="using:TranslucentTB.Xaml.Controls">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:TranslucentTB.Xaml.Controls">
 
     <x:Double x:Key="TitlebarHeight">28</x:Double>
+
+    <Color x:Key="InactiveChromeButtonForeground">#999999</Color>
 
     <Style BasedOn="{StaticResource ChromeButtonStyle}" TargetType="controls:ChromeButton" />
 
@@ -35,10 +37,10 @@
                         VerticalContentAlignment="Center"
                         Content="{TemplateBinding Icon}">
                         <ContentPresenter.Foreground>
-                            <SolidColorBrush x:Name="ForegroundBrush" />
+                            <SolidColorBrush x:Name="ForegroundBrush" Color="{Binding NormalForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}" />
                         </ContentPresenter.Foreground>
                         <ContentPresenter.Background>
-                            <SolidColorBrush x:Name="BackgroundBrush" />
+                            <SolidColorBrush x:Name="BackgroundBrush" Color="{Binding NormalBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}" />
                         </ContentPresenter.Background>
 
                         <VisualStateManager.VisualStateGroups>
@@ -78,20 +80,7 @@
                                     </VisualTransition>
                                 </VisualStateGroup.Transitions>
 
-                                <VisualState x:Name="Normal">
-                                    <Storyboard>
-                                        <ColorAnimation
-                                            Storyboard.TargetName="ForegroundBrush"
-                                            Storyboard.TargetProperty="Color"
-                                            To="{Binding NormalForeground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                            Duration="0" />
-                                        <ColorAnimation
-                                            Storyboard.TargetName="BackgroundBrush"
-                                            Storyboard.TargetProperty="Color"
-                                            To="{Binding NormalBackground, RelativeSource = {RelativeSource TemplatedParent}, Mode = OneWay}"
-                                            Duration="0" />
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="Normal" />
 
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
