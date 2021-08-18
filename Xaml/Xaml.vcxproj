@@ -71,6 +71,10 @@
       <DependentUpon>Converters\ContrastBrushConverter.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="Converters\ThicknessFilterConverter.cpp">
+      <DependentUpon>Converters\ThicknessFilterConverter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="Models\FluentColorPalette.cpp">
       <DependentUpon>Models\FluentColorPalette.idl</DependentUpon>
       <SubType>Code</SubType>
@@ -179,6 +183,10 @@
       <DependentUpon>Converters\ContrastBrushConverter.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="Converters\ThicknessFilterConverter.h">
+      <DependentUpon>Converters\ThicknessFilterConverter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="dependencyproperty.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="factory.h" />
@@ -250,6 +258,12 @@
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Converters\ContrastBrushConverter.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Converters\ThicknessFilterConverter.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\ThicknessFilterKind.idl">
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Models\FluentColorPalette.idl">

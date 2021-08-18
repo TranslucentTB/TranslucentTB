@@ -62,6 +62,8 @@
     <Midl Include="Converters\ColorToDisplayNameConverter.idl" />
     <Midl Include="RelativeAncestor.idl" />
     <Midl Include="Models\FluentColorPalette.idl" />
+    <Midl Include="Converters\ThicknessFilterConverter.idl" />
+    <Midl Include="Models\Primitives\ThicknessFilterKind.idl" />
     <Midl Include="Controls\ConstrainedBox.idl" />
   </ItemGroup>
 </Project>
