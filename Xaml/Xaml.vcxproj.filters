@@ -56,8 +56,10 @@
     <Midl Include="Models\Primitives\HsvColor.idl" />
     <Midl Include="Models\Primitives\ColorRepresentation.idl" />
     <Midl Include="Controls\ChromeButton.idl" />
+    <Midl Include="Models\Primitives\IColorPalette.idl" />
     <Midl Include="Controls\UniformGrid.idl" />
     <Midl Include="RelativeAncestor.idl" />
+    <Midl Include="Models\FluentColorPalette.idl" />
     <Midl Include="Controls\ConstrainedBox.idl" />
   </ItemGroup>
 </Project>

@@ -63,6 +63,10 @@
       <DependentUpon>Controls\UniformGrid.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="Models\FluentColorPalette.cpp">
+      <DependentUpon>Models\FluentColorPalette.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="Models\Primitives\OptionalTaskbarAppearance.cpp">
       <DependentUpon>Models\Primitives\OptionalTaskbarAppearance.idl</DependentUpon>
       <SubType>Code</SubType>
@@ -162,6 +166,10 @@
     <ClInclude Include="dependencyproperty.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="factory.h" />
+    <ClInclude Include="Models\FluentColorPalette.h">
+      <DependentUpon>Models\FluentColorPalette.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="Models\Primitives\OptionalTaskbarAppearance.h">
       <DependentUpon>Models\Primitives\OptionalTaskbarAppearance.idl</DependentUpon>
       <SubType>Code</SubType>
@@ -220,6 +228,12 @@
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Controls\UniformGrid.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\FluentColorPalette.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\IColorPalette.idl">
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Models\Primitives\AccentState.idl">
