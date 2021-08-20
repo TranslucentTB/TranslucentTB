@@ -78,7 +78,7 @@ public:
 
 			m_Source = host->source().try_as<IDesktopWindowXamlSourceNative2>();
 
-			std::invoke(std::forward<Callback>(callback), host->content());
+			std::invoke(std::forward<Callback>(callback), host->content(), static_cast<BaseXamlPageHost *>(host.get()));
 
 			m_CurrentWindow = std::move(host);
 

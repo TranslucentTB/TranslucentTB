@@ -114,38 +114,60 @@ void MainAppWindow::TaskbarSettingsChanged(const txmp::TaskbarState &state, cons
 
 void MainAppWindow::ColorRequested(const txmp::TaskbarState &state)
 {
-	auto &appearance = GetConfigForState(state);
-
-	using winrt::TranslucentTB::Xaml::Pages::ColorPickerPage;
-	m_App.CreateXamlWindow<ColorPickerPage>(xaml_startup_position::mouse, [this, &appearance, state](const ColorPickerPage &picker)
+	std::unique_lock lock(m_PickerMutex);
+	auto &pickerHost = m_ColorPickers.at(static_cast<std::size_t>(state));
+	if (!pickerHost)
 	{
-		auto closeRevoker = picker.Closed(winrt::auto_revoke, [this, state]
-		{
-			m_App.DispatchToMainThread([this, state]
-			{
-				m_App.GetWorker().RemoveColorPreview(state);
-			});
-		});
+		auto &appearance = GetConfigForState(state);
 
-		picker.ChangesCommitted([this, state, &appearance, revoker = std::move(closeRevoker)](const winrt::Windows::UI::Color &color) mutable
-		{
-			revoker.revoke(); // we're already doing this.
-
-			m_App.DispatchToMainThread([this, state, color, &appearance]() mutable
+		using winrt::TranslucentTB::Xaml::Pages::ColorPickerPage;
+		m_App.CreateXamlWindow<ColorPickerPage>(xaml_startup_position::mouse,
+			[this, &appearance, &pickerHost, state, inner_lock = std::move(lock)](const ColorPickerPage &picker, BaseXamlPageHost *host) mutable
 			{
-				appearance.Color = color;
-				m_App.GetWorker().RemoveColorPreview(state); // remove color preview implicitly refreshes config
-			});
-		});
+				pickerHost = host;
+				inner_lock.unlock();
 
-		picker.ColorChanged([this, state](const winrt::Windows::UI::Color &color)
-		{
-			m_App.DispatchToMainThread([this, state, color]
-			{
-				m_App.GetWorker().ApplyColorPreview(state, color);
-			});
-		});
-	}, state, appearance.Color);
+				auto closeRevoker = picker.Closed(winrt::auto_revoke, [this, state, &pickerHost]
+				{
+					m_App.DispatchToMainThread([this, state, &pickerHost]() mutable
+					{
+						m_App.GetWorker().RemoveColorPreview(state);
+
+						std::scoped_lock guard(m_PickerMutex);
+						pickerHost = nullptr;
+					});
+				});
+
+				picker.ChangesCommitted([this, state, &appearance, &pickerHost, revoker = std::move(closeRevoker)](const winrt::Windows::UI::Color &color) mutable
+				{
+					revoker.revoke(); // we're already doing this.
+
+					m_App.DispatchToMainThread([this, state, color, &appearance, &pickerHost]() mutable
+					{
+						appearance.Color = color;
+						m_App.GetWorker().RemoveColorPreview(state); // remove color preview implicitly refreshes config
+
+						std::scoped_lock guard(m_PickerMutex);
+						pickerHost = nullptr;
+					});
+				});
+
+				picker.ColorChanged([this, state](const winrt::Windows::UI::Color &color)
+				{
+					m_App.DispatchToMainThread([this, state, color]
+					{
+						m_App.GetWorker().ApplyColorPreview(state, color);
+					});
+				});
+			},
+			state,
+			appearance.Color);
+	}
+	else
+	{
+		SetForegroundWindow(pickerHost->handle());
+		pickerHost->Flash();
+	}
 }
 
 void MainAppWindow::OpenLogFileRequested()

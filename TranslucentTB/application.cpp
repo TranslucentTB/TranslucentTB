@@ -58,7 +58,7 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 	using winrt::TranslucentTB::Xaml::Pages::WelcomePage;
 	CreateXamlWindow<WelcomePage>(
 		xaml_startup_position::center,
-		[this, hasPackageIdentity](const WelcomePage &content)
+		[this, hasPackageIdentity](const WelcomePage &content, BaseXamlPageHost *)
 		{
 			auto closeRevoker = content.Closed(winrt::auto_revoke, [this]
 			{

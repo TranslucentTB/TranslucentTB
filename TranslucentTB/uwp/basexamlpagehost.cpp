@@ -192,17 +192,6 @@ void BaseXamlPageHost::PositionDragRegion(wf::Rect position, wf::Rect buttonsReg
 	}
 }
 
-void BaseXamlPageHost::Flash() noexcept
-{
-	FLASHWINFO fwi = {
-		.cbSize = sizeof(fwi),
-		.hwnd = m_WindowHandle,
-		.dwFlags = FLASHW_ALL | FLASHW_TIMERNOFG
-	};
-
-	FlashWindowEx(&fwi);
-}
-
 bool BaseXamlPageHost::PaintBackground(HDC dc, const RECT &target, winrt::Windows::UI::Color col)
 {
 	if (!m_BackgroundBrush || m_BackgroundColor != col) [[unlikely]]
@@ -250,4 +239,15 @@ BaseXamlPageHost::BaseXamlPageHost(WindowClass &classRef, WindowClass &dragRegio
 			sender.NavigateFocus(request);
 		}
 	});
+}
+
+void BaseXamlPageHost::Flash() noexcept
+{
+	FLASHWINFO fwi = {
+		.cbSize = sizeof(fwi),
+		.hwnd = m_WindowHandle,
+		.dwFlags = FLASHW_ALL | FLASHW_TIMERNOFG
+	};
+
+	FlashWindowEx(&fwi);
 }

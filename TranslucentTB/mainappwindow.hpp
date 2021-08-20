@@ -14,6 +14,8 @@
 #include "config/config.hpp"
 #include "dynamicloader.hpp"
 #include "managers/startupmanager.hpp"
+#include "util/thread_independent_mutex.hpp"
+#include "uwp/basexamlpagehost.hpp"
 
 class Application;
 
@@ -23,6 +25,9 @@ private:
 
 	Application &m_App;
 	bool m_HideIconOverride;
+
+	Util::thread_independent_mutex m_PickerMutex;
+	std::array<BaseXamlPageHost*, 6> m_ColorPickers{};
 
 	page_t::TaskbarSettingsChanged_revoker m_TaskbarSettingsChangedRevoker;
 	page_t::ColorRequested_revoker m_ColorRequestedRevoker;
