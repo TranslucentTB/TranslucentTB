@@ -39,6 +39,7 @@
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <ModuleDefinitionFile>Xaml.def</ModuleDefinitionFile>
       <AppContainer>false</AppContainer>
+      <AdditionalDependencies>ole32.lib;oleaut32.lib;runtimeobject.lib;user32.lib;$(fmtlib)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4197 %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -57,6 +58,10 @@
     </ClCompile>
     <ClCompile Include="Controls\ChromeButton.cpp">
       <DependentUpon>Controls\ChromeButton.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Controls\ColorPicker.cpp">
+      <DependentUpon>Controls\ColorPicker.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="Controls\colorpickerrendering.cpp" />
@@ -158,6 +163,9 @@
     <Page Include="Controls\ChromeButton.xaml">
       <DeploymentContent>true</DeploymentContent>
     </Page>
+    <Page Include="Controls\ColorPicker.xaml">
+      <DeploymentContent>true</DeploymentContent>
+    </Page>
     <Page Include="Controls\ColorPickerSlider.xaml">
       <DeploymentContent>true</DeploymentContent>
     </Page>
@@ -196,6 +204,10 @@
     </ClInclude>
     <ClInclude Include="Controls\ChromeButton.h">
       <DependentUpon>Controls\ChromeButton.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Controls\ColorPicker.h">
+      <DependentUpon>Controls\ColorPicker.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="Controls\ColorPickerSlider.h">
@@ -297,6 +309,9 @@
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Controls\ChromeButton.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Controls\ColorPicker.idl">
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Controls\ColorPickerSlider.idl">

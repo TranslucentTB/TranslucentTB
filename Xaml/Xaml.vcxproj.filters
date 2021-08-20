@@ -41,6 +41,7 @@
     <Page Include="Pages\TrayFlyoutPage.xaml" />
     <Page Include="Themes\Generic.xaml" />
     <Page Include="Controls\ColorPickerSlider.xaml" />
+    <Page Include="Controls\ColorPicker.xaml" />
     <Page Include="Controls\FocusBorderColorSpectrum.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -56,6 +57,7 @@
     <Midl Include="Models\Primitives\TaskbarState.idl" />
     <Midl Include="Models\Primitives\LogLevel.idl" />
     <Midl Include="Models\Primitives\LogSinkState.idl" />
+    <Midl Include="Controls\ColorPicker.idl" />
     <Midl Include="Controls\ColorPickerSlider.idl" />
     <Midl Include="Models\Primitives\ColorChannel.idl" />
     <Midl Include="Models\Primitives\HsvColor.idl" />
