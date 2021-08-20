@@ -1,6 +1,7 @@
 <local:FramelessPage
     x:Class="TranslucentTB.Xaml.Pages.WelcomePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:root="using:TranslucentTB.Xaml"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:TranslucentTB.Xaml.Pages"
     xmlns:controls="using:TranslucentTB.Xaml.Controls"
@@ -19,65 +20,85 @@
             <Setter Property="PressedForeground" Value="White" />
             <Setter Property="PressedBackground" Value="#FF8B0A14" />
         </Style>
+
+        <Color x:Key="InactiveChromeButtonForeground">#D6D6D6</Color>
     </local:FramelessPage.Resources>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-        </Grid.ColumnDefinitions>
+    <!-- Putting all within UserControl makes VSM happy -->
+    <UserControl>
+        <Grid>
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup x:Name="ActivityStates">
+                    <VisualState x:Name="Active" />
+                    <VisualState x:Name="Inactive">
+                        <VisualState.StateTriggers>
+                            <StateTrigger IsActive="{x:Bind root:FunctionalConverters.InvertedBool(IsActive), Mode = OneWay}" />
+                        </VisualState.StateTriggers>
 
-        <RelativePanel x:Name="TitleRegion" Grid.ColumnSpan="2" Height="152" Margin="0,0,0,12">
-            <RelativePanel.Background>
-                <ImageBrush ImageSource="ms-appx:///Assets/SplashScreen.png" Stretch="Fill" />
-            </RelativePanel.Background>
-            <Border RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True">
-                <Border.Background>
-                    <AcrylicBrush BackgroundSource="Backdrop" TintColor="White" TintOpacity="0" FallbackColor="#66FFFFFF" />
-                </Border.Background>
-                <Border BorderThickness="0,2,0,0" BorderBrush="#22FFFFFF" Padding="12">
-                    <TextBlock Style="{ThemeResource SubheaderTextBlockStyle}" Text="{x:Bind Title}" Foreground="White" TextLineBounds="Tight" />
+                        <VisualState.Setters>
+                            <Setter Target="HeaderTitleTextBlock.Foreground" Value="{ThemeResource InactiveChromeButtonForeground}" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+            
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <RelativePanel x:Name="TitleRegion" Grid.ColumnSpan="2" Height="152" Margin="0,0,0,12">
+                <RelativePanel.Background>
+                    <ImageBrush ImageSource="ms-appx:///Assets/SplashScreen.png" Stretch="Fill" />
+                </RelativePanel.Background>
+                <Border RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True">
+                    <Border.Background>
+                        <AcrylicBrush BackgroundSource="Backdrop" TintColor="White" TintOpacity="0" FallbackColor="#66FFFFFF" />
+                    </Border.Background>
+                    <Border BorderThickness="0,2,0,0" BorderBrush="#22FFFFFF" Padding="12">
+                        <TextBlock x:Name="HeaderTitleTextBlock" Style="{ThemeResource TitleTextBlockStyle}" Text="{x:Bind Title}" Foreground="White" TextLineBounds="Tight" />
+                    </Border>
                 </Border>
-            </Border>
-        </RelativePanel>
+            </RelativePanel>
 
-        <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Vertical" Spacing="12" Margin="12,0">
-            <TextBlock TextWrapping="WrapWholeWords">
-                By default, TranslucentTB darkens the taskbar a bit when there is a maximised window.
-                You can alter this behavior, and many other settings, by editing the configuration file now or by using the tray icon (which will appear after pressing "Continue").
-            </TextBlock>
+            <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Vertical" Spacing="12" Margin="12,0">
+                <TextBlock TextWrapping="WrapWholeWords">
+                    By default, TranslucentTB darkens the taskbar a bit when there is a maximised window.
+                    You can alter this behavior, and many other settings, by editing the configuration file now or by using the tray icon (which will appear after pressing "Continue").
+                </TextBlock>
 
-            <controls:ActionList>
-                <models:Action
-                    Name="Donate to the project on Liberapay"
-                    Click="OpenLiberapayLink"
-                    Description="Show us your support by offering a single-time or recurring donation">
-                    <PathIcon Data="{StaticResource LiberapayLogo}" />
-                </models:Action>
-                <models:Action
-                    Name="Join our Discord server"
-                    Click="OpenDiscordLink"
-                    Description="Chat with the developers and get technical assistance with the program">
-                    <PathIcon Data="{StaticResource DiscordLogo}" />
-                </models:Action>
-                <models:Action
-                    Name="Edit the configuration file"
-                    Click="EditConfigFile"
-                    Description="You can always do this by clicking 'Advanced > Edit settings' in the tray icon's context menu&#10;Changes are automatically reloaded when you save the file">
-                    <PathIcon Data="{StaticResource EditIcon}" />
-                </models:Action>
-            </controls:ActionList>
-        </StackPanel>
+                <controls:ActionList>
+                    <models:Action
+                        Name="Donate to the project on Liberapay"
+                        Click="OpenLiberapayLink"
+                        Description="Show us your support by offering a single-time or recurring donation">
+                        <PathIcon Data="{StaticResource LiberapayLogo}" />
+                    </models:Action>
+                    <models:Action
+                        Name="Join our Discord server"
+                        Click="OpenDiscordLink"
+                        Description="Chat with the developers and get technical assistance with the program">
+                        <PathIcon Data="{StaticResource DiscordLogo}" />
+                    </models:Action>
+                    <models:Action
+                        Name="Edit the configuration file"
+                        Click="EditConfigFile"
+                        Description="You can always do this by clicking 'Advanced > Edit settings' in the tray icon's context menu&#10;Changes are automatically reloaded when you save the file">
+                        <PathIcon Data="{StaticResource EditIcon}" />
+                    </models:Action>
+                </controls:ActionList>
+            </StackPanel>
 
-        <CheckBox x:Name="StartupCheckbox" Grid.Row="2" Content="Automatically start TranslucentTB at system bootup" IsChecked="True" Margin="12" />
-        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="12" Margin="12">
-            <Button Width="100" Style="{ThemeResource AccentButtonStyle}" Click="AgreeButtonClicked">Continue</Button>
-            <Button Width="100" Click="DisagreeButtonClicked">Exit</Button>
-        </StackPanel>
-    </Grid>
+            <CheckBox x:Name="StartupCheckbox" Grid.Row="2" Content="Automatically start TranslucentTB at system bootup" IsChecked="True" Margin="12" />
+            <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="12" Margin="12">
+                <Button Width="100" Style="{ThemeResource AccentButtonStyle}" Click="AgreeButtonClicked">Continue</Button>
+                <Button Width="100" Click="DisagreeButtonClicked">Exit</Button>
+            </StackPanel>
+        </Grid>
+    </UserControl>
 </local:FramelessPage>

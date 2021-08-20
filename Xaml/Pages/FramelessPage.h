@@ -33,6 +33,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		DECL_DEPENDENCY_PROPERTY_WITH_DEFAULT(bool, ExpandIntoTitlebar, box_value(false));
 		DECL_DEPENDENCY_PROPERTY_WITH_DEFAULT(bool, IsClosable, box_value(true));
 		DECL_DEPENDENCY_PROPERTY_WITH_DEFAULT(bool, AlwaysOnTop, box_value(false));
+		DECL_DEPENDENCY_PROPERTY_WITH_DEFAULT(bool, IsActive, box_value(true));
 
 		wfc::IObservableVector<Controls::ChromeButton> TitlebarContent() noexcept
 		{

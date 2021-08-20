@@ -28,6 +28,22 @@
 
     <!-- This relies on the order of controls, be careful -->
     <RelativePanel x:DefaultBindMode="OneWay">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="ActivityStates">
+                <VisualState x:Name="Active" />
+                <VisualState x:Name="Inactive">
+                    <VisualState.StateTriggers>
+                        <StateTrigger IsActive="{x:Bind root:FunctionalConverters.InvertedBool(IsActive)}" />
+                    </VisualState.StateTriggers>
+
+                    <VisualState.Setters>
+                        <Setter Target="CloseButton.NormalForeground" Value="{ThemeResource InactiveChromeButtonForeground}" />
+                        <Setter Target="TitleTextBlock.Foreground" Value="{ThemeResource InactiveChromeButtonForeground}" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        
         <ContentPresenter
             x:Name="Content"
             Content="{x:Bind UserContent}"
@@ -43,6 +59,7 @@
             RelativePanel.AlignLeftWithPanel="True"
             RelativePanel.AlignRightWithPanel="True" />
         <TextBlock
+            x:Name="TitleTextBlock"
             Text="{x:Bind Title}"
             FontSize="12"
             Padding="9,0"

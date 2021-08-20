@@ -46,6 +46,13 @@ private:
 	{
 		switch (uMsg)
 		{
+		case WM_ACTIVATE:
+			if (m_content)
+			{
+				m_content.IsActive(wParam != WA_INACTIVE);
+			}
+			break;
+
 		case WM_SYSCOMMAND:
 			if (wParam == SC_CLOSE)
 			{
