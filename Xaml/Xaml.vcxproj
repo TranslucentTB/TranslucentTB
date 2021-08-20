@@ -59,6 +59,7 @@
       <DependentUpon>Controls\ChromeButton.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="Controls\colorpickerrendering.cpp" />
     <ClCompile Include="Controls\ConstrainedBox.cpp">
       <DependentUpon>Controls\ConstrainedBox.idl</DependentUpon>
       <SubType>Code</SubType>
@@ -241,6 +242,7 @@
       <DependentUpon>Pages\ColorPickerPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="Controls\colorpickerrendering.hpp" />
     <ClInclude Include="Pages\FramelessPage.h">
       <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>
       <SubType>Code</SubType>

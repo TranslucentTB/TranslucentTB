@@ -14,6 +14,7 @@
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="Controls\colorpickerrendering.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Xaml.def">
@@ -29,6 +30,7 @@
     <ClInclude Include="factory.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="property.h" />
+    <ClInclude Include="Controls\colorpickerrendering.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Pages\WelcomePage.xaml" />
