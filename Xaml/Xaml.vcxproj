@@ -51,6 +51,10 @@
       <DependentUpon>Controls\ActionList.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="Controls\Case.cpp">
+      <DependentUpon>Controls\Case.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="Controls\ChromeButton.cpp">
       <DependentUpon>Controls\ChromeButton.idl</DependentUpon>
       <SubType>Code</SubType>
@@ -61,6 +65,10 @@
     </ClCompile>
     <ClCompile Include="Controls\FocusBorderColorSpectrum.cpp">
       <DependentUpon>Controls\FocusBorderColorSpectrum.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Controls\SwitchPresenter.cpp">
+      <DependentUpon>Controls\SwitchPresenter.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="Controls\UniformGrid.cpp">
@@ -174,6 +182,10 @@
       <DependentUpon>Controls\ActionList.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="Controls\Case.h">
+      <DependentUpon>Controls\Case.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="Controls\ChromeButton.h">
       <DependentUpon>Controls\ChromeButton.idl</DependentUpon>
       <SubType>Code</SubType>
@@ -184,6 +196,10 @@
     </ClInclude>
     <ClInclude Include="Controls\FocusBorderColorSpectrum.h">
       <DependentUpon>Controls\FocusBorderColorSpectrum.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Controls\SwitchPresenter.h">
+      <DependentUpon>Controls\SwitchPresenter.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="Controls\UniformGrid.h">
@@ -264,6 +280,9 @@
       <DependentUpon>Controls\ActionList.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
+    <Midl Include="Controls\Case.idl">
+      <SubType>Designer</SubType>
+    </Midl>
     <Midl Include="Controls\ChromeButton.idl">
       <SubType>Designer</SubType>
     </Midl>
@@ -271,6 +290,9 @@
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Controls\FocusBorderColorSpectrum.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Controls\SwitchPresenter.idl">
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Controls\UniformGrid.idl">

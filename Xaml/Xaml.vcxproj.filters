@@ -63,6 +63,8 @@
     <Midl Include="Converters\ColorToColorShadeConverter.idl" />
     <Midl Include="Converters\ColorToDisplayNameConverter.idl" />
     <Midl Include="RelativeAncestor.idl" />
+    <Midl Include="Controls\SwitchPresenter.idl" />
+    <Midl Include="Controls\Case.idl" />
     <Midl Include="Models\FluentColorPalette.idl" />
     <Midl Include="Converters\ThicknessFilterConverter.idl" />
     <Midl Include="Models\Primitives\ThicknessFilterKind.idl" />
