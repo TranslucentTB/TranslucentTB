@@ -60,6 +60,10 @@
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="Controls\colorpickerrendering.cpp" />
+    <ClCompile Include="Controls\ColorPickerSlider.cpp">
+      <DependentUpon>Controls\ColorPickerSlider.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="Controls\ConstrainedBox.cpp">
       <DependentUpon>Controls\ConstrainedBox.idl</DependentUpon>
       <SubType>Code</SubType>
@@ -154,6 +158,9 @@
     <Page Include="Controls\ChromeButton.xaml">
       <DeploymentContent>true</DeploymentContent>
     </Page>
+    <Page Include="Controls\ColorPickerSlider.xaml">
+      <DeploymentContent>true</DeploymentContent>
+    </Page>
     <Page Include="Controls\FocusBorderColorSpectrum.xaml">
       <DeploymentContent>true</DeploymentContent>
     </Page>
@@ -189,6 +196,10 @@
     </ClInclude>
     <ClInclude Include="Controls\ChromeButton.h">
       <DependentUpon>Controls\ChromeButton.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Controls\ColorPickerSlider.h">
+      <DependentUpon>Controls\ColorPickerSlider.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="Controls\ConstrainedBox.h">
@@ -286,6 +297,9 @@
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Controls\ChromeButton.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Controls\ColorPickerSlider.idl">
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Controls\ConstrainedBox.idl">

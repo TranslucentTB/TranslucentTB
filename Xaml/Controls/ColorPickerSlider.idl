@@ -1,0 +1,23 @@
+#include "..\dependencyproperty.h"
+
+import "Models/Primitives/ColorChannel.idl";
+import "Models/Primitives/ColorRepresentation.idl";
+import "Models/Primitives/HsvColor.idl";
+
+namespace TranslucentTB.Xaml.Controls
+{
+	runtimeclass ColorPickerSlider : Windows.UI.Xaml.Controls.Slider
+	{
+		ColorPickerSlider();
+		void UpdateColors();
+
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Color, Color);
+		DECL_DEPENDENCY_PROPERTY(TranslucentTB.Xaml.Models.Primitives.ColorChannel, ColorChannel);
+		DECL_DEPENDENCY_PROPERTY(TranslucentTB.Xaml.Models.Primitives.ColorRepresentation, ColorRepresentation);
+		DECL_DEPENDENCY_PROPERTY(TranslucentTB.Xaml.Models.Primitives.HsvColor, HsvColor);
+		DECL_DEPENDENCY_PROPERTY(Boolean, IsAlphaMaxForced);
+		DECL_DEPENDENCY_PROPERTY(Boolean, IsAutoUpdatingEnabled);
+		DECL_DEPENDENCY_PROPERTY(Boolean, IsSaturationValueMaxForced);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Color, CheckerBackgroundColor);
+	}
+}
