@@ -44,7 +44,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 			{
 				// Only bother clearing our actual content if we had something before.
 				Content(nullptr);
-				CurrentCase(nullptr);
+				SetValue(CurrentCaseProperty(), nullptr);
 			}
 
 			return;
@@ -91,7 +91,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 		{
 			// If we don't have any cases or default, setting these to null is what we want to be blank again.
 			Content(newcase ? newcase.Content() : nullptr);
-			CurrentCase(newcase);
+			SetValue(CurrentCaseProperty(), newcase);
 		}
 	}
 

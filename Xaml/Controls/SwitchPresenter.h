@@ -13,10 +13,22 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 		// make DECL_DEPENDENCY_PROPERTY_WITH_METADATA below work
 		static void OnValueChanged(const IInspectable &sender, const wux::DependencyPropertyChangedEventArgs &args);
 
+		// This one manually implemented to not expose the setter
+		DECL_DEPENDENCY_PROPERTY_FIELD(Controls::Case, CurrentCase, nullptr);
+
 	public:
 		SwitchPresenter();
 
-		DECL_DEPENDENCY_PROPERTY(Controls::Case, CurrentCase);
+		static wux::DependencyProperty CurrentCaseProperty() noexcept
+		{
+			return DEPENDENCY_PROPERTY_FIELD(CurrentCase);
+		}
+
+		Controls::Case CurrentCase()
+		{
+			return GetValue(DEPENDENCY_PROPERTY_FIELD(CurrentCase)).as<Controls::Case>();
+		}
+
 		DECL_DEPENDENCY_PROPERTY_WITH_METADATA(IInspectable, Value, wux::PropertyMetadata(nullptr, OnValueChanged));
 
 		wfc::IObservableVector<Controls::Case> SwitchCases() noexcept
@@ -30,7 +42,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 
 	private:
 		void EvaluateCases();
-		
+
 		void OnCasesChanged(const wfc::IObservableVector<Controls::Case> &sender, const wfc::IVectorChangedEventArgs &event);
 		event_token m_CasesChangedToken;
 		wfc::IObservableVector<Controls::Case> m_Cases = single_threaded_observable_vector<Controls::Case>();

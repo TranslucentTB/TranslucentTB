@@ -9,7 +9,11 @@ namespace TranslucentTB.Xaml.Controls
 	{
 		SwitchPresenter();
 
-		DECL_DEPENDENCY_PROPERTY(Case, CurrentCase);
+		Case CurrentCase { get; };
+
+		[noexcept]
+		static Windows.UI.Xaml.DependencyProperty CurrentCaseProperty { get; };
+
 		DECL_DEPENDENCY_PROPERTY(Object, Value);
 
 		[noexcept]
