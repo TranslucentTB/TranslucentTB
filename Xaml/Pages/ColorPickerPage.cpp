@@ -73,7 +73,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		m_DialogOpened = false;
 	}
 
-	void ColorPickerPage::PickerColorChanged(const wuxc::ColorPicker &, const wuxc::ColorChangedEventArgs &args)
+	void ColorPickerPage::PickerColorChanged(const muxc::ColorPicker &, const muxc::ColorChangedEventArgs &args)
 	{
 		m_ColorChangedHandler(args.NewColor());
 	}
@@ -97,23 +97,19 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 	fire_and_forget ColorPickerPage::OpenConfirmDialog()
 	{
-		// dialog is lazily loaded via x:Load to workaround https://github.com/microsoft/microsoft-ui-xaml/issues/5596
-		if (const auto dialog = FindName(L"ConfirmCloseDialog").try_as<wuxc::ContentDialog>())
+		const auto self_weak = get_weak();
+		const auto result = co_await ConfirmCloseDialog().ShowAsync();
+
+		if (const auto self = self_weak.get())
 		{
-			const auto self_weak = get_weak();
-			const auto result = co_await dialog.ShowAsync();
-
-			if (const auto self = self_weak.get())
+			if (result != wuxc::ContentDialogResult::None)
 			{
-				if (result != wuxc::ContentDialogResult::None)
+				if (result == wuxc::ContentDialogResult::Primary)
 				{
-					if (result == wuxc::ContentDialogResult::Primary)
-					{
-						self->m_ChangesCommittedHandler(self->Picker().Color());
-					}
-
-					self->Close();
+					self->m_ChangesCommittedHandler(self->Picker().Color());
 				}
+
+				self->Close();
 			}
 		}
 	}

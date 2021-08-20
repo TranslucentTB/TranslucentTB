@@ -25,7 +25,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void DialogOpened(const IInspectable &sender, const wuxc::ContentDialogOpenedEventArgs &args) noexcept;
 		void DialogClosed(const IInspectable &sender, const wuxc::ContentDialogClosedEventArgs &args) noexcept;
 
-		void PickerColorChanged(const wuxc::ColorPicker &sender, const wuxc::ColorChangedEventArgs &args);
+		void PickerColorChanged(const muxc::ColorPicker &sender, const muxc::ColorChangedEventArgs &args);
 
 	private:
 		static std::wstring_view GetTextForState(txmp::TaskbarState state);
