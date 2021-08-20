@@ -67,6 +67,10 @@
       <DependentUpon>Controls\UniformGrid.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="Converters\ColorToColorShadeConverter.cpp">
+      <DependentUpon>Converters\ColorToColorShadeConverter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="Converters\ColorToDisplayNameConverter.cpp">
       <DependentUpon>Converters\ColorToDisplayNameConverter.idl</DependentUpon>
       <SubType>Code</SubType>
@@ -186,6 +190,10 @@
       <DependentUpon>Controls\UniformGrid.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="Converters\ColorToColorShadeConverter.h">
+      <DependentUpon>Converters\ColorToColorShadeConverter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="Converters\ColorToDisplayNameConverter.h">
       <DependentUpon>Converters\ColorToDisplayNameConverter.idl</DependentUpon>
       <SubType>Code</SubType>
@@ -266,6 +274,9 @@
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Controls\UniformGrid.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Converters\ColorToColorShadeConverter.idl">
       <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Converters\ColorToDisplayNameConverter.idl">
