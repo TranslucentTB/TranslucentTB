@@ -44,10 +44,16 @@ void ConfigManager::WatcherCallback(void *context, DWORD, std::wstring_view file
 	{
 		const auto that = static_cast<ConfigManager *>(context);
 
-		that->Load();
-		that->UpdateVerbosity();
-		that->m_Callback(that->m_Context);
+		if (!that->ScheduleReload())
+		{
+			that->Reload();
+		}
 	}
+}
+
+void ConfigManager::TimerCallback(void *context, DWORD, DWORD)
+{
+	static_cast<ConfigManager *>(context)->Reload();
 }
 
 bool ConfigManager::TryOpenConfigAsJson() noexcept
@@ -180,14 +186,60 @@ bool ConfigManager::Load()
 	return file || err != ENOENT;
 }
 
+void ConfigManager::Reload()
+{
+	Load();
+	UpdateVerbosity();
+	m_Callback(m_Context);
+}
+
+bool ConfigManager::ScheduleReload()
+{
+	if (m_ReloadTimer)
+	{
+		LARGE_INTEGER waitTime{};
+		// 200 ms, relative to current time. arbitrarily chosen to get a balance
+		// between feeling snappy and not triggering errors due to the various weird
+		// ways editors save files.
+		waitTime.QuadPart = -2000000;
+		if (SetWaitableTimer(m_ReloadTimer.get(), &waitTime, 0, TimerCallback, this, false))
+		{
+			return true;
+		}
+		else
+		{
+			LastErrorHandle(spdlog::level::warn, L"Failed to set waitable timer");
+		}
+	}
+
+	return false;
+}
+
 ConfigManager::ConfigManager(const std::optional<std::filesystem::path> &storageFolder, bool &fileExists, callback_t callback, void *context) :
 	m_ConfigPath(DetermineConfigPath(storageFolder)),
 	m_Watcher(m_ConfigPath.parent_path(), false, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE, WatcherCallback, this),
+	m_ReloadTimer(CreateWaitableTimer(nullptr, true, nullptr)),
 	m_Callback(callback),
 	m_Context(context)
 {
+	if (!m_ReloadTimer)
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to create waitable timer");
+	}
+
 	fileExists = Load();
 	UpdateVerbosity();
+}
+
+ConfigManager::~ConfigManager()
+{
+	if (m_ReloadTimer)
+	{
+		if (!CancelWaitableTimer(m_ReloadTimer.get()))
+		{
+			LastErrorHandle(spdlog::level::info, L"Failed to cancel reload timer");
+		}
+	}
 }
 
 void ConfigManager::UpdateVerbosity()
