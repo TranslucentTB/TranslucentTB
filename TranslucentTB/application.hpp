@@ -6,6 +6,7 @@
 #include <windef.h>
 #include "winrt.hpp"
 #include "undefgetcurrenttime.h"
+#include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.UI.Xaml.Hosting.h>
 #include "redefgetcurrenttime.h"
 #include <winrt/TranslucentTB.Xaml.h>
@@ -45,8 +46,7 @@ class Application final {
 
 	XamlThreadPool m_Xaml;
 
-	void CreateWelcomePage(bool hasPackageIdentity);
-	winrt::fire_and_forget LicenseApprovedCallback(bool hasPackageIdentity, bool startupState);
+	winrt::fire_and_forget CreateWelcomePage(wf::IAsyncOperation<bool> operation);
 	Application(HINSTANCE hInst, std::optional<std::filesystem::path> storageFolder, bool fileExists);
 
 public:
@@ -55,6 +55,9 @@ public:
 	static void OpenDonationPage();
 	static void OpenTipsPage();
 
+#ifdef DO_NOT_USE_GAME_SDK
+	static
+#endif
 	void OpenDiscordServer();
 
 	constexpr ConfigManager &GetConfigManager() noexcept { return m_Config; }

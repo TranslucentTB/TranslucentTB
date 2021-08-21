@@ -7,14 +7,9 @@
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
-	WelcomePage::WelcomePage(bool hasPackageIdentity)
+	WelcomePage::WelcomePage()
 	{
 		InitializeComponent();
-
-		if (!hasPackageIdentity)
-		{
-			StartupCheckbox().Visibility(wux::Visibility::Collapsed);
-		}
 	}
 
 	wf::Rect WelcomePage::DragRegion()
@@ -45,7 +40,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 	void WelcomePage::AgreeButtonClicked(const IInspectable &, const wux::RoutedEventArgs &)
 	{
-		m_LicenseApprovedHandler(StartupCheckbox().IsChecked().Value());
+		m_LicenseApprovedHandler();
 		Close();
 	}
 

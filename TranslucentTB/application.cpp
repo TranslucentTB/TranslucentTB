@@ -53,17 +53,30 @@ void Application::RunDiscordCallbacks()
 }
 #endif
 
-void Application::CreateWelcomePage(bool hasPackageIdentity)
+winrt::fire_and_forget Application::CreateWelcomePage(wf::IAsyncOperation<bool> operation)
 {
+	// done first because the closed callback would otherwise need to await it
+	// and we can only await an IAsyncOperation once.
+	if (operation)
+	{
+		co_await operation;
+		co_await m_Startup.Enable();
+	}
+
 	using winrt::TranslucentTB::Xaml::Pages::WelcomePage;
 	CreateXamlWindow<WelcomePage>(
 		xaml_startup_position::center,
-		[this, hasPackageIdentity](const WelcomePage &content, BaseXamlPageHost *)
+		[this, hasStartup = operation != nullptr](const WelcomePage &content, BaseXamlPageHost *)
 		{
-			auto closeRevoker = content.Closed(winrt::auto_revoke, [this]
+			auto closeRevoker = content.Closed(winrt::auto_revoke, [this, hasStartup]
 			{
-				DispatchToMainThread([this]
+				DispatchToMainThread([this, hasStartup]
 				{
+					if (hasStartup)
+					{
+						m_Startup.Disable();
+					}
+
 					m_Config.DeleteConfigFile();
 					Shutdown(1);
 				});
@@ -71,6 +84,7 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 
 			content.LiberapayOpenRequested(OpenDonationPage);
 
+#ifndef DO_NOT_USE_GAME_SDK
 			content.DiscordJoinRequested([this]
 			{
 				DispatchToMainThread([this]
@@ -78,6 +92,9 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 					OpenDiscordServer();
 				});
 			});
+#else
+			content.DiscordJoinRequested(OpenDiscordServer);
+#endif
 
 			content.ConfigEditRequested([this]
 			{
@@ -87,39 +104,18 @@ void Application::CreateWelcomePage(bool hasPackageIdentity)
 				});
 			});
 
-			content.LicenseApproved([this, hasPackageIdentity, revoker = std::move(closeRevoker)](bool startupState) mutable
+			content.LicenseApproved([this, revoker = std::move(closeRevoker)]() mutable
 			{
 				// remove the close handler because returning from the lambda will make the close event fire.
 				revoker.revoke();
 
-				DispatchToMainThread([this, hasPackageIdentity, startupState]
+				DispatchToMainThread([this]
 				{
-					// This is in a different method because the lambda is freed after the first suspension point,
-					// leading to use-after-free issues. An independent method doesn't have that issue, because
-					// everything is stored in the coroutine frame, which is only freed once the coroutine ends.
-					LicenseApprovedCallback(hasPackageIdentity, startupState);
+					m_Config.SaveConfig(); // create the config file, if not already present
+					m_AppWindow.RemoveHideTrayIconOverride();
 				});
 			});
-		},
-		hasPackageIdentity);
-}
-
-winrt::fire_and_forget Application::LicenseApprovedCallback(bool hasPackageIdentity, bool startupState)
-{
-	if (hasPackageIdentity && co_await m_Startup.AcquireTask())
-	{
-		if (startupState)
-		{
-			co_await m_Startup.Enable();
-		}
-		else
-		{
-			m_Startup.Disable();
-		}
-	}
-
-	m_Config.SaveConfig(); // create the config file, if not already present
-	m_AppWindow.RemoveHideTrayIconOverride();
+		});
 }
 
 Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> storageFolder, bool fileExists) :
@@ -136,13 +132,10 @@ Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> s
 		spam(PreferredAppMode::AllowDark);
 	}
 
+	wf::IAsyncOperation<bool> op = storageFolder ? m_Startup.AcquireTask() : nullptr;
 	if (!fileExists)
 	{
-		CreateWelcomePage(storageFolder.has_value());
-	}
-	else if (storageFolder)
-	{
-		m_Startup.AcquireTask();
+		CreateWelcomePage(std::move(op));
 	}
 }
 

@@ -93,7 +93,6 @@
                 </controls:ActionList>
             </StackPanel>
 
-            <CheckBox x:Name="StartupCheckbox" Grid.Row="2" Content="Automatically start TranslucentTB at system bootup" IsChecked="True" Margin="12" />
             <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="12" Margin="12">
                 <Button Width="100" Style="{ThemeResource AccentButtonStyle}" Click="AgreeButtonClicked">Continue</Button>
                 <Button Width="100" Click="DisagreeButtonClicked">Exit</Button>

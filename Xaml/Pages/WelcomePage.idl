@@ -5,11 +5,11 @@ namespace TranslucentTB.Xaml.Pages
 	delegate void LiberapayOpenDelegate();
 	delegate void DiscordJoinDelegate();
 	delegate void ConfigEditDelegate();
-	delegate void LicenseApprovedDelegate(Boolean startupState);
+	delegate void LicenseApprovedDelegate();
 
 	runtimeclass WelcomePage : FramelessPage
 	{
-		WelcomePage(Boolean hasPackageIdentity);
+		WelcomePage();
 
 		event LiberapayOpenDelegate LiberapayOpenRequested;
 		event DiscordJoinDelegate DiscordJoinRequested;

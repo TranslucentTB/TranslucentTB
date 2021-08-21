@@ -10,7 +10,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	struct WelcomePage : WelcomePageT<WelcomePage>
 	{
-		WelcomePage(bool hasPackageIdentity);
+		WelcomePage();
 
 		wf::Rect DragRegion() override;
 
