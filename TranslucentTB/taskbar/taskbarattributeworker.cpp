@@ -231,6 +231,22 @@ LRESULT TaskbarAttributeWorker::OnRequestAttributeRefresh(LPARAM lParam)
 	return 0;
 }
 
+LRESULT TaskbarAttributeWorker::OnTaskbarCreated()
+{
+	const auto now = std::chrono::steady_clock::now();
+	if (now > m_LastExplorerRestart + std::chrono::seconds(30))
+	{
+		m_LastExplorerRestart = now;
+		MessagePrint(spdlog::level::debug, L"Main taskbar got created, refreshing...");
+		ResetState();
+		return 0;
+	}
+	else
+	{
+		MessagePrint(spdlog::level::err, L"Windows Explorer restarted twice in the last 30 seconds! This may be a conflict between TranslucentTB and other shell customization software, or a Windows Update. To avoid further issues, TranslucentTB will now exit.");
+	}
+}
+
 LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_SETTINGCHANGE)
@@ -254,9 +270,7 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 	}
 	else if (uMsg == m_TaskbarCreatedMessage)
 	{
-		MessagePrint(spdlog::level::debug, L"Main taskbar got created, refreshing...");
-		ResetState();
-		return 0;
+		return OnTaskbarCreated();
 	}
 	else if (uMsg == m_RefreshRequestedMessage && !m_disableAttributeRefreshReply)
 	{
@@ -675,15 +689,16 @@ void TaskbarAttributeWorker::UnregisterSearchCallbacks() noexcept
 {
 	if (m_SearchManager)
 	{
+		// workaround https://github.com/microsoft/cppwinrt/issues/1003
 		if (m_SuggestionsShownToken)
 		{
-			m_SearchManager.SuggestionsShown(m_SuggestionsShownToken);
+			(*reinterpret_cast<winrt::impl::abi_t<decltype(m_SearchManager)>**>(&m_SearchManager))->remove_SuggestionsShown(m_SuggestionsShownToken);
 			m_SuggestionsShownToken = { };
 		}
 
 		if (m_SuggestionsHiddenToken)
 		{
-			m_SearchManager.SuggestionsHidden(m_SuggestionsHiddenToken);
+			(*reinterpret_cast<winrt::impl::abi_t<decltype(m_SearchManager)>**>(&m_SearchManager))->remove_SuggestionsHidden(m_SuggestionsHiddenToken);
 			m_SuggestionsHiddenToken = { };
 		}
 	}

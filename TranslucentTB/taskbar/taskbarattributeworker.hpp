@@ -1,6 +1,7 @@
 #pragma once
 #include "arch.h"
 #include <array>
+#include <chrono>
 #include <member_thunk/page.hpp>
 #include <optional>
 #include <ShObjIdl.h>
@@ -95,6 +96,9 @@ private:
 	std::optional<UINT> m_StartVisibilityChangeMessage;
 	std::optional<UINT> m_SearchVisibilityChangeMessage;
 
+	// Explorer crash detection
+	std::chrono::steady_clock::time_point m_LastExplorerRestart;
+
 	// Type aliases
 	using taskbar_iterator = std::unordered_map<HMONITOR, MonitorInfo>::iterator;
 
@@ -111,6 +115,7 @@ private:
 	LRESULT OnSystemSettingsChange(UINT uiAction, std::wstring_view changedParameter);
 	LRESULT OnPowerBroadcast(const POWERBROADCAST_SETTING *settings);
 	LRESULT OnRequestAttributeRefresh(LPARAM lParam);
+	LRESULT OnTaskbarCreated();
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	// Config
