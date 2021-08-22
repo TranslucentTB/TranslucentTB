@@ -54,6 +54,8 @@
     <fmtlib Condition="'$(Configuration)'=='Release'">fmt.lib</fmtlib>
     <fmtlib Condition="'$(Configuration)'=='Debug'">fmtd.lib</fmtlib>
 
+    <!-- Don't use the Game SDK for now because it causes a crash when Discord exits while we are running. -->
+    <UsingGameSDK>false</UsingGameSDK>
     <UsingGameSDK Condition="'$(UsingGameSDK)'=='' and '$(Platform)'=='x64'">true</UsingGameSDK>
 
     <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'!=''">/tr $(CertificateTimestampServer) /td sha256</SignToolAdditionalArguments>
