@@ -243,7 +243,7 @@ LRESULT TaskbarAttributeWorker::OnTaskbarCreated()
 	}
 	else
 	{
-		MessagePrint(spdlog::level::err, L"Windows Explorer restarted twice in the last 30 seconds! This may be a conflict between TranslucentTB and other shell customization software, or a Windows Update. To avoid further issues, TranslucentTB will now exit.");
+		MessagePrint(spdlog::level::critical, L"Windows Explorer restarted twice in the last 30 seconds! This may be a conflict between TranslucentTB and other shell customization software, or a Windows Update. To avoid further issues, TranslucentTB will now exit.");
 	}
 }
 

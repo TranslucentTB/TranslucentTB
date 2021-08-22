@@ -6,11 +6,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxcWindows11Present="using:Microsoft.UI.Xaml.Controls?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 14)"
-    xmlns:windows11NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract, 14)"
     mc:Ignorable="d"
-    muxcWindows11Present:BackdropMaterial.ApplyToRootOrPageBackground="True"
-    windows11NotPresent:Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
+    Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
 
     <FlyoutBase.AttachedFlyout>
         <MenuFlyout x:Name="SystemMenu" Opening="SystemMenuOpening">
@@ -43,7 +40,7 @@
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
-        
+
         <ContentPresenter
             x:Name="Content"
             Content="{x:Bind UserContent}"
