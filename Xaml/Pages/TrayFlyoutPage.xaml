@@ -7,6 +7,7 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:root="using:TranslucentTB.Xaml"
     xmlns:primitives="using:TranslucentTB.Xaml.Models.Primitives"
+    xmlns:windows11NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract, 14)"
     mc:Ignorable="d" x:DefaultBindMode="OneWay">
     <ToolTipService.ToolTip>
         <ToolTip>TranslucentTB</ToolTip>
@@ -22,7 +23,7 @@
                         <FontIcon Glyph="&#xE790;" />
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
-                <ToggleMenuFlyoutItem Tag="ShowPeek" Text="Show Desktop Peek Button" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <windows11NotPresent:ToggleMenuFlyoutItem Tag="ShowPeek" Text="Show Desktop Peek Button" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem Text="Normal" GroupName="DesktopCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -60,7 +61,7 @@
                         <FontIcon Glyph="&#xE790;" />
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
-                <ToggleMenuFlyoutItem Tag="ShowPeek" Text="Show Desktop Peek Button" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <windows11NotPresent:ToggleMenuFlyoutItem Tag="ShowPeek" Text="Show Desktop Peek Button" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem Text="Normal" GroupName="VisibleCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -98,7 +99,7 @@
                         <FontIcon Glyph="&#xE790;" />
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
-                <ToggleMenuFlyoutItem Tag="ShowPeek" Text="Show Desktop Peek Button" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <windows11NotPresent:ToggleMenuFlyoutItem Tag="ShowPeek" Text="Show Desktop Peek Button" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem Text="Normal" GroupName="MaximizedCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -139,7 +140,7 @@
                         <FontIcon Glyph="&#xE790;" />
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
-                <ToggleMenuFlyoutItem Tag="ShowPeek" Text="Show Desktop Peek Button" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <windows11NotPresent:ToggleMenuFlyoutItem Tag="ShowPeek" Text="Show Desktop Peek Button" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem Text="Normal" GroupName="StartCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -167,7 +168,7 @@
                     </muxc:RadioMenuFlyoutItem.Tag>
                 </muxc:RadioMenuFlyoutItem>
             </MenuFlyoutSubItem>
-            <MenuFlyoutSubItem Text="Search opened" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
+            <windows11NotPresent:MenuFlyoutSubItem Text="Search opened" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
                 <MenuFlyoutSubItem.Tag>
                     <primitives:TaskbarState>SearchOpened</primitives:TaskbarState>
                 </MenuFlyoutSubItem.Tag>
@@ -207,7 +208,7 @@
                         <primitives:AccentState>Acrylic</primitives:AccentState>
                     </muxc:RadioMenuFlyoutItem.Tag>
                 </muxc:RadioMenuFlyoutItem>
-            </MenuFlyoutSubItem>
+            </windows11NotPresent:MenuFlyoutSubItem>
             <MenuFlyoutSubItem Text="Task View opened" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
                 <MenuFlyoutSubItem.Tag>
                     <primitives:TaskbarState>TaskViewOpened</primitives:TaskbarState>
@@ -221,7 +222,7 @@
                         <FontIcon Glyph="&#xE790;" />
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
-                <ToggleMenuFlyoutItem Tag="ShowPeek" Text="Show Desktop Peek Button" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <windows11NotPresent:ToggleMenuFlyoutItem Tag="ShowPeek" Text="Show Desktop Peek Button" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem Text="Normal" GroupName="TaskViewCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -306,7 +307,7 @@
             </MenuFlyoutSubItem>
             <ToggleMenuFlyoutItem x:Name="StartupState" Text="Open at boot" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="StartupClicked" />
             <MenuFlyoutItem Text="Tips and tricks" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="TipsAndTricksClicked" />
-            <MenuFlyoutItem Text="About TranslucentTB" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="AboutClicked" />
+            <!-- <MenuFlyoutItem Text="About TranslucentTB" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="AboutClicked" /> -->
             <MenuFlyoutItem Text="Exit" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ExitClicked" />
         </MenuFlyout>
     </Page.ContextFlyout>

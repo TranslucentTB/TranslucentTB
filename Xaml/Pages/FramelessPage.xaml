@@ -16,7 +16,7 @@
         <MenuFlyout x:Name="SystemMenu" Opening="SystemMenuOpening">
             <MenuFlyoutItem x:Name="CloseMenuItem" Text="Close" IsEnabled="{x:Bind IsClosable, Mode = OneWay}" Click="CloseClicked">
                 <MenuFlyoutItem.Icon>
-                    <FontIcon Glyph="&#xE8BB;" />
+                    <FontIcon Glyph="&#xE711;" />
                 </MenuFlyoutItem.Icon>
                 <MenuFlyoutItem.KeyboardAccelerators>
                     <KeyboardAccelerator Key="F4" Modifiers="Menu" />
