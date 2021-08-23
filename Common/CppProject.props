@@ -58,7 +58,7 @@
     <UsingGameSDK>false</UsingGameSDK>
     <UsingGameSDK Condition="'$(UsingGameSDK)'=='' and '$(Platform)'=='x64'">true</UsingGameSDK>
 
-    <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'!=''">/tr $(CertificateTimestampServer) /td sha256</SignToolAdditionalArguments>
+    <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'!=''">/tr $(CertificateTimestampServer) /td sha512</SignToolAdditionalArguments>
     <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'==''"></SignToolAdditionalArguments>
 
     <VcpkgOSTarget>windows-ttb</VcpkgOSTarget>
@@ -134,8 +134,9 @@
       <PreprocessorDefinitions>SIGNED_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <CustomBuildStep>
-      <Command>signtool.exe sign $(SignToolAdditionalArguments) /fd sha256 /sha1 $(CertificateThumbprint) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>
+      <Command>signtool.exe sign $(SignToolAdditionalArguments) /fd sha512 /sha1 $(CertificateThumbprint) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>
       <Message>Signing $(TargetPath)</Message>
+      <Inputs>$(TargetPath)</Inputs>
       <Outputs>$(OutDir)sign\$(ProjectName)-sign.out</Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
