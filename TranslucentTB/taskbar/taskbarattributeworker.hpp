@@ -38,6 +38,7 @@ private:
 
 	// fixme before release:
 	// - dynamic search on windows 11
+	// - windows 11: start menu opened always thinks it opens on the main monitor, sometimes thinks 0x0
 
 	// future improvements:
 	// - better aero peek support: detect current peeked to window and include in calculation
