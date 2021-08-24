@@ -4,10 +4,41 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{59F844AA-8D3C-431C-B8CC-57682915F551}</ProjectGuid>
     <ConfigurationType>Application</ConfigurationType>
-    <GenerateManifest>false</GenerateManifest>
+    <GenerateManifest>true</GenerateManifest>
     <RootNamespace>TranslucentTB</RootNamespace>
   </PropertyGroup>
   <Import Project="..\Common\CppProject.props" />
+  <PropertyGroup>
+    <BeforeLinkTargets Condition="'$(WindowsTargetPlatformVersion)' &gt;= '10.0.18362.0'">
+      $(BeforeLinkTargets);
+      _UnpackagedWin32GenerateAdditionalWinmdManifests;
+    </BeforeLinkTargets>
+  </PropertyGroup>
+  <Target Name="_UnpackagedWin32MapWinmdsToManifestFiles" DependsOnTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <!-- For each non-system .winmd file in References, generate a .manifest in IntDir for it. -->
+      <_UnpackagedWin32WinmdManifest Include="@(ReferencePath->'$(IntDir)\%(FileName).manifest')" Condition="'%(ReferencePath.IsSystemReference)' != 'true' and '%(ReferencePath.WinMDFile)' == 'true' and '%(ReferencePath.ReferenceSourceTarget)' == 'ResolveAssemblyReference' and '%(ReferencePath.Implementation)' != ''">
+        <WinMDPath>%(ReferencePath.FullPath)</WinMDPath>
+        <Implementation>%(ReferencePath.Implementation)</Implementation>
+      </_UnpackagedWin32WinmdManifest>
+      <!-- For each referenced project that _produces_ a winmd, generate a temporary item that maps to
+           the winmd, and use that temporary item to generate a .manifest in IntDir for it.
+           We don't set Implementation here because it's inherited from the _ResolvedNativeProjectReferencePaths. -->
+      <_UnpackagedWin32WinmdProjectReference Condition="'%(_ResolvedNativeProjectReferencePaths.ProjectType)' != 'StaticLibrary'" Include="@(_ResolvedNativeProjectReferencePaths-&gt;WithMetadataValue('FileType','winmd')-&gt;'%(RootDir)%(Directory)%(TargetPath)')" />
+      <_UnpackagedWin32WinmdManifest Include="@(_UnpackagedWin32WinmdProjectReference->'$(IntDir)\%(FileName).manifest')">
+        <WinMDPath>%(Identity)</WinMDPath>
+      </_UnpackagedWin32WinmdManifest>
+    </ItemGroup>
+  </Target>
+  <Target Name="_UnpackagedWin32GenerateAdditionalWinmdManifests" Inputs="@(_UnpackagedWin32WinmdManifest.WinMDPath)" Outputs="@(_UnpackagedWin32WinmdManifest)" DependsOnTargets="_UnpackagedWin32MapWinmdsToManifestFiles">
+    <Message Text="Generating manifest for %(_UnpackagedWin32WinmdManifest.WinMDPath)" Importance="High" />
+    <!-- This target is batched and a new Exec is spawned for each entry in _UnpackagedWin32WinmdManifest. -->
+    <Exec Command="mt.exe -nologo -winmd:%(_UnpackagedWin32WinmdManifest.WinMDPath) -dll:%(_UnpackagedWin32WinmdManifest.Implementation) -out:%(_UnpackagedWin32WinmdManifest.Identity)" />
+    <ItemGroup>
+      <!-- Emit the generated manifest into the Link inputs. -->
+      <Manifest Include="@(_UnpackagedWin32WinmdManifest)" />
+    </ItemGroup>
+  </Target>
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
       <PreprocessorDefinitions>_TRANSLUCENTTB_EXE;%(PreprocessorDefinitions)</PreprocessorDefinitions>

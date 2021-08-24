@@ -19,11 +19,3 @@ LANGUAGE LANG_INVARIANT, SUBLANG_NEUTRAL
 IDI_MAINICON            ICON                    "TranslucentTB.ico"
 IDI_TRAYWHITEICON       ICON                    "TranslucentTB.white.ico"
 IDI_TRAYBLACKICON       ICON                    "TranslucentTB.black.ico"
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Manifest
-//
-
-CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "TranslucentTB.manifest"

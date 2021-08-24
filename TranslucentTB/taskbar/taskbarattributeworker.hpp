@@ -38,7 +38,6 @@ private:
 
 	// fixme before release:
 	// - dynamic search on windows 11
-	// - close if explorer crashes twice in 30 seconds
 
 	// future improvements:
 	// - better aero peek support: detect current peeked to window and include in calculation

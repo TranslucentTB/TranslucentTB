@@ -4,7 +4,9 @@
   <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
     <application>
       <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" />
-      <maxversiontested Id="10.0.22000.0" />
+      <!-- DO NOT ADVANCE PAST 18362. The OS has a bug where it won't recognize 19041 (or 22000) as bigger. -->
+      <!-- This will cause unpackaged activation failures in XAML Islands. -->
+      <maxversiontested Id="10.0.18362.0"/>
     </application>
   </compatibility>
 
@@ -30,16 +32,5 @@
       <ws2016:longPathAware>true</ws2016:longPathAware>
     </windowsSettings>
   </asmv3:application>
-
-  <file name="Xaml.dll" hashalg="SHA1" xmlns:winrt="urn:schemas-microsoft-com:winrt.v1">
-    <winrt:activatableClass name="TranslucentTB.Xaml.App" threadingModel="both" />
-    <winrt:activatableClass name="TranslucentTB.Xaml.Models.Primitives.OptionalTaskbarAppearance" threadingModel="both" />
-    <winrt:activatableClass name="TranslucentTB.Xaml.Models.Primitives.TaskbarAppearance" threadingModel="both" />
-    <winrt:activatableClass name="TranslucentTB.Xaml.Pages.FramelessPage" threadingModel="both" />
-    <winrt:activatableClass name="TranslucentTB.Xaml.Pages.WelcomePage" threadingModel="both" />
-    <winrt:activatableClass name="TranslucentTB.Xaml.Pages.ColorPickerPage" threadingModel="both" />
-    <winrt:activatableClass name="TranslucentTB.Xaml.Pages.FlyoutPage" threadingModel="both" />
-    <winrt:activatableClass name="TranslucentTB.Xaml.Pages.TrayFlyoutPage" threadingModel="both" />
-  </file>
 
 </assembly>
