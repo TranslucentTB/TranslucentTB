@@ -24,17 +24,20 @@ XamlThread &XamlThreadPool::GetAvailableThread(std::unique_lock<Util::thread_ind
 
 XamlThreadPool::~XamlThreadPool()
 {
-	std::vector<wil::unique_handle> threads;
-	threads.reserve(m_Threads.size());
-
-	for (auto &xamlThread : m_Threads)
+	if (const auto size = m_Threads.size(); size != 0)
 	{
-		threads.push_back(xamlThread->Delete());
-		static_cast<void>(xamlThread.release());
-	}
+		std::vector<wil::unique_handle> threads;
+		threads.reserve(size);
 
-	if (WaitForMultipleObjects(wil::safe_cast<DWORD>(threads.size()), threads.data()->addressof(), true, INFINITE) == WAIT_FAILED)
-	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to wait for thread termination");
+		for (auto &xamlThread : m_Threads)
+		{
+			threads.push_back(xamlThread->Delete());
+			static_cast<void>(xamlThread.release());
+		}
+
+		if (WaitForMultipleObjects(wil::safe_cast<DWORD>(size), threads.data()->addressof(), true, INFINITE) == WAIT_FAILED)
+		{
+			LastErrorHandle(spdlog::level::warn, L"Failed to wait for thread termination");
+		}
 	}
 }
