@@ -61,22 +61,6 @@ void HardenProcess()
 		LastErrorHandle(level, L"Couldn't get current ASLR policy.");
 	}
 
-#ifdef _CONTROL_FLOW_GUARD
-	PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY cfg_policy;
-	if (GetProcessMitigationPolicy(GetCurrentProcess(), ProcessControlFlowGuardPolicy, &cfg_policy, sizeof(cfg_policy)))
-	{
-		cfg_policy.StrictMode = true;
-		if (!SetProcessMitigationPolicy(ProcessControlFlowGuardPolicy, &cfg_policy, sizeof(cfg_policy)))
-		{
-			LastErrorHandle(level, L"Couldn't enable strict Control Flow Guard.");
-		}
-	}
-	else
-	{
-		LastErrorHandle(level, L"Couldn't get current Control Flow Guard policy.");
-	}
-#endif
-
 	PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY extension_policy{};
 	extension_policy.DisableExtensionPoints = true;
 	if (!SetProcessMitigationPolicy(ProcessExtensionPointDisablePolicy, &extension_policy, sizeof(extension_policy)))
