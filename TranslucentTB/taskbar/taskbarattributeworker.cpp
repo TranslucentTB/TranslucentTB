@@ -689,16 +689,15 @@ void TaskbarAttributeWorker::UnregisterSearchCallbacks() noexcept
 {
 	if (m_SearchManager)
 	{
-		// workaround https://github.com/microsoft/cppwinrt/issues/1003
 		if (m_SuggestionsShownToken)
 		{
-			(*reinterpret_cast<winrt::impl::abi_t<decltype(m_SearchManager)>**>(&m_SearchManager))->remove_SuggestionsShown(m_SuggestionsShownToken);
+			m_SearchManager.SuggestionsShown(m_SuggestionsShownToken);
 			m_SuggestionsShownToken = { };
 		}
 
 		if (m_SuggestionsHiddenToken)
 		{
-			(*reinterpret_cast<winrt::impl::abi_t<decltype(m_SearchManager)>**>(&m_SearchManager))->remove_SuggestionsHidden(m_SuggestionsHiddenToken);
+			m_SearchManager.SuggestionsHidden(m_SuggestionsHiddenToken);
 			m_SuggestionsHiddenToken = { };
 		}
 	}
@@ -926,7 +925,10 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 			InsertTaskbar(secondtaskbar.monitor(), secondtaskbar);
 		}
 
-		CreateSearchManager();
+		if (!win32::IsAtLeastBuild(22000))
+		{
+			CreateSearchManager();
+		}
 	}
 	else
 	{
