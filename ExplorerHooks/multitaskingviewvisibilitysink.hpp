@@ -8,12 +8,15 @@
 #include "undoc/explorer.hpp"
 
 class MultitaskingViewVisibilitySink : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, IMultitaskingViewVisibilityNotification> {
+private:
+	UINT m_ChangeMessage;
+
 	void NotifyWorker(bool opened) const noexcept
 	{
 		if (const auto worker = FindWindow(TTB_WORKERWINDOW.c_str(), TTB_WORKERWINDOW.c_str()))
 		{
 			// avoid freezing Explorer if our main process is frozen
-			SendMessageTimeout(worker, TaskViewVisibilityMonitor::s_TaskViewVisibilityChangeMessage, opened, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK | SMTO_ERRORONEXIT, 50, nullptr);
+			SendMessageTimeout(worker, m_ChangeMessage, opened, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK | SMTO_ERRORONEXIT, 50, nullptr);
 		}
 	}
 
@@ -36,4 +39,7 @@ class MultitaskingViewVisibilitySink : public Microsoft::WRL::RuntimeClass<Micro
 
 		return S_OK;
 	}
+
+public:
+	MultitaskingViewVisibilitySink(UINT changeMessage) noexcept : m_ChangeMessage(changeMessage) { }
 };

@@ -8,7 +8,7 @@
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
       <ExceptionHandling>false</ExceptionHandling>
-      <PreprocessorDefinitions>EXPLORERHOOKS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>EXPLORERHOOKS_EXPORTS;WIL_SUPPRESS_EXCEPTIONS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>detours.lib;kernel32.lib;ole32.lib;user32.lib</AdditionalDependencies>
@@ -16,6 +16,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="common.cpp" />
     <ClCompile Include="detourtransaction.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="swcadetour.cpp" />
@@ -23,7 +24,7 @@
     <ClCompile Include="taskviewvisibilitymonitor.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="detourresult.hpp" />
+    <ClInclude Include="common.hpp" />
     <ClInclude Include="detourtransaction.hpp" />
     <ClInclude Include="swcadetour.hpp" />
     <ClInclude Include="explorerhooks.hpp" />

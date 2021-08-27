@@ -1,16 +1,15 @@
-#include "arch.h"
 #include "error.hpp"
-
 #include <debugapi.h>
+#include <intrin.h>
 #include <roerrorapi.h>
 #include <spdlog/spdlog.h>
 #include <string>
 #include <processthreadsapi.h>
 #include <wil/resource.h>
+#include <winnt.h>
 
 #include "../log.hpp"
 #include "std.hpp"
-#include "util/abort.hpp"
 #include "win32.hpp"
 
 bool Error::ShouldLog(spdlog::level::level_enum level)
@@ -107,7 +106,7 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 		}
 	}
 
-	Util::QuickAbort();
+	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
 }
 
 std::thread Error::impl::CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type)

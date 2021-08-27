@@ -4,10 +4,9 @@
 #include <detours/detours.h>
 #include <processthreadsapi.h>
 #include <wil/resource.h>
+#include <wil/result.h>
 #include <wil/win32_helpers.h>
 #include <WinUser.h>
-
-#include "util/abort.hpp"
 
 LRESULT CALLBACK ExplorerHooks::CallWndProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept
 {
@@ -22,10 +21,7 @@ void *ExplorerHooks::FindExplorerPayload() noexcept
 
 void ExplorerHooks::FreeExplorerPayload(void *payload) noexcept
 {
-	if (!DetourFreePayload(payload))
-	{
-		Util::QuickAbort();
-	}
+	FAIL_FAST_IF_WIN32_BOOL_FALSE(DetourFreePayload(payload));
 }
 
 HHOOK ExplorerHooks::Inject(HWND window) noexcept

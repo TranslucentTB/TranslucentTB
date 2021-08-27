@@ -22,14 +22,14 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 		{
 			// Install the things
 			SWCADetour::Install();
-			TaskViewVisibilityMonitor::Install(hinstDLL);
+			TaskViewVisibilityMonitor::Install();
 		}
 		break;
 
 	case DLL_PROCESS_DETACH:
 		if (payload)
 		{
-			TaskViewVisibilityMonitor::Uninstall(hinstDLL);
+			TaskViewVisibilityMonitor::Uninstall();
 			SWCADetour::Uninstall();
 
 			ExplorerHooks::FreeExplorerPayload(payload);

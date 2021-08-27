@@ -1,18 +1,18 @@
 #pragma once
+#include "arch.h"
 #include <memory>
 #include <type_traits>
+#include <windef.h>
+#include <wil/resource.h>
 
-#include "detourresult.hpp"
+#include "common.hpp"
 #include "util/concepts.hpp"
 #include "util/null_terminated_string_view.hpp"
 
 class DetourTransaction {
 private:
-	static constexpr Util::null_terminated_wstring_view NO_PENDING_TRANSACTION = L"No pending transaction exists.";
-	static constexpr Util::null_terminated_wstring_view FUNCTION_TOO_SMALL = L"The function referenced is too small to be detoured.";
-	static constexpr Util::null_terminated_wstring_view OUT_OF_MEMORY = L"Not enough memory exists to complete the operation.";
-	static constexpr Util::null_terminated_wstring_view NULL_POINTER = L"The ppPointer parameter is null or points to a null pointer.";
-	static constexpr Util::null_terminated_wstring_view UNKNOWN_ERROR = L"Unknown error";
+	static void HeapDestroyFailFast(HANDLE hHeap) noexcept;
+	using unique_hheap_failfast = wil::unique_any<HANDLE, decltype(&HeapDestroyFailFast), HeapDestroyFailFast>;
 
 	struct node;
 	struct node_deleter {
@@ -21,41 +21,40 @@ private:
 	using node_ptr = std::unique_ptr<node, node_deleter>;
 
 	struct node {
-		HANDLE thread;
+		unique_handle_failfast thread;
 		node_ptr next;
-
-		~node() noexcept;
 	};
+
+	static unique_hheap_failfast s_Heap;
 
 	node_ptr m_Head;
 	bool m_IsTransacting = false;
 
-	DetourResult attach_internal(void **function, void *detour) noexcept;
-	DetourResult detach_internal(void **function, void *detour) noexcept;
+	void attach_internal(void **function, void *detour) noexcept;
+	void detach_internal(void **function, void *detour) noexcept;
+
+	void update_thread(unique_handle_failfast hThread) noexcept;
 
 public:
-	constexpr DetourTransaction() noexcept = default;
+	DetourTransaction() noexcept;
 
 	DetourTransaction(const DetourTransaction &) = delete;
 	DetourTransaction &operator =(const DetourTransaction &) = delete;
 
-	DetourResult begin() noexcept;
-	DetourResult update_thread(HANDLE hThread) noexcept;
-	DetourResult update_all_threads() noexcept;
-	DetourResult commit() noexcept;
-	DetourResult abort() noexcept;
+	void update_all_threads() noexcept;
+	void commit() noexcept;
 
 	~DetourTransaction() noexcept;
 
 	template<Util::function_pointer T>
-	DetourResult attach(T &function, std::type_identity_t<T> detour) noexcept
+	void attach(T &function, std::type_identity_t<T> detour) noexcept
 	{
-		return attach_internal(reinterpret_cast<void **>(&function), reinterpret_cast<void *>(detour));
+		attach_internal(reinterpret_cast<void **>(&function), reinterpret_cast<void *>(detour));
 	}
 
 	template<Util::function_pointer T>
-	DetourResult detach(T &function, std::type_identity_t<T> detour) noexcept
+	void detach(T &function, std::type_identity_t<T> detour) noexcept
 	{
-		return detach_internal(reinterpret_cast<void **>(&function), reinterpret_cast<void *>(detour));
+		detach_internal(reinterpret_cast<void **>(&function), reinterpret_cast<void *>(detour));
 	}
 };
