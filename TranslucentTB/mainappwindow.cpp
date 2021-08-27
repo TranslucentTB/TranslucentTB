@@ -229,7 +229,7 @@ void MainAppWindow::HideTrayRequested()
 
 void MainAppWindow::ResetDynamicStateRequested()
 {
-	m_App.GetWorker().ResetState();
+	m_App.GetWorker().ResetState(true);
 }
 
 void MainAppWindow::CompactThunkHeapRequested()

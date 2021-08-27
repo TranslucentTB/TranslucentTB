@@ -98,6 +98,7 @@ private:
 
 	// Explorer crash detection
 	std::chrono::steady_clock::time_point m_LastExplorerRestart;
+	DWORD m_LastExplorerPid;
 
 	// Type aliases
 	using taskbar_iterator = std::unordered_map<HMONITOR, MonitorInfo>::iterator;
@@ -115,7 +116,6 @@ private:
 	LRESULT OnSystemSettingsChange(UINT uiAction, std::wstring_view changedParameter);
 	LRESULT OnPowerBroadcast(const POWERBROADCAST_SETTING *settings);
 	LRESULT OnRequestAttributeRefresh(LPARAM lParam);
-	LRESULT OnTaskbarCreated();
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	// Config
@@ -214,7 +214,7 @@ public:
 	}
 
 	void DumpState();
-	void ResetState(bool rehook = true);
+	void ResetState(bool manual = false);
 
 	~TaskbarAttributeWorker() noexcept(false);
 };

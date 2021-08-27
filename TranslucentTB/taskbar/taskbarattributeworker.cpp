@@ -231,22 +231,6 @@ LRESULT TaskbarAttributeWorker::OnRequestAttributeRefresh(LPARAM lParam)
 	return 0;
 }
 
-LRESULT TaskbarAttributeWorker::OnTaskbarCreated()
-{
-	const auto now = std::chrono::steady_clock::now();
-	if (now > m_LastExplorerRestart + std::chrono::seconds(30))
-	{
-		m_LastExplorerRestart = now;
-		MessagePrint(spdlog::level::debug, L"Main taskbar got created, refreshing...");
-		ResetState();
-		return 0;
-	}
-	else
-	{
-		MessagePrint(spdlog::level::critical, L"Windows Explorer restarted twice in the last 30 seconds! This may be a conflict between TranslucentTB and other shell customization software, or a Windows Update. To avoid further issues, TranslucentTB will now exit.");
-	}
-}
-
 LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_SETTINGCHANGE)
@@ -270,7 +254,9 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 	}
 	else if (uMsg == m_TaskbarCreatedMessage)
 	{
-		return OnTaskbarCreated();
+		MessagePrint(spdlog::level::debug, L"Main taskbar got created, refreshing...");
+		ResetState();
+		return 0;
 	}
 	else if (uMsg == m_RefreshRequestedMessage && !m_disableAttributeRefreshReply)
 	{
@@ -814,7 +800,8 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_TaskViewVisibilityChangeMessage(Window::RegisterMessage(WM_TTBHOOKTASKVIEWVISIBILITYCHANGE)),
 	m_IsTaskViewOpenedMessage(Window::RegisterMessage(WM_TTBHOOKISTASKVIEWOPENED)),
 	m_StartVisibilityChangeMessage(Window::RegisterMessage(WM_TTBSTARTVISIBILITYCHANGE)),
-	m_SearchVisibilityChangeMessage(Window::RegisterMessage(WM_TTBSEARCHVISIBILITYCHANGE))
+	m_SearchVisibilityChangeMessage(Window::RegisterMessage(WM_TTBSEARCHVISIBILITYCHANGE)),
+	m_LastExplorerPid(0)
 {
 	const auto stateThunk = CreateThunk(&TaskbarAttributeWorker::OnWindowStateChange);
 	m_ResizeMoveHook = CreateHook(EVENT_OBJECT_LOCATIONCHANGE, stateThunk);
@@ -895,7 +882,7 @@ void TaskbarAttributeWorker::DumpState()
 	MessagePrint(spdlog::level::off, L"===== End TaskbarAttributeWorker state dump =====");
 }
 
-void TaskbarAttributeWorker::ResetState(bool rehook)
+void TaskbarAttributeWorker::ResetState(bool manual)
 {
 	MessagePrint(spdlog::level::debug, L"Resetting worker state");
 
@@ -906,37 +893,44 @@ void TaskbarAttributeWorker::ResetState(bool rehook)
 	m_CurrentStartMonitor = nullptr;
 	m_CurrentSearchMonitor = nullptr;
 
-	if (rehook)
+	m_Taskbars.clear();
+	m_NormalTaskbars.clear();
+
+	// Keep old hooks alive while we rehook to avoid DLL unload.
+	auto oldHooks = std::move(m_Hooks);
+	m_Hooks.clear();
+
+	if (const Window main_taskbar = Window::Find(TASKBAR))
 	{
-		m_Taskbars.clear();
-		m_NormalTaskbars.clear();
-
-		// Keep old hooks alive while we rehook to avoid DLL unload.
-		auto oldHooks = std::move(m_Hooks);
-		m_Hooks.clear();
-
-		if (const Window main_taskbar = Window::Find(TASKBAR))
+		
+		if (!manual)
 		{
-			InsertTaskbar(main_taskbar.monitor(), main_taskbar);
+			const auto pid = main_taskbar.process_id();
+			if (pid != m_LastExplorerPid)
+			{
+				const auto now = std::chrono::steady_clock::now();
+				if (now < m_LastExplorerRestart + std::chrono::seconds(30))
+				{
+					MessagePrint(spdlog::level::critical, L"Windows Explorer restarted twice in the last 30 seconds! This may be a conflict between TranslucentTB and other shell customization software, or a Windows Update. To avoid further issues, TranslucentTB will now exit.");
+				}
+
+				m_LastExplorerRestart = now;
+			}
+
+			m_LastExplorerPid = pid;
 		}
 
-		for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))
-		{
-			InsertTaskbar(secondtaskbar.monitor(), secondtaskbar);
-		}
-
-		if (!win32::IsAtLeastBuild(22000))
-		{
-			CreateSearchManager();
-		}
+		InsertTaskbar(main_taskbar.monitor(), main_taskbar);
 	}
-	else
+
+	for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))
 	{
-		for (auto &[mon, info] : m_Taskbars)
-		{
-			info.MaximisedWindows.clear();
-			info.NormalWindows.clear();
-		}
+		InsertTaskbar(secondtaskbar.monitor(), secondtaskbar);
+	}
+
+	if (!win32::IsAtLeastBuild(22000))
+	{
+		CreateSearchManager();
 	}
 
 	// This might race but it's not an issue because
