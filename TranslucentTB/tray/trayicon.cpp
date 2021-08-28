@@ -3,6 +3,7 @@
 
 #include "appinfo.hpp"
 #include "constants.hpp"
+#include "../localization.hpp"
 #include "../../ProgramLog/error/errno.hpp"
 #include "../../ProgramLog/error/std.hpp"
 #include "../../ProgramLog/error/win32.hpp"
@@ -28,9 +29,9 @@ void TrayIcon::LoadThemedIcon()
 	}
 }
 
-bool TrayIcon::Notify(DWORD message)
+bool TrayIcon::Notify(DWORD message, NOTIFYICONDATA *data)
 {
-	if (Shell_NotifyIcon(message, &m_IconData))
+	if (Shell_NotifyIcon(message, data ? data : &m_IconData))
 	{
 		return true;
 	}
@@ -150,6 +151,22 @@ void TrayIcon::Hide()
 	if (m_CurrentlyShowing && Notify(NIM_DELETE))
 	{
 		m_CurrentlyShowing = false;
+	}
+}
+
+void TrayIcon::SendNotification(uint16_t textResource, DWORD infoFlags)
+{
+	if (m_CurrentlyShowing)
+	{
+		// copy the data because if explorer restarts or the theme/settings change we don't want to re-send the notification
+		auto data = m_IconData;
+		data.uFlags |= NIF_INFO;
+		data.dwInfoFlags = infoFlags;
+		// don't set szInfoTitle, the OS will show the app name already.
+
+		Localization::LoadLocalizedResourceString(textResource, hinstance()).copy(data.szInfo, std::size(data.szInfo));
+
+		Notify(NIM_MODIFY, &data);
 	}
 }
 

@@ -817,7 +817,8 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 
 	CreateAppVisibility();
 
-	ResetState();
+	// we don't want to do consider the first state reset as an Explorer restart.
+	ResetState(true);
 }
 
 void TaskbarAttributeWorker::DumpState()
@@ -902,10 +903,9 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 
 	if (const Window main_taskbar = Window::Find(TASKBAR))
 	{
-		
+		const auto pid = main_taskbar.process_id();
 		if (!manual)
 		{
-			const auto pid = main_taskbar.process_id();
 			if (pid != m_LastExplorerPid)
 			{
 				const auto now = std::chrono::steady_clock::now();
@@ -916,9 +916,9 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 
 				m_LastExplorerRestart = now;
 			}
-
-			m_LastExplorerPid = pid;
 		}
+
+		m_LastExplorerPid = pid;
 
 		InsertTaskbar(main_taskbar.monitor(), main_taskbar);
 	}

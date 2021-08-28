@@ -26,7 +26,7 @@ private:
 	PFN_SHOULD_SYSTEM_USE_DARK_MODE m_Ssudm;
 
 	void LoadThemedIcon();
-	bool Notify(DWORD message);
+	bool Notify(DWORD message, NOTIFYICONDATA *data = nullptr);
 
 protected:
 	static constexpr UINT TRAY_CALLBACK = 0xBEEF;
@@ -48,6 +48,8 @@ public:
 
 	void Show();
 	void Hide();
+
+	void SendNotification(uint16_t textResource, DWORD infoFlags = NIIF_INFO);
 
 	virtual ~TrayIcon() noexcept(false) = 0;
 };

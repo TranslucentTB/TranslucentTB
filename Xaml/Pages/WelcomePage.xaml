@@ -88,7 +88,7 @@
                     <models:Action
                         Name="Edit the configuration file"
                         Click="EditConfigFile"
-                        Description="You can always do this by clicking 'Advanced > Edit settings' in the tray icon's context menu&#10;Changes are automatically reloaded when you save the file"
+                        Description="You can always do this by clicking &quot;Advanced&quot; > &quot;Edit settings&quot; in the tray icon's context menu&#10;Changes are automatically reloaded when you save the file"
                         Icon="Edit" />
                 </controls:ActionList>
             </StackPanel>
