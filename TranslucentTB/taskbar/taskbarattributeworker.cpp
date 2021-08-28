@@ -817,7 +817,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 
 	CreateAppVisibility();
 
-	// we don't want to do consider the first state reset as an Explorer restart.
+	// we don't want to consider the first state reset as an Explorer restart.
 	ResetState(true);
 }
 
@@ -927,6 +927,9 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 	{
 		InsertTaskbar(secondtaskbar.monitor(), secondtaskbar);
 	}
+
+	// drop the old hooks.
+	oldHooks.clear();
 
 	if (!win32::IsAtLeastBuild(22000))
 	{
