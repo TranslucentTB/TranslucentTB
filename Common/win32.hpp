@@ -124,7 +124,7 @@ public:
 		}
 	}
 
-	inline static bool IsAtLeastBuild(uint32_t buildNumber)
+	inline static bool IsAtLeastBuild(uint32_t buildNumber) noexcept
 	{
 		OSVERSIONINFOEX versionInfo = { sizeof(versionInfo), 10, 0, buildNumber };
 

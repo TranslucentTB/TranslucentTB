@@ -68,21 +68,21 @@
 
             <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Vertical" Spacing="12" Margin="12,0">
                 <TextBlock TextWrapping="WrapWholeWords">
-                    By default, TranslucentTB darkens the taskbar a bit when there is a maximised window.
-                    You can alter this behavior, and many other settings, by editing the configuration file now or by using the tray icon (which will appear after pressing "Continue").
+                    Thanks for trying TranslucentTB! After you hit "Continue", you can personalize how the taskbar looks to your desires.
+                    We hope you enjoy it, and feel free to <Hyperlink NavigateUri="https://github.com/TranslucentTB/TranslucentTB/issues/new">open a GitHub issue</Hyperlink> if you have any problem or want to see a feature added!
                 </TextBlock>
 
                 <controls:ActionList>
                     <models:Action
                         Name="Donate to the project on Liberapay"
                         Click="OpenLiberapayLink"
-                        Description="Show us your support by offering a single-time or recurring donation">
+                        Description="Show us your support by offering a single-time or recurring donation&#x2764;&#xFE0F;">
                         <PathIcon Data="{StaticResource LiberapayLogo}" />
                     </models:Action>
                     <models:Action
                         Name="Join our Discord server"
                         Click="OpenDiscordLink"
-                        Description="Chat with the developers and get technical assistance with the program">
+                        Description="Chat with the developers and get help with the program">
                         <PathIcon Data="{StaticResource DiscordLogo}" />
                     </models:Action>
                     <models:Action

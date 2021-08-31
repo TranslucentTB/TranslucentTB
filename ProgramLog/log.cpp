@@ -97,7 +97,7 @@ void Log::Initialize(const std::optional<std::filesystem::path> &storageFolder)
 		if (auto path = GetPath(storageFolder); !path.empty())
 		{
 			auto fileLog = std::make_shared<lazy_file_sink_mt>(std::move(path));
-			fileLog->set_level(Config { }.LogVerbosity);
+			fileLog->set_level(Config::DEFAULT_LOG_VERBOSITY);
 			s_LogSink = fileLog;
 
 			defaultLogger->sinks().push_back(std::move(fileLog));

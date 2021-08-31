@@ -11,6 +11,13 @@
 
 class Config {
 public:
+	static constexpr spdlog::level::level_enum DEFAULT_LOG_VERBOSITY =
+#ifdef _DEBUG
+		spdlog::level::debug;
+#else
+		spdlog::level::warn;
+#endif
+
 	// Appearances
 	TaskbarAppearance DesktopAppearance = { ACCENT_ENABLE_TRANSPARENTGRADIENT, { 0, 0, 0, 0 }, false };
 	OptionalTaskbarAppearance VisibleWindowAppearance = { false, ACCENT_ENABLE_BLURBEHIND, { 0, 0, 0, 0 }, true };
@@ -23,12 +30,7 @@ public:
 	WindowFilter IgnoredWindows;
 	bool HideTray = false;
 	bool DisableSaving = false;
-	spdlog::level::level_enum LogVerbosity =
-#ifdef _DEBUG
-		spdlog::level::debug;
-#else
-		spdlog::level::warn;
-#endif
+	spdlog::level::level_enum LogVerbosity = DEFAULT_LOG_VERBOSITY;
 
 	template<class Writer>
 	inline void Serialize(Writer &writer) const
