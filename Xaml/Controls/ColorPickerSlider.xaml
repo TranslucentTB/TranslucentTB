@@ -1,0 +1,178 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:TranslucentTB.Xaml.Controls">
+
+    <Style BasedOn="{StaticResource ColorPickerSliderStyle}" TargetType="controls:ColorPickerSlider" />
+
+    <Style x:Key="ColorPickerSliderStyle" TargetType="controls:ColorPickerSlider">
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="IsThumbToolTipEnabled" Value="False" />
+        <Setter Property="CheckerBackgroundColor" Value="{ThemeResource SystemListLowColor}" />
+        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+        <Setter Property="FocusVisualMargin" Value="-3" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:ColorPickerSlider">
+                    <Grid x:Name="SliderContainer"
+                        Margin="{TemplateBinding Padding}"
+                        Background="{ThemeResource SliderContainerBackground}">
+                        <Grid.Resources>
+                            <Style x:Key="SliderThumbStyle" TargetType="Thumb">
+                                <Setter Property="BorderThickness" Value="3" />
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Border Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="{ThemeResource SliderThumbCornerRadius}" />
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Grid.Resources>
+
+                        <!-- This border exists only to draw the correct focus rect with rounded corners when element is focused. -->
+                        <Border x:Name="FocusBorder" CornerRadius="10" Control.IsTemplateFocusTarget="True" Margin="2,0" />
+
+                        <Grid x:Name="HorizontalTemplate" MinHeight="20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="0" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="0" />
+                            </Grid.RowDefinitions>
+
+                            <Rectangle x:Name="HorizontalTrackRect"
+                                Grid.Row="1"
+                                Grid.ColumnSpan="3"
+                                Height="20"
+                                RadiusX="10"
+                                RadiusY="10"
+                                Margin="2,0" />
+                            <Rectangle x:Name="HorizontalDecreaseRect"
+                                Grid.Row="1"
+                                Fill="Transparent"
+                                RadiusX="8"
+                                RadiusY="8" />
+                            <Thumb x:Name="HorizontalThumb"
+                                Grid.Row="0"
+                                Grid.RowSpan="3"
+                                Grid.Column="1"
+                                Width="20"
+                                Height="20"
+                                AutomationProperties.AccessibilityView="Raw"
+                                BorderBrush="{ThemeResource SystemControlBackgroundChromeWhiteBrush}"
+                                CornerRadius="10"
+                                DataContext="{TemplateBinding Value}"
+                                FocusVisualMargin="-14,-6,-14,-6"
+                                Style="{StaticResource SliderThumbStyle}" />
+                        </Grid>
+                        <Grid x:Name="VerticalTemplate" MinWidth="20" Visibility="Collapsed">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="0" />
+                            </Grid.ColumnDefinitions>
+
+                            <Rectangle x:Name="VerticalTrackRect"
+                                Grid.RowSpan="3"
+                                Grid.Column="1"
+                                Width="20"
+                                RadiusX="10"
+                                RadiusY="10"
+                                Margin="0,2" />
+                            <Rectangle x:Name="VerticalDecreaseRect"
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                Fill="Transparent"
+                                RadiusX="8"
+                                RadiusY="8" />
+                            <Thumb x:Name="VerticalThumb"
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="3"
+                                Width="20"
+                                Height="20"
+                                AutomationProperties.AccessibilityView="Raw"
+                                BorderBrush="{ThemeResource SystemControlBackgroundChromeWhiteBrush}"
+                                CornerRadius="10"
+                                DataContext="{TemplateBinding Value}"
+                                FocusVisualMargin="-6,-14,-6,-14"
+                                Style="{StaticResource SliderThumbStyle}" />
+                        </Grid>
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+
+                                <!--
+                                    The Pressed state is purposely the same as normal.
+                                    This ensures that the thumb always has the correct contrast with
+                                    the selected color underneath it when dragging or moving.
+                                -->
+                                <VisualState x:Name="Pressed" />
+
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="HorizontalThumb.Opacity" Value="0.8" />
+                                        <Setter Target="VerticalThumb.Opacity" Value="0.8" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="SelectionColor">
+                                <VisualState x:Name="LightSliderThumb" />
+                                <VisualState x:Name="DarkSliderThumb">
+                                    <VisualState.Setters>
+                                        <Setter Target="HorizontalThumb.BorderBrush" Value="{ThemeResource SystemControlBackgroundChromeBlackHighBrush}" />
+                                        <Setter Target="VerticalThumb.BorderBrush" Value="{ThemeResource SystemControlBackgroundChromeBlackHighBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="FocusEngagementStates">
+                                <VisualState x:Name="FocusDisengaged" />
+                                <VisualState x:Name="FocusEngagedHorizontal">
+                                    <VisualState.Setters>
+                                        <Setter Target="FocusBorder.(Control.IsTemplateFocusTarget)" Value="False" />
+                                        <Setter Target="HorizontalThumb.(Control.IsTemplateFocusTarget)" Value="True" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="FocusEngagedVertical">
+                                    <VisualState.Setters>
+                                        <Setter Target="FocusBorder.(Control.IsTemplateFocusTarget)" Value="False" />
+                                        <Setter Target="VerticalThumb.(Control.IsTemplateFocusTarget)" Value="True" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="OrientationStates">
+                                <VisualState x:Name="HorizontalColorSlider" />
+                                <VisualState x:Name="VerticalColorSlider">
+                                    <VisualState.Setters>
+                                        <Setter Target="FocusBorder.Margin" Value="0,2" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

@@ -1,0 +1,13 @@
+namespace TranslucentTB.Xaml.Models.Primitives
+{
+	enum LogLevel
+	{
+		Trace = 0,
+		Debug = 1,
+		Info = 2,
+		Warn = 3,
+		Err = 4,
+		Critical = 5,
+		Off = 6
+	};
+}

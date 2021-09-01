@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resources">
+      <UniqueIdentifier>accd3aa8-1ba0-4223-9bbe-0c431709210b</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{926ab91d-31b4-48c3-b9a4-e681349f27f0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Controls\colorpickerrendering.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Xaml.def">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="App.base.hpp" />
+    <ClInclude Include="PropertyChangedBase.hpp" />
+    <ClInclude Include="dependencyproperty.h" />
+    <ClInclude Include="factory.h" />
+    <ClInclude Include="event.h" />
+    <ClInclude Include="property.h" />
+    <ClInclude Include="Controls\colorpickerrendering.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Pages\WelcomePage.xaml" />
+    <Page Include="Pages\FramelessPage.xaml" />
+    <Page Include="Controls\ChromeButton.xaml" />
+    <Page Include="Controls\ActionList.xaml" />
+    <Page Include="Pages\ColorPickerPage.xaml" />
+    <Page Include="Pages\TrayFlyoutPage.xaml" />
+    <Page Include="Themes\Generic.xaml" />
+    <Page Include="Controls\ColorPickerSlider.xaml" />
+    <Page Include="Controls\ColorPicker.xaml" />
+    <Page Include="Controls\FocusBorderColorSpectrum.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="Models\Action.idl" />
+    <Midl Include="FunctionalConverters.idl" />
+    <Midl Include="StyleResources.idl" />
+    <Midl Include="Models\Primitives\AccentState.idl" />
+    <Midl Include="Models\Primitives\TaskbarAppearance.idl" />
+    <Midl Include="Models\Primitives\OptionalTaskbarAppearance.idl" />
+    <Midl Include="Models\Primitives\TaskbarState.idl" />
+    <Midl Include="Models\Primitives\LogLevel.idl" />
+    <Midl Include="Models\Primitives\LogSinkState.idl" />
+    <Midl Include="Controls\ColorPicker.idl" />
+    <Midl Include="Controls\ColorPickerSlider.idl" />
+    <Midl Include="Models\Primitives\ColorChannel.idl" />
+    <Midl Include="Models\Primitives\HsvColor.idl" />
+    <Midl Include="Models\Primitives\ColorRepresentation.idl" />
+    <Midl Include="Converters\ContrastBrushConverter.idl" />
+    <Midl Include="Controls\ChromeButton.idl" />
+    <Midl Include="Models\Primitives\IColorPalette.idl" />
+    <Midl Include="Controls\UniformGrid.idl" />
+    <Midl Include="Converters\ColorToColorShadeConverter.idl" />
+    <Midl Include="Converters\ColorToDisplayNameConverter.idl" />
+    <Midl Include="RelativeAncestor.idl" />
+    <Midl Include="Controls\SwitchPresenter.idl" />
+    <Midl Include="Controls\Case.idl" />
+    <Midl Include="Models\FluentColorPalette.idl" />
+    <Midl Include="Converters\ThicknessFilterConverter.idl" />
+    <Midl Include="Models\Primitives\ThicknessFilterKind.idl" />
+    <Midl Include="Controls\ConstrainedBox.idl" />
+    <Midl Include="Controls\FocusBorderColorSpectrum.idl" />
+  </ItemGroup>
+</Project>

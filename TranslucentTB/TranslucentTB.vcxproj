@@ -1,85 +1,149 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210825.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210825.3\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{59F844AA-8D3C-431C-B8CC-57682915F551}</ProjectGuid>
-    <RootNamespace>TranslucentTB</RootNamespace>
     <ConfigurationType>Application</ConfigurationType>
+    <GenerateManifest>true</GenerateManifest>
+    <RootNamespace>TranslucentTB</RootNamespace>
   </PropertyGroup>
-  <Import Project="..\common.props" />
+  <Import Project="..\Common\CppProject.props" />
+  <PropertyGroup>
+    <BeforeLinkTargets Condition="'$(WindowsTargetPlatformVersion)' &gt;= '10.0.18362.0'">
+      $(BeforeLinkTargets);
+      _UnpackagedWin32GenerateAdditionalWinmdManifests;
+    </BeforeLinkTargets>
+  </PropertyGroup>
+  <Target Name="_UnpackagedWin32MapWinmdsToManifestFiles" DependsOnTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <!-- For each non-system .winmd file in References, generate a .manifest in IntDir for it. -->
+      <_UnpackagedWin32WinmdManifest Include="@(ReferencePath->'$(IntDir)\%(FileName).manifest')" Condition="'%(ReferencePath.IsSystemReference)' != 'true' and '%(ReferencePath.WinMDFile)' == 'true' and '%(ReferencePath.ReferenceSourceTarget)' == 'ResolveAssemblyReference' and '%(ReferencePath.Implementation)' != ''">
+        <WinMDPath>%(ReferencePath.FullPath)</WinMDPath>
+        <Implementation>%(ReferencePath.Implementation)</Implementation>
+      </_UnpackagedWin32WinmdManifest>
+      <!-- For each referenced project that _produces_ a winmd, generate a temporary item that maps to
+           the winmd, and use that temporary item to generate a .manifest in IntDir for it.
+           We don't set Implementation here because it's inherited from the _ResolvedNativeProjectReferencePaths. -->
+      <_UnpackagedWin32WinmdProjectReference Condition="'%(_ResolvedNativeProjectReferencePaths.ProjectType)' != 'StaticLibrary'" Include="@(_ResolvedNativeProjectReferencePaths-&gt;WithMetadataValue('FileType','winmd')-&gt;'%(RootDir)%(Directory)%(TargetPath)')" />
+      <_UnpackagedWin32WinmdManifest Include="@(_UnpackagedWin32WinmdProjectReference->'$(IntDir)\%(FileName).manifest')">
+        <WinMDPath>%(Identity)</WinMDPath>
+      </_UnpackagedWin32WinmdManifest>
+    </ItemGroup>
+  </Target>
+  <Target Name="_UnpackagedWin32GenerateAdditionalWinmdManifests" Inputs="@(_UnpackagedWin32WinmdManifest.WinMDPath)" Outputs="@(_UnpackagedWin32WinmdManifest)" DependsOnTargets="_UnpackagedWin32MapWinmdsToManifestFiles">
+    <Message Text="Generating manifest for %(_UnpackagedWin32WinmdManifest.WinMDPath)" Importance="High" />
+    <!-- This target is batched and a new Exec is spawned for each entry in _UnpackagedWin32WinmdManifest. -->
+    <Exec Command="mt.exe -nologo -winmd:%(_UnpackagedWin32WinmdManifest.WinMDPath) -dll:%(_UnpackagedWin32WinmdManifest.Implementation) -out:%(_UnpackagedWin32WinmdManifest.Identity)" />
+    <ItemGroup>
+      <!-- Emit the generated manifest into the Link inputs. -->
+      <Manifest Include="@(_UnpackagedWin32WinmdManifest)" />
+    </ItemGroup>
+  </Target>
   <ItemDefinitionGroup Label="Globals">
+    <ClCompile>
+      <PreprocessorDefinitions>_TRANSLUCENTTB_EXE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
     <Link>
-      <AdditionalDependencies>advapi32.lib;comctl32.lib;dwmapi.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>advapi32.lib;comctl32.lib;coremessaging.lib;dwmapi.lib;gdi32.lib;mincore.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;shlwapi.lib;user32.lib;$(fmtlib)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(UsingGameSDK)'=='true'">discord_game_sdk.lib;discord_game_sdk_cpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="appvisibilitysink.cpp" />
-    <ClCompile Include="autostart_desktop.cpp" Condition="'$(Configuration)'!='Store'" />
-    <ClCompile Include="autostart_store.cpp" Condition="'$(Configuration)'=='Store'" />
-    <ClCompile Include="blacklist.cpp" />
-    <ClCompile Include="config.cpp" />
-    <ClCompile Include="eventhook.cpp" />
-    <ClCompile Include="findwindowiterator.cpp" />
-    <ClCompile Include="hooks.cpp" />
+    <ClCompile Include="application.cpp" />
+    <ClCompile Include="localization.cpp" />
+    <ClCompile Include="managers\configmanager.cpp" />
+    <ClCompile Include="folderwatcher.cpp" />
+    <ClCompile Include="mainappwindow.cpp" />
+    <ClCompile Include="managers\startupmanager.cpp" />
+    <ClCompile Include="taskbar\taskbarattributeworker.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="messagewindow.cpp" />
-    <ClCompile Include="traycontextmenu.cpp" />
-    <ClCompile Include="trayicon.cpp" />
-    <ClCompile Include="ttberror.cpp" />
-    <ClCompile Include="ttblog.cpp" />
-    <ClCompile Include="uwp.cpp" Condition="'$(Configuration)'=='Store'" />
-    <ClCompile Include="win32.cpp" />
-    <ClCompile Include="window.cpp" />
-    <ClCompile Include="windowclass.cpp" />
+    <ClCompile Include="tray\basecontextmenu.cpp" />
+    <ClCompile Include="uwp\basexamlpagehost.cpp" />
+    <ClCompile Include="uwp\xamldragregion.cpp" />
+    <ClCompile Include="uwp\xamlthreadpool.cpp" />
+    <ClCompile Include="uwp\xamlthread.cpp" />
+    <ClCompile Include="windows\messagewindow.cpp" />
+    <ClCompile Include="tray\trayicon.cpp" />
+    <ClCompile Include="uwp\uwp.cpp" />
+    <ClCompile Include="windows\window.cpp" />
+    <ClCompile Include="windows\windowclass.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="appvisibilitysink.hpp" />
-    <ClInclude Include="arch.h" />
-    <ClInclude Include="autofree.hpp" />
-    <ClInclude Include="autostart.hpp" />
-    <ClInclude Include="blacklist.hpp" />
-    <ClInclude Include="clipboardcontext.hpp" />
-    <ClInclude Include="common.hpp" />
-    <ClInclude Include="createinstance.hpp" />
-    <ClInclude Include="eventhook.hpp" />
-    <ClInclude Include="findwindowiterator.hpp" />
-    <ClInclude Include="hooks.hpp" />
-    <ClInclude Include="messagewindow.hpp" />
-    <ClInclude Include="registrykey.hpp" />
-    <ClInclude Include="swcadata.hpp" />
-    <ClInclude Include="config.hpp" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="traycontextmenu.hpp" />
-    <ClInclude Include="trayicon.hpp" />
-    <ClInclude Include="ttberror.hpp" />
-    <ClInclude Include="ttblog.hpp" />
-    <ClInclude Include="util.hpp" />
-    <ClInclude Include="uwp.hpp" Condition="'$(Configuration)'=='Store'" />
-    <ClInclude Include="win32.hpp" />
-    <ClInclude Include="window.hpp" />
-    <ClInclude Include="windowclass.hpp" />
+    <ClInclude Include="application.hpp" />
+    <ClInclude Include="dynamicloader.hpp" />
+    <ClInclude Include="localization.hpp" />
+    <ClInclude Include="managers\configmanager.hpp" />
+    <ClInclude Include="folderwatcher.hpp" />
+    <ClInclude Include="mainappwindow.hpp" />
+    <ClInclude Include="managers\startupmanager.hpp" />
+    <ClInclude Include="taskbar\launchervisibilitysink.hpp" />
+    <ClInclude Include="tray\basecontextmenu.hpp" />
+    <ClInclude Include="tray\traycontextmenu.hpp" />
+    <ClInclude Include="taskbar\taskbarattributeworker.hpp" />
+    <ClInclude Include="uwp\basexamlpagehost.hpp" />
+    <ClInclude Include="uwp\xamldragregion.hpp" />
+    <ClInclude Include="uwp\xamlthreadpool.hpp" />
+    <ClInclude Include="uwp\xamlpagehost.hpp" />
+    <ClInclude Include="uwp\xamlthread.hpp" />
+    <ClInclude Include="windows\messagewindow.hpp" />
+    <ClInclude Include="resources\ids.h" />
+    <ClInclude Include="tray\contextmenu.hpp" />
+    <ClInclude Include="tray\trayicon.hpp" />
+    <ClInclude Include="uwp\uwp.hpp" />
+    <ClInclude Include="windows\window.hpp" />
+    <ClInclude Include="windows\windowclass.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="TranslucentTB.rc2" />
+    <ResourceCompile Include="resources\TranslucentTB.rc2" />
+    <ResourceCompile Include="resources\language\TranslucentTB.en.rc2" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\LICENSE.md" />
-    <None Include="..\README.md" />
-    <None Include="config.cfg" />
-    <None Include="dynamic-ws-exclude.csv" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CPicker\CPicker.vcxproj">
-      <Project>{ab4d3015-2ad4-4152-bdd2-fc1343b22b6c}</Project>
+    <ProjectReference Include="..\ExplorerHooks\ExplorerHooks.vcxproj">
+      <Project>{d0004e78-f00b-4943-b77e-9a278f8ba399}</Project>
+      <DeploymentContent>true</DeploymentContent>
+    </ProjectReference>
+    <ProjectReference Include="..\ProgramLog\ProgramLog.vcxproj">
+      <Project>{62cd9de0-af10-40f0-b72c-7a7b5bbba3c7}</Project>
+      <DeploymentContent>true</DeploymentContent>
+    </ProjectReference>
+    <ProjectReference Include="..\Xaml\Xaml.vcxproj">
+      <Project>{9875d8e1-9594-445e-a0e4-07c6027f85e0}</Project>
+      <DeploymentContent>true</DeploymentContent>
+      <!--
+        Prevent the .pri and .winmd from showing up in the final output.
+        IDK why this doesn't also prevent copying the .dll, but whatever.
+      -->
+      <Private>false</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="app.manifest" />
+    <Manifest Include="resources\TranslucentTB.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="TTB_color.ico" />
-    <Image Include="TTB_white.ico" />
+    <Image Include="resources\TranslucentTB.black.ico" />
+    <Image Include="resources\TranslucentTB.ico" />
+    <Image Include="resources\TranslucentTB.white.ico" />
   </ItemGroup>
-  <Target Name="PostBuildEvent">
-    <Copy SourceFiles="@(None)" DestinationFolder="$(TargetDir)" />
+  <ItemGroup>
+    <Natvis Include="windows\Window.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="taskbar\ShellExperience.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+  </ItemGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.UI.Xaml.2.7.0-prerelease.210816001\build\native\Microsoft.UI.Xaml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.UI.Xaml.2.7.0-prerelease.210816001\build\native\Microsoft.UI.Xaml.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210825.3\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210825.3\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210825.3\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210825.3\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
+  <Import Project="..\packages\Microsoft.UI.Xaml.2.7.0-prerelease.210816001\build\native\Microsoft.UI.Xaml.targets" Condition="Exists('..\packages\Microsoft.UI.Xaml.2.7.0-prerelease.210816001\build\native\Microsoft.UI.Xaml.targets')" />
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210825.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210825.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
 </Project>

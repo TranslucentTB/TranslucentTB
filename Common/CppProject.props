@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <LinkIncremental>false</LinkIncremental>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Globals">
+    <CharacterSet>Unicode</CharacterSet>
+    <Keyword>Win32Proj</Keyword>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <SpectreMitigation>Spectre</SpectreMitigation>
+
+    <!-- Versions -->
+    <PlatformToolset Condition="'$(PlatformToolset)'==''">v143</PlatformToolset>
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)'==''">17.0</MinimumVisualStudioVersion>
+    <WindowsTargetPlatformVersion>10.0.22000.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformMinVersion>10.0.18362.0</WindowsTargetPlatformMinVersion>
+
+    <!-- WinRT -->
+    <CppWinRTLibs>false</CppWinRTLibs>
+    <CppWinRTFastAbi>true</CppWinRTFastAbi>
+    <CppWinRTOptimized>true</CppWinRTOptimized>
+    <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
+
+    <fmtlib Condition="'$(Configuration)'=='Release'">fmt.lib</fmtlib>
+    <fmtlib Condition="'$(Configuration)'=='Debug'">fmtd.lib</fmtlib>
+
+    <!-- Don't use the Game SDK for now because it causes a crash when Discord exits while we are running. -->
+    <UsingGameSDK>false</UsingGameSDK>
+    <UsingGameSDK Condition="'$(UsingGameSDK)'=='' and '$(Platform)'=='x64'">true</UsingGameSDK>
+
+    <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'!=''">/tr $(CertificateTimestampServer) /td sha512</SignToolAdditionalArguments>
+    <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'==''"></SignToolAdditionalArguments>
+
+    <VcpkgOSTarget>windows-ttb</VcpkgOSTarget>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <Link>
+      <!-- Debug information -->
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
+
+      <!-- Optimization -->
+      <OptimizeReferences>false</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <!-- Warnings and errors -->
+      <TreatWarningAsError>true</TreatWarningAsError>
+
+      <!-- Optimization -->
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>MaxSpeed</Optimization>
+
+      <!-- Trim the prefix from embedded file paths -->
+      <AdditionalOptions>/d1trimfile:"$(SolutionDir)\" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(VcpkgRoot)'!=''">/d1trimfile:"$([System.IO.Path]::GetFullPath($(VcpkgRoot)))installed\$(VcpkgTriplet)\include\\" %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <!-- Warnings and errors -->
+      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+
+      <!-- Debug information -->
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+
+      <!-- Optimization -->
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <OptimizeReferences>true</OptimizeReferences>
+
+      <!-- Disable PDB paths and strip timestamps from output -->
+      <AdditionalOptions>/pdbaltpath:%_PDB% /Brepro %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Platform)'=='x64'">
+    <ClCompile>
+      <!-- Windows requires SSE2 on any x86 processor, see https://docs.microsoft.com/windows-hardware/manufacture/desktop/paenxsse2-support-requirement-guide-for-windows-8 -->
+      <PreprocessorDefinitions>RAPIDJSON_SSE2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <IntelJCCErratum>true</IntelJCCErratum>
+      <GuardEHContMetadata>true</GuardEHContMetadata>
+    </ClCompile>
+    <Link>
+      <CETCompat>true</CETCompat>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Platform)'=='ARM64'">
+    <ClCompile>
+      <!-- Windows requires NEON on any ARM processor, see https://docs.microsoft.com/cpp/build/overview-of-arm-abi-conventions -->
+      <PreprocessorDefinitions>RAPIDJSON_NEON;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(CertificateThumbprint)'!=''">
+    <ClCompile>
+      <PreprocessorDefinitions>SIGNED_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <CustomBuildStep>
+      <Command>signtool.exe sign $(SignToolAdditionalArguments) /fd sha512 /sha1 $(CertificateThumbprint) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>
+      <Message>Signing $(TargetPath)</Message>
+      <Inputs>$(TargetPath)</Inputs>
+      <Outputs>$(OutDir)sign\$(ProjectName)-sign.out</Outputs>
+    </CustomBuildStep>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Label="Globals">
+    <ClCompile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalOptions>/ZH:SHA_256 /utf-8 /Zc:__cplusplus /Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
+
+      <!-- PCH -->
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+
+      <!-- Language version and conformance -->
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
+
+      <!-- Warnings and errors -->
+      <WarningLevel>Level4</WarningLevel>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <UseFullPaths>true</UseFullPaths>
+
+      <!-- Discord GameSDK -->
+      <PreprocessorDefinitions Condition="'$(UsingGameSDK)'!='true'">DO_NOT_USE_GAME_SDK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+
+      <!-- RapidJSON -->
+      <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING=1;RAPIDJSON_ERROR_CHARTYPE=wchar_t;RAPIDJSON_ERROR_STRING=UTIL_WIDEN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+
+      <!-- member_thunk -->
+      <PreprocessorDefinitions>MEMBER_THUNK_DEFAULT_HEAP_SAFETY=3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+
+      <!-- spdlog -->
+      <PreprocessorDefinitions>SPDLOG_DISABLE_DEFAULT_LOGGER;SPDLOG_FMT_EXTERNAL;SPDLOG_NO_NAME;SPDLOG_NO_THREAD_ID;SPDLOG_NO_TLS;SPDLOG_WCHAR_TO_UTF8_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+
+      <!-- wil -->
+      <PreprocessorDefinitions>RESULT_SUPPRESS_STATIC_INITIALIZERS;WIL_LOCK_EXCEPTION_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+
+      <!-- Windows -->
+      <PreprocessorDefinitions>_HIDE_GLOBAL_ASYNC_STATUS;STRICT_TYPED_ITEMIDS;NOMINMAX;_WINDOWS;WIN32_LEAN_AND_MEAN;WINRT_WINDOWS_ABI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ResourceCompile>
+      <NullTerminateStrings>true</NullTerminateStrings>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+
+  <ImportGroup Label="Shared">
+    <Import Project="Common.vcxitems" Label="Shared" />
+  </ImportGroup>
+</Project>

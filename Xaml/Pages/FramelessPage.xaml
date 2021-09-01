@@ -1,0 +1,93 @@
+<Page
+    x:Class="TranslucentTB.Xaml.Pages.FramelessPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:root="using:TranslucentTB.Xaml"
+    xmlns:controls="using:TranslucentTB.Xaml.Controls"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
+
+    <FlyoutBase.AttachedFlyout>
+        <MenuFlyout x:Name="SystemMenu" Opening="SystemMenuOpening">
+            <MenuFlyoutItem x:Name="CloseMenuItem" Text="Close" IsEnabled="{x:Bind IsClosable, Mode = OneWay}" Click="CloseClicked">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE711;" />
+                </MenuFlyoutItem.Icon>
+                <MenuFlyoutItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="F4" Modifiers="Menu" />
+                    <KeyboardAccelerator Key="C" />
+                </MenuFlyoutItem.KeyboardAccelerators>
+            </MenuFlyoutItem>
+        </MenuFlyout>
+    </FlyoutBase.AttachedFlyout>
+
+    <!-- This relies on the order of controls, be careful -->
+    <RelativePanel x:DefaultBindMode="OneWay">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="ActivityStates">
+                <VisualState x:Name="Active" />
+                <VisualState x:Name="Inactive">
+                    <VisualState.StateTriggers>
+                        <StateTrigger IsActive="{x:Bind root:FunctionalConverters.InvertedBool(IsActive)}" />
+                    </VisualState.StateTriggers>
+
+                    <VisualState.Setters>
+                        <Setter Target="CloseButton.NormalForeground" Value="{ThemeResource InactiveChromeButtonForeground}" />
+                        <Setter Target="TitleTextBlock.Foreground" Value="{ThemeResource InactiveChromeButtonForeground}" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
+        <ContentPresenter
+            x:Name="Content"
+            Content="{x:Bind UserContent}"
+            RelativePanel.Below="Titlebar"
+            RelativePanel.AlignBottomWithPanel="True"
+            RelativePanel.AlignLeftWithPanel="True"
+            RelativePanel.AlignRightWithPanel="True" />
+        <Border
+            x:Name="Titlebar"
+            Height="{StaticResource TitlebarHeight}"
+            Visibility="{x:Bind root:FunctionalConverters.InvertedBoolToVisibility(ExpandIntoTitlebar)}"
+            RelativePanel.AlignTopWithPanel="True"
+            RelativePanel.AlignLeftWithPanel="True"
+            RelativePanel.AlignRightWithPanel="True" />
+        <TextBlock
+            x:Name="TitleTextBlock"
+            Text="{x:Bind Title}"
+            FontSize="12"
+            Padding="9,0"
+            TextLineBounds="Tight"
+            TextTrimming="CharacterEllipsis"
+            Visibility="{x:Bind root:FunctionalConverters.InvertedBoolToVisibility(ExpandIntoTitlebar)}"
+            RelativePanel.LeftOf="CustomTitlebarControls"
+            RelativePanel.AlignLeftWithPanel="True"
+            RelativePanel.AlignVerticalCenterWith="Titlebar" />
+        <ItemsControl
+            x:Name="CustomTitlebarControls"
+            ItemsSource="{x:Bind TitlebarContent, Mode = OneTime}"
+            IsTabStop="False"
+            RelativePanel.AlignTopWithPanel="True"
+            RelativePanel.LeftOf="CloseButton">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+        <!-- Needs to be ThemeResource to allow pages who derive to customize style -->
+        <controls:ChromeButton
+            x:Name="CloseButton"
+            Visibility="{x:Bind IsClosable}"
+            Click="CloseClicked"
+            Style="{ThemeResource CloseButtonStyle}"
+            ToolTipService.ToolTip="Close"
+            RelativePanel.AlignTopWithPanel="True"
+            RelativePanel.AlignRightWithPanel="True">
+            <FontIcon Glyph="&#xE8BB;" FontSize="10" />
+        </controls:ChromeButton>
+    </RelativePanel>
+</Page>

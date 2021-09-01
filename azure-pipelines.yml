@@ -1,0 +1,65 @@
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: $(Build.SourcesDirectory)/TranslucentTB.sln
+  vcpkgArgs: --overlay-triplets=$(Build.SourcesDirectory)/vcpkg/triplets --triplet $(platform)-windows-ttb
+
+strategy:
+  matrix:
+    'ARM64 Debug':
+      configuration: Debug
+      platform: ARM64
+    'ARM64 Release':
+      configuration: Release
+      platform: ARM64
+    'x64 Debug':
+      configuration: Debug
+      platform: x64
+    'x64 Release':
+      configuration: Release
+      platform: x64
+
+steps:
+- powershell: .\update-version.ps1
+  displayName: Update version info
+- script: git pull
+  displayName: 'Update vcpkg ports'
+  workingDirectory: C:\vcpkg
+- script: .\bootstrap-vcpkg.bat
+  displayName: 'Bootstrap vcpkg'
+  workingDirectory: C:\vcpkg
+- script: vcpkg install $(vcpkgArgs) discord-game-sdk
+  displayName: 'Install Discord Game SDK'
+  condition: and(succeeded(), eq(variables['platform'], 'x64'))
+- script: vcpkg install $(vcpkgArgs) fmt spdlog
+  displayName: 'Install vcpkg dependencies'
+- script: vcpkg install $(vcpkgArgs) --overlay-ports=$(Build.SourcesDirectory)/vcpkg/ports --head detours gtest member-thunk rapidjson wil
+  displayName: 'Install vcpkg head dependencies'
+- task: NuGetCommand@2
+  displayName: 'Restore NuGet packages'
+  inputs:
+    restoreSolution: $(solution)
+- script: vcpkg integrate install
+  displayName: 'Integrate vcpkg'
+- task: VSBuild@1
+  displayName: 'Build solution'
+  inputs:
+    solution: $(solution)
+    platform: $(platform)
+    configuration: $(configuration)
+- publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
+  artifact: 'Portable $(platform) $(configuration)'
+  displayName: 'Upload portable build'
+- publish: $(Build.SourcesDirectory)\AppPackage\AppPackages
+  artifact: 'MSIX $(platform) $(configuration)'
+  displayName: 'Upload MSIX package'
+- task: VSTest@2
+  displayName: 'Run unit tests'
+  condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'))
+  inputs:
+    testAssemblyVer2: $(platform)\$(configuration)\Tests.exe
+    runInParallel: true
+    platform: $(platform)
+    configuration: $(configuration)
+    testRunTitle: '$(platform) $(configuration)'

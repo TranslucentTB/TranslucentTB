@@ -1,0 +1,9 @@
+namespace TranslucentTB.Xaml.Models.Primitives
+{
+	enum LogSinkState
+	{
+		Opened = 0,
+		NothingLogged = 1,
+		Failed = 2
+	};
+}

@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210825.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210825.3\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9875d8e1-9594-445e-a0e4-07c6027f85e0}</ProjectGuid>
+    <ProjectName>Xaml</ProjectName>
+    <RootNamespace>TranslucentTB.Xaml</RootNamespace>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
+    <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
+    <!-- Compile as a UWP project for the XAML compiler to compile the pages. -->
+    <MinimalCoreWin>true</MinimalCoreWin>
+    <AppContainerApplication>true</AppContainerApplication>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+    <!-- But link against the desktop CRT, we're not making a true UWP app. -->
+    <_NoWinAPIFamilyApp>true</_NoWinAPIFamilyApp>
+    <_VC_Target_Library_Platform>Desktop</_VC_Target_Library_Platform>
+    <DesktopCompatible>true</DesktopCompatible>
+    <!-- Don't store outputs in a subfolder otherwise the main program can't find them. -->
+    <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
+    <!-- Disable embedded XBF (even if the naming suggests otherwise) so that our XAML is in the final resources.pri. -->
+    <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
+    <_GenerateProjectPriFileDependsOn>PlaceAppXbfAtRootOfResourceTree;$(_GenerateProjectPriFileDependsOn)</_GenerateProjectPriFileDependsOn>
+    <!-- Prevent the XAML source code from being copied to the output -->
+    <GenerateLibraryLayout>false</GenerateLibraryLayout>
+    <!-- Workaround https://github.com/microsoft/microsoft-ui-xaml/issues/5597 -->
+    <PlatformToolset>v142</PlatformToolset>
+    <MinimumVisualStudioVersion>16.11</MinimumVisualStudioVersion>
+  </PropertyGroup>
+  <Import Project="..\Common\CppProject.props" />
+  <ItemDefinitionGroup Label="Globals">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PreprocessorDefinitions>_WINRT_DLL;DISABLE_XAML_GENERATED_MAIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>Xaml.def</ModuleDefinitionFile>
+      <AppContainer>false</AppContainer>
+      <AdditionalDependencies>ole32.lib;oleaut32.lib;runtimeobject.lib;user32.lib;$(fmtlib)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4197 %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="App.cpp">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Controls\ActionList.cpp">
+      <DependentUpon>Controls\ActionList.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Controls\Case.cpp">
+      <DependentUpon>Controls\Case.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Controls\ChromeButton.cpp">
+      <DependentUpon>Controls\ChromeButton.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Controls\ColorPicker.cpp">
+      <DependentUpon>Controls\ColorPicker.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Controls\colorpickerrendering.cpp" />
+    <ClCompile Include="Controls\ColorPickerSlider.cpp">
+      <DependentUpon>Controls\ColorPickerSlider.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Controls\ConstrainedBox.cpp">
+      <DependentUpon>Controls\ConstrainedBox.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Controls\FocusBorderColorSpectrum.cpp">
+      <DependentUpon>Controls\FocusBorderColorSpectrum.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Controls\SwitchPresenter.cpp">
+      <DependentUpon>Controls\SwitchPresenter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Controls\UniformGrid.cpp">
+      <DependentUpon>Controls\UniformGrid.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Converters\ColorToColorShadeConverter.cpp">
+      <DependentUpon>Converters\ColorToColorShadeConverter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Converters\ColorToDisplayNameConverter.cpp">
+      <DependentUpon>Converters\ColorToDisplayNameConverter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Converters\ContrastBrushConverter.cpp">
+      <DependentUpon>Converters\ContrastBrushConverter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Converters\ThicknessFilterConverter.cpp">
+      <DependentUpon>Converters\ThicknessFilterConverter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Models\FluentColorPalette.cpp">
+      <DependentUpon>Models\FluentColorPalette.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Models\Primitives\OptionalTaskbarAppearance.cpp">
+      <DependentUpon>Models\Primitives\OptionalTaskbarAppearance.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Models\Primitives\TaskbarAppearance.cpp">
+      <DependentUpon>Models\Primitives\TaskbarAppearance.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Pages\ColorPickerPage.cpp">
+      <DependentUpon>Pages\ColorPickerPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="Pages\FramelessPage.cpp">
+      <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="FunctionalConverters.cpp">
+      <DependentUpon>FunctionalConverters.idl</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="Pages\TrayFlyoutPage.cpp">
+      <DependentUpon>Pages\TrayFlyoutPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Pages\WelcomePage.cpp">
+      <DependentUpon>Pages\WelcomePage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="Models\Action.cpp">
+      <DependentUpon>Models\Action.idl</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="RelativeAncestor.cpp">
+      <DependentUpon>RelativeAncestor.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="StyleResources.cpp">
+      <DependentUpon>StyleResources.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Xaml.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <SubType>Designer</SubType>
+      <FileType>Document</FileType>
+    </ApplicationDefinition>
+    <Page Include="Controls\ActionList.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\ChromeButton.xaml">
+      <DeploymentContent>true</DeploymentContent>
+    </Page>
+    <Page Include="Controls\ColorPicker.xaml">
+      <DeploymentContent>true</DeploymentContent>
+    </Page>
+    <Page Include="Controls\ColorPickerSlider.xaml">
+      <DeploymentContent>true</DeploymentContent>
+    </Page>
+    <Page Include="Controls\FocusBorderColorSpectrum.xaml">
+      <DeploymentContent>true</DeploymentContent>
+    </Page>
+    <Page Include="Pages\ColorPickerPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\FramelessPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\TrayFlyoutPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\WelcomePage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Generic.xaml">
+      <DeploymentContent>true</DeploymentContent>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="App.base.hpp" />
+    <ClInclude Include="App.h">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Controls\ActionList.h">
+      <DependentUpon>Controls\ActionList.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Controls\Case.h">
+      <DependentUpon>Controls\Case.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Controls\ChromeButton.h">
+      <DependentUpon>Controls\ChromeButton.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Controls\ColorPicker.h">
+      <DependentUpon>Controls\ColorPicker.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Controls\ColorPickerSlider.h">
+      <DependentUpon>Controls\ColorPickerSlider.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Controls\ConstrainedBox.h">
+      <DependentUpon>Controls\ConstrainedBox.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Controls\FocusBorderColorSpectrum.h">
+      <DependentUpon>Controls\FocusBorderColorSpectrum.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Controls\SwitchPresenter.h">
+      <DependentUpon>Controls\SwitchPresenter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Controls\UniformGrid.h">
+      <DependentUpon>Controls\UniformGrid.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Converters\ColorToColorShadeConverter.h">
+      <DependentUpon>Converters\ColorToColorShadeConverter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Converters\ColorToDisplayNameConverter.h">
+      <DependentUpon>Converters\ColorToDisplayNameConverter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Converters\ContrastBrushConverter.h">
+      <DependentUpon>Converters\ContrastBrushConverter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Converters\ThicknessFilterConverter.h">
+      <DependentUpon>Converters\ThicknessFilterConverter.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="dependencyproperty.h" />
+    <ClInclude Include="event.h" />
+    <ClInclude Include="factory.h" />
+    <ClInclude Include="Models\FluentColorPalette.h">
+      <DependentUpon>Models\FluentColorPalette.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Models\Primitives\OptionalTaskbarAppearance.h">
+      <DependentUpon>Models\Primitives\OptionalTaskbarAppearance.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Models\Primitives\TaskbarAppearance.h">
+      <DependentUpon>Models\Primitives\TaskbarAppearance.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Pages\ColorPickerPage.h">
+      <DependentUpon>Pages\ColorPickerPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Controls\colorpickerrendering.hpp" />
+    <ClInclude Include="Pages\FramelessPage.h">
+      <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="FunctionalConverters.h">
+      <DependentUpon>FunctionalConverters.idl</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="Pages\TrayFlyoutPage.h">
+      <DependentUpon>Pages\TrayFlyoutPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Pages\WelcomePage.h">
+      <DependentUpon>Pages\WelcomePage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="Models\Action.h">
+      <DependentUpon>Models\Action.idl</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="property.h" />
+    <ClInclude Include="PropertyChangedBase.hpp" />
+    <ClInclude Include="RelativeAncestor.h">
+      <DependentUpon>RelativeAncestor.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="StyleResources.h">
+      <DependentUpon>StyleResources.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="App.idl">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="Controls\ActionList.idl">
+      <DependentUpon>Controls\ActionList.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="Controls\Case.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Controls\ChromeButton.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Controls\ColorPicker.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Controls\ColorPickerSlider.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Controls\ConstrainedBox.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Controls\FocusBorderColorSpectrum.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Controls\SwitchPresenter.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Controls\UniformGrid.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Converters\ColorToColorShadeConverter.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Converters\ColorToDisplayNameConverter.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Converters\ContrastBrushConverter.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Converters\ThicknessFilterConverter.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\ThicknessFilterKind.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\FluentColorPalette.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\IColorPalette.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\AccentState.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\ColorChannel.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\ColorRepresentation.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\HsvColor.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\LogLevel.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\LogSinkState.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\OptionalTaskbarAppearance.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\TaskbarAppearance.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Models\Primitives\TaskbarState.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="Pages\ColorPickerPage.idl">
+      <DependentUpon>Pages\ColorPickerPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="Pages\FramelessPage.idl">
+      <DependentUpon>Pages\FramelessPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="FunctionalConverters.idl" />
+    <Midl Include="Pages\TrayFlyoutPage.idl">
+      <DependentUpon>Pages\TrayFlyoutPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="Pages\WelcomePage.idl">
+      <DependentUpon>Pages\WelcomePage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="Models\Action.idl" />
+    <Midl Include="RelativeAncestor.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+    <Midl Include="StyleResources.idl">
+      <SubType>Designer</SubType>
+    </Midl>
+  </ItemGroup>
+  <Target Name="PlaceAppXbfAtRootOfResourceTree" DependsOnTargets="GetPackagingOutputs">
+    <ItemGroup>
+      <_RelocatedAppXamlData Include="@(PackagingOutputs)" Condition="'%(Filename)' == 'App' and ('%(Extension)' == '.xaml' or '%(Extension)' == '.xbf')" />
+      <PackagingOutputs Remove="@(_RelocatedAppXamlData)" />
+      <PackagingOutputs Include="@(_RelocatedAppXamlData)">
+        <TargetPath>%(Filename)%(Extension)</TargetPath>
+      </PackagingOutputs>
+    </ItemGroup>
+  </Target>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.UI.Xaml.2.7.0-prerelease.210816001\build\native\Microsoft.UI.Xaml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.UI.Xaml.2.7.0-prerelease.210816001\build\native\Microsoft.UI.Xaml.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210825.3\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210825.3\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210825.3\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210825.3\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  </Target>
+  <Import Project="..\packages\Microsoft.UI.Xaml.2.7.0-prerelease.210816001\build\native\Microsoft.UI.Xaml.targets" Condition="Exists('..\packages\Microsoft.UI.Xaml.2.7.0-prerelease.210816001\build\native\Microsoft.UI.Xaml.targets')" />
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210825.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210825.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
+</Project>

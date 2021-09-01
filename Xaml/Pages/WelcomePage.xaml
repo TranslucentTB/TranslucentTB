@@ -1,0 +1,102 @@
+<local:FramelessPage
+    x:Class="TranslucentTB.Xaml.Pages.WelcomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:root="using:TranslucentTB.Xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:TranslucentTB.Xaml.Pages"
+    xmlns:controls="using:TranslucentTB.Xaml.Controls"
+    xmlns:models="using:TranslucentTB.Xaml.Models"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" Width="636" Height="500" ExpandIntoTitlebar="True" IsClosable="True" Title="Welcome to TranslucentTB!">
+
+    <local:FramelessPage.Resources>
+        <!-- Use white no matter the theme -->
+        <Style x:Key="CloseButtonStyle" BasedOn="{StaticResource ChromeButtonStyle}" TargetType="controls:ChromeButton">
+            <Setter Property="NormalForeground" Value="White" />
+            <Setter Property="NormalBackground" Value="#00E81123" />
+            <Setter Property="HoverForeground" Value="White" />
+            <Setter Property="HoverBackground" Value="#FFE81123" />
+            <Setter Property="PressedForeground" Value="White" />
+            <Setter Property="PressedBackground" Value="#FF8B0A14" />
+        </Style>
+
+        <Color x:Key="InactiveChromeButtonForeground">#D6D6D6</Color>
+    </local:FramelessPage.Resources>
+
+    <!-- Putting all within UserControl makes VSM happy -->
+    <UserControl>
+        <Grid>
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup x:Name="ActivityStates">
+                    <VisualState x:Name="Active" />
+                    <VisualState x:Name="Inactive">
+                        <VisualState.StateTriggers>
+                            <StateTrigger IsActive="{x:Bind root:FunctionalConverters.InvertedBool(IsActive), Mode = OneWay}" />
+                        </VisualState.StateTriggers>
+
+                        <VisualState.Setters>
+                            <Setter Target="HeaderTitleTextBlock.Foreground" Value="{ThemeResource InactiveChromeButtonForeground}" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+            
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <RelativePanel x:Name="TitleRegion" Grid.ColumnSpan="2" Height="152" Margin="0,0,0,12">
+                <RelativePanel.Background>
+                    <ImageBrush ImageSource="ms-appx:///Assets/SplashScreen.png" Stretch="Fill" />
+                </RelativePanel.Background>
+                <Border RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True">
+                    <Border.Background>
+                        <AcrylicBrush BackgroundSource="Backdrop" TintColor="White" TintOpacity="0" FallbackColor="#66FFFFFF" />
+                    </Border.Background>
+                    <Border BorderThickness="0,2,0,0" BorderBrush="#22FFFFFF" Padding="12">
+                        <TextBlock x:Name="HeaderTitleTextBlock" Style="{ThemeResource TitleTextBlockStyle}" Text="{x:Bind Title}" Foreground="White" TextLineBounds="Tight" />
+                    </Border>
+                </Border>
+            </RelativePanel>
+
+            <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Vertical" Spacing="12" Margin="12,0">
+                <TextBlock TextWrapping="WrapWholeWords">
+                    Thanks for trying TranslucentTB! After you hit "Continue", you can personalize how the taskbar looks to your desires.
+                    We hope you enjoy it, and feel free to <Hyperlink NavigateUri="https://github.com/TranslucentTB/TranslucentTB/issues/new">open a GitHub issue</Hyperlink> if you have any problem or want to see a feature added!
+                </TextBlock>
+
+                <controls:ActionList>
+                    <models:Action
+                        Name="Donate to the project on Liberapay"
+                        Click="OpenLiberapayLink"
+                        Description="Show us your support by offering a single-time or recurring donation&#x2764;&#xFE0F;">
+                        <PathIcon Data="{StaticResource LiberapayLogo}" />
+                    </models:Action>
+                    <models:Action
+                        Name="Join our Discord server"
+                        Click="OpenDiscordLink"
+                        Description="Chat with the developers and get help with the program">
+                        <PathIcon Data="{StaticResource DiscordLogo}" />
+                    </models:Action>
+                    <models:Action
+                        Name="Edit the configuration file"
+                        Click="EditConfigFile"
+                        Description="You can always do this by clicking &quot;Advanced&quot; > &quot;Edit settings&quot; in the tray icon's context menu&#10;Changes are automatically reloaded when you save the file"
+                        Icon="Edit" />
+                </controls:ActionList>
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="12" Margin="12">
+                <Button Width="100" Style="{ThemeResource AccentButtonStyle}" Click="AgreeButtonClicked">Continue</Button>
+                <Button Width="100" Click="DisagreeButtonClicked">Exit</Button>
+            </StackPanel>
+        </Grid>
+    </UserControl>
+</local:FramelessPage>

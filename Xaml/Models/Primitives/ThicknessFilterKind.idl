@@ -1,0 +1,13 @@
+namespace TranslucentTB.Xaml.Models.Primitives
+{
+	enum ThicknessFilterKind
+	{
+		None,
+		Left,
+		Top,
+		Right,
+		Bottom,
+		LeftRight,
+		TopBottom
+	};
+}

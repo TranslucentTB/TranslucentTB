@@ -1,0 +1,19 @@
+import "Models/Primitives/LogSinkState.idl";
+
+namespace TranslucentTB.Xaml
+{
+	static runtimeclass FunctionalConverters
+	{
+		[noexcept]
+		static Boolean InvertedBool(Boolean value);
+
+		[noexcept]
+		static Windows.UI.Xaml.Visibility InvertedBoolToVisibility(Boolean value);
+
+		[noexcept]
+		static Boolean IsSameLogSinkState(TranslucentTB.Xaml.Models.Primitives.LogSinkState a, TranslucentTB.Xaml.Models.Primitives.LogSinkState b);
+
+		[noexcept]
+		static Boolean IsDifferentLogSinkState(TranslucentTB.Xaml.Models.Primitives.LogSinkState a, TranslucentTB.Xaml.Models.Primitives.LogSinkState b);
+	}
+}

@@ -1,0 +1,9 @@
+namespace TranslucentTB.Xaml.Models.Primitives
+{
+	interface IColorPalette 
+	{
+		UInt32 ColorCount { get; };
+		UInt32 ShadeCount { get; };
+		Windows.UI.Color GetColor(UInt32 colorIndex, UInt32 shadeIndex);
+	}
+}

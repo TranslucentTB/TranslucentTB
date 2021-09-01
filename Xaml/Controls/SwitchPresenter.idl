@@ -1,0 +1,22 @@
+#include "..\dependencyproperty.h"
+
+import "Controls/Case.idl";
+
+namespace TranslucentTB.Xaml.Controls
+{
+	[contentproperty("SwitchCases")]
+	runtimeclass SwitchPresenter : Windows.UI.Xaml.Controls.ContentPresenter
+	{
+		SwitchPresenter();
+
+		Case CurrentCase { get; };
+
+		[noexcept]
+		static Windows.UI.Xaml.DependencyProperty CurrentCaseProperty { get; };
+
+		DECL_DEPENDENCY_PROPERTY(Object, Value);
+
+		[noexcept]
+		IObservableVector<Case> SwitchCases { get; };
+	}
+}

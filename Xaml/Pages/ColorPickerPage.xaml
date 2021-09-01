@@ -1,0 +1,93 @@
+<local:FramelessPage
+    x:Class="TranslucentTB.Xaml.Pages.ColorPickerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:root="using:TranslucentTB.Xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:TranslucentTB.Xaml.Controls"
+    xmlns:local="using:TranslucentTB.Xaml.Pages"
+    mc:Ignorable="d" IsClosable="True" Width="346">
+
+    <local:FramelessPage.TitlebarContent>
+        <controls:ChromeButton x:Name="AlwaysOnTopButton" ToolTipService.ToolTip="Always on top" IsTogglable="True" IsChecked="{x:Bind AlwaysOnTop, Mode = TwoWay}">
+            <FontIcon Glyph="&#xE840;" FontSize="10" FontWeight="Medium" />
+        </controls:ChromeButton>
+    </local:FramelessPage.TitlebarContent>
+
+    <local:FramelessPage.SystemMenuContent>
+        <ToggleMenuFlyoutItem Text="Always on top" IsChecked="{x:Bind AlwaysOnTop, Mode = TwoWay}" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" />
+    </local:FramelessPage.SystemMenuContent>
+
+    <!-- Putting all within UserControl makes VSM happy -->
+    <UserControl>
+        <StackPanel>
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup x:Name="ActivityStates">
+                    <VisualState x:Name="Active" />
+                    <VisualState x:Name="Inactive">
+                        <VisualState.StateTriggers>
+                            <StateTrigger IsActive="{x:Bind root:FunctionalConverters.InvertedBool(IsActive), Mode = OneWay}" />
+                        </VisualState.StateTriggers>
+
+                        <VisualState.Setters>
+                            <Setter Target="AlwaysOnTopButton.NormalForeground" Value="{ThemeResource InactiveChromeButtonForeground}" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+        
+            <controls:ColorPicker x:Name="Picker" IsAlphaEnabled="True" ColorChanged="PickerColorChanged" Background="{ThemeResource LayerFillColorDefaultBrush}" HeaderCornerRadius="0" HeaderBackground="Transparent" />
+
+            <Grid Height="{ThemeResource DatePickerFlyoutPresenterAcceptDismissHostGridHeight}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!--
+                    HACK: allows ContentDialog localization in .resw, removes the need for explicit XamlRoot
+                    We insert it here because anywhere else it would throw off StackPanel spacing.
+                -->
+                <ContentDialog
+                    x:Name="ConfirmCloseDialog"
+                    d:Visibility="Collapsed"
+                    Content="Do you want to save changes to the color?"
+                    PrimaryButtonText="Yes"
+                    SecondaryButtonText="No"
+                    CloseButtonText="Cancel"
+                    DefaultButton="Primary"
+                    Opened="DialogOpened"
+                    Closed="DialogClosed" />
+
+                <Rectangle
+                    Height="{ThemeResource DatePickerSpacerThemeWidth}"
+                    VerticalAlignment="Top"
+                    Fill="{ThemeResource DatePickerFlyoutPresenterSpacerFill}"
+                    Grid.ColumnSpan="2" />
+                <Button
+                    Grid.Column="0"
+                    Content="&#xE8FB;"
+                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                    FontSize="16"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Margin="{StaticResource DatePickerFlyoutPresenterAcceptMargin}"
+                    Padding="4"
+                    Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
+                    Click="OkButtonClicked" />
+                <Button
+                    Grid.Column="1"
+                    Content="&#xE711;"
+                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                    FontSize="16"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Margin="{StaticResource DatePickerFlyoutPresenterDismissMargin}"
+                    Padding="4"
+                    Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
+                    Click="CancelButtonClicked" />
+            </Grid>
+        </StackPanel>
+    </UserControl>
+</local:FramelessPage>

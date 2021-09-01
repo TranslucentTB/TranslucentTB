@@ -1,0 +1,30 @@
+#include "..\dependencyproperty.h"
+
+import "Controls/ColorPickerSlider.idl";
+import "Models/Primitives/IColorPalette.idl";
+
+namespace TranslucentTB.Xaml.Controls
+{
+	runtimeclass ColorPicker : Microsoft.UI.Xaml.Controls.ColorPicker
+	{
+		ColorPicker();
+
+		IObservableVector<Windows.UI.Color> CustomPaletteColors { get; };
+
+		[noexcept]
+		static Windows.UI.Xaml.DependencyProperty CustomPaletteColorsProperty { get; };
+
+		DECL_DEPENDENCY_PROPERTY(Int32, CustomPaletteColumnCount);
+		DECL_DEPENDENCY_PROPERTY(TranslucentTB.Xaml.Models.Primitives.IColorPalette, CustomPalette);
+		DECL_DEPENDENCY_PROPERTY(Boolean, IsColorPaletteVisible);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Color, CheckerBackgroundColor);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Xaml.Media.Brush, HeaderBackground);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Xaml.CornerRadius, HeaderCornerRadius);
+
+		[noexcept]
+		static Object InvertedCheckerboardProperty { get; };
+
+		static Boolean GetInvertedCheckerboard(Windows.UI.Xaml.Controls.Border obj);
+		static void SetInvertedCheckerboard(Windows.UI.Xaml.Controls.Border obj, Boolean value);
+	}
+}

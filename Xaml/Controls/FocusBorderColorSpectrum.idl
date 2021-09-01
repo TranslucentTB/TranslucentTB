@@ -1,0 +1,8 @@
+namespace TranslucentTB.Xaml.Controls
+{
+	[default_interface]
+	runtimeclass FocusBorderColorSpectrum : Microsoft.UI.Xaml.Controls.Primitives.ColorSpectrum
+    {
+        FocusBorderColorSpectrum();
+    }
+}

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D0004E78-F00B-4943-B77E-9A278F8BA399}</ProjectGuid>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="..\Common\CppProject.props" />
+  <ItemDefinitionGroup Label="Globals">
+    <ClCompile>
+      <ExceptionHandling>false</ExceptionHandling>
+      <PreprocessorDefinitions>EXPLORERHOOKS_EXPORTS;WIL_SUPPRESS_EXCEPTIONS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>detours.lib;kernel32.lib;ole32.lib;user32.lib</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="common.cpp" />
+    <ClCompile Include="detourtransaction.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="swcadetour.cpp" />
+    <ClCompile Include="explorerhooks.cpp" />
+    <ClCompile Include="taskviewvisibilitymonitor.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="common.hpp" />
+    <ClInclude Include="detourtransaction.hpp" />
+    <ClInclude Include="swcadetour.hpp" />
+    <ClInclude Include="explorerhooks.hpp" />
+    <ClInclude Include="multitaskingviewvisibilitysink.hpp" />
+    <ClInclude Include="taskviewvisibilitymonitor.hpp" />
+  </ItemGroup>
+</Project>

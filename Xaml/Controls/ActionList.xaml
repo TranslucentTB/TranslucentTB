@@ -1,0 +1,29 @@
+<ItemsControl
+    x:Class="TranslucentTB.Xaml.Controls.ActionList"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:TranslucentTB.Xaml.Models"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    TabNavigation="Local" HorizontalAlignment="Stretch" IsTabStop="False">
+
+    <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="models:Action" x:DefaultBindMode="OneWay">
+            <!-- Fight me -->
+            <ListViewItem Tapped="ForwardAction" KeyUp="ForwardActionKey" Tag="{x:Bind}" Padding="0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentPresenter Content="{x:Bind Icon}" Width="20" Height="24" VerticalAlignment="Top" Margin="16" />
+                    <StackPanel Grid.Column="1" Margin="0,12">
+                        <TextBlock FontSize="14" Text="{x:Bind Name}" Foreground="{ThemeResource SystemAccentColor}" TextLineBounds="TrimToCapHeight" />
+                        <TextBlock FontSize="13" Opacity="0.6" Text="{x:Bind Description}" />
+                    </StackPanel>
+                </Grid>
+            </ListViewItem>
+        </DataTemplate>
+    </ItemsControl.ItemTemplate>
+</ItemsControl>

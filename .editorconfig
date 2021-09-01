@@ -1,12 +1,20 @@
 root = true
 
-[*.{cpp,h,hpp}]
+[*]
 charset = utf-8
 end_of_line = crlf
-insert_final_newline = false
+insert_final_newline = true
+trim_trailing_whitespace = true
 indent_style = tab
 tab_width = 4
-trim_trailing_whitespace = true
 
-[resource.h]
-insert_final_newline = true
+[*.{appxmanifest,config,filters,props,vcxitems,vcxproj,wapproj}]
+insert_final_newline = false
+
+[*.{appxmanifest,config,filters,json,manifest,md,natvis,props,vcxitems,vcxproj,wapproj,yml}]
+indent_style = spaces
+indent_size = 2
+
+[*.xaml]
+indent_style = spaces
+indent_size = 4

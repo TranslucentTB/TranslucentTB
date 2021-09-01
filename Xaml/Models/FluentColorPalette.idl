@@ -1,0 +1,9 @@
+import "Models/Primitives/IColorPalette.idl";
+
+namespace TranslucentTB.Xaml.Models
+{
+    runtimeclass FluentColorPalette : [default] TranslucentTB.Xaml.Models.Primitives.IColorPalette
+    {
+        FluentColorPalette();
+    }
+}

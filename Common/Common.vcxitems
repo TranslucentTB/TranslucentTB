@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{8a1baf89-44d0-4bbf-a64d-35e6ebebed06}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)appinfo.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)arch.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)undoc\explorer.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)undoc\winternl.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\color.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)config\config.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)config\optionaltaskbarappearance.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)config\rapidjsonhelper.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)config\taskbarappearance.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)config\windowfilter.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)constants.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)redefgetcurrenttime.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)undefgetcurrenttime.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)undoc\user32.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)undoc\uxtheme.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)undoc\winuser.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\concepts.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\fmt.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\hash.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\maybe_delete.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\null_terminated_string_view.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\numbers.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\strings.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\string_macros.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\thread_independent_mutex.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\to_string_view.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\type_traits.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)version.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)wilx.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)win32.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)winrt.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)CppProject.props" />
+  </ItemGroup>
+</Project>

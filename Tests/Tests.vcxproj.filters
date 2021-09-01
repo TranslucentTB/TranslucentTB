@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Util Tests">
+      <UniqueIdentifier>{fbed2b1b-deaf-4229-b819-e9e4fdf72b8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config Tests">
+      <UniqueIdentifier>{3268f330-639d-4e82-8928-d43f800a0cb4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="util\numbers.cpp">
+      <Filter>Util Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="util\strings.cpp">
+      <Filter>Util Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="win32.cpp" />
+    <ClCompile Include="util\color.cpp">
+      <Filter>Util Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="config\rapidjsonhelper.cpp">
+      <Filter>Config Tests</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Tests.rc2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="win32version.h" />
+    <ClInclude Include="testingdata.hpp" />
+  </ItemGroup>
+</Project>

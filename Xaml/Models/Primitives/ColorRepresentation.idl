@@ -1,0 +1,8 @@
+namespace TranslucentTB.Xaml.Models.Primitives
+{
+	enum ColorRepresentation
+	{
+		Hsva,
+		Rgba
+	};
+}

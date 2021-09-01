@@ -1,0 +1,14 @@
+#include "..\dependencyproperty.h"
+
+namespace TranslucentTB.Xaml.Controls
+{
+	[contentproperty("Content")]
+	runtimeclass Case : Windows.UI.Xaml.DependencyObject
+	{
+		Case();
+
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Xaml.UIElement, Content);
+		DECL_DEPENDENCY_PROPERTY(Boolean, IsDefault);
+		DECL_DEPENDENCY_PROPERTY(Object, Value);
+	}
+}

@@ -1,0 +1,14 @@
+#include "..\dependencyproperty.h"
+
+import "Models/Primitives/ThicknessFilterKind.idl";
+
+namespace TranslucentTB.Xaml.Converters
+{
+	runtimeclass ThicknessFilterConverter : Windows.UI.Xaml.DependencyObject, Windows.UI.Xaml.Data.IValueConverter
+	{
+		ThicknessFilterConverter();
+
+		DECL_DEPENDENCY_PROPERTY(TranslucentTB.Xaml.Models.Primitives.ThicknessFilterKind, Filter);
+		DECL_DEPENDENCY_PROPERTY(Double, Scale);
+	}
+}

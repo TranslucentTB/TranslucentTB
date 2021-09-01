@@ -1,0 +1,39 @@
+#include "..\dependencyproperty.h"
+import "Controls/ChromeButton.idl";
+
+namespace TranslucentTB.Xaml.Pages
+{
+	delegate void ClosedDelegate();
+
+	[contentproperty("UserContent")]
+	unsealed runtimeclass FramelessPage : Windows.UI.Xaml.Controls.Page
+	{
+		FramelessPage();
+
+		[noexcept]
+		overridable Boolean CanMove { get; };
+
+		void ShowSystemMenu(Windows.Foundation.Point position);
+		void HideSystemMenu();
+
+		overridable Boolean RequestClose();
+		overridable Windows.Foundation.Rect DragRegion { get; };
+		Windows.Foundation.Rect TitlebarButtonsRegion { get; };
+
+		protected void Close();
+		event ClosedDelegate Closed;
+
+		DECL_DEPENDENCY_PROPERTY(String, Title);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Xaml.UIElement, UserContent);
+		DECL_DEPENDENCY_PROPERTY(Boolean, ExpandIntoTitlebar);
+		DECL_DEPENDENCY_PROPERTY(Boolean, IsClosable);
+		DECL_DEPENDENCY_PROPERTY(Boolean, AlwaysOnTop);
+		DECL_DEPENDENCY_PROPERTY(Boolean, IsActive);
+
+		[noexcept]
+		IObservableVector<TranslucentTB.Xaml.Controls.ChromeButton> TitlebarContent { get; };
+
+		[noexcept]
+		IObservableVector<Windows.UI.Xaml.Controls.MenuFlyoutItemBase> SystemMenuContent { get; };
+	}
+}

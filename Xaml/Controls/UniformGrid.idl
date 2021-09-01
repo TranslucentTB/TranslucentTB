@@ -1,0 +1,20 @@
+#include "..\dependencyproperty.h"
+
+namespace TranslucentTB.Xaml.Controls
+{
+	runtimeclass UniformGrid : Windows.UI.Xaml.Controls.Grid
+	{
+		UniformGrid();
+
+		DECL_DEPENDENCY_PROPERTY(Int32, Columns);
+		DECL_DEPENDENCY_PROPERTY(Int32, FirstColumn);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Xaml.Controls.Orientation, Orientation);
+		DECL_DEPENDENCY_PROPERTY(Int32, Rows);
+
+		[noexcept]
+		static Windows.UI.Xaml.DependencyProperty AutoLayoutProperty { get; };
+
+		static Windows.Foundation.IReference<Boolean> GetAutoLayout(Windows.UI.Xaml.FrameworkElement element);
+		static void SetAutoLayout(Windows.UI.Xaml.FrameworkElement element, Windows.Foundation.IReference<Boolean> value);
+	}
+}

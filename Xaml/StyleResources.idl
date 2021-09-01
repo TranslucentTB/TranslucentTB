@@ -1,0 +1,11 @@
+namespace TranslucentTB.Xaml
+{
+	static runtimeclass StyleResources
+	{
+		[noexcept]
+		static Windows.UI.Xaml.DependencyProperty ResourcesProperty { get; };
+
+		static Windows.UI.Xaml.ResourceDictionary GetResources(Windows.UI.Xaml.DependencyObject obj);
+		static void SetResources(Windows.UI.Xaml.DependencyObject obj, Windows.UI.Xaml.ResourceDictionary value);
+	}
+}

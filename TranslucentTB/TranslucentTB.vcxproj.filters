@@ -13,170 +13,169 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Stock Configuration Files">
-      <UniqueIdentifier>{8a3034e1-4c07-4ca8-a036-8cfc161a562d}</UniqueIdentifier>
-      <Extensions>cfg;csv</Extensions>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="win32.cpp">
+    <ClCompile Include="windows\messagewindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ttberror.cpp">
+    <ClCompile Include="tray\trayicon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ttblog.cpp">
+    <ClCompile Include="windows\window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="uwp.cpp">
+    <ClCompile Include="windows\windowclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="window.cpp">
+    <ClCompile Include="uwp\uwp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="eventhook.cpp">
+    <ClCompile Include="taskbar\taskbarattributeworker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windowclass.cpp">
+    <ClCompile Include="mainappwindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="messagewindow.cpp">
+    <ClCompile Include="application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="trayicon.cpp">
+    <ClCompile Include="folderwatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="traycontextmenu.cpp">
+    <ClCompile Include="uwp\basexamlpagehost.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="config.cpp">
+    <ClCompile Include="managers\configmanager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="blacklist.cpp">
+    <ClCompile Include="managers\startupmanager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="appvisibilitysink.cpp">
+    <ClCompile Include="uwp\xamlthread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="findwindowiterator.cpp">
+    <ClCompile Include="uwp\xamlthreadpool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="autostart_desktop.cpp">
+    <ClCompile Include="uwp\xamldragregion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="autostart_store.cpp">
+    <ClCompile Include="tray\basecontextmenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="hooks.cpp">
+    <ClCompile Include="localization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="windows\messagewindow.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="win32.hpp">
+    <ClInclude Include="tray\trayicon.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="config.hpp">
+    <ClInclude Include="windows\windowclass.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="util.hpp">
+    <ClInclude Include="resources\ids.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="swcadata.hpp">
+    <ClInclude Include="uwp\uwp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ttberror.hpp">
+    <ClInclude Include="taskbar\taskbarattributeworker.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ttblog.hpp">
+    <ClInclude Include="uwp\xamlpagehost.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="autostart.hpp">
+    <ClInclude Include="tray\contextmenu.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="uwp.hpp">
+    <ClInclude Include="tray\traycontextmenu.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="arch.h">
+    <ClInclude Include="mainappwindow.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="window.hpp">
+    <ClInclude Include="folderwatcher.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="eventhook.hpp">
+    <ClInclude Include="application.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windowclass.hpp">
+    <ClInclude Include="taskbar\launchervisibilitysink.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="messagewindow.hpp">
+    <ClInclude Include="uwp\basexamlpagehost.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="autofree.hpp">
+    <ClInclude Include="managers\configmanager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="trayicon.hpp">
+    <ClInclude Include="managers\startupmanager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="traycontextmenu.hpp">
+    <ClInclude Include="uwp\xamlthread.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="blacklist.hpp">
+    <ClInclude Include="uwp\xamlthreadpool.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="common.hpp">
+    <ClInclude Include="uwp\xamldragregion.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="clipboardcontext.hpp">
+    <ClInclude Include="windows\window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="registrykey.hpp">
+    <ClInclude Include="dynamicloader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="appvisibilitysink.hpp">
+    <ClInclude Include="tray\basecontextmenu.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="findwindowiterator.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="createinstance.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hooks.hpp">
+    <ClInclude Include="localization.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="TranslucentTB.rc2">
+    <Image Include="resources\TranslucentTB.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\TranslucentTB.black.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\TranslucentTB.white.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resources\TranslucentTB.rc2">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="resources\language\TranslucentTB.en.rc2">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="config.cfg">
-      <Filter>Stock Configuration Files</Filter>
-    </None>
-    <None Include="dynamic-ws-exclude.csv">
-      <Filter>Stock Configuration Files</Filter>
-    </None>
-    <None Include="..\LICENSE.md" />
-    <None Include="..\Readme.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Manifest Include="app.manifest">
+    <Manifest Include="resources\TranslucentTB.manifest">
       <Filter>Resource Files</Filter>
     </Manifest>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="TTB_white.ico">
+    <Natvis Include="windows\Window.natvis">
       <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="TTB_color.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
+    </Natvis>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="taskbar\ShellExperience.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
   </ItemGroup>
 </Project>

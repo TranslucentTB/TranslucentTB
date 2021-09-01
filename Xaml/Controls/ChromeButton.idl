@@ -1,0 +1,19 @@
+#include "..\dependencyproperty.h"
+
+namespace TranslucentTB.Xaml.Controls
+{
+	[contentproperty("Icon")]
+	runtimeclass ChromeButton : Windows.UI.Xaml.Controls.Primitives.ToggleButton
+	{
+		ChromeButton();
+
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Xaml.Controls.IconElement, Icon);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Color, NormalForeground);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Color, NormalBackground);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Color, HoverForeground);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Color, HoverBackground);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Color, PressedForeground);
+		DECL_DEPENDENCY_PROPERTY(Windows.UI.Color, PressedBackground);
+		DECL_DEPENDENCY_PROPERTY(Boolean, IsTogglable);
+	}
+}

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="Window" Inheritable="false">
+    <DisplayString>{m_WindowHandle}</DisplayString>
+    <Expand>
+      <Item Name="[title]" Condition="m_WindowHandle != 0">title()</Item>
+      <Item Name="[class]" Condition="m_WindowHandle != 0">classname()</Item>
+      <Item Name="[file]" Condition="m_WindowHandle != 0">file()</Item>
+    </Expand>
+  </Type>
+</AutoVisualizer>

@@ -1,0 +1,314 @@
+<Page
+    x:Class="TranslucentTB.Xaml.Pages.TrayFlyoutPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:root="using:TranslucentTB.Xaml"
+    xmlns:primitives="using:TranslucentTB.Xaml.Models.Primitives"
+    xmlns:windows11NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract, 14)"
+    mc:Ignorable="d" x:DefaultBindMode="OneWay">
+    <ToolTipService.ToolTip>
+        <ToolTip>TranslucentTB</ToolTip>
+    </ToolTipService.ToolTip>
+    <Page.ContextFlyout>
+        <MenuFlyout x:Name="ContextMenu" ShouldConstrainToRootBounds="False">
+            <MenuFlyoutSubItem Text="Desktop" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
+                <MenuFlyoutSubItem.Tag>
+                    <primitives:TaskbarState>Desktop</primitives:TaskbarState>
+                </MenuFlyoutSubItem.Tag>
+                <MenuFlyoutItem Tag="Color" Text="Accent Color" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ColorClicked">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE790;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <windows11NotPresent:ToggleMenuFlyoutItem Tag="ShowPeek" Text="Show Desktop Peek Button" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <MenuFlyoutSeparator />
+                <muxc:RadioMenuFlyoutItem Text="Normal" GroupName="DesktopCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Normal</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Opaque" GroupName="DesktopCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Opaque</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Clear" GroupName="DesktopCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Clear</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Blur" GroupName="DesktopCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Blur</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Acrylic" GroupName="DesktopCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Acrylic</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+            </MenuFlyoutSubItem>
+            <MenuFlyoutSubItem Text="Visible window" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
+                <MenuFlyoutSubItem.Tag>
+                    <primitives:TaskbarState>VisibleWindow</primitives:TaskbarState>
+                </MenuFlyoutSubItem.Tag>
+                <ToggleMenuFlyoutItem Tag="Enabled" Text="Enabled" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <MenuFlyoutItem Tag="Color" Text="Accent Color" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ColorClicked">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE790;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <windows11NotPresent:ToggleMenuFlyoutItem Tag="ShowPeek" Text="Show Desktop Peek Button" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <MenuFlyoutSeparator />
+                <muxc:RadioMenuFlyoutItem Text="Normal" GroupName="VisibleCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Normal</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Opaque" GroupName="VisibleCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Opaque</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Clear" GroupName="VisibleCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Clear</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Blur" GroupName="VisibleCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Blur</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Acrylic" GroupName="VisibleCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Acrylic</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+            </MenuFlyoutSubItem>
+            <MenuFlyoutSubItem Text="Maximised window" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
+                <MenuFlyoutSubItem.Tag>
+                    <primitives:TaskbarState>MaximisedWindow</primitives:TaskbarState>
+                </MenuFlyoutSubItem.Tag>
+                <ToggleMenuFlyoutItem Tag="Enabled" Text="Enabled" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <MenuFlyoutItem Tag="Color" Text="Accent Color" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ColorClicked">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE790;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <windows11NotPresent:ToggleMenuFlyoutItem Tag="ShowPeek" Text="Show Desktop Peek Button" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <MenuFlyoutSeparator />
+                <muxc:RadioMenuFlyoutItem Text="Normal" GroupName="MaximizedCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Normal</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Opaque" GroupName="MaximizedCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Opaque</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Clear" GroupName="MaximizedCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Clear</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Blur" GroupName="MaximizedCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Blur</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Acrylic" GroupName="MaximizedCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Acrylic</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+            </MenuFlyoutSubItem>
+            <MenuFlyoutSubItem Text="Start opened" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
+                <MenuFlyoutSubItem.Tag>
+                    <primitives:TaskbarState>StartOpened</primitives:TaskbarState>
+                </MenuFlyoutSubItem.Tag>
+                <MenuFlyoutSubItem.Icon>
+                    <FontIcon FontFamily="HoloLens MDL2 Assets" Glyph="&#xE782;" />
+                </MenuFlyoutSubItem.Icon>
+                <ToggleMenuFlyoutItem Tag="Enabled" Text="Enabled" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <MenuFlyoutItem Tag="Color" Text="Accent Color" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ColorClicked">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE790;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <windows11NotPresent:ToggleMenuFlyoutItem Tag="ShowPeek" Text="Show Desktop Peek Button" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <MenuFlyoutSeparator />
+                <muxc:RadioMenuFlyoutItem Text="Normal" GroupName="StartCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Normal</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Opaque" GroupName="StartCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Opaque</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Clear" GroupName="StartCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Clear</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Blur" GroupName="StartCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Blur</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Acrylic" GroupName="StartCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Acrylic</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+            </MenuFlyoutSubItem>
+            <windows11NotPresent:MenuFlyoutSubItem Text="Search opened" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
+                <MenuFlyoutSubItem.Tag>
+                    <primitives:TaskbarState>SearchOpened</primitives:TaskbarState>
+                </MenuFlyoutSubItem.Tag>
+                <MenuFlyoutSubItem.Icon>
+                    <FontIcon Glyph="&#xE721;" />
+                </MenuFlyoutSubItem.Icon>
+                <ToggleMenuFlyoutItem Tag="Enabled" Text="Enabled" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <MenuFlyoutItem Tag="Color" Text="Accent Color" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ColorClicked">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE790;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <ToggleMenuFlyoutItem Tag="ShowPeek" Text="Show Desktop Peek Button" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <MenuFlyoutSeparator />
+                <muxc:RadioMenuFlyoutItem Text="Normal" GroupName="SearchCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Normal</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Opaque" GroupName="SearchCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Opaque</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Clear" GroupName="SearchCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Clear</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Blur" GroupName="SearchCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Blur</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Acrylic" GroupName="SearchCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Acrylic</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+            </windows11NotPresent:MenuFlyoutSubItem>
+            <MenuFlyoutSubItem Text="Task View opened" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
+                <MenuFlyoutSubItem.Tag>
+                    <primitives:TaskbarState>TaskViewOpened</primitives:TaskbarState>
+                </MenuFlyoutSubItem.Tag>
+                <MenuFlyoutSubItem.Icon>
+                    <FontIcon Glyph="&#xE7C4;" />
+                </MenuFlyoutSubItem.Icon>
+                <ToggleMenuFlyoutItem Tag="Enabled" Text="Enabled" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <MenuFlyoutItem Tag="Color" Text="Accent Color" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ColorClicked">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE790;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <windows11NotPresent:ToggleMenuFlyoutItem Tag="ShowPeek" Text="Show Desktop Peek Button" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <MenuFlyoutSeparator />
+                <muxc:RadioMenuFlyoutItem Text="Normal" GroupName="TaskViewCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Normal</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Opaque" GroupName="TaskViewCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Opaque</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Clear" GroupName="TaskViewCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Clear</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Blur" GroupName="TaskViewCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Blur</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Acrylic" GroupName="TaskViewCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Acrylic</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+            </MenuFlyoutSubItem>
+            <MenuFlyoutSeparator />
+            <MenuFlyoutSubItem Text="Advanced" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
+                <MenuFlyoutItem Text="Open log file" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="OpenLogFileClicked" IsEnabled="{x:Bind root:FunctionalConverters.IsSameLogSinkState(SinkState, primitives:LogSinkState.Opened)}" />
+                <MenuFlyoutSubItem x:Name="LogLevelSubMenu" Text="Log verbosity" Style="{StaticResource MergeIconsMenuFlyoutSubItem}" IsEnabled="{x:Bind root:FunctionalConverters.IsDifferentLogSinkState(SinkState, primitives:LogSinkState.Failed)}">
+                    <muxc:RadioMenuFlyoutItem Text="Trace" GroupName="LogLevel" Click="LogLevelClicked">
+                        <muxc:RadioMenuFlyoutItem.Tag>
+                            <primitives:LogLevel>Trace</primitives:LogLevel>
+                        </muxc:RadioMenuFlyoutItem.Tag>
+                    </muxc:RadioMenuFlyoutItem>
+                    <muxc:RadioMenuFlyoutItem Text="Debug" GroupName="LogLevel" Click="LogLevelClicked">
+                        <muxc:RadioMenuFlyoutItem.Tag>
+                            <primitives:LogLevel>Debug</primitives:LogLevel>
+                        </muxc:RadioMenuFlyoutItem.Tag>
+                    </muxc:RadioMenuFlyoutItem>
+                    <muxc:RadioMenuFlyoutItem Text="Information" GroupName="LogLevel" Click="LogLevelClicked">
+                        <muxc:RadioMenuFlyoutItem.Tag>
+                            <primitives:LogLevel>Info</primitives:LogLevel>
+                        </muxc:RadioMenuFlyoutItem.Tag>
+                    </muxc:RadioMenuFlyoutItem>
+                    <muxc:RadioMenuFlyoutItem Text="Warnings" GroupName="LogLevel" Click="LogLevelClicked">
+                        <muxc:RadioMenuFlyoutItem.Tag>
+                            <primitives:LogLevel>Warn</primitives:LogLevel>
+                        </muxc:RadioMenuFlyoutItem.Tag>
+                    </muxc:RadioMenuFlyoutItem>
+                    <muxc:RadioMenuFlyoutItem Text="Errors" GroupName="LogLevel" Click="LogLevelClicked">
+                        <muxc:RadioMenuFlyoutItem.Tag>
+                            <primitives:LogLevel>Err</primitives:LogLevel>
+                        </muxc:RadioMenuFlyoutItem.Tag>
+                    </muxc:RadioMenuFlyoutItem>
+                    <muxc:RadioMenuFlyoutItem Text="Critical" GroupName="LogLevel" Click="LogLevelClicked">
+                        <muxc:RadioMenuFlyoutItem.Tag>
+                            <primitives:LogLevel>Critical</primitives:LogLevel>
+                        </muxc:RadioMenuFlyoutItem.Tag>
+                    </muxc:RadioMenuFlyoutItem>
+                    <MenuFlyoutSeparator />
+                    <muxc:RadioMenuFlyoutItem Text="Off" GroupName="LogLevel" Click="LogLevelClicked">
+                        <muxc:RadioMenuFlyoutItem.Tag>
+                            <primitives:LogLevel>Off</primitives:LogLevel>
+                        </muxc:RadioMenuFlyoutItem.Tag>
+                    </muxc:RadioMenuFlyoutItem>
+                </MenuFlyoutSubItem>
+                <MenuFlyoutItem Text="Dump dynamic state to log" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="DumpDynamicStateClicked" IsEnabled="{x:Bind root:FunctionalConverters.IsDifferentLogSinkState(SinkState, primitives:LogSinkState.Failed)}" />
+                <MenuFlyoutSeparator />
+                <MenuFlyoutItem Text="Edit settings" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="EditSettingsClicked">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE943;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem Text="Return to default settings" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ResetSettingsClicked" />
+                <ToggleMenuFlyoutItem x:Name="DisableSavingSettings" Text="Disable saving settings" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="DisableSavingSettingsClicked" />
+                <MenuFlyoutItem Text="Hide tray icon" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="HideTrayClicked" />
+                <MenuFlyoutSeparator />
+                <MenuFlyoutItem Text="Reset dynamic state" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ResetDynamicStateClicked" />
+                <MenuFlyoutItem Text="Compact thunk heap" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="CompactThunkHeapClicked" />
+            </MenuFlyoutSubItem>
+            <ToggleMenuFlyoutItem x:Name="StartupState" Text="Open at boot" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="StartupClicked" />
+            <MenuFlyoutItem Text="Tips and tricks" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="TipsAndTricksClicked" />
+            <!-- <MenuFlyoutItem Text="About TranslucentTB" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="AboutClicked" /> -->
+            <MenuFlyoutItem Text="Exit" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ExitClicked" />
+        </MenuFlyout>
+    </Page.ContextFlyout>
+</Page>

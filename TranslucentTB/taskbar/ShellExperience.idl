@@ -1,0 +1,93 @@
+namespace Windows.Internal.Shell.Experience
+{
+	enum CortanaAppTransitionType
+	{
+		None = 0x0,
+		IsolatedLaunch = 0x1,
+		TransitionFromStart = 0x2,
+		QFGoWideFromDefault = 0x3,
+		QFGoWideFromStart = 0x4,
+		TransitionSearchToCortana = 0x5,
+		TransitionCortanaToSearch = 0x6
+	};
+
+	enum FocusNavigateDirection
+	{
+		Up = 0x0,
+		Down = 0x1,
+		Next = 0x2,
+		Prev = 0x3
+	};
+
+	[version(0x00000001)]
+	[uuid("2e8fcb18-a0ee-41ad-8ef8-77fb3a370ca5")]
+	interface IShellExperienceManagerFactory
+	{
+		Object GetExperienceManager(String experienceId);
+	}
+	
+	[version(0x00000001)]
+	[uuid("3b810852-511f-4404-89ae-347bc2e8b561")]
+	interface ICortanaExperienceManager
+	{
+		void Prelaunch(Boolean a);
+		void Show(String a, CortanaAppTransitionType cortanaAppTransitionType);
+		void SetPositioningAnchorRect(Windows.Foundation.Rect a, Windows.Foundation.Rect b);
+		void ShowWithStart(Boolean a);
+		void WorkAreaMayHaveChanged();
+		void Hide();
+		void MinimizeToBoxMode();
+		void TakeKeyboardFocus();
+		void PrepareForAppTransition(CortanaAppTransitionType cortanaAppTransitionType);
+		Boolean CanTransitionFromStart();
+		void EnsureForegroundRights();
+		void PearlRectMayHaveChanged();
+		void Uncloak();
+		Boolean SuggestionsShowing { get; };
+		Boolean IsExplicitDismissEnabled { get; };
+		event Windows.Foundation.TypedEventHandler<Windows.Internal.Shell.Experience.CortanaExperienceManager, Windows.Internal.Shell.Experience.ICortanaShownEventArgs> Shown;
+		event Windows.Foundation.TypedEventHandler<Windows.Internal.Shell.Experience.CortanaExperienceManager, Object> Hidden;
+		event Windows.Foundation.TypedEventHandler<Windows.Internal.Shell.Experience.CortanaExperienceManager, Object> Destroyed;
+		event Windows.Foundation.TypedEventHandler<Windows.Internal.Shell.Experience.CortanaExperienceManager, Object> SuggestionsShown;
+		event Windows.Foundation.TypedEventHandler<Windows.Internal.Shell.Experience.CortanaExperienceManager, Object> SuggestionsHidden;
+		event Windows.Foundation.TypedEventHandler<Windows.Internal.Shell.Experience.CortanaExperienceManager, Object> SetForegroundFailed;
+		event Windows.Foundation.TypedEventHandler<Windows.Internal.Shell.Experience.CortanaExperienceManager, Windows.Internal.Shell.Experience.IFocusNavigateEventArgs> FocusNavigate;
+		event Windows.Foundation.TypedEventHandler<Windows.Internal.Shell.Experience.CortanaExperienceManager, Object> StartAndCortanaDismissRequested;
+		event Windows.Foundation.TypedEventHandler<Windows.Internal.Shell.Experience.CortanaExperienceManager, Object> AppRequestedDismiss;
+		event Windows.Foundation.TypedEventHandler<Windows.Internal.Shell.Experience.CortanaExperienceManager, Object> AppRequestedTransition;
+		event Windows.Foundation.TypedEventHandler<Windows.Internal.Shell.Experience.CortanaExperienceManager, Object> AppTransitionCompleted;
+		event Windows.Foundation.TypedEventHandler<Windows.Internal.Shell.Experience.CortanaExperienceManager, int> LaunchResult;
+		event Windows.Foundation.TypedEventHandler<Windows.Internal.Shell.Experience.CortanaExperienceManager, Object> DeviceLocked;
+		event Windows.Foundation.TypedEventHandler<Windows.Internal.Shell.Experience.CortanaExperienceManager, Object> DeviceUnlocked;
+		event Windows.Foundation.TypedEventHandler<Windows.Internal.Shell.Experience.CortanaExperienceManager, Windows.Foundation.Rect> NotifyRelaunch;
+		UInt64 GetWindowHandle();
+		Boolean LockCurtainShowing { get; };
+		void NotifyUIATreesUnlinked();
+	}
+	
+	[version(0x00000001)]
+	runtimeclass CortanaExperienceManager
+	{
+		[default] interface Windows.Internal.Shell.Experience.ICortanaExperienceManager;
+	}
+	
+	[version(0x00000001)]
+	runtimeclass SearchAppExperienceManager
+	{
+		[default] interface Windows.Internal.Shell.Experience.ICortanaExperienceManager;
+	}
+
+	[version(0x00000001)]
+	[uuid("9697311c-768a-4cd5-9b37-049855339820")]
+	interface ICortanaShownEventArgs
+	{
+		Object Unknown(); //struct of something
+	}
+
+	[version(0x00000001)]
+	[uuid("b0f15396-8df4-4167-b062-b2c66f34efbb")]
+	interface IFocusNavigateEventArgs
+	{
+		FocusNavigateDirection Unknown();
+	}
+}
