@@ -7,9 +7,17 @@
 #include "optionaltaskbarappearance.hpp"
 #include "rapidjsonhelper.hpp"
 #include "taskbarappearance.hpp"
+#include "../win32.hpp"
 #include "windowfilter.hpp"
 
 class Config {
+private:
+	inline static bool IsWindows11() noexcept
+	{
+		static const bool isWindows11 = win32::IsAtLeastBuild(22000);
+		return isWindows11;
+	}
+
 public:
 	static constexpr spdlog::level::level_enum DEFAULT_LOG_VERBOSITY =
 #ifdef _DEBUG
@@ -20,10 +28,10 @@ public:
 
 	// Appearances
 	TaskbarAppearance DesktopAppearance = { ACCENT_ENABLE_TRANSPARENTGRADIENT, { 0, 0, 0, 0 }, false };
-	OptionalTaskbarAppearance VisibleWindowAppearance = { false, ACCENT_ENABLE_BLURBEHIND, { 0, 0, 0, 0 }, true };
-	OptionalTaskbarAppearance MaximisedWindowAppearance = { true, ACCENT_ENABLE_BLURBEHIND, { 0, 0, 0, 0 }, true };
-	OptionalTaskbarAppearance StartOpenedAppearance = { true, ACCENT_NORMAL, { 0, 0, 0, 0 }, true };
-	OptionalTaskbarAppearance SearchOpenedAppearance = { true, ACCENT_NORMAL, { 0, 0, 0, 0 }, true };
+	OptionalTaskbarAppearance VisibleWindowAppearance = { false, ACCENT_ENABLE_TRANSPARENTGRADIENT, { 0, 0, 0, 0 }, true };
+	OptionalTaskbarAppearance MaximisedWindowAppearance = { !IsWindows11(), ACCENT_ENABLE_BLURBEHIND, { 0, 0, 0, 0 }, true };
+	OptionalTaskbarAppearance StartOpenedAppearance = { !IsWindows11(), ACCENT_NORMAL, { 0, 0, 0, 0 }, true };
+	OptionalTaskbarAppearance SearchOpenedAppearance = { !IsWindows11(), ACCENT_NORMAL, { 0, 0, 0, 0 }, true };
 	OptionalTaskbarAppearance TaskViewOpenedAppearance = { true, ACCENT_NORMAL, { 0, 0, 0, 0 }, false };
 
 	// Advanced
