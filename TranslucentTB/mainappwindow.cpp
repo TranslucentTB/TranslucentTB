@@ -76,6 +76,7 @@ void MainAppWindow::RegisterMenuHandlers()
 	m_LogLevelChangedRevoker = menu.LogLevelChanged(winrt::auto_revoke, { this, &MainAppWindow::LogLevelChanged });
 	m_DumpDynamicStateRequestedRevoker = menu.DumpDynamicStateRequested(winrt::auto_revoke, { this, &MainAppWindow::DumpDynamicStateRequested });
 	m_EditSettingsRequestedRevoker = menu.EditSettingsRequested(winrt::auto_revoke, { this, &MainAppWindow::EditSettingsRequested });
+	m_ResetSettingsRequestedRevoker = menu.ResetSettingsRequested(winrt::auto_revoke, { this, &MainAppWindow::ResetSettingsRequested });
 	m_ResetDynamicStateRequestedRevoker = menu.ResetDynamicStateRequested(winrt::auto_revoke, { this, &MainAppWindow::ResetDynamicStateRequested });
 	m_DisableSavingSettingsChangedRevoker = menu.DisableSavingSettingsChanged(winrt::auto_revoke, { this, &MainAppWindow::DisableSavingSettingsChanged });
 	m_HideTrayRequestedRevoker = menu.HideTrayRequested(winrt::auto_revoke, { this, &MainAppWindow::HideTrayRequested });
