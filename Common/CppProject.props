@@ -39,9 +39,9 @@
     <SpectreMitigation>Spectre</SpectreMitigation>
 
     <!-- Versions -->
-    <PlatformToolset Condition="'$(PlatformToolset)'==''">v142</PlatformToolset>
+    <PlatformToolset Condition="'$(PlatformToolset)'==''">v143</PlatformToolset>
     <VCProjectVersion>16.0</VCProjectVersion>
-    <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)'==''">16.11</MinimumVisualStudioVersion>
+    <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)'==''">17.0</MinimumVisualStudioVersion>
     <WindowsTargetPlatformVersion>10.0.22000.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformMinVersion>10.0.18362.0</WindowsTargetPlatformMinVersion>
 
