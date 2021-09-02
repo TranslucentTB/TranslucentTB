@@ -798,12 +798,7 @@ wil::unique_hmodule TaskbarAttributeWorker::LoadHookDll(const std::optional<std:
 		dllPath = std::move(tempDllPath);
 	}
 
-	DWORD loadFlags = LOAD_LIBRARY_SEARCH_SYSTEM32;
-#ifdef SIGNED_BUILD
-	loadFlags |= LOAD_LIBRARY_REQUIRE_SIGNED_TARGET;
-#endif
-
-	wil::unique_hmodule dll(LoadLibraryEx(dllPath.c_str(), nullptr, loadFlags));
+	wil::unique_hmodule dll(LoadLibraryEx(dllPath.c_str(), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
 	if (!dll)
 	{
 		LastErrorHandle(spdlog::level::critical, L"Failed to load ExplorerHooks.dll");
