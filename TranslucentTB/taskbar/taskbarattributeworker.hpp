@@ -18,6 +18,7 @@
 #include "config/config.hpp"
 #include "config/taskbarappearance.hpp"
 #include "../dynamicloader.hpp"
+#include "../ExplorerHooks/explorerhooks.hpp"
 #include "launchervisibilitysink.hpp"
 #include "../windows/messagewindow.hpp"
 #include "undoc/user32.hpp"
@@ -77,7 +78,6 @@ private:
 	wil::unique_hwineventhook m_CreateDestroyHook;
 	wil::unique_hwineventhook m_TitleChangeHook;
 	wil::unique_hwineventhook m_ParentChangeHook;
-	std::vector<wil::unique_hhook> m_Hooks;
 	wil::unique_hpowernotify m_PowerSaverHook;
 
 	// IAppVisibility
@@ -100,6 +100,14 @@ private:
 	std::chrono::steady_clock::time_point m_LastExplorerRestart;
 	DWORD m_LastExplorerPid;
 
+	// Color previews
+	std::array<std::optional<Util::Color>, 6> m_ColorPreviews;
+
+	// Hook DLL
+	std::vector<wil::unique_hhook> m_Hooks;
+	wil::unique_hmodule m_HookDll;
+	PFN_INJECT_EXPLORER_HOOK m_InjectExplorerHook;
+
 	// Type aliases
 	using taskbar_iterator = std::unordered_map<HMONITOR, MonitorInfo>::iterator;
 
@@ -120,9 +128,6 @@ private:
 
 	// Config
 	TaskbarAppearance GetConfig(taskbar_iterator taskbar) const;
-
-	// Color previews
-	std::array<std::optional<Util::Color>, 6> m_ColorPreviews;
 
 	// Attribute
 	void ShowAeroPeekButton(Window taskbar, bool show);
@@ -156,6 +161,7 @@ private:
 	bool IsStartMenuOpened() const;
 	bool IsSearchOpened() const;
 	void InsertTaskbar(HMONITOR mon, Window window);
+	static wil::unique_hmodule LoadHookDll(const std::optional<std::filesystem::path> &storageFolder);
 
 	inline TaskbarAppearance WithPreview(txmp::TaskbarState state, const TaskbarAppearance &appearance) const
 	{
@@ -194,7 +200,7 @@ private:
 	}
 
 public:
-	TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, DynamicLoader &loader);
+	TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, DynamicLoader &loader, const std::optional<std::filesystem::path> &storageFolder);
 
 	inline void ConfigurationChanged()
 	{

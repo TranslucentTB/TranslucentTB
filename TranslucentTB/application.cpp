@@ -121,7 +121,7 @@ winrt::fire_and_forget Application::CreateWelcomePage(wf::IAsyncOperation<bool> 
 
 Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> storageFolder, bool fileExists) :
 	m_Config(storageFolder, fileExists, ConfigurationChanged, this),
-	m_Worker(m_Config.GetConfig(), hInst, m_Loader),
+	m_Worker(m_Config.GetConfig(), hInst, m_Loader, storageFolder),
 	m_DispatcherController(UWP::CreateDispatcherController()),
 	m_XamlApp(CreateXamlApp()),
 	m_XamlManager(UWP::CreateXamlManager()),

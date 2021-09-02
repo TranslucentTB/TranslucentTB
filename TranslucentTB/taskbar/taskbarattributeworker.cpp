@@ -3,7 +3,6 @@
 #include <member_thunk/member_thunk.hpp>
 
 #include "constants.hpp"
-#include "../ExplorerHooks/explorerhooks.hpp"
 #include "../../ProgramLog/error/win32.hpp"
 #include "../../ProgramLog/error/winrt.hpp"
 #include "undoc/explorer.hpp"
@@ -767,7 +766,7 @@ void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 {
 	m_Taskbars.insert_or_assign(mon, MonitorInfo { window });
 
-	if (wil::unique_hhook hook { ExplorerHooks::Inject(window) })
+	if (wil::unique_hhook hook { m_InjectExplorerHook(window) })
 	{
 		m_Hooks.push_back(std::move(hook));
 	}
@@ -777,7 +776,43 @@ void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 	}
 }
 
-TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, DynamicLoader &loader) :
+wil::unique_hmodule TaskbarAttributeWorker::LoadHookDll(const std::optional<std::filesystem::path> &storageFolder)
+{
+	const auto [loc, hr] = win32::GetExeLocation();
+	HresultVerify(hr, spdlog::level::critical, L"Failed to determine executable location!");
+
+	std::filesystem::path dllPath = loc.parent_path() / L"ExplorerHooks.dll";
+
+	if (storageFolder)
+	{
+		// copy the file over to a place Explorer can read. It can't be injected from WindowsApps.
+		auto tempDllPath = *storageFolder / L"TempState" / "ExplorerHooks.dll";
+
+		std::error_code err;
+		std::filesystem::copy_file(dllPath, tempDllPath, std::filesystem::copy_options::update_existing, err);
+		if (err)
+		{
+			StdErrorCodeHandle(err, spdlog::level::critical, L"Failed to copy ExplorerHooks.dll");
+		}
+
+		dllPath = std::move(tempDllPath);
+	}
+
+	DWORD loadFlags = LOAD_LIBRARY_SEARCH_SYSTEM32;
+#ifdef SIGNED_BUILD
+	loadFlags |= LOAD_LIBRARY_REQUIRE_SIGNED_TARGET;
+#endif
+
+	wil::unique_hmodule dll(LoadLibraryEx(dllPath.c_str(), nullptr, loadFlags));
+	if (!dll)
+	{
+		LastErrorHandle(spdlog::level::critical, L"Failed to load ExplorerHooks.dll");
+	}
+
+	return dll;
+}
+
+TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, DynamicLoader &loader, const std::optional<std::filesystem::path> &storageFolder) :
 	MessageWindow(TTB_WORKERWINDOW, TTB_WORKERWINDOW, hInstance, WS_POPUP, WS_EX_NOREDIRECTIONBITMAP),
 	SetWindowCompositionAttribute(loader.SetWindowCompositionAttribute()),
 	ShouldSystemUseDarkMode(loader.ShouldSystemUseDarkMode()),
@@ -801,8 +836,15 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_IsTaskViewOpenedMessage(Window::RegisterMessage(WM_TTBHOOKISTASKVIEWOPENED)),
 	m_StartVisibilityChangeMessage(Window::RegisterMessage(WM_TTBSTARTVISIBILITYCHANGE)),
 	m_SearchVisibilityChangeMessage(Window::RegisterMessage(WM_TTBSEARCHVISIBILITYCHANGE)),
-	m_LastExplorerPid(0)
+	m_LastExplorerPid(0),
+	m_HookDll(LoadHookDll(storageFolder)),
+	m_InjectExplorerHook(reinterpret_cast<PFN_INJECT_EXPLORER_HOOK>(GetProcAddress(m_HookDll.get(), "InjectExplorerHook")))
 {
+	if (!m_InjectExplorerHook)
+	{
+		LastErrorHandle(spdlog::level::critical, L"Failed to get address of InjectExplorerHook");
+	}
+
 	const auto stateThunk = CreateThunk(&TaskbarAttributeWorker::OnWindowStateChange);
 	m_ResizeMoveHook = CreateHook(EVENT_OBJECT_LOCATIONCHANGE, stateThunk);
 	m_TitleChangeHook = CreateHook(EVENT_OBJECT_NAMECHANGE, stateThunk);
