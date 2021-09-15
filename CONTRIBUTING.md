@@ -2,12 +2,13 @@
 
 Thank you for wanting to contribute to TranslucentTB :)
 
-If you are considering a major feature, need guidance, or want to talk an idea out, don't hesitate to jump on [Discord], [Gitter], or file an issue on the GitHub issue tracker. The main contributors are often on [Discord], [Gitter] and GitHub, so we should reply fairly quickly.
+If you are considering a major feature, need guidance, or want to talk an idea out, don't hesitate to jump on [Discord] or file an issue on the GitHub issue tracker. The main contributors are often on [Discord] and GitHub, so we should reply fairly quickly.
 
 At this time we have no plans of expanding this beyond the taskbar.
 
 ## Building from source
-<!-- TODO: needs update -->
+
+### 1 - Clone the repo
 
 You can checkout one of the available branches. For development, one should use `develop`. If you want to simply build it, use `release`.
 
@@ -23,101 +24,48 @@ Receiving objects: 100% (909/909), 383.94 KiB | 2.78 MiB/s, done.
 Resolving deltas: 100% (624/624), done.
 ```
 
-You can also download a zip archive of each branch by clicking `Clone or download` > `Download ZIP` while browsing the branch's files.
+### 2 - Install the build tools
 
-Now that you have the source, you will need Visual Studio 2017. [You can get the free community edition here](https://www.visualstudio.com/vs/community/).
+Now that you have the source, you will need Visual Studio 2022. [You can get the free community edition here](https://visualstudio.microsoft.com/vs/preview/).
 Check the following workloads:
 
 - Desktop development with C++
-- .NET desktop development
+- Universal Windows Platform development
 
-You also need to install the following individual components:
+You also need to install the "MSVC v142 - VS 2019 C++ x64/x86 build tools (v14.29-16.11)" component (under the Individual Components section).
 
-- Any of the VC++ 2017 toolsets (latest prefered)
-- Windows 10 SDK (10.0.17134.0)
-- .NET Framework 4.6.2 SDK
-- .NET Framework 4.6.2 targeting pack
+We currently use the Windows 11 SDK, as it has several important bug fixes. You can get it from the [Microsoft Insider Preview SDK download page](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK).
 
-You also need the [Clang compiler for Windows version 7 or above](http://releases.llvm.org/download.html), the [LLVM Compiler Toolchain Visual Studio addon](https://marketplace.visualstudio.com/items?itemName=LLVMExtensions.llvm-toolchain), [Inno Setup](http://jrsoftware.org/isdl.php) and [vcpkg](https://github.com/microsoft/vcpkg).
+### 3 - Install dependencies
 
-Once you have that installed, Open a terminal and execute these lines
+We use vcpkg to manage our dependencies. You will need to [install it](https://vcpkg.io/en/getting-started.html).
+
+Once you have that installed, open a terminal and execute these lines (replacing `$PATH_TO_TTB` by the location where you cloned TranslucentTB in step 1)
 ```sh
-cd path\to\TranslucentTB
-vcpkg install --triplet x64-windows fmt spdlog discord-game-sdk
-vcpkg install --triplet x64-windows --overlay-ports=ports --head detours gtest member-thunk rapidjson wil
+vcpkg install --overlay-triplets=$PATH_TO_TTB\vcpkg\triplets --triplet x64-windows-ttb fmt spdlog
+vcpkg install --overlay-triplets=$PATH_TO_TTB\vcpkg\triplets --triplet x64-windows-ttb --overlay-ports=$PATH_TO_TTB\vcpkg\ports --head detours gtest member-thunk rapidjson wil
 vcpkg integrate install
 ```
-`gtest` can be skipped if you don't intend to run the unit tests.
+`gtest` can be ommitted if you don't intend to run the unit tests.
 
-<!-- markdownlint-disable MD033 -->
-Once you have that installed, open `TranslucentTB.sln`, and press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> to build the solution.
-<!-- markdownlint-enable MD033 -->
+> **Note!**  
+> If you get a message saying "Applying patch failed" when installing `detours`, you will have to check out a [vcpkg PR that has yet to be merged](https://github.com/microsoft/vcpkg/pull/19657). This message will be removed once the PR is merged. To check out the PR, run these in the folder you cloned vcpkg in:
+> ```sh
+> git remote add strega-nil https://github.com/strega-nil/vcpkg.git
+> git fetch strega-nil minor-fixes
+> git switch --track strega-nil/minor-fixes
+> ```
 
-The output will be in either the Debug or Release folder (depending on which solution configuration is currently active).
+### 4 - Building and running the app
 
-To build the desktop installer, run the DesktopInstallerBuilder project (you need to have built the solution in both x86 and x64 with the Release configuration before).
+Open the solution file in Visual Studio 2022. Set the AppPackage project as the startup project (right-click in the Solution Explorer, then hit "Set as startup project").
 
-To build the Microsoft Store app package, build the solution with the Store configuration.
+By default, Visual Studio attempts to build ARM64. You will want to change the solution platform to x64.
 
-## Code Style
+Once this is done, you should be able to hit play, let the solution build (takes a couple minute on a decent machine), and the app will launch.
 
-When contributing, please respect the style used by the codebase. Quick rundown:
-
-- Allman braces everywhere, even on one line blocks:
-
-  ```cpp
-  // Bad!
-  if (condition) {
-      statement;
-  }
-
-  // Bad!
-  if (condition) statement;
-
-  // Bad!
-  if (condition)
-      statement;
-
-  // Good!
-  if (condition)
-  {
-      statement;
-  }
-  ```
-
-- The only exception to this rule is the opening brace of a class, enumeration, namespace or structure, in which K&R braces apply:
-
-  ```cpp
-  class Foo {
-      // content
-  };
-
-  struct Bar {
-      // content
-  };
-
-  namespace Baz {
-      // content
-  }
-
-  enum Foobar {
-      // content
-  };
-  ```
-
-- lvalue, rvalue and pointer qualifiers are next to the variable name:
-
-  ```cpp
-  std::wstring &foo;
-  std::wstring &&bar;
-  std::wstring *baz;
-  ```
-
-- Indentation style is 4 spaces large tabs, and your editor should enforce it with this repo's `.editorconfig` automatically.
-
-## Notes
-
-When trying to debug the main program, it might seem confusing at first because the only two projects listed for launch in the header are StorePackage and DesktopInstallerBuilder. Just right-click the TranslucentTB project and select "Set as startup project".
+> **Note!**  
+> If you get an error dialog saying "The code execution cannot proceed because fmtd.dll was not found.", you will have to go and copy `<vcpkg>\installed\x64-windows-ttb\debug\bin\fmtd.dll` to `<TranslucentTB>\AppPackage\bin\x64\Debug\AppX`. [This is a bug in vcpkg](https://github.com/microsoft/vcpkg/issues/16184). Once the file is copied, you can relaunch the app from Visual Studio.
 
 [Discord]: https://discord.gg/TranslucentTB
 [Gitter]: https://gitter.im/TranslucentTB/Lobby
