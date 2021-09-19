@@ -7,9 +7,8 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:root="using:TranslucentTB.Xaml"
     xmlns:primitives="using:TranslucentTB.Xaml.Models.Primitives"
-    xmlns:muxcWindows11NotPresent="using:Microsoft.UI.Xaml.Controls?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract, 14)"
     xmlns:windows11NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract, 14)"
-    mc:Ignorable="d" x:DefaultBindMode="OneWay">
+    mc:Ignorable="d" x:DefaultBindMode="OneTime">
     <ToolTipService.ToolTip>
         <ToolTip>TranslucentTB</ToolTip>
     </ToolTipService.ToolTip>
@@ -41,11 +40,11 @@
                         <primitives:AccentState>Clear</primitives:AccentState>
                     </muxc:RadioMenuFlyoutItem.Tag>
                 </muxc:RadioMenuFlyoutItem>
-                <muxcWindows11NotPresent:RadioMenuFlyoutItem Text="Blur" GroupName="DesktopCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                <muxc:RadioMenuFlyoutItem Text="Blur" GroupName="DesktopCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked" Visibility="{x:Bind IsBlurSupported}">
                     <muxc:RadioMenuFlyoutItem.Tag>
                         <primitives:AccentState>Blur</primitives:AccentState>
                     </muxc:RadioMenuFlyoutItem.Tag>
-                </muxcWindows11NotPresent:RadioMenuFlyoutItem>
+                </muxc:RadioMenuFlyoutItem>
                 <muxc:RadioMenuFlyoutItem Text="Acrylic" GroupName="DesktopCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
                         <primitives:AccentState>Acrylic</primitives:AccentState>
@@ -79,11 +78,11 @@
                         <primitives:AccentState>Clear</primitives:AccentState>
                     </muxc:RadioMenuFlyoutItem.Tag>
                 </muxc:RadioMenuFlyoutItem>
-                <muxcWindows11NotPresent:RadioMenuFlyoutItem Text="Blur" GroupName="VisibleCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                <muxc:RadioMenuFlyoutItem Text="Blur" GroupName="VisibleCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked" Visibility="{x:Bind IsBlurSupported}">
                     <muxc:RadioMenuFlyoutItem.Tag>
                         <primitives:AccentState>Blur</primitives:AccentState>
                     </muxc:RadioMenuFlyoutItem.Tag>
-                </muxcWindows11NotPresent:RadioMenuFlyoutItem>
+                </muxc:RadioMenuFlyoutItem>
                 <muxc:RadioMenuFlyoutItem Text="Acrylic" GroupName="VisibleCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
                         <primitives:AccentState>Acrylic</primitives:AccentState>
@@ -117,11 +116,11 @@
                         <primitives:AccentState>Clear</primitives:AccentState>
                     </muxc:RadioMenuFlyoutItem.Tag>
                 </muxc:RadioMenuFlyoutItem>
-                <muxcWindows11NotPresent:RadioMenuFlyoutItem Text="Blur" GroupName="MaximizedCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                <muxc:RadioMenuFlyoutItem Text="Blur" GroupName="MaximizedCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked" Visibility="{x:Bind IsBlurSupported}">
                     <muxc:RadioMenuFlyoutItem.Tag>
                         <primitives:AccentState>Blur</primitives:AccentState>
                     </muxc:RadioMenuFlyoutItem.Tag>
-                </muxcWindows11NotPresent:RadioMenuFlyoutItem>
+                </muxc:RadioMenuFlyoutItem>
                 <muxc:RadioMenuFlyoutItem Text="Acrylic" GroupName="MaximizedCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
                         <primitives:AccentState>Acrylic</primitives:AccentState>
@@ -158,11 +157,11 @@
                         <primitives:AccentState>Clear</primitives:AccentState>
                     </muxc:RadioMenuFlyoutItem.Tag>
                 </muxc:RadioMenuFlyoutItem>
-                <muxcWindows11NotPresent:RadioMenuFlyoutItem Text="Blur" GroupName="StartCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                <muxc:RadioMenuFlyoutItem Text="Blur" GroupName="StartCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked" Visibility="{x:Bind IsBlurSupported}">
                     <muxc:RadioMenuFlyoutItem.Tag>
                         <primitives:AccentState>Blur</primitives:AccentState>
                     </muxc:RadioMenuFlyoutItem.Tag>
-                </muxcWindows11NotPresent:RadioMenuFlyoutItem>
+                </muxc:RadioMenuFlyoutItem>
                 <muxc:RadioMenuFlyoutItem Text="Acrylic" GroupName="StartCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
                         <primitives:AccentState>Acrylic</primitives:AccentState>
@@ -199,11 +198,11 @@
                         <primitives:AccentState>Clear</primitives:AccentState>
                     </muxc:RadioMenuFlyoutItem.Tag>
                 </muxc:RadioMenuFlyoutItem>
-                <muxcWindows11NotPresent:RadioMenuFlyoutItem Text="Blur" GroupName="SearchCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                <muxc:RadioMenuFlyoutItem Text="Blur" GroupName="SearchCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
                         <primitives:AccentState>Blur</primitives:AccentState>
                     </muxc:RadioMenuFlyoutItem.Tag>
-                </muxcWindows11NotPresent:RadioMenuFlyoutItem>
+                </muxc:RadioMenuFlyoutItem>
                 <muxc:RadioMenuFlyoutItem Text="Acrylic" GroupName="SearchCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
                         <primitives:AccentState>Acrylic</primitives:AccentState>
@@ -240,11 +239,11 @@
                         <primitives:AccentState>Clear</primitives:AccentState>
                     </muxc:RadioMenuFlyoutItem.Tag>
                 </muxc:RadioMenuFlyoutItem>
-                <muxcWindows11NotPresent:RadioMenuFlyoutItem Text="Blur" GroupName="TaskViewCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                <muxc:RadioMenuFlyoutItem Text="Blur" GroupName="TaskViewCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked" Visibility="{x:Bind IsBlurSupported}">
                     <muxc:RadioMenuFlyoutItem.Tag>
                         <primitives:AccentState>Blur</primitives:AccentState>
                     </muxc:RadioMenuFlyoutItem.Tag>
-                </muxcWindows11NotPresent:RadioMenuFlyoutItem>
+                </muxc:RadioMenuFlyoutItem>
                 <muxc:RadioMenuFlyoutItem Text="Acrylic" GroupName="TaskViewCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
                         <primitives:AccentState>Acrylic</primitives:AccentState>
@@ -253,8 +252,8 @@
             </MenuFlyoutSubItem>
             <MenuFlyoutSeparator />
             <MenuFlyoutSubItem Text="Advanced" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
-                <MenuFlyoutItem Text="Open log file" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="OpenLogFileClicked" IsEnabled="{x:Bind root:FunctionalConverters.IsSameLogSinkState(SinkState, primitives:LogSinkState.Opened)}" />
-                <MenuFlyoutSubItem x:Name="LogLevelSubMenu" Text="Log verbosity" Style="{StaticResource MergeIconsMenuFlyoutSubItem}" IsEnabled="{x:Bind root:FunctionalConverters.IsDifferentLogSinkState(SinkState, primitives:LogSinkState.Failed)}">
+                <MenuFlyoutItem Text="Open log file" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="OpenLogFileClicked" IsEnabled="{x:Bind root:FunctionalConverters.IsSameLogSinkState(SinkState, primitives:LogSinkState.Opened), Mode = OneWay}" />
+                <MenuFlyoutSubItem x:Name="LogLevelSubMenu" Text="Log verbosity" Style="{StaticResource MergeIconsMenuFlyoutSubItem}" IsEnabled="{x:Bind root:FunctionalConverters.IsDifferentLogSinkState(SinkState, primitives:LogSinkState.Failed), Mode = OneWay}">
                     <muxc:RadioMenuFlyoutItem Text="Trace" GroupName="LogLevel" Click="LogLevelClicked">
                         <muxc:RadioMenuFlyoutItem.Tag>
                             <primitives:LogLevel>Trace</primitives:LogLevel>
@@ -292,7 +291,7 @@
                         </muxc:RadioMenuFlyoutItem.Tag>
                     </muxc:RadioMenuFlyoutItem>
                 </MenuFlyoutSubItem>
-                <MenuFlyoutItem Text="Dump dynamic state to log" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="DumpDynamicStateClicked" IsEnabled="{x:Bind root:FunctionalConverters.IsDifferentLogSinkState(SinkState, primitives:LogSinkState.Failed)}" />
+                <MenuFlyoutItem Text="Dump dynamic state to log" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="DumpDynamicStateClicked" IsEnabled="{x:Bind root:FunctionalConverters.IsDifferentLogSinkState(SinkState, primitives:LogSinkState.Failed), Mode = OneWay}" />
                 <MenuFlyoutSeparator />
                 <MenuFlyoutItem Text="Edit settings" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="EditSettingsClicked">
                     <MenuFlyoutItem.Icon>
@@ -306,7 +305,7 @@
                 <MenuFlyoutItem Text="Reset dynamic state" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ResetDynamicStateClicked" />
                 <MenuFlyoutItem Text="Compact thunk heap" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="CompactThunkHeapClicked" />
             </MenuFlyoutSubItem>
-            <ToggleMenuFlyoutItem x:Name="StartupState" Text="Open at boot" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="StartupClicked" />
+            <ToggleMenuFlyoutItem x:Name="StartupState" Text="Open at boot" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="StartupClicked" Visibility="{x:Bind HasPackageIdentity}" />
             <MenuFlyoutItem Text="Tips and tricks" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="TipsAndTricksClicked" />
             <!-- <MenuFlyoutItem Text="About TranslucentTB" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="AboutClicked" /> -->
             <MenuFlyoutItem Text="Exit" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ExitClicked" />

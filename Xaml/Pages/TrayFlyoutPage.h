@@ -13,6 +13,16 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		TrayFlyoutPage(bool hasPackageIdentity);
 
+		bool IsBlurSupported() noexcept
+		{
+			return m_BlurSupported;
+		}
+
+		bool HasPackageIdentity() noexcept
+		{
+			return m_HasPackageIdentity;
+		}
+
 		DECL_EVENT(TaskbarSettingsChangedDelegate, TaskbarSettingsChanged, m_TaskbarSettingsChangedDelegate);
 		DECL_EVENT(ColorRequestedDelegate, ColorRequested, m_ColorRequestedDelegate);
 
@@ -64,6 +74,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		wuxc::MenuFlyoutSubItem GetSubMenuForState(txmp::TaskbarState state);
 
 		txmp::LogSinkState m_SinkState = txmp::LogSinkState::Failed;
+		bool m_BlurSupported, m_HasPackageIdentity;
 	};
 }
 

@@ -5,16 +5,18 @@
 #include "Pages/TrayFlyoutPage.g.cpp"
 #endif
 
+#include "win32.hpp"
+
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	TrayFlyoutPage::TrayFlyoutPage(bool hasPackageIdentity)
 	{
-		InitializeComponent();
+		// blur is broken on Windows 11, but works fine on Windows 10. this was fixed in build 22449.
+		// so we check that we are < 22000 (windows 11), or >= 22449
+		m_BlurSupported = !win32::IsAtLeastBuild(22000) || win32::IsAtLeastBuild(22449);
+		m_HasPackageIdentity = hasPackageIdentity;
 
-		if (!hasPackageIdentity)
-		{
-			StartupState().Visibility(wux::Visibility::Collapsed);
-		}
+		InitializeComponent();
 	}
 
 	void TrayFlyoutPage::SetTaskbarSettings(const txmp::TaskbarState &state, const txmp::TaskbarAppearance &appearance)

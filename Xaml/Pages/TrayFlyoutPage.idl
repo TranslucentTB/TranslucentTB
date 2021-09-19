@@ -51,5 +51,11 @@ namespace TranslucentTB.Xaml.Pages
 		void SetStartupState(Windows.Foundation.IReference<Windows.ApplicationModel.StartupTaskState> state);
 
 		TranslucentTB.Xaml.Models.Primitives.LogSinkState SinkState;
+
+		[noexcept]
+		Boolean IsBlurSupported { get; };
+
+		[noexcept]
+		Boolean HasPackageIdentity { get; };
 	}
 }
