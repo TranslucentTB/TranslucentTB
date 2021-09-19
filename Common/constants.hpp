@@ -35,6 +35,9 @@ static constexpr Util::null_terminated_wstring_view WM_TTBSTARTVISIBILITYCHANGE 
 // Sent by TaskbarAttributeWorker to itself to switch back to main thread
 static constexpr Util::null_terminated_wstring_view WM_TTBSEARCHVISIBILITYCHANGE = L"TTB_SearchVisibilityChange";
 
+// Sent to the worker to force the taskbar to toggle to normal and back to the expected appearance
+static constexpr Util::null_terminated_wstring_view WM_TTBFORCEREFRESHTASKBAR = L"TTB_ForceRefreshTaskbar";
+
 #pragma endregion
 
 #pragma region Window classes

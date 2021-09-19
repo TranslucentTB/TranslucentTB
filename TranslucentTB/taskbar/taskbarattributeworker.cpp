@@ -189,6 +189,19 @@ void TaskbarAttributeWorker::OnSearchVisibilityChange(bool state)
 	}
 }
 
+void TaskbarAttributeWorker::OnForceRefreshTaskbar(Window taskbar)
+{
+	m_disableAttributeRefreshReply = true;
+	auto guard = wil::scope_exit([this]
+	{
+		m_disableAttributeRefreshReply = false;
+	});
+
+	taskbar.send_message(WM_DWMCOMPOSITIONCHANGED);
+	guard.reset();
+	taskbar.send_message(WM_DWMCOMPOSITIONCHANGED);
+}
+
 LRESULT TaskbarAttributeWorker::OnSystemSettingsChange(UINT uiAction, std::wstring_view)
 {
 	if (uiAction == SPI_SETWORKAREA)
@@ -217,13 +230,16 @@ LRESULT TaskbarAttributeWorker::OnPowerBroadcast(const POWERBROADCAST_SETTING *s
 
 LRESULT TaskbarAttributeWorker::OnRequestAttributeRefresh(LPARAM lParam)
 {
-	const Window window = reinterpret_cast<HWND>(lParam);
-	if (const auto iter = m_Taskbars.find(window.monitor()); iter != m_Taskbars.end() && iter->second.TaskbarWindow == window)
+	if (!m_disableAttributeRefreshReply)
 	{
-		if (const auto config = GetConfig(iter); config.Accent != ACCENT_NORMAL)
+		const Window window = reinterpret_cast<HWND>(lParam);
+		if (const auto iter = m_Taskbars.find(window.monitor()); iter != m_Taskbars.end() && iter->second.TaskbarWindow == window)
 		{
-			SetAttribute(iter->second.TaskbarWindow, config);
-			return 1;
+			if (const auto config = GetConfig(iter); config.Accent != ACCENT_NORMAL)
+			{
+				SetAttribute(iter->second.TaskbarWindow, config);
+				return 1;
+			}
 		}
 	}
 
@@ -257,7 +273,7 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 		ResetState();
 		return 0;
 	}
-	else if (uMsg == m_RefreshRequestedMessage && !m_disableAttributeRefreshReply)
+	else if (uMsg == m_RefreshRequestedMessage)
 	{
 		return OnRequestAttributeRefresh(lParam);
 	}
@@ -274,6 +290,11 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 	else if (uMsg == m_SearchVisibilityChangeMessage)
 	{
 		OnSearchVisibilityChange(wParam);
+		return 0;
+	}
+	else if (uMsg == m_ForceRefreshTaskbar)
+	{
+		OnForceRefreshTaskbar(reinterpret_cast<HWND>(lParam));
 		return 0;
 	}
 
@@ -831,6 +852,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_IsTaskViewOpenedMessage(Window::RegisterMessage(WM_TTBHOOKISTASKVIEWOPENED)),
 	m_StartVisibilityChangeMessage(Window::RegisterMessage(WM_TTBSTARTVISIBILITYCHANGE)),
 	m_SearchVisibilityChangeMessage(Window::RegisterMessage(WM_TTBSEARCHVISIBILITYCHANGE)),
+	m_ForceRefreshTaskbar(Window::RegisterMessage(WM_TTBFORCEREFRESHTASKBAR)),
 	m_LastExplorerPid(0),
 	m_HookDll(LoadHookDll(storageFolder)),
 	m_InjectExplorerHook(reinterpret_cast<PFN_INJECT_EXPLORER_HOOK>(GetProcAddress(m_HookDll.get(), "InjectExplorerHook")))

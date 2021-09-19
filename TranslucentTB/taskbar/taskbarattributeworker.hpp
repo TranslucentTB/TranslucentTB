@@ -95,6 +95,7 @@ private:
 	std::optional<UINT> m_IsTaskViewOpenedMessage;
 	std::optional<UINT> m_StartVisibilityChangeMessage;
 	std::optional<UINT> m_SearchVisibilityChangeMessage;
+	std::optional<UINT> m_ForceRefreshTaskbar;
 
 	// Explorer crash detection
 	std::chrono::steady_clock::time_point m_LastExplorerRestart;
@@ -121,6 +122,7 @@ private:
 	void OnStartVisibilityChange(bool state);
 	void OnTaskViewVisibilityChange(bool state);
 	void OnSearchVisibilityChange(bool state);
+	void OnForceRefreshTaskbar(Window taskbar);
 	LRESULT OnSystemSettingsChange(UINT uiAction, std::wstring_view changedParameter);
 	LRESULT OnPowerBroadcast(const POWERBROADCAST_SETTING *settings);
 	LRESULT OnRequestAttributeRefresh(LPARAM lParam);
