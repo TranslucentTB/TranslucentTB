@@ -13,9 +13,6 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
 	switch (fdwReason)
 	{
 	case DLL_PROCESS_ATTACH:
-		// ignore errors, worse case scenario we get called for new threads
-		DisableThreadLibraryCalls(hinstDLL);
-
 		// Are we in Explorer?
 		payload = ExplorerHooks::FindExplorerPayload();
 		if (payload)
