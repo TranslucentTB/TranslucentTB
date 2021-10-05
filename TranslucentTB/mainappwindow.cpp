@@ -62,8 +62,7 @@ void MainAppWindow::RefreshMenu()
 
 	trayPage.SetDisableSavingSettings(settings.DisableSaving);
 
-	const auto state = m_App.GetStartupManager().GetState();
-	trayPage.SetStartupState(state ? wf::IReference(*state) : nullptr);
+	trayPage.SetStartupState(m_App.GetStartupManager().GetState());
 }
 
 void MainAppWindow::RegisterMenuHandlers()
