@@ -3,12 +3,14 @@
 #include <windef.h>
 #include <winerror.h>
 #include <wil/result_macros.h>
+#include <wil/resource.h>
 
 #include "error.hpp"
 
 namespace Error {
 	namespace impl {
 		void FormatHRESULT(fmt::wmemory_buffer &buf, HRESULT result, std::wstring_view description);
+		wil::unique_hlocal_string FormatMessageForLanguage(HRESULT result, DWORD langId, DWORD &count);
 	}
 
 	PROGRAMLOG_API void MessageFromHRESULT(fmt::wmemory_buffer &buf, HRESULT result);
