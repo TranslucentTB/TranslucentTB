@@ -8,7 +8,7 @@
 
 void *payload = nullptr;
 
-BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID) noexcept
+BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) noexcept
 {
 	switch (fdwReason)
 	{

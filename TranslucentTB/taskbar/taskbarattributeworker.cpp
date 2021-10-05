@@ -385,7 +385,8 @@ void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance confi
 	{
 		m_NormalTaskbars.erase(window);
 
-		if (config.Accent == ACCENT_ENABLE_ACRYLICBLURBEHIND && config.Color.A == 0)
+		const bool isAcrylic = config.Accent == ACCENT_ENABLE_ACRYLICBLURBEHIND;
+		if (isAcrylic && config.Color.A == 0)
 		{
 			// Acrylic mode doesn't likes a completely 0 opacity
 			config.Color.A = 1;
@@ -393,7 +394,7 @@ void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance confi
 
 		ACCENT_POLICY policy = {
 			config.Accent,
-			2,
+			static_cast<UINT>(isAcrylic ? 0 : 2),
 			config.Color.ToABGR(),
 			0
 		};
