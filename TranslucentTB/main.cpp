@@ -92,8 +92,11 @@ _Use_decl_annotations_ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar
 	wil::unique_mutex mutex(MUTEX_GUID.c_str());
 	if (GetLastError() == ERROR_ALREADY_EXISTS)
 	{
-		// If there already is another instance running, tell it to exit
-		MainAppWindow::CloseRemote();
+		// If there already is another instance running, tell it.
+		MainAppWindow::PostNewInstanceNotification();
+
+		// For now we will just exit, because the other instance will send a notification saying it's already running.
+		return 0;
 	}
 
 	try

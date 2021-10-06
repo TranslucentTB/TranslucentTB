@@ -34,7 +34,16 @@ LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	default:
-		return TrayContextMenu::MessageHandler(uMsg, wParam, lParam);
+		if (uMsg == m_NewInstanceMessage)
+		{
+			SendNotification(IDS_ALREADY_RUNNING);
+			m_App.GetWorker().ResetState(true);
+			return 0;
+		}
+		else
+		{
+			return TrayContextMenu::MessageHandler(uMsg, wParam, lParam);
+		}
 	}
 }
 
@@ -315,7 +324,8 @@ MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, bool hasPa
 	MessageWindow(TRAY_WINDOW, APP_NAME, hInstance, WS_POPUP, WS_EX_TOPMOST | WS_EX_NOREDIRECTIONBITMAP),
 	TrayContextMenu(TRAY_GUID, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), loader, hasPackageIdentity),
 	m_App(app),
-	m_HideIconOverride(hideIconOverride)
+	m_HideIconOverride(hideIconOverride),
+	m_NewInstanceMessage(Window::RegisterMessage(WM_TTBNEWINSTANCESTARTED))
 {
 	RegisterMenuHandlers();
 
@@ -335,7 +345,10 @@ void MainAppWindow::RemoveHideTrayIconOverride()
 	UpdateTrayVisibility(!m_App.GetConfigManager().GetConfig().HideTray);
 }
 
-void MainAppWindow::CloseRemote() noexcept
+void MainAppWindow::PostNewInstanceNotification()
 {
-	Window::Find(TRAY_WINDOW, APP_NAME).send_message(WM_CLOSE);
+	if (const auto msg = Window::RegisterMessage(WM_TTBNEWINSTANCESTARTED))
+	{
+		Window::Find(TRAY_WINDOW, APP_NAME).post_message(*msg);
+	}
 }

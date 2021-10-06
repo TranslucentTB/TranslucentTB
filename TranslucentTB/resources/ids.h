@@ -6,3 +6,4 @@
 
 #define IDS_WELCOME_NOTIFICATION           60001
 #define IDS_HIDETRAY_DIALOG                60002
+#define IDS_ALREADY_RUNNING                60003

@@ -47,6 +47,8 @@ private:
 	page_t::AboutRequested_revoker m_AboutRequestedRevoker;
 	page_t::ExitRequested_revoker m_ExitRequestedRevoker;
 
+	std::optional<UINT> m_NewInstanceMessage;
+
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	void RefreshMenu() override;
@@ -79,5 +81,5 @@ public:
 	void ConfigurationChanged();
 	void RemoveHideTrayIconOverride();
 
-	static void CloseRemote() noexcept;
+	static void PostNewInstanceNotification();
 };
