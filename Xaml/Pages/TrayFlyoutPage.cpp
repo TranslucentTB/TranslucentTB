@@ -5,6 +5,9 @@
 #include "Pages/TrayFlyoutPage.g.cpp"
 #endif
 
+#include "arch.h"
+#include <winbase.h>
+
 #include "win32.hpp"
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
@@ -15,6 +18,18 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		// so we check that we are < 22000 (windows 11), or >= 22449
 		m_BlurSupported = !win32::IsAtLeastBuild(22000) || win32::IsAtLeastBuild(22449);
 		m_HasPackageIdentity = hasPackageIdentity;
+
+		SYSTEM_POWER_STATUS powerStatus;
+		if (GetSystemPowerStatus(&powerStatus))
+		{
+			// 128 means no system battery. assume everything else
+			// means the system has one.
+			m_SystemHasBattery = powerStatus.BatteryFlag != 128;
+		}
+		else
+		{
+			m_SystemHasBattery = true; // assume the system has a battery
+		}
 
 		InitializeComponent();
 	}

@@ -250,6 +250,47 @@
                     </muxc:RadioMenuFlyoutItem.Tag>
                 </muxc:RadioMenuFlyoutItem>
             </MenuFlyoutSubItem>
+            <MenuFlyoutSubItem Text="Battery saver" Style="{StaticResource MergeIconsMenuFlyoutSubItem}" Visibility="{x:Bind SystemHasBattery}">
+                <MenuFlyoutSubItem.Tag>
+                    <primitives:TaskbarState>BatterySaver</primitives:TaskbarState>
+                </MenuFlyoutSubItem.Tag>
+                <MenuFlyoutSubItem.Icon>
+                    <FontIcon Glyph="&#xE8BE;" />
+                </MenuFlyoutSubItem.Icon>
+                <ToggleMenuFlyoutItem Tag="Enabled" Text="Enabled" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <MenuFlyoutItem Tag="Color" Text="Accent Color" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ColorClicked">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE790;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <windows11NotPresent:ToggleMenuFlyoutItem Tag="ShowPeek" Text="Show Desktop Peek Button" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <MenuFlyoutSeparator />
+                <muxc:RadioMenuFlyoutItem Text="Normal" GroupName="BatterySaverCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Normal</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Opaque" GroupName="BatterySaverCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Opaque</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Clear" GroupName="BatterySaverCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Clear</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Blur" GroupName="BatterySaverCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked" Visibility="{x:Bind IsBlurSupported}">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Blur</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+                <muxc:RadioMenuFlyoutItem Text="Acrylic" GroupName="BatterySaverCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                    <muxc:RadioMenuFlyoutItem.Tag>
+                        <primitives:AccentState>Acrylic</primitives:AccentState>
+                    </muxc:RadioMenuFlyoutItem.Tag>
+                </muxc:RadioMenuFlyoutItem>
+            </MenuFlyoutSubItem>
             <MenuFlyoutSeparator />
             <MenuFlyoutSubItem Text="Advanced" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
                 <MenuFlyoutItem Text="Open log file" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="OpenLogFileClicked" IsEnabled="{x:Bind root:FunctionalConverters.IsSameLogSinkState(SinkState, primitives:LogSinkState.Opened), Mode = OneWay}" />

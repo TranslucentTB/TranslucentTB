@@ -27,7 +27,7 @@ private:
 	bool m_HideIconOverride;
 
 	Util::thread_independent_mutex m_PickerMutex;
-	std::array<BaseXamlPageHost*, 6> m_ColorPickers{};
+	std::array<BaseXamlPageHost*, 7> m_ColorPickers{};
 
 	page_t::TaskbarSettingsChanged_revoker m_TaskbarSettingsChangedRevoker;
 	page_t::ColorRequested_revoker m_ColorRequestedRevoker;

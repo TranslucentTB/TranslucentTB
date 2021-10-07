@@ -91,6 +91,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		case StartOpened: return L"Start opened";
 		case SearchOpened: return L"Search opened";
 		case TaskViewOpened: return L"Task View opened";
+		case BatterySaverEnabled: return L"Battery saver";
 		default: throw std::invalid_argument("Unknown taskbar state");
 		}
 	}

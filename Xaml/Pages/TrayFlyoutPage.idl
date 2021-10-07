@@ -57,5 +57,8 @@ namespace TranslucentTB.Xaml.Pages
 
 		[noexcept]
 		Boolean HasPackageIdentity { get; };
+
+		[noexcept]
+		Boolean SystemHasBattery { get; };
 	}
 }

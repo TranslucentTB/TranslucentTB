@@ -58,6 +58,7 @@ void MainAppWindow::RefreshMenu()
 	trayPage.SetTaskbarSettings(txmp::TaskbarState::StartOpened, txmp::OptionalTaskbarAppearance(settings.StartOpenedAppearance));
 	trayPage.SetTaskbarSettings(txmp::TaskbarState::SearchOpened, txmp::OptionalTaskbarAppearance(settings.SearchOpenedAppearance));
 	trayPage.SetTaskbarSettings(txmp::TaskbarState::TaskViewOpened, txmp::OptionalTaskbarAppearance(settings.TaskViewOpenedAppearance));
+	trayPage.SetTaskbarSettings(txmp::TaskbarState::BatterySaver, txmp::OptionalTaskbarAppearance(settings.BatterySaverAppearance));
 
 	if (const auto sink = Log::GetSink())
 	{
@@ -303,6 +304,7 @@ TaskbarAppearance &MainAppWindow::GetConfigForState(const txmp::TaskbarState &st
 	case StartOpened: return config.StartOpenedAppearance;
 	case SearchOpened: return config.SearchOpenedAppearance;
 	case TaskViewOpened: return config.TaskViewOpenedAppearance;
+	case BatterySaver: return config.BatterySaverAppearance;
 	default: throw std::invalid_argument("Unknown taskbar state");
 	}
 }

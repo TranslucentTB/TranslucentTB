@@ -209,10 +209,6 @@ LRESULT TaskbarAttributeWorker::OnSystemSettingsChange(UINT uiAction, std::wstri
 		MessagePrint(spdlog::level::debug, L"Work area change detected, refreshing...");
 		ResetState();
 	}
-	else if (m_PowerSaver)
-	{
-		RefreshAllAttributes();
-	}
 
 	return 0;
 }
@@ -262,11 +258,6 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 	{
 		return OnPowerBroadcast(reinterpret_cast<const POWERBROADCAST_SETTING *>(lParam));
 	}
-	else if (uMsg == WM_THEMECHANGED && m_PowerSaver)
-	{
-		RefreshAllAttributes();
-		return 0;
-	}
 	else if (uMsg == m_TaskbarCreatedMessage)
 	{
 		MessagePrint(spdlog::level::debug, L"Main taskbar got created, refreshing...");
@@ -305,14 +296,7 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 {
 	if (m_PowerSaver)
 	{
-		// default to black unless light mode is enabled
-		Util::Color color;
-		if (ShouldSystemUseDarkMode && !ShouldSystemUseDarkMode())
-		{
-			color = { 0xFF, 0xFF, 0xFF };
-		}
-
-		return { ACCENT_ENABLE_GRADIENT, color, true };
+		return WithPreview(txmp::TaskbarState::BatterySaver, m_Config.BatterySaverAppearance);
 	}
 
 	if (m_Config.TaskViewOpenedAppearance.Enabled && m_TaskViewActive)
@@ -872,7 +856,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_PowerSaverHook.reset(RegisterPowerSettingNotification(m_WindowHandle, &GUID_POWER_SAVING_STATUS, DEVICE_NOTIFY_WINDOW_HANDLE));
 	if (!m_PowerSaverHook)
 	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to create power saver notification handle");
+		LastErrorHandle(spdlog::level::warn, L"Failed to create battery saver notification handle");
 	}
 
 	CreateAppVisibility();
@@ -934,7 +918,7 @@ void TaskbarAttributeWorker::DumpState()
 	MessagePrint(spdlog::level::off, buf);
 
 	buf.clear();
-	fmt::format_to(buf, FMT_STRING(L"Power saver is active: {}"), m_PowerSaver);
+	fmt::format_to(buf, FMT_STRING(L"Battery saver is active: {}"), m_PowerSaver);
 	MessagePrint(spdlog::level::off, buf);
 
 	MessagePrint(spdlog::level::off, L"Taskbars currently using normal appearance:");

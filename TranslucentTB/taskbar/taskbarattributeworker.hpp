@@ -102,7 +102,7 @@ private:
 	DWORD m_LastExplorerPid;
 
 	// Color previews
-	std::array<std::optional<Util::Color>, 6> m_ColorPreviews;
+	std::array<std::optional<Util::Color>, 7> m_ColorPreviews;
 
 	// Hook DLL
 	std::vector<wil::unique_hhook> m_Hooks;

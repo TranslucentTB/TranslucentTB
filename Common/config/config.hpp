@@ -29,10 +29,13 @@ public:
 	// Appearances
 	TaskbarAppearance DesktopAppearance = { ACCENT_ENABLE_TRANSPARENTGRADIENT, { 0, 0, 0, 0 }, false };
 	OptionalTaskbarAppearance VisibleWindowAppearance = { false, ACCENT_ENABLE_TRANSPARENTGRADIENT, { 0, 0, 0, 0 }, true };
-	OptionalTaskbarAppearance MaximisedWindowAppearance = { !IsWindows11(), ACCENT_ENABLE_BLURBEHIND, { 0, 0, 0, 0 }, true };
+	OptionalTaskbarAppearance MaximisedWindowAppearance = IsWindows11()
+		? OptionalTaskbarAppearance { false, ACCENT_ENABLE_ACRYLICBLURBEHIND, { 0, 0, 0, 0 }, true }
+		: OptionalTaskbarAppearance { true, ACCENT_ENABLE_BLURBEHIND, { 0, 0, 0, 0 }, true };
 	OptionalTaskbarAppearance StartOpenedAppearance = { !IsWindows11(), ACCENT_NORMAL, { 0, 0, 0, 0 }, true };
 	OptionalTaskbarAppearance SearchOpenedAppearance = { !IsWindows11(), ACCENT_NORMAL, { 0, 0, 0, 0 }, true };
 	OptionalTaskbarAppearance TaskViewOpenedAppearance = { true, ACCENT_NORMAL, { 0, 0, 0, 0 }, false };
+	OptionalTaskbarAppearance BatterySaverAppearance = { false, ACCENT_ENABLE_GRADIENT, { 0, 0, 0, 0 }, true };
 
 	// Advanced
 	WindowFilter IgnoredWindows;
@@ -49,6 +52,7 @@ public:
 		rjh::Serialize(writer, StartOpenedAppearance, START_KEY);
 		rjh::Serialize(writer, SearchOpenedAppearance, SEARCH_KEY);
 		rjh::Serialize(writer, TaskViewOpenedAppearance, TASKVIEW_KEY);
+		rjh::Serialize(writer, BatterySaverAppearance, BATTERYSAVER_KEY);
 		rjh::Serialize(writer, IgnoredWindows, IGNORED_WINDOWS_KEY);
 		rjh::Serialize(writer, HideTray, TRAY_KEY);
 		rjh::Serialize(writer, DisableSaving, SAVING_KEY);
@@ -87,6 +91,10 @@ public:
 			else if (key == TASKVIEW_KEY)
 			{
 				rjh::Deserialize(it->value, TaskViewOpenedAppearance, key, unknownKeyCallback);
+			}
+			else if (key == BATTERYSAVER_KEY)
+			{
+				rjh::Deserialize(it->value, BatterySaverAppearance, key, unknownKeyCallback);
 			}
 			else if (key == IGNORED_WINDOWS_KEY)
 			{
@@ -128,6 +136,7 @@ private:
 	static constexpr std::wstring_view START_KEY = L"start_opened_appearance";
 	static constexpr std::wstring_view SEARCH_KEY = L"search_opened_appearance";
 	static constexpr std::wstring_view TASKVIEW_KEY = L"task_view_opened_appearance";
+	static constexpr std::wstring_view BATTERYSAVER_KEY = L"battery_saver_appearance";
 	static constexpr std::wstring_view IGNORED_WINDOWS_KEY = L"ignored_windows";
 	static constexpr std::wstring_view TRAY_KEY = L"hide_tray";
 	static constexpr std::wstring_view SAVING_KEY = L"disable_saving";

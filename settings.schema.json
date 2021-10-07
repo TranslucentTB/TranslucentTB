@@ -60,6 +60,9 @@
     "task_view_opened_appearance": {
       "$ref": "#/$defs/OptionalTaskbarAppearance"
     },
+    "battery_saver_appearance": {
+      "$ref": "#/$defs/OptionalTaskbarAppearance"
+    },
     "ignored_windows": {
       "properties": {
         "window_class": {

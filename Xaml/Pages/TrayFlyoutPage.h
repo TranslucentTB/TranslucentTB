@@ -23,6 +23,11 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 			return m_HasPackageIdentity;
 		}
 
+		bool SystemHasBattery() noexcept
+		{
+			return m_SystemHasBattery;
+		}
+
 		DECL_EVENT(TaskbarSettingsChangedDelegate, TaskbarSettingsChanged, m_TaskbarSettingsChangedDelegate);
 		DECL_EVENT(ColorRequestedDelegate, ColorRequested, m_ColorRequestedDelegate);
 
@@ -74,7 +79,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		wuxc::MenuFlyoutSubItem GetSubMenuForState(txmp::TaskbarState state);
 
 		txmp::LogSinkState m_SinkState = txmp::LogSinkState::Failed;
-		bool m_BlurSupported, m_HasPackageIdentity;
+		bool m_BlurSupported, m_HasPackageIdentity, m_SystemHasBattery;
 	};
 }
 
