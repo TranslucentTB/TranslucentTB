@@ -8,6 +8,12 @@
     <Filter Include="Generated Files">
       <UniqueIdentifier>{926ab91d-31b4-48c3-b9a4-e681349f27f0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources\Strings">
+      <UniqueIdentifier>{363aa34d-93bf-4701-8510-bb45cb3cfd1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Strings\en-US">
+      <UniqueIdentifier>{7b45cdc2-9ecd-4045-84b1-9ffd61a63be8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -76,5 +82,10 @@
     <Midl Include="Models\Primitives\ThicknessFilterKind.idl" />
     <Midl Include="Controls\ConstrainedBox.idl" />
     <Midl Include="Controls\FocusBorderColorSpectrum.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="Strings\en-US\Resources.resw">
+      <Filter>Resources\Strings\en-US</Filter>
+    </PRIResource>
   </ItemGroup>
 </Project>

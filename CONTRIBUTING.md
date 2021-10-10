@@ -69,3 +69,7 @@ Once this is done, you should be able to hit play, let the solution build (takes
 
 [Discord]: https://discord.gg/TranslucentTB
 [Gitter]: https://gitter.im/TranslucentTB/Lobby
+
+## Help us translate the language
+
+We created a [guide to translate language](https://github.com/TranslucentTB/TranslucentTB/blob/release/TRANSLATOR_GUIDE.md) properly.

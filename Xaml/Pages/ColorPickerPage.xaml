@@ -16,7 +16,7 @@
     </local:FramelessPage.TitlebarContent>
 
     <local:FramelessPage.SystemMenuContent>
-        <ToggleMenuFlyoutItem Text="Always on top" IsChecked="{x:Bind AlwaysOnTop, Mode = TwoWay}" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" />
+        <ToggleMenuFlyoutItem x:Uid="ColorPickerPage_AlwaysOnTop" IsChecked="{x:Bind AlwaysOnTop, Mode = TwoWay}" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" />
     </local:FramelessPage.SystemMenuContent>
 
     <!-- Putting all within UserControl makes VSM happy -->
@@ -52,10 +52,7 @@
                 <ContentDialog
                     x:Name="ConfirmCloseDialog"
                     d:Visibility="Collapsed"
-                    Content="Do you want to save changes to the color?"
-                    PrimaryButtonText="Yes"
-                    SecondaryButtonText="No"
-                    CloseButtonText="Cancel"
+                    x:Uid="ColorPickerPage_ConfirmCloseDialog"
                     DefaultButton="Primary"
                     Opened="DialogOpened"
                     Closed="DialogClosed" />
