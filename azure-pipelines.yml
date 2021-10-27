@@ -23,6 +23,8 @@ strategy:
 steps:
 - powershell: .\update-version.ps1
   displayName: Update version info
+- powershell: .\ws2022-components.ps1
+  displayName: Install required VS 2022 components
 - script: git pull
   displayName: 'Update vcpkg ports'
   workingDirectory: C:\vcpkg
