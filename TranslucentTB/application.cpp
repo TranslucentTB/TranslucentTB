@@ -120,6 +120,29 @@ winrt::fire_and_forget Application::CreateWelcomePage(wf::IAsyncOperation<bool> 
 }
 
 Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> storageFolder, bool fileExists) :
+	// seemingly, dynamic deps are not transitive so add a dyn dep to the CRT that WinUI uses.
+	m_UwpCRTDep(
+		L"Microsoft.VCLibs.140.00_8wekyb3d8bbwe",
+		PACKAGE_VERSION {
+			// 14.0.30035.0 but the order is reversed because that's how the struct is.
+			.Revision = 0,
+			.Build = 30035,
+			.Minor = 0,
+			.Major = 14
+		},
+		storageFolder.has_value()
+	),
+	m_WinUIDep(
+		L"Microsoft.UI.Xaml.2.7_8wekyb3d8bbwe",
+		PACKAGE_VERSION {
+			// 7.2109.13004.0 but the order is reversed because that's how the struct is.
+			.Revision = 0,
+			.Build = 13004,
+			.Minor = 2109,
+			.Major = 7
+		},
+		storageFolder.has_value()
+	),
 	m_Config(storageFolder, fileExists, ConfigurationChanged, this),
 	m_Worker(m_Config.GetConfig(), hInst, m_Loader, storageFolder),
 	m_DispatcherController(UWP::CreateDispatcherController()),

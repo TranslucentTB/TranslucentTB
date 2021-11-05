@@ -69,6 +69,9 @@
     <ClCompile Include="localization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="uwp\dynamicdependency.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\messagewindow.hpp">
@@ -140,6 +143,9 @@
     <ClInclude Include="localization.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="uwp\dynamicdependency.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\TranslucentTB.ico">
@@ -177,5 +183,10 @@
     <Midl Include="taskbar\ShellExperience.idl">
       <Filter>Source Files</Filter>
     </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="uwp\api-ms-win-appmodel-runtime-l1-1-5.def">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>

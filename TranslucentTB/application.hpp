@@ -16,6 +16,7 @@
 #include "mainappwindow.hpp"
 #include "managers/startupmanager.hpp"
 #include "taskbar/taskbarattributeworker.hpp"
+#include "uwp/dynamicdependency.hpp"
 #include "uwp/xamlthreadpool.hpp"
 
 #ifndef DO_NOT_USE_GAME_SDK
@@ -34,6 +35,7 @@ class Application final {
 #endif
 
 	DynamicLoader m_Loader;
+	DynamicDependency m_UwpCRTDep, m_WinUIDep;
 
 	ConfigManager m_Config;
 	TaskbarAttributeWorker m_Worker;
