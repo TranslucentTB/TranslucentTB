@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AppDescription" xml:space="preserve">
+    <value>A lightweight utility that makes the Windows taskbar translucent/transparent</value>
+  </data>
   <data name="ColorPickerPage_AlwaysOnTop.Text" xml:space="preserve">
     <value>Always on top</value>
   </data>
@@ -134,6 +137,9 @@
   </data>
   <data name="FramelessPage_Close.Text" xml:space="preserve">
     <value>Close</value>
+  </data>
+  <data name="PublisherDisplayName" xml:space="preserve">
+    <value>TranslucentTB Open Source Developers</value>
   </data>
   <data name="TrayFlyoutPage_About.Text" xml:space="preserve">
     <value>About TranslucentTB</value>
