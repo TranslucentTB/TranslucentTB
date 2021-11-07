@@ -9,7 +9,7 @@
 #include "../../../Common/appinfo.hpp"
 #include "../ids.h"
 
-LANGUAGE LANG_ENGLISH, SUBLANG_NEUTRAL
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -44,7 +44,7 @@ VS_VERSION_INFO VERSIONINFO
 	}
 	BLOCK L"VarFileInfo"
 	{
-		VALUE L"Translation", LANG_ENGLISH, CP_WINUNICODE
+		VALUE L"Translation", 0x0409, CP_WINUNICODE
 	}
 }
 
