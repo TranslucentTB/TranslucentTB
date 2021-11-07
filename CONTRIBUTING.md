@@ -79,16 +79,19 @@ In order to translate TranslucentTB in your language, you will have to identify 
 
 From a file explorer:
 
-- Duplicate the folder `Xaml\Resources\Strings\en-US` and rename it to use the language identifier found in step 1.
+- Duplicate the folder `Xaml\Strings\en-US` and rename it to use the language identifier found in step 1.
+- Duplicate the folder `AppPackage\Strings\en-US` and rename it to use the language identifier found in step 1.
 - Duplicate the file `TranslucentTB\resources\language\TranslucentTB.en-US.rc2`, replacing `en-US` by your language identifer.
 
 Go back to Visual Studio's Solution Explorer:
+
 - In the Xaml project, right-click on Resources > Strings and select Add > New Filter. Use the language identifer as the filter name. Then right-click this filter, select Add > Existing item, and add the `Resources.resw` file corresponding to your language.
+- Select the AppPackage project, then in the top bar of the Solution Explorer click on Show All Files. Right-click on the `Resources.resw` file for your language, then select Include In Project.
 - In the TranslucentTB project, right-click on Resource Files then select Add > Existing item to add the `rc2` file corresponding to your language.
 
 ### 3 - Translate
 
-Open the `Resources.resw` file for your language by double-clicking it, and translate all text available there.
+Open both `Resources.resw` files for your language by double-clicking them, and translate all the text available in the Value columns.
 
 Open the `rc2` file for your language by right-clicking it and selecting View Code. Replace the language identifier after `LANGUAGE` and within `VarFileInfo`. You can find the macro corresponding to your language and sublanguage in the `winnt.h` header, while you can find the hexadecimal value on the [LCID Structure] documentation.
 
