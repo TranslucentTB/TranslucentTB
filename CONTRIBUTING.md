@@ -58,18 +58,46 @@ vcpkg integrate install
 
 ### 4 - Building and running the app
 
-Open the solution file in Visual Studio 2022. Set the AppPackage project as the startup project (right-click in the Solution Explorer, then hit "Set as startup project").
+Open the solution file in Visual Studio 2022. Set the AppPackage project as the startup project (right-click it in the Solution Explorer, then hit "Set as startup project").
 
-By default, Visual Studio attempts to build ARM64. You will want to change the solution platform to x64.
+By default, Visual Studio attempts to build ARM64. You will most likely want to change the solution platform to x64.
 
-Once this is done, you should be able to hit play, let the solution build (takes a couple minute on a decent machine), and the app will launch.
+Once this is done, you should be able to hit play, let the solution build (takes a couple minutes on a decent machine), and the app will launch.
 
 > **Note!**  
 > If you get an error dialog saying "The code execution cannot proceed because fmtd.dll was not found.", you will have to go and copy `<vcpkg>\installed\x64-windows-ttb\debug\bin\fmtd.dll` to `<TranslucentTB>\AppPackage\bin\x64\Debug\AppX`. [This is a bug in vcpkg](https://github.com/microsoft/vcpkg/issues/16184). Once the file is copied, you can relaunch the app from Visual Studio.
 
+## Translating TranslucentTB
+
+Now that you've built the source, one of the things you can do is translating TranslucentTB in another language.
+
+### 1 - Find your language's identifier
+
+In order to translate TranslucentTB in your language, you will have to identify your language's identifer. It is composed of the [ISO 639-1 code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) combined with a dash and the two letter identifier of your country. For example, Chinese is `zh-CN` and British English is `en-UK`. If it is correct, it should be present in the [LCID Structure] documentation.
+
+### 2 - Create new language resources
+
+From a file explorer:
+
+- Duplicate the folder `Xaml\Resources\Strings\en-US` and rename it to use the language identifier found in step 1.
+- Duplicate the file `TranslucentTB\resources\language\TranslucentTB.en-US.rc2`, replacing `en-US` by your language identifer.
+
+Go back to Visual Studio's Solution Explorer:
+- In the Xaml project, right-click on Resources > Strings and select Add > New Filter. Use the language identifer as the filter name. Then right-click this filter, select Add > Existing item, and add the `Resources.resw` file corresponding to your language.
+- In the TranslucentTB project, right-click on Resource Files then select Add > Existing item to add the `rc2` file corresponding to your language.
+
+### 3 - Translate
+
+Open the `Resources.resw` file for your language by double-clicking it, and translate all text available there.
+
+Open the `rc2` file for your language by right-clicking it and selecting View Code. Replace the language identifier after `LANGUAGE` and within `VarFileInfo`. You can find the macro corresponding to your language and sublanguage in the `winnt.h` header, while you can find the hexadecimal value on the [LCID Structure] documentation.
+
+Then, translate the strings in that file as well.
+
+### 4 - Test
+
+Once you are done, you can launch the app and check what it looks like. If everything checks out okay, send a pull request and we'll gladly take a look at it!
+
+[LCID Structure]: https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/63d3d639-7fd2-4afb-abbe-0d5b5551eef8
 [Discord]: https://discord.gg/TranslucentTB
 [Gitter]: https://gitter.im/TranslucentTB/Lobby
-
-## Help us translate the language
-
-We created a [guide to translate language](https://github.com/TranslucentTB/TranslucentTB/blob/release/TRANSLATOR_GUIDE.md) properly.
