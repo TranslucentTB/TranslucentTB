@@ -11,7 +11,7 @@
 
     <FlyoutBase.AttachedFlyout>
         <MenuFlyout x:Name="SystemMenu" Opening="SystemMenuOpening">
-            <MenuFlyoutItem x:Name="CloseMenuItem" Text="Close" IsEnabled="{x:Bind IsClosable, Mode = OneWay}" Click="CloseClicked">
+            <MenuFlyoutItem x:Name="CloseMenuItem" x:Uid="FramelessPage_Close" IsEnabled="{x:Bind IsClosable, Mode = OneWay}" Click="CloseClicked">
                 <MenuFlyoutItem.Icon>
                     <FontIcon Glyph="&#xE711;" />
                 </MenuFlyoutItem.Icon>

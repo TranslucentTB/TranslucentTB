@@ -1,5 +1,6 @@
 <local:FramelessPage
     x:Class="TranslucentTB.Xaml.Pages.WelcomePage"
+    x:Uid="WelcomePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:root="using:TranslucentTB.Xaml"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -8,7 +9,7 @@
     xmlns:models="using:TranslucentTB.Xaml.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" Width="636" Height="500" ExpandIntoTitlebar="True" IsClosable="True" Title="Welcome to TranslucentTB!">
+    mc:Ignorable="d" Width="636" Height="500" ExpandIntoTitlebar="True" IsClosable="True">
 
     <local:FramelessPage.Resources>
         <!-- Use white no matter the theme -->
@@ -67,35 +68,44 @@
             </RelativePanel>
 
             <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Vertical" Spacing="12" Margin="12,0">
-                <TextBlock TextWrapping="WrapWholeWords">
-                    Thanks for trying TranslucentTB! After you hit "Continue", you can personalize how the taskbar looks to your desires.
-                    We hope you enjoy it, and feel free to <Hyperlink NavigateUri="https://github.com/TranslucentTB/TranslucentTB/issues/new">open a GitHub issue</Hyperlink> if you have any problem or want to see a feature added!
+                <TextBlock
+                    TextWrapping="WrapWholeWords">
+                    <Run x:Uid="WelcomePage_Message_Prefix" />
+                    <Hyperlink
+                        NavigateUri="https://github.com/TranslucentTB/TranslucentTB/issues/new">
+                        <Run x:Uid="WelcomePage_Message_Hyperlink" />
+                    </Hyperlink>
+                    <Run x:Uid="WelcomePage_Message_Suffix" />
                 </TextBlock>
 
                 <controls:ActionList>
                     <models:Action
-                        Name="Donate to the project on Liberapay"
-                        Click="OpenLiberapayLink"
-                        Description="Show us your support by offering a single-time or recurring donation&#x2764;&#xFE0F;">
+                        x:Uid="WelcomePage_Action_Donate"
+                        Click="OpenLiberapayLink">
                         <PathIcon Data="{StaticResource LiberapayLogo}" />
                     </models:Action>
                     <models:Action
-                        Name="Join our Discord server"
-                        Click="OpenDiscordLink"
-                        Description="Chat with the developers and get help with the program">
+                        x:Uid="WelcomePage_Action_Discord"
+                        Click="OpenDiscordLink">
                         <PathIcon Data="{StaticResource DiscordLogo}" />
                     </models:Action>
                     <models:Action
-                        Name="Edit the configuration file"
+                        x:Uid="WelcomePage_Action_Configure"
                         Click="EditConfigFile"
-                        Description="You can always do this by clicking &quot;Advanced&quot; > &quot;Edit settings&quot; in the tray icon's context menu&#10;Changes are automatically reloaded when you save the file"
                         Icon="Edit" />
                 </controls:ActionList>
             </StackPanel>
 
             <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="12" Margin="12">
-                <Button Width="100" Style="{ThemeResource AccentButtonStyle}" Click="AgreeButtonClicked">Continue</Button>
-                <Button Width="100" Click="DisagreeButtonClicked">Exit</Button>
+                <Button
+                    x:Uid="WelcomePage_ButtonBar_Continue"
+                    Width="100"
+                    Style="{ThemeResource AccentButtonStyle}"
+                    Click="AgreeButtonClicked" />
+                <Button
+                    x:Uid="WelcomePage_ButtonBar_Exit"
+                    Width="100"
+                    Click="DisagreeButtonClicked" />
             </StackPanel>
         </Grid>
     </UserControl>
