@@ -1,5 +1,4 @@
 #include "pch.h"
-#include <fmt/format.h>
 
 #include "ColorPickerPage.h"
 #if __has_include("Pages/ColorPickerPage.g.cpp")
@@ -7,7 +6,6 @@
 #endif
 
 #include "appinfo.hpp"
-#include "util/to_string_view.hpp"
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
@@ -15,12 +13,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		InitializeComponent();
 
-		static constexpr std::wstring_view TITLE_REMAINDER = L" - Color picker - " APP_NAME;
-
-		fmt::wmemory_buffer buf;
-		buf.append(GetTextForState(state));
-		buf.append(TITLE_REMAINDER);
-		Title(hstring { Util::ToStringView(buf) });
+		Title(hstring { std::format(L"{} - Color picker - " APP_NAME, GetTextForState(state)) });
 
 		const auto picker = Picker();
 		picker.PreviousColor(currentColor);

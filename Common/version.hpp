@@ -2,9 +2,10 @@
 #include "arch.h"
 #include <compare>
 #include <cstdint>
-#include <fmt/format.h>
+#include <format>
 #include <string>
 #include <windef.h>
+#include <appmodel.h>
 #include "winrt.hpp"
 #include <winrt/Windows.ApplicationModel.h>
 
@@ -16,7 +17,7 @@ struct Version {
 
 	inline std::wstring ToString() const
 	{
-		return fmt::format(FMT_STRING(L"{}.{}.{}.{}"), Major, Minor, Build, Revision);
+		return std::format(L"{}.{}.{}.{}", Major, Minor, Build, Revision);
 	}
 
 	static constexpr Version FromHighLow(DWORD high, DWORD low)
@@ -25,6 +26,11 @@ struct Version {
 	}
 
 	static constexpr Version FromPackageVersion(winrt::Windows::ApplicationModel::PackageVersion version)
+	{
+		return { version.Major, version.Minor, version.Build, version.Revision };
+	}
+
+	static constexpr Version FromPackageVersion(PACKAGE_VERSION version)
 	{
 		return { version.Major, version.Minor, version.Build, version.Revision };
 	}

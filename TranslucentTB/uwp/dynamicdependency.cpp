@@ -1,5 +1,8 @@
 #include "dynamicdependency.hpp"
+#include <format>
+
 #include "../ProgramLog/error/win32.hpp"
+#include "version.hpp"
 
 DynamicDependency::DynamicDependency(Util::null_terminated_wstring_view packageFamilyName, const PACKAGE_VERSION &minVersion, bool hasPackageIdentity) :
 	m_Context(nullptr)
@@ -23,9 +26,8 @@ DynamicDependency::DynamicDependency(Util::null_terminated_wstring_view packageF
 		HRESULT hr = TryCreatePackageDependency(nullptr, packageFamilyName.c_str(), minVersion, arch, PackageDependencyLifetimeKind_Process, nullptr, CreatePackageDependencyOptions_None, m_dependencyId.put());
 		if (FAILED(hr)) [[unlikely]]
 		{
-			fmt::wmemory_buffer buf;
-			fmt::format_to(buf, FMT_STRING(L"Failed to create a dynamic dependency for {} version {}.{}.{}.{} - perhaps it is not installed?"), packageFamilyName, minVersion.Major, minVersion.Minor, minVersion.Build, minVersion.Revision);
-			HresultHandle(hr, spdlog::level::critical, buf);
+			const auto msg = std::format(L"Failed to create a dynamic dependency for {} version {} - perhaps it is not installed?", packageFamilyName, Version::FromPackageVersion(minVersion).ToString());
+			HresultHandle(hr, spdlog::level::critical, msg);
 		}
 
 		wil::unique_process_heap_string packageFullName;

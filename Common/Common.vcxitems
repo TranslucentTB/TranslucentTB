@@ -31,15 +31,14 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)undoc\uxtheme.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)undoc\winuser.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\concepts.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)util\fmt.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\hash.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\hstring_builder.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\maybe_delete.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\null_terminated_string_view.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\numbers.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\strings.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\string_macros.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\thread_independent_mutex.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)util\to_string_view.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\type_traits.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)version.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)wilx.hpp" />

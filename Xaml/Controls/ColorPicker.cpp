@@ -7,9 +7,8 @@
 
 #include "colorpickerrendering.hpp"
 #include "util/color.hpp"
-#include "util/fmt.hpp"
+#include "util/hstring_builder.hpp"
 #include "util/string_macros.hpp"
-#include "util/to_string_view.hpp"
 
 namespace winrt::TranslucentTB::Xaml::Controls::implementation
 {
@@ -961,18 +960,20 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 
 			if (m_HexInputTextBox)
 			{
-				Util::small_wmemory_buffer<9> buf;
-				rgbColor.ToString(buf);
+				uint32_t colorRgba = rgbColor.ToRGBA();
 
-				auto colorHex = Util::ToStringView(buf);
-
-				// Remove the "#" sign
-				colorHex.remove_prefix(1);
-
-				if (!IsAlphaEnabled())
+				hstring colorHex;
+				if (IsAlphaEnabled())
 				{
-					// Remove the alpha hex
-					colorHex.remove_suffix(2);
+					Util::hstring_builder builder(8);
+					std::format_to(std::back_inserter(builder), L"{:08X}", colorRgba);
+					colorHex = builder.to_hstring();
+				}
+				else
+				{
+					Util::hstring_builder builder(6);
+					std::format_to(std::back_inserter(builder), L"{:06X}", static_cast<uint32_t>(colorRgba >> 8));
+					colorHex = builder.to_hstring();
 				}
 
 				m_HexInputTextBox.Text(colorHex);

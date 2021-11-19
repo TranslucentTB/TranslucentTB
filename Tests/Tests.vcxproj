@@ -14,7 +14,7 @@
     <Link>
       <AdditionalDependencies Condition="'$(Configuration)'=='Release'">gmock_main.lib</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Configuration)'=='Debug'">gmock_maind.lib</AdditionalDependencies>
-      <AdditionalDependencies>ole32.lib;version.lib;%(AdditionalDependencies);$(fmtlib)</AdditionalDependencies>
+      <AdditionalDependencies>ole32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
     </Link>

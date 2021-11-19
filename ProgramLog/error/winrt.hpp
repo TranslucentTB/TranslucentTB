@@ -8,25 +8,20 @@
 
 namespace Error {
 	namespace impl {
-		void FormatIRestrictedErrorInfo(fmt::wmemory_buffer &buf, HRESULT result, BSTR description);
+		std::wstring FormatIRestrictedErrorInfo(HRESULT result, BSTR description);
 	}
 
-	PROGRAMLOG_API bool MessageFromIRestrictedErrorInfo(fmt::wmemory_buffer &buf, IRestrictedErrorInfo *info, HRESULT failureCode);
-	PROGRAMLOG_API winrt::com_ptr<IRestrictedErrorInfo> MessageFromHresultError(fmt::wmemory_buffer &buf, const winrt::hresult_error &err, HRESULT *errCode = nullptr);
+	PROGRAMLOG_API bool MessageFromIRestrictedErrorInfo(std::wstring &buf, IRestrictedErrorInfo *info, HRESULT failureCode);
+	PROGRAMLOG_API winrt::com_ptr<IRestrictedErrorInfo> MessageFromHresultError(std::wstring &buf, const winrt::hresult_error &err, HRESULT *errCode = nullptr);
 }
-
-#define HresultErrorHandleWithBuffer(buf_, exception_, level_, message_) do { \
-	fmt::wmemory_buffer &bufLocal_ = (buf_); \
-	HRESULT errCode_ { }; \
-	const auto errInfo_ = Error::MessageFromHresultError(bufLocal_, (exception_), &errCode_); \
-	Error::impl::Handle<(level_)>(Util::ToStringView((message_)), Util::ToStringView(bufLocal_), PROGRAMLOG_ERROR_LOCATION, errCode_, errInfo_.get()); \
-} while (0)
 
 #define HresultErrorHandle(exception_, level_, message_) do { \
 	if (Error::ShouldLog((level_))) \
 	{ \
-		fmt::wmemory_buffer buf_; \
-		HresultErrorHandleWithBuffer(buf_, (exception_), (level_), (message_)); \
+		std::wstring buf_; \
+		HRESULT errCode_ { }; \
+		const auto errInfo_ = Error::MessageFromHresultError(buf_, (exception_), &errCode_); \
+		Error::impl::Handle<(level_)>((message_), buf_, PROGRAMLOG_ERROR_LOCATION, errCode_, errInfo_.get()); \
 	} \
 } while (0)
 

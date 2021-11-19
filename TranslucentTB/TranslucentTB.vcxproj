@@ -46,7 +46,7 @@
       <PreprocessorDefinitions>_TRANSLUCENTTB_EXE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(IntDir)api-ms-win-appmodel-runtime-l1-1-5.lib;advapi32.lib;comctl32.lib;coremessaging.lib;delayimp.lib;dwmapi.lib;gdi32.lib;mincore.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;shlwapi.lib;user32.lib;onecore.lib;$(fmtlib)</AdditionalDependencies>
+      <AdditionalDependencies>$(IntDir)api-ms-win-appmodel-runtime-l1-1-5.lib;advapi32.lib;comctl32.lib;coremessaging.lib;delayimp.lib;dwmapi.lib;gdi32.lib;mincore.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;shlwapi.lib;user32.lib;onecore.lib</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(UsingGameSDK)'=='true'">discord_game_sdk.lib;discord_game_sdk_cpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>api-ms-win-appmodel-runtime-l1-1-5.dll</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>

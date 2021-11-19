@@ -8,7 +8,6 @@
 #include "undoc/explorer.hpp"
 #include "undoc/user32.hpp"
 #include "undoc/winuser.hpp"
-#include "util/fmt.hpp"
 #include "win32.hpp"
 #include "winrt/Windows.Foundation.h"
 
@@ -136,9 +135,7 @@ void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 
 		if (Error::ShouldLog(spdlog::level::debug))
 		{
-			Util::small_wmemory_buffer<50> buf;
-			fmt::format_to(buf, FMT_STRING(L"Start menu opened on monitor {}"), static_cast<void *>(mon));
-			MessagePrint(spdlog::level::debug, buf);
+			MessagePrint(spdlog::level::debug, std::format(L"Start menu opened on monitor {}", static_cast<void *>(mon)));
 		}
 	}
 	else
@@ -171,9 +168,7 @@ void TaskbarAttributeWorker::OnSearchVisibilityChange(bool state)
 
 		if (Error::ShouldLog(spdlog::level::debug))
 		{
-			Util::small_wmemory_buffer<50> buf;
-			fmt::format_to(buf, FMT_STRING(L"Search opened on monitor {}"), static_cast<void*>(mon));
-			MessagePrint(spdlog::level::debug, buf);
+			MessagePrint(spdlog::level::debug, std::format(L"Search opened on monitor {}", static_cast<void *>(mon)));
 		}
 	}
 	else
@@ -431,11 +426,7 @@ void TaskbarAttributeWorker::LogWindowInsertion(const std::pair<std::unordered_s
 {
 	if (result.second && Error::ShouldLog(spdlog::level::debug))
 	{
-		fmt::wmemory_buffer buf;
-		fmt::format_to(buf, FMT_STRING(L"Inserting {} window "), state);
-		DumpWindow(buf, *result.first);
-		fmt::format_to(buf, FMT_STRING(L" to monitor {}"), static_cast<void *>(mon));
-		MessagePrint(spdlog::level::debug, buf);
+		MessagePrint(spdlog::level::debug, std::format(L"Inserting {} window {} to monitor {}", state, DumpWindow(*result.first), static_cast<void *>(mon)));
 	}
 }
 
@@ -443,11 +434,7 @@ void TaskbarAttributeWorker::LogWindowRemoval(std::wstring_view state, Window wi
 {
 	if (Error::ShouldLog(spdlog::level::debug))
 	{
-		fmt::wmemory_buffer buf;
-		fmt::format_to(buf, FMT_STRING(L"Removing {} window "), state);
-		DumpWindow(buf, window);
-		fmt::format_to(buf, FMT_STRING(L" from monitor {}"), static_cast<void *>(mon));
-		MessagePrint(spdlog::level::debug, buf);
+		MessagePrint(spdlog::level::debug, std::format(L"Removing {} window {} from monitor {}", state, DumpWindow(window), static_cast<void *>(mon)));
 	}
 }
 
@@ -455,9 +442,7 @@ void TaskbarAttributeWorker::LogWindowRemovalDestroyed(std::wstring_view state, 
 {
 	if (Error::ShouldLog(spdlog::level::debug))
 	{
-		fmt::wmemory_buffer buf;
-		fmt::format_to(buf, FMT_STRING(L"Removing {} window {} [window destroyed] from monitor {}"), state, static_cast<void *>(window.handle()), static_cast<void *>(mon));
-		MessagePrint(spdlog::level::debug, buf);
+		MessagePrint(spdlog::level::debug, std::format(L"Removing {} window {} [window destroyed] from monitor {}", state, static_cast<void *>(window.handle()), static_cast<void *>(mon)));
 	}
 }
 
@@ -573,7 +558,7 @@ bool TaskbarAttributeWorker::SetContainsValidWindows(std::unordered_set<Window> 
 
 void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set, bool showInfo)
 {
-	fmt::wmemory_buffer buf;
+	std::wstring buf;
 	if (!set.empty())
 	{
 		for (const Window window : set)
@@ -581,24 +566,24 @@ void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::
 			buf.clear();
 			if (showInfo)
 			{
-				buf.append(prefix);
-				DumpWindow(buf, window);
+				buf += prefix;
+				buf += DumpWindow(window);
 			}
 			else
 			{
-				fmt::format_to(buf, FMT_STRING(L"{}{}"), prefix, static_cast<void *>(window.handle()));
+				std::format_to(std::back_inserter(buf), L"{}{}", prefix, static_cast<void *>(window.handle()));
 			}
 			MessagePrint(spdlog::level::off, buf);
 		}
 	}
 	else
 	{
-		fmt::format_to(buf, FMT_STRING(L"{}[none]"), prefix);
+		std::format_to(std::back_inserter(buf), L"{}[none]", prefix);
 		MessagePrint(spdlog::level::off, buf);
 	}
 }
 
-void TaskbarAttributeWorker::DumpWindow(fmt::wmemory_buffer &buf, Window window)
+std::wstring TaskbarAttributeWorker::DumpWindow(Window window)
 {
 	if (window)
 	{
@@ -615,12 +600,12 @@ void TaskbarAttributeWorker::DumpWindow(fmt::wmemory_buffer &buf, Window window)
 				}
 			}
 		}
-		fmt::format_to(buf, FMT_STRING(L"{} [{}] [{}] [{}]"), static_cast<void *>(window.handle()), title, className, fileName);
+
+		return std::format(L"{} [{}] [{}] [{}]", static_cast<void *>(window.handle()), title, className, fileName);
 	}
 	else
 	{
-		static constexpr std::wstring_view NULL_WINDOW = L"0x0";
-		buf.append(NULL_WINDOW);
+		return L"0x0";
 	}
 }
 
@@ -869,11 +854,11 @@ void TaskbarAttributeWorker::DumpState()
 {
 	MessagePrint(spdlog::level::off, L"===== Begin TaskbarAttributeWorker state dump =====");
 
-	fmt::wmemory_buffer buf;
+	std::wstring buf;
 	for (const auto &[monitor, info] : m_Taskbars)
 	{
 		buf.clear();
-		fmt::format_to(buf, FMT_STRING(L"Monitor {} [taskbar {}]:"), static_cast<void *>(monitor), static_cast<void *>(info.TaskbarWindow.handle()));
+		std::format_to(std::back_inserter(buf), L"Monitor {} [taskbar {}]:", static_cast<void*>(monitor), static_cast<void*>(info.TaskbarWindow.handle()));
 		MessagePrint(spdlog::level::off, buf);
 
 		MessagePrint(spdlog::level::off, L"    Maximised windows:");
@@ -884,17 +869,17 @@ void TaskbarAttributeWorker::DumpState()
 	}
 
 	buf.clear();
-	fmt::format_to(buf, FMT_STRING(L"User is using Aero Peek: {}"), m_PeekActive);
+	std::format_to(std::back_inserter(buf), L"User is using Aero Peek: {}", m_PeekActive);
 	MessagePrint(spdlog::level::off, buf);
 
 	buf.clear();
-	fmt::format_to(buf, FMT_STRING(L"User is using Task View: {}"), m_TaskViewActive);
+	std::format_to(std::back_inserter(buf), L"User is using Task View: {}", m_TaskViewActive);
 	MessagePrint(spdlog::level::off, buf);
 
 	if (m_CurrentStartMonitor != nullptr)
 	{
 		buf.clear();
-		fmt::format_to(buf, FMT_STRING(L"Start menu is opened: true [monitor {}]"), static_cast<void*>(m_CurrentStartMonitor));
+		std::format_to(std::back_inserter(buf), L"Start menu is opened: true [monitor {}]", static_cast<void*>(m_CurrentStartMonitor));
 		MessagePrint(spdlog::level::off, buf);
 	}
 	else
@@ -905,7 +890,7 @@ void TaskbarAttributeWorker::DumpState()
 	if (m_CurrentSearchMonitor != nullptr)
 	{
 		buf.clear();
-		fmt::format_to(buf, FMT_STRING(L"Search is opened: true [monitor {}]"), static_cast<void*>(m_CurrentSearchMonitor));
+		std::format_to(std::back_inserter(buf), L"Search is opened: true [monitor {}]", static_cast<void*>(m_CurrentSearchMonitor));
 		MessagePrint(spdlog::level::off, buf);
 	}
 	else
@@ -914,11 +899,11 @@ void TaskbarAttributeWorker::DumpState()
 	}
 
 	buf.clear();
-	fmt::format_to(buf, FMT_STRING(L"Worker handles requests from hooks: {}"), !m_disableAttributeRefreshReply);
+	std::format_to(std::back_inserter(buf), L"Worker handles requests from hooks: {}", !m_disableAttributeRefreshReply);
 	MessagePrint(spdlog::level::off, buf);
 
 	buf.clear();
-	fmt::format_to(buf, FMT_STRING(L"Battery saver is active: {}"), m_PowerSaver);
+	std::format_to(std::back_inserter(buf), L"Battery saver is active: {}", m_PowerSaver);
 	MessagePrint(spdlog::level::off, buf);
 
 	MessagePrint(spdlog::level::off, L"Taskbars currently using normal appearance:");

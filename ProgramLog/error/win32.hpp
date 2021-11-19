@@ -9,24 +9,17 @@
 
 namespace Error {
 	namespace impl {
-		void FormatHRESULT(fmt::wmemory_buffer &buf, HRESULT result, std::wstring_view description);
+		std::wstring FormatHRESULT(HRESULT result, std::wstring_view description);
 		wil::unique_hlocal_string FormatMessageForLanguage(HRESULT result, DWORD langId, DWORD &count);
 	}
 
-	PROGRAMLOG_API void MessageFromHRESULT(fmt::wmemory_buffer &buf, HRESULT result);
+	PROGRAMLOG_API std::wstring MessageFromHRESULT(HRESULT result);
 }
-
-#define HresultHandleWithBuffer(buf_, hresult_, level_, message_) do { \
-	fmt::wmemory_buffer &bufLocal_ = (buf_); \
-	Error::MessageFromHRESULT(bufLocal_, (hresult_)); \
-	Error::impl::Handle<(level_)>(Util::ToStringView((message_)), Util::ToStringView(bufLocal_), PROGRAMLOG_ERROR_LOCATION); \
-} while (0)
 
 #define HresultHandle(hresult_, level_, message_) do { \
 	if (Error::ShouldLog((level_))) \
 	{ \
-		fmt::wmemory_buffer buf_; \
-		HresultHandleWithBuffer(buf_, (hresult_), (level_), (message_)); \
+		Error::impl::Handle<(level_)>((message_), Error::MessageFromHRESULT((hresult_)), PROGRAMLOG_ERROR_LOCATION); \
 	} \
 } while (0)
 

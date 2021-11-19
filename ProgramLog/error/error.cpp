@@ -28,41 +28,35 @@ bool Error::ShouldLog(spdlog::level::level_enum level)
 	return false;
 }
 
-void Error::impl::Log(const fmt::wmemory_buffer &msg, spdlog::level::level_enum level, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function)
+void Error::impl::Log(std::wstring_view msg, spdlog::level::level_enum level, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function)
 {
-	spdlog::log({ file.c_str(), line, function.c_str() }, level, Util::ToStringView(msg));
+	spdlog::log({ file.c_str(), line, function.c_str() }, level, msg);
 }
 
-void Error::impl::GetLogMessage(fmt::wmemory_buffer &out, std::wstring_view message, std::wstring_view error_message, std::wstring_view err_message_fmt, std::wstring_view message_fmt)
+std::wstring Error::impl::GetLogMessage(std::wstring_view message, std::wstring_view error_message, std::wstring_view err_message_fmt, std::wstring_view message_fmt)
 {
 	if (!error_message.empty())
 	{
-		fmt::format_to(out, err_message_fmt, message, error_message);
+		return std::vformat(err_message_fmt, std::make_wformat_args(message, error_message));
 	}
 	else
 	{
-		fmt::format_to(out, message_fmt, message);
+		return std::vformat(message_fmt, std::make_wformat_args(message));
 	}
 }
 
 template<>
 void Error::impl::Handle<spdlog::level::err>(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function, HRESULT, IRestrictedErrorInfo*)
 {
-	fmt::wmemory_buffer buf;
-
 	// allow calls to err handling without needing to initialize logging
 	if (Log::IsInitialized())
 	{
-		GetLogMessage(buf, message, error_message);
-		Log(buf, spdlog::level::err, file, line, function);
+		Log(GetLogMessage(message, error_message), spdlog::level::err, file, line, function);
 	}
 
 	if (!IsDebuggerPresent())
 	{
-		buf.clear();
-		GetLogMessage(buf, message, error_message, ERROR_MESSAGE L"\n\n{}\n\n{}", ERROR_MESSAGE L"\n\n{}");
-
-		CreateMessageBoxThread(buf, ERROR_TITLE, MB_ICONWARNING).detach();
+		CreateMessageBoxThread(GetLogMessage(message, error_message, ERROR_MESSAGE L"\n\n{}\n\n{}", ERROR_MESSAGE L"\n\n{}"), ERROR_TITLE, MB_ICONWARNING).detach();
 	}
 	else
 	{
@@ -73,22 +67,16 @@ void Error::impl::Handle<spdlog::level::err>(std::wstring_view message, std::wst
 template<>
 void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function, HRESULT err, IRestrictedErrorInfo *errInfo)
 {
-	fmt::wmemory_buffer buf;
-
 	// allow calls to critical handling without needing to initialize logging
 	const bool initialized = Log::IsInitialized();
 	if (initialized)
 	{
-		GetLogMessage(buf, message, error_message);
-		Log(buf, spdlog::level::critical, file, line, function);
+		Log(GetLogMessage(message, error_message), spdlog::level::critical, file, line, function);
 	}
 
 	if (!IsDebuggerPresent())
 	{
-		buf.clear();
-		GetLogMessage(buf, message, error_message, FATAL_ERROR_MESSAGE L"\n\n{}\n\n{}", FATAL_ERROR_MESSAGE L"\n\n{}");
-
-		CreateMessageBoxThread(buf, FATAL_ERROR_TITLE, MB_ICONERROR | MB_TOPMOST).join();
+		CreateMessageBoxThread(GetLogMessage(message, error_message, FATAL_ERROR_MESSAGE L"\n\n{}\n\n{}", FATAL_ERROR_MESSAGE L"\n\n{}"), FATAL_ERROR_TITLE, MB_ICONERROR | MB_TOPMOST).join();
 	}
 
 	if (errInfo)
@@ -109,9 +97,9 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
 }
 
-std::thread Error::impl::CreateMessageBoxThread(const fmt::wmemory_buffer &buf, Util::null_terminated_wstring_view title, unsigned int type)
+std::thread Error::impl::CreateMessageBoxThread(std::wstring buf, Util::null_terminated_wstring_view title, unsigned int type)
 {
-	return std::thread([title, type, body = fmt::to_string(buf)]() noexcept
+	return std::thread([title, type, body = std::move(buf)]() noexcept
 	{
 #ifdef _DEBUG
 		SetThreadDescription(GetCurrentThread(), APP_NAME L" Message Box Thread"); // ignore error

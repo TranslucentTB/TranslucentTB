@@ -1,17 +1,14 @@
 #include "win32.hpp"
-#include <fmt/format.h>
 #include <type_traits>
 #include <WinBase.h>
 #include <winnt.h>
 
 #include "util/strings.hpp"
-#include "util/to_string_view.hpp"
 
-void Error::impl::FormatHRESULT(fmt::wmemory_buffer &buf, HRESULT result, std::wstring_view description)
+std::wstring Error::impl::FormatHRESULT(HRESULT result, std::wstring_view description)
 {
-	fmt::format_to(
-		buf,
-		FMT_STRING(L"0x{:08X}: {}"),
+	return std::format(
+		L"0x{:08X}: {}",
 		static_cast<std::make_unsigned_t<HRESULT>>(result), // needs this otherwise we get some error codes in the negatives
 		description
 	);
@@ -33,7 +30,7 @@ wil::unique_hlocal_string Error::impl::FormatMessageForLanguage(HRESULT result, 
 	return error;
 }
 
-void Error::MessageFromHRESULT(fmt::wmemory_buffer &buf, HRESULT result)
+std::wstring Error::MessageFromHRESULT(HRESULT result)
 {
 	DWORD count = 0;
 	auto error = impl::FormatMessageForLanguage(result, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), count);
@@ -45,7 +42,7 @@ void Error::MessageFromHRESULT(fmt::wmemory_buffer &buf, HRESULT result)
 		lastErr = GetLastError();
 	}
 
-	fmt::wmemory_buffer errBuf;
+	std::wstring errBuf;
 	std::wstring_view description;
 	if (count)
 	{
@@ -53,9 +50,9 @@ void Error::MessageFromHRESULT(fmt::wmemory_buffer &buf, HRESULT result)
 	}
 	else
 	{
-		fmt::format_to(errBuf, FMT_STRING(L"[failed to get message] 0x{:08X}"), static_cast<std::make_unsigned_t<HRESULT>>(HRESULT_FROM_WIN32(lastErr)));
-		description = Util::ToStringView(errBuf);
+		errBuf = std::format(L"[failed to get message] 0x{:08X}", static_cast<std::make_unsigned_t<HRESULT>>(HRESULT_FROM_WIN32(lastErr)));
+		description = errBuf;
 	}
 
-	impl::FormatHRESULT(buf, result, description);
+	return impl::FormatHRESULT(result, description);
 }
