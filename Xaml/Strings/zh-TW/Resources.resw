@@ -247,7 +247,7 @@
     <value>歡迎使用 TranslucentTB！</value>
   </data>
   <data name="WelcomePage_Action_Configure.Description" xml:space="preserve">
-    <value>You can always do this by clicking "Advanced" &gt; "Edit settings" in the tray icon's context menu
+    <value>您可以隨時透過右鍵選單中的「進階」 &gt; 「編輯設定」來更動
 儲存檔案後，TranslucentTB 將自動載入更動</value>
     <comment>Mind the newline (a.k.a. enter)</comment>
   </data>
