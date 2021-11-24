@@ -70,6 +70,7 @@
     <Content Include="Assets\Wide310x150Logo.scale-150.jpeg" />
     <Content Include="Assets\Wide310x150Logo.scale-200.jpeg" />
     <Content Include="Assets\Wide310x150Logo.scale-400.jpeg" />
+    <Content Include="Strings\zh-TW\Resources.resw" />
     <PRIResource Include="Strings\en-US\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
