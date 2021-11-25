@@ -1,0 +1,62 @@
+#pragma code_page(65001)
+
+#ifdef APSTUDIO_INVOKED
+#error Please edit this file manually.
+#endif
+
+#include <ddeml.h>
+#include <winres.h>
+#include "../../../Common/appinfo.hpp"
+#include "../ids.h"
+
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_TRADITIONAL
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION APP_VERSION_FIXED
+	PRODUCTVERSION APP_VERSION_FIXED
+	FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+	FILEFLAGS VS_FF_DEBUG
+#endif
+	FILEOS VOS_NT_WINDOWS32
+	FILETYPE VFT_APP
+{
+	BLOCK L"StringFileInfo"
+	{
+		BLOCK L"000904b0"
+		{
+			VALUE L"FileDescription", APP_NAME
+			VALUE L"FileVersion", APP_VERSION
+			VALUE L"InternalName", APP_NAME L".exe"
+			VALUE L"OriginalFilename", APP_NAME L".exe"
+			VALUE L"ProductName", APP_NAME
+			VALUE L"ProductVersion", APP_VERSION
+			VALUE L"Comments", L"一個能夠使 Windows 工作列變半透明/透明的輕量化小工具。"
+			VALUE L"CompanyName", APP_NAME L" 開源開發者"
+			VALUE L"LegalCopyright", L"版權所有 © " APP_COPYRIGHT_YEAR L" " APP_NAME L" 開源開發者"
+		}
+	}
+	BLOCK L"VarFileInfo"
+	{
+		VALUE L"Translation", 0x0404, CP_WINUNICODE
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Strings
+//
+
+STRINGTABLE
+{
+	IDS_WELCOME_NOTIFICATION APP_NAME L" 將隱藏在工具欄中。\n\n對工具欄圖示點擊右鍵以修改設定、設為開機時啟動、檢視關於資訊、關閉應用程式...等。"
+	IDS_HIDETRAY_DIALOG L"此更動僅暫時生效，下次 "APP_NAME L" 啟動時將被還原。\n\n若要永久更動，請透過 「進階」> 「編輯設定」開啟設定檔，並將 ""hide_tray"" 設為 false。\n\n您確定要繼續嗎？"
+	IDS_ALREADY_RUNNING APP_NAME L" 已經在運行了！對工具欄圖示點擊右鍵以存取。"
+}
