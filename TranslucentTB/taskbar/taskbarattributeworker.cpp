@@ -289,7 +289,7 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 
 TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) const
 {
-	if (m_PowerSaver)
+	if (m_Config.BatterySaverAppearance.Enabled && m_PowerSaver)
 	{
 		return WithPreview(txmp::TaskbarState::BatterySaver, m_Config.BatterySaverAppearance);
 	}
