@@ -29,7 +29,7 @@ VS_VERSION_INFO VERSIONINFO
 {
 	BLOCK L"StringFileInfo"
 	{
-		BLOCK L"000904b0"
+		BLOCK L"040404b0"
 		{
 			VALUE L"FileDescription", APP_NAME
 			VALUE L"FileVersion", APP_VERSION
