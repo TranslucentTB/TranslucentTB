@@ -178,6 +178,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="resources\language\TranslucentTB.zh-TW.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\language\TranslucentTB.zh-CN.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="taskbar\ShellExperience.idl">
