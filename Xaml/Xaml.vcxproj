@@ -39,7 +39,7 @@
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <ModuleDefinitionFile>Xaml.def</ModuleDefinitionFile>
       <AppContainer>false</AppContainer>
-      <AdditionalDependencies>ole32.lib;oleaut32.lib;runtimeobject.lib;user32.lib;$(fmtlib)</AdditionalDependencies>
+      <AdditionalDependencies>ole32.lib;oleaut32.lib;runtimeobject.lib;user32.lib</AdditionalDependencies>
       <AdditionalOptions>/ignore:4197 %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -401,6 +401,11 @@
     <Midl Include="StyleResources.idl">
       <SubType>Designer</SubType>
     </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="Strings\en-US\Resources.resw" />
+    <PRIResource Include="Strings\zh-TW\Resources.resw" />
+    <PRIResource Include="Strings\ar-SA\Resources.resw" />
   </ItemGroup>
   <Target Name="PlaceAppXbfAtRootOfResourceTree" DependsOnTargets="GetPackagingOutputs">
     <ItemGroup>
