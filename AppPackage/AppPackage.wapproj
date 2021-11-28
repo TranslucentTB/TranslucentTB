@@ -47,8 +47,7 @@
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
   </PropertyGroup>
   <PropertyGroup Condition="'$(CertificateThumbprint)'==''">
-    <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
-  </PropertyGroup>
+<AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
@@ -70,9 +69,8 @@
     <Content Include="Assets\Wide310x150Logo.scale-150.jpeg" />
     <Content Include="Assets\Wide310x150Logo.scale-200.jpeg" />
     <Content Include="Assets\Wide310x150Logo.scale-400.jpeg" />
+    <Content Include="Strings\ar-SA\Resources.resw" />
     <PRIResource Include="Strings\en-US\Resources.resw" />
-    <PRIResource Include="Strings\zh-TW\Resources.resw" />
-    <PRIResource Include="Strings\ar-SA\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TranslucentTB\TranslucentTB.vcxproj" />
