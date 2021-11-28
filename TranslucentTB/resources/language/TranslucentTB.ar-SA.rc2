@@ -1,0 +1,62 @@
+#pragma code_page(65001)
+
+#ifdef APSTUDIO_INVOKED
+#error Please edit this file manually.
+#endif
+
+#include <ddeml.h>
+#include <winres.h>
+#include "../../../Common/appinfo.hpp"
+#include "../ids.h"
+
+LANGUAGE LANG_ARABIC, SUBLANG_SAUDI_ARABIA
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION APP_VERSION_FIXED
+	PRODUCTVERSION APP_VERSION_FIXED
+	FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+	FILEFLAGS VS_FF_DEBUG
+#endif
+	FILEOS VOS_NT_WINDOWS32
+	FILETYPE VFT_APP
+{
+	BLOCK L"StringFileInfo"
+	{
+		BLOCK L"000904b0"
+		{
+			VALUE L"FileDescription", APP_NAME
+			VALUE L"FileVersion", APP_VERSION
+			VALUE L"InternalName", APP_NAME L".exe"
+			VALUE L"OriginalFilename", APP_NAME L".exe"
+			VALUE L"ProductName", APP_NAME
+			VALUE L"ProductVersion", APP_VERSION
+			VALUE L"Comments", L"أداة مساعدة خفيفة الوزن تجعل شريط مهام الويندوز شفافًا."
+			VALUE L"CompanyName", APP_NAME L" مطوِّرو البرامج مفتوحة المصدر"
+			VALUE L"LegalCopyright", L"حقوق النشر © " APP_COPYRIGHT_YEAR L" " APP_NAME L" مطوِّرو البرامج مفتوحة المصدر"
+		}
+	}
+	BLOCK L"VarFileInfo"
+	{
+		VALUE L"Translation", 0x0401, CP_WINUNICODE
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Strings
+//
+
+STRINGTABLE
+{
+	IDS_WELCOME_NOTIFICATION APP_NAME L" يعيش في علبة النظام.\n\nانقر بزر الماوس الأيمن فوق رمز العلبة لتغيير الإعدادات، وتعيين التطبيق لفتحه عند التمهيد، وعرض المعلومات، والخروج من التطبيق، وما إلى ذلك."
+	IDS_HIDETRAY_DIALOG L"هذا التغيير مؤقت وسيتم فقده في المرة التالية " APP_NAME L" التي يتم فيها البدء. \n\nلجعل هذا الأمر دائمًا، قم بتحرير ملف التكوين باستخدام ""خيارات متقدمة"" > ""تعديل الإعدادات"" واضبط ""hide_tray"" "على false.\n\nهل انت متأكد انك تريد المتابعة؟"
+	IDS_ALREADY_RUNNING APP_NAME L" انه قيد التشغيل بالفعل! انقر بزر الماوس الأيمن على أيقونة العلبة للوصول إليها."
+}
