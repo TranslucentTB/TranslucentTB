@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Resources">
@@ -7,6 +7,18 @@
     </Filter>
     <Filter Include="Generated Files">
       <UniqueIdentifier>{926ab91d-31b4-48c3-b9a4-e681349f27f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Strings">
+      <UniqueIdentifier>{363aa34d-93bf-4701-8510-bb45cb3cfd1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Strings\en-US">
+      <UniqueIdentifier>{7b45cdc2-9ecd-4045-84b1-9ffd61a63be8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Strings\zh-TW">
+      <UniqueIdentifier>{d5edc189-37f7-456e-a1a2-277be644f570}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Strings\ar-SA">
+      <UniqueIdentifier>{2957950e-185a-4cf0-8247-43367635ed14}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -76,5 +88,15 @@
     <Midl Include="Models\Primitives\ThicknessFilterKind.idl" />
     <Midl Include="Controls\ConstrainedBox.idl" />
     <Midl Include="Controls\FocusBorderColorSpectrum.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="Strings\en-US\Resources.resw">
+      <Filter>Resources\Strings\en-US</Filter>
+    </PRIResource>
+    <PRIResource Include="Strings\zh-TW\Resources.resw">
+      <Filter>Resources\Strings\zh-TW</Filter>
+    </PRIResource>
+    <PRIResource Include="Strings\ar-SA\Resources.resw">
+      <Filter>Resources\Strings\ar-SA</Filter>
   </ItemGroup>
 </Project>
