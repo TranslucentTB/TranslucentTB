@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ColorPickerPage_AlwaysOnTop.Text" xml:space="preserve">
+    <value>دائما في القمة</value>
+  </data>
+  <data name="ColorPickerPage_ConfirmCloseDialog.CloseButtonText" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="ColorPickerPage_ConfirmCloseDialog.Content" xml:space="preserve">
+    <value>هل تريد حفظ التغييرات للون؟</value>
+  </data>
+  <data name="ColorPickerPage_ConfirmCloseDialog.PrimaryButtonText" xml:space="preserve">
+    <value>نعم</value>
+  </data>
+  <data name="ColorPickerPage_ConfirmCloseDialog.SecondaryButtonText" xml:space="preserve">
+    <value>لا</value>
+  </data>
+  <data name="FramelessPage_Close.Text" xml:space="preserve">
+    <value>إغلاق</value>
+  </data>
+  <data name="TrayFlyoutPage_About.Text" xml:space="preserve">
+    <value>حول TranslucentTB</value>
+  </data>
+  <data name="TrayFlyoutPage_AccentColor.Text" xml:space="preserve">
+    <value>لون التمييز</value>
+  </data>
+  <data name="TrayFlyoutPage_Acrylic.Text" xml:space="preserve">
+    <value>أكريليك</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced.Text" xml:space="preserve">
+    <value>مُتقدم</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_CompactThunkHeap.Text" xml:space="preserve">
+    <value>كومة مضغوطة</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_DisableHotSettings.Text" xml:space="preserve">
+    <value>تعطيل حفظ الإعدادات</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_DumpDynamicState.Text" xml:space="preserve">
+    <value>تفريغ الحالة الديناميكية لِلسجل</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_EditSettings.Text" xml:space="preserve">
+    <value>تعديل الإعدادات</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_HideTrayIcon.Text" xml:space="preserve">
+    <value>إخفاء أيقونة العلبة</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity.Text" xml:space="preserve">
+    <value>الإسهاب في السجل</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Critical.Text" xml:space="preserve">
+    <value>الحرج</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Debug.Text" xml:space="preserve">
+    <value>تصحيح</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Error.Text" xml:space="preserve">
+    <value>خطأ</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Information.Text" xml:space="preserve">
+    <value>معلومة</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Off.Text" xml:space="preserve">
+    <value>أوقِف التشغيل</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Trace.Text" xml:space="preserve">
+    <value>الأثر</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Warning.Text" xml:space="preserve">
+    <value>تحذير</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_OpenLogFile.Text" xml:space="preserve">
+    <value>افتح ملف السجل</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_ResetDynamicState.Text" xml:space="preserve">
+    <value>إعادة تعيين الحالة الديناميكية</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_ResetSettings.Text" xml:space="preserve">
+    <value>العودة إلى الإعدادات الإفتراضية</value>
+  </data>
+  <data name="TrayFlyoutPage_BatterySaver.Text" xml:space="preserve">
+    <value>حافظ البطارية</value>
+  </data>
+  <data name="TrayFlyoutPage_Blur.Text" xml:space="preserve">
+    <value>طمس</value>
+  </data>
+  <data name="TrayFlyoutPage_Clear.Text" xml:space="preserve">
+    <value>مسح</value>
+  </data>
+  <data name="TrayFlyoutPage_Desktop.Text" xml:space="preserve">
+    <value>سطع المكتب</value>
+  </data>
+  <data name="TrayFlyoutPage_Enabled.Text" xml:space="preserve">
+    <value>تمكين</value>
+  </data>
+  <data name="TrayFlyoutPage_Exit.Text" xml:space="preserve">
+    <value>خروج</value>
+  </data>
+  <data name="TrayFlyoutPage_MaximizedWindow.Text" xml:space="preserve">
+    <value>نافذة مُكبرة</value>
+  </data>
+  <data name="TrayFlyoutPage_Normal.Text" xml:space="preserve">
+    <value>طبيعي</value>
+  </data>
+  <data name="TrayFlyoutPage_Opaque.Text" xml:space="preserve">
+    <value>مبهمة</value>
+  </data>
+  <data name="TrayFlyoutPage_OpenAtBoot.Text" xml:space="preserve">
+    <value>فتح عند التشغيل</value>
+  </data>
+  <data name="TrayFlyoutPage_PeekButton.Text" xml:space="preserve">
+    <value>إظهار زر نظرة خاطفة على سطح المكتب</value>
+  </data>
+  <data name="TrayFlyoutPage_SearchOpened.Text" xml:space="preserve">
+    <value>تم فتح البحث</value>
+  </data>
+  <data name="TrayFlyoutPage_StartOpened.Text" xml:space="preserve">
+    <value>تم فتح البدء</value>
+  </data>
+  <data name="TrayFlyoutPage_TaskViewOpened.Text" xml:space="preserve">
+    <value>تم فتح طريقة عرض المهام</value>
+  </data>
+  <data name="TrayFlyoutPage_TipsAndTricks.Text" xml:space="preserve">
+    <value>النصائح والخدع</value>
+  </data>
+  <data name="TrayFlyoutPage_VisibleWindow.Text" xml:space="preserve">
+    <value>نافذة مرئية</value>
+  </data>
+  <data name="WelcomePage.Title" xml:space="preserve">
+    <value>مرحبًا بك في TranslucentTB!</value>
+  </data>
+  <data name="WelcomePage_Action_Configure.Description" xml:space="preserve">
+    <value>يمكنك دائمًا القيام بذلك عن طريق النقر فوق "خيارات متقدمة" &gt; "تحرير الإعدادات" في قائمة سياق رمز العلبة
+يتم إعادة تحميل التغييرات تلقائيًا عند حفظ الملف</value>
+    <comment>Mind the newline (a.k.a. enter)</comment>
+  </data>
+  <data name="WelcomePage_Action_Configure.Name" xml:space="preserve">
+    <value>قم بتحرير ملف التكوين</value>
+  </data>
+  <data name="WelcomePage_Action_Discord.Description" xml:space="preserve">
+    <value>تحدث مع المطورين واحصل على مساعدة في البرنامج</value>
+  </data>
+  <data name="WelcomePage_Action_Discord.Name" xml:space="preserve">
+    <value>انضم إلى خادم الديسكورد الخاص بنا</value>
+  </data>
+  <data name="WelcomePage_Action_Donate.Description" xml:space="preserve">
+    <value>أظهر لنا دعمك من خلال تقديم تبرع لمرة واحدة أو مُتكرر ❤</value>
+  </data>
+  <data name="WelcomePage_Action_Donate.Name" xml:space="preserve">
+    <value>تبرع لمشروع ليبرا باي</value>
+  </data>
+  <data name="WelcomePage_ButtonBar_Continue.Content" xml:space="preserve">
+    <value>مُتابعة</value>
+  </data>
+  <data name="WelcomePage_ButtonBar_Exit.Content" xml:space="preserve">
+    <value>خروج</value>
+  </data>
+  <data name="WelcomePage_Message_Hyperlink.Text" xml:space="preserve">
+    <value>إفتح مُشكلة GitHub</value>
+  </data>
+  <data name="WelcomePage_Message_Prefix.Text" xml:space="preserve">
+    <value>شكرًا لِتجربة TranslucentTB! بعد النقر على "مُتابعة"، يمكنك تخصيص شكل شريط المهام وفقًا لرغباتك. نأمل أن تستمتع بها، ولا تتردد في ذلك</value>
+  </data>
+  <data name="WelcomePage_Message_Suffix.Text" xml:space="preserve">
+    <value>إذا كان لديك أي مشكلة أو تريد أن ترى ميزة مضافة!</value>
+  </data>
+</root>
+
