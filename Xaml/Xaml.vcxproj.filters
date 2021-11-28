@@ -15,6 +15,7 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="Controls\colorpickerrendering.cpp" />
+    <Filter Include="Resources\Strings\ar-SA">
   </ItemGroup>
   <ItemGroup>
     <None Include="Xaml.def">
