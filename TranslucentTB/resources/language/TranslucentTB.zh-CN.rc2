@@ -56,7 +56,7 @@ VS_VERSION_INFO VERSIONINFO
 
 STRINGTABLE
 {
-	IDS_WELCOME_NOTIFICATION APP_NAME L" 將隱藏在托盤中。\n\n對托盤圖標點擊右鍵以修改設置、設為開機時啟動、檢視關於資訊、關閉應用...等。"
+	IDS_WELCOME_NOTIFICATION APP_NAME L" 将隐藏在托盘中。 \n\n对托盘图标点击右键以修改设置、设为开机时启动、检视关于信息、关闭应用...等。"
 	IDS_HIDETRAY_DIALOG L"此更动仅暂时生效，下次 "APP_NAME L" 启动时将被还原。 \n\n若要永久更动，请透过 「高级」> 「编辑设置」开启配置文件，并将 ""hide_tray"" 设为 false。 \n\n您确定要继续吗？"
 	IDS_ALREADY_RUNNING APP_NAME L" 已经在运行了！对托盘图示点击右键以存取。"
 }
