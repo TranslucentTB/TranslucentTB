@@ -16,6 +16,8 @@
     </ClCompile>
     <ClCompile Include="Controls\colorpickerrendering.cpp" />
     <Filter Include="Resources\Strings\ar-SA">
+      <UniqueIdentifier>{2957950e-185a-4cf0-8247-43367635ed14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Xaml.def">
