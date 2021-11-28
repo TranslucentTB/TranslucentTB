@@ -32,12 +32,13 @@
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
   <PropertyGroup>
     <ProjectGuid>0e91e5c8-0ee0-49c9-a0da-d25ab61a90c4</ProjectGuid>
-    <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
+    <TargetPlatformVersion>10.0.22000.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
     <EntryPointProjectUniqueName>..\TranslucentTB\TranslucentTB.vcxproj</EntryPointProjectUniqueName>
     <AppxBundlePlatforms>x64|arm64</AppxBundlePlatforms>
     <DebuggerType>NativeOnly</DebuggerType>
+    <DefaultLanguage>en-US</DefaultLanguage>
   </PropertyGroup>
   <PropertyGroup Condition="'$(CertificateThumbprint)'!=''">
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
@@ -69,6 +70,9 @@
     <Content Include="Assets\Wide310x150Logo.scale-150.jpeg" />
     <Content Include="Assets\Wide310x150Logo.scale-200.jpeg" />
     <Content Include="Assets\Wide310x150Logo.scale-400.jpeg" />
+    <PRIResource Include="Strings\en-US\Resources.resw" />
+    <PRIResource Include="Strings\zh-TW\Resources.resw" />
+    <PRIResource Include="Strings\ar-SA\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TranslucentTB\TranslucentTB.vcxproj" />
