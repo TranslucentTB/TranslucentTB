@@ -142,7 +142,7 @@
     <value>主题色</value>
   </data>
   <data name="TrayFlyoutPage_Acrylic.Text" xml:space="preserve">
-    <value>压克力</value>
+    <value>亚克力</value>
   </data>
   <data name="TrayFlyoutPage_Advanced.Text" xml:space="preserve">
     <value>高级</value>
@@ -169,7 +169,7 @@
     <value>严重</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Debug.Text" xml:space="preserve">
-    <value>侦错</value>
+    <value>调试</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Error.Text" xml:space="preserve">
     <value>错误</value>
@@ -193,7 +193,7 @@
     <value>重置动态状态</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_ResetSettings.Text" xml:space="preserve">
-    <value>恢复出厂设置</value>
+    <value>恢复默认设置</value>
   </data>
   <data name="TrayFlyoutPage_BatterySaver.Text" xml:space="preserve">
     <value>启用节电模式时</value>
@@ -229,7 +229,7 @@
     <value>显示桌面预览按钮</value>
   </data>
   <data name="TrayFlyoutPage_SearchOpened.Text" xml:space="preserve">
-    <value>开启搜寻菜单时</value>
+    <value>开启搜索菜单时</value>
   </data>
   <data name="TrayFlyoutPage_StartOpened.Text" xml:space="preserve">
     <value>开启开始菜单时</value>
@@ -248,7 +248,7 @@
   </data>
   <data name="WelcomePage_Action_Configure.Description" xml:space="preserve">
     <value>您可以随时在托盘图标的右键选单中点击 "高级" &gt; "编辑设置" 来更改
-儲存檔案後，TranslucentTB 將自動載入更動</value>
+儲存文件後，TranslucentTB 將自動載入更動</value>
     <comment>Mind the newline (a.k.a. enter)</comment>
   </data>
   <data name="WelcomePage_Action_Configure.Name" xml:space="preserve">
@@ -258,13 +258,13 @@
     <value>与开发者聊聊并取得协助</value>
   </data>
   <data name="WelcomePage_Action_Discord.Name" xml:space="preserve">
-    <value>加入我们的 Discord 伺服器</value>
+    <value>加入我们的 Discord 服务器</value>
   </data>
   <data name="WelcomePage_Action_Donate.Description" xml:space="preserve">
     <value>单次或定期赞助我们以支持开发 ❤</value>
   </data>
   <data name="WelcomePage_Action_Donate.Name" xml:space="preserve">
-    <value>透过 Liberapay 赞助此专案</value>
+    <value>通过 Liberapay 赞助此专案</value>
   </data>
   <data name="WelcomePage_ButtonBar_Continue.Content" xml:space="preserve">
     <value>继续</value>
