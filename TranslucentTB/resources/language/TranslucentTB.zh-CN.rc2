@@ -1,0 +1,62 @@
+#pragma code_page(65001)
+
+#ifdef APSTUDIO_INVOKED
+#error Please edit this file manually.
+#endif
+
+#include <ddeml.h>
+#include <winres.h>
+#include "../../../Common/appinfo.hpp"
+#include "../ids.h"
+
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION APP_VERSION_FIXED
+	PRODUCTVERSION APP_VERSION_FIXED
+	FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+	FILEFLAGS VS_FF_DEBUG
+#endif
+	FILEOS VOS_NT_WINDOWS32
+	FILETYPE VFT_APP
+{
+	BLOCK L"StringFileInfo"
+	{
+		BLOCK L"080404b0"
+		{
+			VALUE L"FileDescription", APP_NAME
+			VALUE L"FileVersion", APP_VERSION
+			VALUE L"InternalName", APP_NAME L".exe"
+			VALUE L"OriginalFilename", APP_NAME L".exe"
+			VALUE L"ProductName", APP_NAME
+			VALUE L"ProductVersion", APP_VERSION
+			VALUE L"Comments", L"一个能够使 Windows 任务栏变半透明/透明的轻量化小工具"
+			VALUE L"CompanyName", APP_NAME L" 开源开发者"
+			VALUE L"LegalCopyright", L"版权所有 © " APP_COPYRIGHT_YEAR L" " APP_NAME L" 开源开发者"
+		}
+	}
+	BLOCK L"VarFileInfo"
+	{
+		VALUE L"Translation", 0x0804, CP_WINUNICODE
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Strings
+//
+
+STRINGTABLE
+{
+	IDS_WELCOME_NOTIFICATION APP_NAME L" 将隐藏在托盘中。 \n\n对托盘图标点击右键以修改设置、设为开机时启动、检视关于信息、关闭应用...等。"
+	IDS_HIDETRAY_DIALOG L"此更动仅暂时生效，下次 "APP_NAME L" 启动时将被还原。 \n\n若要永久更动，请通过 「高级」> 「编辑设置」开启配置文件，并将 ""hide_tray"" 设为 false。 \n\n您确定要继续吗？"
+	IDS_ALREADY_RUNNING APP_NAME L" 已经在运行了！对托盘图示点击右键以存取。"
+}
