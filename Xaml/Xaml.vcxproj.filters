@@ -93,7 +93,9 @@
     <PRIResource Include="Strings\en-US\Resources.resw">
       <Filter>Resources\Strings\en-US</Filter>
     </PRIResource>
-    <PRIResource Include="Strings\zh-TW\Resources.resw" />
+    <PRIResource Include="Strings\zh-TW\Resources.resw">
+      <Filter>Resources\Strings\zh-TW</Filter>
+    </PRIResource>
     <PRIResource Include="Strings\zh-CN\Resources.resw">
       <Filter>Resources\Strings\zh-CN</Filter>
     </PRIResource>

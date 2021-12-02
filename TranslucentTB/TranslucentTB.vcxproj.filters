@@ -165,6 +165,9 @@
     <ResourceCompile Include="resources\language\TranslucentTB.en-US.rc2">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+    <ResourceCompile Include="resources\language\TranslucentTB.zh-TW.rc2">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="resources\TranslucentTB.manifest">

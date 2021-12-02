@@ -102,6 +102,8 @@
   <ItemGroup>
     <ResourceCompile Include="resources\TranslucentTB.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.en-US.rc2" />
+    <ResourceCompile Include="resources\language\TranslucentTB.zh-CN.rc2" />
+    <ResourceCompile Include="resources\language\TranslucentTB.zh-TW.rc2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExplorerHooks\ExplorerHooks.vcxproj">
@@ -135,8 +137,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="resources\language\TranslucentTB.zh-CN.rc2" />
-    <None Include="resources\language\TranslucentTB.zh-TW.rc2" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="taskbar\ShellExperience.idl">
