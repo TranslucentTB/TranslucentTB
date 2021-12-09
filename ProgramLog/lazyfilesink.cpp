@@ -1,6 +1,5 @@
 #include "lazyfilesink.hpp"
 #include <fileapi.h>
-#include <fmt/format.h>
 #include <utility>
 #include <wil/safecast.h>
 #include "winrt.hpp"
@@ -11,7 +10,6 @@
 #include "error/std.hpp"
 #include "error/win32.hpp"
 #include "error/winrt.hpp"
-#include "util/to_string_view.hpp"
 
 template<typename Mutex>
 lazy_sink_state lazy_file_sink<Mutex>::state()
@@ -87,15 +85,16 @@ template<typename T>
 void lazy_file_sink<Mutex>::write(const T &thing)
 {
 	DWORD bytesWritten;
-	if (!WriteFile(m_Handle.get(), thing.data(), wil::safe_cast<DWORD>(thing.size()), &bytesWritten, nullptr))
+	if (WriteFile(m_Handle.get(), thing.data(), wil::safe_cast<DWORD>(thing.size()), &bytesWritten, nullptr))
+	{
+		if (bytesWritten != thing.size()) [[unlikely]]
+		{
+			MessagePrint(spdlog::level::trace, L"Wrote less characters than there is in log entry?");
+		}
+	}
+	else
 	{
 		LastErrorHandle(spdlog::level::trace, L"Failed to write log entry to file.");
-		return;
-	}
-
-	if (bytesWritten != thing.size())
-	{
-		MessagePrint(spdlog::level::trace, L"Wrote less characters than there is in log entry?");
 	}
 }
 

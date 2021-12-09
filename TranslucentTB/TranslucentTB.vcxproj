@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
@@ -6,6 +6,8 @@
     <ConfigurationType>Application</ConfigurationType>
     <GenerateManifest>true</GenerateManifest>
     <RootNamespace>TranslucentTB</RootNamespace>
+    <CustomBuildAfterTargets>ClCompile</CustomBuildAfterTargets>
+    <CustomBuildBeforeTargets>Link</CustomBuildBeforeTargets>
   </PropertyGroup>
   <Import Project="..\Common\CppProject.props" />
   <PropertyGroup>
@@ -44,8 +46,9 @@
       <PreprocessorDefinitions>_TRANSLUCENTTB_EXE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>advapi32.lib;comctl32.lib;coremessaging.lib;dwmapi.lib;gdi32.lib;mincore.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;shlwapi.lib;user32.lib;$(fmtlib)</AdditionalDependencies>
+      <AdditionalDependencies>$(IntDir)api-ms-win-appmodel-runtime-l1-1-5.lib;advapi32.lib;comctl32.lib;coremessaging.lib;delayimp.lib;dwmapi.lib;gdi32.lib;mincore.lib;ole32.lib;pathcch.lib;runtimeobject.lib;shcore.lib;shell32.lib;shlwapi.lib;user32.lib;onecore.lib</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(UsingGameSDK)'=='true'">discord_game_sdk.lib;discord_game_sdk_cpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>api-ms-win-appmodel-runtime-l1-1-5.dll</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -60,6 +63,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="tray\basecontextmenu.cpp" />
     <ClCompile Include="uwp\basexamlpagehost.cpp" />
+    <ClCompile Include="uwp\dynamicdependency.cpp" />
     <ClCompile Include="uwp\xamldragregion.cpp" />
     <ClCompile Include="uwp\xamlthreadpool.cpp" />
     <ClCompile Include="uwp\xamlthread.cpp" />
@@ -82,6 +86,7 @@
     <ClInclude Include="tray\traycontextmenu.hpp" />
     <ClInclude Include="taskbar\taskbarattributeworker.hpp" />
     <ClInclude Include="uwp\basexamlpagehost.hpp" />
+    <ClInclude Include="uwp\dynamicdependency.hpp" />
     <ClInclude Include="uwp\xamldragregion.hpp" />
     <ClInclude Include="uwp\xamlthreadpool.hpp" />
     <ClInclude Include="uwp\xamlpagehost.hpp" />
@@ -96,7 +101,9 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\TranslucentTB.rc2" />
-    <ResourceCompile Include="resources\language\TranslucentTB.en.rc2" />
+    <ResourceCompile Include="resources\language\TranslucentTB.en-US.rc2" />
+    <ResourceCompile Include="resources\language\TranslucentTB.zh-CN.rc2" />
+    <ResourceCompile Include="resources\language\TranslucentTB.zh-TW.rc2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExplorerHooks\ExplorerHooks.vcxproj">
@@ -136,6 +143,12 @@
     <Midl Include="taskbar\ShellExperience.idl">
       <SubType>Designer</SubType>
     </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="uwp\api-ms-win-appmodel-runtime-l1-1-5.def">
+      <Command>lib.exe /DEF:"%(FullPath)" /OUT:"$(IntDir)%(Filename).lib" /MACHINE:$(PlatformTarget) /NOLOGO</Command>
+      <Outputs>$(IntDir)%(Filename).lib</Outputs>
+    </CustomBuild>
   </ItemGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

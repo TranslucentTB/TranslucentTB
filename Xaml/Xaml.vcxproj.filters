@@ -8,6 +8,18 @@
     <Filter Include="Generated Files">
       <UniqueIdentifier>{926ab91d-31b4-48c3-b9a4-e681349f27f0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources\Strings">
+      <UniqueIdentifier>{363aa34d-93bf-4701-8510-bb45cb3cfd1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Strings\en-US">
+      <UniqueIdentifier>{7b45cdc2-9ecd-4045-84b1-9ffd61a63be8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Strings\zh-TW">
+      <UniqueIdentifier>{d5edc189-37f7-456e-a1a2-277be644f570}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Strings\zh-CN">
+      <UniqueIdentifier>{c759777b-77fe-4280-8e86-b5aeddb0301b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -77,5 +89,19 @@
     <Midl Include="Models\Primitives\ThicknessFilterKind.idl" />
     <Midl Include="Controls\ConstrainedBox.idl" />
     <Midl Include="Controls\FocusBorderColorSpectrum.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="Strings\en-US\Resources.resw">
+      <Filter>Resources\Strings\en-US</Filter>
+    </PRIResource>
+    <PRIResource Include="Strings\zh-TW\Resources.resw">
+      <Filter>Resources\Strings\zh-TW</Filter>
+    </PRIResource>
+    <PRIResource Include="Strings\zh-CN\Resources.resw">
+      <Filter>Resources\Strings\zh-CN</Filter>
+     </PRIResource>
+    <PRIResource Include="Strings\ar-SA\Resources.resw">
+      <Filter>Resources\Strings\ar-SA</Filter>
+    </PRIResource>
   </ItemGroup>
 </Project>

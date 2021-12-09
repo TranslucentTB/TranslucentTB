@@ -6,7 +6,6 @@
 #include <cstdint>
 #include <errhandlingapi.h>
 #include <filesystem>
-#include <fmt/format.h>
 #include <memory>
 #include <processthreadsapi.h>
 #include <winbase.h>
@@ -259,7 +258,7 @@ public:
 	private:
 		inline static void SlowHash(std::size_t &hash, std::wstring_view k)
 		{
-			fmt::wmemory_buffer buf;
+			std::wstring buf;
 			buf.resize(k.length());
 
 			const int result = LCMapStringEx(

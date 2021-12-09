@@ -69,6 +69,9 @@
     <ClCompile Include="localization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="uwp\dynamicdependency.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\messagewindow.hpp">
@@ -140,6 +143,9 @@
     <ClInclude Include="localization.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="uwp\dynamicdependency.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\TranslucentTB.ico">
@@ -156,7 +162,13 @@
     <ResourceCompile Include="resources\TranslucentTB.rc2">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="resources\language\TranslucentTB.en.rc2">
+    <ResourceCompile Include="resources\language\TranslucentTB.en-US.rc2">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="resources\language\TranslucentTB.zh-TW.rc2">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="resources\language\TranslucentTB.zh-CN.rc2">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
     <ResourceCompile Include="resources\language\TranslucentTB.ar-SA.rc2">
@@ -180,5 +192,10 @@
     <Midl Include="taskbar\ShellExperience.idl">
       <Filter>Source Files</Filter>
     </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="uwp\api-ms-win-appmodel-runtime-l1-1-5.def">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>

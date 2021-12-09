@@ -3,7 +3,7 @@
 #include <array>
 #include <cassert>
 #include <concepts>
-#include <fmt/format.h>
+#include <format>
 #include <optional>
 #include <rapidjson/document.h>
 #include <rapidjson/encodings.h>
@@ -12,7 +12,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "../util/to_string_view.hpp"
 #include "../util/type_traits.hpp"
 
 namespace rj = rapidjson;
@@ -46,7 +45,7 @@ namespace rjh {
 		if (!IsType(expected, actual)) [[unlikely]]
 		{
 			throw DeserializationError {
-				fmt::format(FMT_STRING(L"Expected {} but found {} while deserializing {}"), TYPE_NAMES.at(expected), TYPE_NAMES.at(actual), obj)
+				std::format(L"Expected {} but found {} while deserializing {}", TYPE_NAMES.at(expected), TYPE_NAMES.at(actual), obj)
 			};
 		}
 	}
@@ -91,12 +90,11 @@ namespace rjh {
 		writer.Bool(value);
 	}
 
-	template<class Writer, typename T>
-	requires Util::is_convertible_to_wstring_view_v<T>
-	inline void Serialize(Writer &writer, const T &value, std::wstring_view key)
+	template<class Writer>
+	inline void Serialize(Writer &writer, std::wstring_view value, std::wstring_view key)
 	{
 		WriteKey(writer, key);
-		WriteString(writer, Util::ToStringView(value));
+		WriteString(writer, value);
 	}
 
 	template<class Writer, class T, std::size_t size>
@@ -112,7 +110,7 @@ namespace rjh {
 
 	template<class Writer, class T>
 	// prevent ambiguous overload errors
-	requires (std::is_class_v<T> && !Util::is_convertible_to_wstring_view_v<T> && !Util::is_optional_v<T>)
+	requires (std::is_class_v<T> && !std::is_convertible_v<T, std::wstring_view> && !Util::is_optional_v<T>)
 	inline void Serialize(Writer &writer, const T &member, std::wstring_view key)
 	{
 		WriteKey(writer, key);
@@ -151,7 +149,7 @@ namespace rjh {
 		else
 		{
 			throw rjh::DeserializationError {
-				fmt::format(FMT_STRING(L"Found invalid enum string \"{}\" while deserializing key \"{}\""), str, key)
+				std::format(L"Found invalid enum string \"{}\" while deserializing key \"{}\"", str, key)
 			};
 		}
 	}

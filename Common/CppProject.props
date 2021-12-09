@@ -51,9 +51,6 @@
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
 
-    <fmtlib Condition="'$(Configuration)'=='Release'">fmt.lib</fmtlib>
-    <fmtlib Condition="'$(Configuration)'=='Debug'">fmtd.lib</fmtlib>
-
     <!-- Don't use the Game SDK for now because it causes a crash when Discord exits while we are running. -->
     <UsingGameSDK>false</UsingGameSDK>
     <UsingGameSDK Condition="'$(UsingGameSDK)'=='' and '$(Platform)'=='x64'">true</UsingGameSDK>
@@ -174,7 +171,7 @@
       <PreprocessorDefinitions>MEMBER_THUNK_DEFAULT_HEAP_SAFETY=3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
       <!-- spdlog -->
-      <PreprocessorDefinitions>SPDLOG_DISABLE_DEFAULT_LOGGER;SPDLOG_FMT_EXTERNAL;SPDLOG_NO_NAME;SPDLOG_NO_THREAD_ID;SPDLOG_NO_TLS;SPDLOG_WCHAR_TO_UTF8_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SPDLOG_DISABLE_DEFAULT_LOGGER;SPDLOG_NO_NAME;SPDLOG_NO_THREAD_ID;SPDLOG_NO_TLS;SPDLOG_USE_STD_FORMAT;SPDLOG_WCHAR_TO_UTF8_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
       <!-- wil -->
       <PreprocessorDefinitions>RESULT_SUPPRESS_STATIC_INITIALIZERS;WIL_LOCK_EXCEPTION_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>

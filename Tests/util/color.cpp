@@ -155,9 +155,7 @@ TEST(Util_Color_ToString, ReturnsCorrectString)
 
 	for (const auto &testCase : cases)
 	{
-		fmt::wmemory_buffer buf;
-		testCase.first.ToString(buf);
-		ASSERT_EQ(Util::ToStringView(buf), testCase.second);
+		ASSERT_EQ(testCase.first.ToString(), testCase.second);
 	}
 }
 

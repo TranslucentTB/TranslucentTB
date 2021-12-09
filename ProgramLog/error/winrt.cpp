@@ -4,12 +4,12 @@
 #include "util/strings.hpp"
 #include "win32.hpp"
 
-void Error::impl::FormatIRestrictedErrorInfo(fmt::wmemory_buffer &buf, HRESULT result, BSTR description)
+std::wstring Error::impl::FormatIRestrictedErrorInfo(HRESULT result, BSTR description)
 {
-	FormatHRESULT(buf, result, Util::Trim({ description, SysStringLen(description) }));
+	return FormatHRESULT(result, Util::Trim({ description, SysStringLen(description) }));
 }
 
-bool Error::MessageFromIRestrictedErrorInfo(fmt::wmemory_buffer &buf, IRestrictedErrorInfo *info, HRESULT failureCode)
+bool Error::MessageFromIRestrictedErrorInfo(std::wstring &buf, IRestrictedErrorInfo *info, HRESULT failureCode)
 {
 	if (info)
 	{
@@ -23,41 +23,38 @@ bool Error::MessageFromIRestrictedErrorInfo(fmt::wmemory_buffer &buf, IRestricte
 			{
 				if (restrictedDescription)
 				{
-					impl::FormatIRestrictedErrorInfo(buf, errorCode, restrictedDescription.get());
+					buf = impl::FormatIRestrictedErrorInfo(errorCode, restrictedDescription.get());
 				}
 				else if (description)
 				{
-					impl::FormatIRestrictedErrorInfo(buf, errorCode, description.get());
+					buf = impl::FormatIRestrictedErrorInfo(errorCode, description.get());
 				}
 				else
 				{
-					MessageFromHRESULT(buf, errorCode);
+					buf = MessageFromHRESULT(errorCode);
 				}
 
 				return true; // allow crash with error info
 			}
 			else
 			{
-				fmt::format_to(buf, FMT_STRING(L"[IRestrictedErrorInfo did not return expected HRESULT] expected: 0x{:08X}, actual: 0x{:08X}"), failureCode, errorCode);
+				buf = std::format(L"[IRestrictedErrorInfo did not return expected HRESULT] expected: 0x{:08X}, actual: 0x{:08X}", failureCode, errorCode);
 			}
 		}
 		else
 		{
-			fmt::wmemory_buffer hrBuf;
-			MessageFromHRESULT(hrBuf, hr);
-			fmt::format_to(buf, FMT_STRING(L"[failed to get details from IRestrictedErrorInfo] {}"), Util::ToStringView(hrBuf));
+			buf = std::format(L"[failed to get details from IRestrictedErrorInfo] {}", MessageFromHRESULT(hr));
 		}
 	}
 	else
 	{
-		static constexpr std::wstring_view INFO_NULL = L"[IRestrictedErrorInfo was null]";
-		buf.append(INFO_NULL);
+		buf = L"[IRestrictedErrorInfo was null]";
 	}
 
 	return false;
 }
 
-winrt::com_ptr<IRestrictedErrorInfo> Error::MessageFromHresultError(fmt::wmemory_buffer &buf, const winrt::hresult_error &err, HRESULT *errCode)
+winrt::com_ptr<IRestrictedErrorInfo> Error::MessageFromHresultError(std::wstring &buf, const winrt::hresult_error &err, HRESULT *errCode)
 {
 	HRESULT code = err.code();
 	if (errCode)
@@ -74,7 +71,7 @@ winrt::com_ptr<IRestrictedErrorInfo> Error::MessageFromHresultError(fmt::wmemory
 	}
 	else
 	{
-		MessageFromHRESULT(buf, code);
+		buf = MessageFromHRESULT(code);
 	}
 
 	return nullptr;

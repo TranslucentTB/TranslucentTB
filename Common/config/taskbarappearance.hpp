@@ -1,7 +1,6 @@
 #pragma once
 #include "../arch.h"
 #include <array>
-#include <fmt/format.h>
 #include <rapidjson/document.h>
 #include <rapidjson/encodings.h>
 #include <string_view>
@@ -16,8 +15,6 @@
 #include "rapidjsonhelper.hpp"
 #include "../undoc/user32.hpp"
 #include "../util/color.hpp"
-#include "../util/fmt.hpp"
-#include "../util/to_string_view.hpp"
 
 struct TaskbarAppearance {
 	ACCENT_STATE Accent = ACCENT_NORMAL;
@@ -35,11 +32,7 @@ struct TaskbarAppearance {
 	inline void Serialize(Writer &writer) const
 	{
 		rjh::Serialize(writer, Accent, ACCENT_KEY, ACCENT_MAP);
-
-		Util::small_wmemory_buffer<9> buf;
-		Color.ToString(buf);
-		rjh::Serialize(writer, buf, COLOR_KEY);
-
+		rjh::Serialize(writer, Color.ToString(), COLOR_KEY);
 		rjh::Serialize(writer, ShowPeek, SHOW_PEEK_KEY);
 	}
 
@@ -87,7 +80,7 @@ protected:
 			catch (...)
 			{
 				throw rjh::DeserializationError {
-					fmt::format(FMT_STRING(L"Found invalid string \"{}\" while deserializing {}"), colorStr, key)
+					std::format(L"Found invalid string \"{}\" while deserializing {}", colorStr, key)
 				};
 			}
 		}

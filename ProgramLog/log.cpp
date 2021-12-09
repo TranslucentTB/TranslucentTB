@@ -11,8 +11,6 @@
 #include "error/error.hpp"
 #include "error/winrt.hpp"
 #include "error/std.hpp"
-#include "util/fmt.hpp"
-#include "util/to_string_view.hpp"
 
 std::atomic<Log::InitStatus> Log::s_LogInitStatus = Log::InitStatus::NotInitialized;
 std::weak_ptr<lazy_file_sink_mt> Log::s_LogSink;
@@ -56,18 +54,14 @@ std::filesystem::path Log::GetPath(const std::optional<std::filesystem::path> &s
 		}
 	}
 
-	Util::small_wmemory_buffer<25> buf;
-	fmt::format_to(buf, FMT_STRING(L"{}.log"), GetProcessCreationTime());
-	path /= Util::ToStringView(buf);
+	path /= std::format(L"{}.log", GetProcessCreationTime());
 	return path;
 }
 
 void Log::LogErrorHandler(const std::string &message)
 {
-	fmt::memory_buffer buf;
-	fmt::format_to(buf, FMT_STRING("An error has been encountered while logging a message.\n\n{}"), message);
-	buf.push_back('\0');
-	MessageBoxExA(nullptr, buf.data(), UTF8_ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
+	const auto msg = std::format("An error has been encountered while logging a message.\n\n{}", message);
+	MessageBoxExA(nullptr, msg.c_str(), UTF8_ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 }
 
 bool Log::IsInitialized() noexcept

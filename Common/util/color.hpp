@@ -1,7 +1,7 @@
 #pragma once
 #include <bit>
 #include <cstdint>
-#include <fmt/format.h>
+#include <format>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -109,10 +109,9 @@ namespace Util {
 			return { 60.0 * h1, saturation, max, toDouble * A };
 		}
 
-		template<std::size_t size>
-		inline void ToString(fmt::basic_memory_buffer<wchar_t, size>& buf) const
+		inline std::wstring ToString() const
 		{
-			fmt::format_to(buf, FMT_STRING(L"#{:08X}"), ToRGBA());
+			return std::format(L"#{:08X}", ToRGBA());
 		}
 
 		constexpr static Color FromString(std::wstring_view str, bool allowNoPrefix = false)

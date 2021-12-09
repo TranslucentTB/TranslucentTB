@@ -1,5 +1,5 @@
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'windows-2022'
 
 variables:
   solution: $(Build.SourcesDirectory)/TranslucentTB.sln
@@ -29,13 +29,8 @@ steps:
 - script: .\bootstrap-vcpkg.bat
   displayName: 'Bootstrap vcpkg'
   workingDirectory: C:\vcpkg
-- script: vcpkg install $(vcpkgArgs) discord-game-sdk
-  displayName: 'Install Discord Game SDK'
-  condition: and(succeeded(), eq(variables['platform'], 'x64'))
-- script: vcpkg install $(vcpkgArgs) fmt spdlog
+- script: vcpkg install $(vcpkgArgs) --overlay-ports=$(Build.SourcesDirectory)/vcpkg/ports --head detours gtest member-thunk rapidjson spdlog wil
   displayName: 'Install vcpkg dependencies'
-- script: vcpkg install $(vcpkgArgs) --overlay-ports=$(Build.SourcesDirectory)/vcpkg/ports --head detours gtest member-thunk rapidjson wil
-  displayName: 'Install vcpkg head dependencies'
 - task: NuGetCommand@2
   displayName: 'Restore NuGet packages'
   inputs:

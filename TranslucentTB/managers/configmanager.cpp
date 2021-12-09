@@ -140,9 +140,7 @@ bool ConfigManager::LoadFromFile(FILE *f)
 			{
 				if (Error::ShouldLog(spdlog::level::info))
 				{
-					fmt::wmemory_buffer buf;
-					fmt::format_to(buf, FMT_STRING(L"Unknown key found in JSON: {}"), unknownKey);
-					MessagePrint(spdlog::level::info, buf);
+					MessagePrint(spdlog::level::info, std::format(L"Unknown key found in JSON: {}", unknownKey));
 				}
 			});
 
