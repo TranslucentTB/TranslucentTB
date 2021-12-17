@@ -98,10 +98,8 @@ public:
 	}
 
 	// Gets the current Windows build identifier.
-	inline static std::pair<std::wstring, HRESULT> GetWindowsBuild()
+	inline static std::pair<Version, HRESULT> GetWindowsBuild()
 	{
-		// Microsoft recommends this themselves
-		// https://docs.microsoft.com/windows/desktop/SysInfo/getting-the-system-version
 		wil::unique_cotaskmem_string system32;
 		const HRESULT hr = SHGetKnownFolderPath(FOLDERID_System, KF_FLAG_DEFAULT, nullptr, system32.put());
 		if (FAILED(hr))
@@ -109,18 +107,10 @@ public:
 			return { { }, hr };
 		}
 
-		std::filesystem::path user32 = system32.get();
-		user32 /= L"user32.dll";
+		std::filesystem::path ntoskrnl = system32.get();
+		ntoskrnl /= L"ntoskrnl.exe";
 
-		const auto [version, hr2] = GetFixedFileVersion(user32);
-		if (SUCCEEDED(hr2))
-		{
-			return { version.ToString(), S_OK };
-		}
-		else
-		{
-			return { { }, hr2 };
-		}
+		return GetFixedFileVersion(ntoskrnl);
 	}
 
 	inline static bool IsAtLeastBuild(uint32_t buildNumber) noexcept
@@ -131,6 +121,18 @@ public:
 		VER_SET_CONDITION(mask, VER_MAJORVERSION, VER_GREATER_EQUAL);
 		VER_SET_CONDITION(mask, VER_MINORVERSION, VER_GREATER_EQUAL);
 		VER_SET_CONDITION(mask, VER_BUILDNUMBER, VER_GREATER_EQUAL);
+
+		return VerifyVersionInfo(&versionInfo, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, mask);
+	}
+
+	inline static bool IsExactBuild(uint32_t buildNumber) noexcept
+	{
+		OSVERSIONINFOEX versionInfo = { sizeof(versionInfo), 10, 0, buildNumber };
+
+		DWORDLONG mask = 0;
+		VER_SET_CONDITION(mask, VER_MAJORVERSION, VER_EQUAL);
+		VER_SET_CONDITION(mask, VER_MINORVERSION, VER_EQUAL);
+		VER_SET_CONDITION(mask, VER_BUILDNUMBER, VER_EQUAL);
 
 		return VerifyVersionInfo(&versionInfo, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, mask);
 	}

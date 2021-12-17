@@ -14,9 +14,28 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	TrayFlyoutPage::TrayFlyoutPage(bool hasPackageIdentity)
 	{
-		// blur is broken on Windows 11, but works fine on Windows 10. this was fixed in build 22449.
-		// so we check that we are < 22000 (windows 11), or >= 22449
-		m_BlurSupported = !win32::IsAtLeastBuild(22000) || win32::IsAtLeastBuild(22449);
+		// on release Windows 11, blur was extremely laggy.
+		if (win32::IsExactBuild(22000))
+		{
+			// on build 22000, we check for cumulative update KB5006746 (22000.282) which fixes the issue.
+			// using IUpdateSearcher doesn't really works because if the OS was installed after a newer
+			// KB is released, then KB5006746 will never show up (since the newer KB supersedes it).
+			if (const auto [version, hr] = win32::GetWindowsBuild(); SUCCEEDED(hr))
+			{
+				m_BlurSupported =
+					version.Major == 10 && version.Minor == 0 && version.Build == 22000 && version.Revision >= 282;
+			}
+			else
+			{
+				m_BlurSupported = false;
+			}
+		}
+		else
+		{
+			// otherwise, check that we are < 22000 (Windows 10), or >= 22449 (Windows 11 with blur fix)
+			m_BlurSupported = !win32::IsAtLeastBuild(22000) || win32::IsAtLeastBuild(22449);
+		}
+
 		m_HasPackageIdentity = hasPackageIdentity;
 
 		SYSTEM_POWER_STATUS powerStatus;
