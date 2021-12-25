@@ -2,7 +2,6 @@
 #include <ranges>
 
 #include "util/color.hpp"
-#include "util/to_string_view.hpp"
 
 TEST(Util_HsvColor_Constructor, DefaultConstructorIsTransparentBlack)
 {

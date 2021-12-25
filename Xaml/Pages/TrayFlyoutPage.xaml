@@ -353,7 +353,11 @@
             <ToggleMenuFlyoutItem x:Name="StartupState" x:Uid="TrayFlyoutPage_OpenAtBoot" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="StartupClicked" Visibility="{x:Bind HasPackageIdentity}" />
             <MenuFlyoutItem x:Uid="TrayFlyoutPage_TipsAndTricks" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="TipsAndTricksClicked" />
             <!-- <MenuFlyoutItem x:Uid="TrayFlyoutPage_About" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="AboutClicked" /> -->
-            <MenuFlyoutItem x:Uid="TrayFlyoutPage_Exit" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ExitClicked" />
+            <MenuFlyoutItem x:Uid="TrayFlyoutPage_Exit" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ExitClicked">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE7E8;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
         </MenuFlyout>
     </Page.ContextFlyout>
 </Page>

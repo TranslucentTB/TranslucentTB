@@ -41,44 +41,41 @@ protected:
 				// so that they propagate to our islands
 				coreWin.send_message(uMsg, wParam, lParam);
 			}
-
 			break;
 
-		default:
-			if (uMsg == TRAY_CALLBACK)
+		case TRAY_CALLBACK:
+			switch (LOWORD(lParam))
 			{
-				switch (LOWORD(lParam))
+			case WM_CONTEXTMENU:
+			case WM_LBUTTONUP:
+			case NIN_KEYSELECT:
+			case NIN_SELECT:
+				if (!SetForegroundWindow(m_WindowHandle))
 				{
-				case WM_CONTEXTMENU:
-				case WM_LBUTTONUP:
-				case NIN_KEYSELECT:
-				case NIN_SELECT:
-					if (!SetForegroundWindow(m_WindowHandle))
-					{
-						MessagePrint(spdlog::level::info, L"Failed to set window as foreground window.");
-					}
-
-					if (const auto rect = GetTrayRect())
-					{
-						this->RefreshMenu();
-						this->ShowAt(*rect, PointFromParam(wParam));
-						post_message(WM_NULL);
-					}
-
-					return 0;
-
-				case NIN_POPUPOPEN:
-					if (const auto rect = GetTrayRect())
-					{
-						this->ShowTooltip(*rect);
-					}
-					return 0;
-
-				case NIN_POPUPCLOSE:
-					this->HideTooltip();
-					return 0;
+					MessagePrint(spdlog::level::info, L"Failed to set window as foreground window.");
 				}
+
+				if (const auto rect = GetTrayRect())
+				{
+					this->RefreshMenu();
+					this->ShowAt(*rect, PointFromParam(wParam));
+					post_message(WM_NULL);
+				}
+
+				return 0;
+
+			case NIN_POPUPOPEN:
+				if (const auto rect = GetTrayRect())
+				{
+					this->ShowTooltip(*rect);
+				}
+				return 0;
+
+			case NIN_POPUPCLOSE:
+				this->HideTooltip();
+				return 0;
 			}
+			break;
 		}
 
 		return TrayIcon::MessageHandler(uMsg, wParam, lParam);
