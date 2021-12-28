@@ -771,7 +771,9 @@ void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 		{
 			if (auto rect = innerXaml.client_rect())
 			{
-				rect->top += 1; // todo: dpi scale?
+				const float scaleFactor = static_cast<float>(GetDpiForWindow(innerXaml)) / USER_DEFAULT_SCREEN_DPI;
+
+				rect->top += static_cast<LONG>(1.0f * scaleFactor);
 				if (wil::unique_hrgn rgn { CreateRectRgnIndirect(&*rect) })
 				{
 					if (SetWindowRgn(innerXaml, rgn.get(), true))
@@ -780,7 +782,7 @@ void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 					}
 					else
 					{
-						LastErrorHandle(spdlog::leve::warn, L"Failed to set region of inner XAML window");
+						LastErrorHandle(spdlog::level::warn, L"Failed to set region of inner XAML window");
 					}
 				}
 			}
