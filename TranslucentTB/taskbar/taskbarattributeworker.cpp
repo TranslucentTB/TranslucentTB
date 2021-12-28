@@ -709,6 +709,14 @@ void TaskbarAttributeWorker::ReturnToStock()
 	{
 		SetAttribute(it->second.TaskbarWindow, { ACCENT_NORMAL, { 0, 0, 0, 0 }, true });
 
+		if (it->second.InnerXamlContent)
+		{
+			if (!SetWindowRgn(it->second.InnerXamlContent, nullptr, true)) [[unlikely]]
+			{
+				LastErrorHandle(spdlog::level::info, L"Failed to clear window region of inner taskbar XAML");
+			}
+		}
+
 		if (IsMainTaskbar(it->second.TaskbarWindow))
 		{
 			mainMonIt = it;
@@ -755,7 +763,31 @@ catch (const winrt::hresult_error &err)
 
 void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 {
-	m_Taskbars.insert_or_assign(mon, MonitorInfo { window });
+	Window innerXaml;
+	if (m_IsWindows11)
+	{
+		innerXaml = window.find_child(L"Windows.UI.Composition.DesktopWindowContentBridge", L"DesktopWindowXamlSource");
+		if (innerXaml)
+		{
+			if (auto rect = innerXaml.client_rect())
+			{
+				rect->top += 1; // todo: dpi scale?
+				if (wil::unique_hrgn rgn { CreateRectRgnIndirect(&*rect) })
+				{
+					if (SetWindowRgn(innerXaml, rgn.get(), true))
+					{
+						rgn.release();
+					}
+					else
+					{
+						LastErrorHandle(spdlog::leve::warn, L"Failed to set region of inner XAML window");
+					}
+				}
+			}
+		}
+	}
+
+	m_Taskbars.insert_or_assign(mon, MonitorInfo { window, innerXaml });
 
 	if (wil::unique_hhook hook { m_InjectExplorerHook(window) })
 	{
@@ -825,7 +857,8 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_ForceRefreshTaskbar(Window::RegisterMessage(WM_TTBFORCEREFRESHTASKBAR)),
 	m_LastExplorerPid(0),
 	m_HookDll(LoadHookDll(storageFolder)),
-	m_InjectExplorerHook(reinterpret_cast<PFN_INJECT_EXPLORER_HOOK>(GetProcAddress(m_HookDll.get(), "InjectExplorerHook")))
+	m_InjectExplorerHook(reinterpret_cast<PFN_INJECT_EXPLORER_HOOK>(GetProcAddress(m_HookDll.get(), "InjectExplorerHook"))),
+	m_IsWindows11(win32::IsAtLeastBuild(22000))
 {
 	if (!m_InjectExplorerHook)
 	{
@@ -960,7 +993,7 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 	// drop the old hooks.
 	oldHooks.clear();
 
-	if (!win32::IsAtLeastBuild(22000))
+	if (!m_IsWindows11)
 	{
 		CreateSearchManager();
 	}

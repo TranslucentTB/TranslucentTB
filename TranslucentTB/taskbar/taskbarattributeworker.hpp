@@ -33,6 +33,7 @@ private:
 
 	struct MonitorInfo {
 		Window TaskbarWindow;
+		Window InnerXamlContent;
 		std::unordered_set<Window> MaximisedWindows;
 		std::unordered_set<Window> NormalWindows;
 	};
@@ -108,6 +109,9 @@ private:
 	std::vector<wil::unique_hhook> m_Hooks;
 	wil::unique_hmodule m_HookDll;
 	PFN_INJECT_EXPLORER_HOOK m_InjectExplorerHook;
+
+	// Other
+	bool m_IsWindows11;
 
 	// Type aliases
 	using taskbar_iterator = std::unordered_map<HMONITOR, MonitorInfo>::iterator;
