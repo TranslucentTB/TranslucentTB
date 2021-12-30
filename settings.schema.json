@@ -39,6 +39,43 @@
           "$ref": "#/$defs/TaskbarAppearance"
         }
       ]
+    },
+    "RuledTaskbarAppearance": {
+      "allOf": [
+        {
+          "properties": {
+            "rules": {
+              "items": {
+                "allOf": [
+                  {
+                    "properties" : {
+                      "window_class": {
+                        "type": "string"
+                      },
+                      "window_title": {
+                        "type": "string"
+                      },
+                      "process_name": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "$ref": "#/$defs/TaskbarAppearance"
+                  }
+                ]
+              },
+              "uniqueItems": true,
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        {
+          "$ref": "#/$defs/OptionalTaskbarAppearance"
+        }
+      ]
     }
   },
   "properties": {
@@ -46,16 +83,16 @@
       "$ref": "#/$defs/TaskbarAppearance"
     },
     "visible_window_appearance": {
-      "$ref": "#/$defs/OptionalTaskbarAppearance"
+      "$ref": "#/$defs/RuledTaskbarAppearance"
     },
     "maximized_window_appearance": {
-      "$ref": "#/$defs/OptionalTaskbarAppearance"
+      "$ref": "#/$defs/RuledTaskbarAppearance"
     },
     "start_opened_appearance": {
-      "$ref": "#/$defs/OptionalTaskbarAppearance"
+      "$ref": "#/$defs/RuledTaskbarAppearance"
     },
     "search_opened_appearance": {
-      "$ref": "#/$defs/OptionalTaskbarAppearance"
+      "$ref": "#/$defs/RuledTaskbarAppearance"
     },
     "task_view_opened_appearance": {
       "$ref": "#/$defs/OptionalTaskbarAppearance"

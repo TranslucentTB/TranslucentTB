@@ -28,15 +28,7 @@ struct OptionalTaskbarAppearance : TaskbarAppearance {
 		{
 			rjh::EnsureType(rj::Type::kStringType, it->name.GetType(), L"member name");
 
-			const auto key = rjh::ValueToStringView(it->name);
-			if (key == ENABLED_KEY)
-			{
-				rjh::Deserialize(it->value, Enabled, key);
-			}
-			else
-			{
-				InnerDeserialize(key, it->value, unknownKeyCallback);
-			}
+			OptionalInnerDeserialize(rjh::ValueToStringView(it->name), it->value, unknownKeyCallback);
 		}
 	}
 
@@ -51,6 +43,19 @@ struct OptionalTaskbarAppearance : TaskbarAppearance {
 		return { Enabled, static_cast<txmp::AccentState>(Accent), Color, ShowPeek };
 	}
 #endif
+
+protected:
+	void OptionalInnerDeserialize(std::wstring_view key, const rjh::value_t &val, void (*unknownKeyCallback)(std::wstring_view))
+	{
+			if (key == ENABLED_KEY)
+			{
+				rjh::Deserialize(val , Enabled, key);
+			}
+			else
+			{
+				InnerDeserialize(key, val, unknownKeyCallback);
+			}
+	}
 
 private:
 	static constexpr std::wstring_view ENABLED_KEY = L"enabled";
