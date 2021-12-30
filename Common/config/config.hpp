@@ -29,12 +29,12 @@ public:
 
 	// Appearances
 	TaskbarAppearance DesktopAppearance = { ACCENT_ENABLE_TRANSPARENTGRADIENT, { 0, 0, 0, 0 }, false };
-	RuledTaskbarAppearance VisibleWindowAppearance = { false, ACCENT_ENABLE_TRANSPARENTGRADIENT, { 0, 0, 0, 0 }, true };
+	RuledTaskbarAppearance VisibleWindowAppearance = { false, ACCENT_ENABLE_TRANSPARENTGRADIENT, { 0, 0, 0, 0 }, true, {} };
 	RuledTaskbarAppearance MaximisedWindowAppearance = IsWindows11()
-		? RuledTaskbarAppearance { false, ACCENT_ENABLE_ACRYLICBLURBEHIND, { 0, 0, 0, 0 }, true }
-		: RuledTaskbarAppearance { true, ACCENT_ENABLE_BLURBEHIND, { 0, 0, 0, 0 }, true };
-	RuledTaskbarAppearance StartOpenedAppearance = { !IsWindows11(), ACCENT_NORMAL, { 0, 0, 0, 0 }, true };
-	RuledTaskbarAppearance SearchOpenedAppearance = { !IsWindows11(), ACCENT_NORMAL, { 0, 0, 0, 0 }, true };
+		? RuledTaskbarAppearance{ false, ACCENT_ENABLE_ACRYLICBLURBEHIND, { 0, 0, 0, 0 }, true , {} }
+		: RuledTaskbarAppearance { true, ACCENT_ENABLE_BLURBEHIND, { 0, 0, 0, 0 }, true, {} };
+	RuledTaskbarAppearance StartOpenedAppearance = { !IsWindows11(), ACCENT_NORMAL, { 0, 0, 0, 0 }, true, {} };
+	RuledTaskbarAppearance SearchOpenedAppearance = { !IsWindows11(), ACCENT_NORMAL, { 0, 0, 0, 0 }, true, {} };
 	OptionalTaskbarAppearance TaskViewOpenedAppearance = { true, ACCENT_NORMAL, { 0, 0, 0, 0 }, false };
 	OptionalTaskbarAppearance BatterySaverAppearance = { false, ACCENT_ENABLE_GRADIENT, { 0, 0, 0, 0 }, true };
 

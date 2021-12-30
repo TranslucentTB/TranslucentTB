@@ -307,15 +307,7 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar, Wi
 
 	if (m_Config.SearchOpenedAppearance.Enabled && m_CurrentSearchMonitor == taskbar->first)
 	{
-		//const Rule *rule = m_Config.SearchOpenedAppearance.FindRule(window);
-		//if (rule != nullptr)
-		//{
-		//	return WithPreview(txmp::TaskbarState::SearchOpened, rule);
-		//}
-		//else
-		//{
-			return WithPreview(txmp::TaskbarState::SearchOpened, m_Config.SearchOpenedAppearance);
-		//}
+		return WithPreview(txmp::TaskbarState::SearchOpened, m_Config.SearchOpenedAppearance);
 	}
 
 	if (m_Config.StartOpenedAppearance.Enabled && m_CurrentStartMonitor == taskbar->first)
@@ -325,7 +317,15 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar, Wi
 
 	if (m_Config.MaximisedWindowAppearance.Enabled && SetContainsValidWindows(taskbar->second.MaximisedWindows))
 	{
-		return WithPreview(txmp::TaskbarState::MaximisedWindow, m_Config.MaximisedWindowAppearance);
+		const std::optional<Rule> rule = m_Config.MaximisedWindowAppearance.FindRule(window);
+		if (rule)
+		{
+			return WithPreview(txmp::TaskbarState::MaximisedWindow, rule.value());
+		}
+		else
+		{
+			return WithPreview(txmp::TaskbarState::MaximisedWindow, m_Config.MaximisedWindowAppearance);
+		}
 	}
 
 	if (m_Config.VisibleWindowAppearance.Enabled && (SetContainsValidWindows(taskbar->second.MaximisedWindows) || SetContainsValidWindows(taskbar->second.NormalWindows)))

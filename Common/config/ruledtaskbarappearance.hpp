@@ -8,18 +8,19 @@
 #include "../../TranslucentTB/windows/window.hpp"
 
 struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
-	std::vector<Rule> m_Rules = {};
+	std::vector<Rule> Rules = {};
 
-	RuledTaskbarAppearance() noexcept = default;
-	RuledTaskbarAppearance(bool enabled, ACCENT_STATE accent, Util::Color color, bool showPeek) noexcept :
-		OptionalTaskbarAppearance(enabled, accent, color, showPeek)
+	constexpr RuledTaskbarAppearance() noexcept = default;
+	constexpr RuledTaskbarAppearance(bool enabled, ACCENT_STATE accent, Util::Color color, bool showPeek, std::vector<Rule> rules) noexcept :
+		OptionalTaskbarAppearance(enabled, accent, color, showPeek),
+		Rules(rules)
 	{ }
 
 	template<typename Writer>
 	inline void Serialize(Writer& writer) const
 	{
-		SerializeRulesVec(writer, m_Rules, RULES_KEY);
 		OptionalTaskbarAppearance::Serialize(writer);
+		SerializeRulesVec(writer, Rules, RULES_KEY);
 	}
 
 	void Deserialize(const rjh::value_t& obj, void (*unknownKeyCallback)(std::wstring_view))
@@ -33,7 +34,7 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 			const auto key = rjh::ValueToStringView(it->name);
 			if (key == RULES_KEY)
 			{
-				DeserializeRulesVec(it->value, m_Rules, key, unknownKeyCallback);
+				DeserializeRulesVec(it->value, Rules, key, unknownKeyCallback);
 			}
 			else
 			{
@@ -42,9 +43,9 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 		}
 	}
 
-	inline const Rule* FindRule(Window window)
+	inline const std::optional<Rule> FindRule(Window window)
 	{
-		for (const Rule& rule : m_Rules)
+		for (const Rule rule : Rules)
 		{
 			// This is the fastest because we do the less string manipulation, so always try it first
 			if (!rule.m_Class.empty())
@@ -53,7 +54,7 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 				{
 					if (rule.m_Class == *className)
 					{
-						return &rule;
+						return rule;
 					}
 				}
 			}
@@ -64,7 +65,7 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 				{
 					if (rule.m_ProcessName == file->filename().native())
 					{
-						return &rule;
+						return rule;
 					}
 				}
 			}
@@ -76,13 +77,13 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 				{
 					if (rule.m_Title== title)
 					{
-						return &rule;
+						return rule;
 					}
 				}
 			}
 		}
 
-		return nullptr;
+		return std::nullopt;
 	}
 
 private:
