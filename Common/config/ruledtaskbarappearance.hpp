@@ -112,5 +112,4 @@ private:
 	}
 
 	static constexpr std::wstring_view RULES_KEY = L"rules";
-
 };
