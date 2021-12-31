@@ -1,6 +1,7 @@
 #pragma once
 #include <string_view>
 #include <vector>
+#include <format>
 
 #include "rapidjsonhelper.hpp"
 #include "optionaltaskbarappearance.hpp"
@@ -43,8 +44,9 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 		}
 	}
 
-	inline const std::optional<Rule> FindRule(Window window)
+	inline const std::optional<Rule> FindRule(Window window) const
 	{
+
 		for (const Rule rule : Rules)
 		{
 			// This is the fastest because we do the less string manipulation, so always try it first
