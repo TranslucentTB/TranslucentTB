@@ -316,13 +316,10 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar, Wi
 		{
 			return WithPreview(txmp::TaskbarState::SearchOpened, m_Config.SearchOpenedAppearance);
 		}
-	
-
 	}
 
 	if (m_Config.StartOpenedAppearance.Enabled && m_CurrentStartMonitor == taskbar->first)
 	{
-
 		const std::optional<Rule> rule = m_Config.StartOpenedAppearance.FindRule(window);
 		if (rule)
 		{
