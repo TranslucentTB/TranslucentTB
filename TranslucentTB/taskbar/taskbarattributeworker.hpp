@@ -133,7 +133,7 @@ private:
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	// Config
-	TaskbarAppearance GetConfig(taskbar_iterator taskbar, Window window) const;
+	TaskbarAppearance GetConfig(taskbar_iterator taskbar, const Window *window) const;
 
 	// Attribute
 	void ShowAeroPeekButton(Window taskbar, bool show);

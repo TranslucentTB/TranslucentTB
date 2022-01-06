@@ -18,10 +18,12 @@ struct Rule : TaskbarAppearance
 	template <typename Writer>
 	inline void Serialize(Writer &writer) const
 	{
+		writer.StartObject();
 		rjh::Serialize(writer, m_Class, CLASS_KEY);
 		rjh::Serialize(writer, m_Title, TITLE_KEY);
 		rjh::Serialize(writer, m_ProcessName, PROCESS_NAME_KEY);
 		TaskbarAppearance::Serialize(writer);
+		writer.EndObject();
 	}
 
 	void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view))

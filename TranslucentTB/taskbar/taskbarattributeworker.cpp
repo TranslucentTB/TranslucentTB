@@ -226,7 +226,7 @@ LRESULT TaskbarAttributeWorker::OnRequestAttributeRefresh(LPARAM lParam)
 		const Window window = reinterpret_cast<HWND>(lParam);
 		if (const auto iter = m_Taskbars.find(window.monitor()); iter != m_Taskbars.end() && iter->second.TaskbarWindow == window)
 		{
-			if (const auto config = GetConfig(iter, iter->second.TaskbarWindow); config.Accent != ACCENT_NORMAL)
+			if (const auto config = GetConfig(iter, &window); config.Accent != ACCENT_NORMAL)
 			{
 				SetAttribute(iter->second.TaskbarWindow, config);
 				return 1;
@@ -287,7 +287,7 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 	return MessageWindow::MessageHandler(uMsg, wParam, lParam);
 }
 
-TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar, Window window) const
+TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar, const Window *window) const
 {
 	if (m_Config.BatterySaverAppearance.Enabled && m_PowerSaver)
 	{
@@ -431,7 +431,7 @@ void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance confi
 
 void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar, std::optional<bool> isMainOpt)
 {
-	const auto &cfg = GetConfig(taskbar, taskbar->second.TaskbarWindow);
+	const auto &cfg = GetConfig(taskbar, nullptr);
 	SetAttribute(taskbar->second.TaskbarWindow, cfg);
 
 	// ShowAeroPeekButton triggers Windows internal message loop,
