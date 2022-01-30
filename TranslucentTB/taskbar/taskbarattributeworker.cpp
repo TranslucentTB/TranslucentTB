@@ -126,6 +126,41 @@ void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG 
 	}
 }
 
+void TaskbarAttributeWorker::OnForegroundWindowChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD)
+{
+	if (idObject == OBJID_WINDOW && idChild == CHILDID_SELF)
+	{
+		const Window oldForegroundWindow = std::exchange(m_ForegroundWindow, Window(hwnd).valid() ? hwnd : Window::NullWindow);
+
+		if (Error::ShouldLog(spdlog::level::debug))
+		{
+			MessagePrint(spdlog::level::debug, std::format(L"Changed foreground window to {}", DumpWindow(m_ForegroundWindow)));
+		}
+
+		AttributeRefresher refresher(*this);
+		HMONITOR oldMonitor = nullptr;
+		if (oldForegroundWindow)
+		{
+			oldMonitor = oldForegroundWindow.monitor();
+			if (const auto it = m_Taskbars.find(oldMonitor); it != m_Taskbars.end())
+			{
+				refresher.refresh(it);
+			}
+		}
+
+		if (m_ForegroundWindow)
+		{
+			if (auto newMonitor = m_ForegroundWindow.monitor(); newMonitor != oldMonitor)
+			{
+				if (const auto it = m_Taskbars.find(newMonitor); it != m_Taskbars.end())
+				{
+					refresher.refresh(it);
+				}
+			}
+		}
+	}
+}
+
 void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 {
 	HMONITOR mon = nullptr;
@@ -881,6 +916,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_MinimizeRestoreHook(CreateHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, CreateThunk(&TaskbarAttributeWorker::WindowInsertRemove<EVENT_SYSTEM_MINIMIZEEND, EVENT_SYSTEM_MINIMIZESTART>))),
 	m_ShowHideHook(CreateHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, CreateThunk(&TaskbarAttributeWorker::WindowInsertRemove<EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE>))),
 	m_CreateDestroyHook(CreateHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, CreateThunk(&TaskbarAttributeWorker::OnWindowCreateDestroy))),
+	m_ForegroundChangeHook(CreateHook(EVENT_SYSTEM_FOREGROUND, CreateThunk(&TaskbarAttributeWorker::OnForegroundWindowChange))),
 	m_SearchManager(nullptr),
 	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED)),
 	m_RefreshRequestedMessage(Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH)),
@@ -966,6 +1002,10 @@ void TaskbarAttributeWorker::DumpState()
 	}
 
 	buf.clear();
+	std::format_to(std::back_inserter(buf), L"Current foreground window: {}", DumpWindow(m_ForegroundWindow));
+	MessagePrint(spdlog::level::off, buf);
+
+	buf.clear();
 	std::format_to(std::back_inserter(buf), L"Worker handles requests from hooks: {}", !m_disableAttributeRefreshReply);
 	MessagePrint(spdlog::level::off, buf);
 
@@ -989,6 +1029,7 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 	m_TaskViewActive = false;
 	m_CurrentStartMonitor = nullptr;
 	m_CurrentSearchMonitor = nullptr;
+	m_ForegroundWindow = Window::NullWindow;
 
 	m_Taskbars.clear();
 	m_NormalTaskbars.clear();
@@ -1053,6 +1094,7 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 		m_TaskViewActive = hookWnd.send_message(*m_IsTaskViewOpenedMessage);
 	}
 
+	m_ForegroundWindow = Window::ForegroundWindow();
 	if (IsStartMenuOpened())
 	{
 		m_CurrentStartMonitor = GetStartMenuMonitor();

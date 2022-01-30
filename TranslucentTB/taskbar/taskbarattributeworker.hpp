@@ -65,6 +65,7 @@ private:
 	bool m_disableAttributeRefreshReply;
 	HMONITOR m_CurrentStartMonitor;
 	HMONITOR m_CurrentSearchMonitor;
+	Window m_ForegroundWindow;
 	std::unordered_map<HMONITOR, MonitorInfo> m_Taskbars;
 	std::unordered_set<Window> m_NormalTaskbars;
 	const Config &m_Config;
@@ -77,6 +78,7 @@ private:
 	wil::unique_hwineventhook m_ResizeMoveHook;
 	wil::unique_hwineventhook m_ShowHideHook;
 	wil::unique_hwineventhook m_CreateDestroyHook;
+	wil::unique_hwineventhook m_ForegroundChangeHook;
 	wil::unique_hwineventhook m_TitleChangeHook;
 	wil::unique_hwineventhook m_ParentChangeHook;
 	wil::unique_hpowernotify m_PowerSaverHook;
@@ -123,6 +125,7 @@ private:
 	void CALLBACK OnAeroPeekEnterExit(DWORD event, HWND, LONG, LONG, DWORD, DWORD);
 	void CALLBACK OnWindowStateChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
 	void CALLBACK OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
+	void CALLBACK OnForegroundWindowChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
 	void OnStartVisibilityChange(bool state);
 	void OnTaskViewVisibilityChange(bool state);
 	void OnSearchVisibilityChange(bool state);
