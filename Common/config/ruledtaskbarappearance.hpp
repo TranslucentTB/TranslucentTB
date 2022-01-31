@@ -46,13 +46,11 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 
 	inline const std::optional<Rule> FindRule(const Window window) const
 	{
-
 		for (const Rule &rule : Rules)
 		{
 			// This is the fastest because we do the less string manipulation, so always try it first
 			if (!rule.WindowClass.empty())
 			{
-
 				if (rule.WindowClass == window.classname())
 				{
 					return rule;
@@ -62,23 +60,19 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 
 			if (!rule.ProcessName.empty())
 			{
-
 				if (rule.ProcessName == window.file()->filename().native())
 				{
 					return rule;
 				}
-
 			}
 
 			// Do it last because titles can change, so it's less reliable.
 			if (!rule.WindowTitle.empty())
 			{
-
 				if (rule.WindowTitle == window.title())
 				{
 					return rule;
 				}
-
 			}
 		}
 
