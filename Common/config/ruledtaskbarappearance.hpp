@@ -55,7 +55,6 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 				{
 					return rule;
 				}
-
 			}
 
 			if (!rule.ProcessName.empty())
