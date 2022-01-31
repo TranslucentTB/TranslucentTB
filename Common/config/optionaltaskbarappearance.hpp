@@ -47,14 +47,14 @@ struct OptionalTaskbarAppearance : TaskbarAppearance {
 protected:
 	void OptionalInnerDeserialize(std::wstring_view key, const rjh::value_t &val, void (*unknownKeyCallback)(std::wstring_view))
 	{
-			if (key == ENABLED_KEY)
-			{
-				rjh::Deserialize(val , Enabled, key);
-			}
-			else
-			{
-				InnerDeserialize(key, val, unknownKeyCallback);
-			}
+		if (key == ENABLED_KEY)
+		{
+			rjh::Deserialize(val, Enabled, key);
+		}
+		else
+		{
+			InnerDeserialize(key, val, unknownKeyCallback);
+		}
 	}
 
 private:

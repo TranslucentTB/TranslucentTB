@@ -70,4 +70,9 @@ static constexpr Util::null_terminated_wstring_view CORE_WINDOW = L"Windows.UI.C
 // UTF-8 Byte Order Mark
 static constexpr Util::null_terminated_string_view UTF8_BOM = "\xEF\xBB\xBF";
 
+// Serialization Keys
+static constexpr std::wstring_view CLASS_KEY = L"window_class";
+static constexpr std::wstring_view TITLE_KEY = L"window_title";
+static constexpr std::wstring_view FILE_KEY = L"process_name";
+
 #pragma endregion

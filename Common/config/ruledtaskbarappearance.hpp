@@ -12,9 +12,9 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 	std::vector<Rule> Rules = {};
 
 	constexpr RuledTaskbarAppearance() noexcept = default;
-	constexpr RuledTaskbarAppearance(bool enabled, ACCENT_STATE accent, Util::Color color, bool showPeek, std::vector<Rule> rules) noexcept :
-		OptionalTaskbarAppearance(enabled, accent, color, showPeek),
-		Rules(rules)
+	constexpr RuledTaskbarAppearance(std::vector<Rule> rules, bool enabled, ACCENT_STATE accent, Util::Color color, bool showPeek) :
+		Rules(rules),
+		OptionalTaskbarAppearance(enabled, accent, color, showPeek)
 	{ }
 
 	template<typename Writer>
@@ -44,48 +44,41 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 		}
 	}
 
-	inline const std::optional<Rule> FindRule(const Window* window) const
+	inline const std::optional<Rule> FindRule(const Window window) const
 	{
-		const auto windowClassName = window->classname();
-		const auto windowFile = window->file();
-		const auto windowFileName = windowFile->filename().native();
-		const auto windowTitle = window->title();
 
-		for (const Rule rule : Rules)
+		for (const Rule &rule : Rules)
 		{
 			// This is the fastest because we do the less string manipulation, so always try it first
-			if (!rule.m_Class.empty())
+			if (!rule.WindowClass.empty())
 			{
-				if (windowClassName)
+
+				if (rule.WindowClass == window.classname())
 				{
-					if (rule.m_Class == *windowClassName)
-					{
-						return rule;
-					}
+					return rule;
 				}
+
 			}
 
-			if (!rule.m_ProcessName.empty())
+			if (!rule.ProcessName.empty())
 			{
-				if (windowFile)
+
+				if (rule.ProcessName == window.file()->filename().native())
 				{
-					if (rule.m_ProcessName == windowFileName)
-					{
-						return rule;
-					}
+					return rule;
 				}
+
 			}
 
 			// Do it last because titles can change, so it's less reliable.
-			if (!rule.m_Title.empty())
+			if (!rule.WindowTitle.empty())
 			{
-				if (windowTitle)
+
+				if (rule.WindowTitle == window.title())
 				{
-					if (rule.m_Title == windowTitle)
-					{
-						return rule;
-					}
+					return rule;
 				}
+
 			}
 		}
 
@@ -100,7 +93,9 @@ private:
 		writer.StartArray();
 		for (const Rule &rule : vec)
 		{
+			writer.StartObject();
 			rule.Serialize(writer);
+			writer.EndObject();
 		}
 		writer.EndArray();
 	}
@@ -112,7 +107,7 @@ private:
 		for (const auto &elem : arr.GetArray())
 		{
 			rjh::EnsureType(rj::Type::kObjectType, elem.GetType(), L"array element");
-			Rule rule = Rule();
+			Rule rule;
 			rule.Deserialize(elem, unknownKeyCallback);
 			vec.push_back(rule);
 		}

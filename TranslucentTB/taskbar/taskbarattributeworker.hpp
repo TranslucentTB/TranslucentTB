@@ -136,7 +136,7 @@ private:
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	// Config
-	TaskbarAppearance GetConfig(taskbar_iterator taskbar, const Window *window) const;
+	TaskbarAppearance GetConfig(taskbar_iterator taskbar, const Window window) const;
 
 	// Attribute
 	void ShowAeroPeekButton(Window taskbar, bool show);
@@ -209,7 +209,7 @@ private:
 	}
 
 public:
-	TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, DynamicLoader &loader, const std::optional<std::filesystem::path> &storageFolder);
+	TaskbarAttributeWorker(const Config& cfg, HINSTANCE hInstance, DynamicLoader& loader, const std::optional<std::filesystem::path>& storageFolder);
 
 	inline void ConfigurationChanged()
 	{

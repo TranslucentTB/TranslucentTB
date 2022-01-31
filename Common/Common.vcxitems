@@ -16,6 +16,8 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)appinfo.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arch.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)config\rule.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)config\ruledtaskbarappearance.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)undoc\explorer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)undoc\winternl.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\color.hpp" />

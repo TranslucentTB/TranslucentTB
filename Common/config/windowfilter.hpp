@@ -7,6 +7,7 @@
 
 #include "rapidjsonhelper.hpp"
 #include "../win32.hpp"
+#include "../constants.hpp"
 
 #ifdef _TRANSLUCENTTB_EXE
 #include "../../TranslucentTB/windows/window.hpp"
@@ -40,7 +41,7 @@ public:
 			{
 				DeserializeStringSet(it->value, m_TitleList, key);
 			}
-			else if(key == FILE_KEY)
+			else if (key == FILE_KEY)
 			{
 				DeserializeStringSet(it->value, m_FileList, key);
 			}
@@ -136,8 +137,4 @@ private:
 	std::unordered_set<std::wstring> m_ClassList;
 	std::unordered_set<std::wstring> m_TitleList;
 	win32::FilenameSet m_FileList;
-
-	static constexpr std::wstring_view CLASS_KEY = L"window_class";
-	static constexpr std::wstring_view TITLE_KEY = L"window_title";
-	static constexpr std::wstring_view FILE_KEY = L"process_name";
 };

@@ -1,32 +1,31 @@
+#pragma once
 #include "taskbarappearance.hpp"
+#include "../constants.hpp"
 
-struct Rule : TaskbarAppearance
-{
-	std::wstring m_Class;
-	std::wstring m_Title;
-	std::wstring m_ProcessName;
+struct Rule : TaskbarAppearance {
+	std::wstring WindowClass;
+	std::wstring WindowTitle;
+	std::wstring ProcessName;
 
 	constexpr Rule() noexcept = default;
-	constexpr Rule(std::wstring m_class, std::wstring m_title, std::wstring m_processName, ACCENT_STATE accent, Util::Color color, bool showPeek) noexcept :
+	constexpr Rule(std::wstring window_class, std::wstring window_title, std::wstring window_processName, ACCENT_STATE accent, Util::Color color, bool showPeek) :
 		TaskbarAppearance(accent, color, showPeek),
-		m_Class(m_class),
-		m_Title(m_title),
-		m_ProcessName(m_processName)
+		WindowClass(window_class),
+		WindowTitle(window_title),
+		ProcessName(window_processName)
 	{
 	}
 
 	template <typename Writer>
-	inline void Serialize(Writer &writer) const
+	inline void Serialize(Writer& writer) const
 	{
-		writer.StartObject();
-		rjh::Serialize(writer, m_Class, CLASS_KEY);
-		rjh::Serialize(writer, m_Title, TITLE_KEY);
-		rjh::Serialize(writer, m_ProcessName, PROCESS_NAME_KEY);
+		rjh::Serialize(writer, WindowClass, CLASS_KEY);
+		rjh::Serialize(writer, WindowTitle, TITLE_KEY);
+		rjh::Serialize(writer, ProcessName, FILE_KEY);
 		TaskbarAppearance::Serialize(writer);
-		writer.EndObject();
 	}
 
-	void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view))
+	void Deserialize(const rjh::value_t& obj, void (*unknownKeyCallback)(std::wstring_view))
 	{
 		rjh::EnsureType(rj::Type::kObjectType, obj.GetType(), L"root node");
 
@@ -37,15 +36,15 @@ struct Rule : TaskbarAppearance
 			const auto key = rjh::ValueToStringView(it->name);
 			if (key == CLASS_KEY)
 			{
-				m_Class =	rjh::ValueToStringView(it->value);
+				WindowClass = rjh::ValueToStringView(it->value);
 			}
 			else if (key == TITLE_KEY)
 			{
-				m_Title = rjh::ValueToStringView(it->value);
+				WindowTitle = rjh::ValueToStringView(it->value);
 			}
-			else if (key == PROCESS_NAME_KEY)
+			else if (key == FILE_KEY)
 			{
-				m_ProcessName = rjh::ValueToStringView(it->value);
+				ProcessName = rjh::ValueToStringView(it->value);
 			}
 			else
 			{
@@ -53,8 +52,4 @@ struct Rule : TaskbarAppearance
 			}
 		}
 	}
-
-	static constexpr std::wstring_view CLASS_KEY = L"window_class";
-	static constexpr std::wstring_view TITLE_KEY = L"window_title";
-	static constexpr std::wstring_view PROCESS_NAME_KEY = L"process_name";
 };
