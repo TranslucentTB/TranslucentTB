@@ -352,28 +352,12 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar, co
 
 	if (m_Config.MaximisedWindowAppearance.Enabled && SetContainsValidWindows(taskbar->second.MaximisedWindows))
 	{
-		const std::optional<Rule> rule = m_Config.MaximisedWindowAppearance.FindRule(window);
-		if (rule)
-		{
-			return WithPreview(txmp::TaskbarState::MaximisedWindow, rule.value());
-		}
-		else
-		{
-			return WithPreview(txmp::TaskbarState::MaximisedWindow, m_Config.MaximisedWindowAppearance);
-		}
+		return WithPreviewRuled(txmp::TaskbarState::MaximisedWindow, m_Config.MaximisedWindowAppearance, window);
 	}
 
 	if (m_Config.VisibleWindowAppearance.Enabled && (SetContainsValidWindows(taskbar->second.MaximisedWindows) || SetContainsValidWindows(taskbar->second.NormalWindows)))
 	{
-		const std::optional<Rule> rule = m_Config.VisibleWindowAppearance.FindRule(window);
-		if (rule)
-		{
-			return WithPreview(txmp::TaskbarState::VisibleWindow, rule.value());
-		}
-		else
-		{
-			return WithPreview(txmp::TaskbarState::VisibleWindow, m_Config.VisibleWindowAppearance);
-		}
+		return WithPreviewRuled(txmp::TaskbarState::VisibleWindow, m_Config.VisibleWindowAppearance, window);
 	}
 
 	return WithPreview(txmp::TaskbarState::Desktop, m_Config.DesktopAppearance);
