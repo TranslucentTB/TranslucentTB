@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.220131.2\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220131.2\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{59F844AA-8D3C-431C-B8CC-57682915F551}</ProjectGuid>
     <ConfigurationType>Application</ConfigurationType>
@@ -23,10 +23,12 @@
         <WinMDPath>%(ReferencePath.FullPath)</WinMDPath>
         <Implementation>%(ReferencePath.Implementation)</Implementation>
       </_UnpackagedWin32WinmdManifest>
-      <!-- For each referenced project that _produces_ a winmd, generate a temporary item that maps to
-           the winmd, and use that temporary item to generate a .manifest in IntDir for it.
-           We don't set Implementation here because it's inherited from the _ResolvedNativeProjectReferencePaths. -->
-      <_UnpackagedWin32WinmdProjectReference Condition="'%(_ResolvedNativeProjectReferencePaths.ProjectType)' != 'StaticLibrary'" Include="@(_ResolvedNativeProjectReferencePaths-&gt;WithMetadataValue('FileType','winmd')-&gt;'%(RootDir)%(Directory)%(TargetPath)')" />
+      <!--
+          For each referenced project that _produces_ a winmd, generate a temporary item that maps to
+          the winmd, and use that temporary item to generate a .manifest in IntDir for it.
+          We don't set Implementation here because it's inherited from the _ResolvedNativeProjectReferencePaths.
+      -->
+      <_UnpackagedWin32WinmdProjectReference Condition="'%(_ResolvedNativeProjectReferencePaths.ProjectType)' != 'StaticLibrary' And '%(_ResolvedNativeProjectReferencePaths.DeploymentContent)' != 'false'" Include="@(_ResolvedNativeProjectReferencePaths-&gt;WithMetadataValue('FileType','winmd')-&gt;'%(RootDir)%(Directory)%(TargetPath)')" />
       <_UnpackagedWin32WinmdManifest Include="@(_UnpackagedWin32WinmdProjectReference->'$(IntDir)\%(FileName).manifest')">
         <WinMDPath>%(Identity)</WinMDPath>
       </_UnpackagedWin32WinmdManifest>
@@ -118,8 +120,8 @@
       <Project>{9875d8e1-9594-445e-a0e4-07c6027f85e0}</Project>
       <DeploymentContent>true</DeploymentContent>
       <!--
-        Prevent the .pri and .winmd from showing up in the final output.
-        IDK why this doesn't also prevent copying the .dll, but whatever.
+          Prevent the .pri and .winmd from showing up in the final output.
+          IDK why this doesn't also prevent copying the .dll, but whatever.
       -->
       <Private>false</Private>
     </ProjectReference>
@@ -154,9 +156,9 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.UI.Xaml.2.7.0\build\native\Microsoft.UI.Xaml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.UI.Xaml.2.7.0\build\native\Microsoft.UI.Xaml.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220131.2\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.220131.2\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220131.2\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.220131.2\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
   <Import Project="..\packages\Microsoft.UI.Xaml.2.7.0\build\native\Microsoft.UI.Xaml.targets" Condition="Exists('..\packages\Microsoft.UI.Xaml.2.7.0\build\native\Microsoft.UI.Xaml.targets')" />
-  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210930.14\build\native\Microsoft.Windows.CppWinRT.targets')" />
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.220131.2\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220131.2\build\native\Microsoft.Windows.CppWinRT.targets')" />
 </Project>

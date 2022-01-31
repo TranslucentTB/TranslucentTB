@@ -35,11 +35,14 @@ Install the following workloads:
 You also need to install the following individual components:
 
 - MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs (Latest)
-- MSVC v142 - VS 2019 C++ x64/x86 build tools (v14.29-16.11)
-- MSVC v142 - VS 2019 C++ x64/x86 Spectre-mitigated libs (v14.29-16.11)
-- Windows 11 SDK (10.0.22000.0)
 
-### 3 - Install dependencies
+### 3 - Install the Windows Insider SDK
+
+We currently require the [Windows Insider SDK](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK) to build TranslucentTB because it has several important bug fixes.
+
+You do not need to have an Insider build of Windows to use this, you can install it on stable builds. Right now, we use the SDK build 22543, but a newer one should work as well, provided you update `WindowsTargetPlatformVersion` in `Common\CppProject.props` and `TargetPlatformVersion` in `AppPackage\AppPackage.wapproj`.
+
+### 4 - Install dependencies
 
 We use vcpkg to manage our dependencies. You will need to [install it](https://vcpkg.io/en/getting-started.html).
 
@@ -50,7 +53,7 @@ vcpkg integrate install
 ```
 `gtest` can be ommitted if you don't intend to run the unit tests.
 
-### 4 - Building and running the app
+### 5 - Building and running the app
 
 Open the solution file in Visual Studio 2022. Set the AppPackage project as the startup project (right-click it in the Solution Explorer, then hit "Set as startup project").
 
