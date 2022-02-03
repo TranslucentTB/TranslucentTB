@@ -22,7 +22,7 @@ public:
 		m_Worker(worker), m_MainMonIt(m_Worker.m_Taskbars.end()), m_Refresh(refresh) { }
 
 	AttributeRefresher(const AttributeRefresher &) = delete;
-	AttributeRefresher& operator =(const AttributeRefresher &) = delete;
+	AttributeRefresher &operator =(const AttributeRefresher &) = delete;
 
 	void refresh(taskbar_iterator it)
 	{
@@ -352,12 +352,14 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar, co
 
 	if (m_Config.MaximisedWindowAppearance.Enabled && SetContainsValidWindows(taskbar->second.MaximisedWindows))
 	{
-		return WithPreviewRuled(txmp::TaskbarState::MaximisedWindow, m_Config.MaximisedWindowAppearance, window);
+		const std::optional<TaskbarAppearance> rule = m_Config.MaximisedWindowAppearance.FindRule(window);
+		return WithPreview(txmp::TaskbarState::MaximisedWindow, rule ? rule.value() : m_Config.MaximisedWindowAppearance);
 	}
 
 	if (m_Config.VisibleWindowAppearance.Enabled && (SetContainsValidWindows(taskbar->second.MaximisedWindows) || SetContainsValidWindows(taskbar->second.NormalWindows)))
 	{
-		return WithPreviewRuled(txmp::TaskbarState::VisibleWindow, m_Config.VisibleWindowAppearance, window);
+		const std::optional<TaskbarAppearance> rule = m_Config.VisibleWindowAppearance.FindRule(window);
+		return WithPreview(txmp::TaskbarState::VisibleWindow, rule ? rule.value() : m_Config.VisibleWindowAppearance);
 	}
 
 	return WithPreview(txmp::TaskbarState::Desktop, m_Config.DesktopAppearance);
@@ -929,7 +931,7 @@ void TaskbarAttributeWorker::DumpState()
 	for (const auto &[monitor, info] : m_Taskbars)
 	{
 		buf.clear();
-		std::format_to(std::back_inserter(buf), L"Monitor {} [taskbar {}]:", static_cast<void*>(monitor), static_cast<void*>(info.TaskbarWindow.handle()));
+		std::format_to(std::back_inserter(buf), L"Monitor {} [taskbar {}]:", static_cast<void *>(monitor), static_cast<void *>(info.TaskbarWindow.handle()));
 		MessagePrint(spdlog::level::off, buf);
 
 		MessagePrint(spdlog::level::off, L"    Maximised windows:");
@@ -950,7 +952,7 @@ void TaskbarAttributeWorker::DumpState()
 	if (m_CurrentStartMonitor != nullptr)
 	{
 		buf.clear();
-		std::format_to(std::back_inserter(buf), L"Start menu is opened: true [monitor {}]", static_cast<void*>(m_CurrentStartMonitor));
+		std::format_to(std::back_inserter(buf), L"Start menu is opened: true [monitor {}]", static_cast<void *>(m_CurrentStartMonitor));
 		MessagePrint(spdlog::level::off, buf);
 	}
 	else
@@ -961,7 +963,7 @@ void TaskbarAttributeWorker::DumpState()
 	if (m_CurrentSearchMonitor != nullptr)
 	{
 		buf.clear();
-		std::format_to(std::back_inserter(buf), L"Search is opened: true [monitor {}]", static_cast<void*>(m_CurrentSearchMonitor));
+		std::format_to(std::back_inserter(buf), L"Search is opened: true [monitor {}]", static_cast<void *>(m_CurrentSearchMonitor));
 		MessagePrint(spdlog::level::off, buf);
 	}
 	else

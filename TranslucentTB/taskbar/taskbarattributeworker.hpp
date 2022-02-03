@@ -185,18 +185,6 @@ private:
 		}
 	}
 
-	inline TaskbarAppearance WithPreviewRuled(txmp::TaskbarState state, RuledTaskbarAppearance appearance, const Window window) const {
-		const std::optional<Rule> rule = appearance.FindRule(window);
-		if (rule)
-		{
-			return WithPreview(state, rule.value());
-		}
-		else
-		{
-			return WithPreview(state, appearance);
-		}
-	};
-
 	inline static HMONITOR GetStartMenuMonitor() noexcept
 	{
 		// we assume that start is the current foreground window;

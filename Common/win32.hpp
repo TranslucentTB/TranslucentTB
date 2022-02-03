@@ -30,6 +30,8 @@
 #include "util/null_terminated_string_view.hpp"
 #include "util/strings.hpp"
 #include "version.hpp"
+#include "./config/taskbarappearance.hpp"
+
 
 class win32 {
 private:
@@ -146,9 +148,9 @@ public:
 			return { { }, HRESULT_FROM_WIN32(GetLastError()) };
 		}
 
-		VS_FIXEDFILEINFO *fixedFileInfo;
+		VS_FIXEDFILEINFO* fixedFileInfo;
 		unsigned int length;
-		if (!VerQueryValue(data.get(), L"\\", reinterpret_cast<void **>(&fixedFileInfo), &length))
+		if (!VerQueryValue(data.get(), L"\\", reinterpret_cast<void**>(&fixedFileInfo), &length))
 		{
 			return { { }, HRESULT_FROM_WIN32(GetLastError()) };
 		}
@@ -193,7 +195,7 @@ public:
 			outer.top <= inner.top && outer.bottom >= inner.bottom;
 	}
 
-	static constexpr void OffsetRect(RECT &rect, int x, int y) noexcept
+	static constexpr void OffsetRect(RECT& rect, int x, int y) noexcept
 	{
 		rect.left += x;
 		rect.right += x;
@@ -287,4 +289,7 @@ public:
 	};
 
 	using FilenameSet = std::unordered_set<std::wstring, FilenameHash, FilenameEqual>;
+	template<class T>
+	using FilenameMap = std::unordered_map<std::wstring, TaskbarAppearance, FilenameHash, FilenameEqual>;
+
 };

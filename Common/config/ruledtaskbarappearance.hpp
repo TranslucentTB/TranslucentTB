@@ -5,26 +5,37 @@
 
 #include "rapidjsonhelper.hpp"
 #include "optionaltaskbarappearance.hpp"
-#include "rule.hpp"
+#include "taskbarappearance.hpp"
 #include "../../TranslucentTB/windows/window.hpp"
+#include "win32.hpp"
+#include "../constants.hpp"
 
 struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
-	std::vector<Rule> Rules = {};
+	std::unordered_map<std::wstring, TaskbarAppearance> ClassRules;
+	win32::FilenameMap<TaskbarAppearance> FileRules;
+	std::unordered_map<std::wstring, TaskbarAppearance> TitleRules;
 
-	constexpr RuledTaskbarAppearance() noexcept = default;
-	constexpr RuledTaskbarAppearance(std::vector<Rule> rules, bool enabled, ACCENT_STATE accent, Util::Color color, bool showPeek) :
-		Rules(rules),
+	RuledTaskbarAppearance() noexcept = default;
+	RuledTaskbarAppearance(std::unordered_map<std::wstring, TaskbarAppearance> classRules, win32::FilenameMap<TaskbarAppearance> fileRules, std::unordered_map<std::wstring, TaskbarAppearance> titleRules, bool enabled, ACCENT_STATE accent, Util::Color color, bool showPeek) :
+		ClassRules(classRules),
+		FileRules(fileRules),
+		TitleRules(titleRules),
 		OptionalTaskbarAppearance(enabled, accent, color, showPeek)
 	{ }
 
 	template<typename Writer>
-	inline void Serialize(Writer& writer) const
+	inline void Serialize(Writer &writer) const
 	{
 		OptionalTaskbarAppearance::Serialize(writer);
-		SerializeRulesVec(writer, Rules, RULES_KEY);
+		rjh::WriteKey(writer, RULES_KEY);
+		writer.StartObject();
+		SerializeRulesMap(writer, ClassRules, CLASS_KEY);
+		SerializeRulesMap(writer, FileRules, FILE_KEY);
+		SerializeRulesMap(writer, TitleRules, TITLE_KEY);
+		writer.EndObject();
 	}
 
-	void Deserialize(const rjh::value_t& obj, void (*unknownKeyCallback)(std::wstring_view))
+	void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view))
 	{
 		rjh::EnsureType(rj::Type::kObjectType, obj.GetType(), L"root node");
 
@@ -35,7 +46,7 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 			const auto key = rjh::ValueToStringView(it->name);
 			if (key == RULES_KEY)
 			{
-				DeserializeRulesVec(it->value, Rules, key, unknownKeyCallback);
+				DeserializeRulesMap(it->value, unknownKeyCallback);
 			}
 			else
 			{
@@ -44,65 +55,98 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 		}
 	}
 
-	inline const std::optional<Rule> FindRule(const Window window) const
+	inline const std::optional<TaskbarAppearance> FindRule(const Window window) const
 	{
-		for (const Rule &rule : Rules)
-		{
-			// This is the fastest because we do the less string manipulation, so always try it first
-			if (!rule.WindowClass.empty())
-			{
-				if (rule.WindowClass == window.classname())
-				{
-					return rule;
-				}
-			}
+		//for (const Rule &rule : Rules)
+		//{
+		//	// This is the fastest because we do the less string manipulation, so always try it first
+		//	if (!rule.WindowClass.empty())
+		//	{
+		//		if (rule.WindowClass == window.classname())
+		//		{
+		//			return rule;
+		//		}
+		//	}
 
-			if (!rule.ProcessName.empty())
-			{
-				if (rule.ProcessName == window.file()->filename().native())
-				{
-					return rule;
-				}
-			}
+		//	if (!rule.ProcessName.empty())
+		//	{
+		//		if (rule.ProcessName == window.file()->filename().native())
+		//		{
+		//			return rule;
+		//		}
+		//	}
 
-			// Do it last because titles can change, so it's less reliable.
-			if (!rule.WindowTitle.empty())
-			{
-				if (rule.WindowTitle == window.title())
-				{
-					return rule;
-				}
-			}
-		}
+		//	// Do it last because titles can change, so it's less reliable.
+		//	if (!rule.WindowTitle.empty())
+		//	{
+		//		if (rule.WindowTitle == window.title())
+		//		{
+		//			return rule;
+		//		}
+		//	}
+		//}
 
 		return std::nullopt;
 	}
 
 private:
 	template <typename Writer>
-	inline static void SerializeRulesVec(Writer& writer, const std::vector<Rule>& vec, std::wstring_view key)
+	inline static void SerializeRulesMap(Writer& writer, const std::unordered_map<std::wstring, TaskbarAppearance> &map, std::wstring_view mapKey)
 	{
-		rjh::WriteKey(writer, key);
-		writer.StartArray();
-		for (const Rule &rule : vec)
+		rjh::WriteKey(writer, mapKey);
+		writer.StartObject();
+		for (const auto &[key, value] : map)
 		{
+			rjh::WriteKey(writer, key);
 			writer.StartObject();
-			rule.Serialize(writer);
+			value.Serialize(writer);
 			writer.EndObject();
 		}
-		writer.EndArray();
+		writer.EndObject();
 	}
 
-	inline static void DeserializeRulesVec(const rjh::value_t& arr, std::vector<Rule>& vec, std::wstring_view key, void (*unknownKeyCallback)(std::wstring_view))
+	inline void DeserializeRulesMap(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view))
 	{
-		rjh::EnsureType(rj::Type::kArrayType, arr.GetType(), key);
+		rjh::EnsureType(rj::Type::kObjectType, obj.GetType(), L"root node");
 
-		for (const auto &elem : arr.GetArray())
+		for (auto it = obj.MemberBegin(); it != obj.MemberEnd(); ++it)
 		{
-			rjh::EnsureType(rj::Type::kObjectType, elem.GetType(), L"array element");
-			Rule rule;
-			rule.Deserialize(elem, unknownKeyCallback);
-			vec.push_back(rule);
+			rjh::EnsureType(rj::Type::kStringType, it->name.GetType(), L"member name");
+
+			const auto key = rjh::ValueToStringView(it->name);
+			if (key == CLASS_KEY)
+			{
+				DeserializeMap(it->value, ClassRules, unknownKeyCallback);
+			}
+			else if (key == FILE_KEY)
+			{
+				DeserializeMap(it->value, FileRules, unknownKeyCallback);
+			}
+			else if (key == TITLE_KEY)
+			{
+				DeserializeMap(it->value, TitleRules, unknownKeyCallback);
+			}
+			else
+			{
+				unknownKeyCallback(key);
+			}
+		}
+	}
+
+	template<class T>
+	inline static void DeserializeMap(const rjh::value_t &obj, T &map, void (*unknownKeyCallback)(std::wstring_view))
+	{
+		rjh::EnsureType(rj::Type::kObjectType, obj.GetType(), L"root node");
+
+		for (auto it = obj.MemberBegin(); it != obj.MemberEnd(); ++it)
+		{
+			rjh::EnsureType(rj::Type::kStringType, it->name.GetType(), L"member name");
+
+			const auto key = rjh::ValueToStringView(it->name);
+			TaskbarAppearance rule;
+			rule.Deserialize(it->value, unknownKeyCallback);
+
+			map.insert(std::make_pair(key, rule));
 		}
 	}
 
