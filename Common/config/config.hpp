@@ -32,7 +32,7 @@ public:
 	RuledTaskbarAppearance VisibleWindowAppearance = { {}, {}, {}, false, ACCENT_ENABLE_TRANSPARENTGRADIENT, { 0, 0, 0, 0 }, true };
 	RuledTaskbarAppearance MaximisedWindowAppearance = IsWindows11()
 		? RuledTaskbarAppearance{ {}, {}, {}, false, ACCENT_ENABLE_ACRYLICBLURBEHIND, { 0, 0, 0, 0 }, true }
-	: RuledTaskbarAppearance{ {}, {}, {}, true, ACCENT_ENABLE_BLURBEHIND, { 0, 0, 0, 0 }, true };
+		: RuledTaskbarAppearance{ {}, {}, {}, true, ACCENT_ENABLE_BLURBEHIND, { 0, 0, 0, 0 }, true };
 	OptionalTaskbarAppearance StartOpenedAppearance = { !IsWindows11(), ACCENT_NORMAL, { 0, 0, 0, 0 }, true };
 	OptionalTaskbarAppearance SearchOpenedAppearance = { !IsWindows11(), ACCENT_NORMAL, { 0, 0, 0, 0 }, true };
 	OptionalTaskbarAppearance TaskViewOpenedAppearance = { true, ACCENT_NORMAL, { 0, 0, 0, 0 }, false };

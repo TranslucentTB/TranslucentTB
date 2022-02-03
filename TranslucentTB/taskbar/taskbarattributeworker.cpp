@@ -436,7 +436,7 @@ void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance confi
 
 void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar, std::optional<bool> isMainOpt)
 {
-	const auto& cfg = GetConfig(taskbar, m_ForegroundWindow);
+	const auto &cfg = GetConfig(taskbar, m_ForegroundWindow);
 	SetAttribute(taskbar->second.TaskbarWindow, cfg);
 
 	// ShowAeroPeekButton triggers Windows internal message loop,

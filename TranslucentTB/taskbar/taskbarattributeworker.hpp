@@ -209,7 +209,7 @@ private:
 	}
 
 public:
-	TaskbarAttributeWorker(const Config& cfg, HINSTANCE hInstance, DynamicLoader& loader, const std::optional<std::filesystem::path>& storageFolder);
+	TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, DynamicLoader &loader, const std::optional<std::filesystem::path> &storageFolder);
 
 	inline void ConfigurationChanged()
 	{
