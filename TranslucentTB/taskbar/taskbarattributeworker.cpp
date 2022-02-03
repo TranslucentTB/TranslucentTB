@@ -261,7 +261,7 @@ LRESULT TaskbarAttributeWorker::OnRequestAttributeRefresh(LPARAM lParam)
 		const Window window = reinterpret_cast<HWND>(lParam);
 		if (const auto iter = m_Taskbars.find(window.monitor()); iter != m_Taskbars.end() && iter->second.TaskbarWindow == window)
 		{
-			if (const auto config = GetConfig(iter, window); config.Accent != ACCENT_NORMAL)
+			if (const auto config = GetConfig(iter); config.Accent != ACCENT_NORMAL)
 			{
 				SetAttribute(iter->second.TaskbarWindow, config);
 				return 1;
@@ -322,7 +322,7 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 	return MessageWindow::MessageHandler(uMsg, wParam, lParam);
 }
 
-TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar, const Window window) const
+TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) const
 {
 	if (m_Config.BatterySaverAppearance.Enabled && m_PowerSaver)
 	{
@@ -352,14 +352,19 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar, co
 
 	if (m_Config.MaximisedWindowAppearance.Enabled && SetContainsValidWindows(taskbar->second.MaximisedWindows))
 	{
-		const std::optional<TaskbarAppearance> rule = m_Config.MaximisedWindowAppearance.FindRule(window);
-		return WithPreview(txmp::TaskbarState::MaximisedWindow, rule ? rule.value() : m_Config.MaximisedWindowAppearance);
+		if (m_ForegroundWindow.maximised())
+		{
+			return WithRule(txmp::TaskbarState::MaximisedWindow, taskbar->first, m_Config.MaximisedWindowAppearance);
+		}
+		else
+		{
+			return WithPreview(txmp::TaskbarState::MaximisedWindow, m_Config.MaximisedWindowAppearance);
+		}
 	}
 
 	if (m_Config.VisibleWindowAppearance.Enabled && (SetContainsValidWindows(taskbar->second.MaximisedWindows) || SetContainsValidWindows(taskbar->second.NormalWindows)))
 	{
-		const std::optional<TaskbarAppearance> rule = m_Config.VisibleWindowAppearance.FindRule(window);
-		return WithPreview(txmp::TaskbarState::VisibleWindow, rule ? rule.value() : m_Config.VisibleWindowAppearance);
+		return WithRule(txmp::TaskbarState::VisibleWindow, taskbar->first, m_Config.VisibleWindowAppearance);
 	}
 
 	return WithPreview(txmp::TaskbarState::Desktop, m_Config.DesktopAppearance);
@@ -436,7 +441,7 @@ void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance confi
 
 void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar, std::optional<bool> isMainOpt)
 {
-	const auto &cfg = GetConfig(taskbar, m_ForegroundWindow);
+	const auto &cfg = GetConfig(taskbar);
 	SetAttribute(taskbar->second.TaskbarWindow, cfg);
 
 	// ShowAeroPeekButton triggers Windows internal message loop,

@@ -136,7 +136,7 @@ private:
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	// Config
-	TaskbarAppearance GetConfig(taskbar_iterator taskbar, const Window window) const;
+	TaskbarAppearance GetConfig(taskbar_iterator taskbar) const;
 
 	// Attribute
 	void ShowAeroPeekButton(Window taskbar, bool show);
@@ -171,6 +171,17 @@ private:
 	bool IsSearchOpened() const;
 	void InsertTaskbar(HMONITOR mon, Window window);
 	static wil::unique_hmodule LoadHookDll(const std::optional<std::filesystem::path> &storageFolder);
+
+	inline TaskbarAppearance WithRule(txmp::TaskbarState state, HMONITOR taskbarMon, const RuledTaskbarAppearance &appearance) const
+	{
+		std::optional<TaskbarAppearance> rule;
+		if (m_ForegroundWindow.monitor() == taskbarMon)
+		{
+			rule = appearance.FindRule(m_ForegroundWindow);
+		}
+
+		return rule ? *rule : WithPreview(state, appearance);
+	}
 
 	inline TaskbarAppearance WithPreview(txmp::TaskbarState state, const TaskbarAppearance &appearance) const
 	{
