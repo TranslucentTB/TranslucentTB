@@ -4,9 +4,9 @@
 #include <string_view>
 #include <optional>
 
-#include "ruledtaskbarappearance.hpp"
 #include "optionaltaskbarappearance.hpp"
 #include "rapidjsonhelper.hpp"
+#include "ruledtaskbarappearance.hpp"
 #include "taskbarappearance.hpp"
 #include "../win32.hpp"
 #include "windowfilter.hpp"

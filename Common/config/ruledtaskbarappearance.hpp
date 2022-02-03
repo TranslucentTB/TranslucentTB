@@ -1,14 +1,17 @@
 #pragma once
+#include <format>
 #include <string_view>
 #include <vector>
-#include <format>
 
-#include "rapidjsonhelper.hpp"
 #include "optionaltaskbarappearance.hpp"
+#include "rapidjsonhelper.hpp"
 #include "taskbarappearance.hpp"
-#include "../../TranslucentTB/windows/window.hpp"
-#include "win32.hpp"
 #include "../constants.hpp"
+#include "../win32.hpp"
+
+#ifdef _TRANSLUCENTTB_EXE
+#include "../../TranslucentTB/windows/window.hpp"
+#endif
 
 struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 	std::unordered_map<std::wstring, TaskbarAppearance> ClassRules;
@@ -17,10 +20,10 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 
 	RuledTaskbarAppearance() noexcept = default;
 	RuledTaskbarAppearance(std::unordered_map<std::wstring, TaskbarAppearance> classRules, win32::FilenameMap<TaskbarAppearance> fileRules, std::unordered_map<std::wstring, TaskbarAppearance> titleRules, bool enabled, ACCENT_STATE accent, Util::Color color, bool showPeek) :
-		ClassRules(classRules),
-		FileRules(fileRules),
-		TitleRules(titleRules),
-		OptionalTaskbarAppearance(enabled, accent, color, showPeek)
+		OptionalTaskbarAppearance(enabled, accent, color, showPeek),
+		ClassRules(std::move(classRules)),
+		FileRules(std::move(fileRules)),
+		TitleRules(std::move(titleRules))
 	{ }
 
 	template<typename Writer>
@@ -55,7 +58,8 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 		}
 	}
 
-	inline const std::optional<TaskbarAppearance> FindRule(const Window window) const
+#ifdef _TRANSLUCENTTB_EXE
+	inline std::optional<TaskbarAppearance> FindRule(const Window window) const
 	{
 		//for (const Rule &rule : Rules)
 		//{
@@ -88,19 +92,17 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 
 		return std::nullopt;
 	}
+#endif
 
 private:
-	template <typename Writer>
-	inline static void SerializeRulesMap(Writer& writer, const std::unordered_map<std::wstring, TaskbarAppearance> &map, std::wstring_view mapKey)
+	template<typename Writer, typename Hash, typename Equal, typename Alloc>
+	inline static void SerializeRulesMap(Writer &writer, const std::unordered_map<std::wstring, TaskbarAppearance, Hash, Equal, Alloc> &map, std::wstring_view mapKey)
 	{
 		rjh::WriteKey(writer, mapKey);
 		writer.StartObject();
 		for (const auto &[key, value] : map)
 		{
-			rjh::WriteKey(writer, key);
-			writer.StartObject();
-			value.Serialize(writer);
-			writer.EndObject();
+			rjh::Serialize(writer, value, key);
 		}
 		writer.EndObject();
 	}
@@ -133,8 +135,8 @@ private:
 		}
 	}
 
-	template<class T>
-	inline static void DeserializeMap(const rjh::value_t &obj, T &map, void (*unknownKeyCallback)(std::wstring_view))
+	template<typename Hash, typename Equal, typename Alloc>
+	inline static void DeserializeMap(const rjh::value_t &obj, std::unordered_map<std::wstring, TaskbarAppearance, Hash, Equal, Alloc> &map, void (*unknownKeyCallback)(std::wstring_view))
 	{
 		rjh::EnsureType(rj::Type::kObjectType, obj.GetType(), L"root node");
 
@@ -143,10 +145,11 @@ private:
 			rjh::EnsureType(rj::Type::kStringType, it->name.GetType(), L"member name");
 
 			const auto key = rjh::ValueToStringView(it->name);
-			TaskbarAppearance rule;
-			rule.Deserialize(it->value, unknownKeyCallback);
 
-			map.insert(std::make_pair(key, rule));
+			TaskbarAppearance rule;
+			rjh::Deserialize(it->value, rule, key, unknownKeyCallback);
+
+			map[std::wstring(key)] = rule;
 		}
 	}
 

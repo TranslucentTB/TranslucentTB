@@ -30,7 +30,6 @@
 #include "util/null_terminated_string_view.hpp"
 #include "util/strings.hpp"
 #include "version.hpp"
-#include "./config/taskbarappearance.hpp"
 
 
 class win32 {
@@ -289,6 +288,7 @@ public:
 	};
 
 	using FilenameSet = std::unordered_set<std::wstring, FilenameHash, FilenameEqual>;
-	template<class T>
-	using FilenameMap = std::unordered_map<std::wstring, TaskbarAppearance, FilenameHash, FilenameEqual>;
+
+	template<typename T>
+	using FilenameMap = std::unordered_map<std::wstring, T, FilenameHash, FilenameEqual>;
 };
