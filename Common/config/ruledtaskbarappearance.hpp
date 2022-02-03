@@ -11,19 +11,20 @@
 
 #ifdef _TRANSLUCENTTB_EXE
 #include "../../TranslucentTB/windows/window.hpp"
+#include "../../ProgramLog/error/std.hpp"
 #endif
 
 struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 	std::unordered_map<std::wstring, TaskbarAppearance> ClassRules;
-	win32::FilenameMap<TaskbarAppearance> FileRules;
 	std::unordered_map<std::wstring, TaskbarAppearance> TitleRules;
+	win32::FilenameMap<TaskbarAppearance> FileRules;
 
 	RuledTaskbarAppearance() noexcept = default;
-	RuledTaskbarAppearance(std::unordered_map<std::wstring, TaskbarAppearance> classRules, win32::FilenameMap<TaskbarAppearance> fileRules, std::unordered_map<std::wstring, TaskbarAppearance> titleRules, bool enabled, ACCENT_STATE accent, Util::Color color, bool showPeek) :
+	RuledTaskbarAppearance(std::unordered_map<std::wstring, TaskbarAppearance> classRules, std::unordered_map<std::wstring, TaskbarAppearance> titleRules, win32::FilenameMap<TaskbarAppearance> fileRules, bool enabled, ACCENT_STATE accent, Util::Color color, bool showPeek) :
 		OptionalTaskbarAppearance(enabled, accent, color, showPeek),
 		ClassRules(std::move(classRules)),
-		FileRules(std::move(fileRules)),
-		TitleRules(std::move(titleRules))
+		TitleRules(std::move(titleRules)),
+		FileRules(std::move(fileRules))
 	{ }
 
 	template<typename Writer>
@@ -33,12 +34,12 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 		rjh::WriteKey(writer, RULES_KEY);
 		writer.StartObject();
 		SerializeRulesMap(writer, ClassRules, CLASS_KEY);
-		SerializeRulesMap(writer, FileRules, FILE_KEY);
 		SerializeRulesMap(writer, TitleRules, TITLE_KEY);
+		SerializeRulesMap(writer, FileRules, FILE_KEY);
 		writer.EndObject();
 	}
 
-	void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view))
+	inline void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view))
 	{
 		rjh::EnsureType(rj::Type::kObjectType, obj.GetType(), L"root node");
 
@@ -61,34 +62,55 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 #ifdef _TRANSLUCENTTB_EXE
 	inline std::optional<TaskbarAppearance> FindRule(const Window window) const
 	{
-		//for (const Rule &rule : Rules)
-		//{
-		//	// This is the fastest because we do the less string manipulation, so always try it first
-		//	if (!rule.WindowClass.empty())
-		//	{
-		//		if (rule.WindowClass == window.classname())
-		//		{
-		//			return rule;
-		//		}
-		//	}
+		// This is the fastest because we do the less string manipulation, so always try it first
+		if (!ClassRules.empty())
+		{
+			if (const auto className = window.classname())
+			{
+				if (const auto it = ClassRules.find(*className); it != ClassRules.end())
+				{
+					return it->second;
+				}
+			}
+			else
+			{
+				return std::nullopt;
+			}
+		}
 
-		//	if (!rule.ProcessName.empty())
-		//	{
-		//		if (rule.ProcessName == window.file()->filename().native())
-		//		{
-		//			return rule;
-		//		}
-		//	}
+		if (!FileRules.empty())
+		{
+			if (const auto file = window.file())
+			{
+				try
+				{
+					if (const auto it = FileRules.find(file->filename().native()); it != FileRules.end())
+					{
+						return it->second;
+					}
+				}
+				StdSystemErrorCatch(spdlog::level::warn, L"Failed to check if window process is part of window filter");
+			}
+			else
+			{
+				return std::nullopt;
+			}
+		}
 
-		//	// Do it last because titles can change, so it's less reliable.
-		//	if (!rule.WindowTitle.empty())
-		//	{
-		//		if (rule.WindowTitle == window.title())
-		//		{
-		//			return rule;
-		//		}
-		//	}
-		//}
+		// Do it last because titles can change, so it's less reliable.
+		if (!TitleRules.empty())
+		{
+			if (const auto title = window.title())
+			{
+				for (const auto &[key, value] : TitleRules)
+				{
+					if (title->find(key) != std::wstring::npos)
+					{
+						return value;
+					}
+				}
+			}
+		}
 
 		return std::nullopt;
 	}
@@ -120,13 +142,13 @@ private:
 			{
 				DeserializeMap(it->value, ClassRules, unknownKeyCallback);
 			}
-			else if (key == FILE_KEY)
-			{
-				DeserializeMap(it->value, FileRules, unknownKeyCallback);
-			}
 			else if (key == TITLE_KEY)
 			{
 				DeserializeMap(it->value, TitleRules, unknownKeyCallback);
+			}
+			else if (key == FILE_KEY)
+			{
+				DeserializeMap(it->value, FileRules, unknownKeyCallback);
 			}
 			else
 			{
