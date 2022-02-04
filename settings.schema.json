@@ -40,34 +40,28 @@
         }
       ]
     },
+    "RuleSet": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/TaskbarAppearance"
+      }
+    },
     "RuledTaskbarAppearance": {
       "allOf": [
         {
           "properties": {
             "rules": {
-              "items": {
-                "allOf": [
-                  {
-                    "properties" : {
-                      "window_class": {
-                        "type": "string"
-                      },
-                      "window_title": {
-                        "type": "string"
-                      },
-                      "process_name": {
-                        "type": "string"
-                      }
-                    },
-                    "type": "object"
-                  },
-                  {
-                    "$ref": "#/$defs/TaskbarAppearance"
-                  }
-                ]
-              },
-              "uniqueItems": true,
-              "type": "array"
+              "properties" : {
+                "window_class": {
+                  "$ref": "#/$defs/RuleSet"
+                },
+                "window_title": {
+                  "$ref": "#/$defs/RuleSet"
+                },
+                "process_name": {
+                  "$ref": "#/$defs/RuleSet"
+                }
+              }
             }
           },
           "type": "object"
@@ -76,6 +70,13 @@
           "$ref": "#/$defs/OptionalTaskbarAppearance"
         }
       ]
+    },
+    "FilterSet": {
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "type": "array"
     }
   },
   "properties": {
@@ -89,10 +90,10 @@
       "$ref": "#/$defs/RuledTaskbarAppearance"
     },
     "start_opened_appearance": {
-      "$ref": "#/$defs/RuledTaskbarAppearance"
+      "$ref": "#/$defs/OptionalTaskbarAppearance"
     },
     "search_opened_appearance": {
-      "$ref": "#/$defs/RuledTaskbarAppearance"
+      "$ref": "#/$defs/OptionalTaskbarAppearance"
     },
     "task_view_opened_appearance": {
       "$ref": "#/$defs/OptionalTaskbarAppearance"
@@ -103,25 +104,13 @@
     "ignored_windows": {
       "properties": {
         "window_class": {
-          "items": {
-            "type": "string"
-          },
-          "uniqueItems": true,
-          "type": "array"
+          "$ref": "#/$defs/FilterSet"
         },
         "window_title": {
-          "items": {
-            "type": "string"
-          },
-          "uniqueItems": true,
-          "type": "array"
+          "$ref": "#/$defs/FilterSet"
         },
         "process_name": {
-          "items": {
-            "type": "string"
-          },
-          "uniqueItems": true,
-          "type": "array"
+          "$ref": "#/$defs/FilterSet"
         }
       },
       "type": "object"

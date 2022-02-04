@@ -81,6 +81,7 @@ private:
 	wil::unique_hwineventhook m_ForegroundChangeHook;
 	wil::unique_hwineventhook m_TitleChangeHook;
 	wil::unique_hwineventhook m_ParentChangeHook;
+	wil::unique_hwineventhook m_OrderChangeHook;
 	wil::unique_hpowernotify m_PowerSaverHook;
 
 	// IAppVisibility
@@ -126,6 +127,7 @@ private:
 	void CALLBACK OnWindowStateChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
 	void CALLBACK OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
 	void CALLBACK OnForegroundWindowChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
+	void CALLBACK OnWindowOrderChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
 	void OnStartVisibilityChange(bool state);
 	void OnTaskViewVisibilityChange(bool state);
 	void OnSearchVisibilityChange(bool state);
@@ -171,17 +173,6 @@ private:
 	bool IsSearchOpened() const;
 	void InsertTaskbar(HMONITOR mon, Window window);
 	static wil::unique_hmodule LoadHookDll(const std::optional<std::filesystem::path> &storageFolder);
-
-	inline TaskbarAppearance WithRule(txmp::TaskbarState state, HMONITOR taskbarMon, const RuledTaskbarAppearance &appearance) const
-	{
-		std::optional<TaskbarAppearance> rule;
-		if (m_ForegroundWindow.monitor() == taskbarMon)
-		{
-			rule = appearance.FindRule(m_ForegroundWindow);
-		}
-
-		return rule ? *rule : WithPreview(state, appearance);
-	}
 
 	inline TaskbarAppearance WithPreview(txmp::TaskbarState state, const TaskbarAppearance &appearance) const
 	{

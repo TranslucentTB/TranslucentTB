@@ -161,6 +161,17 @@ void TaskbarAttributeWorker::OnForegroundWindowChange(DWORD, HWND hwnd, LONG idO
 	}
 }
 
+void TaskbarAttributeWorker::OnWindowOrderChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD)
+{
+	if (const Window window(hwnd); idObject == OBJID_WINDOW && idChild == CHILDID_SELF && window.valid())
+	{
+		if (const auto iter = m_Taskbars.find(window.monitor()); iter != m_Taskbars.end())
+		{
+			RefreshAttribute(iter);
+		}
+	}
+}
+
 void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 {
 	HMONITOR mon = nullptr;
@@ -350,21 +361,47 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 		return WithPreview(txmp::TaskbarState::StartOpened, m_Config.StartOpenedAppearance);
 	}
 
-	if (m_Config.MaximisedWindowAppearance.Enabled && SetContainsValidWindows(taskbar->second.MaximisedWindows))
+	auto &maximisedWindows = taskbar->second.MaximisedWindows;
+	if (m_Config.MaximisedWindowAppearance.Enabled && SetContainsValidWindows(maximisedWindows))
 	{
-		if (m_ForegroundWindow.maximised())
+		for (const Window wnd : Window::DesktopWindow().get_ordered_childrens())
 		{
-			return WithRule(txmp::TaskbarState::MaximisedWindow, taskbar->first, m_Config.MaximisedWindowAppearance);
+			// find the highest maximized window in the z-order.
+			if (maximisedWindows.contains(wnd))
+			{
+				if (const auto rule = m_Config.MaximisedWindowAppearance.FindRule(wnd))
+				{
+					// if it has a rule, use that rule
+					return *rule;
+				}
+				else
+				{
+					// we only consider the highest z-order maximized window for rules
+					// so stop looking through the z-order
+					break;
+				}
+			}
 		}
-		else
-		{
-			return WithPreview(txmp::TaskbarState::MaximisedWindow, m_Config.MaximisedWindowAppearance);
-		}
+
+		// otherwise, use the normal maximized state
+		return WithPreview(txmp::TaskbarState::MaximisedWindow, m_Config.MaximisedWindowAppearance);
 	}
 
-	if (m_Config.VisibleWindowAppearance.Enabled && (SetContainsValidWindows(taskbar->second.MaximisedWindows) || SetContainsValidWindows(taskbar->second.NormalWindows)))
+	if (m_Config.VisibleWindowAppearance.Enabled && (SetContainsValidWindows(maximisedWindows) || SetContainsValidWindows(taskbar->second.NormalWindows)))
 	{
-		return WithRule(txmp::TaskbarState::VisibleWindow, taskbar->first, m_Config.VisibleWindowAppearance);
+		// if there is no maximized window, and the foreground window is on the current monitor
+		if (!SetContainsValidWindows(maximisedWindows) && m_ForegroundWindow.monitor() == taskbar->first)
+		{
+			// find a rule for the foreground window
+			if (const auto rule = m_Config.VisibleWindowAppearance.FindRule(m_ForegroundWindow))
+			{
+				// if it has a rule, use that rule
+				return *rule;
+			}
+		}
+
+		// otherwise use normal visible state
+		return WithPreview(txmp::TaskbarState::VisibleWindow, m_Config.VisibleWindowAppearance);
 	}
 
 	return WithPreview(txmp::TaskbarState::Desktop, m_Config.DesktopAppearance);
@@ -892,6 +929,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_ShowHideHook(CreateHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, CreateThunk(&TaskbarAttributeWorker::WindowInsertRemove<EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE>))),
 	m_CreateDestroyHook(CreateHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, CreateThunk(&TaskbarAttributeWorker::OnWindowCreateDestroy))),
 	m_ForegroundChangeHook(CreateHook(EVENT_SYSTEM_FOREGROUND, CreateThunk(&TaskbarAttributeWorker::OnForegroundWindowChange))),
+	m_OrderChangeHook(CreateHook(EVENT_OBJECT_REORDER, CreateThunk(&TaskbarAttributeWorker::OnWindowOrderChange))),
 	m_SearchManager(nullptr),
 	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED)),
 	m_RefreshRequestedMessage(Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH)),

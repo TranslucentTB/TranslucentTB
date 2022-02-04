@@ -67,6 +67,7 @@ public:
 	inline static const HWND NoTopMostWindow = HWND_NOTOPMOST;
 
 	class FindEnum;
+	class OrderedEnum;
 
 	inline static Window Find(Util::null_terminated_wstring_view className = { }, Util::null_terminated_wstring_view windowName = { }, Window parent = Window::NullWindow, Window childAfter = Window::NullWindow) noexcept
 	{
@@ -285,6 +286,18 @@ public:
 
 	constexpr FindEnum find_childs(Util::null_terminated_wstring_view className = { }, Util::null_terminated_wstring_view windowName = { }) const noexcept;
 
+	inline Window get_top_children() const noexcept
+	{
+		return GetTopWindow(m_WindowHandle);
+	}
+
+	inline Window get_sibling(int direction) const noexcept
+	{
+		return GetNextWindow(m_WindowHandle, direction);
+	}
+
+	constexpr OrderedEnum get_ordered_childrens() const noexcept;
+
 	constexpr HWND handle() const noexcept
 	{
 		return m_WindowHandle;
@@ -334,19 +347,13 @@ private:
 	Util::null_terminated_wstring_view m_class, m_name;
 	Window m_parent, m_currentWindow;
 
-	inline void MoveNext() noexcept
-	{
-		m_currentWindow = m_parent.find_child(m_class, m_name, m_currentWindow);
-	}
-
 	constexpr FindWindowIterator() noexcept { }
-
 	inline FindWindowIterator(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName, Window parent) noexcept :
 		m_class(className),
 		m_name(windowName),
 		m_parent(parent)
 	{
-		MoveNext();
+		++(*this);
 	}
 
 	friend class Window::FindEnum;
@@ -354,11 +361,45 @@ private:
 public:
 	inline FindWindowIterator &operator ++() noexcept
 	{
-		MoveNext();
+		m_currentWindow = m_parent.find_child(m_class, m_name, m_currentWindow);
+
 		return *this;
 	}
 
 	constexpr bool operator ==(const FindWindowIterator &right) const noexcept
+	{
+		return m_currentWindow == right.m_currentWindow;
+	}
+
+	constexpr Window operator *() const noexcept
+	{
+		return m_currentWindow;
+	}
+};
+
+// Iterator class for OrderedEnum
+class SiblingWindowIterator {
+private:
+	Window m_currentWindow;
+	int m_direction;
+
+	constexpr SiblingWindowIterator() noexcept : m_direction(0) { }
+	constexpr SiblingWindowIterator(Window start, int direction) noexcept :
+		m_currentWindow(start),
+		m_direction(direction)
+	{ }
+
+	friend class Window::OrderedEnum;
+
+public:
+	inline SiblingWindowIterator &operator ++() noexcept
+	{
+		m_currentWindow = m_currentWindow.get_sibling(m_direction);
+
+		return *this;
+	}
+
+	constexpr bool operator ==(const SiblingWindowIterator &right) const noexcept
 	{
 		return m_currentWindow == right.m_currentWindow;
 	}
@@ -391,7 +432,31 @@ public:
 	}
 };
 
+class Window::OrderedEnum {
+private:
+	Window m_parent;
+public:
+	constexpr OrderedEnum(Window parent = Window::NullWindow) noexcept :
+		m_parent(parent)
+	{ }
+
+	inline SiblingWindowIterator begin() const noexcept
+	{
+		return { m_parent.get_top_children(), GW_HWNDNEXT };
+	}
+
+	constexpr SiblingWindowIterator end() const noexcept
+	{
+		return { };
+	}
+};
+
 constexpr Window::FindEnum Window::find_childs(Util::null_terminated_wstring_view className, Util::null_terminated_wstring_view windowName) const noexcept
 {
 	return FindEnum(className, windowName, m_WindowHandle);
+}
+
+constexpr Window::OrderedEnum Window::get_ordered_childrens() const noexcept
+{
+	return OrderedEnum(m_WindowHandle);
 }
