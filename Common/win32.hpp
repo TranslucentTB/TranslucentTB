@@ -31,7 +31,6 @@
 #include "util/strings.hpp"
 #include "version.hpp"
 
-
 class win32 {
 private:
 	static std::unique_ptr<std::byte[]> LoadFileVersionInfo(const std::filesystem::path &file, DWORD flags = 0)
