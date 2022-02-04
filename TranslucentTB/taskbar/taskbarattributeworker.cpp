@@ -22,7 +22,7 @@ public:
 		m_Worker(worker), m_MainMonIt(m_Worker.m_Taskbars.end()), m_Refresh(refresh) { }
 
 	AttributeRefresher(const AttributeRefresher &) = delete;
-	AttributeRefresher& operator =(const AttributeRefresher &) = delete;
+	AttributeRefresher &operator =(const AttributeRefresher &) = delete;
 
 	void refresh(taskbar_iterator it)
 	{
@@ -122,6 +122,52 @@ void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG 
 
 				RemoveWindow<LogWindowRemovalDestroyed>(window, it, refresher);
 			}
+		}
+	}
+}
+
+void TaskbarAttributeWorker::OnForegroundWindowChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD)
+{
+	if (idObject == OBJID_WINDOW && idChild == CHILDID_SELF)
+	{
+		const Window oldForegroundWindow = std::exchange(m_ForegroundWindow, Window(hwnd).valid() ? hwnd : Window::NullWindow);
+
+		if (Error::ShouldLog(spdlog::level::debug))
+		{
+			MessagePrint(spdlog::level::debug, std::format(L"Changed foreground window to {}", DumpWindow(m_ForegroundWindow)));
+		}
+
+		AttributeRefresher refresher(*this);
+		HMONITOR oldMonitor = nullptr;
+		if (oldForegroundWindow)
+		{
+			oldMonitor = oldForegroundWindow.monitor();
+			if (const auto it = m_Taskbars.find(oldMonitor); it != m_Taskbars.end())
+			{
+				refresher.refresh(it);
+			}
+		}
+
+		if (m_ForegroundWindow)
+		{
+			if (auto newMonitor = m_ForegroundWindow.monitor(); newMonitor != oldMonitor)
+			{
+				if (const auto it = m_Taskbars.find(newMonitor); it != m_Taskbars.end())
+				{
+					refresher.refresh(it);
+				}
+			}
+		}
+	}
+}
+
+void TaskbarAttributeWorker::OnWindowOrderChange(DWORD, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD)
+{
+	if (const Window window(hwnd); idObject == OBJID_WINDOW && idChild == CHILDID_SELF && window.valid())
+	{
+		if (const auto iter = m_Taskbars.find(window.monitor()); iter != m_Taskbars.end())
+		{
+			RefreshAttribute(iter);
 		}
 	}
 }
@@ -315,13 +361,46 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 		return WithPreview(txmp::TaskbarState::StartOpened, m_Config.StartOpenedAppearance);
 	}
 
-	if (m_Config.MaximisedWindowAppearance.Enabled && SetContainsValidWindows(taskbar->second.MaximisedWindows))
+	auto &maximisedWindows = taskbar->second.MaximisedWindows;
+	if (m_Config.MaximisedWindowAppearance.Enabled && SetContainsValidWindows(maximisedWindows))
 	{
+		for (const Window wnd : Window::DesktopWindow().get_ordered_childrens())
+		{
+			// find the highest maximized window in the z-order.
+			if (maximisedWindows.contains(wnd))
+			{
+				if (const auto rule = m_Config.MaximisedWindowAppearance.FindRule(wnd))
+				{
+					// if it has a rule, use that rule
+					return *rule;
+				}
+				else
+				{
+					// we only consider the highest z-order maximized window for rules
+					// so stop looking through the z-order
+					break;
+				}
+			}
+		}
+
+		// otherwise, use the normal maximized state
 		return WithPreview(txmp::TaskbarState::MaximisedWindow, m_Config.MaximisedWindowAppearance);
 	}
 
-	if (m_Config.VisibleWindowAppearance.Enabled && (SetContainsValidWindows(taskbar->second.MaximisedWindows) || SetContainsValidWindows(taskbar->second.NormalWindows)))
+	if (m_Config.VisibleWindowAppearance.Enabled && (SetContainsValidWindows(maximisedWindows) || SetContainsValidWindows(taskbar->second.NormalWindows)))
 	{
+		// if there is no maximized window, and the foreground window is on the current monitor
+		if (!SetContainsValidWindows(maximisedWindows) && m_ForegroundWindow.monitor() == taskbar->first)
+		{
+			// find a rule for the foreground window
+			if (const auto rule = m_Config.VisibleWindowAppearance.FindRule(m_ForegroundWindow))
+			{
+				// if it has a rule, use that rule
+				return *rule;
+			}
+		}
+
+		// otherwise use normal visible state
 		return WithPreview(txmp::TaskbarState::VisibleWindow, m_Config.VisibleWindowAppearance);
 	}
 
@@ -849,6 +928,8 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_MinimizeRestoreHook(CreateHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, CreateThunk(&TaskbarAttributeWorker::WindowInsertRemove<EVENT_SYSTEM_MINIMIZEEND, EVENT_SYSTEM_MINIMIZESTART>))),
 	m_ShowHideHook(CreateHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE, CreateThunk(&TaskbarAttributeWorker::WindowInsertRemove<EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE>))),
 	m_CreateDestroyHook(CreateHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_DESTROY, CreateThunk(&TaskbarAttributeWorker::OnWindowCreateDestroy))),
+	m_ForegroundChangeHook(CreateHook(EVENT_SYSTEM_FOREGROUND, CreateThunk(&TaskbarAttributeWorker::OnForegroundWindowChange))),
+	m_OrderChangeHook(CreateHook(EVENT_OBJECT_REORDER, CreateThunk(&TaskbarAttributeWorker::OnWindowOrderChange))),
 	m_SearchManager(nullptr),
 	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED)),
 	m_RefreshRequestedMessage(Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH)),
@@ -893,7 +974,7 @@ void TaskbarAttributeWorker::DumpState()
 	for (const auto &[monitor, info] : m_Taskbars)
 	{
 		buf.clear();
-		std::format_to(std::back_inserter(buf), L"Monitor {} [taskbar {}]:", static_cast<void*>(monitor), static_cast<void*>(info.TaskbarWindow.handle()));
+		std::format_to(std::back_inserter(buf), L"Monitor {} [taskbar {}]:", static_cast<void *>(monitor), static_cast<void *>(info.TaskbarWindow.handle()));
 		MessagePrint(spdlog::level::off, buf);
 
 		MessagePrint(spdlog::level::off, L"    Maximised windows:");
@@ -914,7 +995,7 @@ void TaskbarAttributeWorker::DumpState()
 	if (m_CurrentStartMonitor != nullptr)
 	{
 		buf.clear();
-		std::format_to(std::back_inserter(buf), L"Start menu is opened: true [monitor {}]", static_cast<void*>(m_CurrentStartMonitor));
+		std::format_to(std::back_inserter(buf), L"Start menu is opened: true [monitor {}]", static_cast<void *>(m_CurrentStartMonitor));
 		MessagePrint(spdlog::level::off, buf);
 	}
 	else
@@ -925,13 +1006,17 @@ void TaskbarAttributeWorker::DumpState()
 	if (m_CurrentSearchMonitor != nullptr)
 	{
 		buf.clear();
-		std::format_to(std::back_inserter(buf), L"Search is opened: true [monitor {}]", static_cast<void*>(m_CurrentSearchMonitor));
+		std::format_to(std::back_inserter(buf), L"Search is opened: true [monitor {}]", static_cast<void *>(m_CurrentSearchMonitor));
 		MessagePrint(spdlog::level::off, buf);
 	}
 	else
 	{
 		MessagePrint(spdlog::level::off, L"Search is opened: false");
 	}
+
+	buf.clear();
+	std::format_to(std::back_inserter(buf), L"Current foreground window: {}", DumpWindow(m_ForegroundWindow));
+	MessagePrint(spdlog::level::off, buf);
 
 	buf.clear();
 	std::format_to(std::back_inserter(buf), L"Worker handles requests from hooks: {}", !m_disableAttributeRefreshReply);
@@ -957,6 +1042,7 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 	m_TaskViewActive = false;
 	m_CurrentStartMonitor = nullptr;
 	m_CurrentSearchMonitor = nullptr;
+	m_ForegroundWindow = Window::NullWindow;
 
 	m_Taskbars.clear();
 	m_NormalTaskbars.clear();
@@ -1021,6 +1107,7 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 		m_TaskViewActive = hookWnd.send_message(*m_IsTaskViewOpenedMessage);
 	}
 
+	m_ForegroundWindow = Window::ForegroundWindow();
 	if (IsStartMenuOpened())
 	{
 		m_CurrentStartMonitor = GetStartMenuMonitor();

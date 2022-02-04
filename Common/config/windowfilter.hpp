@@ -7,20 +7,31 @@
 
 #include "rapidjsonhelper.hpp"
 #include "../win32.hpp"
+#include "../constants.hpp"
 
 #ifdef _TRANSLUCENTTB_EXE
 #include "../../TranslucentTB/windows/window.hpp"
 #include "../../ProgramLog/error/std.hpp"
 #endif
 
-class WindowFilter {
-public:
+struct WindowFilter {
+	std::unordered_set<std::wstring> ClassList;
+	std::unordered_set<std::wstring> TitleList;
+	win32::FilenameSet FileList;
+
+	WindowFilter() = default;
+	WindowFilter(std::unordered_set<std::wstring> classList, std::unordered_set<std::wstring> titleList, win32::FilenameSet fileList) :
+		ClassList(std::move(classList)),
+		TitleList(std::move(titleList)),
+		FileList(std::move(fileList))
+	{ }
+
 	template<class Writer>
 	inline void Serialize(Writer &writer) const
 	{
-		SerializeStringSet(writer, m_ClassList, CLASS_KEY);
-		SerializeStringSet(writer, m_TitleList, TITLE_KEY);
-		SerializeStringSet(writer, m_FileList, FILE_KEY);
+		SerializeStringSet(writer, ClassList, CLASS_KEY);
+		SerializeStringSet(writer, TitleList, TITLE_KEY);
+		SerializeStringSet(writer, FileList, FILE_KEY);
 	}
 
 	inline void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view))
@@ -34,15 +45,15 @@ public:
 			const auto key = rjh::ValueToStringView(it->name);
 			if (key == CLASS_KEY)
 			{
-				DeserializeStringSet(it->value, m_ClassList, key);
+				DeserializeStringSet(it->value, ClassList, key);
 			}
 			else if (key == TITLE_KEY)
 			{
-				DeserializeStringSet(it->value, m_TitleList, key);
+				DeserializeStringSet(it->value, TitleList, key);
 			}
-			else if(key == FILE_KEY)
+			else if (key == FILE_KEY)
 			{
-				DeserializeStringSet(it->value, m_FileList, key);
+				DeserializeStringSet(it->value, FileList, key);
 			}
 			else if (unknownKeyCallback)
 			{
@@ -55,11 +66,11 @@ public:
 	inline bool IsFiltered(Window window) const
 	{
 		// This is the fastest because we do the less string manipulation, so always try it first
-		if (!m_ClassList.empty())
+		if (!ClassList.empty())
 		{
 			if (const auto className = window.classname())
 			{
-				if (m_ClassList.contains(*className))
+				if (ClassList.contains(*className))
 				{
 					return true;
 				}
@@ -70,13 +81,13 @@ public:
 			}
 		}
 
-		if (!m_FileList.empty())
+		if (!FileList.empty())
 		{
 			if (const auto file = window.file())
 			{
 				try
 				{
-					if (m_FileList.contains(file->filename().native()))
+					if (FileList.contains(file->filename().native()))
 					{
 						return true;
 					}
@@ -90,11 +101,11 @@ public:
 		}
 
 		// Do it last because titles can change, so it's less reliable.
-		if (!m_TitleList.empty())
+		if (!TitleList.empty())
 		{
 			if (const auto title = window.title())
 			{
-				for (const auto &value : m_TitleList)
+				for (const auto &value : TitleList)
 				{
 					if (title->find(value) != std::wstring::npos)
 					{
@@ -132,12 +143,4 @@ private:
 			set.emplace(rjh::ValueToStringView(elem));
 		}
 	}
-
-	std::unordered_set<std::wstring> m_ClassList;
-	std::unordered_set<std::wstring> m_TitleList;
-	win32::FilenameSet m_FileList;
-
-	static constexpr std::wstring_view CLASS_KEY = L"window_class";
-	static constexpr std::wstring_view TITLE_KEY = L"window_title";
-	static constexpr std::wstring_view FILE_KEY = L"process_name";
 };

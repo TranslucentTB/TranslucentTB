@@ -287,4 +287,7 @@ public:
 	};
 
 	using FilenameSet = std::unordered_set<std::wstring, FilenameHash, FilenameEqual>;
+
+	template<typename T>
+	using FilenameMap = std::unordered_map<std::wstring, T, FilenameHash, FilenameEqual>;
 };
