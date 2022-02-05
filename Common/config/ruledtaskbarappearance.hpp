@@ -116,6 +116,11 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 	}
 #endif
 
+	inline bool HasRules() const noexcept
+	{
+		return !(ClassRules.empty() && FileRules.empty() && TitleRules.empty());
+	}
+
 private:
 	template<typename Writer, typename Hash, typename Equal, typename Alloc>
 	inline static void SerializeRulesMap(Writer &writer, const std::unordered_map<std::wstring, TaskbarAppearance, Hash, Equal, Alloc> &map, std::wstring_view mapKey)

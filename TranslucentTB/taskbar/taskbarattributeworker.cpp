@@ -362,23 +362,27 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 	}
 
 	auto &maximisedWindows = taskbar->second.MaximisedWindows;
-	if (m_Config.MaximisedWindowAppearance.Enabled && SetContainsValidWindows(maximisedWindows))
+	const bool hasMaximizedWindows = SetContainsValidWindows(maximisedWindows);
+	if (m_Config.MaximisedWindowAppearance.Enabled && hasMaximizedWindows)
 	{
-		for (const Window wnd : Window::DesktopWindow().get_ordered_childrens())
+		if (m_Config.MaximisedWindowAppearance.HasRules())
 		{
-			// find the highest maximized window in the z-order.
-			if (maximisedWindows.contains(wnd))
+			for (const Window wnd : Window::DesktopWindow().get_ordered_childrens())
 			{
-				if (const auto rule = m_Config.MaximisedWindowAppearance.FindRule(wnd))
+				// find the highest maximized window in the z-order.
+				if (maximisedWindows.contains(wnd))
 				{
-					// if it has a rule, use that rule
-					return *rule;
-				}
-				else
-				{
-					// we only consider the highest z-order maximized window for rules
-					// so stop looking through the z-order
-					break;
+					if (const auto rule = m_Config.MaximisedWindowAppearance.FindRule(wnd))
+					{
+						// if it has a rule, use that rule
+						return *rule;
+					}
+					else
+					{
+						// we only consider the highest z-order maximized window for rules
+						// so stop looking through the z-order
+						break;
+					}
 				}
 			}
 		}
@@ -387,10 +391,10 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 		return WithPreview(txmp::TaskbarState::MaximisedWindow, m_Config.MaximisedWindowAppearance);
 	}
 
-	if (m_Config.VisibleWindowAppearance.Enabled && (SetContainsValidWindows(maximisedWindows) || SetContainsValidWindows(taskbar->second.NormalWindows)))
+	if (m_Config.VisibleWindowAppearance.Enabled && (hasMaximizedWindows || SetContainsValidWindows(taskbar->second.NormalWindows)))
 	{
 		// if there is no maximized window, and the foreground window is on the current monitor
-		if (!SetContainsValidWindows(maximisedWindows) && m_ForegroundWindow.monitor() == taskbar->first)
+		if (m_Config.VisibleWindowAppearance.HasRules() && !hasMaximizedWindows && m_ForegroundWindow.monitor() == taskbar->first)
 		{
 			// find a rule for the foreground window
 			if (const auto rule = m_Config.VisibleWindowAppearance.FindRule(m_ForegroundWindow))
