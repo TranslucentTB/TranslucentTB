@@ -107,6 +107,7 @@ void ConfigManager::SaveToFile(FILE *f) const
 	}
 
 	rj::PrettyWriter<OutputStream, rj::UTF16LE<>> writer(out);
+	writer.SetIndent(' ', 2);
 
 	writer.StartObject();
 	rjh::Serialize(writer, SCHEMA, SCHEMA_KEY);
@@ -116,7 +117,7 @@ void ConfigManager::SaveToFile(FILE *f) const
 	writer.Flush();
 }
 
-bool ConfigManager::LoadFromFile(FILE *f)
+void ConfigManager::LoadFromFile(FILE *f)
 {
 	static constexpr std::wstring_view DESERIALIZE_FAILED = L"Failed to deserialize JSON document";
 
@@ -145,43 +146,41 @@ bool ConfigManager::LoadFromFile(FILE *f)
 			});
 
 			// everything went fine, we can return!
-			return true;
+			return;
 		}
 		HelperDeserializationErrorCatch(spdlog::level::err, DESERIALIZE_FAILED)
 		StdSystemErrorCatch(spdlog::level::err, DESERIALIZE_FAILED);
 	}
-	else
+	else if (result.Code() != rj::kParseErrorDocumentEmpty)
 	{
 		ParseErrorCodeHandle(result.Code(), spdlog::level::err, DESERIALIZE_FAILED);
 	}
 
-	return false;
+	// parsing failed, use defaults
+	m_Config = { };
 }
 
 bool ConfigManager::Load()
 {
-	const wil::unique_file file(_wfsopen(m_ConfigPath.c_str(), L"rbS", _SH_DENYNO));
-	const errno_t err = errno; // capture the error asap
-
-	// skip empty files. this is to avoid a false error due to how some editors work.
-	// notably, VS Code will create an empty file and then fill it.
-	if (file &&
-		!win32::IsFileEmpty(reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(file.get())))) &&
-		LoadFromFile(file.get()))
+	if (const wil::unique_file file { _wfsopen(m_ConfigPath.c_str(), L"rbS", _SH_DENYNO) })
 	{
+		LoadFromFile(file.get());
 		return true;
 	}
-	else if (!file && err != ENOENT)
+	else
 	{
-		// if the file failed to open, but it exists, something went wrong
-		ErrnoTHandle(err, spdlog::level::err, L"Failed to open configuration file");
+		const errno_t err = errno;
+		const bool fileExists = err != ENOENT;
+		if (fileExists)
+		{
+			// if the file failed to open, but it exists, something went wrong
+			ErrnoTHandle(err, spdlog::level::err, L"Failed to open configuration file");
+		}
+
+		// opening file failed, use defaults
+		m_Config = { };
+		return fileExists;
 	}
-
-	// if anything failed, use defaults
-	m_Config = { };
-
-	// check if the file was successfully opened or it exists but failed to open
-	return file || err != ENOENT;
 }
 
 void ConfigManager::Reload()

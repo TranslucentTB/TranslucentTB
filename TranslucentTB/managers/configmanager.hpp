@@ -33,7 +33,7 @@ class ConfigManager {
 
 	bool TryOpenConfigAsJson() noexcept;
 	void SaveToFile(FILE *f) const;
-	bool LoadFromFile(FILE *f);
+	void LoadFromFile(FILE *f);
 	bool Load();
 	void Reload();
 	bool ScheduleReload();

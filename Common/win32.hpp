@@ -219,12 +219,6 @@ public:
 		}
 	}
 
-	inline static bool IsFileEmpty(HANDLE hFile)
-	{
-		LARGE_INTEGER size;
-		return GetFileSizeEx(hFile, &size) && std::bit_cast<int64_t>(size) == 0;
-	}
-
 	struct FilenameEqual {
 		using is_transparent = void;
 		inline bool operator()(std::wstring_view l, std::wstring_view r) const

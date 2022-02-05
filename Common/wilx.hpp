@@ -38,9 +38,9 @@ namespace wilx {
 		using arg_t = typename function_traits<T>::template arg<I>;
 	}
 
-	template<auto close_fn, impl::arg_t<decltype(close_fn), 0> invalid_token = impl::arg_t<decltype(close_fn), 0>()>
+	template<auto close_fn, impl::arg_t<decltype(close_fn), 0> invalid_token = {}>
 	requires std::is_member_function_pointer_v<decltype(close_fn)>
-	using unique_com_token = wil::unique_com_token<impl::parent_t<decltype(close_fn)>, impl::arg_t<decltype(close_fn), 0>, decltype(close_fn), close_fn, invalid_token>;
+	using unique_com_token = wil::unique_com_token<impl::parent_t<decltype(close_fn)>, decltype(invalid_token), decltype(close_fn), close_fn, invalid_token>;
 
 	template<auto close_fn>
 	requires std::is_member_function_pointer_v<decltype(close_fn)>
