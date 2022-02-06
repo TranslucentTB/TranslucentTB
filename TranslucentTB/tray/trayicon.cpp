@@ -61,8 +61,12 @@ LRESULT TrayIcon::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	default:
 		if (uMsg == m_TaskbarCreatedMessage)
 		{
-			// it's not actually showing anymore, explorer restarted
-			m_CurrentlyShowing = false;
+			LoadThemedIcon();
+
+			// https://github.com/TranslucentTB/TranslucentTB/issues/417
+			// we also get this message when DPI changes. Check if explorer truly
+			// restarted by seeing if a normal NIM_MODIFY worked
+			m_CurrentlyShowing = Shell_NotifyIcon(NIM_MODIFY, &m_IconData);
 
 			if (m_ShowPreference)
 			{
