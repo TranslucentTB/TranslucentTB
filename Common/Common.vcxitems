@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -32,8 +32,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)undoc\uxtheme.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)undoc\winuser.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\concepts.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\fixed_string.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\hash.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)util\hstring_builder.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util\hstring_format.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\maybe_delete.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\null_terminated_string_view.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\numbers.hpp" />

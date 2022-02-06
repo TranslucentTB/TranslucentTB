@@ -14,7 +14,7 @@
     <Link>
       <AdditionalDependencies Condition="'$(Configuration)'=='Release'">gmock_main.lib</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Configuration)'=='Debug'">gmock_maind.lib</AdditionalDependencies>
-      <AdditionalDependencies>ole32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ole32.lib;oleaut32.lib;runtimeobject.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
     </Link>
@@ -22,6 +22,7 @@
   <ItemGroup>
     <ClCompile Include="config\rapidjsonhelper.cpp" />
     <ClCompile Include="util\color.cpp" />
+    <ClCompile Include="util\hstring_format.cpp" />
     <ClCompile Include="util\numbers.cpp" />
     <ClCompile Include="util\strings.cpp" />
     <ClCompile Include="win32.cpp" />

@@ -7,7 +7,7 @@
 
 #include "colorpickerrendering.hpp"
 #include "util/color.hpp"
-#include "util/hstring_builder.hpp"
+#include "util/hstring_format.hpp"
 #include "util/string_macros.hpp"
 
 namespace winrt::TranslucentTB::Xaml::Controls::implementation
@@ -965,15 +965,11 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 				hstring colorHex;
 				if (IsAlphaEnabled())
 				{
-					Util::hstring_builder builder(8);
-					std::format_to(std::back_inserter(builder), L"{:08X}", colorRgba);
-					colorHex = builder.to_hstring();
+					colorHex = Util::hstring_format<L"{:08X}">(colorRgba);
 				}
 				else
 				{
-					Util::hstring_builder builder(6);
-					std::format_to(std::back_inserter(builder), L"{:06X}", static_cast<uint32_t>(colorRgba >> 8));
-					colorHex = builder.to_hstring();
+					colorHex = Util::hstring_format<L"{:06X}">(static_cast<uint32_t>(colorRgba >> 8));
 				}
 
 				m_HexInputTextBox.Text(colorHex);

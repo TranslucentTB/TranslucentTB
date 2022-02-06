@@ -6,6 +6,7 @@
 #endif
 
 #include "appinfo.hpp"
+#include "util/hstring_format.hpp"
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
@@ -13,7 +14,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		InitializeComponent();
 
-		Title(hstring { std::format(L"{} - Color picker - " APP_NAME, GetTextForState(state)) });
+		Title(Util::hstring_format<L"{} - Color picker - " APP_NAME>(GetTextForState(state)));
 
 		const auto picker = Picker();
 		picker.PreviousColor(currentColor);

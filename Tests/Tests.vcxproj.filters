@@ -22,6 +22,9 @@
     <ClCompile Include="config\rapidjsonhelper.cpp">
       <Filter>Config Tests</Filter>
     </ClCompile>
+    <ClCompile Include="util\hstring_format.cpp">
+      <Filter>Util Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
