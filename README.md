@@ -9,6 +9,8 @@
 
 > [**With regards to the malware allegations**, we have an Issue explaining our permissions use.](https://github.com/TranslucentTB/TranslucentTB/issues/350)
 
+> *Compatible with ExplorerPatcher!*
+
 A lightweight (uses a few MB of RAM and almost no CPU) utility that makes the Windows taskbar translucent/transparent on Windows 10.
 
 You can see examples of the customizations you can make in the images below:
