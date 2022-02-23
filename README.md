@@ -30,6 +30,7 @@ You can see examples of the customizations you can make in the images below:
   - **Dynamic Cortana**: Will change the taskbar appearance when Cortana (or the search menu if Cortana is disabled) is open.
   - **Dynamic Timeline**: Will change the taskbar apperance when the Timeline is open.
 - Ability to **show or hide the Aero Peek button** depending on the currently active dynamic mode.
+- Compatible with [ExplorerPatcher](https://github.com/valinet/ExplorerPatcher)!
 
 You can see it in action [here](https://gfycat.com/TidyFelineCrownofthornsstarfish) (short) and [here](https://gfycat.com/ConsciousCriminalDassie) (longer).
 
