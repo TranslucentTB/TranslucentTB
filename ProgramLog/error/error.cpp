@@ -10,6 +10,7 @@
 
 #include "../log.hpp"
 #include "std.hpp"
+#include "util/string_macros.hpp"
 #include "win32.hpp"
 
 bool Error::ShouldLog(spdlog::level::level_enum level)
@@ -28,35 +29,43 @@ bool Error::ShouldLog(spdlog::level::level_enum level)
 	return false;
 }
 
-void Error::impl::Log(std::wstring_view msg, spdlog::level::level_enum level, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function)
+void Error::impl::Log(std::wstring_view msg, spdlog::level::level_enum level, std::source_location location)
 {
-	spdlog::log({ file.c_str(), line, function.c_str() }, level, msg);
+	spdlog::log({ location.file_name(), location.line(), location.function_name() }, level, msg);
 }
 
-std::wstring Error::impl::GetLogMessage(std::wstring_view message, std::wstring_view error_message, std::wstring_view err_message_fmt, std::wstring_view message_fmt)
+std::wstring Error::impl::GetLogMessage(std::wstring_view message, std::wstring_view error_message)
 {
 	if (!error_message.empty())
 	{
-		return std::vformat(err_message_fmt, std::make_wformat_args(message, error_message));
+		return std::format(L"{} ({})", message, error_message);
 	}
 	else
 	{
-		return std::vformat(message_fmt, std::make_wformat_args(message));
+		return std::wstring(message);
 	}
 }
 
 template<>
-void Error::impl::Handle<spdlog::level::err>(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function, HRESULT, IRestrictedErrorInfo*)
+void Error::impl::Handle<spdlog::level::err>(std::wstring_view message, std::wstring_view error_message, std::source_location location, HRESULT, IRestrictedErrorInfo*)
 {
 	// allow calls to err handling without needing to initialize logging
 	if (Log::IsInitialized())
 	{
-		Log(GetLogMessage(message, error_message), spdlog::level::err, file, line, function);
+		Log(GetLogMessage(message, error_message), spdlog::level::err, location);
 	}
 
 	if (!IsDebuggerPresent())
 	{
-		CreateMessageBoxThread(GetLogMessage(message, error_message, ERROR_MESSAGE L"\n\n{}\n\n{}", ERROR_MESSAGE L"\n\n{}"), ERROR_TITLE, MB_ICONWARNING).detach();
+		auto dialogMessage = std::format(APP_NAME L" has encountered an error.\n\n{}", message);
+		if (!error_message.empty())
+		{
+			dialogMessage.reserve(dialogMessage.size() + 2 + error_message.length());
+			dialogMessage += L"\n\n";
+			dialogMessage += error_message;
+		}
+
+		CreateMessageBoxThread(std::move(dialogMessage), UTIL_WIDEN(UTF8_ERROR_TITLE), MB_ICONWARNING).detach();
 	}
 	else
 	{
@@ -65,18 +74,26 @@ void Error::impl::Handle<spdlog::level::err>(std::wstring_view message, std::wst
 }
 
 template<>
-void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, Util::null_terminated_string_view file, int line, Util::null_terminated_string_view function, HRESULT err, IRestrictedErrorInfo *errInfo)
+void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, std::source_location location, HRESULT err, IRestrictedErrorInfo *errInfo)
 {
 	// allow calls to critical handling without needing to initialize logging
 	const bool initialized = Log::IsInitialized();
 	if (initialized)
 	{
-		Log(GetLogMessage(message, error_message), spdlog::level::critical, file, line, function);
+		Log(GetLogMessage(message, error_message), spdlog::level::critical, location);
 	}
 
 	if (!IsDebuggerPresent())
 	{
-		CreateMessageBoxThread(GetLogMessage(message, error_message, FATAL_ERROR_MESSAGE L"\n\n{}\n\n{}", FATAL_ERROR_MESSAGE L"\n\n{}"), FATAL_ERROR_TITLE, MB_ICONERROR | MB_TOPMOST).join();
+		auto dialogMessage = std::format(APP_NAME L" has encountered a fatal error and cannot continue executing.\n\n{}", message);
+		if (!error_message.empty())
+		{
+			dialogMessage.reserve(dialogMessage.size() + 2 + error_message.length());
+			dialogMessage += L"\n\n";
+			dialogMessage += error_message;
+		}
+
+		CreateMessageBoxThread(std::move(dialogMessage), APP_NAME L" - Fatal error", MB_ICONERROR | MB_TOPMOST).join();
 	}
 
 	if (errInfo)
