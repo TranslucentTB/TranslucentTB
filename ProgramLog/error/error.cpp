@@ -31,7 +31,7 @@ bool Error::ShouldLog(spdlog::level::level_enum level)
 
 void Error::impl::Log(std::wstring_view msg, spdlog::level::level_enum level, std::source_location location)
 {
-	spdlog::log({ location.file_name(), location.line(), location.function_name() }, level, msg);
+	spdlog::log({ location.file_name(), static_cast<int>(location.line()), location.function_name() }, level, msg);
 }
 
 std::wstring Error::impl::GetLogMessage(std::wstring_view message, std::wstring_view error_message)
