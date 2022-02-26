@@ -351,14 +351,31 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 		return WithPreview(txmp::TaskbarState::Desktop, m_Config.DesktopAppearance);
 	}
 
+	// on windows 11, search is considered open when start is, so we need to check for start first.
+	if (m_Config.StartOpenedAppearance.Enabled)
+	{
+		bool startOpened;
+		if (m_IsWindows11)
+		{
+			// checking the search monitor is more reliable on windows 11
+			// so check the start monitor to see if it's open and then use the search monitor
+			// to check *where* it's open.
+			startOpened = m_CurrentStartMonitor != nullptr && m_CurrentSearchMonitor == taskbar->first;
+		}
+		else
+		{
+			startOpened = m_CurrentStartMonitor == taskbar->first;
+		}
+
+		if (startOpened)
+		{
+			return WithPreview(txmp::TaskbarState::StartOpened, m_Config.StartOpenedAppearance);
+		}
+	}
+
 	if (m_Config.SearchOpenedAppearance.Enabled && m_CurrentSearchMonitor == taskbar->first)
 	{
 		return WithPreview(txmp::TaskbarState::SearchOpened, m_Config.SearchOpenedAppearance);
-	}
-
-	if (m_Config.StartOpenedAppearance.Enabled && m_CurrentStartMonitor == taskbar->first)
-	{
-		return WithPreview(txmp::TaskbarState::StartOpened, m_Config.StartOpenedAppearance);
 	}
 
 	auto &maximisedWindows = taskbar->second.MaximisedWindows;
@@ -712,37 +729,58 @@ void TaskbarAttributeWorker::CreateAppVisibility()
 	}
 }
 
-void TaskbarAttributeWorker::CreateSearchManager() try
+void TaskbarAttributeWorker::CreateSearchManager()
 {
 	UnregisterSearchCallbacks();
 
 	m_SearchManager = nullptr;
+	m_SearchViewCoordinator = nullptr;
 
 	if (m_SearchVisibilityChangeMessage)
 	{
-		using winrt::Windows::Internal::Shell::Experience::IShellExperienceManagerFactory;
-		using winrt::Windows::Internal::Shell::Experience::ICortanaExperienceManager;
-
-		auto serviceManager = wil::CoCreateInstance<IServiceProvider>(CLSID_ImmersiveShell, CLSCTX_LOCAL_SERVER);
-
-		IShellExperienceManagerFactory factory(nullptr);
-		winrt::check_hresult(serviceManager->QueryService(winrt::guid_of<IShellExperienceManagerFactory>(), winrt::guid_of<IShellExperienceManagerFactory>(), winrt::put_abi(factory)));
-
-		m_SearchManager = factory.GetExperienceManager(win32::IsAtLeastBuild(19041) ? SEH_SearchApp : SEH_Cortana).as<ICortanaExperienceManager>();
-
-		m_SuggestionsShownToken = m_SearchManager.SuggestionsShown([this](const ICortanaExperienceManager &, const wf::IInspectable &)
+		if (m_IsWindows11)
 		{
-			send_message(*m_SearchVisibilityChangeMessage, true);
-		});
+			try
+			{
+				using winrt::WindowsUdk::UI::Shell::ShellViewCoordinator;
+				m_SearchViewCoordinator = ShellViewCoordinator { winrt::WindowsUdk::UI::Shell::ShellView::Search };
 
-		m_SuggestionsHiddenToken = m_SearchManager.SuggestionsHidden([this](const ICortanaExperienceManager &, const wf::IInspectable &)
+				m_SearchViewVisibilityChangedToken = m_SearchViewCoordinator.VisibilityChanged([this](const ShellViewCoordinator &coordinator, const wf::IInspectable &)
+				{
+					send_message(*m_SearchVisibilityChangeMessage, coordinator.Visibility() == winrt::WindowsUdk::UI::Shell::ViewVisibility::Visible);
+				});
+			}
+			HresultErrorCatch(spdlog::level::warn, L"Failed to create ShellViewCoordinator");
+		}
+		else
 		{
-			send_message(*m_SearchVisibilityChangeMessage, false);
-		});
+			try
+			{
+				using winrt::Windows::Internal::Shell::Experience::IShellExperienceManagerFactory;
+				using winrt::Windows::Internal::Shell::Experience::ICortanaExperienceManager;
+
+				auto serviceManager = wil::CoCreateInstance<IServiceProvider>(CLSID_ImmersiveShell, CLSCTX_LOCAL_SERVER);
+
+				IShellExperienceManagerFactory factory(nullptr);
+				winrt::check_hresult(serviceManager->QueryService(winrt::guid_of<IShellExperienceManagerFactory>(), winrt::guid_of<IShellExperienceManagerFactory>(), winrt::put_abi(factory)));
+
+				m_SearchManager = factory.GetExperienceManager(win32::IsAtLeastBuild(19041) ? SEH_SearchApp : SEH_Cortana).as<ICortanaExperienceManager>();
+
+				m_SuggestionsShownToken = m_SearchManager.SuggestionsShown([this](const ICortanaExperienceManager &, const wf::IInspectable &)
+				{
+					send_message(*m_SearchVisibilityChangeMessage, true);
+				});
+
+				m_SuggestionsHiddenToken = m_SearchManager.SuggestionsHidden([this](const ICortanaExperienceManager &, const wf::IInspectable &)
+				{
+					send_message(*m_SearchVisibilityChangeMessage, false);
+				});
+			}
+			ResultExceptionCatch(spdlog::level::warn, L"Failed to create immersive shell service provider")
+			HresultErrorCatch(spdlog::level::warn, L"Failed to query for ICortanaExperienceManager");
+		}
 	}
 }
-ResultExceptionCatch(spdlog::level::warn, L"Failed to create immersive shell service provider")
-HresultErrorCatch(spdlog::level::warn, L"Failed to query for ICortanaExperienceManager");
 
 void TaskbarAttributeWorker::UnregisterSearchCallbacks() noexcept
 {
@@ -758,6 +796,15 @@ void TaskbarAttributeWorker::UnregisterSearchCallbacks() noexcept
 		{
 			m_SearchManager.SuggestionsHidden(m_SuggestionsHiddenToken);
 			m_SuggestionsHiddenToken = { };
+		}
+	}
+
+	if (m_SearchViewCoordinator)
+	{
+		if (m_SearchViewVisibilityChangedToken)
+		{
+			m_SearchViewCoordinator.VisibilityChanged(m_SearchViewVisibilityChangedToken);
+			m_SearchViewVisibilityChangedToken = { };
 		}
 	}
 }
@@ -836,7 +883,18 @@ bool TaskbarAttributeWorker::IsStartMenuOpened() const
 
 bool TaskbarAttributeWorker::IsSearchOpened() const try
 {
-	return m_SearchManager && m_SearchManager.SuggestionsShowing();
+	if (m_SearchViewCoordinator)
+	{
+		return m_SearchViewCoordinator.Visibility() == winrt::WindowsUdk::UI::Shell::ViewVisibility::Visible;
+	}
+	else if (m_SearchManager)
+	{
+		return m_SearchManager.SuggestionsShowing();
+	}
+	else
+	{
+		return false;
+	}
 }
 catch (const winrt::hresult_error &err)
 {
@@ -923,6 +981,8 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_TaskViewActive(false),
 	m_PeekActive(false),
 	m_disableAttributeRefreshReply(false),
+	m_ResettingState(false),
+	m_ResetStateReentered(false),
 	m_CurrentStartMonitor(nullptr),
 	m_CurrentSearchMonitor(nullptr),
 	m_Config(cfg),
@@ -935,6 +995,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_ForegroundChangeHook(CreateHook(EVENT_SYSTEM_FOREGROUND, CreateThunk(&TaskbarAttributeWorker::OnForegroundWindowChange))),
 	m_OrderChangeHook(CreateHook(EVENT_OBJECT_REORDER, CreateThunk(&TaskbarAttributeWorker::OnWindowOrderChange))),
 	m_SearchManager(nullptr),
+	m_SearchViewCoordinator(nullptr),
 	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED)),
 	m_RefreshRequestedMessage(Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH)),
 	m_TaskViewVisibilityChangeMessage(Window::RegisterMessage(WM_TTBHOOKTASKVIEWVISIBILITYCHANGE)),
@@ -1038,97 +1099,120 @@ void TaskbarAttributeWorker::DumpState()
 
 void TaskbarAttributeWorker::ResetState(bool manual)
 {
-	MessagePrint(spdlog::level::debug, L"Resetting worker state");
-
-	// Clear state
-	m_PowerSaver = false;
-	m_PeekActive = false;
-	m_TaskViewActive = false;
-	m_CurrentStartMonitor = nullptr;
-	m_CurrentSearchMonitor = nullptr;
-	m_ForegroundWindow = Window::NullWindow;
-
-	m_Taskbars.clear();
-	m_NormalTaskbars.clear();
-
-	// Keep old hooks alive while we rehook to avoid DLL unload.
-	auto oldHooks = std::move(m_Hooks);
-	m_Hooks.clear();
-
-	if (const Window main_taskbar = Window::Find(TASKBAR))
+	if (!m_ResettingState)
 	{
-		const auto pid = main_taskbar.process_id();
-		if (!manual)
-		{
-			if (pid != m_LastExplorerPid)
-			{
-				const auto now = std::chrono::steady_clock::now();
-				if (now < m_LastExplorerRestart + std::chrono::seconds(30))
-				{
-					MessagePrint(spdlog::level::critical, L"Windows Explorer restarted twice in the last 30 seconds! This may be a conflict between TranslucentTB and other shell customization software, or a Windows Update. To avoid further issues, TranslucentTB will now exit.");
-				}
+		MessagePrint(spdlog::level::debug, L"Resetting worker state");
 
-				m_LastExplorerRestart = now;
+		m_ResettingState = true;
+		m_ResetStateReentered = false;
+		auto guard = wil::scope_exit([this]
+		{
+			m_ResettingState = false;
+			m_ResetStateReentered = false;
+		});
+
+		// Clear state
+		m_PowerSaver = false;
+		m_PeekActive = false;
+		m_TaskViewActive = false;
+		m_CurrentStartMonitor = nullptr;
+		m_CurrentSearchMonitor = nullptr;
+		m_ForegroundWindow = Window::NullWindow;
+
+		m_Taskbars.clear();
+		m_NormalTaskbars.clear();
+
+		// Keep old hooks alive while we rehook to avoid DLL unload.
+		auto oldHooks = std::move(m_Hooks);
+		m_Hooks.clear();
+
+		if (const Window main_taskbar = Window::Find(TASKBAR))
+		{
+			const auto pid = main_taskbar.process_id();
+			if (!manual)
+			{
+				if (pid != m_LastExplorerPid)
+				{
+					const auto now = std::chrono::steady_clock::now();
+					if (now < m_LastExplorerRestart + std::chrono::seconds(30))
+					{
+						MessagePrint(spdlog::level::critical, L"Windows Explorer restarted twice in the last 30 seconds! This may be a conflict between TranslucentTB and other shell customization software, or a Windows Update. To avoid further issues, TranslucentTB will now exit.");
+					}
+
+					m_LastExplorerRestart = now;
+				}
 			}
+
+			m_LastExplorerPid = pid;
+
+			InsertTaskbar(main_taskbar.monitor(), main_taskbar);
 		}
 
-		m_LastExplorerPid = pid;
+		for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))
+		{
+			InsertTaskbar(secondtaskbar.monitor(), secondtaskbar);
+		}
 
-		InsertTaskbar(main_taskbar.monitor(), main_taskbar);
-	}
+		// drop the old hooks.
+		oldHooks.clear();
 
-	for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))
-	{
-		InsertTaskbar(secondtaskbar.monitor(), secondtaskbar);
-	}
-
-	// drop the old hooks.
-	oldHooks.clear();
-
-	if (!m_IsWindows11)
-	{
 		CreateSearchManager();
-	}
 
-	// This might race but it's not an issue because
-	// it'll race on a single thread and only ends up
-	// doing something twice.
+		// This might race but it's not an issue because
+		// it'll race on a single thread and only ends up
+		// doing something twice.
 
-	SYSTEM_POWER_STATUS powerStatus;
-	if (GetSystemPowerStatus(&powerStatus))
-	{
-		m_PowerSaver = powerStatus.SystemStatusFlag;
+		SYSTEM_POWER_STATUS powerStatus;
+		if (GetSystemPowerStatus(&powerStatus))
+		{
+			m_PowerSaver = powerStatus.SystemStatusFlag;
+		}
+		else
+		{
+			LastErrorHandle(spdlog::level::warn, L"Failed to verify system power status");
+		}
+
+		// TODO: check if aero peek is active
+
+		if (const auto hookWnd = Window::Find(TTBHOOK_TASKVIEWMONITOR, TTBHOOK_TASKVIEWMONITOR); hookWnd && m_IsTaskViewOpenedMessage)
+		{
+			m_TaskViewActive = hookWnd.send_message(*m_IsTaskViewOpenedMessage);
+		}
+
+		m_ForegroundWindow = Window::ForegroundWindow();
+		if (IsStartMenuOpened())
+		{
+			m_CurrentStartMonitor = GetStartMenuMonitor();
+		}
+
+		if (IsSearchOpened())
+		{
+			m_CurrentStartMonitor = GetSearchMonitor();
+		}
+
+		for (const Window window : Window::FindEnum())
+		{
+			InsertWindow(window, false);
+		}
+
+		if (!m_ResetStateReentered)
+		{
+			// Apply the calculated effects
+			RefreshAllAttributes();
+		}
+		else
+		{
+			// we got re-entrancy, all this might not even be valid anymore, try it again.
+			guard.reset();
+			ResetState(manual);
+		}
 	}
 	else
 	{
-		LastErrorHandle(spdlog::level::warn, L"Failed to verify system power status");
+		MessagePrint(spdlog::level::debug, L"ResetState re-entrancy detected");
+
+		m_ResetStateReentered = true;
 	}
-
-	// TODO: check if aero peek is active
-
-	if (const auto hookWnd = Window::Find(TTBHOOK_TASKVIEWMONITOR, TTBHOOK_TASKVIEWMONITOR); hookWnd && m_IsTaskViewOpenedMessage)
-	{
-		m_TaskViewActive = hookWnd.send_message(*m_IsTaskViewOpenedMessage);
-	}
-
-	m_ForegroundWindow = Window::ForegroundWindow();
-	if (IsStartMenuOpened())
-	{
-		m_CurrentStartMonitor = GetStartMenuMonitor();
-	}
-
-	if (IsSearchOpened())
-	{
-		m_CurrentStartMonitor = GetSearchMonitor();
-	}
-
-	for (const Window window : Window::FindEnum())
-	{
-		InsertWindow(window, false);
-	}
-
-	// Apply the calculated effects
-	RefreshAllAttributes();
 }
 
 TaskbarAttributeWorker::~TaskbarAttributeWorker() noexcept(false)

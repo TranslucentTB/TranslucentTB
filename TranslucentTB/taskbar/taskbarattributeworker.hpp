@@ -14,6 +14,7 @@
 #include "winrt.hpp"
 #include <winrt/TranslucentTB.Xaml.Models.Primitives.h>
 #include <winrt/Windows.Internal.Shell.Experience.h> // this is evil >:3
+#include <winrt/WindowsUdk.UI.Shell.h> // this is less evil
 
 #include "config/config.hpp"
 #include "config/taskbarappearance.hpp"
@@ -38,10 +39,6 @@ private:
 		std::unordered_set<Window> NormalWindows;
 	};
 
-	// fixme before release:
-	// - dynamic search on windows 11
-	// - windows 11: start menu opened always thinks it opens on the main monitor, sometimes thinks 0x0. more frequent in release. possible timing issue?
-
 	// future improvements:
 	// - better aero peek support: detect current peeked to window and include in calculation
 	// - notification for owner changes
@@ -63,6 +60,8 @@ private:
 	bool m_TaskViewActive;
 	bool m_PeekActive;
 	bool m_disableAttributeRefreshReply;
+	bool m_ResettingState;
+	bool m_ResetStateReentered;
 	HMONITOR m_CurrentStartMonitor;
 	HMONITOR m_CurrentSearchMonitor;
 	Window m_ForegroundWindow;
@@ -92,6 +91,10 @@ private:
 	winrt::Windows::Internal::Shell::Experience::ICortanaExperienceManager m_SearchManager;
 	winrt::event_token m_SuggestionsShownToken, m_SuggestionsHiddenToken;
 
+	// ShellViewCoordinator
+	winrt::WindowsUdk::UI::Shell::ShellViewCoordinator m_SearchViewCoordinator;
+	winrt::event_token m_SearchViewVisibilityChangedToken;
+
 	// Messages
 	std::optional<UINT> m_TaskbarCreatedMessage;
 	std::optional<UINT> m_RefreshRequestedMessage;
@@ -109,9 +112,9 @@ private:
 	std::array<std::optional<Util::Color>, 7> m_ColorPreviews;
 
 	// Hook DLL
-	std::vector<wil::unique_hhook> m_Hooks;
 	wil::unique_hmodule m_HookDll;
 	PFN_INJECT_EXPLORER_HOOK m_InjectExplorerHook;
+	std::vector<wil::unique_hhook> m_Hooks;
 
 	// Other
 	bool m_IsWindows11;
@@ -196,12 +199,14 @@ private:
 		// notified that it's closed another window may be the
 		// foreground window already (eg the user dismissed start
 		// by clicking on a window)
+		Sleep(5); // give it a bit of delay because sometimes it doesn't capture it right
 		return Window::ForegroundWindow().monitor();
 	}
 
 	inline static HMONITOR GetSearchMonitor() noexcept
 	{
 		// same assumption for search
+		Sleep(5);
 		return Window::ForegroundWindow().monitor();
 	}
 

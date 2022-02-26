@@ -1,0 +1,179 @@
+namespace WindowsUdk.UI.Shell
+{
+	[contractversion(4.0)]
+	apicontract ShellContract
+	{
+	}
+
+	[contract(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+	enum InputDeviceKind
+	{
+		None = 0,
+		Touch = 1,
+		Mouse = 2,
+		Keyboard = 3,
+		Pen = 4
+	};
+
+	[contract(WindowsUdk.UI.Shell.ShellContract, 1.0)]
+	enum ShellView
+	{
+		ActionCenter = 0,
+		Search = 1,
+		Start = 2,
+		TaskView = 3,
+		Dashboard = 4,
+		MeetNow = 5,
+		[contract(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+		ControlCenter = 6,
+		[contract(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+		VirtualDesktopSwitcher = 7,
+		[contract(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+		InputSwitcher = 8,
+		[contract(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+		InputMethodEditorMenu = 9,
+		[contract(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+		MiniSearch = 10,
+		[contract(WindowsUdk.UI.Shell.ShellContract, 3.0)]
+		PenMenu = 11
+	};
+
+	[contract(WindowsUdk.UI.Shell.ShellContract, 1.0)]
+	enum ViewVisibility
+	{
+		Visible = 0,
+		Hidden = 1
+	};
+
+	[contract(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+	[exclusiveto(WindowsUdk.UI.Shell.DismissShellViewOptions)]
+	[uuid(8C6C499B-9932-5F96-AF9C-9E1920C2BD7D)]
+	interface IDismissShellViewOptions : IInspectable
+	{
+		[propget] HRESULT InputDeviceKind([out][retval] WindowsUdk.UI.Shell.InputDeviceKind* value);
+		[propput] HRESULT InputDeviceKind([in] WindowsUdk.UI.Shell.InputDeviceKind value);
+		[propget] HRESULT Context([out][retval] HSTRING* value);
+		[propput] HRESULT Context([in] HSTRING value);
+		[propget] HRESULT TelemetryId([out][retval] HSTRING* value);
+		[propput] HRESULT TelemetryId([in] HSTRING value);
+	}
+
+	[contract(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+	[exclusiveto(WindowsUdk.UI.Shell.DismissShellViewRequestedEventArgs)]
+	[uuid(4B0A63B5-4A4E-5A48-8924-3B4B05413410)]
+	interface IDismissShellViewRequestedEventArgs : IInspectable
+	{
+		[propget] HRESULT View([out][retval] WindowsUdk.UI.Shell.ShellView* value);
+		[propget] HRESULT Options([out][retval] WindowsUdk.UI.Shell.DismissShellViewOptions** value);
+		[propget] HRESULT Result([out][retval] boolean* value);
+		[propput] HRESULT Result([in] boolean value);
+		HRESULT GetDeferral([out][retval] Windows.Foundation.Deferral** result);
+	}
+
+	[contract(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+	[exclusiveto(WindowsUdk.UI.Shell.ShellViewCoordinator)]
+	[uuid(BC6FD3A4-3561-5629-ABDD-170AB289EF2F)]
+	interface IShellViewCoordinator : IInspectable
+	{
+		[eventadd] HRESULT ShowRequested([in] Windows.Foundation.TypedEventHandler<WindowsUdk.UI.Shell.ShellViewCoordinator*, WindowsUdk.UI.Shell.ShowShellViewRequestedEventArgs*>* handler,[out][retval] EventRegistrationToken* token);
+		[eventremove] HRESULT ShowRequested([in] EventRegistrationToken token);
+		[eventadd] HRESULT DismissRequested([in] Windows.Foundation.TypedEventHandler<WindowsUdk.UI.Shell.ShellViewCoordinator*, WindowsUdk.UI.Shell.DismissShellViewRequestedEventArgs*>* handler,[out][retval] EventRegistrationToken* token);
+		[eventremove] HRESULT DismissRequested([in] EventRegistrationToken token);
+		HRESULT ReportVisibility([in] WindowsUdk.UI.Shell.ViewVisibility visibility);
+		HRESULT TryShowAsync([in] WindowsUdk.UI.Shell.ShowShellViewOptions* options,[out][retval] Windows.Foundation.IAsyncOperation<boolean>** operation);
+		HRESULT TryDismissAsync([in] WindowsUdk.UI.Shell.DismissShellViewOptions* options,[out][retval] Windows.Foundation.IAsyncOperation<boolean>** operation);
+		[eventadd] HRESULT VisibilityChanged([in] Windows.Foundation.TypedEventHandler<WindowsUdk.UI.Shell.ShellViewCoordinator*, IInspectable*>* handler,[out][retval] EventRegistrationToken* token);
+		[eventremove] HRESULT VisibilityChanged([in] EventRegistrationToken token);
+		[propget] HRESULT Visibility([out][retval] WindowsUdk.UI.Shell.ViewVisibility* value);
+	}
+
+	[contract(WindowsUdk.UI.Shell.ShellContract, 4.0)]
+	[exclusiveto(WindowsUdk.UI.Shell.ShellViewCoordinator)]
+	[uuid(D324D9FD-B336-5AE0-A551-C521045A941C)]
+	interface IShellViewCoordinator2 : IInspectable
+	{
+		[propget] HRESULT VisibilitySource([out][retval] HSTRING* value);
+		HRESULT ReportVisibility([in] WindowsUdk.UI.Shell.ViewVisibility visibility,[in] HSTRING source);
+	}
+
+	[contract(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+	[exclusiveto(WindowsUdk.UI.Shell.ShellViewCoordinator)]
+	[uuid(BB8446E1-05D0-5510-80DD-96E9EBD9E006)]
+	interface IShellViewCoordinatorFactory : IInspectable
+	{
+		HRESULT CreateInstance([in] WindowsUdk.UI.Shell.ShellView view,[out][retval] WindowsUdk.UI.Shell.ShellViewCoordinator** value);
+	}
+
+	[contract(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+	[exclusiveto(WindowsUdk.UI.Shell.ShowShellViewOptions)]
+	[uuid(8F3C6994-B3E4-52A3-975C-AF266B6C6D8A)]
+	interface IShowShellViewOptions : IInspectable
+	{
+		[propget] HRESULT InvokerWindowId([out][retval] UINT64* value);
+		[propput] HRESULT InvokerWindowId([in] UINT64 value);
+		[propget] HRESULT InvocationPoint([out][retval] Windows.Foundation.Point* value);
+		[propput] HRESULT InvocationPoint([in] Windows.Foundation.Point value);
+		[propget] HRESULT PreferredPlacement([out][retval] Windows.UI.Popups.Placement* value);
+		[propput] HRESULT PreferredPlacement([in] Windows.UI.Popups.Placement value);
+		[propget] HRESULT InputDeviceKind([out][retval] WindowsUdk.UI.Shell.InputDeviceKind* value);
+		[propput] HRESULT InputDeviceKind([in] WindowsUdk.UI.Shell.InputDeviceKind value);
+		[propget] HRESULT Context([out][retval] HSTRING* value);
+		[propput] HRESULT Context([in] HSTRING value);
+		[propget] HRESULT TelemetryId([out][retval] HSTRING* value);
+		[propput] HRESULT TelemetryId([in] HSTRING value);
+	}
+
+	[contract(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+	[exclusiveto(WindowsUdk.UI.Shell.ShowShellViewRequestedEventArgs)]
+	[uuid(57FF4607-D238-5438-9D49-6253B5DA89B0)]
+	interface IShowShellViewRequestedEventArgs : IInspectable
+	{
+		[propget] HRESULT View([out][retval] WindowsUdk.UI.Shell.ShellView* value);
+		[propget] HRESULT Options([out][retval] WindowsUdk.UI.Shell.ShowShellViewOptions** value);
+		[propget] HRESULT Result([out][retval] boolean* value);
+		[propput] HRESULT Result([in] boolean value);
+		HRESULT GetDeferral([out][retval] Windows.Foundation.Deferral** result);
+	}
+
+	[activatable(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+	[contract(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+	[marshaling_behavior(agile)]
+	[threading(both)]
+	runtimeclass DismissShellViewOptions
+	{
+		[default] interface WindowsUdk.UI.Shell.IDismissShellViewOptions;
+	}
+
+	[contract(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+	[marshaling_behavior(agile)]
+	runtimeclass DismissShellViewRequestedEventArgs
+	{
+		[default] interface WindowsUdk.UI.Shell.IDismissShellViewRequestedEventArgs;
+	}
+
+	[activatable(WindowsUdk.UI.Shell.IShellViewCoordinatorFactory, WindowsUdk.UI.Shell.ShellContract, 2.0)]
+	[contract(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+	[marshaling_behavior(agile)]
+	[threading(both)]
+	runtimeclass ShellViewCoordinator
+	{
+		[default] interface WindowsUdk.UI.Shell.IShellViewCoordinator;
+		[contract(WindowsUdk.UI.Shell.ShellContract, 4.0)] interface WindowsUdk.UI.Shell.IShellViewCoordinator2;
+	}
+
+	[activatable(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+	[contract(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+	[marshaling_behavior(agile)]
+	[threading(both)]
+	runtimeclass ShowShellViewOptions
+	{
+		[default] interface WindowsUdk.UI.Shell.IShowShellViewOptions;
+	}
+
+	[contract(WindowsUdk.UI.Shell.ShellContract, 2.0)]
+	[marshaling_behavior(agile)]
+	runtimeclass ShowShellViewRequestedEventArgs
+	{
+		[default] interface WindowsUdk.UI.Shell.IShowShellViewRequestedEventArgs;
+	}
+}

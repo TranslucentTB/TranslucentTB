@@ -116,6 +116,12 @@
       <Project>{62cd9de0-af10-40f0-b72c-7a7b5bbba3c7}</Project>
       <DeploymentContent>true</DeploymentContent>
     </ProjectReference>
+    <ProjectReference Include="..\WindowsUdk\WindowsUdk.vcxproj">
+      <Project>{55ed608b-b142-43a8-b42f-bbf292a61cbd}</Project>
+      <DeploymentContent>false</DeploymentContent>
+      <!-- Prevent the .winmd from showing up in the final output. -->
+      <Private>false</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Xaml\Xaml.vcxproj">
       <Project>{9875d8e1-9594-445e-a0e4-07c6027f85e0}</Project>
       <DeploymentContent>true</DeploymentContent>
