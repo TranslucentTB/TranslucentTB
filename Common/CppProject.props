@@ -130,8 +130,11 @@
     <ClCompile>
       <PreprocessorDefinitions>SIGNED_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <Link>
+      <AdditionalOptions>/ALLOWBIND:NO %(AdditionalOptions)</AdditionalOptions>
+    </Link>
     <CustomBuildStep>
-      <Command>signtool.exe sign $(SignToolAdditionalArguments) /fd sha512 /sha1 $(CertificateThumbprint) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>
+      <Command>signtool.exe sign /ph $(SignToolAdditionalArguments) /fd sha512 /sha1 $(CertificateThumbprint) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>
       <Message>Signing $(TargetPath)</Message>
       <Inputs>$(TargetPath)</Inputs>
       <Outputs>$(OutDir)sign\$(ProjectName)-sign.out</Outputs>
