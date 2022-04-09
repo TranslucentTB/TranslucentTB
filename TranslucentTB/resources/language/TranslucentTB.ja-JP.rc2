@@ -1,0 +1,62 @@
+#pragma code_page(65001)
+
+#ifdef APSTUDIO_INVOKED
+#error Please edit this file manually.
+#endif
+
+#include <ddeml.h>
+#include <winres.h>
+#include "../../../Common/appinfo.hpp"
+#include "../ids.h"
+
+LANGUAGE LANG_JAPANESE, SUBLANG_NEUTRAL
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION APP_VERSION_FIXED
+	PRODUCTVERSION APP_VERSION_FIXED
+	FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+	FILEFLAGS VS_FF_DEBUG
+#endif
+	FILEOS VOS_NT_WINDOWS32
+	FILETYPE VFT_APP
+{
+	BLOCK L"StringFileInfo"
+	{
+		BLOCK L"041104b0"
+		{
+			VALUE L"FileDescription", APP_NAME
+			VALUE L"FileVersion", APP_VERSION
+			VALUE L"InternalName", APP_NAME L".exe"
+			VALUE L"OriginalFilename", APP_NAME L".exe"
+			VALUE L"ProductName", APP_NAME
+			VALUE L"ProductVersion", APP_VERSION
+			VALUE L"Comments", L"Windows のタスクバーを透明/半透明にする軽快なソフトウェア。"
+			VALUE L"CompanyName", APP_NAME L" オープンソースの開発者"
+			VALUE L"LegalCopyright", L"Copyright © " APP_COPYRIGHT_YEAR L" " APP_NAME L" オープンソースの開発者"
+		}
+	}
+	BLOCK L"VarFileInfo"
+	{
+		VALUE L"Translation", 0x0411, CP_WINUNICODE
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Strings
+//
+
+STRINGTABLE
+{
+	IDS_WELCOME_NOTIFICATION APP_NAME L" はシステムトレイに格納されています。\n\nトレイのアイコンを右クリックすると設定の変更、起動時にアプリを実行する設定、情報の表示などが行えます。"
+	IDS_HIDETRAY_DIALOG L"この変更は一時的です。次回 " APP_NAME L" を開始すると元に戻ります。\n\n持続的な変更にするには、「高度」 > 「設定の編集」にて設定ファイルを編集し、hide_tray を false に設定します。\n\n続けますか?"
+	IDS_ALREADY_RUNNING APP_NAME L" は既に実行中です! トレイのアイコンを右クリックして利用できます。"
+}
