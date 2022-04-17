@@ -9,7 +9,7 @@
 #include "../../../Common/appinfo.hpp"
 #include "../ids.h"
 
-LANGUAGE LANG_JAPANESE, SUBLANG_NEUTRAL
+LANGUAGE LANG_JAPANESE, SUBLANG_JAPANESE_JAPAN
 
 
 /////////////////////////////////////////////////////////////////////////////
