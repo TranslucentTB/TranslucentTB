@@ -15,6 +15,7 @@
       <UniqueIdentifier>{7b45cdc2-9ecd-4045-84b1-9ffd61a63be8}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resources\Strings\ja-JP">
+      <UniqueIdentifier>{aa4e1600-db10-4d3f-9199-e663c3ed832d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resources\Strings\zh-TW">
       <UniqueIdentifier>{d5edc189-37f7-456e-a1a2-277be644f570}</UniqueIdentifier>
@@ -96,7 +97,7 @@
       <Filter>Resources\Strings\en-US</Filter>
     </PRIResource>
     <PRIResource Include="Strings\ja-JP\Resources.resw">
-      <Filter>Resources\Strings\zh-CN</Filter>
+      <Filter>Resources\Strings\ja-JP</Filter>
     </PRIResource>
     <PRIResource Include="Strings\zh-TW\Resources.resw">
       <Filter>Resources\Strings\zh-TW</Filter>
