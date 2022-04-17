@@ -226,7 +226,7 @@
     <value>起動時に実行</value>
   </data>
   <data name="TrayFlyoutPage_PeekButton.Text" xml:space="preserve">
-    <value>デスクトップ Peek ピークボタンを表示</value>
+    <value>デスクトップ Peek ボタンを表示</value>
   </data>
   <data name="TrayFlyoutPage_SearchOpened.Text" xml:space="preserve">
     <value>検索の展開</value>
