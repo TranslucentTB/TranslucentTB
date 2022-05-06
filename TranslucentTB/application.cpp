@@ -21,38 +21,6 @@ winrt::TranslucentTB::Xaml::App Application::CreateXamlApp() try
 }
 HresultErrorCatch(spdlog::level::critical, L"Failed to create Xaml app");
 
-#ifndef DO_NOT_USE_GAME_SDK
-std::unique_ptr<discord::Core> Application::CreateDiscordCore()
-{
-	discord::Core *core{};
-	// https://github.com/discord/gamesdk-and-dispatch/issues/46
-	// TODO: use a define
-	const auto result = discord::Core::Create(698033470781521940, static_cast<uint64_t>(discord::CreateFlags::NoRequireDiscord), &core);
-	if (core)
-	{
-		return std::unique_ptr<discord::Core>{ core };
-	}
-	else
-	{
-		// todo: log
-		return nullptr;
-	}
-}
-
-void Application::RunDiscordCallbacks()
-{
-	if (m_DiscordCore)
-	{
-		const auto result = m_DiscordCore->RunCallbacks();
-		if (result != discord::Result::Ok)
-		{
-			m_DiscordCore = nullptr;
-			// todo: log
-		}
-	}
-}
-#endif
-
 winrt::fire_and_forget Application::CreateWelcomePage(wf::IAsyncOperation<bool> operation)
 {
 	// done first because the closed callback would otherwise need to await it
@@ -83,18 +51,7 @@ winrt::fire_and_forget Application::CreateWelcomePage(wf::IAsyncOperation<bool> 
 			});
 
 			content.LiberapayOpenRequested(OpenDonationPage);
-
-#ifndef DO_NOT_USE_GAME_SDK
-			content.DiscordJoinRequested([this]
-			{
-				DispatchToMainThread([this]
-				{
-					OpenDiscordServer();
-				});
-			});
-#else
 			content.DiscordJoinRequested(OpenDiscordServer);
-#endif
 
 			content.ConfigEditRequested([this]
 			{
@@ -175,29 +132,7 @@ void Application::OpenTipsPage()
 
 void Application::OpenDiscordServer()
 {
-#ifndef DO_NOT_USE_GAME_SDK
-	if (!m_DiscordCore)
-	{
-		m_DiscordCore = CreateDiscordCore();
-	}
-
-	if (m_DiscordCore)
-	{
-		m_DiscordCore->OverlayManager().OpenGuildInvite(UTF8_APP_NAME, [](discord::Result result)
-		{
-			if (result != discord::Result::Ok)
-			{
-				// todo: log and fallback
-			}
-		});
-	}
-	else
-	{
-		// todo: also fallback
-	}
-#else
 	UWP::OpenUri(wf::Uri(L"https://discord.gg/" APP_NAME));
-#endif
 }
 
 int Application::Run()
@@ -207,10 +142,6 @@ int Application::Run()
 		switch (MsgWaitForMultipleObjectsEx(0, nullptr, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE | MWMO_INPUTAVAILABLE))
 		{
 		case WAIT_OBJECT_0:
-#ifndef DO_NOT_USE_GAME_SDK
-			RunDiscordCallbacks();
-#endif
-
 			for (MSG msg; PeekMessage(&msg, 0, 0, 0, PM_REMOVE);)
 			{
 				if (msg.message != WM_QUIT)

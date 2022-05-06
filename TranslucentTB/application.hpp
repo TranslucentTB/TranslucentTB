@@ -19,20 +19,9 @@
 #include "uwp/dynamicdependency.hpp"
 #include "uwp/xamlthreadpool.hpp"
 
-#ifndef DO_NOT_USE_GAME_SDK
-#include <discord-game-sdk/core.h>
-#endif
-
 class Application final {
 	static void ConfigurationChanged(void *context);
 	static winrt::TranslucentTB::Xaml::App CreateXamlApp();
-
-#ifndef DO_NOT_USE_GAME_SDK
-	static std::unique_ptr<discord::Core> CreateDiscordCore();
-
-	std::unique_ptr<discord::Core> m_DiscordCore;
-	void RunDiscordCallbacks();
-#endif
 
 	DynamicLoader m_Loader;
 	DynamicDependency m_UwpCRTDep, m_WinUIDep;
@@ -56,11 +45,7 @@ public:
 
 	static void OpenDonationPage();
 	static void OpenTipsPage();
-
-#ifdef DO_NOT_USE_GAME_SDK
-	static
-#endif
-	void OpenDiscordServer();
+	static void OpenDiscordServer();
 
 	constexpr ConfigManager &GetConfigManager() noexcept { return m_Config; }
 	constexpr StartupManager &GetStartupManager() noexcept { return m_Startup; }

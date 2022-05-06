@@ -51,10 +51,6 @@
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
 
-    <!-- Don't use the Game SDK for now because it causes a crash when Discord exits while we are running. -->
-    <UsingGameSDK>false</UsingGameSDK>
-    <UsingGameSDK Condition="'$(UsingGameSDK)'=='' and '$(Platform)'=='x64'">true</UsingGameSDK>
-
     <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'!=''">/tr $(CertificateTimestampServer) /td sha512</SignToolAdditionalArguments>
     <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'==''"></SignToolAdditionalArguments>
 
@@ -163,9 +159,6 @@
       <WarningLevel>Level4</WarningLevel>
       <DiagnosticsFormat>Caret</DiagnosticsFormat>
       <UseFullPaths>true</UseFullPaths>
-
-      <!-- Discord GameSDK -->
-      <PreprocessorDefinitions Condition="'$(UsingGameSDK)'!='true'">DO_NOT_USE_GAME_SDK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
       <!-- RapidJSON -->
       <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING=1;RAPIDJSON_ERROR_CHARTYPE=wchar_t;RAPIDJSON_ERROR_STRING=UTIL_WIDEN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
