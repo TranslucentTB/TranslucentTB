@@ -37,8 +37,8 @@ std::wstring Error::MessageFromHRESULT(HRESULT result)
 	DWORD lastErr = GetLastError();
 	if (!count && (lastErr == ERROR_MUI_FILE_NOT_FOUND || lastErr == ERROR_RESOURCE_LANG_NOT_FOUND))
 	{
-		// US language not installed, try again with system language.
-		error = impl::FormatMessageForLanguage(result, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL), count);
+		// US language not installed, try again with default language lookup.
+		error = impl::FormatMessageForLanguage(result, 0, count);
 		lastErr = GetLastError();
 	}
 

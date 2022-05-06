@@ -9,70 +9,52 @@ std::wstring Error::impl::FormatIRestrictedErrorInfo(HRESULT result, BSTR descri
 	return FormatHRESULT(result, Util::Trim({ description, SysStringLen(description) }));
 }
 
-bool Error::MessageFromIRestrictedErrorInfo(std::wstring &buf, IRestrictedErrorInfo *info, HRESULT failureCode)
+bool Error::MessageFromIRestrictedErrorInfo(std::wstring &buf, IRestrictedErrorInfo *info, HRESULT *errCode)
 {
-	if (info)
+	HRESULT hr;
+	wil::unique_bstr description, restrictedDescription, capabilitySid;
+
+	hr = info->GetErrorDetails(description.put(), errCode, restrictedDescription.put(), capabilitySid.put());
+	if (SUCCEEDED(hr))
 	{
-		HRESULT hr, errorCode;
-		wil::unique_bstr description, restrictedDescription, capabilitySid;
-
-		hr = info->GetErrorDetails(description.put(), &errorCode, restrictedDescription.put(), capabilitySid.put());
-		if (SUCCEEDED(hr))
+		if (restrictedDescription)
 		{
-			if (errorCode == failureCode)
-			{
-				if (restrictedDescription)
-				{
-					buf = impl::FormatIRestrictedErrorInfo(errorCode, restrictedDescription.get());
-				}
-				else if (description)
-				{
-					buf = impl::FormatIRestrictedErrorInfo(errorCode, description.get());
-				}
-				else
-				{
-					buf = MessageFromHRESULT(errorCode);
-				}
-
-				return true; // allow crash with error info
-			}
-			else
-			{
-				buf = std::format(L"[IRestrictedErrorInfo did not return expected HRESULT] expected: 0x{:08X}, actual: 0x{:08X}", failureCode, errorCode);
-			}
+			buf = impl::FormatIRestrictedErrorInfo(*errCode, restrictedDescription.get());
+		}
+		else if (description)
+		{
+			buf = impl::FormatIRestrictedErrorInfo(*errCode, description.get());
 		}
 		else
 		{
-			buf = std::format(L"[failed to get details from IRestrictedErrorInfo] {}", MessageFromHRESULT(hr));
+			buf = MessageFromHRESULT(*errCode);
 		}
+
+		return true;
 	}
 	else
 	{
-		buf = L"[IRestrictedErrorInfo was null]";
+		buf = std::format(L"[failed to get details from IRestrictedErrorInfo] {}", MessageFromHRESULT(hr));
+		return false;
 	}
-
-	return false;
 }
 
 winrt::com_ptr<IRestrictedErrorInfo> Error::MessageFromHresultError(std::wstring &buf, const winrt::hresult_error &err, HRESULT *errCode)
 {
-	HRESULT code = err.code();
-	if (errCode)
-	{
-		*errCode = code;
-	}
-
 	if (const auto info = err.try_as<IRestrictedErrorInfo>())
 	{
-		if (MessageFromIRestrictedErrorInfo(buf, info.get(), code))
+		if (!MessageFromIRestrictedErrorInfo(buf, info.get(), errCode))
 		{
-			return info;
+			*errCode = err.code();
 		}
+
+		return info;
 	}
 	else
 	{
-		buf = MessageFromHRESULT(code);
-	}
+		*errCode = err.code();
+		buf = MessageFromHRESULT(*errCode);
 
-	return nullptr;
+		return nullptr;
+	}
 }

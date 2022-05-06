@@ -11,8 +11,8 @@ namespace Error {
 		std::wstring FormatIRestrictedErrorInfo(HRESULT result, BSTR description);
 	}
 
-	PROGRAMLOG_API bool MessageFromIRestrictedErrorInfo(std::wstring &buf, IRestrictedErrorInfo *info, HRESULT failureCode);
-	PROGRAMLOG_API winrt::com_ptr<IRestrictedErrorInfo> MessageFromHresultError(std::wstring &buf, const winrt::hresult_error &err, HRESULT *errCode = nullptr);
+	PROGRAMLOG_API bool MessageFromIRestrictedErrorInfo(std::wstring &buf, IRestrictedErrorInfo *info, HRESULT *errCode);
+	PROGRAMLOG_API winrt::com_ptr<IRestrictedErrorInfo> MessageFromHresultError(std::wstring &buf, const winrt::hresult_error &err, HRESULT *errCode);
 }
 
 #define HresultErrorHandle(exception_, level_, message_) do { \
