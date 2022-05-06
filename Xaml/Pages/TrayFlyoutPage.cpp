@@ -49,8 +49,6 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		{
 			m_SystemHasBattery = true; // assume the system has a battery
 		}
-
-		InitializeComponent();
 	}
 
 	void TrayFlyoutPage::SetTaskbarSettings(const txmp::TaskbarState &state, const txmp::TaskbarAppearance &appearance)

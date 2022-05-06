@@ -10,8 +10,6 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	struct WelcomePage : WelcomePageT<WelcomePage>
 	{
-		WelcomePage();
-
 		wf::Rect DragRegion() override;
 
 		void OpenLiberapayLink(const IInspectable &sender, const wux::RoutedEventArgs &args);

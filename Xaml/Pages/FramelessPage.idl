@@ -8,7 +8,7 @@ namespace TranslucentTB.Xaml.Pages
 	[contentproperty("UserContent")]
 	unsealed runtimeclass FramelessPage : Windows.UI.Xaml.Controls.Page
 	{
-		FramelessPage();
+		protected FramelessPage();
 
 		[noexcept]
 		overridable Boolean CanMove { get; };

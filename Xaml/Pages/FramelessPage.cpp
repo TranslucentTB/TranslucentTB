@@ -12,6 +12,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		m_SystemMenuChangedToken = m_SystemMenuContent.VectorChanged({ get_weak(), &FramelessPage::SystemMenuChanged });
 
+		// keeping InitializeComponent in the constructor as a workaround for https://github.com/microsoft/cppwinrt/issues/1140
 		InitializeComponent();
 	}
 

@@ -9,11 +9,6 @@
 
 namespace winrt::TranslucentTB::Xaml::Controls::implementation
 {
-	ActionList::ActionList()
-	{
-		InitializeComponent();
-	}
-
 	void ActionList::ForwardActionKey(const IInspectable &sender, const wux::Input::KeyRoutedEventArgs &args)
 	{
 		using enum Windows::System::VirtualKey;

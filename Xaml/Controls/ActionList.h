@@ -8,8 +8,6 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 {
 	struct ActionList : ActionListT<ActionList>
 	{
-		ActionList();
-
 		void ForwardActionKey(const IInspectable &sender, const wux::Input::KeyRoutedEventArgs &args);
 		void ForwardAction(const IInspectable &sender, const wux::RoutedEventArgs &args);
 	};

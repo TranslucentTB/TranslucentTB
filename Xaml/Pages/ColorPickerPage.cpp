@@ -10,15 +10,19 @@
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
-	ColorPickerPage::ColorPickerPage(txmp::TaskbarState state, const Windows::UI::Color &currentColor)
-	{
-		InitializeComponent();
+	ColorPickerPage::ColorPickerPage(txmp::TaskbarState state, Windows::UI::Color currentColor) : m_State(state), m_OriginalColor(currentColor)
+	{ }
 
-		Title(Util::hstring_format<L"{} - Color picker - " APP_NAME>(GetTextForState(state)));
+	void ColorPickerPage::InitializeComponent()
+	{
+		ColorPickerPageT::InitializeComponent();
+
+		// TODO: localize
+		Title(Util::hstring_format<L"{} - Color picker - " APP_NAME>(GetTextForState(m_State)));
 
 		const auto picker = Picker();
-		picker.PreviousColor(currentColor);
-		picker.Color(currentColor);
+		picker.PreviousColor(m_OriginalColor);
+		picker.Color(m_OriginalColor);
 	}
 
 	bool ColorPickerPage::CanMove() noexcept
@@ -33,8 +37,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 			return false;
 		}
 
-		const auto prevCol = Picker().PreviousColor();
-		if (!prevCol || Picker().Color() != prevCol.Value())
+		if (Picker().Color() != m_OriginalColor)
 		{
 			OpenConfirmDialog();
 			return false;

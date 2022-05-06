@@ -7,11 +7,6 @@
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
-	WelcomePage::WelcomePage()
-	{
-		InitializeComponent();
-	}
-
 	wf::Rect WelcomePage::DragRegion()
 	{
 		const auto titleRegion = TitleRegion();
