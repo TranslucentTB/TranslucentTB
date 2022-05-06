@@ -25,19 +25,18 @@ private: \
 public: \
 	DECL_PROPERTY_CHANGED_FUNCS(TYPE, NAME, PROPERTY_CHANGED_FIELD(NAME))
 
-template<typename T>
 class PropertyChangedBase {
 public:
 	DECL_EVENT(wux::Data::PropertyChangedEventHandler, PropertyChanged, m_propertyChanged);
 
 protected:
-	template<typename U>
-	void compare_assign(U &value, const U &new_value, std::wstring_view name)
+	template<typename Self, typename U>
+	void compare_assign(this Self &&self, U &value, const U &new_value, std::wstring_view name)
 	{
 		if (value != new_value)
 		{
 			value = new_value;
-			m_propertyChanged(*static_cast<T *>(this), wux::Data::PropertyChangedEventArgs(name));
+			self.m_propertyChanged(self, wux::Data::PropertyChangedEventArgs(name));
 		}
 	}
 };

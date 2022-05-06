@@ -8,7 +8,7 @@
 
 namespace winrt::TranslucentTB::Xaml::Models::implementation
 {
-	struct Action : ActionT<Action>, PropertyChangedBase<Action>
+	struct Action : ActionT<Action>, PropertyChangedBase
 	{
 		Action() = default;
 
