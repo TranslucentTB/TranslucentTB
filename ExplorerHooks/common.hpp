@@ -3,5 +3,7 @@
 #include <wil/resource.h>
 #include <windef.h>
 
+#include "wilx.hpp"
+
 void CloseHandleFailFast(HANDLE handle) noexcept;
-using unique_handle_failfast = wil::unique_any<HANDLE, decltype(&CloseHandleFailFast), CloseHandleFailFast>;
+using unique_handle_failfast = wilx::unique_any<CloseHandleFailFast>;

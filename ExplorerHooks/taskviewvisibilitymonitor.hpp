@@ -7,14 +7,15 @@
 
 #include "common.hpp"
 #include "undoc/explorer.hpp"
+#include "wilx.hpp"
 
 class TaskViewVisibilityMonitor {
 private:
 	static void UnregisterClassFailFast(ATOM atom) noexcept;
-	using unique_class_atom_failfast = wil::unique_any<ATOM, decltype(&UnregisterClassFailFast), UnregisterClassFailFast>;
+	using unique_class_atom_failfast = wilx::unique_any<UnregisterClassFailFast>;
 
 	static void DestroyWindowFailFast(HWND hwnd) noexcept;
-	using unique_window_failfast = wil::unique_any<HWND, decltype(&DestroyWindowFailFast), DestroyWindowFailFast>;
+	using unique_window_failfast = wilx::unique_any<DestroyWindowFailFast>;
 
 	static void UnregisterSink(IMultitaskingViewVisibilityService* source, DWORD cookie) noexcept;
 	using unique_multitasking_view_visibility_token = wil::unique_com_token<IMultitaskingViewVisibilityService, DWORD, decltype(&UnregisterSink), UnregisterSink>;
@@ -28,7 +29,7 @@ private:
 	static wil::com_ptr_failfast<IMultitaskingViewVisibilityService> s_ViewService;
 
 	static void ResetViewService() noexcept;
-	using unique_view_service = wil::unique_call<decltype(&ResetViewService), ResetViewService>;
+	using unique_view_service = wilx::unique_call<ResetViewService>;
 
 	static unique_view_service LoadViewService() noexcept;
 	static unique_multitasking_view_visibility_token RegisterSink() noexcept;

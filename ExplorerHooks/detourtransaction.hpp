@@ -3,16 +3,27 @@
 #include <memory>
 #include <type_traits>
 #include <windef.h>
+#include <processsnapshot.h>
 #include <wil/resource.h>
 
 #include "common.hpp"
 #include "util/concepts.hpp"
 #include "util/null_terminated_string_view.hpp"
+#include "wilx.hpp"
 
 class DetourTransaction {
 private:
 	static void HeapDestroyFailFast(HANDLE hHeap) noexcept;
-	using unique_hheap_failfast = wil::unique_any<HANDLE, decltype(&HeapDestroyFailFast), HeapDestroyFailFast>;
+	using unique_hheap_failfast = wilx::unique_any<HeapDestroyFailFast>;
+
+	static void PssFreeSnapshotFailFast(HPSS snapshot) noexcept;
+	using unique_hpss_failfast = wilx::unique_any<PssFreeSnapshotFailFast>;
+
+	static void PssWalkMarkerFreeFailFast(HPSSWALK marker) noexcept;
+	using unique_hpsswalk_failfast = wilx::unique_any<PssWalkMarkerFreeFailFast>;
+
+	static void* WINAPI PssAllocRoutineFailFast(void* context, DWORD size) noexcept;
+	static void WINAPI PssFreeRoutineFailFast(void* context, void* address) noexcept;
 
 	struct node;
 	struct node_deleter {
@@ -26,6 +37,7 @@ private:
 	};
 
 	static unique_hheap_failfast s_Heap;
+	static const PSS_ALLOCATOR s_PssAllocator;
 
 	node_ptr m_Head;
 	bool m_IsTransacting = false;

@@ -4,11 +4,12 @@
 #include <windef.h>
 
 #include "undoc/user32.hpp"
+#include "wilx.hpp"
 
 class SWCADetour {
 private:
 	static void FreeLibraryFailFast(HMODULE hModule) noexcept;
-	using unique_module_failfast = wil::unique_any<HMODULE, decltype(&FreeLibraryFailFast), FreeLibraryFailFast>;
+	using unique_module_failfast = wilx::unique_any<FreeLibraryFailFast>;
 
 	static unique_module_failfast s_User32;
 	static PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SetWindowCompositionAttribute;

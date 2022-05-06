@@ -25,8 +25,22 @@ namespace wilx {
 			using arg = std::tuple_element_t<I, std::tuple<Args...>>;
 		};
 
+		template<typename Parent, typename Return, typename... Args>
+		struct function_traits<Return(STDMETHODCALLTYPE Parent:: *)(Args...) noexcept> {
+			using parent = Parent;
+
+			template<std::size_t I>
+			using arg = std::tuple_element_t<I, std::tuple<Args...>>;
+		};
+
 		template<typename Return, typename... Args>
 		struct function_traits<Return(STDMETHODCALLTYPE *)(Args...)> {
+			template<std::size_t I>
+			using arg = std::tuple_element_t<I, std::tuple<Args...>>;
+		};
+
+		template<typename Return, typename... Args>
+		struct function_traits<Return(STDMETHODCALLTYPE *)(Args...) noexcept> {
 			template<std::size_t I>
 			using arg = std::tuple_element_t<I, std::tuple<Args...>>;
 		};
@@ -48,6 +62,9 @@ namespace wilx {
 
 	template<Util::function_pointer auto close_fn>
 	using unique_any = wil::unique_any<impl::arg_t<decltype(close_fn), 0>, decltype(close_fn), close_fn>;
+
+	template<Util::function_pointer auto close_fn>
+	using unique_call = wil::unique_call<decltype(close_fn), close_fn>;
 
 	template<Util::function_pointer auto delete_fn>
 	using function_deleter = wil::function_deleter<decltype(delete_fn), delete_fn>;

@@ -6,15 +6,41 @@
 #include <detours/detours.h>
 #include <new>
 #include <processthreadsapi.h>
-#include <TlHelp32.h>
 #include <utility>
 #include <wil/result.h>
 
 DetourTransaction::unique_hheap_failfast DetourTransaction::s_Heap;
+const PSS_ALLOCATOR DetourTransaction::s_PssAllocator = {
+	.AllocRoutine = PssAllocRoutineFailFast,
+	.FreeRoutine = PssFreeRoutineFailFast
+};
 
 void DetourTransaction::HeapDestroyFailFast(HANDLE hHeap) noexcept
 {
 	FAIL_FAST_IF_WIN32_BOOL_FALSE(HeapDestroy(hHeap));
+}
+
+void DetourTransaction::PssFreeSnapshotFailFast(HPSS snapshot) noexcept
+{
+	FAIL_FAST_IF_WIN32_ERROR(PssFreeSnapshot(GetCurrentProcess(), snapshot));
+}
+
+void DetourTransaction::PssWalkMarkerFreeFailFast(HPSSWALK marker) noexcept
+{
+	FAIL_FAST_IF_WIN32_ERROR(PssWalkMarkerFree(marker));
+}
+
+void* DetourTransaction::PssAllocRoutineFailFast(void*, DWORD size) noexcept
+{
+	const auto mem = HeapAlloc(s_Heap.get(), 0, size);
+	FAIL_FAST_LAST_ERROR_IF_NULL(mem);
+
+	return mem;
+}
+
+void DetourTransaction::PssFreeRoutineFailFast(void*, void* address) noexcept
+{
+	FAIL_FAST_IF_WIN32_BOOL_FALSE(HeapFree(s_Heap.get(), 0, address));
 }
 
 void DetourTransaction::node_deleter::operator()(node *ptr) const noexcept
@@ -60,25 +86,37 @@ DetourTransaction::DetourTransaction() noexcept
 
 void DetourTransaction::update_all_threads() noexcept
 {
-	const DWORD pid = GetCurrentProcessId();
-	const unique_handle_failfast snapshot(CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, pid));
-	FAIL_FAST_LAST_ERROR_IF_NULL(snapshot);
+	unique_hpss_failfast snapshot;
+	FAIL_FAST_IF_WIN32_ERROR(PssCaptureSnapshot(GetCurrentProcess(), PSS_CAPTURE_THREADS, 0, snapshot.put()));
 
-	THREADENTRY32 thread = { sizeof(thread) };
-	FAIL_FAST_IF_WIN32_BOOL_FALSE(Thread32First(snapshot.get(), &thread));
+	unique_hpsswalk_failfast walker;
+	FAIL_FAST_IF_WIN32_ERROR(PssWalkMarkerCreate(&s_PssAllocator, walker.put()));
 
-	const DWORD tid = GetCurrentThreadId();
-	do
+	const auto pid = GetCurrentProcessId();
+	const auto tid = GetCurrentThreadId();
+	while (true)
 	{
-		if (thread.th32OwnerProcessID == pid && thread.th32ThreadID != tid)
+		PSS_THREAD_ENTRY thread;
+		const DWORD error = PssWalkSnapshot(snapshot.get(), PSS_WALK_THREADS, walker.get(), &thread, sizeof(thread));
+		if (error == ERROR_SUCCESS)
 		{
-			unique_handle_failfast threadHandle(OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME, false, thread.th32ThreadID));
-			FAIL_FAST_LAST_ERROR_IF_NULL(threadHandle);
+			if (thread.ProcessId == pid && thread.ThreadId != tid && (thread.Flags & PSS_THREAD_FLAGS_TERMINATED) != PSS_THREAD_FLAGS_TERMINATED)
+			{
+				unique_handle_failfast threadHandle(OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME, false, thread.ThreadId));
+				FAIL_FAST_LAST_ERROR_IF_NULL(threadHandle);
 
-			update_thread(std::move(threadHandle));
+				update_thread(std::move(threadHandle));
+			}
+		}
+		else if (error == ERROR_NO_MORE_ITEMS)
+		{
+			break;
+		}
+		else
+		{
+			FAIL_FAST_WIN32(error);
 		}
 	}
-	while (Thread32Next(snapshot.get(), &thread));
 }
 
 void DetourTransaction::commit() noexcept
