@@ -16,7 +16,7 @@ enum ACCENT_STATE : INT {				// Affects the rendering of the background of a win
 	ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,	// Background is GradientColor.
 	ACCENT_ENABLE_BLURBEHIND = 3,			// Background is GradientColor, with blur effect.
 	ACCENT_ENABLE_ACRYLICBLURBEHIND = 4,	// Background is GradientColor, with acrylic blur effect.
-	ACCENT_ENABLE_HOSTBACKDROP = 5,			// Unknown.
+	ACCENT_ENABLE_HOSTBACKDROP = 5,			// Allows desktop apps to use Compositor.CreateHostBackdropBrush
 	ACCENT_INVALID_STATE = 6,				// Unknown. Seems to draw background fully transparent.
 
 	ACCENT_NORMAL = 0x0						// Fake value: tells TTB to send a message to the taskbar for it restore its default effect.

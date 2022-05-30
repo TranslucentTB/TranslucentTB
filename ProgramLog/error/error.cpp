@@ -38,7 +38,14 @@ std::wstring Error::impl::GetLogMessage(std::wstring_view message, std::wstring_
 {
 	if (!error_message.empty())
 	{
-		return std::format(L"{} ({})", message, error_message);
+		std::wstring logMessage;
+		logMessage.reserve(message.length() + 2 + error_message.length() + 1);
+		logMessage += message;
+		logMessage += L" (";
+		logMessage += error_message;
+		logMessage += L")";
+
+		return logMessage;
 	}
 	else
 	{
@@ -47,25 +54,12 @@ std::wstring Error::impl::GetLogMessage(std::wstring_view message, std::wstring_
 }
 
 template<>
-void Error::impl::Handle<spdlog::level::err>(std::wstring_view message, std::wstring_view error_message, std::source_location location, HRESULT, IRestrictedErrorInfo*)
+void Error::impl::Handle<spdlog::level::err>(std::wstring_view message, std::wstring_view error_message, std::source_location location)
 {
-	// allow calls to err handling without needing to initialize logging
-	if (Log::IsInitialized())
+	auto dialogBoxThread = HandleCommon(spdlog::level::err, message, error_message, location, UTIL_WIDEN(UTF8_ERROR_TITLE), APP_NAME L" has encountered an error.", MB_ICONWARNING);
+	if (dialogBoxThread.joinable())
 	{
-		Log(GetLogMessage(message, error_message), spdlog::level::err, location);
-	}
-
-	if (!IsDebuggerPresent())
-	{
-		auto dialogMessage = std::format(APP_NAME L" has encountered an error.\n\n{}", message);
-		if (!error_message.empty())
-		{
-			dialogMessage.reserve(dialogMessage.size() + 2 + error_message.length());
-			dialogMessage += L"\n\n";
-			dialogMessage += error_message;
-		}
-
-		CreateMessageBoxThread(std::move(dialogMessage), UTIL_WIDEN(UTF8_ERROR_TITLE), MB_ICONWARNING).detach();
+		dialogBoxThread.detach();
 	}
 	else
 	{
@@ -74,27 +68,15 @@ void Error::impl::Handle<spdlog::level::err>(std::wstring_view message, std::wst
 }
 
 template<>
-void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, std::source_location location, HRESULT err, IRestrictedErrorInfo *errInfo)
+void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, std::source_location location)
 {
-	// allow calls to critical handling without needing to initialize logging
-	const bool initialized = Log::IsInitialized();
-	if (initialized)
-	{
-		Log(GetLogMessage(message, error_message), spdlog::level::critical, location);
-	}
+	HandleCriticalCommon(message, error_message, location);
+	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
+}
 
-	if (!IsDebuggerPresent())
-	{
-		auto dialogMessage = std::format(APP_NAME L" has encountered a fatal error and cannot continue executing.\n\n{}", message);
-		if (!error_message.empty())
-		{
-			dialogMessage.reserve(dialogMessage.size() + 2 + error_message.length());
-			dialogMessage += L"\n\n";
-			dialogMessage += error_message;
-		}
-
-		CreateMessageBoxThread(std::move(dialogMessage), APP_NAME L" - Fatal error", MB_ICONERROR | MB_TOPMOST).join();
-	}
+void Error::impl::HandleCriticalWithErrorInfo(std::wstring_view message, std::wstring_view error_message, std::source_location location, HRESULT err, IRestrictedErrorInfo *errInfo)
+{
+	HandleCriticalCommon(message, error_message, location);
 
 	if (errInfo)
 	{
@@ -105,22 +87,57 @@ void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std
 			// giving us better insight into what went wrong.
 			RoFailFastWithErrorContext(err);
 		}
-		else if (initialized)
-		{
-			HresultHandle(hr, spdlog::level::warn, L"Failed to set restricted error info");
-		}
 	}
 
 	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
 }
 
-std::thread Error::impl::CreateMessageBoxThread(std::wstring buf, Util::null_terminated_wstring_view title, unsigned int type)
+std::thread Error::impl::HandleCommon(spdlog::level::level_enum level, std::wstring_view message, std::wstring_view error_message, std::source_location location, Util::null_terminated_wstring_view title, std::wstring_view description, unsigned int type)
 {
-	return std::thread([title, type, body = std::move(buf)]() noexcept
+	// allow calls to err handling without needing to initialize logging
+	if (Log::IsInitialized())
 	{
+		Log(GetLogMessage(message, error_message), level, location);
+	}
+
+	if (!IsDebuggerPresent())
+	{
+		std::size_t messageLength = description.length() + 2 + message.length();
+		const bool hasErrorMessage = !error_message.empty();
+		if (hasErrorMessage)
+		{
+			messageLength += 2;
+			messageLength += error_message.length();
+		}
+
+		std::wstring dialogMessage;
+		dialogMessage.reserve(messageLength);
+		dialogMessage += description;
+		dialogMessage += L"\n\n";
+		dialogMessage += message;
+
+		if (hasErrorMessage)
+		{
+			dialogMessage += L"\n\n";
+			dialogMessage += error_message;
+		}
+
+		return std::thread([title, type, body = std::move(dialogMessage)]() noexcept
+		{
 #ifdef _DEBUG
-		SetThreadDescription(GetCurrentThread(), APP_NAME L" Message Box Thread"); // ignore error
+			SetThreadDescription(GetCurrentThread(), APP_NAME L" Error Message Box Thread");
 #endif
-		MessageBoxEx(nullptr, body.c_str(), title.c_str(), type | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
-	});
+
+			MessageBoxEx(nullptr, body.c_str(), title.c_str(), type | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
+		});
+	}
+	else
+	{
+		return {};
+	}
+}
+
+void Error::impl::HandleCriticalCommon(std::wstring_view message, std::wstring_view error_message, std::source_location location)
+{
+	HandleCommon(spdlog::level::critical, message, error_message, location, UTIL_WIDEN(UTF8_ERROR_TITLE), APP_NAME L" has encountered a fatal error and cannot continue executing.", MB_ICONERROR | MB_TOPMOST).join();
 }

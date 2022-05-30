@@ -9,52 +9,30 @@ std::wstring Error::impl::FormatIRestrictedErrorInfo(HRESULT result, BSTR descri
 	return FormatHRESULT(result, Util::Trim({ description, SysStringLen(description) }));
 }
 
-bool Error::MessageFromIRestrictedErrorInfo(std::wstring &buf, IRestrictedErrorInfo *info, HRESULT *errCode)
+std::wstring Error::MessageFromIRestrictedErrorInfo(IRestrictedErrorInfo *info, HRESULT errCode)
 {
-	HRESULT hr;
-	wil::unique_bstr description, restrictedDescription, capabilitySid;
-
-	hr = info->GetErrorDetails(description.put(), errCode, restrictedDescription.put(), capabilitySid.put());
-	if (SUCCEEDED(hr))
+	if (info)
 	{
-		if (restrictedDescription)
+		wil::unique_bstr description, restrictedDescription, capabilitySid;
+		if (SUCCEEDED(info->GetErrorDetails(description.put(), &errCode, restrictedDescription.put(), capabilitySid.put())))
 		{
-			buf = impl::FormatIRestrictedErrorInfo(*errCode, restrictedDescription.get());
-		}
-		else if (description)
-		{
-			buf = impl::FormatIRestrictedErrorInfo(*errCode, description.get());
-		}
-		else
-		{
-			buf = MessageFromHRESULT(*errCode);
-		}
+			if (restrictedDescription)
+			{
+				return impl::FormatIRestrictedErrorInfo(errCode, restrictedDescription.get());
+			}
+			else if (description)
+			{
+				return impl::FormatIRestrictedErrorInfo(errCode, description.get());
+			}
 
-		return true;
+			// fall down to the return below, to call MessageFromHRESULT with the error code extracted from the error info.
+		}
 	}
-	else
-	{
-		buf = std::format(L"[failed to get details from IRestrictedErrorInfo] {}", MessageFromHRESULT(hr));
-		return false;
-	}
+
+	return MessageFromHRESULT(errCode);
 }
 
-winrt::com_ptr<IRestrictedErrorInfo> Error::MessageFromHresultError(std::wstring &buf, const winrt::hresult_error &err, HRESULT *errCode)
+std::wstring Error::MessageFromHresultError(const winrt::hresult_error &error)
 {
-	if (const auto info = err.try_as<IRestrictedErrorInfo>())
-	{
-		if (!MessageFromIRestrictedErrorInfo(buf, info.get(), errCode))
-		{
-			*errCode = err.code();
-		}
-
-		return info;
-	}
-	else
-	{
-		*errCode = err.code();
-		buf = MessageFromHRESULT(*errCode);
-
-		return nullptr;
-	}
+	return MessageFromIRestrictedErrorInfo(error.try_as<IRestrictedErrorInfo>().get(), error.code());
 }

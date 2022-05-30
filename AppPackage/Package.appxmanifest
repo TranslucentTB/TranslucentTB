@@ -1,5 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10" IgnorableNamespaces="rescap">
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:uap7="http://schemas.microsoft.com/appx/manifest/uap/windows10/7"
+  xmlns:uap8="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10">
   <Identity Name="TranslucentTB" Publisher="CN=TranslucentTB Open Source Developers" Version="1.0.0.0" />
   <Properties>
     <DisplayName>TranslucentTB</DisplayName>
@@ -34,6 +41,9 @@
           <desktop:StartupTask TaskId="TranslucentTB" Enabled="false" DisplayName="TranslucentTB" />
         </desktop:Extension>
       </Extensions>
+      <uap7:Properties>
+        <uap8:ActiveCodePage>UTF-8</uap8:ActiveCodePage>
+      </uap7:Properties>
     </Application>
   </Applications>
   <Capabilities>

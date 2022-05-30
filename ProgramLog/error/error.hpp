@@ -23,7 +23,7 @@ namespace Error {
 		PROGRAMLOG_API std::wstring GetLogMessage(std::wstring_view message, std::wstring_view error_message);
 
 		template<spdlog::level::level_enum level>
-		inline void Handle(std::wstring_view message, std::wstring_view error_message, std::source_location location, HRESULT = E_FAIL, IRestrictedErrorInfo* = nullptr)
+		inline void Handle(std::wstring_view message, std::wstring_view error_message, std::source_location location)
 		{
 			if (ShouldLog(level))
 			{
@@ -32,12 +32,15 @@ namespace Error {
 		}
 
 		template<>
-		PROGRAMLOG_API void Handle<spdlog::level::err>(std::wstring_view message, std::wstring_view error_message, std::source_location location, HRESULT, IRestrictedErrorInfo*);
+		PROGRAMLOG_API void Handle<spdlog::level::err>(std::wstring_view message, std::wstring_view error_message, std::source_location location);
 
 		template<>
-		[[noreturn]] PROGRAMLOG_API void Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, std::source_location location, HRESULT err, IRestrictedErrorInfo *errInfo);
+		[[noreturn]] PROGRAMLOG_API void Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, std::source_location location);
 
-		std::thread CreateMessageBoxThread(std::wstring buf, Util::null_terminated_wstring_view title, unsigned int type);
+		[[noreturn]] PROGRAMLOG_API void HandleCriticalWithErrorInfo(std::wstring_view message, std::wstring_view error_message, std::source_location location, HRESULT err, IRestrictedErrorInfo *errInfo);
+
+		std::thread HandleCommon(spdlog::level::level_enum level, std::wstring_view message, std::wstring_view error_message, std::source_location location, Util::null_terminated_wstring_view title, std::wstring_view description, unsigned int type);
+		void HandleCriticalCommon(std::wstring_view message, std::wstring_view error_message, std::source_location location);
 	}
 };
 

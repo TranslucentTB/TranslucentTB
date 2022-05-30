@@ -11,17 +11,19 @@ namespace Error {
 		std::wstring FormatIRestrictedErrorInfo(HRESULT result, BSTR description);
 	}
 
-	PROGRAMLOG_API bool MessageFromIRestrictedErrorInfo(std::wstring &buf, IRestrictedErrorInfo *info, HRESULT *errCode);
-	PROGRAMLOG_API winrt::com_ptr<IRestrictedErrorInfo> MessageFromHresultError(std::wstring &buf, const winrt::hresult_error &err, HRESULT *errCode);
+	PROGRAMLOG_API std::wstring MessageFromIRestrictedErrorInfo(IRestrictedErrorInfo *info, HRESULT errCode);
+	PROGRAMLOG_API std::wstring MessageFromHresultError(const winrt::hresult_error &error);
 }
 
 #define HresultErrorHandle(exception_, level_, message_) do { \
-	if (Error::ShouldLog((level_))) \
+	const winrt::hresult_error &hresultError_ = (exception_); \
+	if constexpr ((level_) == spdlog::level::critical) \
 	{ \
-		std::wstring buf_; \
-		HRESULT errCode_ { }; \
-		const auto errInfo_ = Error::MessageFromHresultError(buf_, (exception_), &errCode_); \
-		Error::impl::Handle<(level_)>((message_), buf_, PROGRAMLOG_ERROR_LOCATION, errCode_, errInfo_.get()); \
+		Error::impl::HandleCriticalWithErrorInfo((message_), Error::MessageFromHresultError(hresultError_), PROGRAMLOG_ERROR_LOCATION, hresultError_.code(), hresultError_.try_as<IRestrictedErrorInfo>().get()); \
+	} \
+	else if (Error::ShouldLog((level_))) \
+	{ \
+		Error::impl::Handle<(level_)>((message_), Error::MessageFromHresultError(hresultError_), PROGRAMLOG_ERROR_LOCATION); \
 	} \
 } while (0)
 
