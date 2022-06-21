@@ -10,6 +10,7 @@
 #include <winrt/Windows.UI.Xaml.Hosting.h>
 #include "redefgetcurrenttime.h"
 #include <winrt/TranslucentTB.Xaml.h>
+#include <wil/cppwinrt_helpers.h>
 
 #include "dynamicloader.hpp"
 #include "managers/configmanager.hpp"
@@ -60,9 +61,10 @@ public:
 		m_Xaml.CreateXamlWindow<T>(pos, std::forward<Callback>(callback), std::forward<Args>(args)...);
 	}
 
-	void DispatchToMainThread(const winrt::Windows::System::DispatcherQueueHandler &callback,
+	winrt::fire_and_forget DispatchToMainThread(winrt::Windows::System::DispatcherQueueHandler callback,
 		winrt::Windows::System::DispatcherQueuePriority priority = winrt::Windows::System::DispatcherQueuePriority::Normal)
 	{
-		m_DispatcherController.DispatcherQueue().TryEnqueue(priority, callback);
+		co_await wil::resume_foreground(m_DispatcherController.DispatcherQueue(), priority);
+		callback();
 	}
 };

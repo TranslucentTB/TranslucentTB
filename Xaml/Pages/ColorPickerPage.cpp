@@ -15,11 +15,12 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 	void ColorPickerPage::InitializeComponent()
 	{
-		ColorPickerPageT::InitializeComponent();
+		ComponentConnectorT::InitializeComponent();
 
 		// TODO: localize
 		Title(Util::hstring_format<L"{} - Color picker - " APP_NAME>(GetTextForState(m_State)));
 
+		// TODO: make this a property and use x:Bind?
 		const auto picker = Picker();
 		picker.PreviousColor(m_OriginalColor);
 		picker.Color(m_OriginalColor);

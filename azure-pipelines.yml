@@ -3,7 +3,6 @@ pool:
 
 variables:
   solution: $(Build.SourcesDirectory)/TranslucentTB.sln
-  vcpkgArgs: --overlay-triplets=$(Build.SourcesDirectory)/vcpkg/triplets --triplet $(platform)-windows-ttb
 
 strategy:
   matrix:
@@ -29,7 +28,7 @@ steps:
 - script: .\bootstrap-vcpkg.bat
   displayName: 'Bootstrap vcpkg'
   workingDirectory: C:\vcpkg
-- script: vcpkg install $(vcpkgArgs) --overlay-ports=$(Build.SourcesDirectory)/vcpkg/ports --head detours gtest member-thunk rapidjson spdlog wil
+- script: vcpkg install --triplet $(platform)-windows --overlay-ports=$(Build.SourcesDirectory)/vcpkg/ports --head detours gtest member-thunk rapidjson spdlog wil
   displayName: 'Install vcpkg dependencies'
 - task: NuGetCommand@2
   displayName: 'Restore NuGet packages'

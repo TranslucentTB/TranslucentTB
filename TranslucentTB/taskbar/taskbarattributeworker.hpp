@@ -70,7 +70,7 @@ private:
 	const Config &m_Config;
 
 	// Hooks
-	member_thunk::page<> m_ThunkPage;
+	member_thunk::page m_ThunkPage;
 	wil::unique_hwineventhook m_PeekUnpeekHook;
 	wil::unique_hwineventhook m_CloakUncloakHook;
 	wil::unique_hwineventhook m_MinimizeRestoreHook;

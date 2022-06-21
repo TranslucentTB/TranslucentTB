@@ -2,7 +2,9 @@
 #include <WinBase.h>
 #include <WinUser.h>
 #include "winrt.hpp"
+#include <winrt/Windows.System.h>
 #include <winrt/TranslucentTB.Xaml.Pages.h>
+#include <wil/cppwinrt_helpers.h>
 
 #include "../ProgramLog/error/std.hpp"
 #include "../ProgramLog/error/win32.hpp"
@@ -180,7 +182,7 @@ winrt::fire_and_forget Application::Shutdown(int exitCode)
 		{
 			// Checking if the window can be closed requires to be on the same thread, so
 			// switch to that thread.
-			co_await thread->GetDispatcher();
+			co_await wil::resume_foreground(thread->GetDispatcher());
 			if (!window->TryClose())
 			{
 				canExit = false;
@@ -194,7 +196,7 @@ winrt::fire_and_forget Application::Shutdown(int exitCode)
 	if (canExit)
 	{
 		// go back to the main thread for exiting
-		co_await m_DispatcherController.DispatcherQueue();
+		co_await wil::resume_foreground(m_DispatcherController.DispatcherQueue());
 
 		co_await m_DispatcherController.ShutdownQueueAsync();
 

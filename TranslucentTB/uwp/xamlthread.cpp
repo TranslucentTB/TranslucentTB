@@ -88,6 +88,21 @@ bool XamlThread::PreTranslateMessage(const MSG &msg)
 	return false;
 }
 
+winrt::fire_and_forget XamlThread::ThreadDeinit()
+{
+	co_await wil::resume_foreground(GetDispatcher(), winrt::Windows::System::DispatcherQueuePriority::Low);
+
+	// only called during destruction of thread pool, so no locking needed.
+	m_CurrentWindow.reset();
+
+	m_Source = nullptr;
+	m_Manager.Close();
+	m_Manager = nullptr;
+
+	co_await m_Dispatcher.ShutdownQueueAsync();
+	PostQuitMessage(0);
+}
+
 XamlThread::XamlThread() :
 	m_Dispatcher(nullptr),
 	m_Manager(nullptr)
@@ -107,20 +122,6 @@ XamlThread::XamlThread() :
 
 wil::unique_handle XamlThread::Delete()
 {
-	m_Dispatcher.DispatcherQueue().TryEnqueue(winrt::Windows::System::DispatcherQueuePriority::Low, [this]() -> winrt::fire_and_forget
-	{
-		// only called during destruction of thread pool, so no locking needed.
-		m_CurrentWindow.reset();
-
-		m_Source = nullptr;
-		m_Manager.Close();
-		m_Manager = nullptr;
-
-		co_await m_Dispatcher.ShutdownQueueAsync();
-
-		// important: don't access captures after the first suspension point.
-		PostQuitMessage(0);
-	});
-
+	ThreadDeinit();
 	return std::move(m_Thread);
 }

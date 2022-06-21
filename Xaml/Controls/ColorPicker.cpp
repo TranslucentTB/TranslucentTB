@@ -364,7 +364,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 			}
 
 #define DISCONNECT_INVERTED_PROPERTY_HANDLER(NAME) \
-	NAME.UnregisterPropertyChangedCallback(m_InvertedCheckerboardProperty, NAME ## InvertedPropertyChangedToken.value);
+	NAME.UnregisterPropertyChangedCallback(m_InvertedCheckerboardProperty, NAME ## InvertedPropertyChangedToken.value)
 
 			if (m_CheckeredBackground1Border)
 			{
@@ -592,7 +592,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 				// move to background
 				const weak_ref<wuxc::Border> border_weak = border;
 				border = nullptr;
-				apartment_context context;
+				const auto dispatcher = Windows::System::DispatcherQueue::GetForCurrentThread();
 				co_await resume_background();
 
 				FillCheckeredBitmap(bgraPixelData, width, height, renderScale, background, inverted);
@@ -600,7 +600,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 				if (const auto border_strong = border_weak.get())
 				{
 					// return to main thread
-					co_await context;
+					co_await wil::resume_foreground(dispatcher);
 
 					bitmap.Invalidate();
 					wux::Media::ImageBrush brush;

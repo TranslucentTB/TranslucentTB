@@ -89,8 +89,15 @@ _Use_decl_annotations_ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar
 	Log::Initialize(storageFolder);
 	HardenProcess();
 
-	wil::unique_mutex mutex(MUTEX_GUID.c_str());
-	if (GetLastError() == ERROR_ALREADY_EXISTS)
+	wil::unique_mutex instanceMutex;
+	bool instanceAlreadyExists = false;
+	try
+	{
+		instanceMutex.create(MUTEX_GUID.c_str(), 0, MAXIMUM_ALLOWED, nullptr, &instanceAlreadyExists);
+	}
+	ResultExceptionCatch(spdlog::level::critical, L"Failed to create or open single-instance mutex.");
+
+	if (instanceAlreadyExists)
 	{
 		// If there already is another instance running, tell it.
 		MainAppWindow::PostNewInstanceNotification();

@@ -34,13 +34,14 @@ Install the following workloads:
 
 You also need to install the following individual components:
 
-- MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs (Latest)
+- If building for x64: MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs (Latest)
+- If building for ARM64: MSVC v143 - VS 2022 C++ ARM64 Spectre-mitigated libs (Latest)
 
 ### 3 - Install the Windows Insider SDK
 
 We currently require the [Windows Insider SDK](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK) to build TranslucentTB because it has several important bug fixes.
 
-You do not need to have an Insider build of Windows to use this, you can install it on stable builds. Right now, we use the SDK build 22543, but a newer one should work as well, provided you update `WindowsTargetPlatformVersion` in `Common\CppProject.props` and `TargetPlatformVersion` in `AppPackage\AppPackage.wapproj`.
+You do not need to have an Insider build of Windows to use this, you can install it on stable builds. Right now, we use the SDK build 22621, but a newer one should work as well, provided you update `WindowsTargetPlatformVersion` in `Common\CppProject.props` and `TargetPlatformVersion` in `AppPackage\AppPackage.wapproj`.
 
 ### 4 - Install dependencies
 
@@ -48,10 +49,10 @@ We use vcpkg to manage our dependencies. You will need to [install it](https://v
 
 Once you have that installed, open a terminal and execute these lines (replacing `$PATH_TO_TTB` by the location where you cloned TranslucentTB in step 1)
 ```sh
-vcpkg install --overlay-triplets=$PATH_TO_TTB\vcpkg\triplets --triplet x64-windows-ttb --overlay-ports=$PATH_TO_TTB\vcpkg\ports --head detours gtest member-thunk rapidjson spdlog wil
+vcpkg install --triplet x64-windows --overlay-ports=$PATH_TO_TTB\vcpkg\ports --head detours gtest member-thunk rapidjson spdlog wil
 vcpkg integrate install
 ```
-`gtest` can be ommitted if you don't intend to run the unit tests.
+`gtest` can be ommitted if you don't intend to run the unit tests. Change the triplet to `arm64-windows` if building for ARM64.
 
 ### 5 - Building and running the app
 

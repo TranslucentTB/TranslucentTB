@@ -1,4 +1,0 @@
-Source: member-thunk
-Version: 0.0.1
-Description: Dynamically creates executable code to allow C callbacks to call C++ member functions without the need for a user data parameter
-Build-Depends: wil

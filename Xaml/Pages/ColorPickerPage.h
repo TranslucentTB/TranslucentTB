@@ -9,7 +9,7 @@
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
-	struct ColorPickerPage : ColorPickerPageT<ColorPickerPage>
+	struct ColorPickerPage : wux::Markup::ComponentConnectorT<ColorPickerPageT<ColorPickerPage>>
 	{
 		ColorPickerPage(txmp::TaskbarState state, Windows::UI::Color currentColor);
 		void InitializeComponent();

@@ -8,7 +8,7 @@
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
-	struct WelcomePage : WelcomePageT<WelcomePage>
+	struct WelcomePage : wux::Markup::ComponentConnectorT<WelcomePageT<WelcomePage>>
 	{
 		wf::Rect DragRegion() override;
 

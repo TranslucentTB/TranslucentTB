@@ -11,7 +11,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	struct FramelessPage : FramelessPageT<FramelessPage>
 	{
-		FramelessPage();
+		void InitializeComponent();
 
 		virtual bool CanMove() noexcept;
 

@@ -35,3 +35,5 @@
 #include <winrt/TranslucentTB.Xaml.Pages.h>
 
 #include "redefgetcurrenttime.h"
+
+#include <wil/cppwinrt_helpers.h>

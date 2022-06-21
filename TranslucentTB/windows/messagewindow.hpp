@@ -15,7 +15,7 @@ private:
 	std::unique_ptr<WindowClass, Util::maybe_delete> m_WindowClass;
 	const wchar_t *m_IconResource;
 
-	member_thunk::page<> m_ProcPage;
+	member_thunk::page m_ProcPage;
 
 	void init(Util::null_terminated_wstring_view windowName, DWORD style, DWORD extended_style, Window parent);
 

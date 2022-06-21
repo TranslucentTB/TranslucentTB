@@ -42,7 +42,7 @@
     <PlatformToolset Condition="'$(PlatformToolset)'==''">v143</PlatformToolset>
     <VCProjectVersion>16.0</VCProjectVersion>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)'==''">17.0</MinimumVisualStudioVersion>
-    <WindowsTargetPlatformVersion>10.0.22543.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformMinVersion>10.0.18362.0</WindowsTargetPlatformMinVersion>
 
     <!-- WinRT -->
@@ -53,8 +53,6 @@
 
     <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'!=''">/tr $(CertificateTimestampServer) /td sha512</SignToolAdditionalArguments>
     <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'==''"></SignToolAdditionalArguments>
-
-    <VcpkgOSTarget>windows-ttb</VcpkgOSTarget>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -64,7 +62,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <Link>
       <!-- Debug information -->
-      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
 
       <!-- Optimization -->
       <OptimizeReferences>false</OptimizeReferences>
@@ -92,6 +90,7 @@
 
       <!-- Debug information -->
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <SetChecksum>true</SetChecksum>
 
       <!-- Optimization -->
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -105,7 +104,7 @@
 
   <ItemDefinitionGroup Condition="'$(Platform)'=='x64'">
     <ClCompile>
-      <!-- Windows requires SSE2 on any x86 processor, see https://docs.microsoft.com/windows-hardware/manufacture/desktop/paenxsse2-support-requirement-guide-for-windows-8 -->
+      <!-- SSE2 is always available on x64 -->
       <PreprocessorDefinitions>RAPIDJSON_SSE2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IntelJCCErratum>true</IntelJCCErratum>
       <GuardEHContMetadata>true</GuardEHContMetadata>
@@ -117,7 +116,7 @@
 
   <ItemDefinitionGroup Condition="'$(Platform)'=='ARM64'">
     <ClCompile>
-      <!-- Windows requires NEON on any ARM processor, see https://docs.microsoft.com/cpp/build/overview-of-arm-abi-conventions -->
+      <!-- Windows requires NEON on any ARM64 processor, see https://docs.microsoft.com/en-us/cpp/build/arm64-windows-abi-conventions -->
       <PreprocessorDefinitions>RAPIDJSON_NEON;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>

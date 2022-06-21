@@ -232,7 +232,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 		const auto bgraPixelData = buffer.data();
 
 		// move to background
-		apartment_context context;
+		const auto dispatcher = Windows::System::DispatcherQueue::GetForCurrentThread();
 		co_await resume_background();
 
 		FillChannelBitmap(bgraPixelData, width, height, renderScale, orientation, representation, channel, color, background, alphaMaxForced, saturationMaxForced);
@@ -240,7 +240,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 		if (const auto rect_strong = rect_weak.get())
 		{
 			// return to main thread
-			co_await context;
+			co_await wil::resume_foreground(dispatcher);
 
 			bitmap.Invalidate();
 			wux::Media::ImageBrush brush;
