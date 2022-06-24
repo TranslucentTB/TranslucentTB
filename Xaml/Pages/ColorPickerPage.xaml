@@ -37,7 +37,15 @@
                 </VisualStateGroup>
             </VisualStateManager.VisualStateGroups>
         
-            <controls:ColorPicker x:Name="Picker" IsAlphaEnabled="True" ColorChanged="PickerColorChanged" Background="{ThemeResource LayerFillColorDefaultBrush}" HeaderCornerRadius="0" HeaderBackground="Transparent" />
+            <controls:ColorPicker
+                x:Name="Picker"
+                IsAlphaEnabled="True"
+                ColorChanged="PickerColorChanged"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                HeaderCornerRadius="0"
+                HeaderBackground="Transparent"
+                Color="{x:Bind OriginalColor, Mode = OneTime}"
+                PreviousColor="{x:Bind OriginalColor, Mode = OneTime}" />
 
             <Grid Height="{ThemeResource DatePickerFlyoutPresenterAcceptDismissHostGridHeight}">
                 <Grid.ColumnDefinitions>

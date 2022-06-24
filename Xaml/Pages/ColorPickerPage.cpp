@@ -10,7 +10,7 @@
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
-	ColorPickerPage::ColorPickerPage(txmp::TaskbarState state, Windows::UI::Color currentColor) : m_State(state), m_OriginalColor(currentColor)
+	ColorPickerPage::ColorPickerPage(txmp::TaskbarState state, Windows::UI::Color originalColor) : m_State(state), m_OriginalColor(originalColor)
 	{ }
 
 	void ColorPickerPage::InitializeComponent()
@@ -19,11 +19,6 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 		// TODO: localize
 		Title(Util::hstring_format<L"{} - Color picker - " APP_NAME>(GetTextForState(m_State)));
-
-		// TODO: make this a property and use x:Bind?
-		const auto picker = Picker();
-		picker.PreviousColor(m_OriginalColor);
-		picker.Color(m_OriginalColor);
 	}
 
 	bool ColorPickerPage::CanMove() noexcept
@@ -69,6 +64,11 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	void ColorPickerPage::DialogClosed(const IInspectable &, const wuxc::ContentDialogClosedEventArgs &) noexcept
 	{
 		m_DialogOpened = false;
+	}
+
+	Windows::UI::Color ColorPickerPage::OriginalColor() noexcept
+	{
+		return m_OriginalColor;
 	}
 
 	void ColorPickerPage::PickerColorChanged(const muxc::ColorPicker &, const muxc::ColorChangedEventArgs &args)

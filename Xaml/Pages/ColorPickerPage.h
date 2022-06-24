@@ -11,7 +11,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	struct ColorPickerPage : wux::Markup::ComponentConnectorT<ColorPickerPageT<ColorPickerPage>>
 	{
-		ColorPickerPage(txmp::TaskbarState state, Windows::UI::Color currentColor);
+		ColorPickerPage(txmp::TaskbarState state, Windows::UI::Color originalColor);
 		void InitializeComponent();
 
 		bool CanMove() noexcept override;
@@ -25,6 +25,8 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 		void DialogOpened(const IInspectable &sender, const wuxc::ContentDialogOpenedEventArgs &args) noexcept;
 		void DialogClosed(const IInspectable &sender, const wuxc::ContentDialogClosedEventArgs &args) noexcept;
+
+		Windows::UI::Color OriginalColor() noexcept;
 
 		void PickerColorChanged(const muxc::ColorPicker &sender, const muxc::ColorChangedEventArgs &args);
 
