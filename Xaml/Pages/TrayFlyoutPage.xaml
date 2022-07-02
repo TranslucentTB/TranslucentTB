@@ -198,7 +198,7 @@
                         <primitives:AccentState>Clear</primitives:AccentState>
                     </muxc:RadioMenuFlyoutItem.Tag>
                 </muxc:RadioMenuFlyoutItem>
-                <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Blur" GroupName="SearchCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
+                <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Blur" GroupName="SearchCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked" Visibility="{x:Bind IsBlurSupported}">
                     <muxc:RadioMenuFlyoutItem.Tag>
                         <primitives:AccentState>Blur</primitives:AccentState>
                     </muxc:RadioMenuFlyoutItem.Tag>
@@ -347,7 +347,11 @@
                 <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_CompactThunkHeap" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="CompactThunkHeapClicked" />
             </MenuFlyoutSubItem>
             <ToggleMenuFlyoutItem x:Name="StartupState" x:Uid="TrayFlyoutPage_OpenAtBoot" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="StartupClicked" Visibility="{x:Bind HasPackageIdentity}" />
-            <MenuFlyoutItem x:Uid="TrayFlyoutPage_TipsAndTricks" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="TipsAndTricksClicked" />
+            <MenuFlyoutItem x:Uid="TrayFlyoutPage_TipsAndTricks" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="TipsAndTricksClicked">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE82F;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
             <!-- <MenuFlyoutItem x:Uid="TrayFlyoutPage_About" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="AboutClicked" /> -->
             <MenuFlyoutItem x:Uid="TrayFlyoutPage_Exit" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ExitClicked">
                 <MenuFlyoutItem.Icon>
