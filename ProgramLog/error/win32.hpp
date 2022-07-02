@@ -17,7 +17,7 @@ namespace Error {
 }
 
 #define HresultHandle(hresult_, level_, message_) do { \
-	if (Error::ShouldLog((level_))) \
+	if (Error::ShouldLog<(level_)>()) \
 	{ \
 		Error::impl::Handle<(level_)>((message_), Error::MessageFromHRESULT((hresult_)), PROGRAMLOG_ERROR_LOCATION); \
 	} \

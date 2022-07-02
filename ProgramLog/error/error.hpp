@@ -1,11 +1,9 @@
 #pragma once
 #include "arch.h"
-#include <RestrictedErrorInfo.h>
 #include <spdlog/common.h>
 #include <source_location>
 #include <string_view>
 #include <thread>
-#include <winerror.h>
 
 #include "../api.h"
 #include "appinfo.hpp"
@@ -14,9 +12,9 @@
 #define UTF8_ERROR_TITLE UTF8_APP_NAME " - Error"
 
 namespace Error {
-	PROGRAMLOG_API bool ShouldLog(spdlog::level::level_enum level);
-
 	namespace impl {
+		PROGRAMLOG_API bool ShouldLogInternal(spdlog::level::level_enum level);
+
 		// Needs to be in DLL because spdlog log registry is per-module.
 		PROGRAMLOG_API void Log(std::wstring_view msg, spdlog::level::level_enum level, std::source_location location);
 
@@ -25,10 +23,7 @@ namespace Error {
 		template<spdlog::level::level_enum level>
 		inline void Handle(std::wstring_view message, std::wstring_view error_message, std::source_location location)
 		{
-			if (ShouldLog(level))
-			{
-				Log(GetLogMessage(message, error_message), level, location);
-			}
+			Log(GetLogMessage(message, error_message), level, location);
 		}
 
 		template<>
@@ -37,10 +32,26 @@ namespace Error {
 		template<>
 		[[noreturn]] PROGRAMLOG_API void Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, std::source_location location);
 
-		[[noreturn]] PROGRAMLOG_API void HandleCriticalWithErrorInfo(std::wstring_view message, std::wstring_view error_message, std::source_location location, HRESULT err, IRestrictedErrorInfo *errInfo);
-
 		std::thread HandleCommon(spdlog::level::level_enum level, std::wstring_view message, std::wstring_view error_message, std::source_location location, Util::null_terminated_wstring_view title, std::wstring_view description, unsigned int type);
 		void HandleCriticalCommon(std::wstring_view message, std::wstring_view error_message, std::source_location location);
+	}
+
+	template<spdlog::level::level_enum level>
+	inline bool ShouldLog()
+	{
+		return impl::ShouldLogInternal(level);
+	}
+
+	template<>
+	constexpr bool ShouldLog<spdlog::level::critical>()
+	{
+		return true;
+	}
+
+	template<>
+	constexpr bool ShouldLog<spdlog::level::err>()
+	{
+		return true;
 	}
 };
 

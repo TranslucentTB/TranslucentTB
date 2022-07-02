@@ -1,10 +1,11 @@
 #include "error.hpp"
 #include <debugapi.h>
 #include <intrin.h>
-#include <roerrorapi.h>
 #include <spdlog/spdlog.h>
 #include <string>
+#ifdef _DEBUG
 #include <processthreadsapi.h>
+#endif
 #include <wil/resource.h>
 #include <winnt.h>
 
@@ -13,13 +14,8 @@
 #include "util/string_macros.hpp"
 #include "win32.hpp"
 
-bool Error::ShouldLog(spdlog::level::level_enum level)
+bool Error::impl::ShouldLogInternal(spdlog::level::level_enum level)
 {
-	if (level == spdlog::level::err || level == spdlog::level::critical)
-	{
-		return true;
-	}
-
 	// implicitly checks if logging is initialized.
 	if (const auto sink = Log::GetSink())
 	{
@@ -71,24 +67,6 @@ template<>
 void Error::impl::Handle<spdlog::level::critical>(std::wstring_view message, std::wstring_view error_message, std::source_location location)
 {
 	HandleCriticalCommon(message, error_message, location);
-	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
-}
-
-void Error::impl::HandleCriticalWithErrorInfo(std::wstring_view message, std::wstring_view error_message, std::source_location location, HRESULT err, IRestrictedErrorInfo *errInfo)
-{
-	HandleCriticalCommon(message, error_message, location);
-
-	if (errInfo)
-	{
-		if (const HRESULT hr = SetRestrictedErrorInfo(errInfo); SUCCEEDED(hr))
-		{
-			// This gives much better error reporting if the error came from a WinRT module:
-			// the stack trace in the dump, debugger and telemetry is unaffected by our error handling,
-			// giving us better insight into what went wrong.
-			RoFailFastWithErrorContext(err);
-		}
-	}
-
 	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
 }
 

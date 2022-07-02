@@ -8,7 +8,7 @@ namespace Error {
 }
 
 #define StdErrorCodeHandle(errc_, level_, message_) do { \
-	if (Error::ShouldLog((level_))) \
+	if (Error::ShouldLog<(level_)>()) \
 	{ \
 		Error::impl::Handle<(level_)>((message_), Error::MessageFromStdErrorCode((errc_)), PROGRAMLOG_ERROR_LOCATION); \
 	} \
@@ -22,7 +22,7 @@ namespace Error {
 } while (0)
 
 #define StdSystemErrorHandle(exception_, level_, message_) do { \
-	if (Error::ShouldLog((level_))) \
+	if (Error::ShouldLog<(level_)>()) \
 	{ \
 		Error::impl::Handle<(level_)>((message_), Error::MessageFromStdErrorCode((exception_).code()), PROGRAMLOG_ERROR_LOCATION); \
 	} \

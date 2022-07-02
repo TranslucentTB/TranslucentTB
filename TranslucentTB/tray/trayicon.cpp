@@ -1,4 +1,5 @@
 #include "trayicon.hpp"
+#include <cguid.h>
 #include <shellapi.h>
 
 #include "appinfo.hpp"

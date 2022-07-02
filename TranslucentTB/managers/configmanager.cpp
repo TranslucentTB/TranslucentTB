@@ -139,7 +139,7 @@ void ConfigManager::LoadFromFile(FILE *f)
 			m_Config = { };
 			m_Config.Deserialize(doc, [](std::wstring_view unknownKey)
 			{
-				if (Error::ShouldLog(spdlog::level::info))
+				if (Error::ShouldLog<spdlog::level::info>())
 				{
 					MessagePrint(spdlog::level::info, std::format(L"Unknown key found in JSON: {}", unknownKey));
 				}

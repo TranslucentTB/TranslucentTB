@@ -132,7 +132,7 @@ void TaskbarAttributeWorker::OnForegroundWindowChange(DWORD, HWND hwnd, LONG idO
 	{
 		const Window oldForegroundWindow = std::exchange(m_ForegroundWindow, Window(hwnd).valid() ? hwnd : Window::NullWindow);
 
-		if (Error::ShouldLog(spdlog::level::debug))
+		if (Error::ShouldLog<spdlog::level::debug>())
 		{
 			MessagePrint(spdlog::level::debug, std::format(L"Changed foreground window to {}", DumpWindow(m_ForegroundWindow)));
 		}
@@ -179,7 +179,7 @@ void TaskbarAttributeWorker::OnStartVisibilityChange(bool state)
 	{
 		mon = m_CurrentStartMonitor = GetStartMenuMonitor();
 
-		if (Error::ShouldLog(spdlog::level::debug))
+		if (Error::ShouldLog<spdlog::level::debug>())
 		{
 			MessagePrint(spdlog::level::debug, std::format(L"Start menu opened on monitor {}", static_cast<void *>(mon)));
 		}
@@ -212,7 +212,7 @@ void TaskbarAttributeWorker::OnSearchVisibilityChange(bool state)
 	{
 		mon = m_CurrentSearchMonitor = GetSearchMonitor();
 
-		if (Error::ShouldLog(spdlog::level::debug))
+		if (Error::ShouldLog<spdlog::level::debug>())
 		{
 			MessagePrint(spdlog::level::debug, std::format(L"Search opened on monitor {}", static_cast<void *>(mon)));
 		}
@@ -524,7 +524,7 @@ void TaskbarAttributeWorker::RefreshAllAttributes()
 
 void TaskbarAttributeWorker::LogWindowInsertion(const std::pair<std::unordered_set<Window>::iterator, bool> &result, std::wstring_view state, HMONITOR mon)
 {
-	if (result.second && Error::ShouldLog(spdlog::level::debug))
+	if (result.second && Error::ShouldLog<spdlog::level::debug>())
 	{
 		MessagePrint(spdlog::level::debug, std::format(L"Inserting {} window {} to monitor {}", state, DumpWindow(*result.first), static_cast<void *>(mon)));
 	}
@@ -532,7 +532,7 @@ void TaskbarAttributeWorker::LogWindowInsertion(const std::pair<std::unordered_s
 
 void TaskbarAttributeWorker::LogWindowRemoval(std::wstring_view state, Window window, HMONITOR mon)
 {
-	if (Error::ShouldLog(spdlog::level::debug))
+	if (Error::ShouldLog<spdlog::level::debug>())
 	{
 		MessagePrint(spdlog::level::debug, std::format(L"Removing {} window {} from monitor {}", state, DumpWindow(window), static_cast<void *>(mon)));
 	}
@@ -540,7 +540,7 @@ void TaskbarAttributeWorker::LogWindowRemoval(std::wstring_view state, Window wi
 
 void TaskbarAttributeWorker::LogWindowRemovalDestroyed(std::wstring_view state, Window window, HMONITOR mon)
 {
-	if (Error::ShouldLog(spdlog::level::debug))
+	if (Error::ShouldLog<spdlog::level::debug>())
 	{
 		MessagePrint(spdlog::level::debug, std::format(L"Removing {} window {} [window destroyed] from monitor {}", state, static_cast<void *>(window.handle()), static_cast<void *>(mon)));
 	}
