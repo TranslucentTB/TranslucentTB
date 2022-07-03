@@ -20,12 +20,14 @@ struct TaskbarAppearance {
 	ACCENT_STATE Accent = ACCENT_NORMAL;
 	Util::Color Color = { 0, 0, 0, 0 };
 	bool ShowPeek = true;
+	bool ShowLine = true;
 
 	constexpr TaskbarAppearance() noexcept = default;
-	constexpr TaskbarAppearance(ACCENT_STATE accent, Util::Color color, bool showPeek) noexcept :
+	constexpr TaskbarAppearance(ACCENT_STATE accent, Util::Color color, bool showPeek, bool showLine) noexcept :
 		Accent(accent),
 		Color(color),
-		ShowPeek(showPeek)
+		ShowPeek(showPeek),
+		ShowLine(showLine)
 	{ }
 
 	template<class Writer>
@@ -34,6 +36,7 @@ struct TaskbarAppearance {
 		rjh::Serialize(writer, Accent, ACCENT_KEY, ACCENT_MAP);
 		rjh::Serialize(writer, Color.ToString(), COLOR_KEY);
 		rjh::Serialize(writer, ShowPeek, SHOW_PEEK_KEY);
+		rjh::Serialize(writer, ShowLine, SHOW_LINE_KEY);
 	}
 
 	void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view))
@@ -52,12 +55,13 @@ struct TaskbarAppearance {
 	TaskbarAppearance(const txmp::TaskbarAppearance &winrtObj) noexcept :
 		Accent(static_cast<ACCENT_STATE>(winrtObj.Accent())),
 		Color(winrtObj.Color()),
-		ShowPeek(winrtObj.ShowPeek())
+		ShowPeek(winrtObj.ShowPeek()),
+		ShowLine(winrtObj.ShowLine())
 	{ }
 
 	operator txmp::TaskbarAppearance() const
 	{
-		return { static_cast<txmp::AccentState>(Accent), Color, ShowPeek };
+		return { static_cast<txmp::AccentState>(Accent), Color, ShowPeek, ShowLine };
 	}
 #endif
 
@@ -88,6 +92,10 @@ protected:
 		{
 			rjh::Deserialize(val, ShowPeek, key);
 		}
+		else if (key == SHOW_LINE_KEY)
+		{
+			rjh::Deserialize(val, ShowLine, key);
+		}
 		else if (unknownKeyCallback)
 		{
 			unknownKeyCallback(key);
@@ -106,4 +114,5 @@ private:
 	static constexpr std::wstring_view ACCENT_KEY = L"accent";
 	static constexpr std::wstring_view COLOR_KEY = L"color";
 	static constexpr std::wstring_view SHOW_PEEK_KEY = L"show_peek";
+	static constexpr std::wstring_view SHOW_LINE_KEY = L"show_line";
 };

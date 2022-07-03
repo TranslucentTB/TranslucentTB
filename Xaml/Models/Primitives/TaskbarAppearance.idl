@@ -5,7 +5,7 @@ namespace TranslucentTB.Xaml.Models.Primitives
 	unsealed runtimeclass TaskbarAppearance
 	{
 		TaskbarAppearance();
-		TaskbarAppearance(AccentState accent, Windows.UI.Color color, Boolean showPeek);
+		TaskbarAppearance(AccentState accent, Windows.UI.Color color, Boolean showPeek, Boolean showLine);
 
 		[noexcept]
 		AccentState Accent;
@@ -15,5 +15,8 @@ namespace TranslucentTB.Xaml.Models.Primitives
 
 		[noexcept]
 		Boolean ShowPeek;
+
+		[noexcept]
+		Boolean ShowLine;
 	}
 }

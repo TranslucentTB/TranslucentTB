@@ -10,8 +10,8 @@ namespace winrt::TranslucentTB::Xaml::Models::Primitives::implementation
 	struct OptionalTaskbarAppearance : OptionalTaskbarAppearanceT<OptionalTaskbarAppearance, TaskbarAppearance>
 	{
 		OptionalTaskbarAppearance() noexcept = default;
-		OptionalTaskbarAppearance(bool enabled, AccentState accent, Windows::UI::Color color, bool showPeek) noexcept :
-			base_type(accent, color, showPeek),
+		OptionalTaskbarAppearance(bool enabled, AccentState accent, Windows::UI::Color color, bool showPeek, bool showLine) noexcept :
+			base_type(accent, color, showPeek, showLine),
 			m_Enabled(enabled)
 		{ }
 

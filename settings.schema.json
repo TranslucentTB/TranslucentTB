@@ -21,6 +21,9 @@
         },
         "show_peek": {
           "type": "boolean"
+        },
+        "show_line": {
+          "type": "boolean"
         }
       },
       "type": "object"

@@ -20,8 +20,8 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 	win32::FilenameMap<TaskbarAppearance> FileRules;
 
 	RuledTaskbarAppearance() = default;
-	RuledTaskbarAppearance(std::unordered_map<std::wstring, TaskbarAppearance> classRules, std::unordered_map<std::wstring, TaskbarAppearance> titleRules, win32::FilenameMap<TaskbarAppearance> fileRules, bool enabled, ACCENT_STATE accent, Util::Color color, bool showPeek) :
-		OptionalTaskbarAppearance(enabled, accent, color, showPeek),
+	RuledTaskbarAppearance(std::unordered_map<std::wstring, TaskbarAppearance> classRules, std::unordered_map<std::wstring, TaskbarAppearance> titleRules, win32::FilenameMap<TaskbarAppearance> fileRules, bool enabled, ACCENT_STATE accent, Util::Color color, bool showPeek, bool showLine) :
+		OptionalTaskbarAppearance(enabled, accent, color, showPeek, showLine),
 		ClassRules(std::move(classRules)),
 		TitleRules(std::move(titleRules)),
 		FileRules(std::move(fileRules))
