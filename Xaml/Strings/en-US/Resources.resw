@@ -213,6 +213,9 @@
   <data name="TrayFlyoutPage_Exit.Text" xml:space="preserve">
     <value>Exit</value>
   </data>
+  <data name="TrayFlyoutPage_LineButton.Text" xml:space="preserve">
+    <value>Show taskbar line</value>
+  </data>
   <data name="TrayFlyoutPage_MaximizedWindow.Text" xml:space="preserve">
     <value>Maximized window</value>
   </data>

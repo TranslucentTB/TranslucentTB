@@ -89,6 +89,11 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 						toggleItem.IsChecked(appearance.ShowPeek());
 						toggleItem.IsEnabled(enabled);
 					}
+					else if (stringTag == L"ShowLine")
+					{
+						toggleItem.IsChecked(appearance.ShowLine());
+						toggleItem.IsEnabled(enabled);
+					}
 				}
 				else if (tag.try_as<hstring>() == L"Color")
 				{
@@ -314,6 +319,10 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 				if (tag.try_as<hstring>() == L"ShowPeek")
 				{
 					appearance.ShowPeek(toggleItem.IsChecked());
+				}
+				else if (tag.try_as<hstring>() == L"ShowLine")
+				{
+					appearance.ShowLine(toggleItem.IsChecked());
 				}
 			}
 		}

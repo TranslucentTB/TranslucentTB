@@ -32,9 +32,15 @@ private:
 	class AttributeRefresher;
 	friend AttributeRefresher;
 
-	struct MonitorInfo {
+	struct TaskbarInfo {
 		Window TaskbarWindow;
+		Window PeekWindow;
 		Window InnerXamlContent;
+		Window WorkerWWindow;
+	};
+
+	struct MonitorInfo {
+		TaskbarInfo Taskbar;
 		std::unordered_set<Window> MaximisedWindows;
 		std::unordered_set<Window> NormalWindows;
 	};
@@ -120,7 +126,7 @@ private:
 	bool m_IsWindows11;
 
 	// Type aliases
-	using taskbar_iterator = std::unordered_map<HMONITOR, MonitorInfo>::iterator;
+	using taskbar_iterator = decltype(m_Taskbars)::iterator;
 
 	// Callbacks
 	template<DWORD insert, DWORD remove>
@@ -144,9 +150,10 @@ private:
 	TaskbarAppearance GetConfig(taskbar_iterator taskbar) const;
 
 	// Attribute
-	void ShowAeroPeekButton(Window taskbar, bool show);
-	void SetAttribute(Window window, TaskbarAppearance config);
-	void RefreshAttribute(taskbar_iterator taskbar, std::optional<bool> isMainOpt = std::nullopt);
+	void ShowAeroPeekButton(const TaskbarInfo &taskbar, bool show);
+	void ShowTaskbarLine(const TaskbarInfo &taskbar, bool show);
+	void SetAttribute(taskbar_iterator taskbar, TaskbarAppearance config);
+	void RefreshAttribute(taskbar_iterator taskbar);
 	void RefreshAllAttributes();
 
 	// Log
@@ -161,7 +168,6 @@ private:
 	void RemoveWindow(Window window, taskbar_iterator it, AttributeRefresher &refresher);
 
 	// Other
-	static bool IsMainTaskbar(Window wnd) noexcept;
 	static bool SetNewWindowExStyle(Window wnd, LONG_PTR oldStyle, LONG_PTR newStyle);
 	static bool SetContainsValidWindows(std::unordered_set<Window> &set);
 	static void DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set, bool showInfo = true);
@@ -182,7 +188,7 @@ private:
 		const auto &preview = m_ColorPreviews.at(static_cast<std::size_t>(state));
 		if (preview)
 		{
-			return { appearance.Accent, *preview, appearance.ShowPeek };
+			return { appearance.Accent, *preview, appearance.ShowPeek, appearance.ShowLine };
 		}
 		else
 		{

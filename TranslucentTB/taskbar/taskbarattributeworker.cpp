@@ -28,14 +28,14 @@ public:
 	{
 		if (m_Refresh)
 		{
-			if (IsMainTaskbar(it->second.TaskbarWindow))
+			if (it->first == MonitorFromPoint({ 0, 0 }, MONITOR_DEFAULTTOPRIMARY))
 			{
 				assert(m_MainMonIt == m_Worker.m_Taskbars.end());
 				m_MainMonIt = it;
 			}
 			else
 			{
-				m_Worker.RefreshAttribute(it, false);
+				m_Worker.RefreshAttribute(it);
 			}
 		}
 	}
@@ -46,7 +46,7 @@ public:
 	{
 		if (m_Refresh && m_MainMonIt != m_Worker.m_Taskbars.end())
 		{
-			m_Worker.RefreshAttribute(m_MainMonIt, true);
+			m_Worker.RefreshAttribute(m_MainMonIt);
 		}
 	}
 };
@@ -110,7 +110,7 @@ void TaskbarAttributeWorker::OnWindowCreateDestroy(DWORD event, HWND hwnd, LONG 
 			AttributeRefresher refresher(*this);
 			for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
 			{
-				if (it->second.TaskbarWindow == window)
+				if (it->second.Taskbar.TaskbarWindow == window)
 				{
 					MessagePrint(spdlog::level::debug, L"A taskbar got destroyed, refreshing...");
 					ResetState();
@@ -270,11 +270,11 @@ LRESULT TaskbarAttributeWorker::OnRequestAttributeRefresh(LPARAM lParam)
 	if (!m_disableAttributeRefreshReply)
 	{
 		const Window window = reinterpret_cast<HWND>(lParam);
-		if (const auto iter = m_Taskbars.find(window.monitor()); iter != m_Taskbars.end() && iter->second.TaskbarWindow == window)
+		if (const auto iter = m_Taskbars.find(window.monitor()); iter != m_Taskbars.end() && iter->second.Taskbar.TaskbarWindow == window)
 		{
 			if (const auto config = GetConfig(iter); config.Accent != ACCENT_NORMAL)
 			{
-				SetAttribute(iter->second.TaskbarWindow, config);
+				SetAttribute(iter, config);
 				return 1;
 			}
 		}
@@ -428,38 +428,68 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 	return WithPreview(txmp::TaskbarState::Desktop, m_Config.DesktopAppearance);
 }
 
-void TaskbarAttributeWorker::ShowAeroPeekButton(Window taskbar, bool show)
+void TaskbarAttributeWorker::ShowAeroPeekButton(const TaskbarInfo &taskbar, bool show)
 {
-	const Window peek = taskbar
-		.find_child(L"TrayNotifyWnd")
-		.find_child(L"TrayShowDesktopButtonWClass");
-
-	if (peek)
+	if (const auto style = taskbar.PeekWindow.get_long_ptr(GWL_EXSTYLE))
 	{
-		if (const auto style = peek.get_long_ptr(GWL_EXSTYLE))
-		{
-			const bool success = SetNewWindowExStyle(peek, *style, show
-				? (*style & ~WS_EX_LAYERED)
-				: (*style | WS_EX_LAYERED));
+		const bool success = SetNewWindowExStyle(taskbar.PeekWindow, *style, show
+			? (*style & ~WS_EX_LAYERED)
+			: (*style | WS_EX_LAYERED));
 
-			if (!show && success)
+		if (!show && success)
+		{
+			// Non-zero alpha makes the button still interactible, even if practically invisible.
+			if (!SetLayeredWindowAttributes(taskbar.PeekWindow, 0, 1, LWA_ALPHA))
 			{
-				// Non-zero alpha makes the button still interactible, even if practically invisible.
-				if (!SetLayeredWindowAttributes(peek, 0, 1, LWA_ALPHA))
-				{
-					LastErrorHandle(spdlog::level::warn, L"Failed to set peek button layered attributes");
-				}
+				LastErrorHandle(spdlog::level::warn, L"Failed to set peek button layered attributes");
 			}
 		}
 	}
-	else
+}
+
+void TaskbarAttributeWorker::ShowTaskbarLine(const TaskbarInfo &taskbar, bool show)
+{
+	if (auto workerW = taskbar.WorkerWWindow)
 	{
-		MessagePrint(spdlog::level::info, L"Can't find peek button handle");
+		workerW.show(show ? SW_SHOWNA : SW_HIDE);
+	}
+	else if (taskbar.InnerXamlContent)
+	{
+		if (show)
+		{
+			if (auto rect = taskbar.InnerXamlContent.client_rect())
+			{
+				const float scaleFactor = static_cast<float>(GetDpiForWindow(taskbar.InnerXamlContent)) / USER_DEFAULT_SCREEN_DPI;
+
+				// bottom taskbar is the only available option in Windows 11 22000.
+				rect->top += std::lround(1.0f * scaleFactor);
+				if (wil::unique_hrgn rgn { CreateRectRgnIndirect(&*rect) })
+				{
+					if (SetWindowRgn(taskbar.InnerXamlContent, rgn.get(), true))
+					{
+						rgn.release();
+					}
+					else
+					{
+						LastErrorHandle(spdlog::level::warn, L"Failed to set region of inner XAML window");
+					}
+				}
+			}
+		}
+		else
+		{
+			if (!SetWindowRgn(taskbar.InnerXamlContent, nullptr, true)) [[unlikely]]
+			{
+				LastErrorHandle(spdlog::level::info, L"Failed to clear window region of inner taskbar XAML");
+			}
+		}
 	}
 }
 
-void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance config)
+void TaskbarAttributeWorker::SetAttribute(taskbar_iterator taskbar, TaskbarAppearance config)
 {
+	const auto window = taskbar->second.Taskbar.TaskbarWindow;
+
 	if (config.Accent != ACCENT_NORMAL)
 	{
 		m_NormalTaskbars.erase(window);
@@ -497,19 +527,26 @@ void TaskbarAttributeWorker::SetAttribute(Window window, TaskbarAppearance confi
 	}
 }
 
-void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar, std::optional<bool> isMainOpt)
+void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
 {
 	const auto &cfg = GetConfig(taskbar);
-	SetAttribute(taskbar->second.TaskbarWindow, cfg);
+	SetAttribute(taskbar, cfg);
 
-	// ShowAeroPeekButton triggers Windows internal message loop,
+	// These functions may trigger Windows internal message loops,
 	// do not pass any member of taskbar map by reference.
 	// See comment in InsertWindow.
-	// Ignore changes when peek is active
-	const bool isMain = isMainOpt ? *isMainOpt : IsMainTaskbar(taskbar->second.TaskbarWindow);
-	if (isMain && !m_PeekActive)
+	const auto taskbarInfo = taskbar->second.Taskbar;
+	if (taskbarInfo.InnerXamlContent || taskbarInfo.WorkerWWindow)
 	{
-		ShowAeroPeekButton(taskbar->second.TaskbarWindow, cfg.ShowPeek);
+		ShowTaskbarLine(taskbarInfo, cfg.ShowLine);
+	}
+	else if (taskbarInfo.PeekWindow)
+	{
+		// Ignore changes when peek is active
+		if (!m_PeekActive)
+		{
+			ShowAeroPeekButton(taskbarInfo, cfg.ShowPeek);
+		}
 	}
 }
 
@@ -628,11 +665,6 @@ void TaskbarAttributeWorker::RemoveWindow(Window window, taskbar_iterator it, At
 	{
 		refresher.refresh(it);
 	}
-}
-
-bool TaskbarAttributeWorker::IsMainTaskbar(Window wnd) noexcept
-{
-	return wnd.monitor() == MonitorFromPoint({ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
 }
 
 bool TaskbarAttributeWorker::SetNewWindowExStyle(Window wnd, LONG_PTR oldStyle, LONG_PTR newStyle)
@@ -828,37 +860,26 @@ wil::unique_hwineventhook TaskbarAttributeWorker::CreateHook(DWORD eventMin, DWO
 
 void TaskbarAttributeWorker::ReturnToStock()
 {
-	m_disableAttributeRefreshReply = true;
-	auto guard = wil::scope_exit([this]
-	{
-		m_disableAttributeRefreshReply = false;
-	});
-
-	auto mainMonIt = m_Taskbars.end();
+	// Copy taskbars to a vector because some functions
+	// trigger Windows internal message loop.
+	std::vector<TaskbarInfo> taskbarInfos;
 	for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
 	{
-		SetAttribute(it->second.TaskbarWindow, { ACCENT_NORMAL, { 0, 0, 0, 0 }, true });
+		SetAttribute(it, { ACCENT_NORMAL, { 0, 0, 0, 0 }, true, true });
 
-		if (it->second.InnerXamlContent)
-		{
-			if (!SetWindowRgn(it->second.InnerXamlContent, nullptr, true)) [[unlikely]]
-			{
-				LastErrorHandle(spdlog::level::info, L"Failed to clear window region of inner taskbar XAML");
-			}
-		}
-
-		if (IsMainTaskbar(it->second.TaskbarWindow))
-		{
-			mainMonIt = it;
-		}
+		taskbarInfos.push_back(it->second.Taskbar);
 	}
 
-	guard.reset();
-
-	// Always do it last, in case of Windows internal message loop
-	if (mainMonIt != m_Taskbars.end())
+	for (const auto &taskbarInfo : taskbarInfos)
 	{
-		ShowAeroPeekButton(mainMonIt->second.TaskbarWindow, true);
+		if (taskbarInfo.InnerXamlContent || taskbarInfo.WorkerWWindow)
+		{
+			ShowTaskbarLine(taskbarInfo, true);
+		}
+		else if (taskbarInfo.PeekWindow)
+		{
+			ShowAeroPeekButton(taskbarInfo, true);
+		}
 	}
 }
 
@@ -904,33 +925,25 @@ catch (const winrt::hresult_error &err)
 
 void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 {
-	Window innerXaml;
+	TaskbarInfo taskbarInfo = { .TaskbarWindow = window };
 	if (m_IsWindows11)
 	{
-		innerXaml = window.find_child(L"Windows.UI.Composition.DesktopWindowContentBridge", L"DesktopWindowXamlSource");
-		if (innerXaml)
+		if (win32::IsAtLeastBuild(22616))
 		{
-			if (auto rect = innerXaml.client_rect())
-			{
-				const float scaleFactor = static_cast<float>(GetDpiForWindow(innerXaml)) / USER_DEFAULT_SCREEN_DPI;
-
-				rect->top += static_cast<LONG>(1.0f * scaleFactor);
-				if (wil::unique_hrgn rgn { CreateRectRgnIndirect(&*rect) })
-				{
-					if (SetWindowRgn(innerXaml, rgn.get(), true))
-					{
-						rgn.release();
-					}
-					else
-					{
-						LastErrorHandle(spdlog::level::warn, L"Failed to set region of inner XAML window");
-					}
-				}
-			}
+			taskbarInfo.WorkerWWindow = window.find_child(L"WorkerW");
+		}
+		else
+		{
+			taskbarInfo.InnerXamlContent = window.find_child(L"Windows.UI.Composition.DesktopWindowContentBridge", L"DesktopWindowXamlSource");
 		}
 	}
+	else
+	{
+		taskbarInfo.PeekWindow = window.find_child(L"TrayNotifyWnd").find_child(L"TrayShowDesktopButtonWClass");
+	}
 
-	m_Taskbars.insert_or_assign(mon, MonitorInfo { window, innerXaml });
+	m_NormalTaskbars.insert(window);
+	m_Taskbars.insert_or_assign(mon, MonitorInfo { taskbarInfo });
 
 	if (wil::unique_hhook hook { m_InjectExplorerHook(window) })
 	{
@@ -1039,14 +1052,30 @@ void TaskbarAttributeWorker::DumpState()
 	for (const auto &[monitor, info] : m_Taskbars)
 	{
 		buf.clear();
-		std::format_to(std::back_inserter(buf), L"Monitor {} [taskbar {}]:", static_cast<void *>(monitor), static_cast<void *>(info.TaskbarWindow.handle()));
+		std::format_to(std::back_inserter(buf), L"Monitor {}:", static_cast<void *>(monitor));
 		MessagePrint(spdlog::level::off, buf);
 
-		MessagePrint(spdlog::level::off, L"    Maximised windows:");
-		DumpWindowSet(L"        ", info.MaximisedWindows);
+		buf.clear();
+		std::format_to(std::back_inserter(buf), L"\tTaskbar handle: {}", DumpWindow(info.Taskbar.TaskbarWindow));
+		MessagePrint(spdlog::level::off, buf);
 
-		MessagePrint(spdlog::level::off, L"    Normal windows:");
-		DumpWindowSet(L"        ", info.NormalWindows);
+		buf.clear();
+		std::format_to(std::back_inserter(buf), L"\tPeek button handle: {}", DumpWindow(info.Taskbar.PeekWindow));
+		MessagePrint(spdlog::level::off, buf);
+
+		buf.clear();
+		std::format_to(std::back_inserter(buf), L"\tInner XAML handle: {}", DumpWindow(info.Taskbar.InnerXamlContent));
+		MessagePrint(spdlog::level::off, buf);
+
+		buf.clear();
+		std::format_to(std::back_inserter(buf), L"\tWorkerW handle: {}", DumpWindow(info.Taskbar.WorkerWWindow));
+		MessagePrint(spdlog::level::off, buf);
+
+		MessagePrint(spdlog::level::off, L"\tMaximised windows:");
+		DumpWindowSet(L"\t\t\t", info.MaximisedWindows);
+
+		MessagePrint(spdlog::level::off, L"\tNormal windows:");
+		DumpWindowSet(L"\t\t\t", info.NormalWindows);
 	}
 
 	buf.clear();
@@ -1084,7 +1113,7 @@ void TaskbarAttributeWorker::DumpState()
 	MessagePrint(spdlog::level::off, buf);
 
 	buf.clear();
-	std::format_to(std::back_inserter(buf), L"Worker handles requests from hooks: {}", !m_disableAttributeRefreshReply);
+	std::format_to(std::back_inserter(buf), L"Worker handles attribute refresh requests from hooks: {}", !m_disableAttributeRefreshReply);
 	MessagePrint(spdlog::level::off, buf);
 
 	buf.clear();
@@ -1092,7 +1121,7 @@ void TaskbarAttributeWorker::DumpState()
 	MessagePrint(spdlog::level::off, buf);
 
 	MessagePrint(spdlog::level::off, L"Taskbars currently using normal appearance:");
-	DumpWindowSet(L"    ", m_NormalTaskbars, false);
+	DumpWindowSet(L"\t\t", m_NormalTaskbars, false);
 
 	MessagePrint(spdlog::level::off, L"===== End TaskbarAttributeWorker state dump =====");
 }
@@ -1217,6 +1246,7 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 
 TaskbarAttributeWorker::~TaskbarAttributeWorker() noexcept(false)
 {
+	m_disableAttributeRefreshReply = true;
 	UnregisterSearchCallbacks();
 	ReturnToStock();
 }

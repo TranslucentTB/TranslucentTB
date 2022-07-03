@@ -8,6 +8,7 @@
     xmlns:root="using:TranslucentTB.Xaml"
     xmlns:primitives="using:TranslucentTB.Xaml.Models.Primitives"
     xmlns:windows11Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 14)"
+    xmlns:windows11NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract, 14)"
     mc:Ignorable="d" x:DefaultBindMode="OneTime">
     <ToolTipService.ToolTip>
         <ToolTip>TranslucentTB</ToolTip>
@@ -24,6 +25,7 @@
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
                 <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
+                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Normal" GroupName="DesktopCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -62,6 +64,7 @@
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
                 <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
+                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Normal" GroupName="VisibleCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -100,6 +103,7 @@
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
                 <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
+                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Normal" GroupName="MaximizedCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -141,6 +145,7 @@
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
                 <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
+                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Normal" GroupName="StartCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -182,6 +187,7 @@
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
                 <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
+                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Normal" GroupName="SearchCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -223,6 +229,7 @@
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
                 <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
+                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Normal" GroupName="TaskViewCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -264,6 +271,7 @@
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
                 <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
+                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Normal" GroupName="BatterySaverCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
