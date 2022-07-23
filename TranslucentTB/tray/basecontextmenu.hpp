@@ -51,6 +51,7 @@ private:
 	void CleanupClassicContextMenu();
 
 protected:
+	static bool ShouldUseXamlMenu();
 	void ShowClassicContextMenu(const wuxc::MenuFlyout &flyout, POINT pt);
 
 	// pass by ref to update the caller's value to represent the new window rect

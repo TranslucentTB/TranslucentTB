@@ -147,6 +147,37 @@ void BaseContextMenu::CleanupClassicContextMenu()
 	m_Items.clear();
 }
 
+bool BaseContextMenu::ShouldUseXamlMenu()
+{
+	static const bool useXamlMenu = []
+	{
+		if (win32::IsAtLeastBuild(19045))
+		{
+			// Windows 10 22H2 and up (including Windows 11) - always works
+			return true;
+		}
+		else if (win32::IsAtLeastBuild(19041))
+		{
+			// Windows 10 21H2, 21H1, 20H2, 2004 - requires KB5007253 (which is revision number 1387 on all of those)
+			if (const auto [version, hr] = win32::GetWindowsBuild(); SUCCEEDED(hr))
+			{
+				return version.Revision >= 1387;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			// older than 2004 - always broken
+			return false;
+		}
+	}();
+
+	return useXamlMenu;
+}
+
 void BaseContextMenu::ShowClassicContextMenu(const wuxc::MenuFlyout &flyout, POINT pt)
 {
 	const auto guard = wil::scope_exit([this]
@@ -162,8 +193,7 @@ void BaseContextMenu::ShowClassicContextMenu(const wuxc::MenuFlyout &flyout, POI
 		{
 			TriggerClassicContextMenuItem(item);
 		}
-		// can return 0 if the menu is dismissed
-		else if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
+		else if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR) // can return 0 if the menu is dismissed
 		{
 			HresultHandle(HRESULT_FROM_WIN32(lastErr), spdlog::level::warn, L"Failed to open context menu.");
 		}

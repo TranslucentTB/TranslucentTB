@@ -98,6 +98,16 @@ public:
 	}
 
 	// Gets the current Windows build identifier.
+	// Unfortunately there is no good generic way to detect if a KB is installed.
+	// Checking via WIM or the WU API only lists KBs installed since the OS
+	// was clean installed, so if a KB superseding the one we are looking for
+	// has been released, then the OS will directly install that and never list
+	// the specific KB we want. We have to check the revision ID for that
+	// but VerifyVersionInfo doesn't support checking revision ID, so we have
+	// to manually read it off ntoskrnl.exe (which is the lesser evil compared
+	// to calling a driver-only API like RtlGetVersion).
+	// Prefer feature checking where possible - however sometimes for mundane
+	// bug fixes or fixes/changes to undocumented feature that isn't possible.
 	inline static std::pair<Version, HRESULT> GetWindowsBuild()
 	{
 		wil::unique_cotaskmem_string system32;

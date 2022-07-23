@@ -12,9 +12,7 @@
       <DisableSpecificWarnings>4275;4389;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalDependencies Condition="'$(Configuration)'=='Release'">gmock_main.lib</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(Configuration)'=='Debug'">gmock_maind.lib</AdditionalDependencies>
-      <AdditionalDependencies>ole32.lib;oleaut32.lib;runtimeobject.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gmock_main.lib;ole32.lib;oleaut32.lib;runtimeobject.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
     </Link>

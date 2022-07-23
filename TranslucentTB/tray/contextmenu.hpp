@@ -8,15 +8,10 @@
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include "redefgetcurrenttime.h"
 
-#include "win32.hpp"
-#include "../ProgramLog/error/win32.hpp"
-
 template<typename T>
 class ContextMenu : public BaseContextMenu {
 private:
 	T m_Page;
-
-	bool m_UseXamlContextMenu;
 
 	void ShowTooltip(bool visible)
 	{
@@ -33,7 +28,7 @@ protected:
 	}
 
 	template<typename... Args>
-	ContextMenu(Args&&... args) : m_Page(std::forward<Args>(args)...), m_UseXamlContextMenu(win32::IsAtLeastBuild(22000))
+	ContextMenu(Args&&... args) : m_Page(std::forward<Args>(args)...)
 	{
 		source().Content(m_Page);
 	}
@@ -42,7 +37,7 @@ protected:
 	{
 		if (const auto flyout = m_Page.ContextFlyout().try_as<wuxc::MenuFlyout>())
 		{
-			if (m_UseXamlContextMenu)
+			if (ShouldUseXamlMenu())
 			{
 				MoveHiddenWindow(rect);
 				const float scaleFactor = static_cast<float>(GetDpiForWindow(m_WindowHandle)) / USER_DEFAULT_SCREEN_DPI;

@@ -14,23 +14,12 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	TrayFlyoutPage::TrayFlyoutPage(bool hasPackageIdentity) : m_HasPackageIdentity(hasPackageIdentity)
 	{
-		// blur works on
-		// - Windows 10
-		// - Windows 11 build 22000 with KB5006746 (22000.282)
-		// - Windows 11 from build 22449 (inclusive) to build 22557 (exclusive)
-		if (!win32::IsAtLeastBuild(22000))
+		if (win32::IsExactBuild(22000))
 		{
-			m_BlurSupported = true;
-		}
-		else if (win32::IsExactBuild(22000))
-		{
-			// we check for cumulative update KB5006746 (22000.282)
-			// using IUpdateSearcher doesn't really works because if the OS was installed after a newer
-			// KB is released, then KB5006746 will never show up (since the newer KB supersedes it).
+			// Windows 11 RTM. sometimes very laggy at release, fixed in KB5006746 (22000.282)
 			if (const auto [version, hr] = win32::GetWindowsBuild(); SUCCEEDED(hr))
 			{
-				m_BlurSupported =
-					version.Major == 10 && version.Minor == 0 && version.Build == 22000 && version.Revision >= 282;
+				m_BlurSupported = version.Revision >= 282;
 			}
 			else
 			{
@@ -39,7 +28,10 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		}
 		else
 		{
-			m_BlurSupported = win32::IsAtLeastBuild(22449) && !win32::IsAtLeastBuild(22557);
+			// always works in Windows 10, but broken in Windows 11 besides RTM with KB5006746.
+			// since we check IsExactBuild above, using an inverted IsAtLeastBuild here 
+			// makes sure we return false for future versions of Windows 11 as well.
+			m_BlurSupported = !win32::IsAtLeastBuild(22000);
 		}
 
 		SYSTEM_POWER_STATUS powerStatus;
