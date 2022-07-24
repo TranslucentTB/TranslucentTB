@@ -274,9 +274,6 @@ void ConfigManager::SaveConfig() const
 	std::filesystem::path tempFile = m_ConfigPath;
 	tempFile.replace_extension(L".tmp");
 
-	std::filesystem::path backupFile = m_ConfigPath;
-	tempFile.replace_extension(L".bak");
-
 	wil::unique_file file;
 	const errno_t err = _wfopen_s(file.put(), tempFile.c_str(), L"wbS");
 	if (err == 0)
@@ -284,7 +281,7 @@ void ConfigManager::SaveConfig() const
 		SaveToFile(file.get());
 
 		file.reset();
-		if (!ReplaceFile(m_ConfigPath.c_str(), tempFile.c_str(), backupFile.c_str(), REPLACEFILE_WRITE_THROUGH | REPLACEFILE_IGNORE_MERGE_ERRORS | REPLACEFILE_IGNORE_ACL_ERRORS, nullptr, nullptr))
+		if (!ReplaceFile(m_ConfigPath.c_str(), tempFile.c_str(), nullptr, REPLACEFILE_WRITE_THROUGH | REPLACEFILE_IGNORE_MERGE_ERRORS | REPLACEFILE_IGNORE_ACL_ERRORS, nullptr, nullptr))
 		{
 			LastErrorHandle(spdlog::level::err, L"Failed to replace configuration file");
 		}
