@@ -283,7 +283,18 @@ void ConfigManager::SaveConfig() const
 		file.reset();
 		if (!ReplaceFile(m_ConfigPath.c_str(), tempFile.c_str(), nullptr, REPLACEFILE_WRITE_THROUGH | REPLACEFILE_IGNORE_MERGE_ERRORS | REPLACEFILE_IGNORE_ACL_ERRORS, nullptr, nullptr))
 		{
-			LastErrorHandle(spdlog::level::err, L"Failed to replace configuration file");
+			// If the target file doesn't exist (e.g. brand new installation of TranslucentTB), ReplaceFile fails.
+			if (const auto lastErr = GetLastError(); lastErr == ERROR_FILE_NOT_FOUND)
+			{
+				if (!MoveFileEx(tempFile.c_str(), m_ConfigPath.c_str(), MOVEFILE_WRITE_THROUGH))
+				{
+					LastErrorHandle(spdlog::level::err, L"Failed to move temporary configuration file");
+				}
+			}
+			else
+			{
+				HresultHandle(HRESULT_FROM_WIN32(lastErr), spdlog::level::err, L"Failed to replace configuration file");
+			}
 		}
 	}
 	else
