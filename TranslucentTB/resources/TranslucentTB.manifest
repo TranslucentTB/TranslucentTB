@@ -4,9 +4,8 @@
   <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
     <application>
       <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" />
-      <!-- DO NOT ADVANCE PAST 18362. The OS has a bug where it won't recognize 19041 (or 22000) as bigger. -->
-      <!-- This will cause unpackaged activation failures in XAML Islands. -->
       <maxversiontested Id="10.0.18362.0"/>
+      <maxversiontested Id="10.0.22000.0"/>
     </application>
   </compatibility>
 
