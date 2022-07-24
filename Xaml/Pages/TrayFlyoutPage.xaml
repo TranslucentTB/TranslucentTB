@@ -19,6 +19,9 @@
                 <MenuFlyoutSubItem.Tag>
                     <primitives:TaskbarState>Desktop</primitives:TaskbarState>
                 </MenuFlyoutSubItem.Tag>
+                <MenuFlyoutSubItem.Icon>
+                    <PathIcon Data="{StaticResource DesktopIcon}" Width="16" Height="16" />
+                </MenuFlyoutSubItem.Icon>
                 <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
                 <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutItem Tag="Color" x:Uid="TrayFlyoutPage_AccentColor" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ColorClicked">
@@ -57,6 +60,9 @@
                 <MenuFlyoutSubItem.Tag>
                     <primitives:TaskbarState>VisibleWindow</primitives:TaskbarState>
                 </MenuFlyoutSubItem.Tag>
+                <MenuFlyoutSubItem.Icon>
+                    <FontIcon Glyph="&#xE737;" />
+                </MenuFlyoutSubItem.Icon>
                 <ToggleMenuFlyoutItem Tag="Enabled" x:Uid="TrayFlyoutPage_Enabled" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
                 <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
                 <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
@@ -96,6 +102,9 @@
                 <MenuFlyoutSubItem.Tag>
                     <primitives:TaskbarState>MaximisedWindow</primitives:TaskbarState>
                 </MenuFlyoutSubItem.Tag>
+                <MenuFlyoutSubItem.Icon>
+                    <FontIcon Glyph="&#xE740;" />
+                </MenuFlyoutSubItem.Icon>
                 <ToggleMenuFlyoutItem Tag="Enabled" x:Uid="TrayFlyoutPage_Enabled" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
                 <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
                 <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
@@ -309,10 +318,13 @@
                 </MenuFlyoutSubItem.Icon>
                 <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_OpenLogFile" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="OpenLogFileClicked" IsEnabled="{x:Bind root:FunctionalConverters.IsSameLogSinkState(SinkState, primitives:LogSinkState.Opened), Mode = OneWay}">
                     <MenuFlyoutItem.Icon>
-                        <PathIcon Data="{StaticResource OpenLogFileIcon}" />
+                        <PathIcon Data="{StaticResource OpenLogFileIcon}" Width="16" Height="16" />
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
                 <MenuFlyoutSubItem x:Name="LogLevelSubMenu" x:Uid="TrayFlyoutPage_Advanced_LogVerbosity" Style="{StaticResource MergeIconsMenuFlyoutSubItem}" IsEnabled="{x:Bind root:FunctionalConverters.IsDifferentLogSinkState(SinkState, primitives:LogSinkState.Failed), Mode = OneWay}">
+                    <MenuFlyoutSubItem.Icon>
+                        <PathIcon Data="{StaticResource LogVerbosityIcon}" Width="16" Height="16" />
+                    </MenuFlyoutSubItem.Icon>
                     <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_LogVerbosity_Trace" GroupName="LogLevel" Click="LogLevelClicked">
                         <muxc:RadioMenuFlyoutItem.Tag>
                             <primitives:LogLevel>Trace</primitives:LogLevel>
@@ -350,7 +362,11 @@
                         </muxc:RadioMenuFlyoutItem.Tag>
                     </muxc:RadioMenuFlyoutItem>
                 </MenuFlyoutSubItem>
-                <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_DumpDynamicState" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="DumpDynamicStateClicked" IsEnabled="{x:Bind root:FunctionalConverters.IsDifferentLogSinkState(SinkState, primitives:LogSinkState.Failed), Mode = OneWay}" />
+                <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_DumpDynamicState" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="DumpDynamicStateClicked" IsEnabled="{x:Bind root:FunctionalConverters.IsDifferentLogSinkState(SinkState, primitives:LogSinkState.Failed), Mode = OneWay}">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xEBE8;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
                 <MenuFlyoutSeparator />
                 <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_EditSettings" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="EditSettingsClicked">
                     <MenuFlyoutItem.Icon>
@@ -369,8 +385,16 @@
                 </MenuFlyoutItem>
                 <ToggleMenuFlyoutItem x:Name="DisableSavingSettings" x:Uid="TrayFlyoutPage_Advanced_DisableHotSettings" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="DisableSavingSettingsClicked" />
                 <MenuFlyoutSeparator />
-                <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_ResetDynamicState" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ResetDynamicStateClicked" />
-                <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_CompactThunkHeap" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="CompactThunkHeapClicked" />
+                <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_ResetDynamicState" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ResetDynamicStateClicked">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE72C;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_CompactThunkHeap" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="CompactThunkHeapClicked">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE73F;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
             </MenuFlyoutSubItem>
             <ToggleMenuFlyoutItem x:Name="StartupState" x:Uid="TrayFlyoutPage_OpenAtBoot" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="StartupClicked" Visibility="{x:Bind HasPackageIdentity}" />
             <MenuFlyoutSeparator Visibility="{x:Bind HasPackageIdentity}" />
