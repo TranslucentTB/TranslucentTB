@@ -19,13 +19,13 @@
                 <MenuFlyoutSubItem.Tag>
                     <primitives:TaskbarState>Desktop</primitives:TaskbarState>
                 </MenuFlyoutSubItem.Tag>
+                <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
+                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutItem Tag="Color" x:Uid="TrayFlyoutPage_AccentColor" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ColorClicked">
                     <MenuFlyoutItem.Icon>
                         <FontIcon Glyph="&#xE790;" />
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
-                <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
-                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Normal" GroupName="DesktopCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -58,13 +58,13 @@
                     <primitives:TaskbarState>VisibleWindow</primitives:TaskbarState>
                 </MenuFlyoutSubItem.Tag>
                 <ToggleMenuFlyoutItem Tag="Enabled" x:Uid="TrayFlyoutPage_Enabled" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
+                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutItem Tag="Color" x:Uid="TrayFlyoutPage_AccentColor" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ColorClicked">
                     <MenuFlyoutItem.Icon>
                         <FontIcon Glyph="&#xE790;" />
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
-                <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
-                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Normal" GroupName="VisibleCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -97,13 +97,13 @@
                     <primitives:TaskbarState>MaximisedWindow</primitives:TaskbarState>
                 </MenuFlyoutSubItem.Tag>
                 <ToggleMenuFlyoutItem Tag="Enabled" x:Uid="TrayFlyoutPage_Enabled" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
+                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutItem Tag="Color" x:Uid="TrayFlyoutPage_AccentColor" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ColorClicked">
                     <MenuFlyoutItem.Icon>
                         <FontIcon Glyph="&#xE790;" />
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
-                <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
-                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Normal" GroupName="MaximizedCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -135,17 +135,20 @@
                 <MenuFlyoutSubItem.Tag>
                     <primitives:TaskbarState>StartOpened</primitives:TaskbarState>
                 </MenuFlyoutSubItem.Tag>
-                <MenuFlyoutSubItem.Icon>
+                <windows11Present:MenuFlyoutSubItem.Icon>
+                    <FontIcon Glyph="&#xE8FC;" />
+                </windows11Present:MenuFlyoutSubItem.Icon>
+                <windows11NotPresent:MenuFlyoutSubItem.Icon>
                     <FontIcon FontFamily="HoloLens MDL2 Assets" Glyph="&#xE782;" />
-                </MenuFlyoutSubItem.Icon>
+                </windows11NotPresent:MenuFlyoutSubItem.Icon>
                 <ToggleMenuFlyoutItem Tag="Enabled" x:Uid="TrayFlyoutPage_Enabled" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
+                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutItem Tag="Color" x:Uid="TrayFlyoutPage_AccentColor" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ColorClicked">
                     <MenuFlyoutItem.Icon>
                         <FontIcon Glyph="&#xE790;" />
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
-                <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
-                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Normal" GroupName="StartCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -181,13 +184,13 @@
                     <FontIcon Glyph="&#xE721;" />
                 </MenuFlyoutSubItem.Icon>
                 <ToggleMenuFlyoutItem Tag="Enabled" x:Uid="TrayFlyoutPage_Enabled" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
+                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutItem Tag="Color" x:Uid="TrayFlyoutPage_AccentColor" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ColorClicked">
                     <MenuFlyoutItem.Icon>
                         <FontIcon Glyph="&#xE790;" />
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
-                <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
-                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Normal" GroupName="SearchCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -223,13 +226,13 @@
                     <FontIcon Glyph="&#xE7C4;" />
                 </MenuFlyoutSubItem.Icon>
                 <ToggleMenuFlyoutItem Tag="Enabled" x:Uid="TrayFlyoutPage_Enabled" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
+                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutItem Tag="Color" x:Uid="TrayFlyoutPage_AccentColor" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ColorClicked">
                     <MenuFlyoutItem.Icon>
                         <FontIcon Glyph="&#xE790;" />
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
-                <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
-                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Normal" GroupName="TaskViewCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -265,13 +268,13 @@
                     <FontIcon Glyph="&#xE8BE;" />
                 </MenuFlyoutSubItem.Icon>
                 <ToggleMenuFlyoutItem Tag="Enabled" x:Uid="TrayFlyoutPage_Enabled" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" />
+                <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
+                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutItem Tag="Color" x:Uid="TrayFlyoutPage_AccentColor" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ColorClicked">
                     <MenuFlyoutItem.Icon>
                         <FontIcon Glyph="&#xE790;" />
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
-                <ToggleMenuFlyoutItem Tag="ShowPeek" x:Uid="TrayFlyoutPage_PeekButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11Present:Visibility="Collapsed" />
-                <ToggleMenuFlyoutItem Tag="ShowLine" x:Uid="TrayFlyoutPage_LineButton" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AppearanceClicked" windows11NotPresent:Visibility="Collapsed" />
                 <MenuFlyoutSeparator />
                 <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Normal" GroupName="BatterySaverCompositionAttribute" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="AppearanceClicked">
                     <muxc:RadioMenuFlyoutItem.Tag>
@@ -301,7 +304,14 @@
             </MenuFlyoutSubItem>
             <MenuFlyoutSeparator />
             <MenuFlyoutSubItem x:Uid="TrayFlyoutPage_Advanced" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
-                <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_OpenLogFile" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="OpenLogFileClicked" IsEnabled="{x:Bind root:FunctionalConverters.IsSameLogSinkState(SinkState, primitives:LogSinkState.Opened), Mode = OneWay}" />
+                <MenuFlyoutSubItem.Icon>
+                    <FontIcon Glyph="&#xE713;" />
+                </MenuFlyoutSubItem.Icon>
+                <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_OpenLogFile" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="OpenLogFileClicked" IsEnabled="{x:Bind root:FunctionalConverters.IsSameLogSinkState(SinkState, primitives:LogSinkState.Opened), Mode = OneWay}">
+                    <MenuFlyoutItem.Icon>
+                        <PathIcon Data="{StaticResource OpenLogFileIcon}" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
                 <MenuFlyoutSubItem x:Name="LogLevelSubMenu" x:Uid="TrayFlyoutPage_Advanced_LogVerbosity" Style="{StaticResource MergeIconsMenuFlyoutSubItem}" IsEnabled="{x:Bind root:FunctionalConverters.IsDifferentLogSinkState(SinkState, primitives:LogSinkState.Failed), Mode = OneWay}">
                     <muxc:RadioMenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_LogVerbosity_Trace" GroupName="LogLevel" Click="LogLevelClicked">
                         <muxc:RadioMenuFlyoutItem.Tag>
@@ -347,14 +357,23 @@
                         <FontIcon Glyph="&#xE943;" />
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
-                <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_ResetSettings" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ResetSettingsClicked" />
+                <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_ResetSettings" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ResetSettingsClicked">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE777;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_HideTrayIcon" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="HideTrayClicked">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xED1A;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
                 <ToggleMenuFlyoutItem x:Name="DisableSavingSettings" x:Uid="TrayFlyoutPage_Advanced_DisableHotSettings" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="DisableSavingSettingsClicked" />
-                <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_HideTrayIcon" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="HideTrayClicked" />
                 <MenuFlyoutSeparator />
                 <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_ResetDynamicState" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="ResetDynamicStateClicked" />
                 <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_CompactThunkHeap" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="CompactThunkHeapClicked" />
             </MenuFlyoutSubItem>
             <ToggleMenuFlyoutItem x:Name="StartupState" x:Uid="TrayFlyoutPage_OpenAtBoot" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="StartupClicked" Visibility="{x:Bind HasPackageIdentity}" />
+            <MenuFlyoutSeparator Visibility="{x:Bind HasPackageIdentity}" />
             <MenuFlyoutItem x:Uid="TrayFlyoutPage_TipsAndTricks" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="TipsAndTricksClicked">
                 <MenuFlyoutItem.Icon>
                     <FontIcon Glyph="&#xE82F;" />
