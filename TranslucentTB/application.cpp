@@ -91,9 +91,9 @@ Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> s
 	m_UwpCRTDep(
 		L"Microsoft.VCLibs.140.00_8wekyb3d8bbwe",
 		PACKAGE_VERSION {
-			// 14.0.30035.0 but the order is reversed because that's how the struct is.
+			// 14.0.30704.0 but the order is reversed because that's how the struct is.
 			.Revision = 0,
-			.Build = 30035,
+			.Build = 30704,
 			.Minor = 0,
 			.Major = 14
 		},
@@ -102,10 +102,10 @@ Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> s
 	m_WinUIDep(
 		L"Microsoft.UI.Xaml.2.7_8wekyb3d8bbwe",
 		PACKAGE_VERSION {
-			// 7.2203.17001.0 but the order is reversed because that's how the struct is.
+			// 7.2207.21001.0 but the order is reversed because that's how the struct is.
 			.Revision = 0,
-			.Build = 17001,
-			.Minor = 2203,
+			.Build = 21001,
+			.Minor = 2207,
 			.Major = 7
 		},
 		storageFolder.has_value()
