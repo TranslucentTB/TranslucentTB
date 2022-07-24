@@ -213,6 +213,9 @@
   <data name="TrayFlyoutPage_Exit.Text" xml:space="preserve">
     <value>离开</value>
   </data>
+  <data name="TrayFlyoutPage_LineButton.Text" xml:space="preserve">
+    <value>显示工作列线</value>
+  </data>
   <data name="TrayFlyoutPage_MaximizedWindow.Text" xml:space="preserve">
     <value>窗口最大化时</value>
   </data>
