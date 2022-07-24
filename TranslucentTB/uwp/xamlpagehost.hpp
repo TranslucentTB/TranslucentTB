@@ -333,7 +333,7 @@ public:
 		}
 		else
 		{
-			Flash();
+			SetForegroundWindow(m_WindowHandle);
 			return false;
 		}
 	}

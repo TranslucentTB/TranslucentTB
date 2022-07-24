@@ -50,10 +50,7 @@ protected:
 			case WM_LBUTTONUP:
 			case NIN_KEYSELECT:
 			case NIN_SELECT:
-				if (!SetForegroundWindow(m_WindowHandle))
-				{
-					MessagePrint(spdlog::level::info, L"Failed to set window as foreground window.");
-				}
+				SetForegroundWindow(m_WindowHandle);
 
 				if (const auto rect = GetTrayRect())
 				{

@@ -36,8 +36,12 @@ LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	default:
 		if (uMsg == m_NewInstanceMessage)
 		{
-			SendNotification(IDS_ALREADY_RUNNING);
-			m_App.GetWorker().ResetState(true);
+			if (!m_App.BringWelcomeToFront())
+			{
+				SendNotification(IDS_ALREADY_RUNNING);
+				m_App.GetWorker().ResetState(true);
+			}
+			
 			return 0;
 		}
 		else
@@ -176,7 +180,6 @@ void MainAppWindow::ColorRequested(const txmp::TaskbarState &state)
 	else
 	{
 		SetForegroundWindow(pickerHost->handle());
-		pickerHost->Flash();
 	}
 }
 
@@ -351,6 +354,10 @@ void MainAppWindow::PostNewInstanceNotification()
 {
 	if (const auto msg = Window::RegisterMessage(WM_TTBNEWINSTANCESTARTED))
 	{
-		Window::Find(TRAY_WINDOW, APP_NAME).post_message(*msg);
+		if (const auto runningInstance = Window::Find(TRAY_WINDOW, APP_NAME))
+		{
+			AllowSetForegroundWindow(runningInstance.process_id());
+			runningInstance.post_message(*msg);
+		}
 	}
 }

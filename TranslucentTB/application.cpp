@@ -36,12 +36,19 @@ winrt::fire_and_forget Application::CreateWelcomePage(wf::IAsyncOperation<bool> 
 	using winrt::TranslucentTB::Xaml::Pages::WelcomePage;
 	CreateXamlWindow<WelcomePage>(
 		xaml_startup_position::center,
-		[this, hasStartup = operation != nullptr](const WelcomePage &content, BaseXamlPageHost *)
+		[this, hasStartup = operation != nullptr](const WelcomePage &content, BaseXamlPageHost *host)
 		{
+			DispatchToMainThread([this, hwnd = host->handle()]
+			{
+				m_WelcomePage = hwnd;
+			});
+
 			auto closeRevoker = content.Closed(winrt::auto_revoke, [this, hasStartup]
 			{
 				DispatchToMainThread([this, hasStartup]
 				{
+					m_WelcomePage = nullptr;
+
 					if (hasStartup)
 					{
 						m_Startup.Disable();
@@ -70,6 +77,7 @@ winrt::fire_and_forget Application::CreateWelcomePage(wf::IAsyncOperation<bool> 
 
 				DispatchToMainThread([this]
 				{
+					m_WelcomePage = nullptr;
 					m_Config.SaveConfig(); // create the config file, if not already present
 					m_AppWindow.RemoveHideTrayIconOverride();
 					m_AppWindow.SendNotification(IDS_WELCOME_NOTIFICATION);
@@ -202,5 +210,18 @@ winrt::fire_and_forget Application::Shutdown(int exitCode)
 
 		// exit
 		PostQuitMessage(exitCode);
+	}
+}
+
+bool Application::BringWelcomeToFront() noexcept
+{
+	if (m_WelcomePage)
+	{
+		SetForegroundWindow(m_WelcomePage);
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }

@@ -35,6 +35,7 @@ class Application final {
 	winrt::TranslucentTB::Xaml::App m_XamlApp;
 	wuxh::WindowsXamlManager m_XamlManager;
 	MainAppWindow m_AppWindow;
+	Window m_WelcomePage;
 
 	XamlThreadPool m_Xaml;
 
@@ -67,4 +68,6 @@ public:
 		co_await wil::resume_foreground(m_DispatcherController.DispatcherQueue(), priority);
 		callback();
 	}
+
+	bool BringWelcomeToFront() noexcept;
 };

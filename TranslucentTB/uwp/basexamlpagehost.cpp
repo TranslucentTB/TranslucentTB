@@ -240,14 +240,3 @@ BaseXamlPageHost::BaseXamlPageHost(WindowClass &classRef, WindowClass &dragRegio
 		}
 	});
 }
-
-void BaseXamlPageHost::Flash() noexcept
-{
-	FLASHWINFO fwi = {
-		.cbSize = sizeof(fwi),
-		.hwnd = m_WindowHandle,
-		.dwFlags = FLASHW_ALL | FLASHW_TIMERNOFG
-	};
-
-	FlashWindowEx(&fwi);
-}
