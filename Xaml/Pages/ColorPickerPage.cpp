@@ -53,7 +53,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 	void ColorPickerPage::CancelButtonClicked(const IInspectable &, const wux::RoutedEventArgs &)
 	{
-		RequestClose();
+		Close();
 	}
 
 	void ColorPickerPage::DialogOpened(const IInspectable &, const wuxc::ContentDialogOpenedEventArgs &) noexcept
