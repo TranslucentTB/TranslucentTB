@@ -7,6 +7,8 @@
 [![Build Status](https://dev.azure.com/sylve0n/TranslucentTB/_apis/build/status/TranslucentTB.TranslucentTB?branchName=develop)](https://dev.azure.com/sylve0n/TranslucentTB/_build/latest?definitionId=4&branchName=develop)
 [![CodeFactor](https://www.codefactor.io/repository/github/translucenttb/translucenttb/badge/develop)](https://www.codefactor.io/repository/github/translucenttb/translucenttb/overview/develop)
 
+![Microsoft Store App Awards 2022 - Community Choice Award: Open Platform (runner up)](https://i.imgur.com/2XlJhnK.png#gh-dark-mode-only)![Microsoft Store App Awards 2022 - Community Choice Award: Open Platform (runner up)](https://i.imgur.com/Mjw137w.png#gh-light-mode-only)
+
 > [**With regards to the malware allegations**, we have an Issue explaining our permissions use.](https://github.com/TranslucentTB/TranslucentTB/issues/350)
 
 A lightweight (uses a few MB of RAM and almost no CPU) utility that makes the Windows taskbar translucent/transparent on Windows 10.
