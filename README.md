@@ -7,7 +7,7 @@
 [![Build Status](https://dev.azure.com/sylve0n/TranslucentTB/_apis/build/status/TranslucentTB.TranslucentTB?branchName=develop)](https://dev.azure.com/sylve0n/TranslucentTB/_build/latest?definitionId=4&branchName=develop)
 [![CodeFactor](https://www.codefactor.io/repository/github/translucenttb/translucenttb/badge/develop)](https://www.codefactor.io/repository/github/translucenttb/translucenttb/overview/develop)
 
-![Microsoft Store App Awards 2022 - Community Choice Award: Open Platform (runner up)](https://i.imgur.com/2XlJhnK.png#gh-dark-mode-only)![Microsoft Store App Awards 2022 - Community Choice Award: Open Platform (runner up)](https://i.imgur.com/Mjw137w.png#gh-light-mode-only)
+![Microsoft Store App Awards 2022 - Community Choice Award: Open Platform (runner up)](https://user-images.githubusercontent.com/6440374/180880766-4380b2cf-4d9e-4d07-8986-a9b34cb6244a.png#gh-dark-mode-only)![Microsoft Store App Awards 2022 - Community Choice Award: Open Platform (runner up)](https://user-images.githubusercontent.com/6440374/180880839-355c472c-0b7a-4aae-88e5-0234001cb281.png#gh-light-mode-only)
 
 > [**With regards to the malware allegations**, we have an Issue explaining our permissions use.](https://github.com/TranslucentTB/TranslucentTB/issues/350)
 
