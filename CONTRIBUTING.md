@@ -26,7 +26,7 @@ Resolving deltas: 100% (624/624), done.
 
 ### 2 - Install the build tools
 
-Now that you have the source, you will need Visual Studio 2022. [You can get the free community edition here](https://visualstudio.microsoft.com/vs/preview/).
+Now that you have the source, you will need Visual Studio 2022. [You can get the free community edition here](https://visualstudio.microsoft.com/downloads/).
 Install the following workloads:
 
 - Desktop development with C++
@@ -34,16 +34,11 @@ Install the following workloads:
 
 You also need to install the following individual components:
 
+- Windows 11 SDK (10.0.22621.0)
 - If building for x64: MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs (Latest)
 - If building for ARM64: MSVC v143 - VS 2022 C++ ARM64 Spectre-mitigated libs (Latest)
 
-### 3 - Install the Windows Insider SDK
-
-We currently require the [Windows Insider SDK](https://www.microsoft.com/en-us/software-download/windowsinsiderpreviewSDK) to build TranslucentTB because it has several important bug fixes.
-
-You do not need to have an Insider build of Windows to use this, you can install it on stable builds. Right now, we use the SDK build 22621, but a newer one should work as well, provided you update `WindowsTargetPlatformVersion` in `Common\CppProject.props` and `TargetPlatformVersion` in `AppPackage\AppPackage.wapproj`.
-
-### 4 - Install dependencies
+### 3 - Install dependencies
 
 We use vcpkg to manage our dependencies. You will need to [install it](https://vcpkg.io/en/getting-started.html).
 
@@ -54,7 +49,7 @@ vcpkg integrate install
 ```
 `gtest` can be ommitted if you don't intend to run the unit tests. Change the triplet to `arm64-windows` if building for ARM64.
 
-### 5 - Building and running the app
+### 4 - Building and running the app
 
 Open the solution file in Visual Studio 2022. Set the AppPackage project as the startup project (right-click it in the Solution Explorer, then hit "Set as startup project").
 
@@ -96,4 +91,3 @@ Once you are done, you can launch the app and check what it looks like. If every
 
 [LCID Structure]: https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/63d3d639-7fd2-4afb-abbe-0d5b5551eef8
 [Discord]: https://discord.gg/TranslucentTB
-[Gitter]: https://gitter.im/TranslucentTB/Lobby
