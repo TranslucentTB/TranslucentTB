@@ -100,13 +100,13 @@ Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> s
 		storageFolder.has_value()
 	),
 	m_WinUIDep(
-		L"Microsoft.UI.Xaml.2.7_8wekyb3d8bbwe",
+		L"Microsoft.UI.Xaml.2.8_8wekyb3d8bbwe",
 		PACKAGE_VERSION {
-			// 7.2207.21001.0 but the order is reversed because that's how the struct is.
+			// 8.2208.12001.0 but the order is reversed because that's how the struct is.
 			.Revision = 0,
-			.Build = 21001,
-			.Minor = 2207,
-			.Major = 7
+			.Build = 12001,
+			.Minor = 2208,
+			.Major = 8
 		},
 		storageFolder.has_value()
 	),
