@@ -52,7 +52,7 @@ wf::IAsyncAction StartupManager::Enable()
 
 		if (result != StartupTaskState::Enabled && result != StartupTaskState::EnabledByPolicy)
 		{
-			MessagePrint(spdlog::level::err, L"A request to enable the startup task did not result in it being enabled.");
+			MessagePrint(spdlog::level::err, APP_NAME L" asked Windows to enable a startup task but Windows did not enable it. This is typically the result of running \"privacy\" scripts on your computer.");
 		}
 	}
 }
