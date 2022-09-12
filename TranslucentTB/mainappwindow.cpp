@@ -250,7 +250,7 @@ void MainAppWindow::CompactThunkHeapRequested()
 	member_thunk::compact();
 }
 
-void MainAppWindow::StartupStateChanged()
+winrt::fire_and_forget MainAppWindow::StartupStateChanged()
 {
 	auto &manager = m_App.GetStartupManager();
 	if (const auto state = manager.GetState())
@@ -260,7 +260,7 @@ void MainAppWindow::StartupStateChanged()
 			using enum winrt::Windows::ApplicationModel::StartupTaskState;
 
 		case Disabled:
-			manager.Enable();
+			co_await manager.Enable();
 			break;
 
 		case Enabled:

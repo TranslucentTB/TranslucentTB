@@ -67,7 +67,7 @@ private:
 	void ResetDynamicStateRequested();
 	static void CompactThunkHeapRequested();
 
-	void StartupStateChanged();
+	winrt::fire_and_forget StartupStateChanged();
 	static void TipsAndTricksRequested();
 	void AboutRequested();
 	void Exit();

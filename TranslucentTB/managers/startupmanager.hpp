@@ -11,7 +11,7 @@ private:
 public:
 	inline StartupManager() noexcept : m_StartupTask(nullptr) { }
 
-	wf::IAsyncOperation<bool> AcquireTask();
+	winrt::fire_and_forget AcquireTask();
 
 	std::optional<winrt::Windows::ApplicationModel::StartupTaskState> GetState() const;
 	wf::IAsyncAction Enable();
