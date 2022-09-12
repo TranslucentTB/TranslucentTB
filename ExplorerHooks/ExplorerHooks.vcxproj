@@ -3,6 +3,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D0004E78-F00B-4943-B77E-9A278F8BA399}</ProjectGuid>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <Import Project="..\Common\CppProject.props" />
   <ItemDefinitionGroup Label="Globals">
@@ -26,6 +27,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="api.cpp" />
     <ClCompile Include="common.cpp" />
     <ClCompile Include="detourtransaction.cpp" />
     <ClCompile Include="dllmain.cpp" />
@@ -34,6 +36,7 @@
     <ClCompile Include="taskviewvisibilitymonitor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="api.hpp" />
     <ClInclude Include="common.hpp" />
     <ClInclude Include="detourtransaction.hpp" />
     <ClInclude Include="swcadetour.hpp" />

@@ -19,7 +19,7 @@
 #include "config/config.hpp"
 #include "config/taskbarappearance.hpp"
 #include "../dynamicloader.hpp"
-#include "../ExplorerHooks/explorerhooks.hpp"
+#include "../ExplorerHooks/api.hpp"
 #include "launchervisibilitysink.hpp"
 #include "../windows/messagewindow.hpp"
 #include "undoc/user32.hpp"

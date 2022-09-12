@@ -44,7 +44,8 @@ We use vcpkg to manage our dependencies. You will need to [install it](https://v
 
 Once you have that installed, open a terminal and execute these lines (replacing `$PATH_TO_TTB` by the location where you cloned TranslucentTB in step 1)
 ```sh
-vcpkg install --triplet x64-windows --overlay-ports=$PATH_TO_TTB\vcpkg\ports --head detours gtest member-thunk rapidjson spdlog wil
+vcpkg install --triplet x64-windows --overlay-ports=$PATH_TO_TTB\vcpkg\ports --head gtest member-thunk rapidjson spdlog wil
+vcpkg install --triplet x64-windows-static --overlay-ports=$PATH_TO_TTB\vcpkg\ports --head detours wil
 vcpkg integrate install
 ```
 `gtest` can be ommitted if you don't intend to run the unit tests. Change the triplet to `arm64-windows` if building for ARM64.
