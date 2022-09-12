@@ -291,7 +291,7 @@ void MainAppWindow::AboutRequested()
 void MainAppWindow::Exit()
 {
 	m_App.GetConfigManager().SaveConfig();
-	m_App.Shutdown(0);
+	m_App.Shutdown();
 }
 
 TaskbarAppearance &MainAppWindow::GetConfigForState(const txmp::TaskbarState &state)

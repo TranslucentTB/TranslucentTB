@@ -23,39 +23,23 @@ winrt::TranslucentTB::Xaml::App Application::CreateXamlApp() try
 }
 HresultErrorCatch(spdlog::level::critical, L"Failed to create Xaml app");
 
-winrt::fire_and_forget Application::CreateWelcomePage(wf::IAsyncOperation<bool> operation)
+void Application::CreateWelcomePage()
 {
-	// done first because the closed callback would otherwise need to await it
-	// and we can only await an IAsyncOperation once.
-	if (operation)
-	{
-		co_await operation;
-		co_await m_Startup.Enable();
-	}
-
 	using winrt::TranslucentTB::Xaml::Pages::WelcomePage;
 	CreateXamlWindow<WelcomePage>(
 		xaml_startup_position::center,
-		[this, hasStartup = operation != nullptr](const WelcomePage &content, BaseXamlPageHost *host)
+		[this](const WelcomePage &content, BaseXamlPageHost *host)
 		{
 			DispatchToMainThread([this, hwnd = host->handle()]
 			{
 				m_WelcomePage = hwnd;
 			});
 
-			auto closeRevoker = content.Closed(winrt::auto_revoke, [this, hasStartup]
+			auto closeRevoker = content.Closed(winrt::auto_revoke, [this]
 			{
-				DispatchToMainThread([this, hasStartup]
+				DispatchToMainThread([this]
 				{
-					m_WelcomePage = nullptr;
-
-					if (hasStartup)
-					{
-						m_Startup.Disable();
-					}
-
-					m_Config.DeleteConfigFile();
-					Shutdown(1);
+					Shutdown();
 				});
 			});
 
@@ -116,17 +100,22 @@ Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> s
 	m_XamlApp(CreateXamlApp()),
 	m_XamlManager(UWP::CreateXamlManager()),
 	m_AppWindow(*this, !fileExists, storageFolder.has_value(), hInst, m_Loader),
-	m_Xaml(hInst)
+	m_Xaml(hInst),
+	m_ShuttingDown(false)
 {
 	if (const auto spam = m_Loader.SetPreferredAppMode())
 	{
 		spam(PreferredAppMode::AllowDark);
 	}
 
-	wf::IAsyncOperation<bool> op = storageFolder ? m_Startup.AcquireTask() : nullptr;
+	if (storageFolder)
+	{
+		m_Startup.AcquireTask();
+	}
+
 	if (!fileExists)
 	{
-		CreateWelcomePage(std::move(op));
+		CreateWelcomePage();
 	}
 }
 
@@ -180,36 +169,53 @@ int Application::Run()
 	}
 }
 
-winrt::fire_and_forget Application::Shutdown(int exitCode)
+winrt::fire_and_forget Application::Shutdown()
 {
-	bool canExit = true;
-	for (const auto &thread : m_Xaml.GetThreads())
+	// several calls to Shutdown crash the app because DispatcherController::ShutdownQueueAsync
+	// can only be called once. but it can happen that Shutdown is called several times
+	// e.g. the user uninstalls the app while the welcome page is opened, which causes Shutdown
+	// to close the welcome page, which tries to shutdown the app.
+	if (!m_ShuttingDown)
 	{
-		const auto guard = thread->Lock();
-		if (const auto &window = thread->GetCurrentWindow(); window && window->page())
-		{
-			// Checking if the window can be closed requires to be on the same thread, so
-			// switch to that thread.
-			co_await wil::resume_foreground(thread->GetDispatcher());
-			if (!window->TryClose())
-			{
-				canExit = false;
+		m_ShuttingDown = true;
+		const bool hasWelcomePage = m_WelcomePage != nullptr;
 
-				// bring attention to the window that couldn't be closed.
-				SetForegroundWindow(window->handle());
+		bool canExit = true;
+		for (const auto &thread : m_Xaml.GetThreads())
+		{
+			const auto guard = thread->Lock();
+			if (const auto &window = thread->GetCurrentWindow(); window && window->page())
+			{
+				// Checking if the window can be closed requires to be on the same thread, so
+				// switch to that thread.
+				co_await wil::resume_foreground(thread->GetDispatcher());
+				if (!window->TryClose())
+				{
+					canExit = false;
+
+					// bring attention to the window that couldn't be closed.
+					SetForegroundWindow(window->handle());
+				}
 			}
 		}
-	}
 
-	if (canExit)
-	{
-		// go back to the main thread for exiting
-		co_await wil::resume_foreground(m_DispatcherController.DispatcherQueue());
+		if (canExit)
+		{
+			// go back to the main thread for exiting
+			co_await wil::resume_foreground(m_DispatcherController.DispatcherQueue());
 
-		co_await m_DispatcherController.ShutdownQueueAsync();
+			co_await m_DispatcherController.ShutdownQueueAsync();
 
-		// exit
-		PostQuitMessage(exitCode);
+			// delete the config file if the user hasn't went through the welcome page
+			// to make them go through it again next startup.
+			if (hasWelcomePage)
+			{
+				m_Config.DeleteConfigFile();
+			}
+
+			// exit
+			PostQuitMessage(hasWelcomePage ? 1 : 0);
+		}
 	}
 }
 

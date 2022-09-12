@@ -38,7 +38,7 @@
           </uap3:AppExecutionAlias>
         </uap3:Extension>
         <desktop:Extension Category="windows.startupTask" Executable="TranslucentTB.exe" EntryPoint="Windows.FullTrustApplication">
-          <desktop:StartupTask TaskId="TranslucentTB" Enabled="false" DisplayName="TranslucentTB" />
+          <desktop:StartupTask TaskId="TranslucentTB" Enabled="true" DisplayName="TranslucentTB" />
         </desktop:Extension>
       </Extensions>
       <uap7:Properties>

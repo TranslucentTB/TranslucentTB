@@ -38,8 +38,9 @@ class Application final {
 	Window m_WelcomePage;
 
 	XamlThreadPool m_Xaml;
+	bool m_ShuttingDown;
 
-	winrt::fire_and_forget CreateWelcomePage(wf::IAsyncOperation<bool> operation);
+	void CreateWelcomePage();
 	Application(HINSTANCE hInst, std::optional<std::filesystem::path> storageFolder, bool fileExists);
 
 public:
@@ -54,7 +55,7 @@ public:
 	constexpr TaskbarAttributeWorker &GetWorker() noexcept { return m_Worker; }
 
 	int Run();
-	winrt::fire_and_forget Shutdown(int exitCode);
+	winrt::fire_and_forget Shutdown();
 
 	template<typename T, typename Callback, typename... Args>
 	void CreateXamlWindow(xaml_startup_position pos, Callback &&callback, Args&&... args)
