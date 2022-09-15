@@ -8,16 +8,30 @@
 #include "../../ProgramLog/error/errno.hpp"
 #include "../../ProgramLog/error/std.hpp"
 #include "../../ProgramLog/error/win32.hpp"
+#include "util/color.hpp"
+
+const wchar_t *TrayIcon::GetThemedIcon() const
+{
+	HIGHCONTRAST info = { .cbSize = sizeof(info) };
+	if (SystemParametersInfo(SPI_GETHIGHCONTRAST, 0, &info, 0))
+	{
+		if (info.dwFlags & HCF_HIGHCONTRASTON)
+		{
+			return Util::Color::FromABGR(GetSysColor(COLOR_WINDOWTEXT)).IsDarkColor()
+				? m_darkIconResource : m_whiteIconResource;
+		}
+	}
+	else
+	{
+		LastErrorHandle(spdlog::level::info, L"Failed to check if high contrast mode is enabled");
+	}
+
+	return m_Ssudm && !m_Ssudm() ? m_darkIconResource : m_whiteIconResource;
+}
 
 void TrayIcon::LoadThemedIcon()
 {
-	const wchar_t *icon = m_whiteIconResource;
-	if (m_Ssudm && !m_Ssudm())
-	{
-		icon = m_darkIconResource;
-	}
-
-	if (const HRESULT hr = LoadIconMetric(hinstance(), icon, LIM_SMALL, m_Icon.put()); SUCCEEDED(hr))
+	if (const HRESULT hr = LoadIconMetric(hinstance(), GetThemedIcon(), LIM_SMALL, m_Icon.put()); SUCCEEDED(hr))
 	{
 		m_IconData.uFlags |= NIF_ICON;
 		m_IconData.hIcon = m_Icon.get();

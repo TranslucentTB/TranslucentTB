@@ -95,11 +95,6 @@ TEST(Util_Color_Constructor, ConstructorFromWinRTGivesCorrectValue)
 	ASSERT_EQ(Util::Color(winrtCol), Util::Color(0xDE, 0xAD, 0xBE, 0xEF));
 }
 
-TEST(Util_Color_Constructor, ConstructorFromUInt32GivesCorrectValue)
-{
-	ASSERT_EQ(Util::Color(0xDEADBEEF), Util::Color(0xDE, 0xAD, 0xBE, 0xEF));
-}
-
 TEST(Util_Color_ToRGBA, ReturnsCorrectValue)
 {
 	ASSERT_EQ(Util::Color(0xDE, 0xAD, 0xBE, 0xEF).ToRGBA(), 0xDEADBEEF);
@@ -198,6 +193,16 @@ TEST(Util_Color_FromString, ThrowsWhenInvalidColor)
 	{
 		ASSERT_THROW(Util::Color::FromString(testCase), std::invalid_argument);
 	}
+}
+
+TEST(Util_Color_FromRGBA, ReturnsCorrectValue)
+{
+	ASSERT_EQ(Util::Color::FromRGBA(0xDEADBEEF), Util::Color(0xDE, 0xAD, 0xBE, 0xEF));
+}
+
+TEST(Util_Color_FromABGR, ReturnsCorrectValue)
+{
+	ASSERT_EQ(Util::Color::FromABGR(0xEFBEADDE), Util::Color(0xDE, 0xAD, 0xBE, 0xEF));
 }
 
 TEST(Util_Color_FromHSV, ReturnsCorrectValue)

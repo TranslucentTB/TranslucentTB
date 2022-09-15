@@ -25,6 +25,7 @@ private:
 
 	PFN_SHOULD_SYSTEM_USE_DARK_MODE m_Ssudm;
 
+	const wchar_t *GetThemedIcon() const;
 	void LoadThemedIcon();
 	bool Notify(DWORD message, NOTIFYICONDATA *data = nullptr);
 

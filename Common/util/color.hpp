@@ -51,7 +51,6 @@ namespace Util {
 		constexpr Color() noexcept : R(0), G(0), B(0), A(0) { }
 		constexpr Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) noexcept : R(r), G(g), B(b), A(a) { }
 		constexpr Color(winrt::Windows::UI::Color col) noexcept : Color(std::bit_cast<Color>(std::rotr(std::bit_cast<uint32_t>(col), 8))) { }
-		constexpr explicit Color(uint32_t col) noexcept : Color(std::bit_cast<Color>(SwapBytes(col))) { }
 
 		constexpr uint32_t ToRGBA() const noexcept
 		{
@@ -148,16 +147,26 @@ namespace Util {
 			}
 			else if (str.length() == 6)
 			{
-				return Color { Util::ParseHexNumber<uint32_t>(str) << 8 | 0xFF };
+				return FromRGBA(Util::ParseHexNumber<uint32_t>(str) << 8 | 0xFF);
 			}
 			else if (str.length() == 8)
 			{
-				return Color { Util::ParseHexNumber<uint32_t>(str) };
+				return FromRGBA(Util::ParseHexNumber<uint32_t>(str));
 			}
 			else
 			{
 				throw std::invalid_argument("Not a valid color");
 			}
+		}
+
+		constexpr static Color FromRGBA(uint32_t col) noexcept
+		{
+			return std::bit_cast<Color>(SwapBytes(col));
+		}
+
+		constexpr static Color FromABGR(uint32_t col) noexcept
+		{
+			return std::bit_cast<Color>(col);
 		}
 
 		inline static Color FromHSV(double hue, double saturation, double value, double alpha = 1.0)
@@ -233,13 +242,18 @@ namespace Util {
 			return ToABGR() == other.ToABGR();
 		}
 
-		bool IsDarkColor() const noexcept
+		double Luminance() const noexcept
 		{
 			const double rg = R <= 10 ? R / 3294.0 : std::pow((R / 269.0) + 0.0513, 2.4);
 			const double gg = G <= 10 ? G / 3294.0 : std::pow((G / 269.0) + 0.0513, 2.4);
 			const double bg = B <= 10 ? B / 3294.0 : std::pow((B / 269.0) + 0.0513, 2.4);
 
-			return (0.2126 * rg) + (0.7152 * gg) + (0.0722 * bg) <= 0.5;
+			return (0.2126 * rg) + (0.7152 * gg) + (0.0722 * bg);
+		}
+
+		bool IsDarkColor() const noexcept
+		{
+			return Luminance() <= 0.5;
 		}
 
 	private:
