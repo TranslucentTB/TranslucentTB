@@ -182,4 +182,24 @@
   <ImportGroup Label="Shared">
     <Import Project="Common.vcxitems" Label="Shared" />
   </ImportGroup>
+
+  <Target Name="MakeWinMDReferencesNonPrivate" BeforeTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <_TemporaryReferences Include="@(Reference)" Condition="'%(Extension)' == '.winmd' And '%(Reference.Private)' == ''" />
+      <Reference Remove="@(_TemporaryReferences)" />
+      <Reference Include="@(_TemporaryReferences)">
+        <Private>false</Private>
+      </Reference>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="RemoveWebView2" BeforeTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <_WebView2Reference Include="@(Reference)" Condition="'%(Filename)' == 'Microsoft.Web.WebView2.Core'" />
+      <Reference Remove="@(_WebView2Reference)" />
+      <Reference Include="@(_WebView2Reference)" RemoveMetadata="Implementation" />
+
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)' == 'Microsoft.Web.WebView2.Core'" />
+    </ItemGroup>
+  </Target>
 </Project>

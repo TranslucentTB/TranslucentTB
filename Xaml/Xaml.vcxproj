@@ -31,6 +31,8 @@
     <!-- Prevent vcpkg from using the uwp triplet -->
     <VcpkgOSTarget>windows</VcpkgOSTarget>
     <AppxBundlePlatforms>x64|arm64</AppxBundlePlatforms>
+    <!-- Don't copy the WinMD in the appx -->
+    <IncludeCopyWinmdArtifactsOutputGroup>false</IncludeCopyWinmdArtifactsOutputGroup>
   </PropertyGroup>
   <Import Project="..\Common\CppProject.props" />
   <ItemDefinitionGroup Label="Globals">
