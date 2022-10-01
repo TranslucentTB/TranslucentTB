@@ -40,8 +40,11 @@
     <!-- This target is batched and a new Exec is spawned for each entry in _UnpackagedWin32WinmdManifest. -->
     <Exec Command="mt.exe -nologo -winmd:%(_UnpackagedWin32WinmdManifest.WinMDPath) -dll:%(_UnpackagedWin32WinmdManifest.Implementation) -out:%(_UnpackagedWin32WinmdManifest.Identity)" />
     <ItemGroup>
-      <!-- Emit the generated manifest into the Link inputs. -->
-      <Manifest Include="@(_UnpackagedWin32WinmdManifest)" />
+      <!--
+          Emit the generated manifest into the Link inputs.
+          Pass a metadata name that isn't used to wipe all metadata because otherwise VS tries copying the manifest to the output as %(FileName).winmd
+       -->
+      <Manifest Include="@(_UnpackagedWin32WinmdManifest)" KeepMetadata="DoesntExist" />
     </ItemGroup>
   </Target>
   <ItemDefinitionGroup Label="Globals">
