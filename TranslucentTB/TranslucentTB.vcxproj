@@ -43,7 +43,7 @@
       <!--
           Emit the generated manifest into the Link inputs.
           Pass a metadata name that isn't used to wipe all metadata because otherwise VS tries copying the manifest to the output as %(FileName).winmd
-       -->
+      -->
       <Manifest Include="@(_UnpackagedWin32WinmdManifest)" KeepMetadata="DoesntExist" />
     </ItemGroup>
   </Target>
