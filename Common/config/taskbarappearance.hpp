@@ -15,8 +15,17 @@
 #include "rapidjsonhelper.hpp"
 #include "../undoc/user32.hpp"
 #include "../util/color.hpp"
+#include "../win32.hpp"
 
 struct TaskbarAppearance {
+private:
+	inline static bool IsWindows1122H2() noexcept
+	{
+		static const bool isWindows1122H2 = win32::IsAtLeastBuild(22621);
+		return isWindows1122H2;
+	}
+
+public:
 	ACCENT_STATE Accent = ACCENT_NORMAL;
 	Util::Color Color = { 0, 0, 0, 0 };
 	bool ShowPeek = true;
@@ -71,6 +80,12 @@ protected:
 		if (key == ACCENT_KEY)
 		{
 			rjh::Deserialize(val, Accent, key, ACCENT_MAP);
+
+			// on 22H2 and newer, blur is broken so upgrade people to acrylic
+			if (Accent == ACCENT_ENABLE_BLURBEHIND && IsWindows1122H2())
+			{
+				Accent = ACCENT_ENABLE_ACRYLICBLURBEHIND;
+			}
 		}
 		else if (key == COLOR_KEY)
 		{
