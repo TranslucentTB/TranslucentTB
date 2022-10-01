@@ -78,6 +78,9 @@
   <ItemGroup>
     <ProjectReference Include="..\TranslucentTB\TranslucentTB.vcxproj" />
   </ItemGroup>
+  <ItemGroup>
+    <SDKReference Include="Microsoft.VCLibs, Version=14.0" />
+  </ItemGroup>
   <Target Name="FlattenPackage" BeforeTargets="_ConvertItems">
     <ItemGroup>
       <_TemporaryFilteredWapProjOutput Include="@(_FilteredNonWapProjProjectOutput)" />
