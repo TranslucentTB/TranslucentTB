@@ -1,0 +1,57 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: checkboxes
+    id: dupes
+    attributes:
+      description: By submitting this issue, you agree that you've done the minimal effort of checking for an existing issue, and understand that we may close your issue if an issue already exists, our you do not provide enough information in your issue.
+      options:
+        - label: I have checked the issue tracker if my bug has already been fixed or answered in another (possibly closed) issue.
+          required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce the issue
+      description: Please give us clear and concise steps to reproduce the problem you are experiencing.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected results
+      description: What you expected to happen
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual results
+      description: What actually happened
+    validations:
+      required: true
+  - type: dropdown
+    id: os-version
+    attributes:
+      label: Windows version
+      description: What version of Windows are you running? Note that Insider builds are subject to frequent changes by Microsoft so a bug may not be addressed until the update becomes close to reaching public release.
+      options:
+        - Windows 10 May/November 2019 Update (builds 18362 and 18363)
+        - Windows 10 2004-22H2 (builds 19041-19045)
+        - Windows 11 RTM (build 22000)
+        - Windows 11 SV2 (builds 22621-22622)
+        - Windows 11 Insider builds (builds 22623 and up). Please mention exact build.
+    validations:
+      required: true
+  - type: textarea
+    id: other
+    attributes:
+      label: Other details
+      description: Put other details that you feel could be helpful in diagnosing the problem
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
