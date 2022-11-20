@@ -14,6 +14,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	TrayFlyoutPage::TrayFlyoutPage(bool hasPackageIdentity) : m_HasPackageIdentity(hasPackageIdentity)
 	{
+		// TODO: move that to a common public function and use in both taskbarappearance and here.
 		if (win32::IsExactBuild(22000))
 		{
 			// Windows 11 RTM. sometimes very laggy at release, fixed in KB5006746 (22000.282)

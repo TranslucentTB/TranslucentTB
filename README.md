@@ -31,6 +31,7 @@ A lightweight (uses a few MB of RAM and almost no CPU) utility that makes the Wi
   - **Task View opened**: Will change the taskbar apperance when the Task View (previously Timeline) is open.
 - On Windows 10, ability to **show or hide the Aero Peek button** depending on the currently active dynamic mode.
 - On Windows 11, ability to **show or hide the taskbar line** depending on the currently active dynamic mode.
+- Compatible with [RoundedTB](https://github.com/torchgm/RoundedTB)!
 - Compatible with [ExplorerPatcher](https://github.com/valinet/ExplorerPatcher)!
 
 You can see it in action [here](https://gfycat.com/TidyFelineCrownofthornsstarfish) (short) and [here](https://gfycat.com/ConsciousCriminalDassie) (longer).

@@ -310,9 +310,7 @@ public:
 			HresultVerify(initWithWnd->Initialize(m_WindowHandle), spdlog::level::warn, L"Failed to initialize with window");
 		}
 
-		// TODO:
-		// tab navigation enabled on opening
-		// no animation when closing through alt-space menu
+		// TODO: no animation when closing through alt-space menu with keyboard
 	}
 
 	inline winrt::TranslucentTB::Xaml::Pages::FramelessPage page() noexcept override
