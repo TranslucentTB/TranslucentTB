@@ -6,6 +6,7 @@ body:
   - type: checkboxes
     id: dupes
     attributes:
+      label: Please check for a duplicate first
       description: By submitting this issue, you agree that you've done the minimal effort of checking for an existing issue, and understand that we may close your issue if an issue already exists, our you do not provide enough information in your issue.
       options:
         - label: I have checked the issue tracker if my bug has already been fixed or answered in another (possibly closed) issue.
