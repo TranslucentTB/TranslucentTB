@@ -18,14 +18,34 @@
 #include "../win32.hpp"
 
 struct TaskbarAppearance {
-private:
-	inline static bool IsWindows1122H2() noexcept
+	inline static bool IsBlurSupported()
 	{
-		static const bool isWindows1122H2 = win32::IsAtLeastBuild(22621);
-		return isWindows1122H2;
+		static const bool isBlurSupported = []
+		{
+			if (win32::IsExactBuild(22000))
+			{
+				// Windows 11 RTM. sometimes very laggy at release, fixed in KB5006746 (22000.282)
+				if (const auto [version, hr] = win32::GetWindowsBuild(); SUCCEEDED(hr))
+				{
+					return version.Revision >= 282;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			else
+			{
+				// always works in Windows 10, but broken in Windows 11 besides RTM with KB5006746.
+				// since we check IsExactBuild above, using an inverted IsAtLeastBuild here 
+				// makes sure we return false for future versions of Windows 11 as well.
+				return !win32::IsAtLeastBuild(22000);
+			}
+		}();
+
+		return isBlurSupported;
 	}
 
-public:
 	ACCENT_STATE Accent = ACCENT_NORMAL;
 	Util::Color Color = { 0, 0, 0, 0 };
 	bool ShowPeek = true;
@@ -81,8 +101,8 @@ protected:
 		{
 			rjh::Deserialize(val, Accent, key, ACCENT_MAP);
 
-			// on 22H2 and newer, blur is broken so upgrade people to acrylic
-			if (Accent == ACCENT_ENABLE_BLURBEHIND && IsWindows1122H2())
+			// when blur is broken upgrade people to acrylic
+			if (Accent == ACCENT_ENABLE_BLURBEHIND && !IsBlurSupported())
 			{
 				Accent = ACCENT_ENABLE_ACRYLICBLURBEHIND;
 			}

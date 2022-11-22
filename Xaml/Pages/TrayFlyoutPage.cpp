@@ -8,33 +8,14 @@
 #include "arch.h"
 #include <winbase.h>
 
-#include "win32.hpp"
+#include "config/taskbarappearance.hpp"
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
-	TrayFlyoutPage::TrayFlyoutPage(bool hasPackageIdentity) : m_HasPackageIdentity(hasPackageIdentity)
+	TrayFlyoutPage::TrayFlyoutPage(bool hasPackageIdentity) :
+		m_BlurSupported(TaskbarAppearance::IsBlurSupported()),
+		m_HasPackageIdentity(hasPackageIdentity)
 	{
-		// TODO: move that to a common public function and use in both taskbarappearance and here.
-		if (win32::IsExactBuild(22000))
-		{
-			// Windows 11 RTM. sometimes very laggy at release, fixed in KB5006746 (22000.282)
-			if (const auto [version, hr] = win32::GetWindowsBuild(); SUCCEEDED(hr))
-			{
-				m_BlurSupported = version.Revision >= 282;
-			}
-			else
-			{
-				m_BlurSupported = false;
-			}
-		}
-		else
-		{
-			// always works in Windows 10, but broken in Windows 11 besides RTM with KB5006746.
-			// since we check IsExactBuild above, using an inverted IsAtLeastBuild here 
-			// makes sure we return false for future versions of Windows 11 as well.
-			m_BlurSupported = !win32::IsAtLeastBuild(22000);
-		}
-
 		SYSTEM_POWER_STATUS powerStatus;
 		if (GetSystemPowerStatus(&powerStatus))
 		{
