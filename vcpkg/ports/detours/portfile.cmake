@@ -9,7 +9,6 @@ vcpkg_from_github(
 )
 
 set(EXTRA_FLAGS "/guard:cf /guard:ehcont /ZH:SHA_256 /Qspectre /QIntel-jcc-erratum")
-set(EXTRA_FLAGS_RELEASE "/GL")
 
 set(VCPKG_CXX_FLAGS "${VCPKG_CXX_FLAGS} ${EXTRA_FLAGS}")
 set(VCPKG_CXX_FLAGS_RELEASE "${VCPKG_CXX_FLAGS_RELEASE} ${EXTRA_FLAGS_RELEASE}")

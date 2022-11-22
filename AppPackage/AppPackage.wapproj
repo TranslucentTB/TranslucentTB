@@ -39,6 +39,8 @@
     <AppxBundlePlatforms>x64|arm64</AppxBundlePlatforms>
     <DebuggerType>NativeOnly</DebuggerType>
     <DefaultLanguage>en-US</DefaultLanguage>
+    <!-- Prevent ucrtbased.dll from being copied to the output -->
+    <DisableImplicitUCRTReference>true</DisableImplicitUCRTReference>
   </PropertyGroup>
   <PropertyGroup Condition="'$(CertificateThumbprint)'!=''">
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
