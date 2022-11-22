@@ -6,7 +6,6 @@
 #endif
 
 #include "appinfo.hpp"
-#include "util/hstring_format.hpp"
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
@@ -17,8 +16,10 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		ComponentConnectorT::InitializeComponent();
 
-		// TODO: localize
-		Title(Util::hstring_format<L"{} - Color picker - " APP_NAME>(GetTextForState(m_State)));
+		const auto resourceLoader = Windows::ApplicationModel::Resources::ResourceLoader::GetForUIContext(UIContext());
+		Title(winrt::format(L"{} - {} - " APP_NAME,
+			resourceLoader.GetString(GetResourceForState(m_State)),
+			resourceLoader.GetString(L"/TranslucentTB.Xaml/Resources/TrayFlyoutPage_AccentColor/Text")));
 	}
 
 	bool ColorPickerPage::CanMove() noexcept
@@ -76,20 +77,18 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		m_ColorChangedHandler(args.NewColor());
 	}
 
-	std::wstring_view ColorPickerPage::GetTextForState(txmp::TaskbarState state)
+	std::wstring_view ColorPickerPage::GetResourceForState(txmp::TaskbarState state)
 	{
 		switch (state)
 		{
 			using enum txmp::TaskbarState;
-
-		// TODO: in the future, when localization is possible, we should lookup the same resource used for the context menu entries.
-		case Desktop: return L"Desktop";
-		case VisibleWindow: return L"Visible window";
-		case MaximisedWindow: return L"Maximised window";
-		case StartOpened: return L"Start opened";
-		case SearchOpened: return L"Search opened";
-		case TaskViewOpened: return L"Task View opened";
-		case BatterySaver: return L"Battery saver";
+		case Desktop: return L"/TranslucentTB.Xaml/Resources/TrayFlyoutPage_Desktop/Text";
+		case VisibleWindow: return L"/TranslucentTB.Xaml/Resources/TrayFlyoutPage_VisibleWindow/Text";
+		case MaximisedWindow: return L"/TranslucentTB.Xaml/Resources/TrayFlyoutPage_MaximizedWindow/Text";
+		case StartOpened: return L"/TranslucentTB.Xaml/Resources/TrayFlyoutPage_StartOpened/Text";
+		case SearchOpened: return L"/TranslucentTB.Xaml/Resources/TrayFlyoutPage_SearchOpened/Text";
+		case TaskViewOpened: return L"/TranslucentTB.Xaml/Resources/TrayFlyoutPage_TaskViewOpened/Text";
+		case BatterySaver: return L"/TranslucentTB.Xaml/Resources/TrayFlyoutPage_BatterySaver/Text";
 		default: throw std::invalid_argument("Unknown taskbar state");
 		}
 	}

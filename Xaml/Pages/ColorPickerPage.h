@@ -31,7 +31,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void PickerColorChanged(const muxc::ColorPicker &sender, const muxc::ColorChangedEventArgs &args);
 
 	private:
-		static std::wstring_view GetTextForState(txmp::TaskbarState state);
+		static std::wstring_view GetResourceForState(txmp::TaskbarState state);
 		fire_and_forget OpenConfirmDialog();
 
 		bool m_DialogOpened = false;

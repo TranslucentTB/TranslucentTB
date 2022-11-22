@@ -34,6 +34,7 @@ A lightweight (uses a few MB of RAM and almost no CPU) utility that makes the Wi
 - Compatible with [RoundedTB](https://github.com/torchgm/RoundedTB)!
 - Compatible with [ExplorerPatcher](https://github.com/valinet/ExplorerPatcher)!
 
+<!-- TODO: update that as well -->
 You can see it in action [here](https://gfycat.com/TidyFelineCrownofthornsstarfish) (short) and [here](https://gfycat.com/ConsciousCriminalDassie) (longer).
 
 ## Download

@@ -2,12 +2,12 @@
 #include <chrono>
 #include <debugapi.h>
 #include <spdlog/spdlog.h>
+#include <spdlog/sinks/msvc_sink.h>
 #include <spdlog/logger.h>
 #include "winrt.hpp"
 
 #include "appinfo.hpp"
 #include "config/config.hpp"
-#include "debugsink.hpp"
 #include "error/error.hpp"
 #include "error/winrt.hpp"
 #include "error/std.hpp"
@@ -92,7 +92,7 @@ void Log::Initialize(const std::optional<std::filesystem::path> &storageFolder)
 	auto expected = InitStatus::NotInitialized;
 	if (s_LogInitStatus.compare_exchange_strong(expected, InitStatus::Initializing))
 	{
-		auto defaultLogger = std::make_shared<spdlog::logger>("", std::make_shared<debug_sink>());
+		auto defaultLogger = std::make_shared<spdlog::logger>("", std::make_shared<spdlog::sinks::windebug_sink_st>());
 
 		if (auto path = GetPath(storageFolder); !path.empty())
 		{

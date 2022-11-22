@@ -42,9 +42,6 @@
     <ClInclude Include="error\errno.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="debugsink.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
