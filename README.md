@@ -37,7 +37,7 @@ A lightweight (uses a few MB of RAM and almost no CPU) utility that makes the Wi
 
 ## Download
 
-[<img src="https://user-images.githubusercontent.com/6440374/204117354-93847af4-a54b-444e-9b84-6d3ee1547cbc.svg" alt="Get it from Microsoft" height="104">](https://apps.microsoft.com/store/detail/9PF4KZ2VN4W9)
+[<img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Get it from Microsoft" height="104">](https://apps.microsoft.com/store/detail/9PF4KZ2VN4W9)
 
 You can download the program for free from the [Microsoft Store](https://www.microsoft.com/store/apps/9PF4KZ2VN4W9) and take advantage of its features like background auto-updates.
 
