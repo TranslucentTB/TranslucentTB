@@ -140,6 +140,7 @@
   </data>
   <data name="TrayFlyoutPage_AccentColor.Text" xml:space="preserve">
     <value>アクセントカラー</value>
+    <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Acrylic.Text" xml:space="preserve">
     <value>アクリル</value>
@@ -197,6 +198,7 @@
   </data>
   <data name="TrayFlyoutPage_BatterySaver.Text" xml:space="preserve">
     <value>バッテリー節約機能</value>
+    <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Blur.Text" xml:space="preserve">
     <value>ぼかし</value>
@@ -206,6 +208,7 @@
   </data>
   <data name="TrayFlyoutPage_Desktop.Text" xml:space="preserve">
     <value>デスクトップ</value>
+    <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Enabled.Text" xml:space="preserve">
     <value>有効</value>
@@ -213,11 +216,16 @@
   <data name="TrayFlyoutPage_Exit.Text" xml:space="preserve">
     <value>終了</value>
   </data>
+  <data name="TrayFlyoutPage_LineButton.Text" xml:space="preserve">
+    <value>タスクバーの境界線を表示する</value>
+  </data>
   <data name="TrayFlyoutPage_MaximizedWindow.Text" xml:space="preserve">
     <value>ウィンドウ最大化</value>
+    <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Normal.Text" xml:space="preserve">
     <value>通常</value>
+    <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Opaque.Text" xml:space="preserve">
     <value>不透明</value>
@@ -230,12 +238,15 @@
   </data>
   <data name="TrayFlyoutPage_SearchOpened.Text" xml:space="preserve">
     <value>検索の展開</value>
+    <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_StartOpened.Text" xml:space="preserve">
     <value>スタートメニュー展開</value>
+    <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_TaskViewOpened.Text" xml:space="preserve">
     <value>タスクビュー展開</value>
+    <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_TipsAndTricks.Text" xml:space="preserve">
     <value>使い方のコツ</value>
