@@ -9,7 +9,7 @@
 
 A lightweight (uses a few MB of RAM and almost no CPU) utility that makes the Windows taskbar translucent/transparent on Windows 10 and Windows 11.
 
-[<img src="https://user-images.githubusercontent.com/6440374/204117354-93847af4-a54b-444e-9b84-6d3ee1547cbc.svg#gh-dark-mode-only" alt="Get it from Microsoft" height="104"><img src="https://user-images.githubusercontent.com/6440374/204117365-e83dfdac-a22b-41e8-ac81-a12c472338d4.svg#gh-light-mode-only" alt="Get it from Microsoft" height="104">](https://apps.microsoft.com/store/detail/9PF4KZ2VN4W9)
+[<img src="https://user-images.githubusercontent.com/6440374/204117354-93847af4-a54b-444e-9b84-6d3ee1547cbc.svg" alt="Get it from Microsoft" height="104">](https://apps.microsoft.com/store/detail/9PF4KZ2VN4W9)
 
 <img src="https://i.imgur.com/QbG7KQA.png" alt="windows 11 acrylic" width="243"> <img src="https://i.imgur.com/zabZ52s.png" alt="windows 11 clear" width="243">
 
