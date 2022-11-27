@@ -7,13 +7,13 @@
 
 ![Microsoft Store App Awards 2022 - Community Choice Award: Open Platform (runner up)](https://user-images.githubusercontent.com/6440374/180880766-4380b2cf-4d9e-4d07-8986-a9b34cb6244a.png#gh-dark-mode-only)![Microsoft Store App Awards 2022 - Community Choice Award: Open Platform (runner up)](https://user-images.githubusercontent.com/6440374/180880839-355c472c-0b7a-4aae-88e5-0234001cb281.png#gh-light-mode-only)
 
-<!-- TODO: Get it on Microsoft store badge -->
-
 A lightweight (uses a few MB of RAM and almost no CPU) utility that makes the Windows taskbar translucent/transparent on Windows 10 and Windows 11.
 
 <img src="https://i.imgur.com/QbG7KQA.png" alt="windows 11 acrylic" width="243"> <img src="https://i.imgur.com/zabZ52s.png" alt="windows 11 clear" width="243">
 
 ![windows 10 acrylic](https://i.imgur.com/M15IPJW.png) ![windows 10 clear](https://i.imgur.com/eLGTtwp.png) ![windows 10 blur](https://i.imgur.com/r4ZJjnL.png)
+
+[<img src="https://get.microsoft.com/images/en-us%20dark.svg#gh-dark-mode-only" alt="Get it from Microsoft" height="104"><img src="https://get.microsoft.com/images/en-us%20light.svg#gh-light-mode-only" alt="Get it from Microsoft" height="104">](https://apps.microsoft.com/store/detail/9PF4KZ2VN4W9)
 
 ## Features
 
@@ -34,9 +34,6 @@ A lightweight (uses a few MB of RAM and almost no CPU) utility that makes the Wi
 - On Windows 11, ability to **show or hide the taskbar line** depending on the currently active dynamic mode.
 - Compatible with [RoundedTB](https://github.com/torchgm/RoundedTB)!
 - Compatible with [ExplorerPatcher](https://github.com/valinet/ExplorerPatcher)!
-
-<!-- TODO: update that as well -->
-You can see it in action [here](https://gfycat.com/TidyFelineCrownofthornsstarfish) (short) and [here](https://gfycat.com/ConsciousCriminalDassie) (longer).
 
 ## Download
 

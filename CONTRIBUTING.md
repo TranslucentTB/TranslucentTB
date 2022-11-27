@@ -48,7 +48,7 @@ vcpkg install --triplet x64-windows --overlay-ports=$PATH_TO_TTB\vcpkg\ports --h
 vcpkg install --triplet x64-windows-static --overlay-ports=$PATH_TO_TTB\vcpkg\ports --head detours wil
 vcpkg integrate install
 ```
-`gtest` can be ommitted if you don't intend to run the unit tests. Change the triplet to `arm64-windows` if building for ARM64.
+`gtest` can be ommitted if you don't intend to run the unit tests. Change the triplet to `arm64-windows` and `arm64-windows-static` if building for ARM64.
 
 ### 4 - Building and running the app
 
