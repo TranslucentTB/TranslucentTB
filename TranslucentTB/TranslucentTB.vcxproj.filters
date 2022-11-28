@@ -194,8 +194,8 @@
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="uwp\api-ms-win-appmodel-runtime-l1-1-5.def">
+    <CustomDefFile Include="uwp\api-ms-win-appmodel-runtime-l1-1-5.def">
       <Filter>Source Files</Filter>
-    </CustomBuild>
+    </CustomDefFile>
   </ItemGroup>
 </Project>

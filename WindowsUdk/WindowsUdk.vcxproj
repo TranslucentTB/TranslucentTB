@@ -13,6 +13,9 @@
     <ApplicationType>Windows Store</ApplicationType>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
     <DesktopCompatible>true</DesktopCompatible>
+
+    <!-- We don't produce a DLL -->
+    <SkipSigning>True</SkipSigning>
   </PropertyGroup>
   <Import Project="..\Common\CppProject.props" />
   <ItemGroup>
