@@ -1,0 +1,62 @@
+#pragma code_page(65001)
+
+#ifdef APSTUDIO_INVOKED
+#error Please edit this file manually.
+#endif
+
+#include <ddeml.h>
+#include <winres.h>
+#include "../../../Common/appinfo.hpp"
+#include "../ids.h"
+
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION APP_VERSION_FIXED
+	PRODUCTVERSION APP_VERSION_FIXED
+	FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+	FILEFLAGS VS_FF_DEBUG
+#endif
+	FILEOS VOS_NT_WINDOWS32
+	FILETYPE VFT_APP
+{
+	BLOCK L"StringFileInfo"
+	{
+		BLOCK L"040704b0"
+		{
+			VALUE L"FileDescription", APP_NAME
+			VALUE L"FileVersion", APP_VERSION
+			VALUE L"InternalName", APP_NAME L".exe"
+			VALUE L"OriginalFilename", APP_NAME L".exe"
+			VALUE L"ProductName", APP_NAME
+			VALUE L"ProductVersion", APP_VERSION
+			VALUE L"Comments", L"Ein leichtgewichtiges Werkzeug, das die Windows-Taskleiste durchscheinend/transparent macht."
+			VALUE L"CompanyName", APP_NAME L" Open-Source-Entwickler"
+			VALUE L"LegalCopyright", L"Copyright © " APP_COPYRIGHT_YEAR L" " APP_NAME L" Open-Source-Entwickler"
+		}
+	}
+	BLOCK L"VarFileInfo"
+	{
+		VALUE L"Translation", 0x0407, CP_WINUNICODE
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Strings
+//
+
+STRINGTABLE
+{
+	IDS_WELCOME_NOTIFICATION APP_NAME L" lebt in der Taskleiste.\n\nKlicken Sie mit der rechten Maustaste auf das Taskleistensymbol, um Einstellungen zu ändern, die App so einzustellen, dass sie beim Booten geöffnet wird, Informationen anzuzeigen, die App zu beenden usw."
+	IDS_HIDETRAY_DIALOG L"Diese Änderung ist temporär und geht beim nächsten Start von " APP_NAME L" verloren.\n\nUm diese Änderung dauerhaft zu machen, bearbeiten Sie die Konfigurationsdatei mit ""Erweitert"" > ""Einstellungen bearbeiten"" und setzen ""hide_tray"" auf wahr.\n\nSind Sie sicher, dass Sie fortfahren möchten?"
+	IDS_ALREADY_RUNNING APP_NAME L" ist bereits gestartet! Klicken Sie mit der rechten Maustaste auf das Taskleistensymbol, um darauf zuzugreifen."
+}
