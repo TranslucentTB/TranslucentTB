@@ -197,7 +197,7 @@
     <value>Auf Standardeinstellungen zurücksetzen</value>
   </data>
   <data name="TrayFlyoutPage_BatterySaver.Text" xml:space="preserve">
-    <value>Batterieschoner</value>
+    <value>Energiesparmodus</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Blur.Text" xml:space="preserve">
@@ -228,7 +228,7 @@
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Opaque.Text" xml:space="preserve">
-    <value>Deckkraft</value>
+    <value>Undurchsichtig</value>
   </data>
   <data name="TrayFlyoutPage_OpenAtBoot.Text" xml:space="preserve">
     <value>Mit Windows starten</value>
