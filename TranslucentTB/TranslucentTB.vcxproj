@@ -164,6 +164,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="resources\language\TranslucentTB.es-US.rc2">
+      <FileType>RC</FileType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="taskbar\ShellExperience.idl">

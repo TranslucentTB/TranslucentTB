@@ -72,6 +72,7 @@
     <Content Include="Assets\Wide310x150Logo.scale-150.jpeg" />
     <Content Include="Assets\Wide310x150Logo.scale-200.jpeg" />
     <Content Include="Assets\Wide310x150Logo.scale-400.jpeg" />
+    <Content Include="Strings\es-US\Resources.resw" />
     <PRIResource Include="Strings\en-US\Resources.resw" />
     <PRIResource Include="Strings\ja-JP\Resources.resw" />
     <PRIResource Include="Strings\zh-CN\Resources.resw" />
