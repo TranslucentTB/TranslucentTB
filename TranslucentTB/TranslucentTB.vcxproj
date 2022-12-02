@@ -106,6 +106,7 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\TranslucentTB.rc2" />
+    <ResourceCompile Include="resources\language\TranslucentTB.de-DE.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.en-US.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.ja-JP.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.zh-CN.rc2" />
