@@ -118,6 +118,7 @@
   <ItemGroup>
     <ResourceCompile Include="resources\TranslucentTB.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.en-US.rc2" />
+    <ResourceCompile Include="resources\language\TranslucentTB.es-US.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.ja-JP.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.zh-CN.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.zh-TW.rc2" />
@@ -161,12 +162,6 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="windows\Window.natvis" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-    <None Include="resources\language\TranslucentTB.es-US.rc2">
-      <FileType>RC</FileType>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="taskbar\ShellExperience.idl">
