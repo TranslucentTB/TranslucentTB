@@ -26,7 +26,7 @@ Resolving deltas: 100% (624/624), done.
 
 ### 2 - Install the build tools
 
-Now that you have the source, you will need Visual Studio 2022. [You can get the free community edition here](https://visualstudio.microsoft.com/downloads/).
+Now that you have the source, you will need Visual Studio 2022 Preview. [You can get the free community edition here](https://visualstudio.microsoft.com/vs/preview/#download-preview).
 Install the following workloads:
 
 - Desktop development with C++
@@ -34,7 +34,7 @@ Install the following workloads:
 
 You also need to install the following individual components:
 
-- Windows 11 SDK (10.0.22621.0)
+- [Windows 11 SDK](https://developer.microsoft.com/en-ca/windows/downloads/sdk-archive/) (10.0.22621.0)
 - If building for x64: MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs (Latest)
 - If building for ARM64: MSVC v143 - VS 2022 C++ ARM64 Spectre-mitigated libs (Latest)
 
@@ -52,7 +52,7 @@ vcpkg integrate install
 
 ### 4 - Building and running the app
 
-Open the solution file in Visual Studio 2022. Set the AppPackage project as the startup project (right-click it in the Solution Explorer, then hit "Set as startup project").
+Open the solution file in Visual Studio 2022 Preview. Set the AppPackage project as the startup project (right-click it in the Solution Explorer, then hit "Set as startup project").
 
 Once this is done, you should be able to hit play, let the solution build (takes a couple minutes on a decent machine), and the app will launch.
 
