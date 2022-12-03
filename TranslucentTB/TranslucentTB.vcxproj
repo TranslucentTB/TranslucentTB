@@ -164,6 +164,9 @@
     <Natvis Include="windows\Window.natvis" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
     <Midl Include="taskbar\ShellExperience.idl">
       <SubType>Designer</SubType>
     </Midl>
