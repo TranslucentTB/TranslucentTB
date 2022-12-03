@@ -189,6 +189,9 @@
     </Natvis>
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
     <Midl Include="taskbar\ShellExperience.idl">
       <Filter>Source Files</Filter>
     </Midl>
