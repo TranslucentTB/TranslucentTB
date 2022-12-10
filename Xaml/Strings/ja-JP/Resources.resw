@@ -258,7 +258,8 @@
     <value>TranslucentTB へようこそ!</value>
   </data>
   <data name="WelcomePage_Action_Configure.Description" xml:space="preserve">
-    <value>トレイアイコンを右クリックし、「高度」 &gt; 「設定の編集」を選択することで、いつでも行えます。ファイルを保存すると、変更点が自動的に読み込まれます。</value>
+    <value>トレイアイコンを右クリックし、「高度」 &gt; 「設定の編集」を選択することで、いつでも行えます。
+ファイルを保存すると、変更が自動的に読み込まれます。</value>
     <comment>Mind the newline (a.k.a. enter)</comment>
   </data>
   <data name="WelcomePage_Action_Configure.Name" xml:space="preserve">
