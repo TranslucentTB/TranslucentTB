@@ -118,13 +118,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ColorPickerPage_AlwaysOnTop.Text" xml:space="preserve">
-    <value>前端显示</value>
+    <value>置顶</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.CloseButtonText" xml:space="preserve">
     <value>取消</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.Content" xml:space="preserve">
-    <value>您要储存对颜色的更动吗？</value>
+    <value>您要保存对颜色的更改吗？</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.PrimaryButtonText" xml:space="preserve">
     <value>是</value>
@@ -139,7 +139,7 @@
     <value>关于 TranslucentTB</value>
   </data>
   <data name="TrayFlyoutPage_AccentColor.Text" xml:space="preserve">
-    <value>主题色</value>
+    <value>强调色</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Acrylic.Text" xml:space="preserve">
@@ -152,7 +152,7 @@
     <value>Thunk 堆压缩</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_DisableHotSettings.Text" xml:space="preserve">
-    <value>停用保存设置</value>
+    <value>禁用保存设置</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_DumpDynamicState.Text" xml:space="preserve">
     <value>将动态状态转储至日志文件</value>
@@ -204,7 +204,7 @@
     <value>模糊</value>
   </data>
   <data name="TrayFlyoutPage_Clear.Text" xml:space="preserve">
-    <value>清晰</value>
+    <value>透明</value>
   </data>
   <data name="TrayFlyoutPage_Desktop.Text" xml:space="preserve">
     <value>返回桌面时</value>
@@ -214,10 +214,10 @@
     <value>启用</value>
   </data>
   <data name="TrayFlyoutPage_Exit.Text" xml:space="preserve">
-    <value>离开</value>
+    <value>退出</value>
   </data>
   <data name="TrayFlyoutPage_LineButton.Text" xml:space="preserve">
-    <value>显示工作列线</value>
+    <value>显示任务栏边框</value>
   </data>
   <data name="TrayFlyoutPage_MaximizedWindow.Text" xml:space="preserve">
     <value>窗口最大化时</value>
@@ -249,7 +249,7 @@
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_TipsAndTricks.Text" xml:space="preserve">
-    <value>诀窍和技巧</value>
+    <value>提示和技巧</value>
   </data>
   <data name="TrayFlyoutPage_VisibleWindow.Text" xml:space="preserve">
     <value>开启任何窗口时</value>
@@ -258,15 +258,15 @@
     <value>欢迎使用 TranslucentTB！</value>
   </data>
   <data name="WelcomePage_Action_Configure.Description" xml:space="preserve">
-    <value>您可以随时在托盘图标的右键选单中点击 "高级" &gt; "编辑设置" 来更改
-儲存文件後，TranslucentTB 將自動載入更動</value>
+    <value>您可以随时在托盘图标的右键菜单中点击 "高级" &gt; "编辑设置" 来更改设置
+保存文件时，TranslucentTB 将自动重新加载更改</value>
     <comment>Mind the newline (a.k.a. enter)</comment>
   </data>
   <data name="WelcomePage_Action_Configure.Name" xml:space="preserve">
     <value>编辑配置文件</value>
   </data>
   <data name="WelcomePage_Action_Discord.Description" xml:space="preserve">
-    <value>与开发者聊聊并取得协助</value>
+    <value>与开发者聊聊并取得帮助</value>
   </data>
   <data name="WelcomePage_Action_Discord.Name" xml:space="preserve">
     <value>加入我们的 Discord 服务器</value>
@@ -275,19 +275,19 @@
     <value>单次或定期赞助我们以支持开发 ❤</value>
   </data>
   <data name="WelcomePage_Action_Donate.Name" xml:space="preserve">
-    <value>通过 Liberapay 赞助此专案</value>
+    <value>通过 Liberapay 赞助这个项目</value>
   </data>
   <data name="WelcomePage_ButtonBar_Continue.Content" xml:space="preserve">
     <value>继续</value>
   </data>
   <data name="WelcomePage_ButtonBar_Exit.Content" xml:space="preserve">
-    <value>离开</value>
+    <value>退出</value>
   </data>
   <data name="WelcomePage_Message_Hyperlink.Text" xml:space="preserve">
     <value>在 Github 上发起议题</value>
   </data>
   <data name="WelcomePage_Message_Prefix.Text" xml:space="preserve">
-    <value>感谢您使用 TranslucentTB！点击 「继续」后，您即可依您的喜好自订工作列的外观。如果您有任何问题，或是想要提议新功能，欢迎</value>
+    <value>感谢您使用 TranslucentTB！点击 「继续」后，您可以根据自己的喜好个性化设置任务栏的外观。如果您有任何问题，或是想要提议新功能，欢迎</value>
   </data>
   <data name="WelcomePage_Message_Suffix.Text" xml:space="preserve">
     <value>。祝您使用愉快！</value>
