@@ -118,178 +118,178 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ColorPickerPage_AlwaysOnTop.Text" xml:space="preserve">
-    <value>置顶</value>
+    <value>Siempre encima</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.CloseButtonText" xml:space="preserve">
-    <value>取消</value>
+    <value>Cancelar</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.Content" xml:space="preserve">
-    <value>您要保存对颜色的更改吗？</value>
+    <value>¿Quieres guardar los cambios en el color?</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.PrimaryButtonText" xml:space="preserve">
-    <value>是</value>
+    <value>Si</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.SecondaryButtonText" xml:space="preserve">
-    <value>否</value>
+    <value>No</value>
   </data>
   <data name="FramelessPage_Close.Text" xml:space="preserve">
-    <value>关闭</value>
+    <value>Cerrar</value>
   </data>
   <data name="TrayFlyoutPage_About.Text" xml:space="preserve">
-    <value>关于 TranslucentTB</value>
+    <value>Acerca de TranslucentTB</value>
   </data>
   <data name="TrayFlyoutPage_AccentColor.Text" xml:space="preserve">
-    <value>强调色</value>
+    <value>Acentuar Color</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Acrylic.Text" xml:space="preserve">
-    <value>亚克力</value>
+    <value>Acrílico</value>
   </data>
   <data name="TrayFlyoutPage_Advanced.Text" xml:space="preserve">
-    <value>高级</value>
+    <value>Avanzado</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_CompactThunkHeap.Text" xml:space="preserve">
-    <value>Thunk 堆压缩</value>
+    <value>Compresión de montón thunk</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_DisableHotSettings.Text" xml:space="preserve">
-    <value>禁用保存设置</value>
+    <value>Deshabilitar la configuración de guardado</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_DumpDynamicState.Text" xml:space="preserve">
-    <value>将动态状态转储至日志文件</value>
+    <value>Volcar estado dinámico al registro</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_EditSettings.Text" xml:space="preserve">
-    <value>编辑设置</value>
+    <value>Editar configuración</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_HideTrayIcon.Text" xml:space="preserve">
-    <value>隐藏托盘图标</value>
+    <value>Ocultar icono de bandeja</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity.Text" xml:space="preserve">
-    <value>日志详细级别</value>
+    <value>Verbosidad del registro</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Critical.Text" xml:space="preserve">
-    <value>严重</value>
+    <value>Crítico</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Debug.Text" xml:space="preserve">
-    <value>调试</value>
+    <value>Depurar</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Error.Text" xml:space="preserve">
-    <value>错误</value>
+    <value>Error</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Information.Text" xml:space="preserve">
-    <value>信息</value>
+    <value>Información</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Off.Text" xml:space="preserve">
-    <value>关闭</value>
+    <value>Apagado</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Trace.Text" xml:space="preserve">
-    <value>跟踪</value>
+    <value>Rastro</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Warning.Text" xml:space="preserve">
-    <value>警告</value>
+    <value>Advertencia</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_OpenLogFile.Text" xml:space="preserve">
-    <value>开启日志文件</value>
+    <value>Abrir archivo de registro</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_ResetDynamicState.Text" xml:space="preserve">
-    <value>重置动态状态</value>
+    <value>Restablecer estado dinámico</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_ResetSettings.Text" xml:space="preserve">
-    <value>恢复默认设置</value>
+    <value>Volver a la configuración predeterminada</value>
   </data>
   <data name="TrayFlyoutPage_BatterySaver.Text" xml:space="preserve">
-    <value>启用节电模式时</value>
+    <value>Ahorro de batería</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Blur.Text" xml:space="preserve">
-    <value>模糊</value>
+    <value>Difuminar</value>
   </data>
   <data name="TrayFlyoutPage_Clear.Text" xml:space="preserve">
-    <value>透明</value>
+    <value>Claro</value>
   </data>
   <data name="TrayFlyoutPage_Desktop.Text" xml:space="preserve">
-    <value>返回桌面时</value>
+    <value>Escritorio</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Enabled.Text" xml:space="preserve">
-    <value>启用</value>
+    <value>Activado</value>
   </data>
   <data name="TrayFlyoutPage_Exit.Text" xml:space="preserve">
-    <value>退出</value>
+    <value>Salir</value>
   </data>
   <data name="TrayFlyoutPage_LineButton.Text" xml:space="preserve">
-    <value>显示任务栏边框</value>
+    <value>Mostrar borde de la barra de tarea</value>
   </data>
   <data name="TrayFlyoutPage_MaximizedWindow.Text" xml:space="preserve">
-    <value>窗口最大化时</value>
+    <value>Ventana maximizada</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Normal.Text" xml:space="preserve">
-    <value>正常</value>
+    <value>Normal</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Opaque.Text" xml:space="preserve">
-    <value>不透明</value>
+    <value>Opaco</value>
   </data>
   <data name="TrayFlyoutPage_OpenAtBoot.Text" xml:space="preserve">
-    <value>开机时启动</value>
+    <value>Abrir en el arranque</value>
   </data>
   <data name="TrayFlyoutPage_PeekButton.Text" xml:space="preserve">
-    <value>显示桌面预览按钮</value>
+    <value>Mostrar el botón Vista previa del Escritorio</value>
   </data>
   <data name="TrayFlyoutPage_SearchOpened.Text" xml:space="preserve">
-    <value>开启搜索菜单时</value>
+    <value>Búsqueda abierta</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_StartOpened.Text" xml:space="preserve">
-    <value>开启开始菜单时</value>
+    <value>Inicio abierto</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_TaskViewOpened.Text" xml:space="preserve">
-    <value>开启任务视图时</value>
+    <value>Vista de tareas abierta</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_TipsAndTricks.Text" xml:space="preserve">
-    <value>提示和技巧</value>
+    <value>Consejos y trucos</value>
   </data>
   <data name="TrayFlyoutPage_VisibleWindow.Text" xml:space="preserve">
-    <value>开启任何窗口时</value>
+    <value>Ventana visible</value>
   </data>
   <data name="WelcomePage.Title" xml:space="preserve">
-    <value>欢迎使用 TranslucentTB！</value>
+    <value>¡Bienvenido a TranslucentTB!</value>
   </data>
   <data name="WelcomePage_Action_Configure.Description" xml:space="preserve">
-    <value>您可以随时在托盘图标的右键菜单中点击 "高级" &gt; "编辑设置" 来更改设置
-保存文件时，TranslucentTB 将自动重新加载更改</value>
+    <value>Siempre puede hacer esto haciendo clic en "Avanzado" &gt; "Editar configuración" en el menú contextual del icono de la bandeja
+Los cambios se recargan automáticamente cuando guarda el archivo</value>
     <comment>Mind the newline (a.k.a. enter)</comment>
   </data>
   <data name="WelcomePage_Action_Configure.Name" xml:space="preserve">
-    <value>编辑配置文件</value>
+    <value>Edite el archivo de configuración</value>
   </data>
   <data name="WelcomePage_Action_Discord.Description" xml:space="preserve">
-    <value>与开发者聊聊并取得帮助</value>
+    <value>Chatea con los desarrolladores y obtén ayuda con el programa</value>
   </data>
   <data name="WelcomePage_Action_Discord.Name" xml:space="preserve">
-    <value>加入我们的 Discord 服务器</value>
+    <value>Únete a nuestro servidor de Discord</value>
   </data>
   <data name="WelcomePage_Action_Donate.Description" xml:space="preserve">
-    <value>单次或定期赞助我们以支持开发 ❤</value>
+    <value>Muéstranos tu apoyo ofreciendo una donación única o recurrente ❤</value>
   </data>
   <data name="WelcomePage_Action_Donate.Name" xml:space="preserve">
-    <value>通过 Liberapay 赞助这个项目</value>
+    <value>Donar al proyecto en Liberapay</value>
   </data>
   <data name="WelcomePage_ButtonBar_Continue.Content" xml:space="preserve">
-    <value>继续</value>
+    <value>Continuar</value>
   </data>
   <data name="WelcomePage_ButtonBar_Exit.Content" xml:space="preserve">
-    <value>退出</value>
+    <value>Salir</value>
   </data>
   <data name="WelcomePage_Message_Hyperlink.Text" xml:space="preserve">
-    <value>在 Github 上发起议题</value>
+    <value>crear una propuesta en GitHub</value>
   </data>
   <data name="WelcomePage_Message_Prefix.Text" xml:space="preserve">
-    <value>感谢您使用 TranslucentTB！点击 「继续」后，您可以根据自己的喜好个性化设置任务栏的外观。如果您有任何问题，或是想要提议新功能，欢迎</value>
+    <value>¡Gracias por probar TranslucentTB! Después de presionar "Continuar", puede personalizar el aspecto de la barra de tareas según sus deseos. Esperamos que lo disfruten y no duden en</value>
   </data>
   <data name="WelcomePage_Message_Suffix.Text" xml:space="preserve">
-    <value>。祝您使用愉快！</value>
+    <value>si tiene algún problema o desea ver una característica agregada!</value>
   </data>
 </root>
