@@ -1,0 +1,62 @@
+#pragma code_page(65001)
+
+#ifdef APSTUDIO_INVOKED
+#error Please edit this file manually.
+#endif
+
+#include <ddeml.h>
+#include <winres.h>
+#include "../../../Common/appinfo.hpp"
+#include "../ids.h"
+
+LANGUAGE LANG_ITALIAN, SUBLANG_ITALIAN
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION APP_VERSION_FIXED
+	PRODUCTVERSION APP_VERSION_FIXED
+	FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+	FILEFLAGS VS_FF_DEBUG
+#endif
+	FILEOS VOS_NT_WINDOWS32
+	FILETYPE VFT_APP
+{
+	BLOCK L"StringFileInfo"
+	{
+		BLOCK L"040904b0"
+		{
+			VALUE L"FileDescription", APP_NAME
+			VALUE L"FileVersion", APP_VERSION
+			VALUE L"InternalName", APP_NAME L".exe"
+			VALUE L"OriginalFilename", APP_NAME L".exe"
+			VALUE L"ProductName", APP_NAME
+			VALUE L"ProductVersion", APP_VERSION
+			VALUE L"Comments", L"A lightweight utility that makes the Windows taskbar translucent/transparent."
+			VALUE L"CompanyName", APP_NAME L" Open Source Developers"
+			VALUE L"LegalCopyright", L"Copyright © " APP_COPYRIGHT_YEAR L" " APP_NAME L" Open Source Developers"
+		}
+	}
+	BLOCK L"VarFileInfo"
+	{
+		VALUE L"Translation", 0x0410, CP_WINUNICODE
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Strings
+//
+
+STRINGTABLE
+{
+	IDS_WELCOME_NOTIFICATION APP_NAME L" è nel tray di sistema.\n\nFai click destro sull'icona nel tray per cambiare le impostazioni, aprire l'app all'avvio, avere maggiori informazioni, uscire dall'app, etc."
+	IDS_HIDETRAY_DIALOG L"Questa modifica è temporanena e non rimarrà in futuro" APP_NAME L"è stata avviata.\n\nTo per rendere ciò permanente, modifica il file di configurazione cliccando su ""Advanzate"" > ""Modifica Impostazioni "" ed imposta ""hide_tray"" su true.\n\nSei sicuro di voler procedere"
+	IDS_ALREADY_RUNNING APP_NAME L" è già in esecuzione! Clicca destro sull'icona nel tray per accederci."
+}
