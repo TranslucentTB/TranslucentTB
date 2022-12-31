@@ -162,7 +162,13 @@
     <ResourceCompile Include="resources\TranslucentTB.rc2">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+    <ResourceCompile Include="resources\language\TranslucentTB.de-DE.rc2">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
     <ResourceCompile Include="resources\language\TranslucentTB.en-US.rc2">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="resources\language\TranslucentTB.es-US.rc2">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
     <ResourceCompile Include="resources\language\TranslucentTB.ja-JP.rc2">
@@ -194,8 +200,8 @@
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="uwp\api-ms-win-appmodel-runtime-l1-1-5.def">
+    <CustomDefFile Include="uwp\api-ms-win-appmodel-runtime-l1-1-5.def">
       <Filter>Source Files</Filter>
-    </CustomBuild>
+    </CustomDefFile>
   </ItemGroup>
 </Project>

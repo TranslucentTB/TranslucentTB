@@ -1,0 +1,62 @@
+#pragma code_page(65001)
+
+#ifdef APSTUDIO_INVOKED
+#error Please edit this file manually.
+#endif
+
+#include <ddeml.h>
+#include <winres.h>
+#include "../../../Common/appinfo.hpp"
+#include "../ids.h"
+
+LANGUAGE LANG_SPANISH, SUBLANG_SPANISH_US
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION APP_VERSION_FIXED
+	PRODUCTVERSION APP_VERSION_FIXED
+	FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+	FILEFLAGS VS_FF_DEBUG
+#endif
+	FILEOS VOS_NT_WINDOWS32
+	FILETYPE VFT_APP
+{
+	BLOCK L"StringFileInfo"
+	{
+		BLOCK L"540A04b0"
+		{
+			VALUE L"FileDescription", APP_NAME
+			VALUE L"FileVersion", APP_VERSION
+			VALUE L"InternalName", APP_NAME L".exe"
+			VALUE L"OriginalFilename", APP_NAME L".exe"
+			VALUE L"ProductName", APP_NAME
+			VALUE L"ProductVersion", APP_VERSION
+			VALUE L"Comments", L"A lightweight utility that makes the Windows taskbar translucent/transparent."
+			VALUE L"CompanyName", APP_NAME L" Open Source Developers"
+			VALUE L"LegalCopyright", L"Copyright © " APP_COPYRIGHT_YEAR L" " APP_NAME L" Open Source Developers"
+		}
+	}
+	BLOCK L"VarFileInfo"
+	{
+		VALUE L"Translation", 0x540A, CP_WINUNICODE
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Strings
+//
+
+STRINGTABLE
+{
+	IDS_WELCOME_NOTIFICATION APP_NAME L" vive en la bandeja del sistema.\n\nHaga clic con el botón derecho en el icono de la bandeja para cambiar la configuración, configurar la aplicación para que se abra al arrancar, ver información, salir de la aplicación, etc."
+	IDS_HIDETRAY_DIALOG L"Este cambio es temporal y se perderá la próxima vez " APP_NAME L" este iniciada.\n\nPara hacer esto permanente, edite el archivo de configuración usando ""Avanzado"" > ""Editar configuración"" y establecer ""ocultar_bandeja"" a verdadero.\n\n¿Estas seguro que deseas continuar?"
+	IDS_ALREADY_RUNNING APP_NAME L" ya esta corriendo! Haga clic con el botón derecho en el icono de la bandeja para acceder a él."
+}

@@ -7,14 +7,13 @@
     <ConfigurationType>Application</ConfigurationType>
     <GenerateManifest>true</GenerateManifest>
     <RootNamespace>TranslucentTB</RootNamespace>
-    <CustomBuildAfterTargets>ClCompile</CustomBuildAfterTargets>
-    <CustomBuildBeforeTargets>Link</CustomBuildBeforeTargets>
   </PropertyGroup>
   <Import Project="..\Common\CppProject.props" />
   <PropertyGroup>
-    <BeforeLinkTargets Condition="'$(WindowsTargetPlatformVersion)' &gt;= '10.0.18362.0'">
+    <BeforeLinkTargets>
       $(BeforeLinkTargets);
       _UnpackagedWin32GenerateAdditionalWinmdManifests;
+      _GenerateCustomLibFiles;
     </BeforeLinkTargets>
   </PropertyGroup>
   <Target Name="_UnpackagedWin32MapWinmdsToManifestFiles" DependsOnTargets="ResolveAssemblyReferences">
@@ -45,6 +44,18 @@
           Pass a metadata name that isn't used to wipe all metadata because otherwise VS tries copying the manifest to the output as %(FileName).winmd
       -->
       <Manifest Include="@(_UnpackagedWin32WinmdManifest)" KeepMetadata="DoesntExist" />
+    </ItemGroup>
+  </Target>
+  <Target Name="_GenerateCustomLibFiles" Inputs="@(CustomDefFile.FullPath)" Outputs="$(IntDir)@(CustomDefFile.Filename).lib">
+    <Message Text="Generating lib file for %(CustomDefFile.Filename).%(CustomDefFile.Extension)" Importance="High" />
+    <!-- This target is batched and a new Exec is spawned for each entry in CustomDefFile. -->
+    <Exec Command="lib.exe /DEF:&quot;%(CustomDefFile.FullPath)&quot; /OUT:&quot;$(IntDir)%(CustomDefFile.Filename).lib&quot; /MACHINE:$(PlatformTarget) /NOLOGO" />
+    <ItemGroup>
+      <!--
+          Emit the generated lib files into the Link inputs.
+          Pass a metadata name that isn't used to wipe all metadata.
+      -->
+      <Library Include="$(IntDir)%(CustomDefFile.Filename).lib" KeepMetadata="DoesntExist" />
     </ItemGroup>
   </Target>
   <ItemDefinitionGroup Label="Globals">
@@ -106,7 +117,9 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\TranslucentTB.rc2" />
+    <ResourceCompile Include="resources\language\TranslucentTB.de-DE.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.en-US.rc2" />
+    <ResourceCompile Include="resources\language\TranslucentTB.es-US.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.ja-JP.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.zh-CN.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.zh-TW.rc2" />
@@ -114,6 +127,10 @@
   <ItemGroup>
     <ProjectReference Include="..\ExplorerHooks\ExplorerHooks.vcxproj">
       <Project>{d0004e78-f00b-4943-b77e-9a278f8ba399}</Project>
+      <DeploymentContent>true</DeploymentContent>
+    </ProjectReference>
+    <ProjectReference Include="..\ExplorerTAP\ExplorerTAP.vcxproj">
+      <Project>{e759084f-6445-400d-8f43-a64a6e276659}</Project>
       <DeploymentContent>true</DeploymentContent>
     </ProjectReference>
     <ProjectReference Include="..\ProgramLog\ProgramLog.vcxproj">
@@ -156,10 +173,7 @@
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="uwp\api-ms-win-appmodel-runtime-l1-1-5.def">
-      <Command>lib.exe /DEF:"%(FullPath)" /OUT:"$(IntDir)%(Filename).lib" /MACHINE:$(PlatformTarget) /NOLOGO</Command>
-      <Outputs>$(IntDir)%(Filename).lib</Outputs>
-    </CustomBuild>
+    <CustomDefFile Include="uwp\api-ms-win-appmodel-runtime-l1-1-5.def" />
   </ItemGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
