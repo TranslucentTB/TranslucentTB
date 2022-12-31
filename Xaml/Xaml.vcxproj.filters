@@ -29,6 +29,9 @@
     <Filter Include="Resources\Strings\de-DE">
       <UniqueIdentifier>{c69368bf-a517-45c5-a527-5bde79049f4c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources\Strings\it-IT">
+      <UniqueIdentifier>{52f29a8a-104e-41ee-92e1-9136a944f09b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -116,6 +119,9 @@
     </PRIResource>
     <PRIResource Include="Strings\de-DE\Resources.resw">
       <Filter>Resources\Strings\de-DE</Filter>
+    </PRIResource>
+    <PRIResource Include="Strings\it-IT\Resources.resw">
+      <Filter>Resources\Strings\it-IT</Filter>
     </PRIResource>
   </ItemGroup>
 </Project>
