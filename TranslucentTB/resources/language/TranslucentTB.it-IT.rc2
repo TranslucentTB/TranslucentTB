@@ -37,7 +37,7 @@ VS_VERSION_INFO VERSIONINFO
 			VALUE L"OriginalFilename", APP_NAME L".exe"
 			VALUE L"ProductName", APP_NAME
 			VALUE L"ProductVersion", APP_VERSION
-			VALUE L"Comments", L"A lightweight utility that makes the Windows taskbar translucent/transparent."
+			VALUE L"Comments", L"Un programma leggero che rende la barra delle applicazioni traslucente/transparente."
 			VALUE L"CompanyName", APP_NAME L" Open Source Developers"
 			VALUE L"LegalCopyright", L"Copyright © " APP_COPYRIGHT_YEAR L" " APP_NAME L" Open Source Developers"
 		}

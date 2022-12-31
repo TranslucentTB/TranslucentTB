@@ -60,7 +60,7 @@ Once this is done, you should be able to hit play, let the solution build (takes
 
 Now that you've built the source, one of the things you can do is translating TranslucentTB in another language.
 
-> **Note!**
+> **Note!**  
 > Please use the `develop` branch when localizing TranslucentTB, to minimize merge conflicts and ensure you translate the latest string additions/changes.
 
 ### 1 - Find your language's identifier
