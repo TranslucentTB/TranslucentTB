@@ -60,6 +60,9 @@ Once this is done, you should be able to hit play, let the solution build (takes
 
 Now that you've built the source, one of the things you can do is translating TranslucentTB in another language.
 
+> **Note!**
+> Please use the `develop` branch when localizing TranslucentTB, to minimize merge conflicts and ensure you translate the latest string additions/changes.
+
 ### 1 - Find your language's identifier
 
 In order to translate TranslucentTB in your language, you will have to identify your language's identifer. It is composed of the [ISO 639-1 code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) combined with a dash and the two letter identifier of your country. For example, Chinese is `zh-CN` and British English is `en-UK`. If it is correct, it should be present in the [LCID Structure] documentation.
