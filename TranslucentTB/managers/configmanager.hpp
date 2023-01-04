@@ -28,13 +28,16 @@ class ConfigManager {
 
 	wil::unique_handle m_ReloadTimer;
 
+	std::wstring m_StartupLanguage;
+	bool m_ShownChangeWarning;
+
 	callback_t m_Callback;
 	void *m_Context;
 
 	bool TryOpenConfigAsJson() noexcept;
 	void SaveToFile(FILE *f) const;
-	void LoadFromFile(FILE *f);
-	bool Load();
+	bool LoadFromFile(FILE *f);
+	bool Load(bool firstLoad = false);
 	void Reload();
 	bool ScheduleReload();
 

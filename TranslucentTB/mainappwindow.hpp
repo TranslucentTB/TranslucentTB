@@ -24,7 +24,7 @@ private:
 	using page_t = winrt::TranslucentTB::Xaml::Pages::TrayFlyoutPage;
 
 	Application &m_App;
-	bool m_HideIconOverride;
+	bool m_HideIconOverride, m_HideTrayWarningShown;
 
 	Util::thread_independent_mutex m_PickerMutex;
 	std::array<BaseXamlPageHost*, 7> m_ColorPickers{};

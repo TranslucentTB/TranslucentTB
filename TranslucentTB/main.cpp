@@ -85,6 +85,10 @@ void HardenProcess()
 
 _Use_decl_annotations_ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
 {
+#ifdef _DEBUG
+	SetThreadDescription(GetCurrentThread(), APP_NAME L" Main Thread");
+#endif
+
 	auto storageFolder = UWP::GetAppStorageFolder();
 	Log::Initialize(storageFolder);
 	HardenProcess();

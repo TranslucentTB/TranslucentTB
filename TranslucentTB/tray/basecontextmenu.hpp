@@ -17,6 +17,7 @@ private:
 	wuxh::DesktopWindowXamlSource m_Source;
 	Window m_InteropWnd;
 
+	std::optional<bool> m_UseXamlMenu;
 	wil::unique_hmenu m_ContextMenu;
 	std::unordered_set<wuxc::MenuFlyoutItem> m_Items;
 	UINT m_ContextMenuClickableId = 0;
@@ -51,7 +52,7 @@ private:
 	void CleanupClassicContextMenu();
 
 protected:
-	static bool ShouldUseXamlMenu();
+	bool ShouldUseXamlMenu();
 	void ShowClassicContextMenu(const wuxc::MenuFlyout &flyout, POINT pt);
 
 	// pass by ref to update the caller's value to represent the new window rect
@@ -69,5 +70,6 @@ protected:
 	}
 
 public:
+	void SetXamlContextMenuOverride(const std::optional<bool> &menuOverride);
 	bool PreTranslateMessage(const MSG &msg);
 };

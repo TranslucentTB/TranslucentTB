@@ -2,7 +2,6 @@
 #include "arch.h"
 #include <cstdint>
 #include <windef.h>
-#include <winnt.h>
 
 #include "util/null_terminated_string_view.hpp"
 

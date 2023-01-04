@@ -24,10 +24,12 @@ class Application final {
 	static void ConfigurationChanged(void *context);
 	static winrt::TranslucentTB::Xaml::App CreateXamlApp();
 
+	ConfigManager m_Config;
+
 	DynamicLoader m_Loader;
+	// seemingly, dynamic deps are not transitive so add a dyn dep to the CRT that WinUI uses.
 	DynamicDependency m_UwpCRTDep, m_WinUIDep;
 
-	ConfigManager m_Config;
 	TaskbarAttributeWorker m_Worker;
 	StartupManager m_Startup;
 

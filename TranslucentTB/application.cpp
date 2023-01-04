@@ -71,7 +71,7 @@ void Application::CreateWelcomePage()
 }
 
 Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> storageFolder, bool fileExists) :
-	// seemingly, dynamic deps are not transitive so add a dyn dep to the CRT that WinUI uses.
+	m_Config(storageFolder, fileExists, ConfigurationChanged, this),
 	m_UwpCRTDep(
 		L"Microsoft.VCLibs.140.00_8wekyb3d8bbwe",
 		PACKAGE_VERSION {
@@ -94,7 +94,6 @@ Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> s
 		},
 		storageFolder.has_value()
 	),
-	m_Config(storageFolder, fileExists, ConfigurationChanged, this),
 	m_Worker(m_Config.GetConfig(), hInst, m_Loader, storageFolder),
 	m_DispatcherController(UWP::CreateDispatcherController()),
 	m_XamlApp(CreateXamlApp()),

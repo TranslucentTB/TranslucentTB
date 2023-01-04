@@ -149,7 +149,7 @@ void BaseContextMenu::CleanupClassicContextMenu()
 
 bool BaseContextMenu::ShouldUseXamlMenu()
 {
-	static const bool useXamlMenu = []
+	static const bool xamlMenuWorks = []
 	{
 		if (win32::IsAtLeastBuild(19045))
 		{
@@ -175,7 +175,7 @@ bool BaseContextMenu::ShouldUseXamlMenu()
 		}
 	}();
 
-	return useXamlMenu;
+	return m_UseXamlMenu.value_or(xamlMenuWorks);
 }
 
 void BaseContextMenu::ShowClassicContextMenu(const wuxc::MenuFlyout &flyout, POINT pt)
@@ -244,6 +244,11 @@ BaseContextMenu::~BaseContextMenu()
 {
 	m_Source.Close();
 	m_Source = nullptr;
+}
+
+void BaseContextMenu::SetXamlContextMenuOverride(const std::optional<bool> &menuOverride)
+{
+	m_UseXamlMenu = menuOverride;
 }
 
 bool BaseContextMenu::PreTranslateMessage(const MSG &msg)

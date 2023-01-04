@@ -9,6 +9,8 @@
 #include <share.h>
 #include <Shlwapi.h>
 #include <wil/resource.h>
+#include "winrt.hpp"
+#include <winrt/Windows.Globalization.h>
 
 #include "constants.hpp"
 #include "../../ProgramLog/error/errno.hpp"
@@ -19,6 +21,8 @@
 #include "../../ProgramLog/log.hpp"
 #include "config/rapidjsonhelper.hpp"
 #include "win32.hpp"
+#include "../localization.hpp"
+#include "../resources/ids.h"
 
 std::filesystem::path ConfigManager::DetermineConfigPath(const std::optional<std::filesystem::path> &storageFolder)
 {
@@ -117,7 +121,7 @@ void ConfigManager::SaveToFile(FILE *f) const
 	writer.Flush();
 }
 
-void ConfigManager::LoadFromFile(FILE *f)
+bool ConfigManager::LoadFromFile(FILE *f)
 {
 	static constexpr std::wstring_view DESERIALIZE_FAILED = L"Failed to deserialize JSON document";
 
@@ -146,7 +150,7 @@ void ConfigManager::LoadFromFile(FILE *f)
 			});
 
 			// everything went fine, we can return!
-			return;
+			return true;
 		}
 		HelperDeserializationErrorCatch(spdlog::level::err, DESERIALIZE_FAILED)
 		StdSystemErrorCatch(spdlog::level::err, DESERIALIZE_FAILED);
@@ -158,13 +162,73 @@ void ConfigManager::LoadFromFile(FILE *f)
 
 	// parsing failed, use defaults
 	m_Config = { };
+	return false;
 }
 
-bool ConfigManager::Load()
+bool ConfigManager::Load(bool firstLoad)
 {
+	using winrt::Windows::Globalization::ApplicationLanguages;
+
 	if (const wil::unique_file file { _wfsopen(m_ConfigPath.c_str(), L"rbS", _SH_DENYNO) })
 	{
-		LoadFromFile(file.get());
+		if (LoadFromFile(file.get()))
+		{
+			if (firstLoad)
+			{
+				if (!m_Config.Language.empty())
+				{
+					std::wstring langOverride = m_Config.Language;
+					// make double null terminated
+					langOverride.push_back(L'\0');
+					if (!SetProcessPreferredUILanguages(MUI_LANGUAGE_NAME, langOverride.c_str(), nullptr))
+					{
+						LastErrorHandle(spdlog::level::err, L"Failed to set process UI language. Is the language set in the configuration file a BCP-47 language name?");
+
+						// don't try setting XAML language, it'll probably fail too
+						// remove the existing override to not fail in a partially localized to previous value state
+						ApplicationLanguages::PrimaryLanguageOverride(L"");
+						return true;
+					}
+				}
+
+				if (m_Config.Language != ApplicationLanguages::PrimaryLanguageOverride())
+				{
+					try
+					{
+						ApplicationLanguages::PrimaryLanguageOverride(m_Config.Language);
+					}
+					catch (const winrt::hresult_error &err)
+					{
+						HresultErrorHandle(err, spdlog::level::err, L"Failed to set XAML language override. Is the language set in the configuration file a BCP-47 language name?");
+
+						// remove the existing override to not fail in a partially localized to previous value state
+						SetProcessPreferredUILanguages(MUI_LANGUAGE_NAME, nullptr, nullptr);
+						ApplicationLanguages::PrimaryLanguageOverride(L"");
+						return true;
+					}
+				}
+
+				m_StartupLanguage = m_Config.Language;
+			}
+			else if (m_StartupLanguage != m_Config.Language && !std::exchange(m_ShownChangeWarning, true))
+			{
+				std::thread([msg = Localization::LoadLocalizedResourceString(IDS_LANGUAGE_CHANGED, wil::GetModuleInstanceHandle())]() noexcept
+				{
+#ifdef _DEBUG
+					SetThreadDescription(GetCurrentThread(), APP_NAME L" Language Change Message Box Thread");
+#endif
+
+					MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
+				}).detach();
+			}
+		}
+		else if (firstLoad)
+		{
+			// remove the existing override to not fail in a partially localized to previous value state
+			ApplicationLanguages::PrimaryLanguageOverride(L"");
+		}
+
+		// note: this demarks if the file exists, even if parsing failed.
 		return true;
 	}
 	else
@@ -179,6 +243,11 @@ bool ConfigManager::Load()
 
 		// opening file failed, use defaults
 		m_Config = { };
+		if (firstLoad)
+		{
+			// remove the existing override to not fail in a partially localized to previous value state
+			ApplicationLanguages::PrimaryLanguageOverride(L"");
+		}
 		return fileExists;
 	}
 }
@@ -216,6 +285,7 @@ ConfigManager::ConfigManager(const std::optional<std::filesystem::path> &storage
 	m_ConfigPath(DetermineConfigPath(storageFolder)),
 	m_Watcher(m_ConfigPath.parent_path(), false, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE, WatcherCallback, this),
 	m_ReloadTimer(CreateWaitableTimer(nullptr, true, nullptr)),
+	m_ShownChangeWarning(false),
 	m_Callback(callback),
 	m_Context(context)
 {
@@ -224,7 +294,7 @@ ConfigManager::ConfigManager(const std::optional<std::filesystem::path> &storage
 		LastErrorHandle(spdlog::level::warn, L"Failed to create waitable timer");
 	}
 
-	fileExists = Load();
+	fileExists = Load(true);
 	UpdateVerbosity();
 }
 

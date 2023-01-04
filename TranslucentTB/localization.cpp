@@ -38,6 +38,11 @@ Util::null_terminated_wstring_view Localization::LoadLocalizedResourceString(uin
 	{
 		return Util::null_terminated_wstring_view::make_unsafe(resStr.data(), resStr.length() - 1);
 	}
+	else if (lang != MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US))
+	{
+		// try again in English
+		return LoadLocalizedResourceString(resource, hInst, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US));
+	}
 	else
 	{
 		return FAILED_LOADING;

@@ -60,14 +60,11 @@ std::filesystem::path Log::GetPath(const std::optional<std::filesystem::path> &s
 
 void Log::LogErrorHandler(const std::string &message)
 {
-	static constexpr std::string_view BODY_BASE = "An error has been encountered while logging a message.\n\n";
-
-	std::string dialogMessage;
-	dialogMessage.reserve(BODY_BASE.length() + message.length());
-	dialogMessage += BODY_BASE;
-	dialogMessage += message;
-
-	MessageBoxExA(nullptr, dialogMessage.c_str(), UTF8_ERROR_TITLE, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
+	if (IsDebuggerPresent())
+	{
+		static std::atomic_size_t counter = 0;
+		OutputDebugStringA(std::format("[*** LOG ERROR {:04} ***] {}\n", counter++, message).c_str());
+	}
 }
 
 bool Log::IsInitialized() noexcept

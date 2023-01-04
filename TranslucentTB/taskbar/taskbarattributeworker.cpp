@@ -690,9 +690,9 @@ bool TaskbarAttributeWorker::SetContainsValidWindows(std::unordered_set<Window> 
 
 void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set, bool showInfo)
 {
-	std::wstring buf;
 	if (!set.empty())
 	{
+		std::wstring buf;
 		for (const Window window : set)
 		{
 			buf.clear();
@@ -710,8 +710,7 @@ void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::
 	}
 	else
 	{
-		std::format_to(std::back_inserter(buf), L"{}[none]", prefix);
-		MessagePrint(spdlog::level::off, buf);
+		MessagePrint(spdlog::level::off, std::format(L"{}[none]", prefix));
 	}
 }
 

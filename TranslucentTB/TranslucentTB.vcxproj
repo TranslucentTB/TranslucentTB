@@ -47,7 +47,7 @@
     </ItemGroup>
   </Target>
   <Target Name="_GenerateCustomLibFiles" Inputs="@(CustomDefFile.FullPath)" Outputs="$(IntDir)@(CustomDefFile.Filename).lib">
-    <Message Text="Generating lib file for %(CustomDefFile.Filename).%(CustomDefFile.Extension)" Importance="High" />
+    <Message Text="Generating lib file for %(CustomDefFile.Filename)%(CustomDefFile.Extension)" Importance="High" />
     <!-- This target is batched and a new Exec is spawned for each entry in CustomDefFile. -->
     <Exec Command="lib.exe /DEF:&quot;%(CustomDefFile.FullPath)&quot; /OUT:&quot;$(IntDir)%(CustomDefFile.Filename).lib&quot; /MACHINE:$(PlatformTarget) /NOLOGO" />
     <ItemGroup>
