@@ -20,12 +20,15 @@
 #include "config/taskbarappearance.hpp"
 #include "../dynamicloader.hpp"
 #include "../ExplorerHooks/api.hpp"
+#include "../ExplorerTAP/api.hpp"
 #include "launchervisibilitysink.hpp"
 #include "../windows/messagewindow.hpp"
 #include "undoc/user32.hpp"
 #include "undoc/uxtheme.hpp"
 #include "util/color.hpp"
+#include "util/null_terminated_string_view.hpp"
 #include "wilx.hpp"
+#include "../ProgramLog/error/win32.hpp"
 
 class TaskbarAttributeWorker final : public MessageWindow {
 private:
@@ -122,6 +125,10 @@ private:
 	PFN_INJECT_EXPLORER_HOOK m_InjectExplorerHook;
 	std::vector<wil::unique_hhook> m_Hooks;
 
+	// TAP DLL
+	wil::unique_hmodule m_TAPDll;
+	PFN_INJECT_EXPLORER_TAP m_InjectExplorerTAP;
+
 	// Other
 	bool m_IsWindows11;
 
@@ -181,7 +188,8 @@ private:
 	bool IsStartMenuOpened() const;
 	bool IsSearchOpened() const;
 	void InsertTaskbar(HMONITOR mon, Window window);
-	static wil::unique_hmodule LoadHookDll(const std::optional<std::filesystem::path> &storageFolder);
+	static std::filesystem::path GetDllPath(const std::optional<std::filesystem::path> &storageFolder, std::wstring_view dll);
+	static wil::unique_hmodule LoadDll(const std::optional<std::filesystem::path> &storageFolder, std::wstring_view dll);
 
 	inline TaskbarAppearance WithPreview(txmp::TaskbarState state, const TaskbarAppearance &appearance) const
 	{
@@ -219,6 +227,19 @@ private:
 	inline static wil::unique_hwineventhook CreateHook(DWORD event, WINEVENTPROC proc)
 	{
 		return CreateHook(event, event, proc);
+	}
+
+	template<typename T>
+	static T GetProc(const wil::unique_hmodule &module, Util::null_terminated_string_view proc)
+	{
+		if (const auto ptr = GetProcAddress(module.get(), proc.c_str()))
+		{
+			return reinterpret_cast<T>(ptr);
+		}
+		else
+		{
+			LastErrorHandle(spdlog::level::critical, L"Failed to get address of procedure");
+		}
 	}
 
 public:

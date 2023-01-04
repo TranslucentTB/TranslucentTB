@@ -954,35 +954,44 @@ void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 	}
 }
 
-wil::unique_hmodule TaskbarAttributeWorker::LoadHookDll(const std::optional<std::filesystem::path> &storageFolder)
+std::filesystem::path TaskbarAttributeWorker::GetDllPath(const std::optional<std::filesystem::path>& storageFolder, std::wstring_view dll)
 {
 	const auto [loc, hr] = win32::GetExeLocation();
 	HresultVerify(hr, spdlog::level::critical, L"Failed to determine executable location!");
 
-	std::filesystem::path dllPath = loc.parent_path() / L"ExplorerHooks.dll";
+	std::filesystem::path dllPath = loc.parent_path() / dll;
 
 	if (storageFolder)
 	{
 		// copy the file over to a place Explorer can read. It can't be injected from WindowsApps.
-		auto tempDllPath = *storageFolder / L"TempState" / "ExplorerHooks.dll";
+		auto tempDllPath = *storageFolder / L"TempState" / dll;
 
 		std::error_code err;
 		std::filesystem::copy_file(dllPath, tempDllPath, std::filesystem::copy_options::update_existing, err);
 		if (err)
 		{
-			StdErrorCodeHandle(err, spdlog::level::critical, L"Failed to copy ExplorerHooks.dll");
+			StdErrorCodeHandle(err, spdlog::level::critical, std::format(L"Failed to copy {}", dll));
 		}
 
-		dllPath = std::move(tempDllPath);
+		return tempDllPath;
 	}
-
-	wil::unique_hmodule dll(LoadLibraryEx(dllPath.c_str(), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
-	if (!dll)
+	else
 	{
-		LastErrorHandle(spdlog::level::critical, L"Failed to load ExplorerHooks.dll");
+		return dllPath;
+	}
+}
+
+wil::unique_hmodule TaskbarAttributeWorker::LoadDll(const std::optional<std::filesystem::path> &storageFolder, std::wstring_view dll)
+{
+	const std::filesystem::path dllPath = GetDllPath(storageFolder, dll);
+
+	wil::unique_hmodule hmod(LoadLibraryEx(dllPath.c_str(), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+	if (!hmod)
+	{
+		LastErrorHandle(spdlog::level::critical, std::format(L"Failed to load {}", dll));
 	}
 
-	return dll;
+	return hmod;
 }
 
 TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, DynamicLoader &loader, const std::optional<std::filesystem::path> &storageFolder) :
@@ -1016,15 +1025,14 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_SearchVisibilityChangeMessage(Window::RegisterMessage(WM_TTBSEARCHVISIBILITYCHANGE)),
 	m_ForceRefreshTaskbar(Window::RegisterMessage(WM_TTBFORCEREFRESHTASKBAR)),
 	m_LastExplorerPid(0),
-	m_HookDll(LoadHookDll(storageFolder)),
-	m_InjectExplorerHook(reinterpret_cast<PFN_INJECT_EXPLORER_HOOK>(GetProcAddress(m_HookDll.get(), "InjectExplorerHook"))),
+	m_HookDll(LoadDll(storageFolder, L"ExplorerHooks.dll")),
+	m_InjectExplorerHook(GetProc<PFN_INJECT_EXPLORER_HOOK>(m_HookDll, "InjectExplorerHook")),
+	m_TAPDll(LoadDll(storageFolder, L"ExplorerTAP.dll")),
+	// TODO: since explorer tap is loaded all the time by explorer, ask the user to restart explorer if it fails copying due to being used by another process
+	// TODO: in debug builds, kill explorer to force unload?
+	m_InjectExplorerTAP(GetProc<PFN_INJECT_EXPLORER_TAP>(m_TAPDll, "InjectExplorerTAP")),
 	m_IsWindows11(win32::IsAtLeastBuild(22000))
 {
-	if (!m_InjectExplorerHook)
-	{
-		LastErrorHandle(spdlog::level::critical, L"Failed to get address of InjectExplorerHook");
-	}
-
 	const auto stateThunk = CreateThunk(&TaskbarAttributeWorker::OnWindowStateChange);
 	m_ResizeMoveHook = CreateHook(EVENT_OBJECT_LOCATIONCHANGE, stateThunk);
 	m_TitleChangeHook = CreateHook(EVENT_OBJECT_NAMECHANGE, stateThunk);
@@ -1174,6 +1182,11 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 			m_LastExplorerPid = pid;
 
 			InsertTaskbar(main_taskbar.monitor(), main_taskbar);
+
+			// TODO: restore on ttb dying - use a threadpool waitforsingleobject within dll for this? pass handle to explorer via the extra parameter?
+			// TODO: what happens if we reinject/reapply when explorer didn't get killed, maybe need to avoid doing that
+			// TODO: error handling, only use on windows 11
+			m_InjectExplorerTAP(pid);
 		}
 
 		for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))
