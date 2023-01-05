@@ -1185,7 +1185,7 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 
 			// TODO: restore on ttb dying - use a threadpool waitforsingleobject within dll for this? pass handle to explorer via the extra parameter?
 			// TODO: what happens if we reinject/reapply when explorer didn't get killed, maybe need to avoid doing that
-			// TODO: error handling, only use on windows 11
+			// TODO: error handling, only use on windows 11 with the new taskbar
 			m_InjectExplorerTAP(pid);
 		}
 

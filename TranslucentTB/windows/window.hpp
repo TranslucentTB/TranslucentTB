@@ -201,7 +201,11 @@ public:
 			if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
 			{
 				HresultHandle(HRESULT_FROM_WIN32(lastErr), level, L"Failed to set window pointer");
-				return std::nullopt;
+				// HresultHandle is [[noreturn]] with spdlog::level::critical
+				if constexpr (level != spdlog::level::critical)
+				{
+					return std::nullopt;
+				}
 			}
 		}
 
