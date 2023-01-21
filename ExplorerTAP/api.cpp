@@ -42,8 +42,7 @@ HRESULT InjectExplorerTAP(DWORD pid)
 
 	if (const auto ixde = reinterpret_cast<PFN_INITIALIZE_XAML_DIAGNOSTICS_EX>(GetProcAddress(wux.get(), UTIL_STRINGIFY_UTF8(InitializeXamlDiagnosticsEx))))
 	{
-		// TODO: don't hardcode this xaml diagnostics dll
-		return ixde(L"VisualDiagConnection1", pid, L"C:\\Program Files (x86)\\Windows Kits\\10\\bin\\x64\\XamlDiagnostics\\xamldiagnostics.dll", location.c_str(), CLSID_ExplorerTAP, nullptr);
+		return ixde(L"VisualDiagConnection1", pid, NULL, location.c_str(), CLSID_ExplorerTAP, nullptr);
 	}
 	else
 	{
