@@ -57,7 +57,8 @@ VS_VERSION_INFO VERSIONINFO
 STRINGTABLE
 {
 	IDS_WELCOME_NOTIFICATION APP_NAME L" lives in the system tray.\n\nRight-click on the tray icon to change settings, set the app to open at boot, view about information, exit the app, etc."
-	IDS_HIDETRAY_DIALOG L"This change is temporary and will be lost the next time " APP_NAME L" is started.\n\nTo make this permanent, edit the configuration file using ""Advanced"" > ""Edit settings"" and set ""hide_tray"" to true.\n\nAre you sure you want to proceed?"
+	IDS_HIDE_TRAY L"This change is temporary and will be lost the next time " APP_NAME L" is started.\n\nTo make this permanent, edit the configuration file using ""Advanced"" > ""Edit settings"" and set ""hide_tray"" to true.\n\nAre you sure you want to proceed?"
 	IDS_ALREADY_RUNNING APP_NAME L" is already running! Right-click on the tray icon to access it."
 	IDS_LANGUAGE_CHANGED L"The language override setting in the configuration file has been changed. Please restart " APP_NAME L" for the changes to take effect."
+	IDS_RESTART_REQUIRED APP_NAME L" was recently updated. Please restart Windows to start using the latest version."
 }

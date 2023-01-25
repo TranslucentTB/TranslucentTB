@@ -3,6 +3,7 @@
 #include <member_thunk/member_thunk.hpp>
 
 #include "constants.hpp"
+#include "../localization.hpp"
 #include "../../ProgramLog/error/win32.hpp"
 #include "../../ProgramLog/error/winrt.hpp"
 #include "undoc/explorer.hpp"
@@ -970,7 +971,19 @@ std::filesystem::path TaskbarAttributeWorker::GetDllPath(const std::optional<std
 		std::filesystem::copy_file(dllPath, tempDllPath, std::filesystem::copy_options::update_existing, err);
 		if (err)
 		{
-			StdErrorCodeHandle(err, spdlog::level::critical, std::format(L"Failed to copy {}", dll));
+			if (err.category() == std::system_category() && err.value() == ERROR_SHARING_VIOLATION)
+			{
+				std::thread([msg = Localization::LoadLocalizedResourceString(IDS_RESTART_REQUIRED, hinstance())]() noexcept
+				{
+					MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_ICONINFORMATION | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
+				}).join();
+
+				ExitProcess(1);
+			}
+			else
+			{
+				StdErrorCodeHandle(err, spdlog::level::critical, std::format(L"Failed to copy {}", dll));
+			}
 		}
 
 		return tempDllPath;

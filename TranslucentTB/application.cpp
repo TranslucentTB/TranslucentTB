@@ -72,6 +72,8 @@ void Application::CreateWelcomePage()
 
 Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> storageFolder, bool fileExists) :
 	m_Config(storageFolder, fileExists, ConfigurationChanged, this),
+	m_Worker(m_Config.GetConfig(), hInst, m_Loader, storageFolder),
+	m_DispatcherController(UWP::CreateDispatcherController()),
 	m_UwpCRTDep(
 		L"Microsoft.VCLibs.140.00_8wekyb3d8bbwe",
 		PACKAGE_VERSION {
@@ -94,8 +96,6 @@ Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> s
 		},
 		storageFolder.has_value()
 	),
-	m_Worker(m_Config.GetConfig(), hInst, m_Loader, storageFolder),
-	m_DispatcherController(UWP::CreateDispatcherController()),
 	m_XamlApp(CreateXamlApp()),
 	m_XamlManager(UWP::CreateXamlManager()),
 	m_AppWindow(*this, !fileExists, storageFolder.has_value(), hInst, m_Loader),

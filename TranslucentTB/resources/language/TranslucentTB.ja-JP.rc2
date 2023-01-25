@@ -57,6 +57,6 @@ VS_VERSION_INFO VERSIONINFO
 STRINGTABLE
 {
 	IDS_WELCOME_NOTIFICATION APP_NAME L" はシステムトレイに格納されています。\n\nトレイのアイコンを右クリックすると設定の変更、起動時にアプリを実行する設定、情報の表示などが行えます。"
-	IDS_HIDETRAY_DIALOG L"この変更は一時的です。次回 " APP_NAME L" を開始すると元に戻ります。\n\n持続的な変更にするには、「高度」 > 「設定の編集」にて設定ファイルを編集し、hide_tray を true に設定します。\n\n続けますか?"
+	IDS_HIDE_TRAY L"この変更は一時的です。次回 " APP_NAME L" を開始すると元に戻ります。\n\n持続的な変更にするには、「高度」 > 「設定の編集」にて設定ファイルを編集し、hide_tray を true に設定します。\n\n続けますか?"
 	IDS_ALREADY_RUNNING APP_NAME L" は既に実行中です! トレイのアイコンを右クリックして利用できます。"
 }

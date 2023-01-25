@@ -188,8 +188,8 @@ private:
 	bool IsStartMenuOpened() const;
 	bool IsSearchOpened() const;
 	void InsertTaskbar(HMONITOR mon, Window window);
-	static std::filesystem::path GetDllPath(const std::optional<std::filesystem::path> &storageFolder, std::wstring_view dll);
-	static wil::unique_hmodule LoadDll(const std::optional<std::filesystem::path> &storageFolder, std::wstring_view dll);
+	std::filesystem::path GetDllPath(const std::optional<std::filesystem::path> &storageFolder, std::wstring_view dll);
+	wil::unique_hmodule LoadDll(const std::optional<std::filesystem::path> &storageFolder, std::wstring_view dll);
 
 	inline TaskbarAppearance WithPreview(txmp::TaskbarState state, const TaskbarAppearance &appearance) const
 	{
