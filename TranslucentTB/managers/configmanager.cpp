@@ -214,10 +214,6 @@ bool ConfigManager::Load(bool firstLoad)
 			{
 				std::thread([msg = Localization::LoadLocalizedResourceString(IDS_LANGUAGE_CHANGED, wil::GetModuleInstanceHandle())]() noexcept
 				{
-#ifdef _DEBUG
-					SetThreadDescription(GetCurrentThread(), APP_NAME L" Language Change Message Box Thread");
-#endif
-
 					MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
 				}).detach();
 			}
