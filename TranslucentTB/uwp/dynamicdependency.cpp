@@ -1,8 +1,11 @@
 #include "dynamicdependency.hpp"
-#include <format>
+#include <wil/win32_helpers.h>
 
 #include "../ProgramLog/error/win32.hpp"
+#include "../resources/ids.h"
+#include "../localization.hpp"
 #include "version.hpp"
+#include "../windows/window.hpp"
 
 DynamicDependency::DynamicDependency(Util::null_terminated_wstring_view packageFamilyName, const PACKAGE_VERSION &minVersion, bool hasPackageIdentity) :
 	m_Context(nullptr)
@@ -11,7 +14,12 @@ DynamicDependency::DynamicDependency(Util::null_terminated_wstring_view packageF
 	{
 		if (!IsApiSetImplemented("api-ms-win-appmodel-runtime-l1-1-5"))
 		{
-			MessagePrint(spdlog::level::critical, L"Portable mode only works on Windows 11");
+			std::thread([msg = Localization::LoadLocalizedResourceString(IDS_PORTABLE_UNSUPPORTED, wil::GetModuleInstanceHandle())]() noexcept
+			{
+				MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
+			}).join();
+
+			ExitProcess(1);
 		}
 
 		static constexpr PackageDependencyProcessorArchitectures arch =
@@ -26,16 +34,26 @@ DynamicDependency::DynamicDependency(Util::null_terminated_wstring_view packageF
 		HRESULT hr = TryCreatePackageDependency(nullptr, packageFamilyName.c_str(), minVersion, arch, PackageDependencyLifetimeKind_Process, nullptr, CreatePackageDependencyOptions_None, m_dependencyId.put());
 		if (FAILED(hr)) [[unlikely]]
 		{
-			const auto msg = std::format(L"Failed to create a dynamic dependency for {} version {} - perhaps it is not installed?", packageFamilyName, Version::FromPackageVersion(minVersion).ToString());
-			HresultHandle(hr, spdlog::level::critical, msg);
+			if (hr == STATEREPOSITORY_E_DEPENDENCY_NOT_RESOLVED)
+			{
+				const auto fmt = Localization::LoadLocalizedResourceString(IDS_MISSING_DEPENDENCIES, wil::GetModuleInstanceHandle());
+
+				std::thread([msg = std::vformat(fmt, std::make_wformat_args(packageFamilyName, Version::FromPackageVersion(minVersion)))]() noexcept
+				{
+					MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
+				}).join();
+
+				ExitProcess(1);
+			}
+			else
+			{
+				HresultHandle(hr, spdlog::level::critical, L"Failed to create a dynamic dependency");
+			}
 		}
 
 		wil::unique_process_heap_string packageFullName;
 		hr = AddPackageDependency(m_dependencyId.get(), 0, AddPackageDependencyOptions_None, &m_Context, packageFullName.put());
-		if (FAILED(hr)) [[unlikely]]
-		{
-			HresultHandle(hr, spdlog::level::critical, L"Failed to add a runtime dependency");
-		}
+		HresultVerify(hr, spdlog::level::critical, L"Failed to add a runtime dependency");
 	}
 }
 
@@ -55,9 +73,6 @@ DynamicDependency::~DynamicDependency() noexcept(false)
 		}
 
 		hr = DeletePackageDependency(m_dependencyId.get());
-		if (FAILED(hr)) [[unlikely]]
-		{
-			HresultHandle(hr, spdlog::level::warn, L"Failed to delete a dynamic dependency");
-		}
+		HresultVerify(hr, spdlog::level::warn, L"Failed to delete a dynamic dependency");
 	}
 }

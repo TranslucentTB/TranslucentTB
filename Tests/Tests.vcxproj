@@ -23,6 +23,7 @@
     <ClCompile Include="util\color.cpp" />
     <ClCompile Include="util\numbers.cpp" />
     <ClCompile Include="util\strings.cpp" />
+    <ClCompile Include="version.cpp" />
     <ClCompile Include="win32.cpp" />
   </ItemGroup>
   <ItemGroup>

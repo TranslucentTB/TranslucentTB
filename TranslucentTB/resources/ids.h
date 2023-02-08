@@ -9,3 +9,5 @@
 #define IDS_ALREADY_RUNNING                60003
 #define IDS_LANGUAGE_CHANGED               60004
 #define IDS_RESTART_REQUIRED               60005
+#define IDS_PORTABLE_UNSUPPORTED           60006
+#define IDS_MISSING_DEPENDENCIES           60007

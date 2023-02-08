@@ -61,4 +61,6 @@ STRINGTABLE
 	IDS_ALREADY_RUNNING APP_NAME L" is already running! Right-click on the tray icon to access it."
 	IDS_LANGUAGE_CHANGED L"The language override setting in the configuration file has been changed. Please restart " APP_NAME L" for the changes to take effect."
 	IDS_RESTART_REQUIRED APP_NAME L" was recently updated. Please restart Windows to start using the latest version."
+	IDS_PORTABLE_UNSUPPORTED L"Portable mode only works on Windows 11."
+	IDS_MISSING_DEPENDENCIES APP_NAME L" cannot start in portable mode because {0} (version {1}) is not installed on the system."
 }

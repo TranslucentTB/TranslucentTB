@@ -10,7 +10,7 @@
 #include <Shlwapi.h>
 #include <wil/resource.h>
 #include "winrt.hpp"
-#include <winrt/Windows.Globalization.h>
+#include <winrt/Windows.ApplicationModel.Resources.Core.h>
 
 #include "constants.hpp"
 #include "../../ProgramLog/error/errno.hpp"
@@ -167,14 +167,14 @@ bool ConfigManager::LoadFromFile(FILE *f)
 
 bool ConfigManager::Load(bool firstLoad)
 {
-	using winrt::Windows::Globalization::ApplicationLanguages;
-
 	if (const wil::unique_file file { _wfsopen(m_ConfigPath.c_str(), L"rbS", _SH_DENYNO) })
 	{
 		if (LoadFromFile(file.get()))
 		{
 			if (firstLoad)
 			{
+				m_StartupLanguage = m_Config.Language;
+
 				if (!m_Config.Language.empty())
 				{
 					std::wstring langOverride = m_Config.Language;
@@ -185,30 +185,21 @@ bool ConfigManager::Load(bool firstLoad)
 						LastErrorHandle(spdlog::level::err, L"Failed to set process UI language. Is the language set in the configuration file a BCP-47 language name?");
 
 						// don't try setting XAML language, it'll probably fail too
-						// remove the existing override to not fail in a partially localized to previous value state
-						ApplicationLanguages::PrimaryLanguageOverride(L"");
 						return true;
 					}
-				}
 
-				if (m_Config.Language != ApplicationLanguages::PrimaryLanguageOverride())
-				{
 					try
 					{
-						ApplicationLanguages::PrimaryLanguageOverride(m_Config.Language);
+						winrt::Windows::ApplicationModel::Resources::Core::ResourceContext::SetGlobalQualifierValue(L"Language", m_Config.Language);
 					}
 					catch (const winrt::hresult_error &err)
 					{
-						HresultErrorHandle(err, spdlog::level::err, L"Failed to set XAML language override. Is the language set in the configuration file a BCP-47 language name?");
+						HresultErrorHandle(err, spdlog::level::err, L"Failed to set resource language override. Is the language set in the configuration file a BCP-47 language name?");
 
 						// remove the existing override to not fail in a partially localized to previous value state
 						SetProcessPreferredUILanguages(MUI_LANGUAGE_NAME, nullptr, nullptr);
-						ApplicationLanguages::PrimaryLanguageOverride(L"");
-						return true;
 					}
 				}
-
-				m_StartupLanguage = m_Config.Language;
 			}
 			else if (m_StartupLanguage != m_Config.Language && !std::exchange(m_ShownChangeWarning, true))
 			{
@@ -217,11 +208,6 @@ bool ConfigManager::Load(bool firstLoad)
 					MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
 				}).detach();
 			}
-		}
-		else if (firstLoad)
-		{
-			// remove the existing override to not fail in a partially localized to previous value state
-			ApplicationLanguages::PrimaryLanguageOverride(L"");
 		}
 
 		// note: this demarks if the file exists, even if parsing failed.
@@ -239,11 +225,6 @@ bool ConfigManager::Load(bool firstLoad)
 
 		// opening file failed, use defaults
 		m_Config = { };
-		if (firstLoad)
-		{
-			// remove the existing override to not fail in a partially localized to previous value state
-			ApplicationLanguages::PrimaryLanguageOverride(L"");
-		}
 		return fileExists;
 	}
 }
