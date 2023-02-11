@@ -4,6 +4,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{e759084f-6445-400d-8f43-a64a6e276659}</ProjectGuid>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <Import Project="..\Common\CppProject.props" />
   <ItemDefinitionGroup Label="Globals">

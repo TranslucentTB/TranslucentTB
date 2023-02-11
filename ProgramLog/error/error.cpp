@@ -117,5 +117,9 @@ std::thread Error::impl::HandleCommon(spdlog::level::level_enum level, std::wstr
 
 void Error::impl::HandleCriticalCommon(std::wstring_view message, std::wstring_view error_message, std::source_location location)
 {
-	HandleCommon(spdlog::level::critical, message, error_message, location, UTIL_WIDEN(UTF8_ERROR_TITLE), APP_NAME L" has encountered a fatal error and cannot continue executing.", MB_ICONERROR | MB_TOPMOST).join();
+	auto dialogBoxThread = HandleCommon(spdlog::level::critical, message, error_message, location, UTIL_WIDEN(UTF8_ERROR_TITLE), APP_NAME L" has encountered a fatal error and cannot continue executing.", MB_ICONERROR | MB_TOPMOST);
+	if (dialogBoxThread.joinable())
+	{
+		dialogBoxThread.join();
+	}
 }
