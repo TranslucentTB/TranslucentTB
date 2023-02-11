@@ -42,6 +42,6 @@ namespace Util {
 	using null_terminated_wstring_view = basic_null_terminated_string_view<wchar_t>;
 }
 
-template<typename char_type>
-struct std::formatter<Util::basic_null_terminated_string_view<char_type>, char_type> : std::formatter<std::basic_string_view<char_type>, char_type>
+template<typename char_type, class traits>
+struct std::formatter<Util::basic_null_terminated_string_view<char_type, traits>, char_type> : std::formatter<std::basic_string_view<char_type, traits>, char_type>
 {};

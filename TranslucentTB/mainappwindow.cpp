@@ -229,12 +229,8 @@ void MainAppWindow::HideTrayRequested()
 {
 	if (!std::exchange(m_HideTrayWarningShown, true))
 	{
-		std::thread([this, msg = Localization::LoadLocalizedResourceString(IDS_HIDETRAY_DIALOG, hinstance())]()
+		std::thread([this, msg = Localization::LoadLocalizedResourceString(IDS_HIDE_TRAY, hinstance())]
 		{
-#ifdef _DEBUG
-			SetThreadDescription(GetCurrentThread(), APP_NAME L" Hide Tray Message Box Thread");
-#endif
-
 			if (MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_YESNO | MB_ICONINFORMATION | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)) == IDYES)
 			{
 				m_App.DispatchToMainThread([this]

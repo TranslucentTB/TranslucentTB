@@ -197,7 +197,7 @@ TEST(Util_Color_FromString, ThrowsWhenInvalidColor)
 
 TEST(Util_Color_FromString, AllowNoPrefixParameter)
 {
-	ASSERT_EQ(Util::Color::FromString(L"FFFFFF", true), Util::Color { 0xFF, 0xFF, 0xFF });
+	ASSERT_EQ(Util::Color::FromString(L"FFFFFF", true), Util::Color(0xFF, 0xFF, 0xFF));
 }
 
 TEST(Util_Color_FromRGBA, ReturnsCorrectValue)

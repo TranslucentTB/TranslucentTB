@@ -102,10 +102,6 @@ std::thread Error::impl::HandleCommon(spdlog::level::level_enum level, std::wstr
 
 		return std::thread([title, type, body = std::move(dialogMessage)]() noexcept
 		{
-#ifdef _DEBUG
-			SetThreadDescription(GetCurrentThread(), APP_NAME L" Error Message Box Thread");
-#endif
-
 			MessageBoxEx(nullptr, body.c_str(), title.c_str(), type | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 		});
 	}
