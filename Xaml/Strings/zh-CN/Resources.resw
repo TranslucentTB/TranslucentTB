@@ -140,7 +140,7 @@
   </data>
   <data name="TrayFlyoutPage_AccentColor.Text" xml:space="preserve">
     <value>强调色</value>
-    <comment>也被用于颜色生成窗口的标题</comment>
+    <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Acrylic.Text" xml:space="preserve">
     <value>亚克力</value>
@@ -198,7 +198,7 @@
   </data>
   <data name="TrayFlyoutPage_BatterySaver.Text" xml:space="preserve">
     <value>启用节电模式时</value>
-    <comment>也被用于颜色生成窗口的标题</comment>
+    <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Blur.Text" xml:space="preserve">
     <value>模糊</value>
@@ -208,7 +208,7 @@
   </data>
   <data name="TrayFlyoutPage_Desktop.Text" xml:space="preserve">
     <value>返回桌面时</value>
-    <comment>也被用于颜色生成窗口的标题</comment>
+    <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Enabled.Text" xml:space="preserve">
     <value>启用</value>
@@ -221,11 +221,11 @@
   </data>
   <data name="TrayFlyoutPage_MaximizedWindow.Text" xml:space="preserve">
     <value>窗口最大化时</value>
-    <comment>也被用于颜色生成窗口的标题</comment>
+    <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Normal.Text" xml:space="preserve">
     <value>默认</value>
-    <comment>也被用于颜色生成窗口的标题</comment>
+    <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Opaque.Text" xml:space="preserve">
     <value>不透明</value>
@@ -238,15 +238,15 @@
   </data>
   <data name="TrayFlyoutPage_SearchOpened.Text" xml:space="preserve">
     <value>打开搜索菜单时</value>
-    <comment>也被用于颜色生成窗口的标题</comment>
+    <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_StartOpened.Text" xml:space="preserve">
     <value>打开开始菜单时</value>
-    <comment>也被用于颜色生成窗口的标题</comment>
+    <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_TaskViewOpened.Text" xml:space="preserve">
     <value>打开任务视图时</value>
-    <comment>也被用于颜色生成窗口的标题</comment>
+    <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_TipsAndTricks.Text" xml:space="preserve">
     <value>提示和技巧</value>
@@ -260,7 +260,7 @@
   <data name="WelcomePage_Action_Configure.Description" xml:space="preserve">
     <value>你可以随时在托盘图标的菜单中点击 "高级" &gt; "编辑设置" 来打开配置文件
 保存文件后，TranslucentTB 将自动重载</value>
-    <comment>注意换字符 (enter)</comment>
+    <comment>Mind the newline (a.k.a. enter)</comment>
   </data>
   <data name="WelcomePage_Action_Configure.Name" xml:space="preserve">
     <value>编辑配置文件</value>
