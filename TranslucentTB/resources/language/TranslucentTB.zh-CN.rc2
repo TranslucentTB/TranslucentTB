@@ -37,7 +37,7 @@ VS_VERSION_INFO VERSIONINFO
 			VALUE L"OriginalFilename", APP_NAME L".exe"
 			VALUE L"ProductName", APP_NAME
 			VALUE L"ProductVersion", APP_VERSION
-			VALUE L"Comments", L"一个能够使 Windows 任务栏变半透明/透明的轻量化小工具"
+			VALUE L"Comments", L"一个能使 Windows 任务栏半透明/透明的轻量工具"
 			VALUE L"CompanyName", APP_NAME L" 开源开发者"
 			VALUE L"LegalCopyright", L"版权所有 © " APP_COPYRIGHT_YEAR L" " APP_NAME L" 开源开发者"
 		}
@@ -56,7 +56,11 @@ VS_VERSION_INFO VERSIONINFO
 
 STRINGTABLE
 {
-	IDS_WELCOME_NOTIFICATION APP_NAME L" 将隐藏在托盘中。 \n\n对托盘图标点击右键以修改设置、设为开机时启动、检视关于信息、关闭应用...等。"
-	IDS_HIDE_TRAY L"此更动仅暂时生效，下次 "APP_NAME L" 启动时将被还原。 \n\n若要永久更动，请通过 「高级」> 「编辑设置」开启配置文件，并将 ""hide_tray"" 设为 true。 \n\n您确定要继续吗？"
-	IDS_ALREADY_RUNNING APP_NAME L" 已经在运行了！对托盘图示点击右键以存取。"
+	IDS_WELCOME_NOTIFICATION APP_NAME L" 将隐藏在托盘中。\n\n右键点击托盘图标以修改设置、设为开机时启动、查看关于信息、退出应用等。"
+	IDS_HIDE_TRAY L"此更改仅暂时生效，下次 " APP_NAME L" 启动时将被重置。\n\n如果要永久更改，请通过 "高级" > "编辑设置" 来打开配置文件，并将 ""hide_tray"" 设为 true。\n\n你确定要继续吗？"
+	IDS_ALREADY_RUNNING APP_NAME L" 已经在运行了！右键点击托盘图标以打开菜单。"
+	IDS_LANGUAGE_CHANGED L"配置文件中的语言覆盖设置已更改。请重启 " APP_NAME L" 以查看效果。"
+	IDS_RESTART_REQUIRED APP_NAME L" 最近已更新。请重启 Windows 以使用最新版本。"
+	IDS_PORTABLE_UNSUPPORTED L"便捷模式仅能在 Windows 11 上运行。"
+	IDS_MISSING_DEPENDENCIES APP_NAME L" 不能在便捷模式中启动，因为 {0} (版本 {1}) 未安装在系统上。"
 }
