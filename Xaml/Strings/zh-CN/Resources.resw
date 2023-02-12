@@ -188,7 +188,7 @@
     <value>警告</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_OpenLogFile.Text" xml:space="preserve">
-    <value>打开日志文件</value>
+    <value>打开日志</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_ResetDynamicState.Text" xml:space="preserve">
     <value>重置动态状态</value>
