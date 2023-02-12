@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ColorPickerPage_AlwaysOnTop.Text" xml:space="preserve">
-    <value>保持在顶部</value>
+    <value>置顶</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.CloseButtonText" xml:space="preserve">
     <value>取消</value>
@@ -197,7 +197,7 @@
     <value>恢复默认设置</value>
   </data>
   <data name="TrayFlyoutPage_BatterySaver.Text" xml:space="preserve">
-    <value>启用节电模式时</value>
+    <value>开启节电模式时</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Blur.Text" xml:space="preserve">
@@ -224,7 +224,7 @@
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Normal.Text" xml:space="preserve">
-    <value>默认</value>
+    <value>正常</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Opaque.Text" xml:space="preserve">
