@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AppDescription" xml:space="preserve">
-    <value>一个能够使 Windows 任务栏变半透明/透明的轻量化小工具</value>
+    <value>一个能使 Windows 任务栏半透明/透明的轻量小工具</value>
   </data>
   <data name="PublisherDisplayName" xml:space="preserve">
     <value>TranslucentTB 开源开发者</value>
