@@ -10,8 +10,16 @@ HRESULT ExplorerTAP::SetSite(IUnknown *pUnkSite) try
 
 	visualTreeService = FromIUnknown<IVisualTreeService3>(pUnkSite);
 
-	visualTreeWatcher->SetXamlDiagnostics(visualTreeService.as<IXamlDiagnostics>());
-	winrt::check_hresult(visualTreeService->AdviseVisualTreeChange(visualTreeWatcher.get()));
+	if (visualTreeService)
+	{
+		if (!visualTreeWatcher)
+		{
+			visualTreeWatcher = winrt::make_self<VisualTreeWatcher>();
+		}
+
+		visualTreeWatcher->SetXamlDiagnostics(visualTreeService.as<IXamlDiagnostics>());
+		winrt::check_hresult(visualTreeService->AdviseVisualTreeChange(visualTreeWatcher.get()));
+	}
 
 	return S_OK;
 }
