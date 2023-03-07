@@ -28,10 +28,10 @@ class Application final {
 
 	DynamicLoader m_Loader;
 
+	winrt::Windows::System::DispatcherQueueController m_DispatcherController;
 	TaskbarAttributeWorker m_Worker;
 	StartupManager m_Startup;
 
-	winrt::Windows::System::DispatcherQueueController m_DispatcherController;
 	// seemingly, dynamic deps are not transitive so add a dyn dep to the CRT that WinUI uses.
 	DynamicDependency m_UwpCRTDep, m_WinUIDep;
 	winrt::TranslucentTB::Xaml::App m_XamlApp;
