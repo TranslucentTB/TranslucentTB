@@ -1,8 +1,8 @@
 #include "visualtreewatcher.hpp"
 #include "undefgetcurrenttime.h"
 #include <winrt/Windows.UI.Xaml.Hosting.h>
-#include <winrt/Windows.UI.Xaml.Media.h>
 #include "redefgetcurrenttime.h"
+#include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
 
 HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation, VisualElement element, VisualMutationType mutationType) try
 {
@@ -12,17 +12,51 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation, VisualElement
 		switch (mutationType)
 		{
 		case Add:
-			if (!m_FoundSources.insert(element.Handle).second)
+			if (!m_FoundSources.contains(element.Handle))
 			{
-				if (const auto background = FindControl(FromHandle<wuxh::DesktopWindowXamlSource>(element.Handle).Content().try_as<wux::FrameworkElement>(), L"BackgroundFill"))
+				const auto desktopXamlSource = FromHandle<wuxh::DesktopWindowXamlSource>(element.Handle);
+
+				// make sure we're on the taskbar control
+				if (const auto taskbarFrame = FindControl(desktopXamlSource.Content().try_as<wux::FrameworkElement>(), L"TaskbarFrame"))
 				{
-					background.Visibility(wux::Visibility::Collapsed);
+					const auto backgroundControl = FindControl(taskbarFrame, L"BackgroundControl");
+					const auto backgroundFill = FindControl(backgroundControl, L"BackgroundFill").as<wux::Shapes::Shape>();
+					const auto backgroundStroke = FindControl(backgroundControl, L"BackgroundStroke").as<wux::Shapes::Shape>();
+					if (backgroundFill && backgroundStroke)
+					{
+						const auto nativeSource = desktopXamlSource.as<IDesktopWindowXamlSourceNative>();
+
+						HWND hwnd = nullptr;
+						winrt::check_hresult(nativeSource->get_WindowHandle(&hwnd));
+
+						if (const auto monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONULL))
+						{
+							m_FoundSources.insert_or_assign(element.Handle, TaskbarInfo {
+								{
+									backgroundFill,
+									backgroundFill.Fill()
+								},
+								{
+									backgroundStroke,
+									backgroundStroke.Fill()
+								},
+								monitor
+							});
+						}
+					}
 				}
 			}
 			break;
 
 		case Remove:
-			m_FoundSources.erase(element.Handle);
+			if (auto it = m_FoundSources.find(element.Handle); it != m_FoundSources.end())
+			{
+				// TODO: would stuff still be alive here if we didn't keep a reference?
+				RestoreElement(it->second.background);
+				RestoreElement(it->second.border);
+
+				m_FoundSources.erase(it);
+			}
 			break;
 		}
 	}
@@ -39,9 +73,25 @@ HRESULT VisualTreeWatcher::OnElementStateChanged(InstanceHandle, VisualElementSt
 	return S_OK;
 }
 
-void VisualTreeWatcher::SetXamlDiagnostics(winrt::com_ptr<IXamlDiagnostics> diagnostics) noexcept
+void VisualTreeWatcher::SetXamlDiagnostics(winrt::com_ptr<IXamlDiagnostics> diagnostics)
 {
+	ClearSources();
 	m_XamlDiagnostics = std::move(diagnostics);
+}
+
+VisualTreeWatcher::~VisualTreeWatcher()
+{
+	ClearSources();
+}
+
+void VisualTreeWatcher::ClearSources()
+{
+	for (const auto &[handle, info] : m_FoundSources)
+	{
+		RestoreElement(info.background);
+		RestoreElement(info.border);
+	}
+
 	m_FoundSources.clear();
 }
 
@@ -67,4 +117,9 @@ wux::FrameworkElement VisualTreeWatcher::FindControl(const wux::FrameworkElement
 	}
 
 	return nullptr;
+}
+
+void VisualTreeWatcher::RestoreElement(const ElementInfo<wux::Shapes::Shape> &element)
+{
+	element.element.Fill(element.originalFill);
 }

@@ -12,7 +12,7 @@
       <PreprocessorDefinitions>EXPLORERTAP_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Ole32.lib;OleAut32.lib</AdditionalDependencies>
+      <AdditionalDependencies>Ole32.lib;OleAut32.lib;user32.lib</AdditionalDependencies>
       <ModuleDefinitionFile>ExplorerTAP.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
     </Link>

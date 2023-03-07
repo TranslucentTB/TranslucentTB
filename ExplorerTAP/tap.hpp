@@ -23,5 +23,5 @@ private:
 	}
 
 	winrt::com_ptr<IVisualTreeService3> visualTreeService;
-	winrt::com_ptr<VisualTreeWatcher> visualTreeWatcher = winrt::make_self<VisualTreeWatcher>();
+	winrt::com_ptr<VisualTreeWatcher> visualTreeWatcher;
 };
