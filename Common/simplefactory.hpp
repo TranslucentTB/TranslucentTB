@@ -1,0 +1,30 @@
+#pragma once
+#include <Unknwn.h>
+#include "winrt.hpp"
+
+template<class T>
+struct SimpleFactory : winrt::implements<SimpleFactory<T>, IClassFactory>
+{
+	HRESULT STDMETHODCALLTYPE CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppvObject) override try
+	{
+		*ppvObject = nullptr;
+
+		if (!pUnkOuter)
+		{
+			return winrt::make<T>().as(riid, ppvObject);
+		}
+		else
+		{
+			return CLASS_E_NOAGGREGATION;
+		}
+	}
+	catch (...)
+	{
+		return winrt::to_hresult();
+	}
+
+	HRESULT STDMETHODCALLTYPE LockServer(BOOL) noexcept override
+	{
+		return S_OK;
+	}
+};

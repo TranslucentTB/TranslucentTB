@@ -2,7 +2,7 @@
 #include "winrt.hpp"
 
 #include "tap.hpp"
-#include "tapfactory.hpp"
+#include "simplefactory.hpp"
 
 _Use_decl_annotations_ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) try
 {
@@ -10,7 +10,7 @@ _Use_decl_annotations_ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LP
 
 	if (rclsid == CLSID_ExplorerTAP)
 	{
-		return winrt::make<TAPFactory>().as(riid, ppv);
+		return winrt::make<SimpleFactory<ExplorerTAP>>().as(riid, ppv);
 	}
 	else
 	{

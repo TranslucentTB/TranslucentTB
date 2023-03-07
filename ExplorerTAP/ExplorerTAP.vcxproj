@@ -31,7 +31,6 @@
     <ClCompile Include="api.cpp" />
     <ClCompile Include="module.cpp" />
     <ClCompile Include="tap.cpp" />
-    <ClCompile Include="tapfactory.cpp" />
     <ClCompile Include="visualtreewatcher.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -41,7 +40,6 @@
   <ItemGroup>
     <ClInclude Include="api.hpp" />
     <ClInclude Include="tap.hpp" />
-    <ClInclude Include="tapfactory.hpp" />
     <ClInclude Include="visualtreewatcher.hpp" />
   </ItemGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
