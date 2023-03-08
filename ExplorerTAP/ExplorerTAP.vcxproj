@@ -4,18 +4,26 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{e759084f-6445-400d-8f43-a64a6e276659}</ProjectGuid>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CppWinRTModernIDL>false</CppWinRTModernIDL>
+    <CppWinRTGenerateWindowsMetadata>false</CppWinRTGenerateWindowsMetadata>
     <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <Import Project="..\Common\CppProject.props" />
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);Generated Files</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>EXPLORERTAP_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Ole32.lib;OleAut32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>Ole32.lib;OleAut32.lib;rpcrt4.lib;user32.lib</AdditionalDependencies>
       <ModuleDefinitionFile>ExplorerTAP.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
     </Link>
+    <Midl>
+      <OutputDirectory>Generated Files</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>$(ProjectName).tlb</TypeLibraryName>
+    </Midl>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
