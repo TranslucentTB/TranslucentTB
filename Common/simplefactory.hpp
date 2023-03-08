@@ -3,7 +3,7 @@
 #include "winrt.hpp"
 
 template<class T>
-struct SimpleFactory : winrt::implements<SimpleFactory<T>, IClassFactory>
+struct SimpleFactory : winrt::implements<SimpleFactory<T>, IClassFactory, winrt::non_agile>
 {
 	HRESULT STDMETHODCALLTYPE CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppvObject) override try
 	{
