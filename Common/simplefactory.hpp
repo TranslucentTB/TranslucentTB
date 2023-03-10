@@ -7,10 +7,9 @@ struct SimpleFactory : winrt::implements<SimpleFactory<T>, IClassFactory, winrt:
 {
 	HRESULT STDMETHODCALLTYPE CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppvObject) override try
 	{
-		*ppvObject = nullptr;
-
 		if (!pUnkOuter)
 		{
+			*ppvObject = nullptr;
 			return winrt::make<T>().as(riid, ppvObject);
 		}
 		else
