@@ -13,10 +13,34 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{1f6135d4-d3d0-4d33-b09e-884a6aaf5c33}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="tap.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="api.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="module.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="visualtreewatcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated Files\dlldata.c">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated Files\ExplorerTAP_i.c">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated Files\ITaskbarAppearanceService_i.c">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated Files\ITaskbarAppearanceService_p.c">
+      <Filter>Generated Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -26,11 +50,34 @@
     <ClInclude Include="visualtreewatcher.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="tap.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated Files\ExplorerTAP.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated Files\ITaskbarAppearanceService.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated Files\TaskbarBrush.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ExplorerTAP.def">
       <Filter>Source Files</Filter>
     </None>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="ExplorerTAP.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="ITaskbarAppearanceService.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="TaskbarBrush.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
   </ItemGroup>
 </Project>

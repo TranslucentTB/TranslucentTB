@@ -4,6 +4,80 @@
 #include "redefgetcurrenttime.h"
 #include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
 
+#include "taskbarappearanceservice.hpp"
+
+void VisualTreeWatcher::InitializeComponent()
+{
+	TaskbarAppearanceService::Install(this);
+}
+
+void VisualTreeWatcher::SetXamlDiagnostics(winrt::com_ptr<IXamlDiagnostics> diagnostics)
+{
+	ClearSources();
+	m_XamlDiagnostics = std::move(diagnostics);
+}
+
+void VisualTreeWatcher::SetTaskbarBrush(HMONITOR monitor, wux::Media::Brush fill)
+{
+	for (const auto &[handle, info] : m_FoundSources)
+	{
+		if (info.monitor == monitor)
+		{
+			info.background.element.Fill(fill);
+			break;
+		}
+	}
+}
+
+void VisualTreeWatcher::RestoreOriginalTaskbarBrush(HMONITOR monitor)
+{
+	for (const auto& [handle, info] : m_FoundSources)
+	{
+		if (info.monitor == monitor)
+		{
+			RestoreElement(info.background);
+			break;
+		}
+	}
+}
+
+void VisualTreeWatcher::ShowHideTaskbarBorder(HMONITOR monitor, bool visible)
+{
+	for (const auto& [handle, info] : m_FoundSources)
+	{
+		if (info.monitor == monitor)
+		{
+			if (visible)
+			{
+				RestoreElement(info.background);
+			}
+			else
+			{
+				wux::Media::SolidColorBrush brush;
+				brush.Opacity(0);
+				info.border.element.Fill(brush);
+			}
+			
+			break;
+		}
+	}
+}
+
+void VisualTreeWatcher::RestoreAllTaskbars()
+{
+	for (const auto& [handle, info] : m_FoundSources)
+	{
+		RestoreElement(info.background);
+		RestoreElement(info.border);
+	}
+}
+
+VisualTreeWatcher::~VisualTreeWatcher()
+{
+	ClearSources();
+	TaskbarAppearanceService::Uninstall();
+}
+
 HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation, VisualElement element, VisualMutationType mutationType) try
 {
 	const std::wstring_view type { element.Type, SysStringLen(element.Type) };
@@ -51,7 +125,6 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation, VisualElement
 		case Remove:
 			if (auto it = m_FoundSources.find(element.Handle); it != m_FoundSources.end())
 			{
-				// TODO: would stuff still be alive here if we didn't keep a reference?
 				RestoreElement(it->second.background);
 				RestoreElement(it->second.border);
 
@@ -73,25 +146,31 @@ HRESULT VisualTreeWatcher::OnElementStateChanged(InstanceHandle, VisualElementSt
 	return S_OK;
 }
 
-void VisualTreeWatcher::SetXamlDiagnostics(winrt::com_ptr<IXamlDiagnostics> diagnostics)
+HRESULT VisualTreeWatcher::CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppvObject) try
 {
-	ClearSources();
-	m_XamlDiagnostics = std::move(diagnostics);
+	if (!pUnkOuter)
+	{
+		*ppvObject = nullptr;
+		return winrt::make<TaskbarAppearanceService>(get_strong()).as(riid, ppvObject);
+	}
+	else
+	{
+		return CLASS_E_NOAGGREGATION;
+	}
+}
+catch (...)
+{
+	return winrt::to_hresult();
 }
 
-VisualTreeWatcher::~VisualTreeWatcher()
+HRESULT VisualTreeWatcher::LockServer(BOOL) noexcept
 {
-	ClearSources();
+	return S_OK;
 }
 
 void VisualTreeWatcher::ClearSources()
 {
-	for (const auto &[handle, info] : m_FoundSources)
-	{
-		RestoreElement(info.background);
-		RestoreElement(info.border);
-	}
-
+	RestoreAllTaskbars();
 	m_FoundSources.clear();
 }
 

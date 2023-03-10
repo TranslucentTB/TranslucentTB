@@ -9,12 +9,24 @@
 #include <winrt/Windows.UI.Xaml.Shapes.h>
 #include "redefgetcurrenttime.h"
 
-struct VisualTreeWatcher : winrt::implements<VisualTreeWatcher, IVisualTreeServiceCallback2>
+struct VisualTreeWatcher : winrt::implements<VisualTreeWatcher, IVisualTreeServiceCallback2, IClassFactory, winrt::non_agile>
 {
-	HRESULT STDMETHODCALLTYPE OnVisualTreeChange(ParentChildRelation relation, VisualElement element, VisualMutationType mutationType) override;
-	HRESULT STDMETHODCALLTYPE OnElementStateChanged(InstanceHandle element, VisualElementState elementState, LPCWSTR context) noexcept override;
+	VisualTreeWatcher() = default;
+	void InitializeComponent();
+
+	VisualTreeWatcher(const VisualTreeWatcher&) = delete;
+	VisualTreeWatcher& operator=(const VisualTreeWatcher&) = delete;
+
+	VisualTreeWatcher(VisualTreeWatcher&&) = delete;
+	VisualTreeWatcher& operator=(VisualTreeWatcher&&) = delete;
 
 	void SetXamlDiagnostics(winrt::com_ptr<IXamlDiagnostics> diagnostics);
+
+	void SetTaskbarBrush(HMONITOR monitor, wux::Media::Brush fill);
+	void RestoreOriginalTaskbarBrush(HMONITOR monitor);
+
+	void ShowHideTaskbarBorder(HMONITOR monitor, bool visible);
+	void RestoreAllTaskbars();
 
 	~VisualTreeWatcher();
 
@@ -32,6 +44,11 @@ private:
 		HMONITOR monitor;
 	};
 
+	HRESULT STDMETHODCALLTYPE OnVisualTreeChange(ParentChildRelation relation, VisualElement element, VisualMutationType mutationType) override;
+	HRESULT STDMETHODCALLTYPE OnElementStateChanged(InstanceHandle element, VisualElementState elementState, LPCWSTR context) noexcept override;
+	HRESULT STDMETHODCALLTYPE CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppvObject) override;
+	HRESULT STDMETHODCALLTYPE LockServer(BOOL) noexcept override;
+
 	void ClearSources();
 
 	template<typename T>
@@ -46,8 +63,6 @@ private:
 	static wux::FrameworkElement FindControl(const wux::FrameworkElement &parent, std::wstring_view name);
 	static void RestoreElement(const ElementInfo<wux::Shapes::Shape> &element);
 
-	winrt::com_ptr<IXamlDiagnostics> m_XamlDiagnostics; // TODO: make weak? check if destructed when parent process dies
+	winrt::com_ptr<IXamlDiagnostics> m_XamlDiagnostics = nullptr;
 	std::unordered_map<InstanceHandle, TaskbarInfo> m_FoundSources;
-
-	// TODO: IPC with ttb main process. use com remoting
 };

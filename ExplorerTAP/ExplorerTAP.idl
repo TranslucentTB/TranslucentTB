@@ -1,0 +1,12 @@
+import "ITaskbarAppearanceService.idl";
+
+[uuid(e22e715d-1c63-4da4-a445-78695330311e)]
+library ExplorerTAP
+{
+	[uuid(50e9ab23-97b4-4dba-8f44-5cd342f30b78)]
+	coclass TaskbarAppearanceService
+	{
+		[default]
+		interface ITaskbarAppearanceService;
+	}
+};
