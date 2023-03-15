@@ -955,58 +955,6 @@ void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 	}
 }
 
-std::filesystem::path TaskbarAttributeWorker::GetDllPath(const std::optional<std::filesystem::path>& storageFolder, std::wstring_view dll)
-{
-	const auto [loc, hr] = win32::GetExeLocation();
-	HresultVerify(hr, spdlog::level::critical, L"Failed to determine executable location!");
-
-	std::filesystem::path dllPath = loc.parent_path() / dll;
-
-	if (storageFolder)
-	{
-		// copy the file over to a place Explorer can read. It can't be injected from WindowsApps.
-		auto tempDllPath = *storageFolder / L"TempState" / dll;
-
-		std::error_code err;
-		std::filesystem::copy_file(dllPath, tempDllPath, std::filesystem::copy_options::update_existing, err);
-		if (err)
-		{
-			if (err.category() == std::system_category() && err.value() == ERROR_SHARING_VIOLATION)
-			{
-				std::thread([msg = Localization::LoadLocalizedResourceString(IDS_RESTART_REQUIRED, hinstance())]() noexcept
-				{
-					MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_ICONINFORMATION | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
-				}).join();
-
-				ExitProcess(1);
-			}
-			else
-			{
-				StdErrorCodeHandle(err, spdlog::level::critical, std::format(L"Failed to copy {}", dll));
-			}
-		}
-
-		return tempDllPath;
-	}
-	else
-	{
-		return dllPath;
-	}
-}
-
-wil::unique_hmodule TaskbarAttributeWorker::LoadDll(const std::optional<std::filesystem::path> &storageFolder, std::wstring_view dll)
-{
-	const std::filesystem::path dllPath = GetDllPath(storageFolder, dll);
-
-	wil::unique_hmodule hmod(LoadLibraryEx(dllPath.c_str(), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
-	if (!hmod)
-	{
-		LastErrorHandle(spdlog::level::critical, std::format(L"Failed to load {}", dll));
-	}
-
-	return hmod;
-}
-
 TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, DynamicLoader &loader, const std::optional<std::filesystem::path> &storageFolder) :
 	MessageWindow(TTB_WORKERWINDOW, TTB_WORKERWINDOW, hInstance, WS_POPUP, WS_EX_NOREDIRECTIONBITMAP),
 	SetWindowCompositionAttribute(loader.SetWindowCompositionAttribute()),
@@ -1038,12 +986,10 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_SearchVisibilityChangeMessage(Window::RegisterMessage(WM_TTBSEARCHVISIBILITYCHANGE)),
 	m_ForceRefreshTaskbar(Window::RegisterMessage(WM_TTBFORCEREFRESHTASKBAR)),
 	m_LastExplorerPid(0),
-	m_HookDll(LoadDll(storageFolder, L"ExplorerHooks.dll")),
-	m_InjectExplorerHook(GetProc<PFN_INJECT_EXPLORER_HOOK>(m_HookDll, "InjectExplorerHook")),
-	m_TAPDll(LoadDll(storageFolder, L"ExplorerTAP.dll")),
-	// TODO: since explorer tap is loaded all the time by explorer, ask the user to restart explorer if it fails copying due to being used by another process
-	// TODO: in debug builds, kill explorer to force unload?
-	m_InjectExplorerTAP(GetProc<PFN_INJECT_EXPLORER_TAP>(m_TAPDll, "InjectExplorerTAP")),
+	m_HookDll(storageFolder, L"ExplorerHooks.dll"),
+	m_InjectExplorerHook(m_HookDll.GetProc<PFN_INJECT_EXPLORER_HOOK>("InjectExplorerHook")),
+	m_TAPDll(storageFolder, L"ExplorerTAP.dll"),
+	m_InjectExplorerTAP(m_TAPDll.GetProc<PFN_INJECT_EXPLORER_TAP>("InjectExplorerTAP")),
 	m_IsWindows11(win32::IsAtLeastBuild(22000))
 {
 	const auto stateThunk = CreateThunk(&TaskbarAttributeWorker::OnWindowStateChange);

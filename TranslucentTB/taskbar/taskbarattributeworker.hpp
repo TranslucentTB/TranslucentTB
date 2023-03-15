@@ -29,6 +29,7 @@
 #include "util/null_terminated_string_view.hpp"
 #include "wilx.hpp"
 #include "../ProgramLog/error/win32.hpp"
+#include "../loadabledll.hpp"
 
 class TaskbarAttributeWorker final : public MessageWindow {
 private:
@@ -121,12 +122,12 @@ private:
 	std::array<std::optional<Util::Color>, 7> m_ColorPreviews;
 
 	// Hook DLL
-	wil::unique_hmodule m_HookDll;
+	LoadableDll m_HookDll;
 	PFN_INJECT_EXPLORER_HOOK m_InjectExplorerHook;
 	std::vector<wil::unique_hhook> m_Hooks;
 
 	// TAP DLL
-	wil::unique_hmodule m_TAPDll;
+	LoadableDll m_TAPDll;
 	PFN_INJECT_EXPLORER_TAP m_InjectExplorerTAP;
 
 	// Other
@@ -188,8 +189,6 @@ private:
 	bool IsStartMenuOpened() const;
 	bool IsSearchOpened() const;
 	void InsertTaskbar(HMONITOR mon, Window window);
-	std::filesystem::path GetDllPath(const std::optional<std::filesystem::path> &storageFolder, std::wstring_view dll);
-	wil::unique_hmodule LoadDll(const std::optional<std::filesystem::path> &storageFolder, std::wstring_view dll);
 
 	inline TaskbarAppearance WithPreview(txmp::TaskbarState state, const TaskbarAppearance &appearance) const
 	{
@@ -227,19 +226,6 @@ private:
 	inline static wil::unique_hwineventhook CreateHook(DWORD event, WINEVENTPROC proc)
 	{
 		return CreateHook(event, event, proc);
-	}
-
-	template<typename T>
-	static T GetProc(const wil::unique_hmodule &module, Util::null_terminated_string_view proc)
-	{
-		if (const auto ptr = GetProcAddress(module.get(), proc.c_str()))
-		{
-			return reinterpret_cast<T>(ptr);
-		}
-		else
-		{
-			LastErrorHandle(spdlog::level::critical, L"Failed to get address of procedure");
-		}
 	}
 
 public:

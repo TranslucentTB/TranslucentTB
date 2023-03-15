@@ -72,6 +72,9 @@
     <ClCompile Include="uwp\dynamicdependency.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="loadabledll.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\messagewindow.hpp">
@@ -144,6 +147,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="uwp\dynamicdependency.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="loadabledll.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
