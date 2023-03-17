@@ -19,7 +19,7 @@ public:
 	LoadableDll(const std::optional<std::filesystem::path> &storagePath, std::wstring_view dll);
 
 	template<typename T>
-	static T GetProc(Util::null_terminated_string_view proc)
+	T GetProc(Util::null_terminated_string_view proc)
 	{
 		if (const auto ptr = GetProcAddress(m_hMod.get(), proc.c_str()))
 		{

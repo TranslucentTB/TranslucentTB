@@ -52,7 +52,7 @@ wil::unique_hmodule LoadableDll::LoadDll(const std::filesystem::path &location)
 	wil::unique_hmodule hmod(LoadLibraryEx(location.c_str(), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
 	if (!hmod)
 	{
-		LastErrorHandle(spdlog::level::critical, std::format(L"Failed to load {}", location.filename()));
+		LastErrorHandle(spdlog::level::critical, std::format(L"Failed to load {}", location.filename().native()));
 	}
 
 	return hmod;
