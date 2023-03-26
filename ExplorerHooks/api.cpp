@@ -7,7 +7,13 @@
 #include <wil/win32_helpers.h>
 #include <WinUser.h>
 
-#include "explorerhooks.hpp"
+#include "constants.hpp"
+
+LRESULT CALLBACK CallWndProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept
+{
+	// Placeholder
+	return CallNextHookEx(nullptr, nCode, wParam, lParam);
+}
 
 HHOOK InjectExplorerHook(HWND window) noexcept
 {
@@ -20,7 +26,7 @@ HHOOK InjectExplorerHook(HWND window) noexcept
 		return nullptr;
 	}
 
-	if (!DetourFindRemotePayload(proc.get(), ExplorerHooks::EXPLORER_PAYLOAD, nullptr))
+	if (!DetourFindRemotePayload(proc.get(), EXPLORER_PAYLOAD, nullptr))
 	{
 		proc.reset(OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_WRITE, false, pid));
 		if (!proc) [[unlikely]]
@@ -29,11 +35,11 @@ HHOOK InjectExplorerHook(HWND window) noexcept
 		}
 
 		static constexpr uint32_t content = 0xDEADBEEF;
-		if (!DetourCopyPayloadToProcess(proc.get(), ExplorerHooks::EXPLORER_PAYLOAD, &content, sizeof(content))) [[unlikely]]
+		if (!DetourCopyPayloadToProcess(proc.get(), EXPLORER_PAYLOAD, &content, sizeof(content))) [[unlikely]]
 		{
 			return nullptr;
 		}
 	}
 
-	return SetWindowsHookEx(WH_CALLWNDPROC, ExplorerHooks::CallWndProc, wil::GetModuleInstanceHandle(), tid);
+	return SetWindowsHookEx(WH_CALLWNDPROC, CallWndProc, wil::GetModuleInstanceHandle(), tid);
 }

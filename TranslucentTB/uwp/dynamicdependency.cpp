@@ -7,14 +7,14 @@
 #include "version.hpp"
 #include "../windows/window.hpp"
 
-DynamicDependency::DynamicDependency(Util::null_terminated_wstring_view packageFamilyName, const PACKAGE_VERSION &minVersion, bool hasPackageIdentity) :
+DynamicDependency::DynamicDependency(HMODULE hModule, Util::null_terminated_wstring_view packageFamilyName, const PACKAGE_VERSION &minVersion, bool hasPackageIdentity) :
 	m_Context(nullptr)
 {
 	if (!hasPackageIdentity)
 	{
 		if (!IsApiSetImplemented("api-ms-win-appmodel-runtime-l1-1-5"))
 		{
-			std::thread([msg = Localization::LoadLocalizedResourceString(IDS_PORTABLE_UNSUPPORTED, wil::GetModuleInstanceHandle())]() noexcept
+			std::thread([msg = Localization::LoadLocalizedResourceString(IDS_PORTABLE_UNSUPPORTED, hModule)]() noexcept
 			{
 				MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
 			}).join();
@@ -36,7 +36,7 @@ DynamicDependency::DynamicDependency(Util::null_terminated_wstring_view packageF
 		{
 			if (hr == STATEREPOSITORY_E_DEPENDENCY_NOT_RESOLVED)
 			{
-				const auto fmt = Localization::LoadLocalizedResourceString(IDS_MISSING_DEPENDENCIES, wil::GetModuleInstanceHandle());
+				const auto fmt = Localization::LoadLocalizedResourceString(IDS_MISSING_DEPENDENCIES, hModule);
 
 				std::thread([msg = std::vformat(fmt, std::make_wformat_args(packageFamilyName, Version::FromPackageVersion(minVersion)))]() noexcept
 				{

@@ -13,6 +13,9 @@ static constexpr Util::null_terminated_wstring_view MUTEX_GUID = L"344635E9-9AE4
 // Tray icon GUID
 static constexpr GUID TRAY_GUID = { 0x974A6DD7, 0x6BBD, 0x4B9A, { 0x9F, 0x11, 0xA8, 0xED, 0x62, 0x44, 0x2A, 0x55 } };
 
+// GUID of payload injected in Explorer
+static constexpr GUID EXPLORER_PAYLOAD = { 0xF5E0B1A9, 0x9D5D, 0x4EB3, { 0x8F, 0x6D, 0x1F, 0x4D, 0x43, 0xD7, 0xCD, 0x0E } };
+
 #pragma endregion
 
 #pragma region Messages

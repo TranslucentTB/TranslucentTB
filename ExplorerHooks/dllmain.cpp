@@ -1,8 +1,10 @@
 #include "arch.h"
 #include <libloaderapi.h>
 #include <windef.h>
+#include <processthreadsapi.h>
+#include <detours/detours.h>
 
-#include "explorerhooks.hpp"
+#include "constants.hpp"
 #include "swcadetour.hpp"
 #include "taskviewvisibilitymonitor.hpp"
 
@@ -14,7 +16,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) noexcept
 	{
 	case DLL_PROCESS_ATTACH:
 		// Are we in Explorer?
-		payload = ExplorerHooks::FindExplorerPayload();
+		payload = DetourFindPayloadEx(EXPLORER_PAYLOAD, nullptr);
 		if (payload)
 		{
 			// Install the things
@@ -28,9 +30,6 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) noexcept
 		{
 			TaskViewVisibilityMonitor::Uninstall();
 			SWCADetour::Uninstall();
-
-			ExplorerHooks::FreeExplorerPayload(payload);
-			payload = nullptr;
 		}
 		break;
 	}

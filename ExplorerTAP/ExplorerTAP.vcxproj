@@ -4,18 +4,26 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{e759084f-6445-400d-8f43-a64a6e276659}</ProjectGuid>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CppWinRTModernIDL>false</CppWinRTModernIDL>
+    <CppWinRTGenerateWindowsMetadata>false</CppWinRTGenerateWindowsMetadata>
     <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
   <Import Project="..\Common\CppProject.props" />
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
-      <PreprocessorDefinitions>EXPLORERTAP_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);Generated Files</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EXPLORERTAP_EXPORTS;PROXY_CLSID_IS={ 0xe8721a60, 0x3798, 0x448f, { 0xa0, 0x1b, 0xdc, 0x4a, 0xf6, 0x5a, 0x78, 0xb } };ENTRY_PREFIX=PSFactory_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Ole32.lib;OleAut32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>Ole32.lib;OleAut32.lib;rpcrt4.lib;user32.lib</AdditionalDependencies>
       <ModuleDefinitionFile>ExplorerTAP.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
     </Link>
+    <Midl>
+      <OutputDirectory>Generated Files</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>$(ProjectName).tlb</TypeLibraryName>
+    </Midl>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
@@ -29,9 +37,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="api.cpp" />
-    <ClCompile Include="module.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="Generated Files\dlldata.c" />
+    <ClCompile Include="Generated Files\ExplorerTAP_i.c" />
+    <ClCompile Include="Generated Files\ITaskbarAppearanceService_i.c" />
+    <ClCompile Include="Generated Files\ITaskbarAppearanceService_p.c" />
+    <ClCompile Include="module.cpp">
+      <PreprocessorDefinitions>RPCPROXY_ENABLE_CPP_NO_CINTERFACE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
     <ClCompile Include="tap.cpp" />
-    <ClCompile Include="tapfactory.cpp" />
+    <ClCompile Include="taskbarappearanceservice.cpp" />
     <ClCompile Include="visualtreewatcher.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -40,9 +55,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="api.hpp" />
+    <ClInclude Include="Generated Files\ExplorerTAP.h" />
+    <ClInclude Include="Generated Files\ITaskbarAppearanceService.h" />
+    <ClInclude Include="Generated Files\TaskbarBrush.h" />
     <ClInclude Include="tap.hpp" />
-    <ClInclude Include="tapfactory.hpp" />
+    <ClInclude Include="taskbarappearanceservice.hpp" />
     <ClInclude Include="visualtreewatcher.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="ExplorerTAP.idl" />
+    <Midl Include="ITaskbarAppearanceService.idl" />
+    <Midl Include="TaskbarBrush.idl" />
   </ItemGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

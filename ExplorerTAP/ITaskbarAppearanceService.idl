@@ -1,0 +1,13 @@
+import "unknwn.idl";
+import "TaskbarBrush.idl";
+
+[object, uuid(5bcf9150-c28a-4ef2-913c-4c3ea2f5ead0)]
+interface ITaskbarAppearanceService : IUnknown
+{
+	HRESULT SetTaskbarAppearance([in] HMONITOR monitor, [in] enum TaskbarBrush brush, [in] UINT color);
+	HRESULT ReturnTaskbarToDefaultAppearance([in] HMONITOR monitor);
+
+	HRESULT SetTaskbarBorderVisibility([in] HMONITOR monitor, [in] BOOL visible);
+
+	HRESULT RestoreAllTaskbarsToDefault();
+};

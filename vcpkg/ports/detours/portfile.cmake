@@ -5,7 +5,7 @@ vcpkg_from_github(
     REPO microsoft/Detours
     REF v4.0.1
     SHA512 0a9c21b8222329add2de190d2e94d99195dfa55de5a914b75d380ffe0fb787b12e016d0723ca821001af0168fd1643ffd2455298bf3de5fdc155b3393a3ccc87
-    HEAD_REF master
+    HEAD_REF main
 )
 
 set(EXTRA_FLAGS "/guard:cf /guard:ehcont /ZH:SHA_256 /Qspectre /QIntel-jcc-erratum")

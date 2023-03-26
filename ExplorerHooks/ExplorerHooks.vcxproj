@@ -32,7 +32,6 @@
     <ClCompile Include="detourtransaction.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="swcadetour.cpp" />
-    <ClCompile Include="explorerhooks.cpp" />
     <ClCompile Include="taskviewvisibilitymonitor.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -40,7 +39,6 @@
     <ClInclude Include="common.hpp" />
     <ClInclude Include="detourtransaction.hpp" />
     <ClInclude Include="swcadetour.hpp" />
-    <ClInclude Include="explorerhooks.hpp" />
     <ClInclude Include="multitaskingviewvisibilitysink.hpp" />
     <ClInclude Include="taskviewvisibilitymonitor.hpp" />
   </ItemGroup>

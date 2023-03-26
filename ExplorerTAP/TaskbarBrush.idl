@@ -1,0 +1,5 @@
+enum TaskbarBrush
+{
+	Acrylic,
+	SolidColor
+};
