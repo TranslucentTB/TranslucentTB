@@ -184,7 +184,7 @@ bool ConfigManager::Load(bool firstLoad)
 					{
 						LastErrorHandle(spdlog::level::err, L"Failed to set process UI language. Is the language set in the configuration file a BCP-47 language name?");
 
-						// don't try setting XAML language, it'll probably fail too
+						// don't try setting thread & XAML language, it'll probably fail too
 						return true;
 					}
 
