@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -204,7 +204,7 @@
     <value>Bulanıklık</value>
   </data>
   <data name="TrayFlyoutPage_Clear.Text" xml:space="preserve">
-    <value>Temiz</value>
+    <value>Şeffaf</value>
   </data>
   <data name="TrayFlyoutPage_Desktop.Text" xml:space="preserve">
     <value>Masaüstü</value>
