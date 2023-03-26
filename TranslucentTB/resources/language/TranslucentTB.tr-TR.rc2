@@ -57,7 +57,7 @@ VS_VERSION_INFO VERSIONINFO
 STRINGTABLE
 {
 	IDS_WELCOME_NOTIFICATION APP_NAME L" sistem tepsisinde çalışıyor.\n\nAyarları değiştirmek, başlangıçta çalıştırmak, uygulamadan çıkmak gibi işlemler için tepsi simgesine sağ tıklayın."
-	IDS_HIDETRAY_DIALOG L"Bu değişiklik geçicidir ve " APP_NAME L" tekrar çalıştırıldığında kaybolacaktır.\n\nKalıcı hale getirmek için yapılandırma dosyasını ""Gelişmiş"" > ""Ayarları düzenle"" açın ve ""hide_tray""'i true yapın\n\nDevam etmek istediğinize emin misiniz?"
+	IDS_HIDE_TRAY L"Bu değişiklik geçicidir ve " APP_NAME L" tekrar çalıştırıldığında kaybolacaktır.\n\nKalıcı hale getirmek için yapılandırma dosyasını ""Gelişmiş"" > ""Ayarları düzenle"" açın ve ""hide_tray""'i true yapın\n\nDevam etmek istediğinize emin misiniz?"
 	IDS_ALREADY_RUNNING APP_NAME L" zaten çalışıyor! Erişmek için sistem tepsisi ikonuna sağ tıklayın."
 	IDS_LANGUAGE_CHANGED L"Yapılandırma dosyasındaki dil geçersiz kılma ayarı değiştirildi. Değişikliklerin etkili olması için lütfen " APP_NAME L" yi yeniden başlatın."
 	IDS_RESTART_REQUIRED APP_NAME L" yakın zamanda güncellendi. En son sürümü kullanmaya başlamak için Windows'u yeniden başlatın."

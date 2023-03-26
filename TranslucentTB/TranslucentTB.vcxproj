@@ -123,6 +123,7 @@
     <ResourceCompile Include="resources\language\TranslucentTB.en-US.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.es-US.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.ja-JP.rc2" />
+    <ResourceCompile Include="resources\language\TranslucentTB.tr-TR.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.zh-CN.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.zh-TW.rc2" />
   </ItemGroup>

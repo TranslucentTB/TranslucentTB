@@ -188,6 +188,21 @@ bool ConfigManager::Load(bool firstLoad)
 						return true;
 					}
 
+					// SetProcessPreferredUILanguages does not affect the lookup behavior of resource functions like FindResourceEx
+					// only SetThreadPreferredUILanguages does.
+					// WHY WINDOWS
+					// WHAT IS THE POINT OF SETPROCESSPREFERREDUILANGUAGES OTHERWISE
+					if (!SetThreadPreferredUILanguages(MUI_LANGUAGE_NAME, langOverride.c_str(), nullptr))
+					{
+						LastErrorHandle(spdlog::level::err, L"Failed to set process UI language. Is the language set in the configuration file a BCP-47 language name?");
+
+						// remove the existing override to not fail in a partially localized to previous value state
+						SetThreadPreferredUILanguages(MUI_LANGUAGE_NAME, nullptr, nullptr);
+
+						// don't try setting XAML language, it'll probably fail too
+						return true;
+					}
+
 					try
 					{
 						winrt::Windows::ApplicationModel::Resources::Core::ResourceContext::SetGlobalQualifierValue(L"Language", m_Config.Language);
@@ -196,7 +211,8 @@ bool ConfigManager::Load(bool firstLoad)
 					{
 						HresultErrorHandle(err, spdlog::level::err, L"Failed to set resource language override. Is the language set in the configuration file a BCP-47 language name?");
 
-						// remove the existing override to not fail in a partially localized to previous value state
+						// remove the existing overrides to not fail in a partially localized to previous value state
+						SetThreadPreferredUILanguages(MUI_LANGUAGE_NAME, nullptr, nullptr);
 						SetProcessPreferredUILanguages(MUI_LANGUAGE_NAME, nullptr, nullptr);
 					}
 				}
