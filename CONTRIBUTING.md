@@ -60,6 +60,8 @@ Once this is done, you should be able to hit play, let the solution build (takes
 
 Now that you've built the source, one of the things you can do is translating TranslucentTB in another language.
 
+**NOTE:** Please use the `develop` branch as the basis for your translations, as you will get the very latest copy of translatable strings. It also helps avoid merge conflicts.
+
 ### 1 - Find your language's identifier
 
 In order to translate TranslucentTB in your language, you will have to identify your language's identifer. It is composed of the [ISO 639-1 code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) combined with a dash and the two letter identifier of your country. For example, Chinese is `zh-CN` and British English is `en-UK`. If it is correct, it should be present in the [LCID Structure] documentation.
@@ -86,9 +88,11 @@ Open the `rc2` file for your language by right-clicking it and selecting View Co
 
 Then, translate the strings in that file as well.
 
+Open the `store-listing.csv` file in a CSV editor (Excel typically works fine), and translate the strings in those as well. Leave the thumbnail URL untouched (just copy them all from any other language). Make sure to also translate the feature list and search terms. Those are towards the end of the file and are rather easy to miss.
+
 ### 4 - Test
 
-Once you are done, you can launch the app and check what it looks like. If everything checks out okay, send a pull request and we'll gladly take a look at it!
+Once you are done, you can launch the app and check what it looks like. If everything checks out okay, send a pull request (targetting the `develop` branch) and we'll gladly take a look at it!
 
 [LCID Structure]: https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/63d3d639-7fd2-4afb-abbe-0d5b5551eef8
 [Discord]: https://discord.gg/TranslucentTB
