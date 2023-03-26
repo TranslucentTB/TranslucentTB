@@ -197,7 +197,7 @@ bool ConfigManager::Load(bool firstLoad)
 						LastErrorHandle(spdlog::level::err, L"Failed to set thread UI language. Is the language set in the configuration file a BCP-47 language name?");
 
 						// remove the existing override to not fail in a partially localized to previous value state
-						SetThreadPreferredUILanguages(MUI_LANGUAGE_NAME, nullptr, nullptr);
+						SetProcessPreferredUILanguages(MUI_LANGUAGE_NAME, nullptr, nullptr);
 
 						// don't try setting XAML language, it'll probably fail too
 						return true;
