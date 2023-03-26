@@ -191,10 +191,10 @@ bool ConfigManager::Load(bool firstLoad)
 					// SetProcessPreferredUILanguages does not affect the lookup behavior of resource functions like FindResourceEx
 					// only SetThreadPreferredUILanguages does.
 					// WHY WINDOWS
-					// WHAT IS THE POINT OF SETPROCESSPREFERREDUILANGUAGES OTHERWISE
+					// WHAT IS THE POINT OF SETPROCESSPREFERREDUILANGUAGES THEN
 					if (!SetThreadPreferredUILanguages(MUI_LANGUAGE_NAME, langOverride.c_str(), nullptr))
 					{
-						LastErrorHandle(spdlog::level::err, L"Failed to set process UI language. Is the language set in the configuration file a BCP-47 language name?");
+						LastErrorHandle(spdlog::level::err, L"Failed to set thread UI language. Is the language set in the configuration file a BCP-47 language name?");
 
 						// remove the existing override to not fail in a partially localized to previous value state
 						SetThreadPreferredUILanguages(MUI_LANGUAGE_NAME, nullptr, nullptr);
