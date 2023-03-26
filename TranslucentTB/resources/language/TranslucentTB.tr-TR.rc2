@@ -1,0 +1,66 @@
+#pragma code_page(65001)
+
+#ifdef APSTUDIO_INVOKED
+#error Please edit this file manually.
+#endif
+
+#include <ddeml.h>
+#include <winres.h>
+#include "../../../Common/appinfo.hpp"
+#include "../ids.h"
+
+LANGUAGE LANG_TURKISH, SUBLANG_TURKISH_TURKEY
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION APP_VERSION_FIXED
+	PRODUCTVERSION APP_VERSION_FIXED
+	FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+	FILEFLAGS VS_FF_DEBUG
+#endif
+	FILEOS VOS_NT_WINDOWS32
+	FILETYPE VFT_APP
+{
+	BLOCK L"StringFileInfo"
+	{
+		BLOCK L"041f04b0"
+		{
+			VALUE L"FileDescription", APP_NAME
+			VALUE L"FileVersion", APP_VERSION
+			VALUE L"InternalName", APP_NAME L".exe"
+			VALUE L"OriginalFilename", APP_NAME L".exe"
+			VALUE L"ProductName", APP_NAME
+			VALUE L"ProductVersion", APP_VERSION
+			VALUE L"Comments", L"Windows görev çubuğunu yarı saydam/şeffaf hale getiren hafif bir yardımcı program."
+			VALUE L"CompanyName", APP_NAME L" Açık Kaynak Geliştiricileri"
+			VALUE L"LegalCopyright", L"Telif Hakkı © " APP_COPYRIGHT_YEAR L" " APP_NAME L" Açık Kaynak Geliştiricileri"
+		}
+	}
+	BLOCK L"VarFileInfo"
+	{
+		VALUE L"Translation", 0x041F, CP_WINUNICODE
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Strings
+//
+
+STRINGTABLE
+{
+	IDS_WELCOME_NOTIFICATION APP_NAME L" sistem tepsisinde çalışıyor.\n\nAyarları değiştirmek, başlangıçta çalıştırmak, uygulamadan çıkmak gibi işlemler için tepsi simgesine sağ tıklayın."
+	IDS_HIDETRAY_DIALOG L"Bu değişiklik geçicidir ve " APP_NAME L" tekrar çalıştırıldığında kaybolacaktır.\n\nKalıcı hale getirmek için yapılandırma dosyasını ""Gelişmiş"" > ""Ayarları düzenle"" açın ve ""hide_tray""'i true yapın\n\nDevam etmek istediğinize emin misiniz?"
+	IDS_ALREADY_RUNNING APP_NAME L" zaten çalışıyor! Erişmek için sistem tepsisi ikonuna sağ tıklayın."
+	IDS_LANGUAGE_CHANGED L"Yapılandırma dosyasındaki dil geçersiz kılma ayarı değiştirildi. Değişikliklerin etkili olması için lütfen " APP_NAME L" yi yeniden başlatın."
+	IDS_RESTART_REQUIRED APP_NAME L" yakın zamanda güncellendi. En son sürümü kullanmaya başlamak için Windows'u yeniden başlatın."
+	IDS_PORTABLE_UNSUPPORTED L"Taşınabilir mod yalnızca Windows 11'de çalışmaktadır."
+	IDS_MISSING_DEPENDENCIES APP_NAME L" taşınabilir mod {0} (versiyon {1}) yüklü olmadığından başlatılamıyor."
+}

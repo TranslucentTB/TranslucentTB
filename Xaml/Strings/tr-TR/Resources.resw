@@ -1,0 +1,295 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ColorPickerPage_AlwaysOnTop.Text" xml:space="preserve">
+    <value>Her zaman üstte</value>
+  </data>
+  <data name="ColorPickerPage_ConfirmCloseDialog.CloseButtonText" xml:space="preserve">
+    <value>İptal</value>
+  </data>
+  <data name="ColorPickerPage_ConfirmCloseDialog.Content" xml:space="preserve">
+    <value>Renk değişikliklerini kaydetmek istiyor musunuz?</value>
+  </data>
+  <data name="ColorPickerPage_ConfirmCloseDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Evet</value>
+  </data>
+  <data name="ColorPickerPage_ConfirmCloseDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Hayır</value>
+  </data>
+  <data name="FramelessPage_Close.Text" xml:space="preserve">
+    <value>Kapat</value>
+  </data>
+  <data name="TrayFlyoutPage_About.Text" xml:space="preserve">
+    <value>TranslucentTB Hakkında</value>
+  </data>
+  <data name="TrayFlyoutPage_AccentColor.Text" xml:space="preserve">
+    <value>Vurgu Rengi</value>
+    <comment>Also used to generate the title of color picker windows</comment>
+  </data>
+  <data name="TrayFlyoutPage_Acrylic.Text" xml:space="preserve">
+    <value>Akrilik</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced.Text" xml:space="preserve">
+    <value>Gelişmiş</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_CompactThunkHeap.Text" xml:space="preserve">
+    <value>Kompakt thunk yığını</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_DisableHotSettings.Text" xml:space="preserve">
+    <value>Ayarların kaydedilmesini kapat</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_DumpDynamicState.Text" xml:space="preserve">
+    <value>Dinamik durumu günlüğe yaz</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_EditSettings.Text" xml:space="preserve">
+    <value>Ayarları düzenle</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_HideTrayIcon.Text" xml:space="preserve">
+    <value>Tepsi simgesini gizle</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity.Text" xml:space="preserve">
+    <value>Günlük ayrıntı düzeyi</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Critical.Text" xml:space="preserve">
+    <value>Kritik</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Debug.Text" xml:space="preserve">
+    <value>Hata Ayıklama</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Error.Text" xml:space="preserve">
+    <value>Hata</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Information.Text" xml:space="preserve">
+    <value>Bilgi</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Off.Text" xml:space="preserve">
+    <value>Kapalı</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Trace.Text" xml:space="preserve">
+    <value>İz</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Warning.Text" xml:space="preserve">
+    <value>Uyarı</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_OpenLogFile.Text" xml:space="preserve">
+    <value>Günlük dosyasını aç</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_ResetDynamicState.Text" xml:space="preserve">
+    <value>Dinamik durumu sıfırla</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_ResetSettings.Text" xml:space="preserve">
+    <value>Varsayılan ayarlara dön</value>
+  </data>
+  <data name="TrayFlyoutPage_BatterySaver.Text" xml:space="preserve">
+    <value>Pil tasarrufu</value>
+    <comment>Also used to generate the title of color picker windows</comment>
+  </data>
+  <data name="TrayFlyoutPage_Blur.Text" xml:space="preserve">
+    <value>Bulanıklık</value>
+  </data>
+  <data name="TrayFlyoutPage_Clear.Text" xml:space="preserve">
+    <value>Temiz</value>
+  </data>
+  <data name="TrayFlyoutPage_Desktop.Text" xml:space="preserve">
+    <value>Masaüstü</value>
+    <comment>Also used to generate the title of color picker windows</comment>
+  </data>
+  <data name="TrayFlyoutPage_Enabled.Text" xml:space="preserve">
+    <value>Etkin</value>
+  </data>
+  <data name="TrayFlyoutPage_Exit.Text" xml:space="preserve">
+    <value>Çık</value>
+  </data>
+  <data name="TrayFlyoutPage_LineButton.Text" xml:space="preserve">
+    <value>Görev çubuğu kenarlığını göster</value>
+  </data>
+  <data name="TrayFlyoutPage_MaximizedWindow.Text" xml:space="preserve">
+    <value>Tam ekran pencere</value>
+    <comment>Also used to generate the title of color picker windows</comment>
+  </data>
+  <data name="TrayFlyoutPage_Normal.Text" xml:space="preserve">
+    <value>Normal</value>
+    <comment>Also used to generate the title of color picker windows</comment>
+  </data>
+  <data name="TrayFlyoutPage_Opaque.Text" xml:space="preserve">
+    <value>Opak</value>
+  </data>
+  <data name="TrayFlyoutPage_OpenAtBoot.Text" xml:space="preserve">
+    <value>Başlangıçta çalıştır</value>
+  </data>
+  <data name="TrayFlyoutPage_PeekButton.Text" xml:space="preserve">
+    <value>Masaüstü göz atma butonunu göster</value>
+  </data>
+  <data name="TrayFlyoutPage_SearchOpened.Text" xml:space="preserve">
+    <value>Arama açıldı</value>
+    <comment>Also used to generate the title of color picker windows</comment>
+  </data>
+  <data name="TrayFlyoutPage_StartOpened.Text" xml:space="preserve">
+    <value>Başlat açıldı</value>
+    <comment>Also used to generate the title of color picker windows</comment>
+  </data>
+  <data name="TrayFlyoutPage_TaskViewOpened.Text" xml:space="preserve">
+    <value>Görev Görünümü açıldı</value>
+    <comment>Also used to generate the title of color picker windows</comment>
+  </data>
+  <data name="TrayFlyoutPage_TipsAndTricks.Text" xml:space="preserve">
+    <value>İpuçları ve püf noktalar</value>
+  </data>
+  <data name="TrayFlyoutPage_VisibleWindow.Text" xml:space="preserve">
+    <value>Görünür pencere</value>
+  </data>
+  <data name="WelcomePage.Title" xml:space="preserve">
+    <value>TranslucentTB'ye hoş geldiniz!</value>
+  </data>
+  <data name="WelcomePage_Action_Configure.Description" xml:space="preserve">
+    <value>Bunu tepsi ikonu menüsünde "Gelişmiş" &gt; "Ayarları düzenle" seçerek istediğiniz zaman
+yapabilirsiniz. Değişiklikler dosya kaydedildiğinde otomatik olarak uygulanır.</value>
+    <comment>Mind the newline (a.k.a. enter)</comment>
+  </data>
+  <data name="WelcomePage_Action_Configure.Name" xml:space="preserve">
+    <value>Yapılandırma dosyasını düzenle</value>
+  </data>
+  <data name="WelcomePage_Action_Discord.Description" xml:space="preserve">
+    <value>Geliştiricilerle sohbet edin ve programla ilgili yardım alın</value>
+  </data>
+  <data name="WelcomePage_Action_Discord.Name" xml:space="preserve">
+    <value>Discord sunucumuza katılın</value>
+  </data>
+  <data name="WelcomePage_Action_Donate.Description" xml:space="preserve">
+    <value>Tek seferlik veya yinelenen bağışta bulunarak bize desteğinizi gösterin ❤</value>
+  </data>
+  <data name="WelcomePage_Action_Donate.Name" xml:space="preserve">
+    <value>Liberapay üzerinde projeye bağış yapın</value>
+  </data>
+  <data name="WelcomePage_ButtonBar_Continue.Content" xml:space="preserve">
+    <value>Devam et</value>
+  </data>
+  <data name="WelcomePage_ButtonBar_Exit.Content" xml:space="preserve">
+    <value>Çık</value>
+  </data>
+  <data name="WelcomePage_Message_Hyperlink.Text" xml:space="preserve">
+    <value>bir GitHub sorun bildirimi </value>
+  </data>
+  <data name="WelcomePage_Message_Prefix.Text" xml:space="preserve">
+    <value>TranslucentTB'yi denediğiniz için teşekkürler! Devam et'e bastıktan sonra görev çubuğunun nasıl görüneceğini istediğiniz gibi kişiselleştirebilirsiniz. Umarız beğenirsiniz, ve bir sorununuz varsa veya bir özelliğin eklenmesini istiyorsanız</value>
+  </data>
+  <data name="WelcomePage_Message_Suffix.Text" xml:space="preserve">
+    <value>oluşturabilirsiniz!</value>
+  </data>
+</root>
