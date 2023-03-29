@@ -213,4 +213,9 @@
       <Filter>Source Files</Filter>
     </CustomDefFile>
   </ItemGroup>
+  <ItemGroup>
+    <PropertyPageSchema Include="resources\ResourceFileMapping.xml">
+      <Filter>Resource Files</Filter>
+    </PropertyPageSchema>
+  </ItemGroup>
 </Project>
