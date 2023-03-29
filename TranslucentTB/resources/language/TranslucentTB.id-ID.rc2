@@ -1,0 +1,66 @@
+#pragma code_page(65001)
+
+#ifdef APSTUDIO_INVOKED
+#error Please edit this file manually.
+#endif
+
+#include <ddeml.h>
+#include <winres.h>
+#include "../../../Common/appinfo.hpp"
+#include "../ids.h"
+
+LANGUAGE LANG_INDONESIAN, SUBLANG_INDONESIAN_INDONESIA
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION APP_VERSION_FIXED
+	PRODUCTVERSION APP_VERSION_FIXED
+	FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+	FILEFLAGS VS_FF_DEBUG
+#endif
+	FILEOS VOS_NT_WINDOWS32
+	FILETYPE VFT_APP
+{
+	BLOCK L"StringFileInfo"
+	{
+		BLOCK L"042104b0"
+		{
+			VALUE L"FileDescription", APP_NAME
+			VALUE L"FileVersion", APP_VERSION
+			VALUE L"InternalName", APP_NAME L".exe"
+			VALUE L"OriginalFilename", APP_NAME L".exe"
+			VALUE L"ProductName", APP_NAME
+			VALUE L"ProductVersion", APP_VERSION
+			VALUE L"Comments", L"Sebuah utilitas ringan yang membuat taskbar Windows tembus pandang/transparan."
+			VALUE L"CompanyName", APP_NAME L" Pengembang Sumber Terbuka"
+			VALUE L"LegalCopyright", L"Hak Cipta © " APP_COPYRIGHT_YEAR L" " APP_NAME L" Pengembang Sumber Terbuka"
+		}
+	}
+	BLOCK L"VarFileInfo"
+	{
+		VALUE L"Translation", 0x0421, CP_WINUNICODE
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Strings
+//
+
+STRINGTABLE
+{
+	IDS_WELCOME_NOTIFICATION APP_NAME L" hidup di baki sistem.\n\nKlik kanan pada ikon baki untuk mengubah pengaturan, mengatur aplikasi terbuka saat pengaktifan, melihat tentang informasi, keluar aplikasi, dll."
+	IDS_HIDE_TRAY L"Perubahan ini hanya temporer dan akan hilang pada saat " APP_NAME L" dijalankan berikutnya.\n\nAgar ini permanen, ubah berkas konfigurasi menggunakan ""Lanjutan"" > ""Ubah pengaturan"" dan atur ""hide_tray"" ke true.\n\nAnda yakin ingin melanjutkan?"
+	IDS_ALREADY_RUNNING APP_NAME L" sudah berjalan! Klik kanan pada ikon baki untuk mengakses nya."
+	IDS_LANGUAGE_CHANGED L"Pengaturan penimpa bahasa di berkas konfigurasi telah berubah. Mohon aktifkan ulang " APP_NAME L" agar perubahan dapat diterapkan."
+	IDS_RESTART_REQUIRED APP_NAME L" Baru saja diperbarui. Mohon aktifkan ulang Windows untuk memulai menggunakan versi terbaru."
+	IDS_PORTABLE_UNSUPPORTED L"Mode Portabel hanya bekerja di Windows 11."
+	IDS_MISSING_DEPENDENCIES APP_NAME L" Tidak dapat memulai dalam mode portabel karena {0} (versi {1}) tidak terpasang pada sistem."
+}
