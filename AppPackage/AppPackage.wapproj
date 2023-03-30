@@ -92,6 +92,9 @@
   <ItemGroup>
     <SDKReference Include="Microsoft.VCLibs, Version=14.0" />
   </ItemGroup>
+  <ItemGroup>
+    <PropertyPageSchema Include="ResourceFileMapping.xml" />
+  </ItemGroup>
   <Target Name="FlattenPackage" BeforeTargets="_ConvertItems">
     <ItemGroup>
       <_TemporaryFilteredWapProjOutput Include="@(_FilteredNonWapProjProjectOutput)" />
