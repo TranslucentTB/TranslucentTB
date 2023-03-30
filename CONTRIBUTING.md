@@ -60,7 +60,7 @@ Once this is done, you should be able to hit play, let the solution build (takes
 
 Now that you've built the source, one of the things you can do is translating TranslucentTB in another language.
 
-**NOTE:** Please use the `develop` branch as the basis for your translations, as you will get the very latest copy of translatable strings. It also helps avoid merge conflicts.
+**NOTE:** Please use the `develop` branch as the basis for your translations, as you will get the very latest copy of translatable strings and the latest translation guidelines. It also helps avoid merge conflicts.
 
 ### 1 - Find your language's identifier
 
@@ -89,6 +89,8 @@ Open the `rc2` file for your language by right-clicking it and selecting View Co
 Then, translate the strings in that file as well.
 
 Open the `store-listing.csv` file in a CSV editor (Excel typically works fine), and translate the strings in there too. Leave the thumbnail URL untouched (just copy them all from any other language). Make sure to also translate the feature list and search terms. Those are towards the end of the file and are rather easy to miss.
+
+Finally, add your language identifier in `AppPackage\AppPackage.wapproj` under `AppxDefaultResourceQualifiers`. You can easily edit this file by right-clicking `AppPackage` under the Solution Explorer, then selecting Edit Project File.
 
 ### 4 - Test
 
