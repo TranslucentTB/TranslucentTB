@@ -596,7 +596,8 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 
 				FillCheckeredBitmap(bgraPixelData, width, height, renderScale, background, inverted);
 
-				if (const auto border_strong = border_weak.get())
+				border = border_weak.get();
+				if (border)
 				{
 					// return to main thread
 					co_await wil::resume_foreground(dispatcher);
@@ -605,7 +606,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 					wux::Media::ImageBrush brush;
 					brush.ImageSource(bitmap);
 					brush.Stretch(wux::Media::Stretch::Fill);
-					border_strong.Background(brush);
+					border.Background(brush);
 				}
 			}
 		}
