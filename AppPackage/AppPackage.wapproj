@@ -34,11 +34,12 @@
     <ProjectGuid>0e91e5c8-0ee0-49c9-a0da-d25ab61a90c4</ProjectGuid>
     <TargetPlatformVersion>10.0.22621.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
-    <DefaultLanguage>en-US</DefaultLanguage>
     <EntryPointProjectUniqueName>..\TranslucentTB\TranslucentTB.vcxproj</EntryPointProjectUniqueName>
     <AppxBundlePlatforms>x64|arm64</AppxBundlePlatforms>
     <DebuggerType>NativeOnly</DebuggerType>
     <DefaultLanguage>en-US</DefaultLanguage>
+    <AppxBundleAutoResourcePackageQualifiers>Scale|DXFeatureLevel</AppxBundleAutoResourcePackageQualifiers>
+    <AppxDefaultResourceQualifiers>Language=en-us;de-de;es-us;id-id;ja-jp;tr-tr;zh-cn;zh-tw</AppxDefaultResourceQualifiers>
     <!-- Prevent ucrtbased.dll from being copied to the output -->
     <DisableImplicitUCRTReference>true</DisableImplicitUCRTReference>
   </PropertyGroup>
@@ -59,23 +60,30 @@
   <ItemGroup>
     <Content Include="Assets\SmallTile.png" />
     <Content Include="Assets\SmallTile.scale-400.png" />
-    <Content Include="Assets\SplashScreen.png">
+    <Content Include="Assets\SplashScreen.jpeg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SplashScreen.scale-400.jpeg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Square150x150Logo.png" />
     <Content Include="Assets\Square150x150Logo.scale-400.png" />
+    <Content Include="Assets\Square44x44Logo.altform-lightunplated.png" />
+    <Content Include="Assets\Square44x44Logo.altform-unplated.png" />
+    <Content Include="Assets\Square44x44Logo.png" />
     <Content Include="Assets\Square44x44Logo.targetsize-256_altform-unplated.png" />
     <Content Include="Assets\Square44x44Logo.targetsize-256.png" />
     <Content Include="Assets\Square44x44Logo.targetsize-256_altform-lightunplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\StoreLogo.scale-400.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-150.jpeg" />
-    <Content Include="Assets\Wide310x150Logo.scale-200.jpeg" />
+    <Content Include="Assets\Wide310x150Logo.jpeg" />
     <Content Include="Assets\Wide310x150Logo.scale-400.jpeg" />
     <PRIResource Include="Strings\de-DE\Resources.resw" />
     <PRIResource Include="Strings\es-US\Resources.resw" />
     <PRIResource Include="Strings\en-US\Resources.resw" />
+    <PRIResource Include="Strings\id-ID\Resources.resw" />
     <PRIResource Include="Strings\ja-JP\Resources.resw" />
+    <PRIResource Include="Strings\tr-TR\Resources.resw" />
     <PRIResource Include="Strings\zh-CN\Resources.resw" />
     <PRIResource Include="Strings\zh-TW\Resources.resw" />
   </ItemGroup>
@@ -84,6 +92,9 @@
   </ItemGroup>
   <ItemGroup>
     <SDKReference Include="Microsoft.VCLibs, Version=14.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <PropertyPageSchema Include="ResourceFileMapping.xml" />
   </ItemGroup>
   <Target Name="FlattenPackage" BeforeTargets="_ConvertItems">
     <ItemGroup>

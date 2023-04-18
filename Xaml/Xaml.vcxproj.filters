@@ -29,6 +29,12 @@
     <Filter Include="Resources\Strings\de-DE">
       <UniqueIdentifier>{c69368bf-a517-45c5-a527-5bde79049f4c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources\Strings\tr-TR">
+      <UniqueIdentifier>{892f1e8f-f237-41e7-9f55-86bda17245fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Strings\id-ID">
+      <UniqueIdentifier>{28e9c66e-8ff1-4c04-ba70-3faf47ed9668}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -116,6 +122,12 @@
     </PRIResource>
     <PRIResource Include="Strings\de-DE\Resources.resw">
       <Filter>Resources\Strings\de-DE</Filter>
+    </PRIResource>
+    <PRIResource Include="Strings\tr-TR\Resources.resw">
+      <Filter>Resources\Strings\tr-TR</Filter>
+    </PRIResource>
+    <PRIResource Include="Strings\id-ID\Resources.resw">
+      <Filter>Resources\Strings\id-ID</Filter>
     </PRIResource>
   </ItemGroup>
 </Project>
