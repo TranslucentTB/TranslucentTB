@@ -28,15 +28,10 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 
 	wf::Size UniformGrid::MeasureOverride(const wf::Size &availableSize)
 	{
-		std::vector<wux::FrameworkElement> visible;
-
-		const auto children = Children();
-		for (auto item : children
-			| std::views::transform([](const wux::UIElement &element) { return element.try_as<wux::FrameworkElement>(); })
-			| std::views::filter([](const wux::FrameworkElement &element) { return element && element.Visibility() != wux::Visibility::Collapsed; }))
-		{
-			visible.push_back(std::move(item));
-		}
+		const auto visible = Children()
+			| std::views::transform([](const wux::UIElement& element) noexcept { return element.try_as<wux::FrameworkElement>(); })
+			| std::views::filter([](const wux::FrameworkElement& element) { return element && element.Visibility() != wux::Visibility::Collapsed; })
+			| std::ranges::to<std::vector>();
 
 		const auto [rows, columns] = GetDimensions(visible, Rows(), Columns(), FirstColumn());
 
@@ -91,7 +86,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 		// Backwards with FlowDirection
 		auto freespots = GetFreeSpots(FirstColumn(), Orientation() == wuxc::Orientation::Vertical);
 		auto freespot = freespots.begin();
-		for (auto child : visible)
+		for (const auto &child : visible)
 		{
 			// Set location if we're in charge
 			const auto autoLayout = GetAutoLayout(child);
@@ -122,7 +117,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 					// Therefore, tell this element it has no size and move on.
 					child.Measure(wf::Size { });
 
-					m_Overflow.push_back(std::move(child));
+					m_Overflow.push_back(child);
 
 					continue;
 				}
@@ -137,7 +132,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 					// of our grid space, so we should hide it instead.
 					child.Measure(wf::Size { });
 
-					m_Overflow.push_back(std::move(child));
+					m_Overflow.push_back(child);
 
 					continue;
 				}
