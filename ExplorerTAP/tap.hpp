@@ -2,6 +2,7 @@
 #include <ocidl.h>
 #include <xamlOM.h>
 #include "winrt.hpp"
+#include <wil/resource.h>
 
 #include "visualtreewatcher.hpp"
 
@@ -12,16 +13,10 @@ struct ExplorerTAP : winrt::implements<ExplorerTAP, IObjectWithSite, winrt::non_
 	HRESULT STDMETHODCALLTYPE SetSite(IUnknown *pUnkSite) override;
 	HRESULT STDMETHODCALLTYPE GetSite(REFIID riid, void **ppvSite) noexcept override;
 
+	static wil::unique_event_nothrow GetReadyEvent();
+
 private:
-	template<typename T>
-	static winrt::com_ptr<T> FromIUnknown(IUnknown *pSite)
-	{
-		winrt::com_ptr<IUnknown> site;
-		site.copy_from(pSite);
+	static winrt::weak_ref<VisualTreeWatcher> s_VisualTreeWatcher;
 
-		return site.as<T>();
-	}
-
-	winrt::com_ptr<IVisualTreeService3> visualTreeService;
-	winrt::com_ptr<VisualTreeWatcher> visualTreeWatcher;
+	winrt::com_ptr<IUnknown> site;
 };

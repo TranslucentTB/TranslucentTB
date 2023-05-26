@@ -1,24 +1,27 @@
 #include "tap.hpp"
+#include "constants.hpp"
+
+winrt::weak_ref<VisualTreeWatcher> ExplorerTAP::s_VisualTreeWatcher;
 
 HRESULT ExplorerTAP::SetSite(IUnknown *pUnkSite) try
 {
-	if (visualTreeService && visualTreeWatcher)
+	// only ever 1 VTW at once
+	if (s_VisualTreeWatcher.get())
 	{
-		winrt::check_hresult(visualTreeService->UnadviseVisualTreeChange(visualTreeWatcher.get()));
-		visualTreeWatcher->SetXamlDiagnostics(nullptr);
+		throw winrt::hresult_illegal_method_call();
 	}
 
-	visualTreeService = FromIUnknown<IVisualTreeService3>(pUnkSite);
+	site.copy_from(pUnkSite);
 
-	if (visualTreeService)
+	if (site)
 	{
-		if (!visualTreeWatcher)
-		{
-			visualTreeWatcher = winrt::make_self<VisualTreeWatcher>();
-		}
+		s_VisualTreeWatcher = winrt::make_self<VisualTreeWatcher>(site);
 
-		visualTreeWatcher->SetXamlDiagnostics(visualTreeService.as<IXamlDiagnostics>());
-		winrt::check_hresult(visualTreeService->AdviseVisualTreeChange(visualTreeWatcher.get()));
+		wil::unique_event_nothrow readyEvent;
+		if (readyEvent.try_open(TAP_READY_EVENT.c_str(), EVENT_MODIFY_STATE))
+		{
+			readyEvent.SetEvent();
+		}
 	}
 
 	return S_OK;
@@ -30,5 +33,12 @@ catch (...)
 
 HRESULT ExplorerTAP::GetSite(REFIID riid, void **ppvSite) noexcept
 {
-	return visualTreeService.as(riid, ppvSite);
+	return site.as(riid, ppvSite);
+}
+
+wil::unique_event_nothrow ExplorerTAP::GetReadyEvent()
+{
+	wil::unique_event_nothrow readyEvent;
+	winrt::check_hresult(readyEvent.create(wil::EventOptions::None, TAP_READY_EVENT.c_str()));
+	return readyEvent;
 }

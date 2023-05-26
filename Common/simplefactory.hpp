@@ -22,8 +22,17 @@ struct SimpleFactory : winrt::implements<SimpleFactory<T>, IClassFactory, winrt:
 		return winrt::to_hresult();
 	}
 
-	HRESULT STDMETHODCALLTYPE LockServer(BOOL) noexcept override
+	HRESULT STDMETHODCALLTYPE LockServer(BOOL fLock) noexcept override
 	{
+		if (fLock)
+		{
+			++winrt::get_module_lock();
+		}
+		else
+		{
+			--winrt::get_module_lock();
+		}
+
 		return S_OK;
 	}
 };

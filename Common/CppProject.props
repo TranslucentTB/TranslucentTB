@@ -145,6 +145,9 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ControlFlowGuard>Guard</ControlFlowGuard>
 
+      <!-- We don't use modules yet and they conflict with PCHes -->
+      <BuildStlModules>false</BuildStlModules>
+
       <!-- PCH -->
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>

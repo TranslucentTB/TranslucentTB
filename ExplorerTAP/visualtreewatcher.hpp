@@ -9,9 +9,12 @@
 #include <winrt/Windows.UI.Xaml.Shapes.h>
 #include "redefgetcurrenttime.h"
 
-struct VisualTreeWatcher : winrt::implements<VisualTreeWatcher, IVisualTreeServiceCallback2, IClassFactory, winrt::non_agile>
+#include "ExplorerTAP.h"
+
+class VisualTreeWatcher : public winrt::implements<VisualTreeWatcher, IVisualTreeServiceCallback2, ITaskbarAppearanceService, winrt::non_agile>
 {
-	VisualTreeWatcher() = default;
+public:
+	VisualTreeWatcher(winrt::com_ptr<IUnknown> site);
 	void InitializeComponent();
 
 	VisualTreeWatcher(const VisualTreeWatcher&) = delete;
@@ -20,15 +23,17 @@ struct VisualTreeWatcher : winrt::implements<VisualTreeWatcher, IVisualTreeServi
 	VisualTreeWatcher(VisualTreeWatcher&&) = delete;
 	VisualTreeWatcher& operator=(VisualTreeWatcher&&) = delete;
 
-	void SetXamlDiagnostics(winrt::com_ptr<IXamlDiagnostics> diagnostics);
+	HRESULT STDMETHODCALLTYPE SetTaskbarAppearance(HMONITOR monitor, TaskbarBrush brush, UINT color) override;
+	HRESULT STDMETHODCALLTYPE ReturnTaskbarToDefaultAppearance(HMONITOR monitor) override;
 
-	void SetTaskbarBrush(HMONITOR monitor, wux::Media::Brush fill);
-	void RestoreOriginalTaskbarBrush(HMONITOR monitor);
+	HRESULT STDMETHODCALLTYPE SetTaskbarBorderVisibility(HMONITOR monitor, BOOL visible) override;
 
-	void ShowHideTaskbarBorder(HMONITOR monitor, bool visible);
-	void RestoreAllTaskbars();
+	HRESULT STDMETHODCALLTYPE RestoreAllTaskbarsToDefault() override;
 
 	~VisualTreeWatcher();
+
+	static void InstallProxyStub();
+	static void UninstallProxyStub();
 
 private:
 	template<typename T>
@@ -46,10 +51,6 @@ private:
 
 	HRESULT STDMETHODCALLTYPE OnVisualTreeChange(ParentChildRelation relation, VisualElement element, VisualMutationType mutationType) override;
 	HRESULT STDMETHODCALLTYPE OnElementStateChanged(InstanceHandle element, VisualElementState elementState, LPCWSTR context) noexcept override;
-	HRESULT STDMETHODCALLTYPE CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppvObject) override;
-	HRESULT STDMETHODCALLTYPE LockServer(BOOL) noexcept override;
-
-	void ClearSources();
 
 	template<typename T>
 	T FromHandle(InstanceHandle handle)
@@ -63,6 +64,9 @@ private:
 	static wux::FrameworkElement FindControl(const wux::FrameworkElement &parent, std::wstring_view name);
 	static void RestoreElement(const ElementInfo<wux::Shapes::Shape> &element);
 
-	winrt::com_ptr<IXamlDiagnostics> m_XamlDiagnostics = nullptr;
+	DWORD m_RegisterCookie;
+	winrt::com_ptr<IXamlDiagnostics> m_XamlDiagnostics;
 	std::unordered_map<InstanceHandle, TaskbarInfo> m_FoundSources;
+
+	static DWORD s_ProxyStubRegistrationCookie;
 };

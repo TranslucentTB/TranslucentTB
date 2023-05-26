@@ -4,34 +4,76 @@
 #include "redefgetcurrenttime.h"
 #include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
 
-#include "taskbarappearanceservice.hpp"
+#include "util/color.hpp"
+
+DWORD VisualTreeWatcher::s_ProxyStubRegistrationCookie = 0;
+
+VisualTreeWatcher::VisualTreeWatcher(winrt::com_ptr<IUnknown> site) :
+	m_RegisterCookie(0),
+	m_XamlDiagnostics(site.as<IXamlDiagnostics>())
+{
+}
 
 void VisualTreeWatcher::InitializeComponent()
 {
-	TaskbarAppearanceService::Install(this);
+	const auto treeService = m_XamlDiagnostics.as<IVisualTreeService3>();
+
+	winrt::check_hresult(treeService->AdviseVisualTreeChange(this));
+
+	InstallProxyStub();
+	const HRESULT hr = RegisterActiveObject(static_cast<ITaskbarAppearanceService*>(this), CLSID_VisualTreeWatcher, ACTIVEOBJECT_STRONG, &m_RegisterCookie);
+	if (FAILED(hr)) [[unlikely]]
+	{
+		winrt::check_hresult(treeService->UnadviseVisualTreeChange(this));
+		winrt::throw_hresult(hr);
+	}
 }
 
-void VisualTreeWatcher::SetXamlDiagnostics(winrt::com_ptr<IXamlDiagnostics> diagnostics)
-{
-	ClearSources();
-	m_XamlDiagnostics = std::move(diagnostics);
-}
-
-void VisualTreeWatcher::SetTaskbarBrush(HMONITOR monitor, wux::Media::Brush fill)
+HRESULT VisualTreeWatcher::SetTaskbarAppearance(HMONITOR monitor, TaskbarBrush brush, UINT color) try
 {
 	for (const auto &[handle, info] : m_FoundSources)
 	{
 		if (info.monitor == monitor)
 		{
-			info.background.element.Fill(fill);
+			const winrt::Windows::UI::Color tint = Util::Color::FromABGR(color);
+			wux::Media::Brush newBrush = nullptr;
+			if (brush == Acrylic)
+			{
+				wux::Media::AcrylicBrush acrylicBrush;
+				// on the taskbar, using Backdrop instead of HostBackdrop
+				// makes the effect still show what's behind, but also not disable itself
+				// when the window isn't active
+				// this is because it sources what's behind the XAML, and the taskbar window
+				// is transparent so what's behind is actually the content behind the window
+				// (it doesn't need to poke a hole like HostBackdrop)
+				acrylicBrush.BackgroundSource(wux::Media::AcrylicBackgroundSource::Backdrop);
+				acrylicBrush.TintColor(tint);
+
+				newBrush = std::move(acrylicBrush);
+			}
+			else if (brush == SolidColor)
+			{
+				wux::Media::SolidColorBrush solidBrush;
+				solidBrush.Color(tint);
+
+				newBrush = std::move(solidBrush);
+			}
+
+			info.background.element.Fill(newBrush);
 			break;
 		}
 	}
+
+	return S_OK;
+}
+catch (...)
+{
+	return winrt::to_hresult();
 }
 
-void VisualTreeWatcher::RestoreOriginalTaskbarBrush(HMONITOR monitor)
+HRESULT VisualTreeWatcher::ReturnTaskbarToDefaultAppearance(HMONITOR monitor) try
 {
-	for (const auto& [handle, info] : m_FoundSources)
+	for (const auto &[handle, info] : m_FoundSources)
 	{
 		if (info.monitor == monitor)
 		{
@@ -39,17 +81,23 @@ void VisualTreeWatcher::RestoreOriginalTaskbarBrush(HMONITOR monitor)
 			break;
 		}
 	}
+
+	return S_OK;
+}
+catch (...)
+{
+	return winrt::to_hresult();
 }
 
-void VisualTreeWatcher::ShowHideTaskbarBorder(HMONITOR monitor, bool visible)
+HRESULT VisualTreeWatcher::SetTaskbarBorderVisibility(HMONITOR monitor, BOOL visible) try
 {
-	for (const auto& [handle, info] : m_FoundSources)
+	for (const auto &[handle, info] : m_FoundSources)
 	{
 		if (info.monitor == monitor)
 		{
 			if (visible)
 			{
-				RestoreElement(info.background);
+				RestoreElement(info.border);
 			}
 			else
 			{
@@ -57,25 +105,57 @@ void VisualTreeWatcher::ShowHideTaskbarBorder(HMONITOR monitor, bool visible)
 				brush.Opacity(0);
 				info.border.element.Fill(brush);
 			}
-			
+
 			break;
 		}
 	}
+
+	return S_OK;
+}
+catch (...)
+{
+	return winrt::to_hresult();
 }
 
-void VisualTreeWatcher::RestoreAllTaskbars()
+HRESULT VisualTreeWatcher::RestoreAllTaskbarsToDefault() try
 {
-	for (const auto& [handle, info] : m_FoundSources)
+	for (const auto &[handle, info] : m_FoundSources)
 	{
 		RestoreElement(info.background);
 		RestoreElement(info.border);
 	}
+
+	return S_OK;
+}
+catch (...)
+{
+	return winrt::to_hresult();
 }
 
 VisualTreeWatcher::~VisualTreeWatcher()
 {
-	ClearSources();
-	TaskbarAppearanceService::Uninstall();
+	winrt::check_hresult(RestoreAllTaskbarsToDefault());
+	winrt::check_hresult(RevokeActiveObject(m_RegisterCookie, nullptr));
+}
+
+void VisualTreeWatcher::InstallProxyStub()
+{
+	if (!s_ProxyStubRegistrationCookie)
+	{
+		winrt::com_ptr<IUnknown> proxyStub;
+		winrt::check_hresult(DllGetClassObject(PROXY_CLSID_IS, winrt::guid_of<decltype(proxyStub)::type>(), proxyStub.put_void()));
+		winrt::check_hresult(CoRegisterClassObject(PROXY_CLSID_IS, proxyStub.get(), CLSCTX_INPROC_SERVER, REGCLS_MULTIPLEUSE, &s_ProxyStubRegistrationCookie));
+
+		winrt::check_hresult(CoRegisterPSClsid(IID_ITaskbarAppearanceService, PROXY_CLSID_IS));
+	}
+}
+
+void VisualTreeWatcher::UninstallProxyStub()
+{
+	if (s_ProxyStubRegistrationCookie)
+	{
+		winrt::check_hresult(CoRevokeClassObject(s_ProxyStubRegistrationCookie));
+	}
 }
 
 HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation, VisualElement element, VisualMutationType mutationType) try
@@ -144,34 +224,6 @@ catch (...)
 HRESULT VisualTreeWatcher::OnElementStateChanged(InstanceHandle, VisualElementState, LPCWSTR) noexcept
 {
 	return S_OK;
-}
-
-HRESULT VisualTreeWatcher::CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppvObject) try
-{
-	if (!pUnkOuter)
-	{
-		*ppvObject = nullptr;
-		return winrt::make<TaskbarAppearanceService>(get_strong()).as(riid, ppvObject);
-	}
-	else
-	{
-		return CLASS_E_NOAGGREGATION;
-	}
-}
-catch (...)
-{
-	return winrt::to_hresult();
-}
-
-HRESULT VisualTreeWatcher::LockServer(BOOL) noexcept
-{
-	return S_OK;
-}
-
-void VisualTreeWatcher::ClearSources()
-{
-	RestoreAllTaskbars();
-	m_FoundSources.clear();
 }
 
 wux::FrameworkElement VisualTreeWatcher::FindControl(const wux::FrameworkElement &parent, std::wstring_view name)

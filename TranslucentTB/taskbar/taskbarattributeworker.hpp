@@ -21,6 +21,7 @@
 #include "../dynamicloader.hpp"
 #include "../ExplorerHooks/api.hpp"
 #include "../ExplorerTAP/api.hpp"
+#include "../ExplorerTAP/Generated Files/ITaskbarAppearanceService.h"
 #include "launchervisibilitysink.hpp"
 #include "../windows/messagewindow.hpp"
 #include "undoc/user32.hpp"
@@ -129,6 +130,7 @@ private:
 	// TAP DLL
 	LoadableDll m_TAPDll;
 	PFN_INJECT_EXPLORER_TAP m_InjectExplorerTAP;
+	winrt::com_ptr<ITaskbarAppearanceService> m_TaskbarService;
 
 	// Other
 	bool m_IsWindows11;

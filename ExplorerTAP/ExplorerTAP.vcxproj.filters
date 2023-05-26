@@ -42,6 +42,9 @@
     <ClCompile Include="Generated Files\ITaskbarAppearanceService_p.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="api.hpp">
