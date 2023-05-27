@@ -11,7 +11,7 @@
 
 #include "ExplorerTAP.h"
 
-class VisualTreeWatcher : public winrt::implements<VisualTreeWatcher, IVisualTreeServiceCallback2, ITaskbarAppearanceService, winrt::non_agile>
+class VisualTreeWatcher : public winrt::implements<VisualTreeWatcher, ITaskbarAppearanceService, IVisualTreeServiceCallback2, winrt::non_agile>
 {
 public:
 	VisualTreeWatcher(winrt::com_ptr<IUnknown> site);
