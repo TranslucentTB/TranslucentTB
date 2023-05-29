@@ -35,6 +35,9 @@
     <Filter Include="Resources\Strings\id-ID">
       <UniqueIdentifier>{28e9c66e-8ff1-4c04-ba70-3faf47ed9668}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources\Strings\ru-RU">
+      <UniqueIdentifier>{dc632056-91f7-43ac-a253-f3c1bcd8c0f5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -128,6 +131,9 @@
     </PRIResource>
     <PRIResource Include="Strings\id-ID\Resources.resw">
       <Filter>Resources\Strings\id-ID</Filter>
+    </PRIResource>
+    <PRIResource Include="Strings\ru-RU\Resources.resw">
+      <Filter>Resources\Strings\ru-RU</Filter>
     </PRIResource>
   </ItemGroup>
 </Project>
