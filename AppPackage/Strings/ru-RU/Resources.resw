@@ -118,9 +118,9 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AppDescription" xml:space="preserve">
-    <value>A lightweight utility that makes the Windows taskbar translucent/transparent</value>
+    <value>Легковесная утилита, делающая панель задач Windows прозрачной</value>
   </data>
   <data name="PublisherDisplayName" xml:space="preserve">
-    <value>TranslucentTB Open Source Developers</value>
+    <value>Разработчики открытого исходного кода TranslucentTB</value>
   </data>
 </root>
