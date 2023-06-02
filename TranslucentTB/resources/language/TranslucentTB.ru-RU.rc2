@@ -1,0 +1,66 @@
+#pragma code_page(65001)
+
+#ifdef APSTUDIO_INVOKED
+#error Please edit this file manually.
+#endif
+
+#include <ddeml.h>
+#include <winres.h>
+#include "../../../Common/appinfo.hpp"
+#include "../ids.h"
+
+LANGUAGE LANG_RUSSIAN, SUBLANG_RUSSIAN_RUSSIA
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION APP_VERSION_FIXED
+	PRODUCTVERSION APP_VERSION_FIXED
+	FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+	FILEFLAGS VS_FF_DEBUG
+#endif
+	FILEOS VOS_NT_WINDOWS32
+	FILETYPE VFT_APP
+{
+	BLOCK L"StringFileInfo"
+	{
+		BLOCK L"041904b0"
+		{
+			VALUE L"FileDescription", APP_NAME
+			VALUE L"FileVersion", APP_VERSION
+			VALUE L"InternalName", APP_NAME L".exe"
+			VALUE L"OriginalFilename", APP_NAME L".exe"
+			VALUE L"ProductName", APP_NAME
+			VALUE L"ProductVersion", APP_VERSION
+			VALUE L"Comments", L"Легковесная утилита, делающая панель задач Windows прозрачной."
+			VALUE L"CompanyName", APP_NAME L" Разработчики открытого исходного кода"
+			VALUE L"LegalCopyright", L"Все права защищены © " APP_COPYRIGHT_YEAR L" " APP_NAME L" Разработчики открытого исходного кода"
+		}
+	}
+	BLOCK L"VarFileInfo"
+	{
+		VALUE L"Translation", 0x0419, CP_WINUNICODE
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Strings
+//
+
+STRINGTABLE
+{
+	IDS_WELCOME_NOTIFICATION APP_NAME L" живет в системном трее.\n\nНажмите правой кнопкой мыши на иконку в трее, чтобы изменить настройки, включить автозагрузку приложения, посмотреть информация, закрыть приложение и т.д."
+	IDS_HIDE_TRAY L"Это временное изменение будет потеряно следующий раз, когда " APP_NAME L" будет запущен.\n\nЧтобы это поведение сохранилось, проследуйте в ""Дополнительные"" > ""Изменить настройки"" и установите ""hide_tray"" значение true.\n\nВы желаете продолжить?"
+	IDS_ALREADY_RUNNING APP_NAME L" уже запущен! Нажмите правой кнопкой мыши на иконку в трее, чтобы открыть его."
+	IDS_LANGUAGE_CHANGED L"Настройка принудительного выбора языка в конфигурационном файле была изменена. Пожалуйста, перезапустите " APP_NAME L" для п."
+	IDS_RESTART_REQUIRED APP_NAME L" был недавно обновлён. Пожалуйста, перезагрузите Windows, чтобы начать использование новой версии."
+	IDS_PORTABLE_UNSUPPORTED L"Портативный режим работает только на Windows 11."
+	IDS_MISSING_DEPENDENCIES APP_NAME L" не может запуститься в портативном режиме, так как {0} (версии {1}) не установлен в Вашей системе."
+}
