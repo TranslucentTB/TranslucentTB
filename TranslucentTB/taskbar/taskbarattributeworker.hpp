@@ -96,7 +96,7 @@ private:
 
 	// IAppVisibility
 	wil::com_ptr<IAppVisibility> m_IAV;
-	wilx::unique_app_visibility_token m_IAVECookie;
+	wilx::unique_com_token<&IAppVisibility::Unadvise> m_IAVECookie;
 
 	// ICortanaExperienceManager
 	winrt::Windows::Internal::Shell::Experience::ICortanaExperienceManager m_SearchManager;

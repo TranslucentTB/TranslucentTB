@@ -1,6 +1,4 @@
-#ifndef WILX_HPP
-#define WILX_HPP
-
+#pragma once
 #include "arch.h"
 #include <cstddef>
 #include <tuple>
@@ -71,13 +69,4 @@ namespace wilx {
 
 	template<Util::function_pointer auto delete_fn>
 	using function_deleter = wil::function_deleter<decltype(delete_fn), delete_fn>;
-}
-
-#endif // WILX_HPP
-
-namespace wilx {
-#if defined(__IAppVisibility_INTERFACE_DEFINED__) && !defined(CINTERFACE) && !defined(WILX_IAV)
-#define WILX_IAV
-	using unique_app_visibility_token = unique_com_token<&IAppVisibility::Unadvise>;
-#endif
 }
