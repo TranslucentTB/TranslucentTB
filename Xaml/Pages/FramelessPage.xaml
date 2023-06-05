@@ -65,7 +65,14 @@
             Visibility="{x:Bind root:FunctionalConverters.InvertedBoolToVisibility(ExpandIntoTitlebar)}"
             RelativePanel.LeftOf="CustomTitlebarControls"
             RelativePanel.AlignLeftWithPanel="True"
-            RelativePanel.AlignVerticalCenterWith="Titlebar" />
+            RelativePanel.AlignVerticalCenterWith="Titlebar">
+            <TextBlock.Resources>
+                <root:BindableObjectReference x:Key="BindableTextBlock" Object="{Binding ElementName=TitleTextBlock}" />
+            </TextBlock.Resources>
+            <ToolTipService.ToolTip>
+                <ToolTip Content="{x:Bind Title}" IsEnabled="{Binding Path = Object.IsTextTrimmed, Source = {StaticResource BindableTextBlock}}" IsOpen="{x:Bind TitleTooltipVisible}" />
+            </ToolTipService.ToolTip>
+        </TextBlock>
         <ItemsControl
             x:Name="CustomTitlebarControls"
             ItemsSource="{x:Bind TitlebarContent, Mode = OneTime}"

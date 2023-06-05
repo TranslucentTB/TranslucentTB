@@ -54,6 +54,10 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="BindableObjectReference.cpp">
+      <DependentUpon>BindableObjectReference.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="Controls\ActionList.cpp">
       <DependentUpon>Controls\ActionList.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -200,6 +204,10 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="BindableObjectReference.h">
+      <DependentUpon>BindableObjectReference.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="Controls\ActionList.h">
       <DependentUpon>Controls\ActionList.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -306,6 +314,9 @@
     <Midl Include="App.idl">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="BindableObjectReference.idl">
+      <SubType>Designer</SubType>
     </Midl>
     <Midl Include="Controls\ActionList.idl">
       <DependentUpon>Controls\ActionList.xaml</DependentUpon>

@@ -106,6 +106,7 @@
     <Midl Include="Models\Primitives\ThicknessFilterKind.idl" />
     <Midl Include="Controls\ConstrainedBox.idl" />
     <Midl Include="Controls\FocusBorderColorSpectrum.idl" />
+    <Midl Include="BindableObjectReference.idl" />
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="Strings\en-US\Resources.resw">

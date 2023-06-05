@@ -41,6 +41,37 @@ LRESULT XamlDragRegion::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		HandleClick(WM_NCRBUTTONUP, lParam);
 		return 0;
 
+	case WM_MOUSEMOVE:
+		if (!m_Tracking)
+		{
+			TRACKMOUSEEVENT tme = {
+				.cbSize = sizeof(tme),
+				.dwFlags = TME_HOVER | TME_LEAVE,
+				.hwndTrack = m_WindowHandle,
+				.dwHoverTime = HOVER_DEFAULT
+			};
+
+			if (TrackMouseEvent(&tme))
+			{
+				m_Tracking = true;
+			}
+			else
+			{
+				LastErrorHandle(spdlog::level::info, L"Failed to track mouse events");
+			}
+		}
+
+		return 0;
+
+	case WM_MOUSEHOVER:
+		ancestor(GA_PARENT).send_message(uMsg, wParam, lParam);
+		return 0;
+
+	case WM_MOUSELEAVE:
+		ancestor(GA_PARENT).send_message(uMsg, wParam, lParam);
+		m_Tracking = false;
+		return 0;
+
 	default:
 		return MessageWindow::MessageHandler(uMsg, wParam, lParam);
 	}
