@@ -1,16 +1,20 @@
 #include "visualtreewatcher.hpp"
 #include "undefgetcurrenttime.h"
+#include <winrt/Windows.System.h>
 #include <winrt/Windows.UI.Xaml.Hosting.h>
 #include "redefgetcurrenttime.h"
 #include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
+#include <wil/cppwinrt_helpers.h>
 
+#include "constants.hpp"
 #include "util/color.hpp"
 
 DWORD VisualTreeWatcher::s_ProxyStubRegistrationCookie = 0;
 
 VisualTreeWatcher::VisualTreeWatcher(winrt::com_ptr<IUnknown> site) :
 	m_RegisterCookie(0),
-	m_XamlDiagnostics(site.as<IXamlDiagnostics>())
+	m_XamlDiagnostics(site.as<IXamlDiagnostics>()),
+	m_XamlThreadQueue(winrt::Windows::System::DispatcherQueue::GetForCurrentThread())
 {
 }
 
@@ -27,6 +31,16 @@ void VisualTreeWatcher::InitializeComponent()
 		winrt::check_hresult(treeService->UnadviseVisualTreeChange(this));
 		winrt::throw_hresult(hr);
 	}
+}
+
+HRESULT VisualTreeWatcher::GetVersion(DWORD* apiVersion) noexcept
+{
+	if (apiVersion)
+	{
+		*apiVersion = TAP_API_VERSION;
+	}
+
+	return S_OK;
 }
 
 HRESULT VisualTreeWatcher::SetTaskbarAppearance(HMONITOR monitor, TaskbarBrush brush, UINT color) try
@@ -132,8 +146,45 @@ catch (...)
 	return winrt::to_hresult();
 }
 
+HRESULT VisualTreeWatcher::RestoreAllTaskbarsToDefaultWhenProcessDies(DWORD pid)
+{
+	if (!m_Process)
+	{
+		m_Process.reset(OpenProcess(SYNCHRONIZE, false, pid));
+		if (!m_Process) [[unlikely]]
+		{
+			return HRESULT_FROM_WIN32(GetLastError());
+		}
+
+		if (!RegisterWaitForSingleObject(m_WaitHandle.put(), m_Process.get(), ProcessWaitCallback, this, INFINITE, WT_EXECUTEONLYONCE))
+		{
+			m_Process.reset();
+			return HRESULT_FROM_WIN32(GetLastError());
+		}
+
+		return S_OK;
+	}
+	else
+	{
+		if (GetProcessId(m_Process.get()) == pid)
+		{
+			return S_OK; // already watching for this process to die.
+		}
+		else
+		{
+			return E_ILLEGAL_METHOD_CALL;
+		}
+	}
+}
+
 VisualTreeWatcher::~VisualTreeWatcher()
 {
+	// wait for all callbacks to be done, as they have a raw pointer to the instance.
+	winrt::check_bool(UnregisterWaitEx(m_WaitHandle.get(), INVALID_HANDLE_VALUE));
+	m_WaitHandle.release();
+
+	m_Process.reset();
+
 	winrt::check_hresult(RestoreAllTaskbarsToDefault());
 	winrt::check_hresult(RevokeActiveObject(m_RegisterCookie, nullptr));
 }
@@ -147,6 +198,7 @@ void VisualTreeWatcher::InstallProxyStub()
 		winrt::check_hresult(CoRegisterClassObject(PROXY_CLSID_IS, proxyStub.get(), CLSCTX_INPROC_SERVER, REGCLS_MULTIPLEUSE, &s_ProxyStubRegistrationCookie));
 
 		winrt::check_hresult(CoRegisterPSClsid(IID_ITaskbarAppearanceService, PROXY_CLSID_IS));
+		winrt::check_hresult(CoRegisterPSClsid(IID_IVersionedApi, PROXY_CLSID_IS));
 	}
 }
 
@@ -226,6 +278,20 @@ HRESULT VisualTreeWatcher::OnElementStateChanged(InstanceHandle, VisualElementSt
 	return S_OK;
 }
 
+winrt::fire_and_forget VisualTreeWatcher::OnProcessDied()
+{
+	m_WaitHandle.reset();
+	m_Process.reset();
+
+	const auto self_weak = get_weak();
+	co_await wil::resume_foreground(m_XamlThreadQueue);
+
+	if (const auto self = self_weak.get())
+	{
+		self->RestoreAllTaskbarsToDefault();
+	}
+}
+
 wux::FrameworkElement VisualTreeWatcher::FindControl(const wux::FrameworkElement &parent, std::wstring_view name)
 {
 	if (!parent)
@@ -253,4 +319,9 @@ wux::FrameworkElement VisualTreeWatcher::FindControl(const wux::FrameworkElement
 void VisualTreeWatcher::RestoreElement(const ElementInfo<wux::Shapes::Shape> &element)
 {
 	element.element.Fill(element.originalFill);
+}
+
+void VisualTreeWatcher::ProcessWaitCallback(void* parameter, BOOLEAN)
+{
+	reinterpret_cast<VisualTreeWatcher*>(parameter)->OnProcessDied();
 }

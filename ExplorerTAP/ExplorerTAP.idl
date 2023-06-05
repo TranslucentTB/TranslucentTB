@@ -1,4 +1,5 @@
 import "ITaskbarAppearanceService.idl";
+import "IVersionedApi.idl";
 
 [uuid(e22e715d-1c63-4da4-a445-78695330311e)]
 library ExplorerTAP
@@ -8,5 +9,6 @@ library ExplorerTAP
 	{
 		[default]
 		interface ITaskbarAppearanceService;
+		interface IVersionedApi;
 	}
 };

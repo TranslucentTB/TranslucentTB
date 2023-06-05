@@ -42,6 +42,8 @@
     <ClCompile Include="Generated Files\ExplorerTAP_i.c" />
     <ClCompile Include="Generated Files\ITaskbarAppearanceService_i.c" />
     <ClCompile Include="Generated Files\ITaskbarAppearanceService_p.c" />
+    <ClCompile Include="Generated Files\IVersionedApi_i.c" />
+    <ClCompile Include="Generated Files\IVersionedApi_p.c" />
     <ClCompile Include="module.cpp">
       <PreprocessorDefinitions>RPCPROXY_ENABLE_CPP_NO_CINTERFACE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -56,6 +58,7 @@
     <ClInclude Include="api.hpp" />
     <ClInclude Include="Generated Files\ExplorerTAP.h" />
     <ClInclude Include="Generated Files\ITaskbarAppearanceService.h" />
+    <ClInclude Include="Generated Files\IVersionedApi.h" />
     <ClInclude Include="Generated Files\TaskbarBrush.h" />
     <ClInclude Include="tap.hpp" />
     <ClInclude Include="visualtreewatcher.hpp" />
@@ -63,6 +66,7 @@
   <ItemGroup>
     <Midl Include="ExplorerTAP.idl" />
     <Midl Include="ITaskbarAppearanceService.idl" />
+    <Midl Include="IVersionedApi.idl" />
     <Midl Include="TaskbarBrush.idl" />
   </ItemGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

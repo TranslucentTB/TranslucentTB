@@ -45,6 +45,12 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Generated Files\IVersionedApi_i.c">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated Files\IVersionedApi_p.c">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="api.hpp">
@@ -65,6 +71,9 @@
     <ClInclude Include="Generated Files\TaskbarBrush.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
+    <ClInclude Include="Generated Files\IVersionedApi.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ExplorerTAP.def">
@@ -80,6 +89,9 @@
       <Filter>Source Files</Filter>
     </Midl>
     <Midl Include="TaskbarBrush.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="IVersionedApi.idl">
       <Filter>Source Files</Filter>
     </Midl>
   </ItemGroup>

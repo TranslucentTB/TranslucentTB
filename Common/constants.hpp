@@ -13,6 +13,9 @@ static constexpr Util::null_terminated_wstring_view MUTEX_GUID = L"344635E9-9AE4
 // Event used to signal when the TAP is ready
 static constexpr Util::null_terminated_wstring_view TAP_READY_EVENT = L"TTBTAP_Ready";
 
+// Current version of the API used for IPC with the TAP
+static constexpr std::uint32_t TAP_API_VERSION = 1;
+
 // Tray icon GUID
 static constexpr GUID TRAY_GUID = { 0x974A6DD7, 0x6BBD, 0x4B9A, { 0x9F, 0x11, 0xA8, 0xED, 0x62, 0x44, 0x2A, 0x55 } };
 
@@ -45,7 +48,7 @@ static constexpr Util::null_terminated_wstring_view WM_TTBSEARCHVISIBILITYCHANGE
 static constexpr Util::null_terminated_wstring_view WM_TTBFORCEREFRESHTASKBAR = L"TTB_ForceRefreshTaskbar";
 
 // Sent by another instance of TranslucentTB to signal that it was started while this instance is running.
-static constexpr Util::null_terminated_wstring_view WM_TTBNEWINSTANCESTARTED = L"TTB_NewInstancecStarted";
+static constexpr Util::null_terminated_wstring_view WM_TTBNEWINSTANCESTARTED = L"TTB_NewInstanceStarted";
 
 #pragma endregion
 

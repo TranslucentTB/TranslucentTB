@@ -10,4 +10,5 @@ interface ITaskbarAppearanceService : IUnknown
 	HRESULT SetTaskbarBorderVisibility([in] HMONITOR monitor, [in] BOOL visible);
 
 	HRESULT RestoreAllTaskbarsToDefault();
+	HRESULT RestoreAllTaskbarsToDefaultWhenProcessDies([in] DWORD pid);
 };

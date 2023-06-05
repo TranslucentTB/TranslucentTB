@@ -1196,7 +1196,22 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 				main_taskbar.find_child(L"Windows.UI.Composition.DesktopWindowContentBridge") &&
 				!main_taskbar.find_child(L"WorkerW"))
 			{
-				HresultVerify(m_InjectExplorerTAP(pid, IID_PPV_ARGS(m_TaskbarService.put())), spdlog::level::critical, L"Failed to initialize XAML Diagnostics.");
+				const HRESULT hr = m_InjectExplorerTAP(pid, IID_PPV_ARGS(m_TaskbarService.put()));
+				if (hr == HRESULT_FROM_WIN32(ERROR_PRODUCT_VERSION))
+				{
+					std::thread([msg = Localization::LoadLocalizedResourceString(IDS_RESTART_REQUIRED, hinstance())]() noexcept
+					{
+						MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
+					}).join();
+
+					ExitProcess(1);
+				}
+				else
+				{
+					HresultVerify(hr, spdlog::level::critical, L"Failed to initialize XAML Diagnostics.");
+				}
+
+				HresultVerify(m_TaskbarService->RestoreAllTaskbarsToDefaultWhenProcessDies(GetCurrentProcessId()), spdlog::level::warn, L"Couldn't configure TAP to restore taskbar appearance once " APP_NAME L" dies.");
 			}
 		}
 

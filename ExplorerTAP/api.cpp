@@ -122,7 +122,15 @@ HRESULT InjectExplorerTAP(DWORD pid, REFIID riid, LPVOID* ppv) try
 			return HRESULT_FROM_WIN32(GetLastError());
 		}
 
-		if (WaitForSingleObject(pi.hProcess, 1000) != WAIT_OBJECT_0) [[unlikely]]
+		static constexpr DWORD TIMEOUT =
+#ifdef _DEBUG
+			// do not timeout on debug builds, to allow debugging the DLL while it's loading in explorer
+			INFINITE;
+#else
+			1000;
+#endif
+
+		if (WaitForSingleObject(pi.hProcess, TIMEOUT) != WAIT_OBJECT_0) [[unlikely]]
 		{
 			return HRESULT_FROM_WIN32(WAIT_TIMEOUT);
 		}
@@ -138,18 +146,32 @@ HRESULT InjectExplorerTAP(DWORD pid, REFIID riid, LPVOID* ppv) try
 			return static_cast<HRESULT>(exitCode);
 		}
 
-		if (!event.wait(1000)) [[unlikely]]
+		if (!event.wait(TIMEOUT)) [[unlikely]]
 		{
 			return HRESULT_FROM_WIN32(WAIT_TIMEOUT);
 		}
 
 		hr = GetActiveObject(CLSID_VisualTreeWatcher, nullptr, service.put());
-		if (FAILED(hr))
+		if (FAILED(hr)) [[unlikely]]
 		{
 			return hr;
 		}
 	}
 	else if (FAILED(hr)) [[unlikely]]
+	{
+		return hr;
+	}
+
+	DWORD version = 0;
+	hr = service.as<IVersionedApi>()->GetVersion(&version);
+	if (SUCCEEDED(hr))
+	{
+		if (version != TAP_API_VERSION)
+		{
+			return HRESULT_FROM_WIN32(ERROR_PRODUCT_VERSION);
+		}
+	}
+	else
 	{
 		return hr;
 	}
