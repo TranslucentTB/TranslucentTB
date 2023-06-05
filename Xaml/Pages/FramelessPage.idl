@@ -16,11 +16,11 @@ namespace TranslucentTB.Xaml.Pages
 		void ShowSystemMenu(Windows.Foundation.Point position);
 		void HideSystemMenu();
 
-		overridable Boolean RequestClose();
 		overridable Windows.Foundation.Rect DragRegion { get; };
 		Windows.Foundation.Rect TitlebarButtonsRegion { get; };
 
-		protected void Close();
+		Boolean RequestClose();
+		overridable Boolean Close();
 		event ClosedDelegate Closed;
 
 		DECL_DEPENDENCY_PROPERTY(String, Title);

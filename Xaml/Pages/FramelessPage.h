@@ -18,11 +18,11 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void ShowSystemMenu(const wf::Point &position);
 		void HideSystemMenu();
 
-		virtual bool RequestClose();
 		virtual wf::Rect DragRegion();
 		wf::Rect TitlebarButtonsRegion();
 
-		void Close();
+		bool RequestClose();
+		virtual bool Close();
 		DECL_EVENT(ClosedDelegate, Closed, m_ClosedHandler);
 
 		void CloseClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);

@@ -27,7 +27,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		return !m_DialogOpened;
 	}
 
-	bool ColorPickerPage::RequestClose()
+	bool ColorPickerPage::Close()
 	{
 		if (m_DialogOpened)
 		{
@@ -41,20 +41,19 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		}
 		else
 		{
-			Close();
-			return true;
+			return base_type::Close();
 		}
 	}
 
 	void ColorPickerPage::OkButtonClicked(const IInspectable &, const wux::RoutedEventArgs &)
 	{
 		m_ChangesCommittedHandler(Picker().Color());
-		Close();
+		base_type::Close();
 	}
 
 	void ColorPickerPage::CancelButtonClicked(const IInspectable &, const wux::RoutedEventArgs &)
 	{
-		Close();
+		base_type::Close();
 	}
 
 	void ColorPickerPage::DialogOpened(const IInspectable &, const wuxc::ContentDialogOpenedEventArgs &) noexcept
@@ -107,7 +106,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 					self->m_ChangesCommittedHandler(self->Picker().Color());
 				}
 
-				self->Close();
+				self->base_type::Close();
 			}
 		}
 	}

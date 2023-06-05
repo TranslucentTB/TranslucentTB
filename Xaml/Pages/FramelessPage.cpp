@@ -33,19 +33,6 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		SystemMenu().Hide();
 	}
 
-	bool FramelessPage::RequestClose()
-	{
-		if (IsClosable())
-		{
-			Close();
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
 	wf::Rect FramelessPage::DragRegion()
 	{
 		if (!ExpandIntoTitlebar())
@@ -105,14 +92,27 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		}
 	}
 
-	void FramelessPage::Close()
+	bool FramelessPage::RequestClose()
 	{
-		m_ClosedHandler();
+		return Close();
+	}
+
+	bool FramelessPage::Close()
+	{
+		if (IsClosable())
+		{
+			m_ClosedHandler();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	void FramelessPage::CloseClicked(const IInspectable &, const wux::RoutedEventArgs &)
 	{
-		RequestClose();
+		Close();
 	}
 
 	void FramelessPage::SystemMenuOpening(const IInspectable &, const IInspectable &)
