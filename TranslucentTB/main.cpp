@@ -81,6 +81,12 @@ void HardenProcess()
 	{
 		LastErrorHandle(level, L"Couldn't set image load policy.");
 	}
+
+	BOOL suppressExceptions = false;
+	if (!SetUserObjectInformation(GetCurrentProcess(), UOI_TIMERPROC_EXCEPTION_SUPPRESSION, &suppressExceptions, sizeof(suppressExceptions)))
+	{
+		LastErrorHandle(level, L"Couldn't disable timer exception suppression.");
+	}
 }
 
 _Use_decl_annotations_ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar_t *, int)
