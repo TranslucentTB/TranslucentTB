@@ -1,7 +1,5 @@
 #include "api.hpp"
 #include <libloaderapi.h>
-#include <processthreadsapi.h>
-#include <detours/detours.h>
 #include <wil/resource.h>
 
 #include "constants.hpp"
@@ -10,62 +8,7 @@
 #include "win32.hpp"
 #include "util/string_macros.hpp"
 
-// derived from https://web.archive.org/web/20190109172835/https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
-std::wstring EscapeForCommandLine(std::wstring_view argument)
-{
-	// Unless we're told otherwise, don't quote unless we actually
-	// need to do so --- hopefully avoid problems if programs won't
-	// parse quotes properly
-
-	if (argument.find_first_of(L" \t\n\v\"") == std::wstring_view::npos)
-	{
-		return std::wstring(argument);
-	}
-	else
-	{
-		std::wstring escapedArgument;
-		escapedArgument.push_back(L'"');
-
-		for (auto it = argument.begin(); ; ++it)
-		{
-			unsigned backslashCount = 0;
-
-			while (it != argument.end() && *it == L'\\')
-			{
-				++it;
-				++backslashCount;
-			}
-
-			if (it == argument.end())
-			{
-				// Escape all backslashes, but let the terminating
-				// double quotation mark we add below be interpreted
-				// as a metacharacter.
-
-				escapedArgument.append(backslashCount * 2, L'\\');
-				break;
-			}
-			else if (*it == L'"')
-			{
-				// Escape all backslashes and the following
-				// double quotation mark.
-
-				escapedArgument.append(backslashCount * 2 + 1, L'\\');
-				escapedArgument.push_back(*it);
-			}
-			else
-			{
-				// Backslashes aren't special here.
-
-				escapedArgument.append(backslashCount, L'\\');
-				escapedArgument.push_back(*it);
-			}
-		}
-
-		escapedArgument.push_back(L'"');
-		return escapedArgument;
-	}
-}
+using PFN_INITIALIZE_XAML_DIAGNOSTICS_EX = decltype(&InitializeXamlDiagnosticsEx);
 
 HRESULT InjectExplorerTAP(DWORD pid, REFIID riid, LPVOID* ppv) try
 {
@@ -78,48 +21,36 @@ HRESULT InjectExplorerTAP(DWORD pid, REFIID riid, LPVOID* ppv) try
 	{
 		const auto event = ExplorerTAP::GetReadyEvent();
 
-		const wil::unique_process_handle proc(OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, false, pid));
-		if (!proc) [[unlikely]]
-		{
-			return HRESULT_FROM_WIN32(GetLastError());
-		}
-
-		if (!DetourFindRemotePayload(proc.get(), EXPLORER_PAYLOAD, nullptr))
-		{
-			static constexpr uint32_t content = 0xDEADBEEF;
-			if (!DetourCopyPayloadToProcess(proc.get(), EXPLORER_PAYLOAD, &content, sizeof(content))) [[unlikely]]
-			{
-				return HRESULT_FROM_WIN32(GetLastError());
-			}
-		}
-
 		const auto [location, hr2] = win32::GetDllLocation(wil::GetModuleInstanceHandle());
 		if (FAILED(hr2)) [[unlikely]]
 		{
 			return hr2;
 		}
 
-		wil::unique_cotaskmem_string clsid;
-		hr = StringFromIID(CLSID_ExplorerTAP, clsid.put());
+		const wil::unique_hmodule wux(LoadLibraryEx(L"Windows.UI.Xaml.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+		if (!wux) [[unlikely]]
+		{
+			return HRESULT_FROM_WIN32(GetLastError());
+		}
+
+		const auto ixde = reinterpret_cast<PFN_INITIALIZE_XAML_DIAGNOSTICS_EX>(GetProcAddress(wux.get(), UTIL_STRINGIFY_UTF8(InitializeXamlDiagnosticsEx)));
+		if (!ixde) [[unlikely]]
+		{
+			return HRESULT_FROM_WIN32(GetLastError());
+		}
+
+		// We need this to exist because XAML Diagnostics can only be initialized once per thread
+		// future calls simply return S_OK without doing anything.
+		// But we need to be able to initialize it again if Explorer restarts. So we create a thread
+		// that is discardable to do the initialization from.
+		std::thread([&hr, ixde, pid, &location]
+		{
+			hr = ixde(L"VisualDiagConnection1", pid, nullptr, location.c_str(), CLSID_ExplorerTAP, nullptr);
+		}).join();
+
 		if (FAILED(hr)) [[unlikely]]
 		{
 			return hr;
-		}
-
-		const auto [exe, hr3] = win32::GetExeLocation();
-		if (FAILED(hr3)) [[unlikely]]
-		{
-			return hr3;
-		}
-
-		const auto injector = exe.parent_path() / L"TAPInjector.exe";
-		auto commandLine = std::format(L"{} {:#x} {} {}", EscapeForCommandLine(injector.native()), pid, EscapeForCommandLine(location.native()), clsid.get());
-
-		STARTUPINFO si = { sizeof(si) };
-		wil::unique_process_information pi;
-		if (!CreateProcess(injector.native().c_str(), commandLine.data(), nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi)) [[unlikely]]
-		{
-			return HRESULT_FROM_WIN32(GetLastError());
 		}
 
 		static constexpr DWORD TIMEOUT =
@@ -130,34 +61,15 @@ HRESULT InjectExplorerTAP(DWORD pid, REFIID riid, LPVOID* ppv) try
 			1000;
 #endif
 
-		if (WaitForSingleObject(pi.hProcess, TIMEOUT) != WAIT_OBJECT_0) [[unlikely]]
-		{
-			return HRESULT_FROM_WIN32(WAIT_TIMEOUT);
-		}
-
-		DWORD exitCode = 0;
-		if (!GetExitCodeProcess(pi.hProcess, &exitCode)) [[unlikely]]
-		{
-			return HRESULT_FROM_WIN32(GetLastError());
-		}
-
-		if (FAILED(static_cast<HRESULT>(exitCode))) [[unlikely]]
-		{
-			return static_cast<HRESULT>(exitCode);
-		}
-
 		if (!event.wait(TIMEOUT)) [[unlikely]]
 		{
 			return HRESULT_FROM_WIN32(WAIT_TIMEOUT);
 		}
 
 		hr = GetActiveObject(CLSID_VisualTreeWatcher, nullptr, service.put());
-		if (FAILED(hr)) [[unlikely]]
-		{
-			return hr;
-		}
 	}
-	else if (FAILED(hr)) [[unlikely]]
+
+	if (FAILED(hr)) [[unlikely]]
 	{
 		return hr;
 	}
