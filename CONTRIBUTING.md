@@ -82,7 +82,7 @@ Go back to Visual Studio's Solution Explorer:
 
 ### 3 - Translate
 
-Open both `Resources.resw` files for your language by double-clicking them, and translate all the text available in the Value columns.
+Open both `Resources.resw` files for your language by double-clicking them, and translate all the text available in the Value columns. Keep the "Comment" column unchanged, these are notes to future translators that won't be visible in the program.
 
 Open the `rc2` file for your language by right-clicking it and selecting View Code. Replace the language identifier after `LANGUAGE`, within `VarFileInfo`, and within `StringFileInfo` (only the first 4 characters of `040904b0`). You can find the macro corresponding to your language and sublanguage in the `winnt.h` header, while you can find the hexadecimal value on the [LCID Structure] documentation.
 

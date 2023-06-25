@@ -117,7 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ColorPickerPage_AlwaysOnTop.Text" xml:space="preserve">
+  <data name="ColorPickerPage_AlwaysOnTopButton.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Всегда сверху</value>
+  </data>
+  <data name="ColorPickerPage_AlwaysOnTopMenuItem.Text" xml:space="preserve">
     <value>Всегда сверху</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.CloseButtonText" xml:space="preserve">
@@ -132,7 +135,10 @@
   <data name="ColorPickerPage_ConfirmCloseDialog.SecondaryButtonText" xml:space="preserve">
     <value>Нет</value>
   </data>
-  <data name="FramelessPage_Close.Text" xml:space="preserve">
+  <data name="FramelessPage_CloseButton.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Закрыть</value>
+  </data>
+  <data name="FramelessPage_CloseMenuItem.Text" xml:space="preserve">
     <value>Закрыть</value>
   </data>
   <data name="TrayFlyoutPage_About.Text" xml:space="preserve">

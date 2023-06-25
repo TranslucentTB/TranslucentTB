@@ -11,7 +11,7 @@
 
     <FlyoutBase.AttachedFlyout>
         <MenuFlyout x:Name="SystemMenu" Opening="SystemMenuOpening">
-            <MenuFlyoutItem x:Name="CloseMenuItem" x:Uid="FramelessPage_Close" IsEnabled="{x:Bind IsClosable, Mode = OneWay}" Click="CloseClicked">
+            <MenuFlyoutItem x:Name="CloseMenuItem" x:Uid="FramelessPage_CloseMenuItem" IsEnabled="{x:Bind IsClosable, Mode = OneWay}" Click="CloseClicked">
                 <MenuFlyoutItem.Icon>
                     <FontIcon Glyph="&#xE711;" />
                 </MenuFlyoutItem.Icon>
@@ -88,10 +88,10 @@
         <!-- Needs to be ThemeResource to allow pages who derive to customize style -->
         <controls:ChromeButton
             x:Name="CloseButton"
+            x:Uid="FramelessPage_CloseButton"
             Visibility="{x:Bind IsClosable}"
             Click="CloseClicked"
             Style="{ThemeResource CloseButtonStyle}"
-            ToolTipService.ToolTip="Close"
             RelativePanel.AlignTopWithPanel="True"
             RelativePanel.AlignRightWithPanel="True">
             <FontIcon Glyph="&#xE8BB;" FontSize="10" />
