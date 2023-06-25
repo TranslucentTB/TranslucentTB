@@ -3,6 +3,13 @@
 
 winrt::weak_ref<VisualTreeWatcher> TAPSite::s_VisualTreeWatcher;
 
+wil::unique_event_nothrow TAPSite::GetReadyEvent()
+{
+	wil::unique_event_nothrow readyEvent;
+	winrt::check_hresult(readyEvent.create(wil::EventOptions::None, TAP_READY_EVENT.c_str()));
+	return readyEvent;
+}
+
 HRESULT TAPSite::SetSite(IUnknown *pUnkSite) try
 {
 	// only ever 1 VTW at once
@@ -34,11 +41,4 @@ catch (...)
 HRESULT TAPSite::GetSite(REFIID riid, void **ppvSite) noexcept
 {
 	return site.as(riid, ppvSite);
-}
-
-wil::unique_event_nothrow TAPSite::GetReadyEvent()
-{
-	wil::unique_event_nothrow readyEvent;
-	winrt::check_hresult(readyEvent.create(wil::EventOptions::None, TAP_READY_EVENT.c_str()));
-	return readyEvent;
 }
