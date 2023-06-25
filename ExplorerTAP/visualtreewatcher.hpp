@@ -9,7 +9,7 @@
 
 #include "taskbarappearanceservice.hpp"
 
-class VisualTreeWatcher : public winrt::implements<VisualTreeWatcher, IVisualTreeServiceCallback2>
+struct VisualTreeWatcher : winrt::implements<VisualTreeWatcher, IVisualTreeServiceCallback2, winrt::non_agile>
 {
 public:
 	VisualTreeWatcher(winrt::com_ptr<IUnknown> site);

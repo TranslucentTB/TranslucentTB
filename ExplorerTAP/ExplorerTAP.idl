@@ -1,5 +1,6 @@
 import "ITaskbarAppearanceService.idl";
 import "IVersionedApi.idl";
+import "ocidl.idl";
 
 [uuid(e22e715d-1c63-4da4-a445-78695330311e)]
 library ExplorerTAP
@@ -11,4 +12,10 @@ library ExplorerTAP
 		interface ITaskbarAppearanceService;
 		interface IVersionedApi;
 	}
+
+	[uuid(31213658-fd16-4328-b5e2-ed2903adbd2d)]
+	coclass TAPSite
+	{
+		interface IObjectWithSite;
+	};
 };

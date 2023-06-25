@@ -1,9 +1,9 @@
-#include "tap.hpp"
+#include "tapsite.hpp"
 #include "constants.hpp"
 
-winrt::weak_ref<VisualTreeWatcher> ExplorerTAP::s_VisualTreeWatcher;
+winrt::weak_ref<VisualTreeWatcher> TAPSite::s_VisualTreeWatcher;
 
-HRESULT ExplorerTAP::SetSite(IUnknown *pUnkSite) try
+HRESULT TAPSite::SetSite(IUnknown *pUnkSite) try
 {
 	// only ever 1 VTW at once
 	if (s_VisualTreeWatcher.get())
@@ -31,12 +31,12 @@ catch (...)
 	return winrt::to_hresult();
 }
 
-HRESULT ExplorerTAP::GetSite(REFIID riid, void **ppvSite) noexcept
+HRESULT TAPSite::GetSite(REFIID riid, void **ppvSite) noexcept
 {
 	return site.as(riid, ppvSite);
 }
 
-wil::unique_event_nothrow ExplorerTAP::GetReadyEvent()
+wil::unique_event_nothrow TAPSite::GetReadyEvent()
 {
 	wil::unique_event_nothrow readyEvent;
 	winrt::check_hresult(readyEvent.create(wil::EventOptions::None, TAP_READY_EVENT.c_str()));

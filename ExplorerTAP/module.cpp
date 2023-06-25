@@ -2,7 +2,7 @@
 #include <RpcProxy.h>
 #include "winrt.hpp"
 
-#include "tap.hpp"
+#include "tapsite.hpp"
 #include "simplefactory.hpp"
 
 extern "C"
@@ -13,10 +13,10 @@ extern "C"
 
 _Use_decl_annotations_ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) try
 {
-	if (rclsid == CLSID_ExplorerTAP)
+	if (rclsid == CLSID_TAPSite)
 	{
 		*ppv = nullptr;
-		return winrt::make<SimpleFactory<ExplorerTAP>>().as(riid, ppv);
+		return winrt::make<SimpleFactory<TAPSite>>().as(riid, ppv);
 	}
 	else
 	{

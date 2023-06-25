@@ -3,7 +3,7 @@
 #include <wil/resource.h>
 
 #include "constants.hpp"
-#include "tap.hpp"
+#include "tapsite.hpp"
 #include "win32.hpp"
 #include "taskbarappearanceservice.hpp"
 #include "util/string_macros.hpp"
@@ -19,7 +19,7 @@ HRESULT InjectExplorerTAP(DWORD pid, REFIID riid, LPVOID* ppv) try
 
 	if (hr == MK_E_UNAVAILABLE)
 	{
-		const auto event = ExplorerTAP::GetReadyEvent();
+		const auto event = TAPSite::GetReadyEvent();
 
 		const auto [location, hr2] = win32::GetDllLocation(wil::GetModuleInstanceHandle());
 		if (FAILED(hr2)) [[unlikely]]
@@ -45,7 +45,7 @@ HRESULT InjectExplorerTAP(DWORD pid, REFIID riid, LPVOID* ppv) try
 		// that is discardable to do the initialization from.
 		std::thread([&hr, ixde, pid, &location]
 		{
-			hr = ixde(L"VisualDiagConnection1", pid, nullptr, location.c_str(), CLSID_ExplorerTAP, nullptr);
+			hr = ixde(L"VisualDiagConnection1", pid, nullptr, location.c_str(), CLSID_TAPSite, nullptr);
 		}).join();
 
 		if (FAILED(hr)) [[unlikely]]

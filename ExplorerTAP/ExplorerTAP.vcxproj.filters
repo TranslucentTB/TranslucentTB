@@ -18,7 +18,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="tap.cpp">
+    <ClCompile Include="tapsite.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="api.cpp">
@@ -62,7 +62,7 @@
     <ClInclude Include="visualtreewatcher.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="tap.hpp">
+    <ClInclude Include="tapsite.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Generated Files\ExplorerTAP.h">
