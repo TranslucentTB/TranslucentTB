@@ -3,19 +3,19 @@
 #include <wil/resource.h>
 
 #include "constants.hpp"
-#include "visualtreewatcher.hpp"
 #include "tap.hpp"
 #include "win32.hpp"
+#include "taskbarappearanceservice.hpp"
 #include "util/string_macros.hpp"
 
 using PFN_INITIALIZE_XAML_DIAGNOSTICS_EX = decltype(&InitializeXamlDiagnosticsEx);
 
 HRESULT InjectExplorerTAP(DWORD pid, REFIID riid, LPVOID* ppv) try
 {
-	VisualTreeWatcher::InstallProxyStub();
+	TaskbarAppearanceService::InstallProxyStub();
 
 	winrt::com_ptr<IUnknown> service;
-	HRESULT hr = GetActiveObject(CLSID_VisualTreeWatcher, nullptr, service.put());
+	HRESULT hr = GetActiveObject(CLSID_TaskbarAppearanceService, nullptr, service.put());
 
 	if (hr == MK_E_UNAVAILABLE)
 	{
@@ -66,7 +66,7 @@ HRESULT InjectExplorerTAP(DWORD pid, REFIID riid, LPVOID* ppv) try
 			return HRESULT_FROM_WIN32(WAIT_TIMEOUT);
 		}
 
-		hr = GetActiveObject(CLSID_VisualTreeWatcher, nullptr, service.put());
+		hr = GetActiveObject(CLSID_TaskbarAppearanceService, nullptr, service.put());
 	}
 
 	if (FAILED(hr)) [[unlikely]]

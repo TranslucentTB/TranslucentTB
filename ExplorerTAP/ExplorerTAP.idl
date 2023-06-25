@@ -5,7 +5,7 @@ import "IVersionedApi.idl";
 library ExplorerTAP
 {
 	[uuid(50e9ab23-97b4-4dba-8f44-5cd342f30b78)]
-	coclass VisualTreeWatcher
+	coclass TaskbarAppearanceService
 	{
 		[default]
 		interface ITaskbarAppearanceService;

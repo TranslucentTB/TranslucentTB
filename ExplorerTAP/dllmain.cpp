@@ -2,14 +2,14 @@
 #include <libloaderapi.h>
 #include <windef.h>
 
-#include "visualtreewatcher.hpp"
+#include "taskbarappearanceservice.hpp"
 
 BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) noexcept
 {
 	switch (fdwReason)
 	{
 	case DLL_PROCESS_DETACH:
-		VisualTreeWatcher::UninstallProxyStub();
+		TaskbarAppearanceService::UninstallProxyStub();
 		break;
 	}
 

@@ -51,6 +51,9 @@
     <ClCompile Include="Generated Files\IVersionedApi_p.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="taskbarappearanceservice.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="api.hpp">
@@ -73,6 +76,9 @@
     </ClInclude>
     <ClInclude Include="Generated Files\IVersionedApi.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="taskbarappearanceservice.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

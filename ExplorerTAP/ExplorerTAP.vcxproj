@@ -48,6 +48,7 @@
       <PreprocessorDefinitions>RPCPROXY_ENABLE_CPP_NO_CINTERFACE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="tap.cpp" />
+    <ClCompile Include="taskbarappearanceservice.cpp" />
     <ClCompile Include="visualtreewatcher.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -61,6 +62,7 @@
     <ClInclude Include="Generated Files\IVersionedApi.h" />
     <ClInclude Include="Generated Files\TaskbarBrush.h" />
     <ClInclude Include="tap.hpp" />
+    <ClInclude Include="taskbarappearanceservice.hpp" />
     <ClInclude Include="visualtreewatcher.hpp" />
   </ItemGroup>
   <ItemGroup>
