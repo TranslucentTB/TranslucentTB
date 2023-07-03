@@ -71,8 +71,11 @@ void Application::CreateWelcomePage()
 }
 
 Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> storageFolder, bool fileExists) :
-	// seemingly, dynamic deps are not transitive so add a dyn dep to the CRT that WinUI uses.
+	m_Config(storageFolder, fileExists, ConfigurationChanged, this),
+	m_DispatcherController(UWP::CreateDispatcherController()),
+	m_Worker(m_Config.GetConfig(), hInst, m_Loader, storageFolder),
 	m_UwpCRTDep(
+		hInst,
 		L"Microsoft.VCLibs.140.00_8wekyb3d8bbwe",
 		PACKAGE_VERSION {
 			// 14.0.30704.0 but the order is reversed because that's how the struct is.
@@ -84,19 +87,17 @@ Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> s
 		storageFolder.has_value()
 	),
 	m_WinUIDep(
+		hInst,
 		L"Microsoft.UI.Xaml.2.8_8wekyb3d8bbwe",
 		PACKAGE_VERSION {
-			// 8.2208.12001.0 but the order is reversed because that's how the struct is.
+			// 8.2305.5001.0 but the order is reversed because that's how the struct is.
 			.Revision = 0,
-			.Build = 12001,
-			.Minor = 2208,
+			.Build = 5001,
+			.Minor = 2305,
 			.Major = 8
 		},
 		storageFolder.has_value()
 	),
-	m_Config(storageFolder, fileExists, ConfigurationChanged, this),
-	m_Worker(m_Config.GetConfig(), hInst, m_Loader, storageFolder),
-	m_DispatcherController(UWP::CreateDispatcherController()),
 	m_XamlApp(CreateXamlApp()),
 	m_XamlManager(UWP::CreateXamlManager()),
 	m_AppWindow(*this, !fileExists, storageFolder.has_value(), hInst, m_Loader),

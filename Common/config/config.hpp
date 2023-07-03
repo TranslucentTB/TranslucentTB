@@ -1,5 +1,7 @@
 #pragma once
 #include <array>
+#include <format>
+#include <regex>
 #include <spdlog/common.h>
 #include <string_view>
 #include <optional>
@@ -17,6 +19,12 @@ private:
 	{
 		static const bool isWindows11 = win32::IsAtLeastBuild(22000);
 		return isWindows11;
+	}
+
+	inline static const std::wregex &LanguageRegex()
+	{
+		static const std::wregex languageRegex(L"^[a-z]{2}(-[A-Z]{2})?$");
+		return languageRegex;
 	}
 
 public:
@@ -41,6 +49,8 @@ public:
 	bool HideTray = false;
 	bool DisableSaving = false;
 	spdlog::level::level_enum LogVerbosity = DEFAULT_LOG_VERBOSITY;
+	std::wstring Language;
+	std::optional<bool> UseXamlContextMenu;
 
 	template<class Writer>
 	inline void Serialize(Writer &writer) const
@@ -56,6 +66,11 @@ public:
 		rjh::Serialize(writer, HideTray, TRAY_KEY);
 		rjh::Serialize(writer, DisableSaving, SAVING_KEY);
 		rjh::Serialize(writer, LogVerbosity, LOG_KEY, LOG_MAP);
+		if (!Language.empty())
+		{
+			rjh::Serialize(writer, Language, LANGUAGE_KEY);
+		}
+		rjh::Serialize(writer, UseXamlContextMenu, USE_XAML_CONTEXT_MENU_KEY);
 	}
 
 	inline void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view) = nullptr)
@@ -111,6 +126,26 @@ public:
 			{
 				rjh::Deserialize(it->value, LogVerbosity, key, LOG_MAP);
 			}
+			else if (key == LANGUAGE_KEY)
+			{
+				rjh::EnsureType(rj::Type::kStringType, it->value.GetType(), key);
+
+				const auto languageStr = rjh::ValueToStringView(it->value);
+				if (languageStr.empty() || std::regex_match(languageStr.begin(), languageStr.end(), LanguageRegex()))
+				{
+					Language = languageStr;
+				}
+				else
+				{
+					throw rjh::DeserializationError {
+						std::format(L"Found invalid string \"{}\" while deserializing {}", languageStr, key)
+					};
+				}
+			}
+			else if (key == USE_XAML_CONTEXT_MENU_KEY)
+			{
+				rjh::Deserialize(it->value, UseXamlContextMenu, key);
+			}
 			else if (unknownKeyCallback)
 			{
 				unknownKeyCallback(key);
@@ -140,4 +175,6 @@ private:
 	static constexpr std::wstring_view TRAY_KEY = L"hide_tray";
 	static constexpr std::wstring_view SAVING_KEY = L"disable_saving";
 	static constexpr std::wstring_view LOG_KEY = L"verbosity";
+	static constexpr std::wstring_view LANGUAGE_KEY = L"language";
+	static constexpr std::wstring_view USE_XAML_CONTEXT_MENU_KEY = L"use_xaml_context_menu";
 };

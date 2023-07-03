@@ -18,7 +18,7 @@ public:
 	inline DynamicLoader()
 	{
 		m_User32.reset(LoadLibraryEx(L"user32.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
-		if (!m_User32)
+		if (!m_User32) [[unlikely]]
 		{
 			LastErrorHandle(spdlog::level::critical, L"Failed to load user32.dll");
 		}
@@ -27,7 +27,7 @@ public:
 		if (m_UxTheme)
 		{
 			m_Ssudm = reinterpret_cast<PFN_SHOULD_SYSTEM_USE_DARK_MODE>(GetProcAddress(m_UxTheme.get(), MAKEINTRESOURCEA(138)));
-			if (!m_Ssudm)
+			if (!m_Ssudm) [[unlikely]]
 			{
 				LastErrorHandle(spdlog::level::warn, L"Failed to get address of ShouldSystemUseDarkMode");
 			}
@@ -45,7 +45,7 @@ public:
 	inline PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE SetWindowCompositionAttribute() const
 	{
 		const auto fn = reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(GetProcAddress(m_User32.get(), UTIL_STRINGIFY_UTF8(SetWindowCompositionAttribute)));
-		if (!fn)
+		if (!fn) [[unlikely]]
 		{
 			LastErrorHandle(spdlog::level::critical, L"Failed to get address of SetWindowCompositionAttribute");
 		}
@@ -59,7 +59,7 @@ public:
 		if (m_UxTheme)
 		{
 			const auto fn = reinterpret_cast<PFN_SET_PREFERRED_APP_MODE>(GetProcAddress(m_UxTheme.get(), MAKEINTRESOURCEA(135)));
-			if (!fn)
+			if (!fn) [[unlikely]]
 			{
 				LastErrorHandle(spdlog::level::warn, L"Failed to get address of SetPreferredAppMode");
 			}
@@ -78,7 +78,7 @@ public:
 		if (m_UxTheme)
 		{
 			const auto fn = reinterpret_cast<PFN_ALLOW_DARK_MODE_FOR_WINDOW>(GetProcAddress(m_UxTheme.get(), MAKEINTRESOURCEA(133)));
-			if (!fn)
+			if (!fn) [[unlikely]]
 			{
 				LastErrorHandle(spdlog::level::warn, L"Failed to get address of AllowDarkModeForWindow");
 			}

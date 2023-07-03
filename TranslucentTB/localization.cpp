@@ -7,7 +7,7 @@
 
 Util::null_terminated_wstring_view Localization::LoadLocalizedResourceString(uint16_t resource, HINSTANCE hInst, WORD lang)
 {
-	const HRSRC src = FindResourceEx(hInst, RT_STRING, MAKEINTRESOURCE(resource / 16 + 1), lang);
+	const HRSRC src = FindResourceEx(hInst, RT_STRING, MAKEINTRESOURCE((resource >> 4) + 1), lang);
 	if (!src)
 	{
 		LastErrorHandle(spdlog::level::warn, L"Failed to find string resource.");
@@ -28,7 +28,7 @@ Util::null_terminated_wstring_view Localization::LoadLocalizedResourceString(uin
 		return FAILED_LOADING;
 	}
 
-	for (int i = 0; i < (resource & 15); i++)
+	for (int i = 0; i < (resource & 0xF); i++)
 	{
 		str += 1 + static_cast<uint16_t>(*str);
 	}
@@ -37,6 +37,11 @@ Util::null_terminated_wstring_view Localization::LoadLocalizedResourceString(uin
 	if (!resStr.empty() && resStr.back() == L'\0')
 	{
 		return Util::null_terminated_wstring_view::make_unsafe(resStr.data(), resStr.length() - 1);
+	}
+	else if (lang != MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US))
+	{
+		// try again in English
+		return LoadLocalizedResourceString(resource, hInst, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US));
 	}
 	else
 	{

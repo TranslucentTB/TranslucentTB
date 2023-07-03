@@ -237,7 +237,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 
 		FillChannelBitmap(bgraPixelData, width, height, renderScale, orientation, representation, channel, color, background, alphaMaxForced, saturationMaxForced);
 
-		if (const auto rect_strong = rect_weak.get())
+		if (const auto rect = rect_weak.get())
 		{
 			// return to main thread
 			co_await wil::resume_foreground(dispatcher);
@@ -246,7 +246,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 			wux::Media::ImageBrush brush;
 			brush.ImageSource(bitmap);
 			brush.Stretch(wux::Media::Stretch::Fill);
-			rect_strong.Fill(brush);
+			rect.Fill(brush);
 		}
 	}
 }

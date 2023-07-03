@@ -1,6 +1,4 @@
-#ifndef WILX_HPP
-#define WILX_HPP
-
+#pragma once
 #include "arch.h"
 #include <cstddef>
 #include <tuple>
@@ -64,17 +62,11 @@ namespace wilx {
 	using unique_any = wil::unique_any<impl::arg_t<decltype(close_fn), 0>, decltype(close_fn), close_fn>;
 
 	template<Util::function_pointer auto close_fn>
+	using unique_any_handle_invalid = wil::unique_any_handle_invalid<decltype(close_fn), close_fn>;
+
+	template<Util::function_pointer auto close_fn>
 	using unique_call = wil::unique_call<decltype(close_fn), close_fn>;
 
 	template<Util::function_pointer auto delete_fn>
 	using function_deleter = wil::function_deleter<decltype(delete_fn), delete_fn>;
-}
-
-#endif // WILX_HPP
-
-namespace wilx {
-#if defined(__IAppVisibility_INTERFACE_DEFINED__) && !defined(CINTERFACE) && !defined(WILX_IAV)
-#define WILX_IAV
-	using unique_app_visibility_token = unique_com_token<&IAppVisibility::Unadvise>;
-#endif
 }

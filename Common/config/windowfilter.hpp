@@ -65,6 +65,7 @@ struct WindowFilter {
 #ifdef _TRANSLUCENTTB_EXE
 	inline bool IsFiltered(Window window) const
 	{
+		// TODO: add logging
 		// This is the fastest because we do the less string manipulation, so always try it first
 		if (!ClassList.empty())
 		{

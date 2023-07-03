@@ -128,7 +128,7 @@ namespace Util {
 
 			if (str.length() == 3)
 			{
-				const uint16_t col = Util::ParseHexNumber<uint16_t>(str) & 0xFFF;
+				const uint16_t col = Util::ParseHexNumber<uint16_t>(str);
 				const uint8_t r = Util::ExpandOneHexDigitByte((col & 0xF00) >> 8);
 				const uint8_t g = Util::ExpandOneHexDigitByte((col & 0xF0) >> 4);
 				const uint8_t b = Util::ExpandOneHexDigitByte(col & 0xF);

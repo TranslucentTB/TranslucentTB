@@ -10,13 +10,13 @@
     mc:Ignorable="d" IsClosable="True" Width="346">
 
     <local:FramelessPage.TitlebarContent>
-        <controls:ChromeButton x:Name="AlwaysOnTopButton" ToolTipService.ToolTip="Always on top" IsTogglable="True" IsChecked="{x:Bind AlwaysOnTop, Mode = TwoWay}">
+        <controls:ChromeButton x:Name="AlwaysOnTopButton" x:Uid="ColorPickerPage_AlwaysOnTopButton" IsTogglable="True" IsChecked="{x:Bind AlwaysOnTop, Mode = TwoWay}">
             <FontIcon Glyph="&#xE840;" FontSize="10" FontWeight="Medium" />
         </controls:ChromeButton>
     </local:FramelessPage.TitlebarContent>
 
     <local:FramelessPage.SystemMenuContent>
-        <ToggleMenuFlyoutItem x:Uid="ColorPickerPage_AlwaysOnTop" IsChecked="{x:Bind AlwaysOnTop, Mode = TwoWay}" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" />
+        <ToggleMenuFlyoutItem x:Uid="ColorPickerPage_AlwaysOnTopMenuItem" IsChecked="{x:Bind AlwaysOnTop, Mode = TwoWay}" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" />
     </local:FramelessPage.SystemMenuContent>
 
     <!-- Putting all within UserControl makes VSM happy -->

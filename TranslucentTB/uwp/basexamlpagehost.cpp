@@ -135,10 +135,12 @@ LRESULT BaseXamlPageHost::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam
 
 	case WM_SETTINGCHANGE:
 	case WM_THEMECHANGED:
+	case WM_SIZE:
 		if (const auto coreWin = UWP::GetCoreWindow())
 		{
 			// forward theme changes to the fake core window
 			// so that they propagate to our islands
+			// do the same for size: https://github.com/microsoft/microsoft-ui-xaml/issues/3577#issuecomment-1399250405
 			coreWin.send_message(uMsg, wParam, lParam);
 		}
 

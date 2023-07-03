@@ -69,7 +69,6 @@ private:
 			break;
 		}
 
-
 		case WM_ERASEBKGND:
 		{
 			const auto rect = client_rect();
@@ -125,6 +124,11 @@ private:
 				}
 			}
 			break;
+
+		case WM_MOUSEHOVER:
+		case WM_MOUSELEAVE:
+			m_content.TitleTooltipVisible(uMsg == WM_MOUSEHOVER);
+			return 0;
 		}
 
 		return BaseXamlPageHost::MessageHandler(uMsg, wParam, lParam);

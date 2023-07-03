@@ -42,7 +42,7 @@
                     </VisualState>
                 </VisualStateGroup>
             </VisualStateManager.VisualStateGroups>
-            
+
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -55,7 +55,7 @@
 
             <RelativePanel x:Name="TitleRegion" Grid.ColumnSpan="2" Height="152" Margin="0,0,0,12">
                 <RelativePanel.Background>
-                    <ImageBrush ImageSource="ms-appx:///Assets/SplashScreen.png" Stretch="Fill" />
+                    <ImageBrush ImageSource="ms-appx:///Assets/SplashScreen.jpeg" Stretch="Fill" />
                 </RelativePanel.Background>
                 <Border RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True">
                     <Border.Background>

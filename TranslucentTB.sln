@@ -33,6 +33,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProgramLog", "ProgramLog\Pr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WindowsUdk", "WindowsUdk\WindowsUdk.vcxproj", "{55ED608B-B142-43A8-B42F-BBF292A61CBD}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExplorerTAP", "ExplorerTAP\ExplorerTAP.vcxproj", "{E759084F-6445-400D-8F43-A64A6E276659}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -101,6 +103,14 @@ Global
 		{55ED608B-B142-43A8-B42F-BBF292A61CBD}.Release|ARM64.Build.0 = Release|ARM64
 		{55ED608B-B142-43A8-B42F-BBF292A61CBD}.Release|x64.ActiveCfg = Release|x64
 		{55ED608B-B142-43A8-B42F-BBF292A61CBD}.Release|x64.Build.0 = Release|x64
+		{E759084F-6445-400D-8F43-A64A6E276659}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{E759084F-6445-400D-8F43-A64A6E276659}.Debug|ARM64.Build.0 = Debug|ARM64
+		{E759084F-6445-400D-8F43-A64A6E276659}.Debug|x64.ActiveCfg = Debug|x64
+		{E759084F-6445-400D-8F43-A64A6E276659}.Debug|x64.Build.0 = Debug|x64
+		{E759084F-6445-400D-8F43-A64A6E276659}.Release|ARM64.ActiveCfg = Release|ARM64
+		{E759084F-6445-400D-8F43-A64A6E276659}.Release|ARM64.Build.0 = Release|ARM64
+		{E759084F-6445-400D-8F43-A64A6E276659}.Release|x64.ActiveCfg = Release|x64
+		{E759084F-6445-400D-8F43-A64A6E276659}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

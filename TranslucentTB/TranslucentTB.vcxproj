@@ -1,20 +1,19 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.221121.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.221121.5\build\native\Microsoft.Windows.CppWinRT.props')" />
-  <Import Project="..\packages\Microsoft.UI.Xaml.2.8.1\build\native\Microsoft.UI.Xaml.props" Condition="Exists('..\packages\Microsoft.UI.Xaml.2.8.1\build\native\Microsoft.UI.Xaml.props')" />
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.230524.4\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.230524.4\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="..\packages\Microsoft.UI.Xaml.2.8.4\build\native\Microsoft.UI.Xaml.props" Condition="Exists('..\packages\Microsoft.UI.Xaml.2.8.4\build\native\Microsoft.UI.Xaml.props')" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{59F844AA-8D3C-431C-B8CC-57682915F551}</ProjectGuid>
     <ConfigurationType>Application</ConfigurationType>
     <GenerateManifest>true</GenerateManifest>
     <RootNamespace>TranslucentTB</RootNamespace>
-    <CustomBuildAfterTargets>ClCompile</CustomBuildAfterTargets>
-    <CustomBuildBeforeTargets>Link</CustomBuildBeforeTargets>
   </PropertyGroup>
   <Import Project="..\Common\CppProject.props" />
   <PropertyGroup>
-    <BeforeLinkTargets Condition="'$(WindowsTargetPlatformVersion)' &gt;= '10.0.18362.0'">
+    <BeforeLinkTargets>
       $(BeforeLinkTargets);
       _UnpackagedWin32GenerateAdditionalWinmdManifests;
+      _GenerateCustomLibFiles;
     </BeforeLinkTargets>
   </PropertyGroup>
   <Target Name="_UnpackagedWin32MapWinmdsToManifestFiles" DependsOnTargets="ResolveAssemblyReferences">
@@ -47,6 +46,18 @@
       <Manifest Include="@(_UnpackagedWin32WinmdManifest)" KeepMetadata="DoesntExist" />
     </ItemGroup>
   </Target>
+  <Target Name="_GenerateCustomLibFiles" Inputs="@(CustomDefFile.FullPath)" Outputs="$(IntDir)@(CustomDefFile.Filename).lib">
+    <Message Text="Generating lib file for %(CustomDefFile.Filename)%(CustomDefFile.Extension)" Importance="High" />
+    <!-- This target is batched and a new Exec is spawned for each entry in CustomDefFile. -->
+    <Exec Command="lib.exe /DEF:&quot;%(CustomDefFile.FullPath)&quot; /OUT:&quot;$(IntDir)%(CustomDefFile.Filename).lib&quot; /MACHINE:$(PlatformTarget) /NOLOGO" />
+    <ItemGroup>
+      <!--
+          Emit the generated lib files into the Link inputs.
+          Pass a metadata name that isn't used to wipe all metadata.
+      -->
+      <Library Include="$(IntDir)%(CustomDefFile.Filename).lib" KeepMetadata="DoesntExist" />
+    </ItemGroup>
+  </Target>
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
       <PreprocessorDefinitions>_TRANSLUCENTTB_EXE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -59,6 +70,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="application.cpp" />
+    <ClCompile Include="loadabledll.cpp" />
     <ClCompile Include="localization.cpp" />
     <ClCompile Include="managers\configmanager.cpp" />
     <ClCompile Include="folderwatcher.cpp" />
@@ -81,6 +93,7 @@
   <ItemGroup>
     <ClInclude Include="application.hpp" />
     <ClInclude Include="dynamicloader.hpp" />
+    <ClInclude Include="loadabledll.hpp" />
     <ClInclude Include="localization.hpp" />
     <ClInclude Include="managers\configmanager.hpp" />
     <ClInclude Include="folderwatcher.hpp" />
@@ -105,15 +118,24 @@
     <ClInclude Include="windows\windowclass.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="resources\TranslucentTB.rc2" />
+    <ResourceCompile Include="resources\language\TranslucentTB.de-DE.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.en-US.rc2" />
+    <ResourceCompile Include="resources\language\TranslucentTB.es-US.rc2" />
+    <ResourceCompile Include="resources\language\TranslucentTB.id-ID.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.ja-JP.rc2" />
+    <ResourceCompile Include="resources\language\TranslucentTB.ru-RU.rc2" />
+    <ResourceCompile Include="resources\language\TranslucentTB.tr-TR.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.zh-CN.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.zh-TW.rc2" />
+    <ResourceCompile Include="resources\TranslucentTB.rc2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExplorerHooks\ExplorerHooks.vcxproj">
       <Project>{d0004e78-f00b-4943-b77e-9a278f8ba399}</Project>
+      <DeploymentContent>true</DeploymentContent>
+    </ProjectReference>
+    <ProjectReference Include="..\ExplorerTAP\ExplorerTAP.vcxproj">
+      <Project>{e759084f-6445-400d-8f43-a64a6e276659}</Project>
       <DeploymentContent>true</DeploymentContent>
     </ProjectReference>
     <ProjectReference Include="..\ProgramLog\ProgramLog.vcxproj">
@@ -156,22 +178,22 @@
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="uwp\api-ms-win-appmodel-runtime-l1-1-5.def">
-      <Command>lib.exe /DEF:"%(FullPath)" /OUT:"$(IntDir)%(Filename).lib" /MACHINE:$(PlatformTarget) /NOLOGO</Command>
-      <Outputs>$(IntDir)%(Filename).lib</Outputs>
-    </CustomBuild>
+    <CustomDefFile Include="uwp\api-ms-win-appmodel-runtime-l1-1-5.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <PropertyPageSchema Include="resources\ResourceFileMapping.xml" />
   </ItemGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.UI.Xaml.2.8.1\build\native\Microsoft.UI.Xaml.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.UI.Xaml.2.8.1\build\native\Microsoft.UI.Xaml.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.UI.Xaml.2.8.1\build\native\Microsoft.UI.Xaml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.UI.Xaml.2.8.1\build\native\Microsoft.UI.Xaml.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Web.WebView2.1.0.1418.22\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Web.WebView2.1.0.1418.22\build\native\Microsoft.Web.WebView2.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.221121.5\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.221121.5\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.221121.5\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.221121.5\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.UI.Xaml.2.8.4\build\native\Microsoft.UI.Xaml.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.UI.Xaml.2.8.4\build\native\Microsoft.UI.Xaml.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.UI.Xaml.2.8.4\build\native\Microsoft.UI.Xaml.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.UI.Xaml.2.8.4\build\native\Microsoft.UI.Xaml.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Web.WebView2.1.0.1774.30\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Web.WebView2.1.0.1774.30\build\native\Microsoft.Web.WebView2.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.230524.4\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.230524.4\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.230524.4\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.230524.4\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
-  <Import Project="..\packages\Microsoft.UI.Xaml.2.8.1\build\native\Microsoft.UI.Xaml.targets" Condition="Exists('..\packages\Microsoft.UI.Xaml.2.8.1\build\native\Microsoft.UI.Xaml.targets')" />
-  <Import Project="..\packages\Microsoft.Web.WebView2.1.0.1418.22\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\packages\Microsoft.Web.WebView2.1.0.1418.22\build\native\Microsoft.Web.WebView2.targets')" />
-  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.221121.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.221121.5\build\native\Microsoft.Windows.CppWinRT.targets')" />
+  <Import Project="..\packages\Microsoft.UI.Xaml.2.8.4\build\native\Microsoft.UI.Xaml.targets" Condition="Exists('..\packages\Microsoft.UI.Xaml.2.8.4\build\native\Microsoft.UI.Xaml.targets')" />
+  <Import Project="..\packages\Microsoft.Web.WebView2.1.0.1774.30\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\packages\Microsoft.Web.WebView2.1.0.1774.30\build\native\Microsoft.Web.WebView2.targets')" />
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.230524.4\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.230524.4\build\native\Microsoft.Windows.CppWinRT.targets')" />
 </Project>

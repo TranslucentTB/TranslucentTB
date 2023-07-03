@@ -1,4 +1,5 @@
 #pragma once
+#include <format>
 #include <string>
 #include <string_view>
 
@@ -35,10 +36,12 @@ namespace Util {
 	};
 
 	using null_terminated_string_view = basic_null_terminated_string_view<char>;
-#ifdef __cpp_lib_char8_t
 	using null_terminated_u8string_view = basic_null_terminated_string_view<char8_t>;
-#endif
 	using null_terminated_u16string_view = basic_null_terminated_string_view<char16_t>;
 	using null_terminated_u32string_view = basic_null_terminated_string_view<char32_t>;
 	using null_terminated_wstring_view = basic_null_terminated_string_view<wchar_t>;
 }
+
+template<typename char_type, class traits>
+struct std::formatter<Util::basic_null_terminated_string_view<char_type, traits>, char_type> : std::formatter<std::basic_string_view<char_type, traits>, char_type>
+{};

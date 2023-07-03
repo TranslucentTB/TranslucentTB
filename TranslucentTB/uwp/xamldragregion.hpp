@@ -7,6 +7,7 @@
 class XamlDragRegion final : public MessageWindow {
 private:
 	wf::Rect m_ButtonsRegion = { };
+	bool m_Tracking = false;
 
 	void HandleClick(UINT msg, LPARAM lParam) noexcept;
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;

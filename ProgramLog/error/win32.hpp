@@ -16,12 +16,7 @@ namespace Error {
 	PROGRAMLOG_API std::wstring MessageFromHRESULT(HRESULT result);
 }
 
-#define HresultHandle(hresult_, level_, message_) do { \
-	if (Error::ShouldLog<(level_)>()) \
-	{ \
-		Error::impl::Handle<(level_)>((message_), Error::MessageFromHRESULT((hresult_)), PROGRAMLOG_ERROR_LOCATION); \
-	} \
-} while (0)
+#define HresultHandle(hresult_, level_, message_) ErrorHandleCommonMacro((level_), (message_), Error::MessageFromHRESULT((hresult_)))
 
 #define HresultVerify(hresult_, level_, message_) do { \
 	if (const HRESULT hr_ = (hresult_); FAILED(hr_)) [[unlikely]] \

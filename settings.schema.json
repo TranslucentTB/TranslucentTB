@@ -135,6 +135,13 @@
         "off"
       ],
       "type": "string"
+    },
+    "language": {
+      "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+      "type": "string"
+    },
+    "use_xaml_context_menu": {
+      "type": "boolean"
     }
   },
   "type": "object"

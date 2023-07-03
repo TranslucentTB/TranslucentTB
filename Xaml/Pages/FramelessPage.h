@@ -18,11 +18,11 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void ShowSystemMenu(const wf::Point &position);
 		void HideSystemMenu();
 
-		virtual bool RequestClose();
 		virtual wf::Rect DragRegion();
 		wf::Rect TitlebarButtonsRegion();
 
-		void Close();
+		bool RequestClose();
+		virtual bool Close();
 		DECL_EVENT(ClosedDelegate, Closed, m_ClosedHandler);
 
 		void CloseClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
@@ -33,7 +33,8 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		DECL_DEPENDENCY_PROPERTY_WITH_DEFAULT(bool, ExpandIntoTitlebar, box_value(false));
 		DECL_DEPENDENCY_PROPERTY_WITH_DEFAULT(bool, IsClosable, box_value(true));
 		DECL_DEPENDENCY_PROPERTY_WITH_DEFAULT(bool, AlwaysOnTop, box_value(false));
-		DECL_DEPENDENCY_PROPERTY_WITH_DEFAULT(bool, IsActive, box_value(true));
+		DECL_DEPENDENCY_PROPERTY_WITH_DEFAULT(bool, IsActive, box_value(false));
+		DECL_DEPENDENCY_PROPERTY_WITH_DEFAULT(bool, TitleTooltipVisible, box_value(false));
 
 		wfc::IObservableVector<Controls::ChromeButton> TitlebarContent() noexcept
 		{

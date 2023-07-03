@@ -3,6 +3,7 @@
 #include <member_thunk/member_thunk.hpp>
 
 #include "constants.hpp"
+#include "../localization.hpp"
 #include "../../ProgramLog/error/win32.hpp"
 #include "../../ProgramLog/error/winrt.hpp"
 #include "undoc/explorer.hpp"
@@ -232,15 +233,18 @@ void TaskbarAttributeWorker::OnSearchVisibilityChange(bool state)
 
 void TaskbarAttributeWorker::OnForceRefreshTaskbar(Window taskbar)
 {
-	m_disableAttributeRefreshReply = true;
-	auto guard = wil::scope_exit([this]
+	if (!m_TaskbarService)
 	{
-		m_disableAttributeRefreshReply = false;
-	});
+		m_disableAttributeRefreshReply = true;
+		auto guard = wil::scope_exit([this]
+		{
+			m_disableAttributeRefreshReply = false;
+		});
 
-	taskbar.send_message(WM_DWMCOMPOSITIONCHANGED);
-	guard.reset();
-	taskbar.send_message(WM_DWMCOMPOSITIONCHANGED);
+		taskbar.send_message(WM_DWMCOMPOSITIONCHANGED);
+		guard.reset();
+		taskbar.send_message(WM_DWMCOMPOSITIONCHANGED);
+	}
 }
 
 LRESULT TaskbarAttributeWorker::OnSystemSettingsChange(UINT uiAction, std::wstring_view)
@@ -267,7 +271,7 @@ LRESULT TaskbarAttributeWorker::OnPowerBroadcast(const POWERBROADCAST_SETTING *s
 
 LRESULT TaskbarAttributeWorker::OnRequestAttributeRefresh(LPARAM lParam)
 {
-	if (!m_disableAttributeRefreshReply)
+	if (!m_disableAttributeRefreshReply && !m_TaskbarService)
 	{
 		const Window window = reinterpret_cast<HWND>(lParam);
 		if (const auto iter = m_Taskbars.find(window.monitor()); iter != m_Taskbars.end() && iter->second.Taskbar.TaskbarWindow == window)
@@ -488,55 +492,87 @@ void TaskbarAttributeWorker::ShowTaskbarLine(const TaskbarInfo &taskbar, bool sh
 
 void TaskbarAttributeWorker::SetAttribute(taskbar_iterator taskbar, TaskbarAppearance config)
 {
-	const auto window = taskbar->second.Taskbar.TaskbarWindow;
-
-	if (config.Accent != ACCENT_NORMAL)
+	if (m_TaskbarService)
 	{
-		m_NormalTaskbars.erase(window);
-
-		const bool isAcrylic = config.Accent == ACCENT_ENABLE_ACRYLICBLURBEHIND;
-		if (isAcrylic && config.Color.A == 0)
+		if (config.Accent == ACCENT_NORMAL)
 		{
-			// Acrylic mode doesn't likes a completely 0 opacity
-			config.Color.A = 1;
+			HresultVerify(m_TaskbarService->ReturnTaskbarToDefaultAppearance(taskbar->first), spdlog::level::info, L"Failed to restore taskbar to normal");
 		}
-
-		ACCENT_POLICY policy = {
-			config.Accent,
-			static_cast<UINT>(isAcrylic ? 0 : 2),
-			config.Color.ToABGR(),
-			0
-		};
-
-		const WINDOWCOMPOSITIONATTRIBDATA data = {
-			WCA_ACCENT_POLICY,
-			&policy,
-			sizeof(policy)
-		};
-
-		if (!SetWindowCompositionAttribute(window, &data)) [[unlikely]]
+		else
 		{
-			LastErrorHandle(spdlog::level::info, L"Failed to set window composition attribute");
+			auto color = config.Color;
+			TaskbarBrush brush = SolidColor;
+
+			if (config.Accent == ACCENT_ENABLE_ACRYLICBLURBEHIND)
+			{
+				brush = Acrylic;
+			}
+			else if (config.Accent == ACCENT_ENABLE_GRADIENT)
+			{
+				color.A = 0xFF;
+			}
+
+			HresultVerify(m_TaskbarService->SetTaskbarAppearance(taskbar->first, brush, color.ToABGR()), spdlog::level::info, L"Failed to set taskbar brush");
 		}
 	}
-	else if (const auto [it, inserted] = m_NormalTaskbars.insert(window); inserted)
+	else
 	{
-		// If this is in response to a window being moved, we send the message way too often
-		// and Explorer doesn't like that too much.
-		window.send_message(WM_DWMCOMPOSITIONCHANGED, 1, 0);
+		const auto window = taskbar->second.Taskbar.TaskbarWindow;
+
+		if (config.Accent != ACCENT_NORMAL)
+		{
+			m_NormalTaskbars.erase(window);
+
+			const bool isAcrylic = config.Accent == ACCENT_ENABLE_ACRYLICBLURBEHIND;
+			if (isAcrylic && config.Color.A == 0)
+			{
+				// Acrylic mode doesn't likes a completely 0 opacity
+				config.Color.A = 1;
+			}
+
+			ACCENT_POLICY policy = {
+				config.Accent,
+				static_cast<UINT>(isAcrylic ? 0 : 2),
+				config.Color.ToABGR(),
+				0
+			};
+
+			const WINDOWCOMPOSITIONATTRIBDATA data = {
+				WCA_ACCENT_POLICY,
+				&policy,
+				sizeof(policy)
+			};
+
+			if (!SetWindowCompositionAttribute(window, &data)) [[unlikely]]
+			{
+				LastErrorHandle(spdlog::level::info, L"Failed to set window composition attribute");
+			}
+		}
+		else if (const auto [it, inserted] = m_NormalTaskbars.insert(window); inserted)
+		{
+			// If this is in response to a window being moved, we send the message way too often
+			// and Explorer doesn't like that too much.
+			window.send_message(WM_DWMCOMPOSITIONCHANGED, 1, 0);
+		}
 	}
 }
 
 void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
 {
-	const auto &cfg = GetConfig(taskbar);
-	SetAttribute(taskbar, cfg);
-
 	// These functions may trigger Windows internal message loops,
 	// do not pass any member of taskbar map by reference.
 	// See comment in InsertWindow.
+	const HMONITOR mon = taskbar->first;
 	const auto taskbarInfo = taskbar->second.Taskbar;
-	if (taskbarInfo.InnerXamlContent || taskbarInfo.WorkerWWindow)
+
+	const auto &cfg = GetConfig(taskbar);
+	SetAttribute(taskbar, cfg);
+
+	if (m_TaskbarService)
+	{
+		HresultVerify(m_TaskbarService->SetTaskbarBorderVisibility(mon, cfg.ShowLine), spdlog::level::info, L"Failed to set taskbar border visibility");
+	}
+	else if (taskbarInfo.InnerXamlContent || taskbarInfo.WorkerWWindow)
 	{
 		ShowTaskbarLine(taskbarInfo, cfg.ShowLine);
 	}
@@ -690,9 +726,9 @@ bool TaskbarAttributeWorker::SetContainsValidWindows(std::unordered_set<Window> 
 
 void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::unordered_set<Window> &set, bool showInfo)
 {
-	std::wstring buf;
 	if (!set.empty())
 	{
+		std::wstring buf;
 		for (const Window window : set)
 		{
 			buf.clear();
@@ -710,8 +746,7 @@ void TaskbarAttributeWorker::DumpWindowSet(std::wstring_view prefix, const std::
 	}
 	else
 	{
-		std::format_to(std::back_inserter(buf), L"{}[none]", prefix);
-		MessagePrint(spdlog::level::off, buf);
+		MessagePrint(spdlog::level::off, std::format(L"{}[none]", prefix));
 	}
 }
 
@@ -860,25 +895,32 @@ wil::unique_hwineventhook TaskbarAttributeWorker::CreateHook(DWORD eventMin, DWO
 
 void TaskbarAttributeWorker::ReturnToStock()
 {
-	// Copy taskbars to a vector because some functions
-	// trigger Windows internal message loop.
-	std::vector<TaskbarInfo> taskbarInfos;
-	for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
+	if (m_TaskbarService)
 	{
-		SetAttribute(it, { ACCENT_NORMAL, { 0, 0, 0, 0 }, true, true });
-
-		taskbarInfos.push_back(it->second.Taskbar);
+		HresultVerify(m_TaskbarService->RestoreAllTaskbarsToDefault(), spdlog::level::info, L"Failed to restore taskbars");
 	}
-
-	for (const auto &taskbarInfo : taskbarInfos)
+	else
 	{
-		if (taskbarInfo.InnerXamlContent || taskbarInfo.WorkerWWindow)
+		// Copy taskbars to a vector because some functions
+		// trigger Windows internal message loop.
+		std::vector<TaskbarInfo> taskbarInfos;
+		for (auto it = m_Taskbars.begin(); it != m_Taskbars.end(); ++it)
 		{
-			ShowTaskbarLine(taskbarInfo, true);
+			SetAttribute(it, { ACCENT_NORMAL, { 0, 0, 0, 0 }, true, true });
+
+			taskbarInfos.push_back(it->second.Taskbar);
 		}
-		else if (taskbarInfo.PeekWindow)
+
+		for (const auto& taskbarInfo : taskbarInfos)
 		{
-			ShowAeroPeekButton(taskbarInfo, true);
+			if (taskbarInfo.InnerXamlContent || taskbarInfo.WorkerWWindow)
+			{
+				ShowTaskbarLine(taskbarInfo, true);
+			}
+			else if (taskbarInfo.PeekWindow)
+			{
+				ShowAeroPeekButton(taskbarInfo, true);
+			}
 		}
 	}
 }
@@ -928,7 +970,7 @@ void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 	TaskbarInfo taskbarInfo = { .TaskbarWindow = window };
 	if (m_IsWindows11)
 	{
-		if (win32::IsAtLeastBuild(22616))
+		if (win32::IsAtLeastBuild(22616)) // TODO: ignore explorer patcher classic taskbar
 		{
 			taskbarInfo.WorkerWWindow = window.find_child(L"WorkerW");
 		}
@@ -953,37 +995,6 @@ void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 	{
 		LastErrorHandle(spdlog::level::critical, L"Failed to set hook.");
 	}
-}
-
-wil::unique_hmodule TaskbarAttributeWorker::LoadHookDll(const std::optional<std::filesystem::path> &storageFolder)
-{
-	const auto [loc, hr] = win32::GetExeLocation();
-	HresultVerify(hr, spdlog::level::critical, L"Failed to determine executable location!");
-
-	std::filesystem::path dllPath = loc.parent_path() / L"ExplorerHooks.dll";
-
-	if (storageFolder)
-	{
-		// copy the file over to a place Explorer can read. It can't be injected from WindowsApps.
-		auto tempDllPath = *storageFolder / L"TempState" / "ExplorerHooks.dll";
-
-		std::error_code err;
-		std::filesystem::copy_file(dllPath, tempDllPath, std::filesystem::copy_options::update_existing, err);
-		if (err)
-		{
-			StdErrorCodeHandle(err, spdlog::level::critical, L"Failed to copy ExplorerHooks.dll");
-		}
-
-		dllPath = std::move(tempDllPath);
-	}
-
-	wil::unique_hmodule dll(LoadLibraryEx(dllPath.c_str(), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
-	if (!dll)
-	{
-		LastErrorHandle(spdlog::level::critical, L"Failed to load ExplorerHooks.dll");
-	}
-
-	return dll;
 }
 
 TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, DynamicLoader &loader, const std::optional<std::filesystem::path> &storageFolder) :
@@ -1017,15 +1028,12 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_SearchVisibilityChangeMessage(Window::RegisterMessage(WM_TTBSEARCHVISIBILITYCHANGE)),
 	m_ForceRefreshTaskbar(Window::RegisterMessage(WM_TTBFORCEREFRESHTASKBAR)),
 	m_LastExplorerPid(0),
-	m_HookDll(LoadHookDll(storageFolder)),
-	m_InjectExplorerHook(reinterpret_cast<PFN_INJECT_EXPLORER_HOOK>(GetProcAddress(m_HookDll.get(), "InjectExplorerHook"))),
+	m_HookDll(storageFolder, L"ExplorerHooks.dll"),
+	m_InjectExplorerHook(m_HookDll.GetProc<PFN_INJECT_EXPLORER_HOOK>("InjectExplorerHook")),
+	m_TAPDll(storageFolder, L"ExplorerTAP.dll"),
+	m_InjectExplorerTAP(m_TAPDll.GetProc<PFN_INJECT_EXPLORER_TAP>("InjectExplorerTAP")),
 	m_IsWindows11(win32::IsAtLeastBuild(22000))
 {
-	if (!m_InjectExplorerHook)
-	{
-		LastErrorHandle(spdlog::level::critical, L"Failed to get address of InjectExplorerHook");
-	}
-
 	const auto stateThunk = CreateThunk(&TaskbarAttributeWorker::OnWindowStateChange);
 	m_ResizeMoveHook = CreateHook(EVENT_OBJECT_LOCATIONCHANGE, stateThunk);
 	m_TitleChangeHook = CreateHook(EVENT_OBJECT_NAMECHANGE, stateThunk);
@@ -1151,6 +1159,8 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 		m_Taskbars.clear();
 		m_NormalTaskbars.clear();
 
+		m_TaskbarService = nullptr;
+
 		// Keep old hooks alive while we rehook to avoid DLL unload.
 		auto oldHooks = std::move(m_Hooks);
 		m_Hooks.clear();
@@ -1175,6 +1185,34 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 			m_LastExplorerPid = pid;
 
 			InsertTaskbar(main_taskbar.monitor(), main_taskbar);
+
+			// TODO: restore on ttb dying - use a threadpool waitforsingleobject within dll for this? pass handle to explorer via the extra parameter?
+
+			// if we're on 22621, with a XAML Island present, but no WorkerW window, we're on the new taskbar
+			// 22000 doesn't have the new taskbar. On 22621 when you have the old taskbar, there is a WorkerW window.
+			// Because ExplorerPatcher unfortunately exists and can restore the Windows 10 taskbar,
+			// check for a XAML Island always to make sure we're not on the 10 taskbar.
+			if (win32::IsAtLeastBuild(22621) &&
+				main_taskbar.find_child(L"Windows.UI.Composition.DesktopWindowContentBridge") &&
+				!main_taskbar.find_child(L"WorkerW"))
+			{
+				const HRESULT hr = m_InjectExplorerTAP(pid, IID_PPV_ARGS(m_TaskbarService.put()));
+				if (hr == HRESULT_FROM_WIN32(ERROR_PRODUCT_VERSION))
+				{
+					std::thread([msg = Localization::LoadLocalizedResourceString(IDS_RESTART_REQUIRED, hinstance())]() noexcept
+					{
+						MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
+					}).join();
+
+					ExitProcess(1);
+				}
+				else
+				{
+					HresultVerify(hr, spdlog::level::critical, L"Failed to initialize XAML Diagnostics.");
+				}
+
+				HresultVerify(m_TaskbarService->RestoreAllTaskbarsToDefaultWhenProcessDies(GetCurrentProcessId()), spdlog::level::warn, L"Couldn't configure TAP to restore taskbar appearance once " APP_NAME L" dies.");
+			}
 		}
 
 		for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))

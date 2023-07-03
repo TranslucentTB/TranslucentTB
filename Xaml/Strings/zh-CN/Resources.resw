@@ -117,8 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ColorPickerPage_AlwaysOnTop.Text" xml:space="preserve">
-    <value>始终置顶</value>
+  <data name="ColorPickerPage_AlwaysOnTopButton.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>置顶</value>
+  </data>
+  <data name="ColorPickerPage_AlwaysOnTopMenuItem.Text" xml:space="preserve">
+    <value>置顶</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.CloseButtonText" xml:space="preserve">
     <value>取消</value>
@@ -132,14 +135,17 @@
   <data name="ColorPickerPage_ConfirmCloseDialog.SecondaryButtonText" xml:space="preserve">
     <value>否</value>
   </data>
-  <data name="FramelessPage_Close.Text" xml:space="preserve">
+  <data name="FramelessPage_CloseButton.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="FramelessPage_CloseMenuItem.Text" xml:space="preserve">
     <value>关闭</value>
   </data>
   <data name="TrayFlyoutPage_About.Text" xml:space="preserve">
     <value>关于 TranslucentTB</value>
   </data>
   <data name="TrayFlyoutPage_AccentColor.Text" xml:space="preserve">
-    <value>主题色</value>
+    <value>强调色</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Acrylic.Text" xml:space="preserve">
@@ -152,10 +158,10 @@
     <value>Thunk 堆压缩</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_DisableHotSettings.Text" xml:space="preserve">
-    <value>停用保存设置</value>
+    <value>禁用保存设置</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_DumpDynamicState.Text" xml:space="preserve">
-    <value>将动态状态转储至日志文件</value>
+    <value>将动态状态转储至日志</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_EditSettings.Text" xml:space="preserve">
     <value>编辑设置</value>
@@ -188,7 +194,7 @@
     <value>警告</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_OpenLogFile.Text" xml:space="preserve">
-    <value>开启日志文件</value>
+    <value>打开日志文件</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_ResetDynamicState.Text" xml:space="preserve">
     <value>重置动态状态</value>
@@ -197,14 +203,14 @@
     <value>恢复默认设置</value>
   </data>
   <data name="TrayFlyoutPage_BatterySaver.Text" xml:space="preserve">
-    <value>启用节电模式时</value>
+    <value>开启节电模式时</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Blur.Text" xml:space="preserve">
     <value>模糊</value>
   </data>
   <data name="TrayFlyoutPage_Clear.Text" xml:space="preserve">
-    <value>清晰</value>
+    <value>透明</value>
   </data>
   <data name="TrayFlyoutPage_Desktop.Text" xml:space="preserve">
     <value>返回桌面时</value>
@@ -214,7 +220,7 @@
     <value>启用</value>
   </data>
   <data name="TrayFlyoutPage_Exit.Text" xml:space="preserve">
-    <value>离开</value>
+    <value>退出</value>
   </data>
   <data name="TrayFlyoutPage_LineButton.Text" xml:space="preserve">
     <value>显示任务栏边框</value>
@@ -237,29 +243,29 @@
     <value>显示桌面预览按钮</value>
   </data>
   <data name="TrayFlyoutPage_SearchOpened.Text" xml:space="preserve">
-    <value>开启搜索菜单时</value>
+    <value>打开搜索菜单时</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_StartOpened.Text" xml:space="preserve">
-    <value>开启开始菜单时</value>
+    <value>打开开始菜单时</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_TaskViewOpened.Text" xml:space="preserve">
-    <value>开启任务视图时</value>
+    <value>打开任务视图时</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_TipsAndTricks.Text" xml:space="preserve">
-    <value>诀窍和技巧</value>
+    <value>提示和技巧</value>
   </data>
   <data name="TrayFlyoutPage_VisibleWindow.Text" xml:space="preserve">
-    <value>开启任何窗口时</value>
+    <value>打开任何窗口时</value>
   </data>
   <data name="WelcomePage.Title" xml:space="preserve">
     <value>欢迎使用 TranslucentTB！</value>
   </data>
   <data name="WelcomePage_Action_Configure.Description" xml:space="preserve">
-    <value>您可以随时在托盘图标的右键选单中点击 "高级" &gt; "编辑设置" 来更改
-储存文件后，TranslucentTB 将自动载入更动</value>
+    <value>你可以随时在托盘图标的菜单中点击 "高级" &gt; "编辑设置" 来打开配置文件
+保存文件后，TranslucentTB 将自动重载</value>
     <comment>Mind the newline (a.k.a. enter)</comment>
   </data>
   <data name="WelcomePage_Action_Configure.Name" xml:space="preserve">
@@ -281,7 +287,7 @@
     <value>继续</value>
   </data>
   <data name="WelcomePage_ButtonBar_Exit.Content" xml:space="preserve">
-    <value>离开</value>
+    <value>退出</value>
   </data>
   <data name="WelcomePage_Message_Hyperlink.Text" xml:space="preserve">
     <value>在 Github 上反馈问题</value>

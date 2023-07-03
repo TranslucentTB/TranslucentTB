@@ -7,6 +7,7 @@
 #include <errhandlingapi.h>
 #include <filesystem>
 #include <memory>
+#include <libloaderapi.h>
 #include <processthreadsapi.h>
 #include <winbase.h>
 #include <shellapi.h>
@@ -73,6 +74,35 @@ public:
 	inline static std::pair<std::filesystem::path, HRESULT> GetExeLocation()
 	{
 		return GetProcessFileName(GetCurrentProcess());
+	}
+
+	// Gets the location of a loaded DLL
+	inline static std::pair<std::filesystem::path, HRESULT> GetDllLocation(HMODULE hModule)
+	{
+		std::wstring location;
+		location.resize(wil::max_path_length);
+
+		if (auto size = GetModuleFileName(hModule, location.data(), static_cast<DWORD>(location.size()) + 1))
+		{
+			if (size == location.size() + 1 && GetLastError() == ERROR_INSUFFICIENT_BUFFER) [[unlikely]]
+			{
+				location.resize(wil::max_extended_path_length);
+				size = GetModuleFileName(hModule, location.data(), static_cast<DWORD>(location.size()) + 1);
+
+				if (!size) [[unlikely]]
+				{
+					return { {}, HRESULT_FROM_WIN32(GetLastError()) };
+				}
+			}
+
+			location.resize(size);
+
+			return { std::move(location), S_OK };
+		}
+		else
+		{
+			return { {}, HRESULT_FROM_WIN32(GetLastError()) };
+		}
 	}
 
 	// Opens a file in the default text editor.

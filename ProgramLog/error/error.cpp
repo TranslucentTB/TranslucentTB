@@ -102,10 +102,6 @@ std::thread Error::impl::HandleCommon(spdlog::level::level_enum level, std::wstr
 
 		return std::thread([title, type, body = std::move(dialogMessage)]() noexcept
 		{
-#ifdef _DEBUG
-			SetThreadDescription(GetCurrentThread(), APP_NAME L" Error Message Box Thread");
-#endif
-
 			MessageBoxEx(nullptr, body.c_str(), title.c_str(), type | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_ENGLISH, SUBLANG_NEUTRAL));
 		});
 	}
@@ -117,5 +113,9 @@ std::thread Error::impl::HandleCommon(spdlog::level::level_enum level, std::wstr
 
 void Error::impl::HandleCriticalCommon(std::wstring_view message, std::wstring_view error_message, std::source_location location)
 {
-	HandleCommon(spdlog::level::critical, message, error_message, location, UTIL_WIDEN(UTF8_ERROR_TITLE), APP_NAME L" has encountered a fatal error and cannot continue executing.", MB_ICONERROR | MB_TOPMOST).join();
+	auto dialogBoxThread = HandleCommon(spdlog::level::critical, message, error_message, location, UTIL_WIDEN(UTF8_ERROR_TITLE), APP_NAME L" has encountered a fatal error and cannot continue executing.", MB_ICONERROR | MB_TOPMOST);
+	if (dialogBoxThread.joinable())
+	{
+		dialogBoxThread.join();
+	}
 }

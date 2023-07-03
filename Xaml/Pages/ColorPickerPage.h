@@ -15,7 +15,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void InitializeComponent();
 
 		bool CanMove() noexcept override;
-		bool RequestClose() override;
+		bool Close() override;
 
 		DECL_EVENT(ColorChangedDelegate, ColorChanged, m_ColorChangedHandler);
 		DECL_EVENT(ChangesCommittedDelegate, ChangesCommitted, m_ChangesCommittedHandler);

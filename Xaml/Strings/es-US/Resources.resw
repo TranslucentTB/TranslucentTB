@@ -1,0 +1,301 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ColorPickerPage_AlwaysOnTopButton.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Siempre encima</value>
+  </data>
+  <data name="ColorPickerPage_AlwaysOnTopMenuItem.Text" xml:space="preserve">
+    <value>Siempre encima</value>
+  </data>
+  <data name="ColorPickerPage_ConfirmCloseDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="ColorPickerPage_ConfirmCloseDialog.Content" xml:space="preserve">
+    <value>¿Quieres guardar los cambios en el color?</value>
+  </data>
+  <data name="ColorPickerPage_ConfirmCloseDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Si</value>
+  </data>
+  <data name="ColorPickerPage_ConfirmCloseDialog.SecondaryButtonText" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="FramelessPage_CloseButton.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Cerrar</value>
+  </data>
+  <data name="FramelessPage_CloseMenuItem.Text" xml:space="preserve">
+    <value>Cerrar</value>
+  </data>
+  <data name="TrayFlyoutPage_About.Text" xml:space="preserve">
+    <value>Acerca de TranslucentTB</value>
+  </data>
+  <data name="TrayFlyoutPage_AccentColor.Text" xml:space="preserve">
+    <value>Acentuar Color</value>
+    <comment>Also used to generate the title of color picker windows</comment>
+  </data>
+  <data name="TrayFlyoutPage_Acrylic.Text" xml:space="preserve">
+    <value>Acrílico</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced.Text" xml:space="preserve">
+    <value>Avanzado</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_CompactThunkHeap.Text" xml:space="preserve">
+    <value>Compresión de montón thunk</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_DisableHotSettings.Text" xml:space="preserve">
+    <value>Deshabilitar la configuración de guardado</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_DumpDynamicState.Text" xml:space="preserve">
+    <value>Volcar estado dinámico al registro</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_EditSettings.Text" xml:space="preserve">
+    <value>Editar configuración</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_HideTrayIcon.Text" xml:space="preserve">
+    <value>Ocultar icono de bandeja</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity.Text" xml:space="preserve">
+    <value>Verbosidad del registro</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Critical.Text" xml:space="preserve">
+    <value>Crítico</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Debug.Text" xml:space="preserve">
+    <value>Depurar</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Error.Text" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Information.Text" xml:space="preserve">
+    <value>Información</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Off.Text" xml:space="preserve">
+    <value>Apagado</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Trace.Text" xml:space="preserve">
+    <value>Rastro</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_LogVerbosity_Warning.Text" xml:space="preserve">
+    <value>Advertencia</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_OpenLogFile.Text" xml:space="preserve">
+    <value>Abrir archivo de registro</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_ResetDynamicState.Text" xml:space="preserve">
+    <value>Restablecer estado dinámico</value>
+  </data>
+  <data name="TrayFlyoutPage_Advanced_ResetSettings.Text" xml:space="preserve">
+    <value>Volver a la configuración predeterminada</value>
+  </data>
+  <data name="TrayFlyoutPage_BatterySaver.Text" xml:space="preserve">
+    <value>Ahorro de batería</value>
+    <comment>Also used to generate the title of color picker windows</comment>
+  </data>
+  <data name="TrayFlyoutPage_Blur.Text" xml:space="preserve">
+    <value>Difuminar</value>
+  </data>
+  <data name="TrayFlyoutPage_Clear.Text" xml:space="preserve">
+    <value>Claro</value>
+  </data>
+  <data name="TrayFlyoutPage_Desktop.Text" xml:space="preserve">
+    <value>Escritorio</value>
+    <comment>Also used to generate the title of color picker windows</comment>
+  </data>
+  <data name="TrayFlyoutPage_Enabled.Text" xml:space="preserve">
+    <value>Activado</value>
+  </data>
+  <data name="TrayFlyoutPage_Exit.Text" xml:space="preserve">
+    <value>Salir</value>
+  </data>
+  <data name="TrayFlyoutPage_LineButton.Text" xml:space="preserve">
+    <value>Mostrar borde de la barra de tarea</value>
+  </data>
+  <data name="TrayFlyoutPage_MaximizedWindow.Text" xml:space="preserve">
+    <value>Ventana maximizada</value>
+    <comment>Also used to generate the title of color picker windows</comment>
+  </data>
+  <data name="TrayFlyoutPage_Normal.Text" xml:space="preserve">
+    <value>Normal</value>
+    <comment>Also used to generate the title of color picker windows</comment>
+  </data>
+  <data name="TrayFlyoutPage_Opaque.Text" xml:space="preserve">
+    <value>Opaco</value>
+  </data>
+  <data name="TrayFlyoutPage_OpenAtBoot.Text" xml:space="preserve">
+    <value>Abrir en el arranque</value>
+  </data>
+  <data name="TrayFlyoutPage_PeekButton.Text" xml:space="preserve">
+    <value>Mostrar el botón Vista previa del Escritorio</value>
+  </data>
+  <data name="TrayFlyoutPage_SearchOpened.Text" xml:space="preserve">
+    <value>Búsqueda abierta</value>
+    <comment>Also used to generate the title of color picker windows</comment>
+  </data>
+  <data name="TrayFlyoutPage_StartOpened.Text" xml:space="preserve">
+    <value>Inicio abierto</value>
+    <comment>Also used to generate the title of color picker windows</comment>
+  </data>
+  <data name="TrayFlyoutPage_TaskViewOpened.Text" xml:space="preserve">
+    <value>Vista de tareas abierta</value>
+    <comment>Also used to generate the title of color picker windows</comment>
+  </data>
+  <data name="TrayFlyoutPage_TipsAndTricks.Text" xml:space="preserve">
+    <value>Consejos y trucos</value>
+  </data>
+  <data name="TrayFlyoutPage_VisibleWindow.Text" xml:space="preserve">
+    <value>Ventana visible</value>
+  </data>
+  <data name="WelcomePage.Title" xml:space="preserve">
+    <value>¡Bienvenido a TranslucentTB!</value>
+  </data>
+  <data name="WelcomePage_Action_Configure.Description" xml:space="preserve">
+    <value>Siempre puede hacer esto haciendo clic en "Avanzado" &gt; "Editar configuración" en el menú contextual del icono de la bandeja
+Los cambios se recargan automáticamente cuando guarda el archivo</value>
+    <comment>Mind the newline (a.k.a. enter)</comment>
+  </data>
+  <data name="WelcomePage_Action_Configure.Name" xml:space="preserve">
+    <value>Edite el archivo de configuración</value>
+  </data>
+  <data name="WelcomePage_Action_Discord.Description" xml:space="preserve">
+    <value>Chatea con los desarrolladores y obtén ayuda con el programa</value>
+  </data>
+  <data name="WelcomePage_Action_Discord.Name" xml:space="preserve">
+    <value>Únete a nuestro servidor de Discord</value>
+  </data>
+  <data name="WelcomePage_Action_Donate.Description" xml:space="preserve">
+    <value>Muéstranos tu apoyo ofreciendo una donación única o recurrente ❤</value>
+  </data>
+  <data name="WelcomePage_Action_Donate.Name" xml:space="preserve">
+    <value>Donar al proyecto en Liberapay</value>
+  </data>
+  <data name="WelcomePage_ButtonBar_Continue.Content" xml:space="preserve">
+    <value>Continuar</value>
+  </data>
+  <data name="WelcomePage_ButtonBar_Exit.Content" xml:space="preserve">
+    <value>Salir</value>
+  </data>
+  <data name="WelcomePage_Message_Hyperlink.Text" xml:space="preserve">
+    <value>crear una propuesta en GitHub</value>
+  </data>
+  <data name="WelcomePage_Message_Prefix.Text" xml:space="preserve">
+    <value>¡Gracias por probar TranslucentTB! Después de presionar "Continuar", puede personalizar el aspecto de la barra de tareas según sus deseos. Esperamos que lo disfruten y no duden en</value>
+  </data>
+  <data name="WelcomePage_Message_Suffix.Text" xml:space="preserve">
+    <value>si tiene algún problema o desea ver una característica agregada!</value>
+  </data>
+</root>

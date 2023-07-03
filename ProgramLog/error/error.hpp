@@ -57,3 +57,13 @@ namespace Error {
 
 #define PROGRAMLOG_ERROR_LOCATION std::source_location::current()
 #define MessagePrint(level_, message_) Error::impl::Handle<(level_)>((message_), std::wstring_view { }, PROGRAMLOG_ERROR_LOCATION)
+#define ErrorHandleCommonMacro(level_, message_, error_message_) do { \
+	if constexpr ((level_) == spdlog::level::critical || (level_) == spdlog::level::err) \
+	{ \
+		Error::impl::Handle<(level_)>((message_), (error_message_), PROGRAMLOG_ERROR_LOCATION); \
+	} \
+	else if (Error::ShouldLog<(level_)>()) \
+	{ \
+		Error::impl::Handle<(level_)>((message_), (error_message_), PROGRAMLOG_ERROR_LOCATION); \
+	} \
+} while (0)

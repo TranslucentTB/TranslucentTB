@@ -26,7 +26,7 @@ Resolving deltas: 100% (624/624), done.
 
 ### 2 - Install the build tools
 
-Now that you have the source, you will need Visual Studio 2022. [You can get the free community edition here](https://visualstudio.microsoft.com/downloads/).
+Now that you have the source, you will need Visual Studio 2022 Preview. [You can get the free community edition here](https://visualstudio.microsoft.com/vs/preview/#download-preview).
 Install the following workloads:
 
 - Desktop development with C++
@@ -34,7 +34,7 @@ Install the following workloads:
 
 You also need to install the following individual components:
 
-- Windows 11 SDK (10.0.22621.0)
+- [Windows 11 SDK](https://developer.microsoft.com/en-ca/windows/downloads/sdk-archive/) (10.0.22621.0)
 - If building for x64: MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs (Latest)
 - If building for ARM64: MSVC v143 - VS 2022 C++ ARM64 Spectre-mitigated libs (Latest)
 
@@ -52,13 +52,15 @@ vcpkg integrate install
 
 ### 4 - Building and running the app
 
-Open the solution file in Visual Studio 2022. Set the AppPackage project as the startup project (right-click it in the Solution Explorer, then hit "Set as startup project").
+Open the solution file in Visual Studio 2022 Preview. Set the AppPackage project as the startup project (right-click it in the Solution Explorer, then hit "Set as startup project").
 
 Once this is done, you should be able to hit play, let the solution build (takes a couple minutes on a decent machine), and the app will launch.
 
 ## Translating TranslucentTB
 
 Now that you've built the source, one of the things you can do is translating TranslucentTB in another language.
+
+**NOTE:** Please use the `develop` branch as the basis for your translations, as you will get the very latest copy of translatable strings and the latest translation guidelines. It also helps avoid merge conflicts.
 
 ### 1 - Find your language's identifier
 
@@ -80,15 +82,19 @@ Go back to Visual Studio's Solution Explorer:
 
 ### 3 - Translate
 
-Open both `Resources.resw` files for your language by double-clicking them, and translate all the text available in the Value columns.
+Open both `Resources.resw` files for your language by double-clicking them, and translate all the text available in the Value columns. Keep the "Comment" column unchanged, these are notes to future translators that won't be visible in the program.
 
 Open the `rc2` file for your language by right-clicking it and selecting View Code. Replace the language identifier after `LANGUAGE`, within `VarFileInfo`, and within `StringFileInfo` (only the first 4 characters of `040904b0`). You can find the macro corresponding to your language and sublanguage in the `winnt.h` header, while you can find the hexadecimal value on the [LCID Structure] documentation.
 
 Then, translate the strings in that file as well.
 
+Open the `store-listing.csv` file in a CSV editor (Excel typically works fine), and translate the strings in there too. Leave the thumbnail URL untouched (just copy them all from any other language). Make sure to also translate the feature list and search terms. Those are towards the end of the file and are rather easy to miss.
+
+Finally, add your language identifier in `AppPackage\AppPackage.wapproj` under `AppxDefaultResourceQualifiers`. You can easily edit this file by right-clicking `AppPackage` under the Solution Explorer, then selecting Edit Project File.
+
 ### 4 - Test
 
-Once you are done, you can launch the app and check what it looks like. If everything checks out okay, send a pull request and we'll gladly take a look at it!
+Once you are done, you can launch the app and check what it looks like. If everything checks out okay, send a pull request (targetting the `develop` branch) and we'll gladly take a look at it!
 
 [LCID Structure]: https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/63d3d639-7fd2-4afb-abbe-0d5b5551eef8
 [Discord]: https://discord.gg/TranslucentTB

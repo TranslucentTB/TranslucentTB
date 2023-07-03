@@ -20,12 +20,17 @@
 #include "config/taskbarappearance.hpp"
 #include "../dynamicloader.hpp"
 #include "../ExplorerHooks/api.hpp"
+#include "../ExplorerTAP/api.hpp"
+#include "../ExplorerTAP/Generated Files/ITaskbarAppearanceService.h"
 #include "launchervisibilitysink.hpp"
 #include "../windows/messagewindow.hpp"
 #include "undoc/user32.hpp"
 #include "undoc/uxtheme.hpp"
 #include "util/color.hpp"
+#include "util/null_terminated_string_view.hpp"
 #include "wilx.hpp"
+#include "../ProgramLog/error/win32.hpp"
+#include "../loadabledll.hpp"
 
 class TaskbarAttributeWorker final : public MessageWindow {
 private:
@@ -91,7 +96,7 @@ private:
 
 	// IAppVisibility
 	wil::com_ptr<IAppVisibility> m_IAV;
-	wilx::unique_app_visibility_token m_IAVECookie;
+	wilx::unique_com_token<&IAppVisibility::Unadvise> m_IAVECookie;
 
 	// ICortanaExperienceManager
 	winrt::Windows::Internal::Shell::Experience::ICortanaExperienceManager m_SearchManager;
@@ -118,9 +123,14 @@ private:
 	std::array<std::optional<Util::Color>, 7> m_ColorPreviews;
 
 	// Hook DLL
-	wil::unique_hmodule m_HookDll;
+	LoadableDll m_HookDll;
 	PFN_INJECT_EXPLORER_HOOK m_InjectExplorerHook;
 	std::vector<wil::unique_hhook> m_Hooks;
+
+	// TAP DLL
+	LoadableDll m_TAPDll;
+	PFN_INJECT_EXPLORER_TAP m_InjectExplorerTAP;
+	winrt::com_ptr<ITaskbarAppearanceService> m_TaskbarService;
 
 	// Other
 	bool m_IsWindows11;
@@ -181,7 +191,6 @@ private:
 	bool IsStartMenuOpened() const;
 	bool IsSearchOpened() const;
 	void InsertTaskbar(HMONITOR mon, Window window);
-	static wil::unique_hmodule LoadHookDll(const std::optional<std::filesystem::path> &storageFolder);
 
 	inline TaskbarAppearance WithPreview(txmp::TaskbarState state, const TaskbarAppearance &appearance) const
 	{

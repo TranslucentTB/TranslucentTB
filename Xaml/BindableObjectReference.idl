@@ -1,0 +1,11 @@
+#include "dependencyproperty.h"
+
+namespace TranslucentTB.Xaml
+{
+    runtimeclass BindableObjectReference : Windows.UI.Xaml.DependencyObject
+    {
+        BindableObjectReference();
+
+		DECL_DEPENDENCY_PROPERTY(Object, Object);
+    }
+}

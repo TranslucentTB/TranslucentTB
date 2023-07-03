@@ -18,3 +18,6 @@ indent_size = 2
 [*.xaml]
 indent_style = spaces
 indent_size = 4
+
+[*.csv]
+charset = utf-8-bom
