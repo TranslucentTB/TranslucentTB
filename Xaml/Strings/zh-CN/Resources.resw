@@ -118,13 +118,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ColorPickerPage_AlwaysOnTop.Text" xml:space="preserve">
-    <value>前端显示</value>
+    <value>始终置顶</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.CloseButtonText" xml:space="preserve">
     <value>取消</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.Content" xml:space="preserve">
-    <value>您要储存对颜色的更动吗？</value>
+    <value>您要保存对颜色的更动吗？</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.PrimaryButtonText" xml:space="preserve">
     <value>是</value>
@@ -217,7 +217,7 @@
     <value>离开</value>
   </data>
   <data name="TrayFlyoutPage_LineButton.Text" xml:space="preserve">
-    <value>显示工作列线</value>
+    <value>显示任务栏边框</value>
   </data>
   <data name="TrayFlyoutPage_MaximizedWindow.Text" xml:space="preserve">
     <value>窗口最大化时</value>
@@ -231,7 +231,7 @@
     <value>不透明</value>
   </data>
   <data name="TrayFlyoutPage_OpenAtBoot.Text" xml:space="preserve">
-    <value>开机时启动</value>
+    <value>开机自启动</value>
   </data>
   <data name="TrayFlyoutPage_PeekButton.Text" xml:space="preserve">
     <value>显示桌面预览按钮</value>
@@ -266,7 +266,7 @@
     <value>编辑配置文件</value>
   </data>
   <data name="WelcomePage_Action_Discord.Description" xml:space="preserve">
-    <value>与开发者聊聊并取得协助</value>
+    <value>在Discord上与开发者交谈并取得协助</value>
   </data>
   <data name="WelcomePage_Action_Discord.Name" xml:space="preserve">
     <value>加入我们的 Discord 服务器</value>
@@ -275,7 +275,7 @@
     <value>单次或定期赞助我们以支持开发 ❤</value>
   </data>
   <data name="WelcomePage_Action_Donate.Name" xml:space="preserve">
-    <value>通过 Liberapay 赞助此专案</value>
+    <value>通过 Liberapay 赞助此项目</value>
   </data>
   <data name="WelcomePage_ButtonBar_Continue.Content" xml:space="preserve">
     <value>继续</value>
@@ -284,12 +284,12 @@
     <value>离开</value>
   </data>
   <data name="WelcomePage_Message_Hyperlink.Text" xml:space="preserve">
-    <value>在 Github 上发起议题</value>
+    <value>在 Github 上反馈问题</value>
   </data>
   <data name="WelcomePage_Message_Prefix.Text" xml:space="preserve">
-    <value>感谢您使用 TranslucentTB！点击 「继续」后，您即可依您的喜好自订工作列的外观。如果您有任何问题，或是想要提议新功能，欢迎</value>
+    <value>感谢您使用 TranslucentTB！点击「继续」后，您即可依您的喜好自定义任务栏的外观。如果您有任何问题，或是想要提议新功能，欢迎！</value>
   </data>
   <data name="WelcomePage_Message_Suffix.Text" xml:space="preserve">
-    <value>。祝您使用愉快！</value>
+    <value>祝您使用愉快！</value>
   </data>
 </root>
