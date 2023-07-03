@@ -259,7 +259,7 @@
   </data>
   <data name="WelcomePage_Action_Configure.Description" xml:space="preserve">
     <value>您可以随时在托盘图标的右键选单中点击 "高级" &gt; "编辑设置" 来更改
-儲存文件後，TranslucentTB 將自動載入更動</value>
+储存文件后，TranslucentTB 将自动载入更动 </value>
     <comment>Mind the newline (a.k.a. enter)</comment>
   </data>
   <data name="WelcomePage_Action_Configure.Name" xml:space="preserve">
