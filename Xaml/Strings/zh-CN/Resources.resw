@@ -127,7 +127,7 @@
     <value>取消</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.Content" xml:space="preserve">
-    <value>您要保存此颜色吗？</value>
+    <value>您是否保存此颜色？</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.PrimaryButtonText" xml:space="preserve">
     <value>是</value>
@@ -145,7 +145,7 @@
     <value>关于 TranslucentTB</value>
   </data>
   <data name="TrayFlyoutPage_AccentColor.Text" xml:space="preserve">
-    <value>强调色</value>
+    <value>主题色</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Acrylic.Text" xml:space="preserve">
@@ -255,7 +255,7 @@
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_TipsAndTricks.Text" xml:space="preserve">
-    <value>提示和技巧</value>
+    <value>提示与技巧</value>
   </data>
   <data name="TrayFlyoutPage_VisibleWindow.Text" xml:space="preserve">
     <value>打开任何窗口时</value>
@@ -272,7 +272,7 @@
     <value>编辑配置文件</value>
   </data>
   <data name="WelcomePage_Action_Discord.Description" xml:space="preserve">
-    <value>在 Discord 上与开发者交谈并取得协助</value>
+    <value>在 Discord 上与开发者交谈并取得帮助</value>
   </data>
   <data name="WelcomePage_Action_Discord.Name" xml:space="preserve">
     <value>加入我们的 Discord 服务器</value>
@@ -293,7 +293,7 @@
     <value>在 Github 上反馈问题</value>
   </data>
   <data name="WelcomePage_Message_Prefix.Text" xml:space="preserve">
-    <value>感谢您使用 TranslucentTB! 点击「继续」后，您即可依您的喜好自定义任务栏的外观。如果您有任何问题或想要提议新功能，欢迎！</value>
+    <value>感谢您使用 TranslucentTB! 点击 "继续" 后，您即可依您的喜好自定义任务栏的外观。如果您有任何问题或想要提议新功能，欢迎！</value>
   </data>
   <data name="WelcomePage_Message_Suffix.Text" xml:space="preserve">
     <value>祝您使用愉快！</value>
