@@ -118,16 +118,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ColorPickerPage_AlwaysOnTopButton.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>置顶</value>
+    <value>始终置顶</value>
   </data>
   <data name="ColorPickerPage_AlwaysOnTopMenuItem.Text" xml:space="preserve">
-    <value>置顶</value>
+    <value>始终置顶</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.CloseButtonText" xml:space="preserve">
     <value>取消</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.Content" xml:space="preserve">
-    <value>您要保存对颜色的更动吗？</value>
+    <value>您要保存此颜色吗？</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.PrimaryButtonText" xml:space="preserve">
     <value>是</value>
@@ -272,13 +272,13 @@
     <value>编辑配置文件</value>
   </data>
   <data name="WelcomePage_Action_Discord.Description" xml:space="preserve">
-    <value>在Discord上与开发者交谈并取得协助</value>
+    <value>在 Discord 上与开发者交谈并取得协助</value>
   </data>
   <data name="WelcomePage_Action_Discord.Name" xml:space="preserve">
     <value>加入我们的 Discord 服务器</value>
   </data>
   <data name="WelcomePage_Action_Donate.Description" xml:space="preserve">
-    <value>单次或定期赞助我们以支持开发 ❤</value>
+    <value>单次或定期赞助我们以支持开发❤</value>
   </data>
   <data name="WelcomePage_Action_Donate.Name" xml:space="preserve">
     <value>通过 Liberapay 赞助此项目</value>
@@ -293,7 +293,7 @@
     <value>在 Github 上反馈问题</value>
   </data>
   <data name="WelcomePage_Message_Prefix.Text" xml:space="preserve">
-    <value>感谢您使用 TranslucentTB！点击「继续」后，您即可依您的喜好自定义任务栏的外观。如果您有任何问题，或是想要提议新功能，欢迎！</value>
+    <value>感谢您使用 TranslucentTB! 点击「继续」后，您即可依您的喜好自定义任务栏的外观。如果您有任何问题或想要提议新功能，欢迎！</value>
   </data>
   <data name="WelcomePage_Message_Suffix.Text" xml:space="preserve">
     <value>祝您使用愉快！</value>
