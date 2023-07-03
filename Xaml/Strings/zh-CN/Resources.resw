@@ -278,7 +278,7 @@
     <value>加入我们的 Discord 服务器</value>
   </data>
   <data name="WelcomePage_Action_Donate.Description" xml:space="preserve">
-    <value>单次或定期赞助我们以支持开发❤</value>
+    <value>单次或定期赞助我们以支持开发 ❤</value>
   </data>
   <data name="WelcomePage_Action_Donate.Name" xml:space="preserve">
     <value>通过 Liberapay 赞助此项目</value>
