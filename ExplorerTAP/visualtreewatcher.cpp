@@ -57,7 +57,6 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation relation, Visu
 
 					break;
 				}
-
 			}
 		}
 		else if (type == winrt::name_of<wux::Shapes::Rectangle>())
