@@ -45,7 +45,7 @@ Alternatively, you can download `TranslucentTB.appinstaller` [via the releases t
 
 A portable version of the app is also available [on GitHub releases](https://github.com/TranslucentTB/TranslucentTB/releases) as `TranslucentTB.zip`, but this version only works on Windows 11.
 
-If you want to get the latest bleeding edge build, you can grab it over at the [Azure Pipelines page](https://dev.azure.com/sylve0n/TranslucentTB/_build?definitionId=4). Note that these build may not work, or include features that are partially complete. Use at your own risk.
+If you want to get the latest bleeding edge build, you can grab it over at the [Azure Pipelines page](https://dev.azure.com/sylve0n/TranslucentTB/_build?definitionId=4). Note that these builds may not work, or include features that are partially complete. Use at your own risk.
 
 ## Add to Startup
 
