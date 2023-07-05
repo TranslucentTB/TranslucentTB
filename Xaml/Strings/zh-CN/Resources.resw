@@ -290,10 +290,10 @@
     <value>退出</value>
   </data>
   <data name="WelcomePage_Message_Hyperlink.Text" xml:space="preserve">
-    <value>在 Github 上反馈问题</value>
+    <value>在 Github 上反馈问题 (issue)</value>
   </data>
   <data name="WelcomePage_Message_Prefix.Text" xml:space="preserve">
-    <value>感谢您使用 TranslucentTB! 点击 "继续" 后，您即可依您的喜好自定义任务栏的外观。如果您有任何问题或想要提议新功能，欢迎！</value>
+    <value>感谢您使用 TranslucentTB! 点击 "继续" 后，您即可依您的喜好自定义任务栏的外观。如果您有任何问题或想要提议新功能，欢迎</value>
   </data>
   <data name="WelcomePage_Message_Suffix.Text" xml:space="preserve">
     <value>祝您使用愉快！</value>
