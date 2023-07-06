@@ -57,6 +57,6 @@ VS_VERSION_INFO VERSIONINFO
 STRINGTABLE
 {
 	IDS_WELCOME_NOTIFICATION APP_NAME L" lebt in der Taskleiste.\n\nKlicken Sie mit der rechten Maustaste auf das Taskleistensymbol, um Einstellungen zu ändern, die App so einzustellen, dass sie beim Booten geöffnet wird, Informationen anzuzeigen, die App zu beenden usw."
-	IDS_HIDE_TRAY L"Diese Änderung ist temporär und geht beim nächsten Start von " APP_NAME L" verloren.\n\nUm diese Änderung dauerhaft zu machen, bearbeiten Sie die Konfigurationsdatei mit ""Erweitert"" > ""Einstellungen bearbeiten"" und setzen ""hide_tray"" auf wahr.\n\nSind Sie sicher, dass Sie fortfahren möchten?"
+	IDS_HIDE_TRAY L"Diese Änderung ist temporär und geht beim nächsten Start von " APP_NAME L" verloren.\n\nUm diese Änderung dauerhaft zu machen, bearbeiten Sie die Konfigurationsdatei mit ""Erweitert"" > ""Einstellungen bearbeiten"" und setzen ""hide_tray"" auf ""true""."
 	IDS_ALREADY_RUNNING APP_NAME L" ist bereits gestartet! Klicken Sie mit der rechten Maustaste auf das Taskleistensymbol, um darauf zuzugreifen."
 }

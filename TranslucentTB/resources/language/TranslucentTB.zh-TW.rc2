@@ -57,6 +57,6 @@ VS_VERSION_INFO VERSIONINFO
 STRINGTABLE
 {
 	IDS_WELCOME_NOTIFICATION APP_NAME L" 將隱藏在工具欄中。\n\n對工具欄圖示點擊右鍵以修改設定、設為開機時啟動、檢視關於資訊、關閉應用程式...等。"
-	IDS_HIDE_TRAY L"此更動僅暫時生效，下次 "APP_NAME L" 啟動時將被還原。\n\n若要永久更動，請透過 「進階」> 「編輯設定」開啟設定檔，並將 ""hide_tray"" 設為 true。\n\n您確定要繼續嗎？"
+	IDS_HIDE_TRAY L"此更動僅暫時生效，下次 "APP_NAME L" 啟動時將被還原。\n\n若要永久更動，請透過 「進階」> 「編輯設定」開啟設定檔，並將 ""hide_tray"" 設為 ""true""。"
 	IDS_ALREADY_RUNNING APP_NAME L" 已經在運行了！對工具欄圖示點擊右鍵以存取。"
 }

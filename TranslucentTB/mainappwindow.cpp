@@ -227,20 +227,15 @@ void MainAppWindow::DisableSavingSettingsChanged(bool disabled) noexcept
 
 void MainAppWindow::HideTrayRequested()
 {
-	if (!std::exchange(m_HideTrayWarningShown, true))
+	std::thread([this, msg = Localization::LoadLocalizedResourceString(IDS_HIDE_TRAY, hinstance())]
 	{
-		std::thread([this, msg = Localization::LoadLocalizedResourceString(IDS_HIDE_TRAY, hinstance())]
+		MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
+		m_App.DispatchToMainThread([this]
 		{
-			if (MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_YESNO | MB_ICONINFORMATION | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)) == IDYES)
-			{
-				m_App.DispatchToMainThread([this]
-				{
-					m_HideIconOverride = true;
-					Hide();
-				});
-			}
-		}).detach();
-	}
+			m_HideIconOverride = true;
+			Hide();
+		});
+	}).detach();
 }
 
 void MainAppWindow::ResetDynamicStateRequested()
@@ -333,7 +328,6 @@ MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, bool hasPa
 	TrayContextMenu(TRAY_GUID, MAKEINTRESOURCE(IDI_TRAYWHITEICON), MAKEINTRESOURCE(IDI_TRAYBLACKICON), loader, hasPackageIdentity),
 	m_App(app),
 	m_HideIconOverride(hideIconOverride),
-	m_HideTrayWarningShown(false),
 	m_NewInstanceMessage(Window::RegisterMessage(WM_TTBNEWINSTANCESTARTED))
 {
 	RegisterMenuHandlers();

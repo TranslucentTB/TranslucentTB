@@ -57,6 +57,6 @@ VS_VERSION_INFO VERSIONINFO
 STRINGTABLE
 {
 	IDS_WELCOME_NOTIFICATION APP_NAME L" vive en la bandeja del sistema.\n\nHaga clic con el botón derecho en el icono de la bandeja para cambiar la configuración, configurar la aplicación para que se abra al arrancar, ver información, salir de la aplicación, etc."
-	IDS_HIDE_TRAY L"Este cambio es temporal y se perderá la próxima vez " APP_NAME L" este iniciada.\n\nPara hacer esto permanente, edite el archivo de configuración usando ""Avanzado"" > ""Editar configuración"" y establecer ""ocultar_bandeja"" a verdadero.\n\n¿Estas seguro que deseas continuar?"
+	IDS_HIDE_TRAY L"Este cambio es temporal y se perderá la próxima vez " APP_NAME L" este iniciada.\n\nPara hacer esto permanente, edite el archivo de configuración usando ""Avanzado"" > ""Editar configuración"" y establecer ""hide_tray"" a ""true""."
 	IDS_ALREADY_RUNNING APP_NAME L" ya esta corriendo! Haga clic con el botón derecho en el icono de la bandeja para acceder a él."
 }
