@@ -1199,11 +1199,7 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 				const HRESULT hr = m_InjectExplorerTAP(pid, IID_PPV_ARGS(m_TaskbarService.put()));
 				if (hr == HRESULT_FROM_WIN32(ERROR_PRODUCT_VERSION))
 				{
-					std::thread([msg = Localization::LoadLocalizedResourceString(IDS_RESTART_REQUIRED, hinstance())]() noexcept
-					{
-						MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
-					}).join();
-
+					Localization::ShowLocalizedMessageBox(IDS_RESTART_REQUIRED, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND, hinstance()).join();
 					ExitProcess(1);
 				}
 				else

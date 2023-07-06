@@ -48,3 +48,13 @@ Util::null_terminated_wstring_view Localization::LoadLocalizedResourceString(uin
 		return FAILED_LOADING;
 	}
 }
+
+std::thread Localization::ShowLocalizedMessageBox(uint16_t resource, UINT type, HINSTANCE hInst)
+{
+	const auto msg = LoadLocalizedResourceString(resource, hInst);
+
+	return std::thread([msg, type]() noexcept
+	{
+		MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, type, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
+	});
+}

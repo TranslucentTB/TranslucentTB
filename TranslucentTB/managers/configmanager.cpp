@@ -219,10 +219,7 @@ bool ConfigManager::Load(bool firstLoad)
 			}
 			else if (m_StartupLanguage != m_Config.Language && !std::exchange(m_ShownChangeWarning, true))
 			{
-				std::thread([msg = Localization::LoadLocalizedResourceString(IDS_LANGUAGE_CHANGED, wil::GetModuleInstanceHandle())]() noexcept
-				{
-					MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
-				}).detach();
+				Localization::ShowLocalizedMessageBox(IDS_LANGUAGE_CHANGED, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND).detach();
 			}
 		}
 

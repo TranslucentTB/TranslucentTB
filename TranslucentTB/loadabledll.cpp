@@ -26,11 +26,7 @@ std::filesystem::path LoadableDll::GetDllPath(const std::optional<std::filesyste
 		{
 			if (err.category() == std::system_category() && err.value() == ERROR_SHARING_VIOLATION)
 			{
-				std::thread([msg = Localization::LoadLocalizedResourceString(IDS_RESTART_REQUIRED, wil::GetModuleInstanceHandle())]() noexcept
-				{
-					MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_ICONWARNING | MB_OK | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
-				}).join();
-
+				Localization::ShowLocalizedMessageBox(IDS_RESTART_REQUIRED, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND).join();
 				ExitProcess(1);
 			}
 			else

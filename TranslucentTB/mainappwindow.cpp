@@ -227,9 +227,8 @@ void MainAppWindow::DisableSavingSettingsChanged(bool disabled) noexcept
 
 void MainAppWindow::HideTrayRequested()
 {
-	std::thread([this, msg = Localization::LoadLocalizedResourceString(IDS_HIDE_TRAY, hinstance())]
+	Localization::ShowLocalizedMessageBoxWithCallback(IDS_HIDE_TRAY, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND, hinstance(), [this](int)
 	{
-		MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
 		m_App.DispatchToMainThread([this]
 		{
 			m_HideIconOverride = true;

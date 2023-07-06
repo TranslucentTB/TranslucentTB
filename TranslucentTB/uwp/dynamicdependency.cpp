@@ -14,11 +14,7 @@ DynamicDependency::DynamicDependency(HMODULE hModule, Util::null_terminated_wstr
 	{
 		if (!IsApiSetImplemented("api-ms-win-appmodel-runtime-l1-1-5"))
 		{
-			std::thread([msg = Localization::LoadLocalizedResourceString(IDS_PORTABLE_UNSUPPORTED, hModule)]() noexcept
-			{
-				MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
-			}).join();
-
+			Localization::ShowLocalizedMessageBox(IDS_PORTABLE_UNSUPPORTED, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND, hModule).join();
 			ExitProcess(1);
 		}
 
@@ -36,13 +32,7 @@ DynamicDependency::DynamicDependency(HMODULE hModule, Util::null_terminated_wstr
 		{
 			if (hr == STATEREPOSITORY_E_DEPENDENCY_NOT_RESOLVED)
 			{
-				const auto fmt = Localization::LoadLocalizedResourceString(IDS_MISSING_DEPENDENCIES, hModule);
-
-				std::thread([msg = std::vformat(fmt, std::make_wformat_args(packageFamilyName, Version::FromPackageVersion(minVersion)))]() noexcept
-				{
-					MessageBoxEx(Window::NullWindow, msg.c_str(), APP_NAME, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
-				}).join();
-
+				Localization::ShowLocalizedMessageBox(IDS_MISSING_DEPENDENCIES, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND, hModule, packageFamilyName, Version::FromPackageVersion(minVersion)).join();
 				ExitProcess(1);
 			}
 			else
