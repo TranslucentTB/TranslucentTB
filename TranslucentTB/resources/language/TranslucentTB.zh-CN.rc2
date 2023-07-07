@@ -37,7 +37,7 @@ VS_VERSION_INFO VERSIONINFO
 			VALUE L"OriginalFilename", APP_NAME L".exe"
 			VALUE L"ProductName", APP_NAME
 			VALUE L"ProductVersion", APP_VERSION
-			VALUE L"Comments", L"一个能使 Windows 任务栏半透明/透明的轻量小工具"
+			VALUE L"Comments", L"一个能够使 Windows 任务栏半透明/透明的轻量小工具"
 			VALUE L"CompanyName", APP_NAME L" 开源开发者"
 			VALUE L"LegalCopyright", L"版权所有 © " APP_COPYRIGHT_YEAR L" " APP_NAME L" 开源开发者"
 		}
