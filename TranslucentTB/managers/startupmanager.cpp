@@ -28,6 +28,7 @@ wf::IAsyncAction StartupManager::Enable() try
 		using enum winrt::Windows::ApplicationModel::StartupTaskState;
 		if (result != Enabled && result != EnabledByPolicy)
 		{
+			// TODO: dialog box, localize, .detach()
 			MessagePrint(spdlog::level::err, APP_NAME L" asked Windows to enable a startup task but Windows did not enable it. This is typically the result of running \"privacy\" scripts on your computer.");
 		}
 	}

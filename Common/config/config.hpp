@@ -15,6 +15,7 @@
 
 class Config {
 private:
+// TODO: move to some common place? osversion helper and move some win32.hpp stuff there?
 	inline static bool IsWindows11() noexcept
 	{
 		static const bool isWindows11 = win32::IsAtLeastBuild(22000);

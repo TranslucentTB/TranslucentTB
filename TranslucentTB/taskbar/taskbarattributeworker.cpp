@@ -1175,6 +1175,7 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 					const auto now = std::chrono::steady_clock::now();
 					if (now < m_LastExplorerRestart + std::chrono::seconds(30)) [[unlikely]]
 					{
+						// TODO: translate error message, use normal dialogbox and self-terminate, warning icon
 						MessagePrint(spdlog::level::critical, L"Windows Explorer restarted twice in the last 30 seconds! This may be a conflict between TranslucentTB and other shell customization software, or a Windows Update. To avoid further issues, TranslucentTB will now exit.");
 					}
 
