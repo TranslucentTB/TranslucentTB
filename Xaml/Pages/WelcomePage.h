@@ -10,7 +10,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	struct WelcomePage : wux::Markup::ComponentConnectorT<WelcomePageT<WelcomePage>>
 	{
-		wf::Rect DragRegion() override;
+		wf::Rect ExpandedDragRegion() override;
 
 		void OpenLiberapayLink(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void OpenDiscordLink(const IInspectable &sender, const wux::RoutedEventArgs &args);

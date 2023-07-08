@@ -11,12 +11,16 @@ namespace TranslucentTB.Xaml.Pages
 		protected FramelessPage();
 
 		[noexcept]
-		overridable Boolean CanMove { get; };
+		Boolean CanMove { get; };
+
+		[noexcept]
+		overridable Boolean CanMoveCore { get; };
 
 		void ShowSystemMenu(Windows.Foundation.Point position);
 		void HideSystemMenu();
 
-		overridable Windows.Foundation.Rect DragRegion { get; };
+		Windows.Foundation.Rect DragRegion { get; };
+		overridable Windows.Foundation.Rect ExpandedDragRegion { get; };
 		Windows.Foundation.Rect TitlebarButtonsRegion { get; };
 
 		Boolean RequestClose();

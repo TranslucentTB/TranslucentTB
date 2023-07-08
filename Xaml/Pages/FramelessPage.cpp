@@ -17,6 +17,11 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 	bool FramelessPage::CanMove() noexcept
 	{
+		return CanMoveCore();
+	}
+
+	bool FramelessPage::CanMoveCore() noexcept
+	{
 		return true;
 	}
 
@@ -46,8 +51,13 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		}
 		else
 		{
-			throw hresult_not_implemented(L"A page that uses ExpandIntoTitlebar should override DragRegion.");
+			return ExpandedDragRegion();
 		}
+	}
+
+	wf::Rect FramelessPage::ExpandedDragRegion()
+	{
+		throw hresult_not_implemented(L"A page that uses ExpandIntoTitlebar should override ExpandedDragRegion.");
 	}
 
 	wf::Rect FramelessPage::TitlebarButtonsRegion()

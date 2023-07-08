@@ -22,7 +22,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 			resourceLoader.GetString(L"/TranslucentTB.Xaml/Resources/TrayFlyoutPage_AccentColor/Text")));
 	}
 
-	bool ColorPickerPage::CanMove() noexcept
+	bool ColorPickerPage::CanMoveCore() noexcept
 	{
 		return !m_DialogOpened;
 	}

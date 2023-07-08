@@ -14,7 +14,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		ColorPickerPage(txmp::TaskbarState state, Windows::UI::Color originalColor);
 		void InitializeComponent();
 
-		bool CanMove() noexcept override;
+		bool CanMoveCore() noexcept override;
 		bool Close() override;
 
 		DECL_EVENT(ColorChangedDelegate, ColorChanged, m_ColorChangedHandler);

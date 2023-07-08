@@ -13,12 +13,14 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		void InitializeComponent();
 
-		virtual bool CanMove() noexcept;
+		bool CanMove() noexcept;
+		virtual bool CanMoveCore() noexcept;
 
 		void ShowSystemMenu(const wf::Point &position);
 		void HideSystemMenu();
 
-		virtual wf::Rect DragRegion();
+		wf::Rect DragRegion();
+		virtual wf::Rect ExpandedDragRegion();
 		wf::Rect TitlebarButtonsRegion();
 
 		bool RequestClose();
