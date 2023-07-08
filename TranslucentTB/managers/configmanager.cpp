@@ -173,53 +173,17 @@ bool ConfigManager::Load(bool firstLoad)
 		{
 			if (firstLoad)
 			{
-				m_StartupLanguage = m_Config.Language;
-
-				if (!m_Config.Language.empty())
+				if (!m_Config.Language.empty() && Localization::SetProcessLangOverride(m_Config.Language))
 				{
-					std::wstring langOverride = m_Config.Language;
-					// make double null terminated
-					langOverride.push_back(L'\0');
-					if (!SetProcessPreferredUILanguages(MUI_LANGUAGE_NAME, langOverride.c_str(), nullptr))
-					{
-						LastErrorHandle(spdlog::level::err, L"Failed to set process UI language. Is the language set in the configuration file a BCP-47 language name?");
-
-						// don't try setting thread & XAML language, it'll probably fail too
-						return true;
-					}
-
-					// SetProcessPreferredUILanguages does not affect the lookup behavior of resource functions like FindResourceEx
-					// only SetThreadPreferredUILanguages does.
-					// WHY WINDOWS
-					// WHAT IS THE POINT OF SETPROCESSPREFERREDUILANGUAGES THEN
-					if (!SetThreadPreferredUILanguages(MUI_LANGUAGE_NAME, langOverride.c_str(), nullptr))
-					{
-						LastErrorHandle(spdlog::level::err, L"Failed to set thread UI language. Is the language set in the configuration file a BCP-47 language name?");
-
-						// remove the existing override to not fail in a partially localized to previous value state
-						SetProcessPreferredUILanguages(MUI_LANGUAGE_NAME, nullptr, nullptr);
-
-						// don't try setting XAML language, it'll probably fail too
-						return true;
-					}
-
-					try
-					{
-						winrt::Windows::ApplicationModel::Resources::Core::ResourceContext::SetGlobalQualifierValue(L"Language", m_Config.Language);
-					}
-					catch (const winrt::hresult_error &err)
-					{
-						HresultErrorHandle(err, spdlog::level::err, L"Failed to set resource language override. Is the language set in the configuration file a BCP-47 language name?");
-
-						// remove the existing overrides to not fail in a partially localized to previous value state
-						SetThreadPreferredUILanguages(MUI_LANGUAGE_NAME, nullptr, nullptr);
-						SetProcessPreferredUILanguages(MUI_LANGUAGE_NAME, nullptr, nullptr);
-					}
+					m_StartupLanguage = m_Config.Language;
 				}
 			}
 			else if (m_StartupLanguage != m_Config.Language && !std::exchange(m_ShownChangeWarning, true))
 			{
-				Localization::ShowLocalizedMessageBox(IDS_LANGUAGE_CHANGED, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND).detach();
+				// try using the new locale for that dialog box
+				LCID newLang = LocaleNameToLCID(m_Config.Language.c_str(), LOCALE_ALLOW_NEUTRAL_NAMES);
+
+				Localization::ShowLocalizedMessageBox(IDS_LANGUAGE_CHANGED, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND, wil::GetModuleInstanceHandle(), newLang ? LANGIDFROMLCID(newLang) : MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL)).detach();
 			}
 		}
 

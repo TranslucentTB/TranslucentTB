@@ -32,7 +32,7 @@ DynamicDependency::DynamicDependency(HMODULE hModule, Util::null_terminated_wstr
 		{
 			if (hr == STATEREPOSITORY_E_DEPENDENCY_NOT_RESOLVED)
 			{
-				Localization::ShowLocalizedMessageBox(IDS_MISSING_DEPENDENCIES, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND, hModule, packageFamilyName, Version::FromPackageVersion(minVersion)).join();
+				Localization::ShowLocalizedMessageBoxWithFormat(IDS_MISSING_DEPENDENCIES, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND, hModule, packageFamilyName, Version::FromPackageVersion(minVersion)).join();
 				ExitProcess(1);
 			}
 			else

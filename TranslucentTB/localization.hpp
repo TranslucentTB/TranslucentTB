@@ -9,13 +9,14 @@
 #include "windows/window.hpp"
 
 namespace Localization {
-	static constexpr Util::null_terminated_wstring_view FAILED_LOADING = L"[error occurred while loading localized string]";
+	bool SetProcessLangOverride(std::wstring_view langOverride);
+
 	Util::null_terminated_wstring_view LoadLocalizedResourceString(uint16_t resource, HINSTANCE hInst = wil::GetModuleInstanceHandle(), WORD lang = MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
 
-	std::thread ShowLocalizedMessageBox(uint16_t resource, UINT type, HINSTANCE hInst = wil::GetModuleInstanceHandle());
+	std::thread ShowLocalizedMessageBox(uint16_t resource, UINT type, HINSTANCE hInst = wil::GetModuleInstanceHandle(), WORD lang = MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
 
 	template<typename... Args>
-	std::thread ShowLocalizedMessageBox(uint16_t resource, UINT type, HINSTANCE hInst, Args&&... args)
+	std::thread ShowLocalizedMessageBoxWithFormat(uint16_t resource, UINT type, HINSTANCE hInst, Args&&... args)
 	{
 		const auto msg = LoadLocalizedResourceString(resource, hInst);
 		std::wstring formatted = std::vformat(msg, std::make_wformat_args(std::forward<Args>(args)...));
