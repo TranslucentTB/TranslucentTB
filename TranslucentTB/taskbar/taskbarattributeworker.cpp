@@ -1175,8 +1175,8 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 					const auto now = std::chrono::steady_clock::now();
 					if (now < m_LastExplorerRestart + std::chrono::seconds(30)) [[unlikely]]
 					{
-						// TODO: translate error message, use normal dialogbox and self-terminate, warning icon
-						MessagePrint(spdlog::level::critical, L"Windows Explorer restarted twice in the last 30 seconds! This may be a conflict between TranslucentTB and other shell customization software, or a Windows Update. To avoid further issues, TranslucentTB will now exit.");
+						Localization::ShowLocalizedMessageBox(IDS_EXPLORER_RESTARTED_TOO_MUCH, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND, hinstance()).join();
+						ExitProcess(1);
 					}
 
 					m_LastExplorerRestart = now;
@@ -1186,8 +1186,6 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 			m_LastExplorerPid = pid;
 
 			InsertTaskbar(main_taskbar.monitor(), main_taskbar);
-
-			// TODO: restore on ttb dying - use a threadpool waitforsingleobject within dll for this? pass handle to explorer via the extra parameter?
 
 			// if we're on 22621, with a XAML Island present, but no WorkerW window, we're on the new taskbar
 			// 22000 doesn't have the new taskbar. On 22621 when you have the old taskbar, there is a WorkerW window.

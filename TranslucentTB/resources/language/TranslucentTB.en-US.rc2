@@ -63,4 +63,5 @@ STRINGTABLE
 	IDS_RESTART_REQUIRED APP_NAME L" was recently updated. Please restart Windows to start using the latest version."
 	IDS_PORTABLE_UNSUPPORTED L"Portable mode only works on Windows 11."
 	IDS_MISSING_DEPENDENCIES APP_NAME L" cannot start in portable mode because {0} (version {1}) is not installed on the system."
+	IDS_EXPLORER_RESTARTED_TOO_MUCH L"Windows Explorer restarted twice in the last 30 seconds! This may be a conflict between " APP_NAME " and other shell customization software, or a Windows Update. To avoid further issues, " APP_NAME " will now exit."
 }
