@@ -97,7 +97,7 @@ bool ConfigManager::TryOpenConfigAsJson() noexcept
 void ConfigManager::SaveToFile(FILE *f) const
 {
 	static constexpr std::string_view COMMENT = "// See https://" UTF8_APP_NAME ".github.io/config for more information\n";
-	static constexpr std::wstring_view SCHEMA = L"https://sylveon.dev/" APP_NAME L"/schema";
+	static constexpr std::wstring_view SCHEMA = L"https://" APP_NAME ".github.io/settings.schema.json";
 
 	char buffer[1024];
 	rj::FileWriteStream filestream(f, buffer, std::size(buffer));
