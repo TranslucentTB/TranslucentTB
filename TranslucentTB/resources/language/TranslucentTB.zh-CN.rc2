@@ -63,5 +63,6 @@ STRINGTABLE
 	IDS_RESTART_REQUIRED APP_NAME L" 最近已更新。请重启 Windows 以使用最新版本。"
 	IDS_PORTABLE_UNSUPPORTED L"便捷模式仅能在 Windows 11 上运行。"
 	IDS_MISSING_DEPENDENCIES APP_NAME L" 不能在便捷模式中启动，因为 {0} (版本 {1}) 未安装在系统上。"
-
+	IDS_EXPLORER_RESTARTED_TOO_MUCH L"wiondows资源管理器在过去的30秒中重启了两次! 这可能是 " APP_NAME " 与其他命令行界面自定义软件之间的冲突,或者是由于Windows更新引起的. 为了避免出现更多的问题, " APP_NAME "将退出。"
+	IDS_STARTUPTASK_BROKEN APP_NAME L" 启用开机自启动失败。这通常是注册表损坏的原因，可能是由于在您的计算机上运行了垃圾清理或隐私程序所致。"
 }
