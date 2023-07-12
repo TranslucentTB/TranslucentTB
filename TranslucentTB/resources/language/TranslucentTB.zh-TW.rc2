@@ -57,6 +57,12 @@ VS_VERSION_INFO VERSIONINFO
 STRINGTABLE
 {
 	IDS_WELCOME_NOTIFICATION APP_NAME L" 將隱藏在工具列中。\n\n對工具列圖示點擊右鍵以變更設定、設為開機時啟動、檢視關於資訊、關閉應用程式...等。"
-	IDS_HIDE_TRAY L"此變更僅暫時生效，下次 "APP_NAME L" 啟動時將被還原。\n\n若要永久變更，請透過「進階」> 「編輯設定」開啟設定檔，並將 ""hide_tray"" 設為 ""true""。"
+	IDS_HIDE_TRAY L"此變更僅暫時套用，下次 "APP_NAME L" 啟動時將被還原。\n\n若要永久變更，請透過「進階」> 「編輯設定」開啟設定檔，並將 ""hide_tray"" 設為 ""true""。"
 	IDS_ALREADY_RUNNING APP_NAME L" 已經在執行了！在工具欄圖示點擊右鍵以存取。"
+	IDS_LANGUAGE_CHANGED L"設定檔中的語言覆蓋設定已變更。請重新啟動 " APP_NAME L" 以使變更套用。"
+	IDS_RESTART_REQUIRED APP_NAME L"最近已更新。請重新啟動 Windows 以開始使用最新版本。"
+	IDS_PORTABLE_UNSUPPORTED L"便攜式模式僅適用於 Windows 11。"
+	IDS_MISSING_DEPENDENCIES APP_NAME L" 無法以便攜模式啟動，因為系統上未安裝 {0} (版本 {1}) 。"
+	IDS_EXPLORER_RESTARTED_TOO_MUCH L"Windows 檔案總管在過去 30 秒內重新啟動了兩次！這可能是 " APP_NAME " 與其他 shell 個人化軟體或其 Windows 更新造成的衝突。為了避免進一步的問題，" APP_NAME " 現在將結束。"
+	IDS_STARTUPTASK_BROKEN APP_NAME L"要求 Windows 執行啟動工作，但 Windows 並未執行。這通常可能是在電腦上執行 debloating 或隱私腳本造成登錄檔損壞的原因。"
 }
