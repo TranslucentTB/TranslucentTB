@@ -24,13 +24,24 @@ std::optional<std::filesystem::path> Window::TryGetNtImageName(DWORD pid)
 		if (NtQuerySystemInformation(static_cast<SYSTEM_INFORMATION_CLASS>(SystemProcessIdInformation), &pidInfo, sizeof(pidInfo), nullptr) == STATUS_INFO_LENGTH_MISMATCH_UNDOC)
 		{
 			std::wstring buf;
-			buf.resize(pidInfo.ImageName.MaximumLength / 2);
-			pidInfo.ImageName.Buffer = buf.data();
-
-			// hopefully the process didn't die midway through this lol
-			if (NT_SUCCESS(NtQuerySystemInformation(static_cast<SYSTEM_INFORMATION_CLASS>(SystemProcessIdInformation), &pidInfo, sizeof(pidInfo), nullptr)))
+			buf.resize_and_overwrite(pidInfo.ImageName.MaximumLength / 2, [&pidInfo](wchar_t* data, std::size_t count)
 			{
-				buf.resize(pidInfo.ImageName.Length / 2);
+				pidInfo.ImageName.Buffer = data;
+				pidInfo.ImageName.MaximumLength = static_cast<USHORT>(count + 1) * 2;
+
+				// hopefully the process didn't die midway through this lol
+				if (NT_SUCCESS(NtQuerySystemInformation(static_cast<SYSTEM_INFORMATION_CLASS>(SystemProcessIdInformation), &pidInfo, sizeof(pidInfo), nullptr)))
+				{
+					return pidInfo.ImageName.Length / 2;
+				}
+				else
+				{
+					return 0;
+				}
+			});
+
+			if (!buf.empty())
+			{
 				return std::move(buf);
 			}
 		}
@@ -60,37 +71,59 @@ std::optional<std::wstring> Window::title() const
 	// But it very well could. It'll either be smaller and waste a bit of RAM, or have
 	// GetWindowText trim it.
 	std::wstring windowTitle;
-	windowTitle.resize(titleSize);
-
-	SetLastError(NO_ERROR);
-	const int copiedChars = GetWindowText(m_WindowHandle, windowTitle.data(), titleSize + 1);
-	if (!copiedChars)
+	bool failed = false;
+	windowTitle.resize_and_overwrite(titleSize, [hwnd = m_WindowHandle, &failed](wchar_t* data, std::size_t count)
 	{
-		if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
+		SetLastError(NO_ERROR);
+		const int copiedChars = GetWindowText(hwnd, data, static_cast<int>(count) + 1);
+		if (!copiedChars)
 		{
-			HresultHandle(HRESULT_FROM_WIN32(lastErr), spdlog::level::info, L"Getting title of a window failed.");
-			return std::nullopt;
+			if (const DWORD lastErr = GetLastError(); lastErr != NO_ERROR)
+			{
+				HresultHandle(HRESULT_FROM_WIN32(lastErr), spdlog::level::info, L"Getting title of a window failed.");
+				failed = true;
+			}
 		}
-	}
 
-	windowTitle.resize(copiedChars);
-	return { std::move(windowTitle) };
+		return copiedChars;
+	});
+
+	if (!failed)
+	{
+		return { std::move(windowTitle) };
+	}
+	else
+	{
+		return std::nullopt;
+	}
 }
 
 std::optional<std::wstring> Window::classname() const
 {
 	std::wstring className;
-	className.resize(256);
-
-	const int count = GetClassName(m_WindowHandle, className.data(), static_cast<int>(className.size()) + 1);
-	if (!count)
+	bool failed = false;
+	// https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassw
+	// The maximum length for lpszClassName is 256.
+	className.resize_and_overwrite(256, [hwnd = m_WindowHandle, &failed](wchar_t* data, std::size_t count)
 	{
-		LastErrorHandle(spdlog::level::info, L"Getting class name of a window failed.");
+		const int length = GetClassName(hwnd, data, static_cast<int>(count) + 1);
+		if (!length)
+		{
+			LastErrorHandle(spdlog::level::info, L"Getting class name of a window failed.");
+			failed = true;
+		}
+
+		return length;
+	});
+
+	if (!failed)
+	{
+		return { std::move(className) };
+	}
+	else
+	{
 		return std::nullopt;
 	}
-
-	className.resize(count);
-	return { std::move(className) };
 }
 
 std::optional<std::filesystem::path> Window::file() const

@@ -56,18 +56,22 @@ public:
 	inline static std::pair<std::filesystem::path, HRESULT> GetProcessFileName(HANDLE process)
 	{
 		std::wstring exeLocation;
-		exeLocation.resize(wil::max_extended_path_length);
+		HRESULT hr = S_OK;
+		exeLocation.resize_and_overwrite(wil::max_extended_path_length, [process, &hr](wchar_t* data, std::size_t count) -> std::size_t
+		{
+			DWORD bufSize = static_cast<DWORD>(count) + 1;
+			if (QueryFullProcessImageName(process, 0, data, &bufSize))
+			{
+				return bufSize;
+			}
+			else
+			{
+				hr = HRESULT_FROM_WIN32(GetLastError());
+				return 0;
+			}
+		});
 
-		DWORD exeLocation_size = static_cast<DWORD>(exeLocation.size()) + 1;
-		if (QueryFullProcessImageName(process, 0, exeLocation.data(), &exeLocation_size))
-		{
-			exeLocation.resize(exeLocation_size);
-			return { std::move(exeLocation), S_OK };
-		}
-		else
-		{
-			return { { }, HRESULT_FROM_WIN32(GetLastError()) };
-		}
+		return { std::move(exeLocation), hr };
 	}
 
 	// Gets location of current process
@@ -80,29 +84,19 @@ public:
 	inline static std::pair<std::filesystem::path, HRESULT> GetDllLocation(HMODULE hModule)
 	{
 		std::wstring location;
-		location.resize(wil::max_path_length);
-
-		if (auto size = GetModuleFileName(hModule, location.data(), static_cast<DWORD>(location.size()) + 1))
+		HRESULT hr = S_OK;
+		location.resize_and_overwrite(wil::max_extended_path_length, [hModule, &hr](wchar_t* data, std::size_t count)
 		{
-			if (size == location.size() + 1 && GetLastError() == ERROR_INSUFFICIENT_BUFFER) [[unlikely]]
+			const DWORD length = GetModuleFileName(hModule, data, static_cast<DWORD>(count) + 1);
+			if (!length) [[unlikely]]
 			{
-				location.resize(wil::max_extended_path_length);
-				size = GetModuleFileName(hModule, location.data(), static_cast<DWORD>(location.size()) + 1);
-
-				if (!size) [[unlikely]]
-				{
-					return { {}, HRESULT_FROM_WIN32(GetLastError()) };
-				}
+				hr = HRESULT_FROM_WIN32(GetLastError());
 			}
 
-			location.resize(size);
+			return length;
+		});
 
-			return { std::move(location), S_OK };
-		}
-		else
-		{
-			return { {}, HRESULT_FROM_WIN32(GetLastError()) };
-		}
+		return { std::move(location), hr };
 	}
 
 	// Opens a file in the default text editor.
@@ -295,27 +289,28 @@ public:
 		inline static void SlowHash(std::size_t &hash, std::wstring_view k)
 		{
 			std::wstring buf;
-			buf.resize(k.length());
-
-			const int result = LCMapStringEx(
-				LOCALE_NAME_INVARIANT, LCMAP_UPPERCASE,
-				k.data(), wil::safe_cast<int>(k.length()),
-				buf.data(), wil::safe_cast<int>(buf.size()),
-				nullptr, nullptr, 0
-			);
-
-			if (result)
+			buf.resize_and_overwrite(k.length(), [k](wchar_t* data, std::size_t count)
 			{
-				buf.resize(result);
+				const int result = LCMapStringEx(
+					LOCALE_NAME_INVARIANT, LCMAP_UPPERCASE,
+					k.data(), wil::safe_cast<int>(k.length()),
+					data, wil::safe_cast<int>(count),
+					nullptr, nullptr, 0
+				);
 
-				for (const wchar_t &c : buf)
+				if (result)
 				{
-					Util::HashCharacter(hash, c);
+					return result;
 				}
-			}
-			else
+				else
+				{
+					throw std::system_error(static_cast<int>(GetLastError()), std::system_category(), "Failed to hash string");
+				}
+			});
+
+			for (const wchar_t &c : buf)
 			{
-				throw std::system_error(static_cast<int>(GetLastError()), std::system_category(), "Failed to hash string");
+				Util::HashCharacter(hash, c);
 			}
 		}
 	};

@@ -30,15 +30,18 @@ std::optional<std::wstring> UWP::GetPackageFamilyName()
 	}
 
 	std::wstring familyName;
-	familyName.resize(length - 1);
-
-	result = GetCurrentPackageFamilyName(&length, familyName.data());
-	if (result != ERROR_SUCCESS) [[unlikely]]
+	familyName.resize_and_overwrite(length - 1, [](wchar_t* data, std::size_t count)
 	{
-		HresultHandle(HRESULT_FROM_WIN32(result), spdlog::level::critical, FAILED_TO_GET);
-	}
+		UINT32 length = static_cast<UINT32>(count) + 1;
+		const LONG result = GetCurrentPackageFamilyName(&length, data);
+		if (result != ERROR_SUCCESS) [[unlikely]]
+		{
+			HresultHandle(HRESULT_FROM_WIN32(result), spdlog::level::critical, FAILED_TO_GET);
+		}
 
-	familyName.resize(length - 1);
+		return length - 1;
+	});
+
 	return familyName;
 }
 
