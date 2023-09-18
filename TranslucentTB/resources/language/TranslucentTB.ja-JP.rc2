@@ -56,13 +56,13 @@ VS_VERSION_INFO VERSIONINFO
 
 STRINGTABLE
 {
-	IDS_WELCOME_NOTIFICATION APP_NAME L" はシステムトレイに格納されています。\n\nトレイのアイコンを右クリックすると設定の変更、起動時にアプリを実行する設定、情報の表示などが行えます。"
+	IDS_WELCOME_NOTIFICATION APP_NAME L"はシステムトレイに格納されています。\n\nトレイのアイコンを右クリックすると設定の変更、起動時にアプリを実行する設定、情報の表示などが行えます。"
 	IDS_HIDE_TRAY L"この変更は一時的です。次回 " APP_NAME L" を開始すると元に戻ります。\n\n持続的な変更にするには、「高度」 > 「設定の編集」にて設定ファイルを編集し、hide_tray を true に設定します。"
 	IDS_ALREADY_RUNNING APP_NAME L" は既に実行中です! トレイのアイコンを右クリックして利用できます。"
-	IDS_LANGUAGE_CHANGED L"設定ファイルの言語オーバーライド設定が変更されました。変更を適用するには" APP_NAME L "を再起動してください。"
+	IDS_LANGUAGE_CHANGED L"設定ファイルの言語オーバーライド設定が変更されました。変更を適用するには " APP_NAME L" を再起動してください。"
 	IDS_RESTART_REQUIRED APP_NAME L" は更新されています。最新版を使うには Windows を再起動してください。"
 	IDS_PORTABLE_UNSUPPORTED L"ポータブルモードは Windows 11 でのみ動作します。"
 	IDS_MISSING_DEPENDENCIES APP_NAME L" をポータブルモードで起動できません。{0} (version {1}) がお使いのシステムにインストールされていません。"
 	IDS_EXPLORER_RESTARTED_TOO_MUCH L"Windows エクスプローラーが30秒以内に2回再起動しました！" APP_NAME " と他のシェル変更ソフトの干渉や Windows Update の可能性があります。続く問題発生の防止のため " APP_NAME " を終了します。"
-	IDS_STARTUPTASK_BROKEN APP_NAME L" は起動時のタスクを有効化しようとしましたが、Windows が有効にしませんでした。原因は一般的にはレジストリの破損で、このパソコンでの肥大化防止スクリプトや個人情報保護スクリプトの実行が原因になることがあります。"
+	IDS_STARTUPTASK_BROKEN APP_NAME L"は起動時のタスクを有効化しようとしましたが、Windows が有効にしませんでした。原因は一般的にはレジストリの破損で、このパソコンでの肥大化防止スクリプトや個人情報保護スクリプトの実行が原因になることがあります。"
 }
