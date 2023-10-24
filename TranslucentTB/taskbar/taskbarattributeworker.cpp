@@ -562,7 +562,6 @@ void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
 	// These functions may trigger Windows internal message loops,
 	// do not pass any member of taskbar map by reference.
 	// See comment in InsertWindow.
-	const HMONITOR mon = taskbar->first;
 	const auto taskbarInfo = taskbar->second.Taskbar;
 
 	const auto &cfg = GetConfig(taskbar);
@@ -997,7 +996,7 @@ void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 	}
 }
 
-BOOL TaskbarAttributeWorker::MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
+BOOL TaskbarAttributeWorker::MonitorEnumProc(HMONITOR hMonitor, HDC, LPRECT lprcMonitor, LPARAM dwData)
 {
 	const auto info = reinterpret_cast<MonitorEnumInfo*>(&dwData);
 	for (const UINT edge : { ABE_BOTTOM, ABE_TOP, ABE_LEFT, ABE_RIGHT })
