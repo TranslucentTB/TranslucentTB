@@ -1,8 +1,15 @@
 #include "taskbarappearanceservice.hpp"
+#include <RpcProxy.h>
+#include <shellapi.h>
 #include <wil/cppwinrt_helpers.h>
 
 #include "constants.hpp"
 #include "util/color.hpp"
+
+extern "C"
+{
+	_Check_return_ HRESULT STDAPICALLTYPE DLLGETCLASSOBJECT_ENTRY(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ void** ppv);
+}
 
 DWORD TaskbarAppearanceService::s_ProxyStubRegistrationCookie = 0;
 
@@ -24,11 +31,11 @@ HRESULT TaskbarAppearanceService::GetVersion(DWORD* apiVersion) noexcept
 	return S_OK;
 }
 
-HRESULT TaskbarAppearanceService::SetTaskbarAppearance(HMONITOR monitor, TaskbarBrush brush, UINT color) try
+HRESULT TaskbarAppearanceService::SetTaskbarAppearance(HWND taskbar, TaskbarBrush brush, UINT color) try
 {
 	for (const auto& [handle, info] : m_Taskbars)
 	{
-		if (MonitorFromWindow(info.window, MONITOR_DEFAULTTONULL) == monitor)
+		if (GetAncestor(info.window, GA_PARENT) == taskbar)
 		{
 			if (info.background.control && info.background.originalFill)
 			{
@@ -70,11 +77,11 @@ catch (...)
 	return winrt::to_hresult();
 }
 
-HRESULT TaskbarAppearanceService::ReturnTaskbarToDefaultAppearance(HMONITOR monitor) try
+HRESULT TaskbarAppearanceService::ReturnTaskbarToDefaultAppearance(HWND taskbar) try
 {
 	for (const auto& [handle, info] : m_Taskbars)
 	{
-		if (MonitorFromWindow(info.window, MONITOR_DEFAULTTONULL) == monitor)
+		if (GetAncestor(info.window, GA_PARENT) == taskbar)
 		{
 			RestoreDefaultControlFill(info.background);
 			break;
@@ -88,11 +95,11 @@ catch (...)
 	return winrt::to_hresult();
 }
 
-HRESULT TaskbarAppearanceService::SetTaskbarBorderVisibility(HMONITOR monitor, BOOL visible) try
+HRESULT TaskbarAppearanceService::SetTaskbarBorderVisibility(HWND taskbar, BOOL visible) try
 {
 	for (const auto& [handle, info] : m_Taskbars)
 	{
-		if (MonitorFromWindow(info.window, MONITOR_DEFAULTTONULL) == monitor)
+		if (GetAncestor(info.window, GA_PARENT) == taskbar)
 		{
 			if (visible)
 			{
@@ -210,7 +217,7 @@ void TaskbarAppearanceService::InstallProxyStub()
 	if (!s_ProxyStubRegistrationCookie)
 	{
 		winrt::com_ptr<IUnknown> proxyStub;
-		winrt::check_hresult(DllGetClassObject(PROXY_CLSID_IS, winrt::guid_of<decltype(proxyStub)::type>(), proxyStub.put_void()));
+		winrt::check_hresult(DLLGETCLASSOBJECT_ENTRY(PROXY_CLSID_IS, winrt::guid_of<decltype(proxyStub)::type>(), proxyStub.put_void()));
 		winrt::check_hresult(CoRegisterClassObject(PROXY_CLSID_IS, proxyStub.get(), CLSCTX_INPROC_SERVER, REGCLS_MULTIPLEUSE, &s_ProxyStubRegistrationCookie));
 
 		winrt::check_hresult(CoRegisterPSClsid(IID_ITaskbarAppearanceService, PROXY_CLSID_IS));

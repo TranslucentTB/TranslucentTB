@@ -4,10 +4,10 @@ import "TaskbarBrush.idl";
 [object, uuid(5bcf9150-c28a-4ef2-913c-4c3ea2f5ead0)]
 interface ITaskbarAppearanceService : IUnknown
 {
-	HRESULT SetTaskbarAppearance([in] HMONITOR monitor, [in] enum TaskbarBrush brush, [in] UINT color);
-	HRESULT ReturnTaskbarToDefaultAppearance([in] HMONITOR monitor);
+	HRESULT SetTaskbarAppearance([in] HWND taskbar, [in] enum TaskbarBrush brush, [in] UINT color);
+	HRESULT ReturnTaskbarToDefaultAppearance([in] HWND taskbar);
 
-	HRESULT SetTaskbarBorderVisibility([in] HMONITOR monitor, [in] BOOL visible);
+	HRESULT SetTaskbarBorderVisibility([in] HWND taskbar, [in] BOOL visible);
 
 	HRESULT RestoreAllTaskbarsToDefault();
 	HRESULT RestoreAllTaskbarsToDefaultWhenProcessDies([in] DWORD pid);

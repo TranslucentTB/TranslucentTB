@@ -50,6 +50,11 @@ private:
 		std::unordered_set<Window> NormalWindows;
 	};
 
+	struct MonitorEnumInfo {
+		Window window;
+		HMONITOR monitor;
+	};
+
 	// future improvements:
 	// - better aero peek support: detect current peeked to window and include in calculation
 	// - notification for owner changes
@@ -191,6 +196,8 @@ private:
 	bool IsStartMenuOpened() const;
 	bool IsSearchOpened() const;
 	void InsertTaskbar(HMONITOR mon, Window window);
+	static BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData);
+	static HMONITOR GetTaskbarMonitor(Window taskbar);
 
 	inline TaskbarAppearance WithPreview(txmp::TaskbarState state, const TaskbarAppearance &appearance) const
 	{

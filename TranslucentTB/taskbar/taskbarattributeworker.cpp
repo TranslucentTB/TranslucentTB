@@ -496,7 +496,7 @@ void TaskbarAttributeWorker::SetAttribute(taskbar_iterator taskbar, TaskbarAppea
 	{
 		if (config.Accent == ACCENT_NORMAL)
 		{
-			HresultVerify(m_TaskbarService->ReturnTaskbarToDefaultAppearance(taskbar->first), spdlog::level::info, L"Failed to restore taskbar to normal");
+			HresultVerify(m_TaskbarService->ReturnTaskbarToDefaultAppearance(taskbar->second.Taskbar.TaskbarWindow), spdlog::level::info, L"Failed to restore taskbar to normal");
 		}
 		else
 		{
@@ -512,7 +512,7 @@ void TaskbarAttributeWorker::SetAttribute(taskbar_iterator taskbar, TaskbarAppea
 				color.A = 0xFF;
 			}
 
-			HresultVerify(m_TaskbarService->SetTaskbarAppearance(taskbar->first, brush, color.ToABGR()), spdlog::level::info, L"Failed to set taskbar brush");
+			HresultVerify(m_TaskbarService->SetTaskbarAppearance(taskbar->second.Taskbar.TaskbarWindow, brush, color.ToABGR()), spdlog::level::info, L"Failed to set taskbar brush");
 		}
 	}
 	else
@@ -570,7 +570,7 @@ void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
 
 	if (m_TaskbarService)
 	{
-		HresultVerify(m_TaskbarService->SetTaskbarBorderVisibility(mon, cfg.ShowLine), spdlog::level::info, L"Failed to set taskbar border visibility");
+		HresultVerify(m_TaskbarService->SetTaskbarBorderVisibility(taskbarInfo.TaskbarWindow, cfg.ShowLine), spdlog::level::info, L"Failed to set taskbar border visibility");
 	}
 	else if (taskbarInfo.InnerXamlContent || taskbarInfo.WorkerWWindow)
 	{
@@ -997,6 +997,40 @@ void TaskbarAttributeWorker::InsertTaskbar(HMONITOR mon, Window window)
 	}
 }
 
+BOOL TaskbarAttributeWorker::MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
+{
+	const auto info = reinterpret_cast<MonitorEnumInfo*>(&dwData);
+	for (const UINT edge : { ABE_BOTTOM, ABE_TOP, ABE_LEFT, ABE_RIGHT })
+	{
+		APPBARDATA data = { sizeof(data) };
+		data.uEdge = edge;
+		data.rc = *lprcMonitor;
+
+		HWND hwndAutoHide = reinterpret_cast<HWND>(SHAppBarMessage(ABM_GETAUTOHIDEBAREX, &data));
+		if (hwndAutoHide == info->window)
+		{
+			info->monitor = hMonitor;
+
+			return false;
+		}
+	}
+
+	return true;
+}
+
+HMONITOR TaskbarAttributeWorker::GetTaskbarMonitor(Window taskbar)
+{
+	MonitorEnumInfo info = { taskbar };
+	if (EnumDisplayMonitors(nullptr, nullptr, MonitorEnumProc, reinterpret_cast<LPARAM>(&info)) && info.monitor)
+	{
+		return info.monitor;
+	}
+	else
+	{
+		return taskbar.monitor();
+	}
+}
+
 TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hInstance, DynamicLoader &loader, const std::optional<std::filesystem::path> &storageFolder) :
 	MessageWindow(TTB_WORKERWINDOW, TTB_WORKERWINDOW, hInstance, WS_POPUP, WS_EX_NOREDIRECTIONBITMAP),
 	SetWindowCompositionAttribute(loader.SetWindowCompositionAttribute()),
@@ -1185,7 +1219,7 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 
 			m_LastExplorerPid = pid;
 
-			InsertTaskbar(main_taskbar.monitor(), main_taskbar);
+			InsertTaskbar(GetTaskbarMonitor(main_taskbar), main_taskbar);
 
 			// if we're on 22621, with a XAML Island present, but no WorkerW window, we're on the new taskbar
 			// 22000 doesn't have the new taskbar. On 22621 when you have the old taskbar, there is a WorkerW window.
@@ -1212,7 +1246,7 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 
 		for (const Window secondtaskbar : Window::FindEnum(SECONDARY_TASKBAR))
 		{
-			InsertTaskbar(secondtaskbar.monitor(), secondtaskbar);
+			InsertTaskbar(GetTaskbarMonitor(secondtaskbar), secondtaskbar);
 		}
 
 		// drop the old hooks.
