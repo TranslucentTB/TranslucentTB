@@ -5,6 +5,7 @@
 #include <synchapi.h>
 #include <wil/resource.h>
 #include "winrt.hpp"
+#include <winrt/Windows.ApplicationModel.Activation.h>
 
 #include "application.hpp"
 #include "constants.hpp"
