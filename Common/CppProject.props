@@ -56,7 +56,7 @@
 
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
     <VcpkgTriplet>$(Platform.ToLowerInvariant())-windows</VcpkgTriplet>
-    <VcpkgAdditionalInstallOptions>--overlay-ports="$(SolutionDir)\vcpkg\ports"</VcpkgAdditionalInstallOptions>
+    <VcpkgAdditionalInstallOptions>--overlay-ports="$(SolutionDir)\vcpkg\ports" --debug</VcpkgAdditionalInstallOptions>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
