@@ -1,8 +1,6 @@
 #pragma once
 #include "../arch.h"
 #include <array>
-#include <rapidjson/document.h>
-#include <rapidjson/encodings.h>
 #include <string_view>
 #include <windef.h>
 
@@ -12,7 +10,13 @@
 #include <winrt/TranslucentTB.Xaml.Models.Primitives.h>
 #endif
 
+#if __has_include(<rapidjson/rapidjson.h>)
+#define HAS_RAPIDJSON
+#include <rapidjson/document.h>
+#include <rapidjson/encodings.h>
 #include "rapidjsonhelper.hpp"
+#endif
+
 #include "../undoc/user32.hpp"
 #include "../util/color.hpp"
 #include "../win32.hpp"
@@ -59,6 +63,7 @@ struct TaskbarAppearance {
 		ShowLine(showLine)
 	{ }
 
+#ifdef HAS_RAPIDJSON
 	template<class Writer>
 	inline void Serialize(Writer &writer) const
 	{
@@ -79,20 +84,6 @@ struct TaskbarAppearance {
 			InnerDeserialize(rjh::ValueToStringView(it->name), it->value, unknownKeyCallback);
 		}
 	}
-
-#ifdef HAS_WINRT_CONFIG
-	TaskbarAppearance(const txmp::TaskbarAppearance &winrtObj) noexcept :
-		Accent(static_cast<ACCENT_STATE>(winrtObj.Accent())),
-		Color(winrtObj.Color()),
-		ShowPeek(winrtObj.ShowPeek()),
-		ShowLine(winrtObj.ShowLine())
-	{ }
-
-	operator txmp::TaskbarAppearance() const
-	{
-		return { static_cast<txmp::AccentState>(Accent), Color, ShowPeek, ShowLine };
-	}
-#endif
 
 protected:
 	void InnerDeserialize(std::wstring_view key, const rjh::value_t &val, void (*unknownKeyCallback)(std::wstring_view))
@@ -150,4 +141,20 @@ private:
 	static constexpr std::wstring_view COLOR_KEY = L"color";
 	static constexpr std::wstring_view SHOW_PEEK_KEY = L"show_peek";
 	static constexpr std::wstring_view SHOW_LINE_KEY = L"show_line";
+#endif
+
+#ifdef HAS_WINRT_CONFIG
+public:
+	TaskbarAppearance(const txmp::TaskbarAppearance &winrtObj) noexcept :
+		Accent(static_cast<ACCENT_STATE>(winrtObj.Accent())),
+		Color(winrtObj.Color()),
+		ShowPeek(winrtObj.ShowPeek()),
+		ShowLine(winrtObj.ShowLine())
+	{ }
+
+	operator txmp::TaskbarAppearance() const
+	{
+		return { static_cast<txmp::AccentState>(Accent), Color, ShowPeek, ShowLine };
+	}
+#endif
 };

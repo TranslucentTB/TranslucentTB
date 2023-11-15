@@ -15,6 +15,7 @@
     <DesktopCompatible>true</DesktopCompatible>
     <!-- We don't produce a DLL -->
     <SkipSigning>True</SkipSigning>
+    <VcpkgEnabled>false</VcpkgEnabled>
   </PropertyGroup>
   <Import Project="..\Common\CppProject.props" />
   <ItemGroup>

@@ -54,7 +54,7 @@
         {
           "properties": {
             "rules": {
-              "properties" : {
+              "properties": {
                 "window_class": {
                   "$ref": "#/$defs/RuleSet"
                 },

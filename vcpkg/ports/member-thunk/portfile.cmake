@@ -1,7 +1,9 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO sylveon/member_thunk
+    REF 3acf1402af87de495f073233c9b842c230a7fb12
     HEAD_REF master
+    SHA512 2f789a791274be20dbb190ce4517f62f5dc1e7f2646372e26b25924e9b7430c3bf3fed33e051913e6e8248a6b4ddd423e9fb8a2a152335839b7d95b9106c4a6e
 )
 
 file(INSTALL ${SOURCE_PATH}/include/member_thunk DESTINATION ${CURRENT_PACKAGES_DIR}/include)

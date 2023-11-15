@@ -3,6 +3,7 @@ pool:
 
 variables:
   solution: $(Build.SourcesDirectory)/TranslucentTB.sln
+  VCPKG_BINARY_SOURCES: 'clear;nuget,https://pkgs.dev.azure.com/sylve0n/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,readwrite'
 
 strategy:
   matrix:
@@ -28,10 +29,8 @@ steps:
 - script: .\bootstrap-vcpkg.bat
   displayName: 'Bootstrap vcpkg'
   workingDirectory: C:\vcpkg
-- script: vcpkg install --triplet $(platform)-windows --overlay-ports=$(Build.SourcesDirectory)/vcpkg/ports --head gtest member-thunk rapidjson spdlog wil
-  displayName: 'Install vcpkg dependencies'
-- script: vcpkg install --triplet $(platform)-windows-static --overlay-ports=$(Build.SourcesDirectory)/vcpkg/ports --head detours wil
-  displayName: 'Install static vcpkg dependencies'
+- task: NuGetAuthenticate@0
+  displayName: 'Authenticate NuGet'
 - task: NuGetCommand@2
   displayName: 'Restore NuGet packages'
   inputs:
