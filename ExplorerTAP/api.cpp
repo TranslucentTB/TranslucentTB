@@ -39,14 +39,28 @@ HRESULT InjectExplorerTAP(DWORD pid, REFIID riid, LPVOID* ppv) try
 			return HRESULT_FROM_WIN32(GetLastError());
 		}
 
-		// We need this to exist because XAML Diagnostics can only be initialized once per thread
-		// future calls simply return S_OK without doing anything.
-		// But we need to be able to initialize it again if Explorer restarts. So we create a thread
-		// that is discardable to do the initialization from.
-		std::thread([&hr, ixde, pid, &location]
+		uint8_t attempts = 0;
+		do
 		{
-			hr = ixde(L"VisualDiagConnection1", pid, nullptr, location.c_str(), CLSID_TAPSite, nullptr);
-		}).join();
+			// We need this to exist because XAML Diagnostics can only be initialized once per thread
+			// future calls simply return S_OK without doing anything.
+			// But we need to be able to initialize it again if Explorer restarts. So we create a thread
+			// that is discardable to do the initialization from.
+			std::thread([&hr, ixde, pid, &location]
+			{
+				hr = ixde(L"VisualDiagConnection1", pid, nullptr, location.c_str(), CLSID_TAPSite, nullptr);
+			}).join();
+
+			if (SUCCEEDED(hr))
+			{
+				break;
+			}
+			else
+			{
+				++attempts;
+				Sleep(500);
+			}
+		} while (FAILED(hr) && attempts < 20);
 
 		if (FAILED(hr)) [[unlikely]]
 		{
