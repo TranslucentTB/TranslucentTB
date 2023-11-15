@@ -64,7 +64,8 @@ namespace winrt::TranslucentTB::Xaml::implementation
 		static wux::DependencyProperty m_AncestorProperty;
 		static wux::DependencyProperty m_AncestorTypeProperty;
 
-		static thread_local std::vector<std::pair<weak_ref<wux::FrameworkElement>, event_token>> s_TokenList;
+		static thread_local std::vector<std::pair<weak_ref<wux::FrameworkElement>, event_token>> s_UnloadedTokenList;
+		static thread_local std::vector<std::pair<weak_ref<wux::FrameworkElement>, event_token>> s_LoadedTokenList;
 	};
 }
 

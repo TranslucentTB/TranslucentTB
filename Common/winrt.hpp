@@ -8,6 +8,7 @@ namespace winrt {
 	namespace Microsoft::UI::Xaml::Controls {}
 	namespace TranslucentTB::Xaml::Models::Primitives {}
 	namespace Windows {
+		namespace ApplicationModel {}
 		namespace Foundation::Collections {}
 		namespace UI::Xaml {
 			namespace Controls {}
@@ -20,6 +21,7 @@ namespace winrt {
 namespace mux = winrt::Microsoft::UI::Xaml;
 namespace muxc = winrt::Microsoft::UI::Xaml::Controls;
 namespace txmp = winrt::TranslucentTB::Xaml::Models::Primitives;
+namespace wam = winrt::Windows::ApplicationModel;
 namespace wf = winrt::Windows::Foundation;
 namespace wfc = wf::Collections;
 namespace wux = winrt::Windows::UI::Xaml;

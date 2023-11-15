@@ -109,10 +109,23 @@ _Use_decl_annotations_ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, wchar
 
 	if (instanceAlreadyExists)
 	{
-		// If there already is another instance running, tell it.
-		MainAppWindow::PostNewInstanceNotification();
+		bool suppressNotification = false;
+		if (storageFolder)
+		{
+			const auto eventArgs = wam::AppInstance::GetActivatedEventArgs();
+			if (eventArgs)
+			{
+				// if an instance got started even earlier, for example by EarlyStart, suppress the notification.
+				suppressNotification = eventArgs.Kind() == wam::Activation::ActivationKind::StartupTask;
+			}
+		}
 
-		// For now we will just exit, because the other instance will send a notification saying it's already running.
+		// If there already is another instance running, tell it.
+		if (!suppressNotification)
+		{
+			MainAppWindow::PostNewInstanceNotification();
+		}
+
 		return 0;
 	}
 

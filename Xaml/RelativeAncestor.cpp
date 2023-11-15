@@ -7,7 +7,8 @@
 
 namespace winrt::TranslucentTB::Xaml::implementation
 {
-	thread_local std::vector<std::pair<weak_ref<wux::FrameworkElement>, event_token>> RelativeAncestor::s_TokenList;
+	thread_local std::vector<std::pair<weak_ref<wux::FrameworkElement>, event_token>> RelativeAncestor::s_UnloadedTokenList;
+	thread_local std::vector<std::pair<weak_ref<wux::FrameworkElement>, event_token>> RelativeAncestor::s_LoadedTokenList;
 
 	wux::DependencyProperty RelativeAncestor::m_AncestorProperty =
 		wux::DependencyProperty::RegisterAttached(
@@ -34,7 +35,7 @@ namespace winrt::TranslucentTB::Xaml::implementation
 				event_token unloadedToken = fe.Unloaded(OnFrameworkElementUnloaded);
 				try
 				{
-					s_TokenList.push_back({ fe, unloadedToken });
+					s_UnloadedTokenList.push_back({ fe, unloadedToken });
 				}
 				catch (...)
 				{
@@ -46,11 +47,12 @@ namespace winrt::TranslucentTB::Xaml::implementation
 				event_token loadedToken = fe.Loaded(OnFrameworkElementLoaded);
 				try
 				{
-					s_TokenList.push_back({ fe, loadedToken });
+					s_LoadedTokenList.push_back({ fe, loadedToken });
 				}
 				catch (...)
 				{
 					// just in case something happens
+					fe.Unloaded(unloadedToken);
 					fe.Loaded(loadedToken);
 					throw;
 				}
@@ -98,20 +100,45 @@ namespace winrt::TranslucentTB::Xaml::implementation
 
 	void RelativeAncestor::RemoveHandlers(const wux::FrameworkElement &element) noexcept
 	{
-		for (auto it = s_TokenList.begin(); it != s_TokenList.end();)
+		for (auto it = s_UnloadedTokenList.begin(); it != s_UnloadedTokenList.end();)
+		{
+			if (const auto fe = it->first.get())
+			{
+				if (fe == element)
+				{
+					fe.Unloaded(it->second);
+
+					it = s_UnloadedTokenList.erase(it);
+				}
+				else
+				{
+					++it;
+				}
+			}
+			else
+			{
+				it = s_UnloadedTokenList.erase(it);
+			}
+		}
+
+		for (auto it = s_LoadedTokenList.begin(); it != s_LoadedTokenList.end();)
 		{
 			if (const auto fe = it->first.get())
 			{
 				if (fe == element)
 				{
 					fe.Loaded(it->second);
-				}
 
-				++it;
+					it = s_LoadedTokenList.erase(it);
+				}
+				else
+				{
+					++it;
+				}
 			}
 			else
 			{
-				it = s_TokenList.erase(it);
+				it = s_LoadedTokenList.erase(it);
 			}
 		}
 	}
