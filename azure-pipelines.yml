@@ -29,14 +29,14 @@ steps:
 - script: .\bootstrap-vcpkg.bat
   displayName: 'Bootstrap vcpkg'
   workingDirectory: C:\vcpkg
-- task: NuGetAuthenticate@0
+- script: vcpkg integrate install
+  displayName: 'Integrate vcpkg'
+- task: NuGetAuthenticate@1
   displayName: 'Authenticate NuGet'
 - task: NuGetCommand@2
   displayName: 'Restore NuGet packages'
   inputs:
     restoreSolution: $(solution)
-- script: vcpkg integrate install
-  displayName: 'Integrate vcpkg'
 - task: VSBuild@1
   displayName: 'Build solution'
   inputs:
