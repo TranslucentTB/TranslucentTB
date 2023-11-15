@@ -38,17 +38,9 @@ You also need to install the following individual components:
 - If building for x64: MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs (Latest)
 - If building for ARM64: MSVC v143 - VS 2022 C++ ARM64 Spectre-mitigated libs (Latest)
 
-### 3 - Install dependencies
+### 3 - Install vcpkg
 
-We use vcpkg to manage our dependencies. You will need to [install it](https://vcpkg.io/en/getting-started.html).
-
-Once you have that installed, open a terminal and execute these lines (replacing `$PATH_TO_TTB` by the location where you cloned TranslucentTB in step 1)
-```sh
-vcpkg install --triplet x64-windows --overlay-ports=$PATH_TO_TTB\vcpkg\ports --head gtest member-thunk rapidjson spdlog wil
-vcpkg install --triplet x64-windows-static --overlay-ports=$PATH_TO_TTB\vcpkg\ports --head detours wil
-vcpkg integrate install
-```
-`gtest` can be ommitted if you don't intend to run the unit tests. Change the triplet to `arm64-windows` and `arm64-windows-static` if building for ARM64.
+We use vcpkg to manage our dependencies. You will need to [install it](https://vcpkg.io/en/getting-started.html). Make sure to run `vcpkg integrate install`.
 
 ### 4 - Building and running the app
 
