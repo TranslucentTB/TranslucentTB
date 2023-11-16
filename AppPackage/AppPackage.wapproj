@@ -47,7 +47,7 @@
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
     <PackageCertificateThumbprint>$(CertificateThumbprint)</PackageCertificateThumbprint>
     <AppxPackageSigningTimestampServerUrl Condition="'$(CertificateTimestampServer)'!=''">$(CertificateTimestampServer)</AppxPackageSigningTimestampServerUrl>
-    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA512</AppxPackageSigningTimestampDigestAlgorithm>
   </PropertyGroup>
   <PropertyGroup Condition="'$(CertificateThumbprint)'==''">
     <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
