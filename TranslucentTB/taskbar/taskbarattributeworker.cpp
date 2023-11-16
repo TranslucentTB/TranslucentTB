@@ -1203,7 +1203,7 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 			const auto pid = main_taskbar.process_id();
 			if (!manual)
 			{
-				if (pid != m_LastExplorerPid)
+				if (m_LastExplorerPid != 0 && pid != m_LastExplorerPid)
 				{
 					const auto now = std::chrono::steady_clock::now();
 					if (now < m_LastExplorerRestart + std::chrono::seconds(30)) [[unlikely]]
