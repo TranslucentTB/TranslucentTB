@@ -45,6 +45,7 @@ struct ActiveInactiveTaskbarAppearance : TaskbarAppearance {
 			}
 		}
 	}
+
 private:
 	static constexpr std::wstring_view INACTIVE_KEY = L"inactive";
 };

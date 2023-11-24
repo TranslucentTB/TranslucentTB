@@ -63,6 +63,18 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 #ifdef _TRANSLUCENTTB_EXE
 	inline std::optional<TaskbarAppearance> FindRule(const Window window) const
 	{
+		const auto rule = FindRuleInner(window);
+		if (window.active())
+		{
+			return rule;
+		}
+		else
+		{
+			return rule.Inactive;
+		}
+	}
+
+	inline std::optional<TaskbarAppearance> FindRuleInner(const Window window) const
 		// This is the fastest because we do the less string manipulation, so always try it first
 		if (!ClassRules.empty())
 		{
@@ -70,13 +82,7 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 			{
 				if (const auto it = ClassRules.find(*className); it != ClassRules.end())
 				{
-					if (window.active()) {
-						return it->second;
-					}
-					else {
-						return it->second.Inactive;
-					}
-
+					return it->second;
 				}
 			}
 			else
@@ -93,12 +99,7 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 				{
 					if (const auto it = FileRules.find(file->filename().native()); it != FileRules.end())
 					{
-						if (window.active()) {
-							return it->second;
-						}
-						else {
-							return it->second.Inactive;
-						}
+						return it->second;
 					}
 				}
 				StdSystemErrorCatch(spdlog::level::warn, L"Failed to check if window process is part of window filter");
@@ -118,12 +119,7 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 				{
 					if (title->find(key) != std::wstring::npos)
 					{
-						if (window.active()) {
-							return value;
-						}
-						else {
-							return value.Inactive;
-						}
+						return value;
 					}
 				}
 			}
