@@ -63,15 +63,20 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 #ifdef _TRANSLUCENTTB_EXE
 	inline std::optional<TaskbarAppearance> FindRule(const Window window) const
 	{
-		const auto rule = FindRuleInner(window);
-		const auto active = window.active();
-		if (!window.active() && rule.Inactive)
+		if (const auto rule = FindRuleInner(window))
 		{
-			return rule.Inactive.value();
+			if (!window.active() && rule->Inactive)
+			{
+				return rule->Inactive.value();
+			}
+			else
+			{
+				return rule;
+			}
 		}
 		else
 		{
-			return rule;
+			return std::nullopt;
 		}
 	}
 
