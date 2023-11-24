@@ -44,10 +44,18 @@
       ]
     },
     "RuleSet": {
-      "type": "object",
-      "additionalProperties": {
+      "allOf": [
+        {
+          "properties": {
+            "inactive": {
+              "$ref": "#/$defs/TaskbarAppearance"
+            }
+          }
+        },
+        {
         "$ref": "#/$defs/TaskbarAppearance"
-      }
+        }
+      ]
     },
     "RuledTaskbarAppearance": {
       "allOf": [
@@ -56,13 +64,25 @@
             "rules": {
               "properties": {
                 "window_class": {
-                  "$ref": "#/$defs/RuleSet"
+                  "patternProperties": {
+                    "^.*$": {
+                      "$ref": "#/$defs/RuleSet"
+                    }
+                  }
                 },
                 "window_title": {
-                  "$ref": "#/$defs/RuleSet"
+                  "patternProperties": {
+                    "^.*$": {
+                      "$ref": "#/$defs/RuleSet"
+                    }
+                  }
                 },
                 "process_name": {
-                  "$ref": "#/$defs/RuleSet"
+                  "patternProperties": {
+                    "^.*$": {
+                      "$ref": "#/$defs/RuleSet"
+                    }
+                  }
                 }
               }
             }
