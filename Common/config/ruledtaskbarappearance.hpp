@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "optionaltaskbarappearance.hpp"
+#include "activeinactivetaskbarappearance.hpp"
 #include "rapidjsonhelper.hpp"
 #include "taskbarappearance.hpp"
 #include "../constants.hpp"
@@ -15,12 +16,12 @@
 #endif
 
 struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
-	std::unordered_map<std::wstring, TaskbarAppearance> ClassRules;
-	std::unordered_map<std::wstring, TaskbarAppearance> TitleRules;
-	win32::FilenameMap<TaskbarAppearance> FileRules;
+	std::unordered_map<std::wstring, ActiveInactiveTaskbarAppearance> ClassRules;
+	std::unordered_map<std::wstring, ActiveInactiveTaskbarAppearance> TitleRules;
+	win32::FilenameMap<ActiveInactiveTaskbarAppearance> FileRules;
 
 	RuledTaskbarAppearance() = default;
-	RuledTaskbarAppearance(std::unordered_map<std::wstring, TaskbarAppearance> classRules, std::unordered_map<std::wstring, TaskbarAppearance> titleRules, win32::FilenameMap<TaskbarAppearance> fileRules, bool enabled, ACCENT_STATE accent, Util::Color color, bool showPeek, bool showLine) :
+	RuledTaskbarAppearance(std::unordered_map<std::wstring, ActiveInactiveTaskbarAppearance> classRules, std::unordered_map<std::wstring, ActiveInactiveTaskbarAppearance> titleRules, win32::FilenameMap<ActiveInactiveTaskbarAppearance> fileRules, bool enabled, ACCENT_STATE accent, Util::Color color, bool showPeek, bool showLine) :
 		OptionalTaskbarAppearance(enabled, accent, color, showPeek, showLine),
 		ClassRules(std::move(classRules)),
 		TitleRules(std::move(titleRules)),
@@ -69,7 +70,13 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 			{
 				if (const auto it = ClassRules.find(*className); it != ClassRules.end())
 				{
-					return it->second;
+					if (window.active()) {
+						return it->second;
+					}
+					else {
+						return it->second.Inactive;
+					}
+
 				}
 			}
 			else
@@ -86,7 +93,12 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 				{
 					if (const auto it = FileRules.find(file->filename().native()); it != FileRules.end())
 					{
-						return it->second;
+						if (window.active()) {
+							return it->second;
+						}
+						else {
+							return it->second.Inactive;
+						}
 					}
 				}
 				StdSystemErrorCatch(spdlog::level::warn, L"Failed to check if window process is part of window filter");
@@ -106,7 +118,12 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 				{
 					if (title->find(key) != std::wstring::npos)
 					{
-						return value;
+						if (window.active()) {
+							return value;
+						}
+						else {
+							return value.Inactive;
+						}
 					}
 				}
 			}
@@ -123,7 +140,7 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 
 private:
 	template<typename Writer, typename Hash, typename Equal, typename Alloc>
-	inline static void SerializeRulesMap(Writer &writer, const std::unordered_map<std::wstring, TaskbarAppearance, Hash, Equal, Alloc> &map, std::wstring_view mapKey)
+	inline static void SerializeRulesMap(Writer &writer, const std::unordered_map<std::wstring, ActiveInactiveTaskbarAppearance, Hash, Equal, Alloc> &map, std::wstring_view mapKey)
 	{
 		rjh::WriteKey(writer, mapKey);
 		writer.StartObject();
@@ -163,7 +180,7 @@ private:
 	}
 
 	template<typename Hash, typename Equal, typename Alloc>
-	inline static void DeserializeMap(const rjh::value_t &obj, std::unordered_map<std::wstring, TaskbarAppearance, Hash, Equal, Alloc> &map, void (*unknownKeyCallback)(std::wstring_view))
+	inline static void DeserializeMap(const rjh::value_t &obj, std::unordered_map<std::wstring, ActiveInactiveTaskbarAppearance, Hash, Equal, Alloc>& map, void (*unknownKeyCallback)(std::wstring_view))
 	{
 		rjh::EnsureType(rj::Type::kObjectType, obj.GetType(), L"root node");
 
@@ -173,7 +190,7 @@ private:
 
 			const auto key = rjh::ValueToStringView(it->name);
 
-			TaskbarAppearance rule;
+			ActiveInactiveTaskbarAppearance rule;
 			rjh::Deserialize(it->value, rule, key, unknownKeyCallback);
 
 			map[std::wstring(key)] = rule;

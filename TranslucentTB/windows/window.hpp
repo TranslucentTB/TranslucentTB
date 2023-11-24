@@ -149,6 +149,11 @@ public:
 		return IsWindowVisible(m_WindowHandle);
 	}
 
+	inline bool active() const noexcept
+	{
+		return ForegroundWindow() == m_WindowHandle;
+	}
+
 	inline bool cloaked() const
 	{
 		const auto attr = get_attribute<DWMWA_CLOAKED>();
