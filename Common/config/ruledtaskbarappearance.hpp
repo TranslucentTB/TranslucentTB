@@ -75,6 +75,7 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 	}
 
 	inline std::optional<TaskbarAppearance> FindRuleInner(const Window window) const
+	{
 		// This is the fastest because we do the less string manipulation, so always try it first
 		if (!ClassRules.empty())
 		{
@@ -176,7 +177,7 @@ private:
 	}
 
 	template<typename Hash, typename Equal, typename Alloc>
-	inline static void DeserializeMap(const rjh::value_t &obj, std::unordered_map<std::wstring, ActiveInactiveTaskbarAppearance, Hash, Equal, Alloc>& map, void (*unknownKeyCallback)(std::wstring_view))
+	inline static void DeserializeMap(const rjh::value_t &obj, std::unordered_map<std::wstring, ActiveInactiveTaskbarAppearance, Hash, Equal, Alloc> &map, void (*unknownKeyCallback)(std::wstring_view))
 	{
 		rjh::EnsureType(rj::Type::kObjectType, obj.GetType(), L"root node");
 

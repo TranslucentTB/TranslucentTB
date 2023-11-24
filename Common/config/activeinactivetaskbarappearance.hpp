@@ -16,7 +16,7 @@ struct ActiveInactiveTaskbarAppearance : TaskbarAppearance {
 	{ }
 
 	template<typename Writer>
-	inline void Serialize(Writer& writer) const
+	inline void Serialize(Writer &writer) const
 	{
 		TaskbarAppearance::Serialize(writer);
 		if (Inactive.has_value()) {
@@ -24,7 +24,7 @@ struct ActiveInactiveTaskbarAppearance : TaskbarAppearance {
 		}
 	}
 
-	inline void Deserialize(const rjh::value_t& obj, void (*unknownKeyCallback)(std::wstring_view))
+	inline void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view))
 	{
 		rjh::EnsureType(rj::Type::kObjectType, obj.GetType(), L"root node");
 
