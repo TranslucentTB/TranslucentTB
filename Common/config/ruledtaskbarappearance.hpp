@@ -64,13 +64,14 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 	inline std::optional<TaskbarAppearance> FindRule(const Window window) const
 	{
 		const auto rule = FindRuleInner(window);
-		if (window.active())
+		const auto active = window.active();
+		if (!window.active() && rule.Inactive)
 		{
-			return rule;
+			return rule.Inactive.value();
 		}
 		else
 		{
-			return rule.Inactive;
+			return rule;
 		}
 	}
 
