@@ -9,8 +9,8 @@
 struct ActiveInactiveTaskbarAppearance : TaskbarAppearance {
 	std::optional<TaskbarAppearance> Inactive;
 
-	ActiveInactiveTaskbarAppearance() = default;
-	ActiveInactiveTaskbarAppearance(std::optional<TaskbarAppearance> inactive, ACCENT_STATE accent, Util::Color color, bool showPeek, bool showLine) :
+	constexpr ActiveInactiveTaskbarAppearance() noexcept = default;
+	constexpr ActiveInactiveTaskbarAppearance(std::optional<TaskbarAppearance> inactive, ACCENT_STATE accent, Util::Color color, bool showPeek, bool showLine) noexcept :
 		TaskbarAppearance(accent, color, showPeek, showLine),
 		Inactive(std::move(inactive))
 	{ }
@@ -19,7 +19,7 @@ struct ActiveInactiveTaskbarAppearance : TaskbarAppearance {
 	inline void Serialize(Writer &writer) const
 	{
 		TaskbarAppearance::Serialize(writer);
-		rjh::Serialize(writer, Inactive.value(), INACTIVE_KEY);
+		rjh::Serialize(writer, Inactive, INACTIVE_KEY);
 	}
 
 	inline void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view))

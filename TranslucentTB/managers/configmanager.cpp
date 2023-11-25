@@ -131,7 +131,7 @@ bool ConfigManager::LoadFromFile(FILE *f)
 	rj::AutoUTFInputStream<uint32_t, rj::FileReadStream> in(filestream);
 
 	rj::GenericDocument<rj::UTF16LE<>> doc;
-	if (const rj::ParseResult result = doc.ParseStream<rj::kParseCommentsFlag, rj::AutoUTF<uint32_t>>(in))
+	if (const rj::ParseResult result = doc.ParseStream<rj::kParseCommentsFlag | rj::kParseTrailingCommasFlag, rj::AutoUTF<uint32_t>>(in))
 	{
 		// remove the schema key to avoid a false unknown key warning
 		doc.RemoveMember(rjh::StringViewToValue(SCHEMA_KEY));
