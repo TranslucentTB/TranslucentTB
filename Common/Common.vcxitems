@@ -16,6 +16,7 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)appinfo.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arch.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)config\activeinactivetaskbarappearance.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config\ruledtaskbarappearance.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)simplefactory.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)undoc\explorer.hpp" />
