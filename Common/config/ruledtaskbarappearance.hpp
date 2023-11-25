@@ -80,6 +80,7 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 		}
 	}
 
+private:
 	inline std::optional<ActiveInactiveTaskbarAppearance> FindRuleInner(const Window window) const
 	{
 		// This is the fastest because we do the less string manipulation, so always try it first
@@ -136,6 +137,7 @@ struct RuledTaskbarAppearance : OptionalTaskbarAppearance {
 	}
 #endif
 
+public:
 	inline bool HasRules() const noexcept
 	{
 		return !(ClassRules.empty() && FileRules.empty() && TitleRules.empty());
