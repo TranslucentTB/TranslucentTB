@@ -19,9 +19,7 @@ struct ActiveInactiveTaskbarAppearance : TaskbarAppearance {
 	inline void Serialize(Writer &writer) const
 	{
 		TaskbarAppearance::Serialize(writer);
-		if (Inactive.has_value()) {
-			rjh::Serialize(writer, Inactive.value(), INACTIVE_KEY);
-		}
+		rjh::Serialize(writer, Inactive.value(), INACTIVE_KEY);
 	}
 
 	inline void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view))
@@ -35,9 +33,7 @@ struct ActiveInactiveTaskbarAppearance : TaskbarAppearance {
 			const auto key = rjh::ValueToStringView(it->name);
 			if (key == INACTIVE_KEY)
 			{
-				TaskbarAppearance appearance;
-				rjh::Deserialize(it->value, appearance, key, unknownKeyCallback);
-				Inactive.emplace(appearance);
+				rjh::Deserialize(it->value, Inactive, key, unknownKeyCallback);
 			}
 			else
 			{

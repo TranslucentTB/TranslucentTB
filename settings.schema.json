@@ -53,7 +53,7 @@
           }
         },
         {
-        "$ref": "#/$defs/TaskbarAppearance"
+          "$ref": "#/$defs/TaskbarAppearance"
         }
       ]
     },
@@ -64,24 +64,18 @@
             "rules": {
               "properties": {
                 "window_class": {
-                  "patternProperties": {
-                    "^.*$": {
+                  "additionalProperties": {
                       "$ref": "#/$defs/RuleSet"
-                    }
                   }
                 },
                 "window_title": {
-                  "patternProperties": {
-                    "^.*$": {
+                  "additionalProperties": {
                       "$ref": "#/$defs/RuleSet"
-                    }
                   }
                 },
                 "process_name": {
-                  "patternProperties": {
-                    "^.*$": {
+                  "additionalProperties": {
                       "$ref": "#/$defs/RuleSet"
-                    }
                   }
                 }
               }
