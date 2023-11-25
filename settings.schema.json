@@ -65,17 +65,17 @@
               "properties": {
                 "window_class": {
                   "additionalProperties": {
-                      "$ref": "#/$defs/RuleSet"
+                    "$ref": "#/$defs/RuleSet"
                   }
                 },
                 "window_title": {
                   "additionalProperties": {
-                      "$ref": "#/$defs/RuleSet"
+                    "$ref": "#/$defs/RuleSet"
                   }
                 },
                 "process_name": {
                   "additionalProperties": {
-                      "$ref": "#/$defs/RuleSet"
+                    "$ref": "#/$defs/RuleSet"
                   }
                 }
               }
