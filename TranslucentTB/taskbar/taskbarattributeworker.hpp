@@ -21,7 +21,7 @@
 #include "../dynamicloader.hpp"
 #include "../ExplorerHooks/api.hpp"
 #include "../ExplorerTAP/api.hpp"
-#include "../ExplorerTAP/Generated Files/ITaskbarAppearanceService.h"
+#include "ITaskbarAppearanceService.h"
 #include "launchervisibilitysink.hpp"
 #include "../windows/messagewindow.hpp"
 #include "undoc/user32.hpp"

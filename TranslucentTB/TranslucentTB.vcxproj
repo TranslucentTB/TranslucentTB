@@ -60,6 +60,7 @@
   </Target>
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);..\ExplorerTAP\Generated Files\$(Platform)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_TRANSLUCENTTB_EXE;WINRT_NO_MODULE_LOCK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
