@@ -7,7 +7,7 @@
   xmlns:uap8="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10">
-  <Identity Name="TranslucentTB" Publisher="CN=Charles Milette, O=Charles Milette, L=Greenfield Park, C=CA" Version="1.0.0.0" />
+  <Identity Name="TranslucentTB" Publisher="CN=TranslucentTB Open Source Developers" Version="1.0.0.0" />
   <Properties>
     <DisplayName>TranslucentTB</DisplayName>
     <PublisherDisplayName>ms-resource:PublisherDisplayName</PublisherDisplayName>
