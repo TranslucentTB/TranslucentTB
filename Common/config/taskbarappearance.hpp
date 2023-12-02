@@ -163,7 +163,7 @@ public:
 
 	operator txmp::TaskbarAppearance() const
 	{
-		return { static_cast<txmp::AccentState>(Accent), Color, ShowPeek, ShowLine };
+		return { static_cast<txmp::AccentState>(Accent), Color, ShowPeek, ShowLine, BlurRadius };
 	}
 #endif
 };

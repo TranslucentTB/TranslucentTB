@@ -9,9 +9,10 @@ namespace winrt::TranslucentTB::Xaml::Models::Primitives::implementation
 	struct TaskbarAppearance : TaskbarAppearanceT<TaskbarAppearance>
 	{
 		TaskbarAppearance() noexcept = default;
-		TaskbarAppearance(AccentState accent, Windows::UI::Color color, bool showPeek, bool showLine) noexcept :
+		TaskbarAppearance(AccentState accent, Windows::UI::Color color, bool showPeek, bool showLine, uint32_t blurRadius = 3) noexcept :
 			m_Accent(accent),
 			m_Color(color),
+			m_Radius(blurRadius),
 			m_ShowPeek(showPeek),
 			m_ShowLine(showLine)
 		{ }

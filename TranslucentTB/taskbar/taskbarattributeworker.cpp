@@ -518,7 +518,7 @@ void TaskbarAttributeWorker::SetAttribute(taskbar_iterator taskbar, TaskbarAppea
 
 			uint32_t colorValue;
 			if (config.Accent == ACCENT_ENABLE_BLURBEHIND)
-				colorValue = 3.0f;
+				colorValue = config.BlurRadius;
 			else
 				colorValue = color.ToABGR();
 
