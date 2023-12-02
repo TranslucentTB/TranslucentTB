@@ -6,6 +6,9 @@
 #include "constants.hpp"
 #include "util/color.hpp"
 
+#include "XamlCompositionBrush.h"
+#include "GaussianBlurEffect.h"
+
 extern "C"
 {
 	_Check_return_ HRESULT STDAPICALLTYPE DLLGETCLASSOBJECT_ENTRY(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ void** ppv);
@@ -61,6 +64,20 @@ HRESULT TaskbarAppearanceService::SetTaskbarAppearance(HWND taskbar, TaskbarBrus
 					solidBrush.Color(tint);
 
 					newBrush = std::move(solidBrush);
+				}
+				else if (brush == Blur)
+				{
+					auto compositor = wuxh::ElementCompositionPreview::GetElementVisual(info.background.control).Compositor();
+					auto backdropBrush = compositor.CreateBackdropBrush();
+					auto blurEffect = winrt::make<GaussianBlurEffect>().as<GaussianBlurEffect>();
+					blurEffect->Source = winrt::Windows::UI::Composition::CompositionEffectSourceParameter(L"blurSource");
+					blurEffect->BlurAmount = color;
+					auto factory = compositor.CreateEffectFactory(blurEffect.as<winrt::Windows::Graphics::Effects::IGraphicsEffect>());
+					auto blurBrush = factory.CreateBrush();
+					blurBrush.SetSourceParameter(L"blurSource", backdropBrush);
+
+					wux::Media::XamlCompositionBrushBase compBrush = winrt::make<XamlCompositionBrush>(blurBrush);
+					newBrush = std::move(compBrush);
 				}
 
 				info.background.control.Fill(newBrush);

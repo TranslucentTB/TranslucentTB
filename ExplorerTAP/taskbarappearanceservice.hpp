@@ -6,6 +6,7 @@
 #include <winrt/Windows.System.h>
 #include <winrt/Windows.UI.Xaml.Media.h>
 #include <winrt/Windows.UI.Xaml.Shapes.h>
+#include <winrt/Windows.UI.Xaml.Hosting.h>
 #include "redefgetcurrenttime.h"
 #include <wil/resource.h>
 
