@@ -69,10 +69,10 @@ HRESULT TaskbarAppearanceService::SetTaskbarAppearance(HWND taskbar, TaskbarBrus
 				{
 					auto compositor = wuxh::ElementCompositionPreview::GetElementVisual(info.background.control).Compositor();
 					auto backdropBrush = compositor.CreateBackdropBrush();
-					auto blurEffect = winrt::make<GaussianBlurEffect>().as<GaussianBlurEffect>();
-					blurEffect->Source = winrt::Windows::UI::Composition::CompositionEffectSourceParameter(L"blurSource");
+					auto blurEffect = winrt::make_self<GaussianBlurEffect>();
+					blurEffect->Source = wuc::CompositionEffectSourceParameter(L"blurSource");
 					blurEffect->BlurAmount = color;
-					auto factory = compositor.CreateEffectFactory(blurEffect.as<winrt::Windows::Graphics::Effects::IGraphicsEffect>());
+					auto factory = compositor.CreateEffectFactory(blurEffect.as<wge::IGraphicsEffect>());
 					auto blurBrush = factory.CreateBrush();
 					blurBrush.SetSourceParameter(L"blurSource", backdropBrush);
 

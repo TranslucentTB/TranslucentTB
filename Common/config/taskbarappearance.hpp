@@ -38,14 +38,8 @@ struct TaskbarAppearance {
 					return false;
 				}
 			}
-			else
-			{
-				// always works in Windows 10, but broken in Windows 11 besides RTM with KB5006746.
-				// since we check IsExactBuild above, using an inverted IsAtLeastBuild here 
-				// makes sure we return false for future versions of Windows 11 as well.
-				//return !win32::IsAtLeastBuild(22000);
-				return true;
-			}
+
+			return true;
 		}();
 
 		return isBlurSupported;
@@ -58,9 +52,10 @@ struct TaskbarAppearance {
 	bool ShowLine = true;
 
 	constexpr TaskbarAppearance() noexcept = default;
-	constexpr TaskbarAppearance(ACCENT_STATE accent, Util::Color color, bool showPeek, bool showLine) noexcept :
+	constexpr TaskbarAppearance(ACCENT_STATE accent, Util::Color color, bool showPeek, bool showLine, uint32_t blurRadius = 3) noexcept :
 		Accent(accent),
 		Color(color),
+		BlurRadius(blurRadius),
 		ShowPeek(showPeek),
 		ShowLine(showLine)
 	{ }
@@ -120,6 +115,9 @@ protected:
 		else if (key == RADIUS_KEY)
 		{
 			rjh::Deserialize(val, BlurRadius, key);
+
+			if (BlurRadius > 250)
+				BlurRadius = 250;
 		}
 		else if (key == SHOW_PEEK_KEY)
 		{
