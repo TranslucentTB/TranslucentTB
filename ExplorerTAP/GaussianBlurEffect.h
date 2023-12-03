@@ -12,12 +12,12 @@ struct GaussianBlurEffect : winrt::implements<GaussianBlurEffect, wge::IGraphics
 {
 public:
 	// IGraphicsEffectD2D1Interop
-	virtual HRESULT STDMETHODCALLTYPE GetEffectId(GUID* id) noexcept override;
-	virtual HRESULT STDMETHODCALLTYPE GetNamedPropertyMapping(LPCWSTR name, UINT* index, awge::GRAPHICS_EFFECT_PROPERTY_MAPPING* mapping) noexcept override;
-	virtual HRESULT STDMETHODCALLTYPE GetPropertyCount(UINT* count) noexcept override;
-	virtual HRESULT STDMETHODCALLTYPE GetProperty(UINT index, ABI::Windows::Foundation::IPropertyValue** value) noexcept override;
-	virtual HRESULT STDMETHODCALLTYPE GetSource(UINT index, awge::IGraphicsEffectSource** source) noexcept override;
-	virtual HRESULT STDMETHODCALLTYPE GetSourceCount(UINT* count) noexcept override;
+	HRESULT STDMETHODCALLTYPE GetEffectId(GUID* id) noexcept override;
+	HRESULT STDMETHODCALLTYPE GetNamedPropertyMapping(LPCWSTR name, UINT* index, awge::GRAPHICS_EFFECT_PROPERTY_MAPPING* mapping) noexcept override;
+	HRESULT STDMETHODCALLTYPE GetPropertyCount(UINT* count) noexcept override;
+	HRESULT STDMETHODCALLTYPE GetProperty(UINT index, ABI::Windows::Foundation::IPropertyValue** value) noexcept override;
+	HRESULT STDMETHODCALLTYPE GetSource(UINT index, awge::IGraphicsEffectSource** source) noexcept override;
+	HRESULT STDMETHODCALLTYPE GetSourceCount(UINT* count) noexcept override;
 
 	// IGraphicsEffect
 	winrt::hstring Name();

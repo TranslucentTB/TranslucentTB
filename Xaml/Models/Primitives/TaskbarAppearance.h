@@ -26,7 +26,7 @@ namespace winrt::TranslucentTB::Xaml::Models::Primitives::implementation
 	private:
 		AccentState m_Accent = AccentState::Normal;
 		Windows::UI::Color m_Color = { 0, 0, 0, 0 };
-		uint32_t m_Radius = 3.0f;
+		uint32_t m_Radius = 3;
 		bool m_ShowPeek = true;
 		bool m_ShowLine = true;
 	};
