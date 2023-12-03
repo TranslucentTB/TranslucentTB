@@ -71,5 +71,7 @@ private:
 	wil::unique_process_handle m_Process;
 	wilx::unique_any<UnregisterWait> m_WaitHandle;
 
+	bool m_wallpaperRefreshed;
+
 	static DWORD s_ProxyStubRegistrationCookie;
 };
