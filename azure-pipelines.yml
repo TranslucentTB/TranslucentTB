@@ -3,7 +3,7 @@ pool:
 
 variables:
   solution: $(Build.SourcesDirectory)/TranslucentTB.sln
-  VCPKG_BINARY_SOURCES: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,readwrite'
+  VCPKG_BINARY_SOURCES: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,readwrite'
 
 strategy:
   matrix:
