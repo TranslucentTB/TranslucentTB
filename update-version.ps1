@@ -1,4 +1,7 @@
-$tag = git describe --abbrev=0 --tags
+$ErrorActionPreference = "Stop"
+
+$tag_commit = git rev-list --tags --max-count=1
+$tag = git describe --tags $tag_commit
 $tag_commas = $tag.Replace(".", ",")
 $tag_hash = git show-ref -s $tag
 $commits_since_tag = git rev-list $tag_hash`...HEAD --count
