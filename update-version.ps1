@@ -1,3 +1,5 @@
+$ErrorActionPreference = "Stop"
+
 $tag = git describe --abbrev=0 --tags
 $tag_commas = $tag.Replace(".", ",")
 $tag_hash = git show-ref -s $tag
