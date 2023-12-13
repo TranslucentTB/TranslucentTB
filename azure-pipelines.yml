@@ -21,6 +21,8 @@ strategy:
       platform: x64
 
 steps:
+- checkout: self
+  fetchTags: true
 - powershell: .\update-version.ps1
   displayName: Update version info
 - script: git pull
