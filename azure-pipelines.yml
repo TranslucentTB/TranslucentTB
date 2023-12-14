@@ -39,12 +39,20 @@ steps:
   displayName: 'Restore NuGet packages'
   inputs:
     restoreSolution: $(solution)
+- ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+  - task: DownloadSecureFile@1
+    name: acsMetadata
+    displayName: 'Download Azure Code Signing metadata'
+    inputs:
+      secureFile: metadata.json
 - task: VSBuild@1
   displayName: 'Build solution'
   inputs:
     solution: $(solution)
     platform: $(platform)
     configuration: $(configuration)
+    ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+      msbuildArgs: /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)"
 - publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
   artifact: 'Portable $(platform) $(configuration)'
   displayName: 'Upload portable build'

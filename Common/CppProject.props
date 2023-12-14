@@ -51,8 +51,11 @@
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
 
-    <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'!=''">/tr $(CertificateTimestampServer) /td sha512</SignToolAdditionalArguments>
-    <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'==''"></SignToolAdditionalArguments>
+    <SignToolTimestampServer Condition="'$(CertificateTimestampServer)'!=''">/tr "$(CertificateTimestampServer)" /td sha512</SignToolTimestampServer>
+    <SignToolTimestampServer Condition="'$(CertificateTimestampServer)'==''"></SignToolTimestampServer>
+
+    <SignToolSignatureMethod Condition="'$(CertificateThumbprint)'!=''">/sha1 $(CertificateThumbprint)</SignToolSignatureMethod>
+    <SignToolSignatureMethod Condition="'$(AcsMetadata)'!=''">/dlib "$(AzureCodeSigningDlibFilePath)" /dmdf "$(AcsMetadata)"</SignToolSignatureMethod>
 
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
     <VcpkgTriplet>$(Platform.ToLowerInvariant())-windows</VcpkgTriplet>
@@ -124,15 +127,16 @@
     </ClCompile>
   </ItemDefinitionGroup>
 
-  <ItemDefinitionGroup Condition="'$(CertificateThumbprint)'!=''">
+  <ItemDefinitionGroup Condition="'$(SkipSigning)'!='True' And ('$(CertificateThumbprint)'!='' Or '$(AcsMetadata)'!='')">
     <ClCompile>
       <PreprocessorDefinitions>SIGNED_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalOptions>/ALLOWBIND:NO %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(AcsMetadata)'!=''">/INTEGRITYCHECK %(AdditionalOptions)</AdditionalOptions>
     </Link>
-    <CustomBuildStep Condition="'$(SkipSigning)'!='True'">
-      <Command>signtool.exe sign /ph $(SignToolAdditionalArguments) /fd sha512 /sha1 $(CertificateThumbprint) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>
+    <CustomBuildStep Condition="">
+      <Command>signtool.exe sign /ph $(SignToolTimestampServer) /fd sha512 $(SignToolSignatureMethod) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>
       <Message>Signing $(TargetPath)</Message>
       <Inputs>$(TargetPath)</Inputs>
       <Outputs>$(OutDir)sign\$(ProjectName)-sign.out</Outputs>
