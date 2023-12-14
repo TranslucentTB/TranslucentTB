@@ -66,6 +66,10 @@ steps:
     configuration: $(configuration)
     ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
       msbuildArgs: /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256
+- ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+  - script: az account clear
+    displayName: Logout from Azure
+    condition: always()
 - publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
   artifact: 'Portable $(platform) $(configuration)'
   displayName: 'Upload portable build'
