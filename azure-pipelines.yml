@@ -56,7 +56,7 @@ steps:
         echo "##vso[task.setvariable variable=azure_tenant_id;issecret=true]$env:tenantId"
         echo "##vso[task.setvariable variable=azure_service_principal_id;issecret=true]$env:servicePrincipalId"
         echo "##vso[task.setvariable variable=azure_federated_token;issecret=true]$env:federatedToken"
-  - script: az login --service-principal -u "$(azure_service_principal_id)" --tenant "$(azure_tenant_id)" --allow-no-subscriptions --federated-token "$(azure_federated_token)"
+  - script: echo az login --service-principal -u "$(azure_service_principal_id)" --tenant "$(azure_tenant_id)" --allow-no-subscriptions --federated-token "$(azure_federated_token)"
     displayName: Authenticate to Azure
 - task: VSBuild@1
   displayName: 'Build solution'
