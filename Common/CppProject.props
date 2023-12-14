@@ -57,7 +57,7 @@
     <SignToolTimestampServer Condition="'$(CertificateTimestampServer)'==''"></SignToolTimestampServer>
 
     <SignToolSignatureMethod Condition="'$(CertificateThumbprint)'!=''">/sha1 $(CertificateThumbprint)</SignToolSignatureMethod>
-    <SignToolSignatureMethod Condition="'$(AcsMetadata)'!=''">/dlib "$(AzureCodeSigningDlibFilePath)" /dmdf "$(AcsMetadata)"</SignToolSignatureMethod>
+    <SignToolSignatureMethod Condition="'$(AcsMetadata)'!=''">/dlib "$(AzureCodeSigningDlibBinFolder)\$(SignToolArchitecture)\Azure.CodeSigning.Dlib.dll" /dmdf "$(AcsMetadata)"</SignToolSignatureMethod>
 
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
     <VcpkgTriplet>$(Platform.ToLowerInvariant())-windows</VcpkgTriplet>
@@ -138,8 +138,7 @@
       <AdditionalOptions Condition="'$(AcsMetadata)'!=''">/INTEGRITYCHECK %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <CustomBuildStep>
-      <Command>where signtool</Command>
-      <!--<Command>signtool.exe sign /ph $(SignToolTimestampServer) /fd $(SignToolDigestAlgorithm) $(SignToolSignatureMethod) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>-->
+      <Command>"$(WindowsSDKBuildToolsBinVersionedArchFolder)\signtool.exe" sign /ph $(SignToolTimestampServer) /fd $(SignToolDigestAlgorithm) $(SignToolSignatureMethod) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>
       <Message>Signing $(TargetPath)</Message>
       <Inputs>$(TargetPath)</Inputs>
       <Outputs>$(OutDir)sign\$(ProjectName)-sign.out</Outputs>
