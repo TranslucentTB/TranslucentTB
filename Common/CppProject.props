@@ -138,7 +138,7 @@
       <AdditionalOptions Condition="'$(AcsMetadata)'!=''">/INTEGRITYCHECK %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <CustomBuildStep>
-      <Command>"$(WindowsSDKBuildToolsBinVersionedArchFolder)\signtool.exe" sign /ph $(SignToolTimestampServer) /fd $(SignToolDigestAlgorithm) $(SignToolSignatureMethod) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>
+      <Command>"$(WindowsSDKBuildToolsBinVersionedArchFolder)\signtool.exe" sign /v /debug /ph $(SignToolTimestampServer) /fd $(SignToolDigestAlgorithm) $(SignToolSignatureMethod) "$(TargetPath)"</Command> <!--  > "$(OutDir)sign\$(ProjectName)-sign.out" -->
       <Message>Signing $(TargetPath)</Message>
       <Inputs>$(TargetPath)</Inputs>
       <Outputs>$(OutDir)sign\$(ProjectName)-sign.out</Outputs>
