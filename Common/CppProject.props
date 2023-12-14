@@ -135,8 +135,8 @@
       <AdditionalOptions>/ALLOWBIND:NO %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AcsMetadata)'!=''">/INTEGRITYCHECK %(AdditionalOptions)</AdditionalOptions>
     </Link>
-    <CustomBuildStep Condition="">
-      <Command>signtool.exe sign /ph $(SignToolTimestampServer) /fd sha512 $(SignToolSignatureMethod) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>
+    <CustomBuildStep>
+      <Command>signtool.exe sign /v /debug /ph $(SignToolTimestampServer) /fd sha512 $(SignToolSignatureMethod) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>
       <Message>Signing $(TargetPath)</Message>
       <Inputs>$(TargetPath)</Inputs>
       <Outputs>$(OutDir)sign\$(ProjectName)-sign.out</Outputs>
