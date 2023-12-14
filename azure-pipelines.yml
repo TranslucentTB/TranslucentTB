@@ -64,7 +64,6 @@ steps:
     solution: $(solution)
     platform: $(platform)
     configuration: $(configuration)
-    maximumCpuCount: true
     ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
       msbuildArgs: /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256
 - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
