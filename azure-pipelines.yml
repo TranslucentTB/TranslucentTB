@@ -52,7 +52,7 @@ steps:
     platform: $(platform)
     configuration: $(configuration)
     ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-      msbuildArgs: /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)"
+      msbuildArgs: /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256
 - publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
   artifact: 'Portable $(platform) $(configuration)'
   displayName: 'Upload portable build'

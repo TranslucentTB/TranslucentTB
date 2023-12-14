@@ -51,7 +51,9 @@
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
 
-    <SignToolTimestampServer Condition="'$(CertificateTimestampServer)'!=''">/tr "$(CertificateTimestampServer)" /td sha512</SignToolTimestampServer>
+    <SignToolDigestAlgorithm Condition="'$(SignToolDigestAlgorithm)'==''">sha512</SignToolDigestAlgorithm>
+
+    <SignToolTimestampServer Condition="'$(CertificateTimestampServer)'!=''">/tr "$(CertificateTimestampServer)" /td $(SignToolDigestAlgorithm)</SignToolTimestampServer>
     <SignToolTimestampServer Condition="'$(CertificateTimestampServer)'==''"></SignToolTimestampServer>
 
     <SignToolSignatureMethod Condition="'$(CertificateThumbprint)'!=''">/sha1 $(CertificateThumbprint)</SignToolSignatureMethod>
@@ -136,7 +138,8 @@
       <AdditionalOptions Condition="'$(AcsMetadata)'!=''">/INTEGRITYCHECK %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <CustomBuildStep>
-      <Command>signtool.exe sign /v /debug /ph $(SignToolTimestampServer) /fd sha512 $(SignToolSignatureMethod) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>
+      <Command>where signtool</Command>
+      <!--<Command>signtool.exe sign /ph $(SignToolTimestampServer) /fd $(SignToolDigestAlgorithm) $(SignToolSignatureMethod) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>-->
       <Message>Signing $(TargetPath)</Message>
       <Inputs>$(TargetPath)</Inputs>
       <Outputs>$(OutDir)sign\$(ProjectName)-sign.out</Outputs>
