@@ -3,7 +3,7 @@ pool:
 
 variables:
   solution: $(Build.SourcesDirectory)/TranslucentTB.sln
-  VCPKG_BINARY_SOURCES: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,readwrite'
+  VCPKG_BINARY_SOURCES: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,readwrite'
 
 strategy:
   matrix:
@@ -39,12 +39,37 @@ steps:
   displayName: 'Restore NuGet packages'
   inputs:
     restoreSolution: $(solution)
+- ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+  - task: DownloadSecureFile@1
+    name: acsMetadata
+    displayName: 'Download Azure Code Signing metadata'
+    inputs:
+      secureFile: metadata.json
+  - task: AzureCLI@2
+    displayName: Get Azure Credentials
+    inputs:
+      azureSubscription: Azure Code Signing
+      scriptType: pscore
+      scriptLocation: inlineScript
+      addSpnToEnvironment: true
+      inlineScript: |
+        echo "##vso[task.setvariable variable=azure_tenant_id;issecret=true]$env:tenantId"
+        echo "##vso[task.setvariable variable=azure_service_principal_id;issecret=true]$env:servicePrincipalId"
+        echo "##vso[task.setvariable variable=azure_federated_token;issecret=true]$env:idToken"
+  - script: az login --service-principal -u "$(azure_service_principal_id)" --tenant "$(azure_tenant_id)" --allow-no-subscriptions --federated-token "$(azure_federated_token)"
+    displayName: Authenticate to Azure
 - task: VSBuild@1
   displayName: 'Build solution'
   inputs:
     solution: $(solution)
     platform: $(platform)
     configuration: $(configuration)
+    ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+      msbuildArgs: /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256
+- ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+  - script: az account clear
+    displayName: Logout from Azure
+    condition: always()
 - publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
   artifact: 'Portable $(platform) $(configuration)'
   displayName: 'Upload portable build'
