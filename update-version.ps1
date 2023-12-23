@@ -34,7 +34,7 @@ if ($is_shallow -eq "true")
 			$repo_name = $matches[1]
 			if ($repo_name.EndsWith(".git"))
 			{
-				$repo_name = $repo_name.Substring(0, $repo_name.LastIndexOf("/"))
+				$repo_name = $repo_name.Substring(0, $repo_name.LastIndexOf("."))
 			}
 		}
 	}
