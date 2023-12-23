@@ -39,7 +39,7 @@ steps:
   displayName: 'Restore NuGet packages'
   inputs:
     restoreSolution: $(solution)
-- ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+- ${{ if ne(variables['System.PullRequest.IsFork'], 'True') }}:
   - task: DownloadSecureFile@1
     name: acsMetadata
     displayName: 'Download Azure Code Signing metadata'
@@ -64,9 +64,9 @@ steps:
     solution: $(solution)
     platform: $(platform)
     configuration: $(configuration)
-    ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+    ${{ if ne(variables['System.PullRequest.IsFork'], 'True') }}:
       msbuildArgs: /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256
-- ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+- ${{ if ne(variables['System.PullRequest.IsFork'], 'True') }}:
   - script: az account clear
     displayName: Logout from Azure
     condition: always()
