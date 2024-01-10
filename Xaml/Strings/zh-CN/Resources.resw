@@ -237,7 +237,7 @@
     <value>不透明</value>
   </data>
   <data name="TrayFlyoutPage_OpenAtBoot.Text" xml:space="preserve">
-    <value>开机自启动</value>
+    <value>开机自启</value>
   </data>
   <data name="TrayFlyoutPage_PeekButton.Text" xml:space="preserve">
     <value>显示桌面预览按钮</value>
