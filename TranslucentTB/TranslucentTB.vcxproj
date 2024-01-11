@@ -121,6 +121,7 @@
     <ClInclude Include="windows\windowclass.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ResourceCompile Include="..\..\TranslucentTB1\TranslucentTB\resources\language\TranslucentTB.uk-UA.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.de-DE.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.en-US.rc2" />
     <ResourceCompile Include="resources\language\TranslucentTB.es-US.rc2" />
