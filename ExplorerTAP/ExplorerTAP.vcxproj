@@ -17,7 +17,7 @@
       <PreprocessorDefinitions>EXPLORERTAP_EXPORTS;WINRT_NO_MODULE_LOCK;RPCPROXY_ENABLE_CPP_NO_CINTERFACE;PROXY_CLSID_IS={ 0xe8721a60, 0x3798, 0x448f, { 0xa0, 0x1b, 0xdc, 0x4a, 0xf6, 0x5a, 0x78, 0xb } };ENTRY_PREFIX=PSFactory_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Ole32.lib;OleAut32.lib;rpcrt4.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>Ole32.lib;OleAut32.lib;rpcrt4.lib;runtimeobject.lib;user32.lib</AdditionalDependencies>
       <ModuleDefinitionFile>ExplorerTAP.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
     </Link>

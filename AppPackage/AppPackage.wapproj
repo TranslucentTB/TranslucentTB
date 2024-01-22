@@ -101,8 +101,12 @@
     <PropertyPageSchema Include="ResourceFileMapping.xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.CodeSigning.Client" Version="1.0.43" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428" />
+    <PackageReference Include="Azure.CodeSigning.Client" Version="1.0.43">
+      <IncludeAssets>build</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428">
+      <IncludeAssets>build</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <Target Name="FlattenPackage" BeforeTargets="_ConvertItems">
     <ItemGroup>
