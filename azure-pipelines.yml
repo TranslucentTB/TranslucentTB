@@ -18,10 +18,8 @@ pr:
     - '*'
 
 variables:
-  acsTimestampServer: http://timestamp.acs.microsoft.com
-  solution: $(Build.SourcesDirectory)/TranslucentTB.sln
-
-variables:
+- acsTimestampServer: http://timestamp.acs.microsoft.com
+- solution: $(Build.SourcesDirectory)/TranslucentTB.sln
 - ${{ if not(startsWith('refs/tags/', variables['Build.SourceBranch'])) }}:
   - VCPKG_BINARY_SOURCES: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,readwrite'
 - ${{ else }}:
