@@ -18,14 +18,19 @@ pr:
     - '*'
 
 variables:
-- acsTimestampServer: http://timestamp.acs.microsoft.com
-- solution: $(Build.SourcesDirectory)/TranslucentTB.sln
+- name: acsTimestampServer
+  value: http://timestamp.acs.microsoft.com
+- name: solution
+  value: $(Build.SourcesDirectory)/TranslucentTB.sln
 - ${{ if not(startsWith('refs/tags/', variables['Build.SourceBranch'])) }}:
-  - VCPKG_BINARY_SOURCES: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,readwrite'
+  - name: VCPKG_BINARY_SOURCES
+    value: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,readwrite'
 - ${{ else }}:
   - group: Azure Code Signing
-  - configuration: Release
-  - packageSigningArgs: /p:AppxPackageSigningTimestampServerUrl="$(acsTimestampServer)" /p:AppxPackageSigningTimestampDigestAlgorithm=SHA256 /p:AzureCodeSigningEnabled=true /p:AzureCodeSigningEndpoint="$(acsEndpoint)" /p:AzureCodeSigningAccountName="$(acsAccountName)" /p:AzureCodeSigningCertificateProfileName="$(acsProfileName)"
+  - name: configuration
+    value: Release
+  - name: packageSigningArgs
+    value: /p:AppxPackageSigningTimestampServerUrl="$(acsTimestampServer)" /p:AppxPackageSigningTimestampDigestAlgorithm=SHA256 /p:AzureCodeSigningEnabled=true /p:AzureCodeSigningEndpoint="$(acsEndpoint)" /p:AzureCodeSigningAccountName="$(acsAccountName)" /p:AzureCodeSigningCertificateProfileName="$(acsProfileName)"
 
 strategy:
 - ${{ if not(startsWith('refs/tags/', variables['Build.SourceBranch'])) }}:
