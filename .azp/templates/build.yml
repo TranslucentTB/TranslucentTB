@@ -63,7 +63,7 @@ steps:
     ${{ if eq(parameters.signBuild, true) }}:
       msbuildArgs: ${{ parameters.extraMsbuildArgs }} /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256 /p:BuildType=${{ parameters.buildType }}
     ${{ else }}:
-      msbuildArgs: /p:BuildType=${{ parameters.buildType }}
+      msbuildArgs: ${{ parameters.extraMsbuildArgs }} /p:BuildType=${{ parameters.buildType }}
 - ${{ if eq(parameters.signBuild, true) }}:
   - script: az account clear
     displayName: Logout from Azure
