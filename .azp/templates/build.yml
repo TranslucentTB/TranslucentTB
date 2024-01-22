@@ -1,24 +1,24 @@
 parameters:
-- name: fileToBuild
-  default: $(Build.SourcesDirectory)/TranslucentTB.sln
 - name: platform
   default: ''
 - name: configuration
   default: ''
+- name: fileToBuild
+  default: $(Build.SourcesDirectory)/TranslucentTB.sln
 - name: extraMsbuildArgs
   default: ''
 - name: signBuild
   type: boolean
   default: false
+- name: buildType
+  default: ''
 
 steps:
 - checkout: self
   fetchTags: true
-- powershell: .\update-version.ps1
+- powershell: $(Build.SourcesDirectory)/.azp/update-version.ps1
   displayName: Update version info
-- powershell: .\get-build-type.ps1
-  displayName: Determine build type
-- powershell: .\update-manifest.ps1
+- powershell: $(Build.SourcesDirectory)/.azp/update-manifest.ps1 -BuildType ${{ parameters.buildType }}
   displayName: Update app manifest
 - script: git pull
   displayName: 'Update vcpkg ports'
@@ -61,9 +61,9 @@ steps:
       platform: ${{ parameters.platform }}
     solution: ${{ parameters.fileToBuild }}
     ${{ if eq(parameters.signBuild, true) }}:
-      msbuildArgs: ${{ parameters.extraMsbuildArgs }} /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256 /p:BuildType=$(build_type)
+      msbuildArgs: ${{ parameters.extraMsbuildArgs }} /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256 /p:BuildType=${{ parameters.buildType }}
     ${{ else }}:
-      msbuildArgs: /p:BuildType=$(build_type)
+      msbuildArgs: /p:BuildType=${{ parameters.buildType }}
 - ${{ if eq(parameters.signBuild, true) }}:
   - script: az account clear
     displayName: Logout from Azure

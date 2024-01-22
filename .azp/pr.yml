@@ -27,12 +27,12 @@ strategy:
       configuration: Release
       platform: x64
 
-
 steps:
 - template: templates/build.yml
   parameters:
     platform: $(platform)
     configuration: $(configuration)
+    buildType: Dev
 - task: VSTest@2
   displayName: 'Run unit tests'
   condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'))

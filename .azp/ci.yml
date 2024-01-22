@@ -11,8 +11,6 @@ variables:
 - name: VCPKG_BINARY_SOURCES
   value: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,readwrite'
 - group: Azure Code Signing
-- name: packageSigningArgs
-  value: /p:AppxPackageSigningTimestampServerUrl="http://timestamp.acs.microsoft.com" /p:AppxPackageSigningTimestampDigestAlgorithm=SHA256 /p:AzureCodeSigningEnabled=true /p:AzureCodeSigningEndpoint="$(acsEndpoint)" /p:AzureCodeSigningAccountName="$(acsAccountName)" /p:AzureCodeSigningCertificateProfileName="$(acsProfileName)"
 
 strategy:
   matrix:
@@ -35,7 +33,9 @@ steps:
   parameters:
     platform: $(platform)
     configuration: $(configuration)
-    extraMsbuildArgs: $[packageSigningArgs] # important to use [], which will cause an empty string if the variable doesn't exist
+    signBuild: true
+    extraMsbuildArgs: /p:AppxPackageSigningTimestampServerUrl="http://timestamp.acs.microsoft.com" /p:AppxPackageSigningTimestampDigestAlgorithm=SHA256 /p:AzureCodeSigningEnabled=true /p:AzureCodeSigningEndpoint="$(acsEndpoint)" /p:AzureCodeSigningAccountName="$(acsAccountName)" /p:AzureCodeSigningCertificateProfileName="$(acsProfileName)"
+    buildType: Canary
 - task: VSTest@2
   displayName: 'Run unit tests'
   condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'))

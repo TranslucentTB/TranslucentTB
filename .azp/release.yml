@@ -11,4 +11,6 @@ steps:
   parameters:
     configuration: Release
     fileToBuild: $(Build.SourcesDirectory)/AppPackage/AppPackage.wapproj
+    signBuild: true
+    buildType: Release
 # TODO: upload msixupload to the store (or artifacts), zip up portable release and create GH release draft.
