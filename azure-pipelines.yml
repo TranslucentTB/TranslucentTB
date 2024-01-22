@@ -33,20 +33,20 @@ variables:
     value: /p:AppxPackageSigningTimestampServerUrl="$(acsTimestampServer)" /p:AppxPackageSigningTimestampDigestAlgorithm=SHA256 /p:AzureCodeSigningEnabled=true /p:AzureCodeSigningEndpoint="$(acsEndpoint)" /p:AzureCodeSigningAccountName="$(acsAccountName)" /p:AzureCodeSigningCertificateProfileName="$(acsProfileName)"
 
 strategy:
-  matrix:
-  - ${{ if not(startsWith('refs/tags/', variables['Build.SourceBranch'])) }}:
-    'ARM64 Debug':
-      configuration: Debug
-      platform: ARM64
-    'ARM64 Release':
-      configuration: Release
-      platform: ARM64
-    'x64 Debug':
-      configuration: Debug
-      platform: x64
-    'x64 Release':
-      configuration: Release
-      platform: x64
+  ${{ if not(startsWith('refs/tags/', variables['Build.SourceBranch'])) }}:
+    matrix:
+      'ARM64 Debug':
+        configuration: Debug
+        platform: ARM64
+      'ARM64 Release':
+        configuration: Release
+        platform: ARM64
+      'x64 Debug':
+        configuration: Debug
+        platform: x64
+      'x64 Release':
+        configuration: Release
+        platform: x64
 
 
 steps:
