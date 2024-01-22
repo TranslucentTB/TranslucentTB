@@ -42,15 +42,17 @@
     <AppxDefaultResourceQualifiers>Language=en-us;de-de;es-us;id-id;ja-jp;tr-tr;zh-cn;zh-tw;ru-ru</AppxDefaultResourceQualifiers>
     <!-- Prevent ucrtbased.dll from being copied to the output -->
     <DisableImplicitUCRTReference>true</DisableImplicitUCRTReference>
+	<UseSdkBuildToolsPackage>true</UseSdkBuildToolsPackage>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(BuildType)'=='Release'">
+    <AppxBundle>Always</AppxBundle>
+    <UapAppxPackageBuildMode>StoreUpload</UapAppxPackageBuildMode>
   </PropertyGroup>
   <PropertyGroup Condition="'$(CertificateThumbprint)'!=''">
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
     <PackageCertificateThumbprint>$(CertificateThumbprint)</PackageCertificateThumbprint>
     <AppxPackageSigningTimestampServerUrl Condition="'$(CertificateTimestampServer)'!=''">$(CertificateTimestampServer)</AppxPackageSigningTimestampServerUrl>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA512</AppxPackageSigningTimestampDigestAlgorithm>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(CertificateThumbprint)'==''">
-    <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -96,6 +98,10 @@
   </ItemGroup>
   <ItemGroup>
     <PropertyPageSchema Include="ResourceFileMapping.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Azure.CodeSigning.Client" Version="1.0.43" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428" />
   </ItemGroup>
   <Target Name="FlattenPackage" BeforeTargets="_ConvertItems">
     <ItemGroup>

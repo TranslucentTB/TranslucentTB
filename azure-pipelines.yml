@@ -1,30 +1,61 @@
 pool:
   vmImage: 'windows-2022'
 
-variables:
-  solution: $(Build.SourcesDirectory)/TranslucentTB.sln
-  VCPKG_BINARY_SOURCES: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,readwrite'
+trigger:
+  batch: true
+  branches:
+    include:
+    - '*'
+  tags:
+    include:
+    - '*'
 
-strategy:
-  matrix:
-    'ARM64 Debug':
-      configuration: Debug
-      platform: ARM64
-    'ARM64 Release':
-      configuration: Release
-      platform: ARM64
-    'x64 Debug':
-      configuration: Debug
-      platform: x64
-    'x64 Release':
-      configuration: Release
-      platform: x64
+pr:
+  autoCancel: true
+  drafts: true
+  branches:
+    include:
+    - '*'
+
+variables:
+  acsTimestampServer: http://timestamp.acs.microsoft.com
+  solution: $(Build.SourcesDirectory)/TranslucentTB.sln
+
+${{ if not(startsWith('refs/tags/', variables['Build.SourceBranch'])) }}:
+  variables:
+    VCPKG_BINARY_SOURCES: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,readwrite'
+
+  strategy:
+    matrix:
+      'ARM64 Debug':
+        configuration: Debug
+        platform: ARM64
+      'ARM64 Release':
+        configuration: Release
+        platform: ARM64
+      'x64 Debug':
+        configuration: Debug
+        platform: x64
+      'x64 Release':
+        configuration: Release
+        platform: x64
+${{ else }}:
+  variables:
+  - group: Azure Code Signing
+
+  variables:
+    configuration: Release
+    packageSigningArgs: /p:AppxPackageSigningTimestampServerUrl="$(acsTimestampServer)" /p:AppxPackageSigningTimestampDigestAlgorithm=SHA256 /p:AzureCodeSigningEnabled=true /p:AzureCodeSigningEndpoint="$(acsEndpoint)" /p:AzureCodeSigningAccountName="$(acsAccountName)" /p:AzureCodeSigningCertificateProfileName="$(acsProfileName)"
 
 steps:
 - checkout: self
   fetchTags: true
 - powershell: .\update-version.ps1
   displayName: Update version info
+- powershell: .\get-build-type.ps1
+  displayName: Determine build type
+- powershell: .\update-manifest.ps1
+  displayName: Update app manifest
 - script: git pull
   displayName: 'Update vcpkg ports'
   workingDirectory: C:\vcpkg
@@ -61,27 +92,35 @@ steps:
 - task: VSBuild@1
   displayName: 'Build solution'
   inputs:
-    solution: $(solution)
-    platform: $(platform)
     configuration: $(configuration)
+    ${{ if startsWith('refs/tags/', variables['Build.SourceBranch']) }}:
+      solution: $(Build.SourcesDirectory)/AppPackage/AppPackage.wapproj
+    ${{ else }}:
+      solution: $(solution)
+      platform: $(platform)
     ${{ if ne(variables['System.PullRequest.IsFork'], 'True') }}:
-      msbuildArgs: /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256
+      msbuildArgs: $[packageSigningArgs] /p:CertificateTimestampServer="$(acsTimestampServer)" /p:AcsMetadata="$(acsMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256 /p:BuildType=$(build_type)
+    ${{ else }}:
+      msbuildArgs: /p:BuildType=$(build_type)
 - ${{ if ne(variables['System.PullRequest.IsFork'], 'True') }}:
   - script: az account clear
     displayName: Logout from Azure
     condition: always()
-- publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
-  artifact: 'Portable $(platform) $(configuration)'
-  displayName: 'Upload portable build'
-- publish: $(Build.SourcesDirectory)\AppPackage\AppPackages
-  artifact: 'MSIX $(platform) $(configuration)'
-  displayName: 'Upload MSIX package'
-- task: VSTest@2
-  displayName: 'Run unit tests'
-  condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'))
-  inputs:
-    testAssemblyVer2: $(platform)\$(configuration)\Tests.exe
-    runInParallel: true
-    platform: $(platform)
-    configuration: $(configuration)
-    testRunTitle: '$(platform) $(configuration)'
+- ${{ if startsWith('refs/tags/', variables['Build.SourceBranch']) }}:
+  # TODO: upload msixupload to the store (or artifacts), zip up portable release and create GH release draft.
+- ${{ else }}:
+  - task: VSTest@2
+    displayName: 'Run unit tests'
+    condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'))
+    inputs:
+      testAssemblyVer2: $(platform)\$(configuration)\Tests.exe
+      runInParallel: true
+      platform: $(platform)
+      configuration: $(configuration)
+      testRunTitle: '$(platform) $(configuration)'
+  - publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
+    artifact: 'Portable $(platform) $(configuration)'
+    displayName: 'Upload portable build'
+  - publish: $(Build.SourcesDirectory)\AppPackage\AppPackages
+    artifact: 'MSIX $(platform) $(configuration)'
+    displayName: 'Upload MSIX package'
