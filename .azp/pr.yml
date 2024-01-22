@@ -1,6 +1,8 @@
 pool:
   vmImage: 'windows-2022'
 
+trigger: none
+
 pr:
   autoCancel: true
   drafts: true
