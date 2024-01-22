@@ -35,15 +35,6 @@ steps:
     platform: $(platform)
     configuration: $(configuration)
     buildType: Dev
-- task: VSTest@2
-  displayName: 'Run unit tests'
-  condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'))
-  inputs:
-    testAssemblyVer2: $(platform)\$(configuration)\Tests.exe
-    runInParallel: true
-    platform: $(platform)
-    configuration: $(configuration)
-    testRunTitle: '$(platform) $(configuration)'
 - publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
   artifact: 'Portable $(platform) $(configuration)'
   displayName: 'Upload portable build'

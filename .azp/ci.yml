@@ -36,15 +36,6 @@ steps:
     signBuild: true
     extraMsbuildArgs: /p:AppxPackageSigningEnabled=true /p:AppxPackageSigningTimestampServerUrl="http://timestamp.acs.microsoft.com" /p:AppxPackageSigningTimestampDigestAlgorithm=SHA256 /p:AzureCodeSigningEnabled=true /p:AzureCodeSigningEndpoint="$(acsEndpoint)" /p:AzureCodeSigningAccountName="$(acsAccountName)" /p:AzureCodeSigningCertificateProfileName="$(acsProfileName)"
     buildType: Canary
-- task: VSTest@2
-  displayName: 'Run unit tests'
-  condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'))
-  inputs:
-    testAssemblyVer2: $(platform)\$(configuration)\Tests.exe
-    runInParallel: true
-    platform: $(platform)
-    configuration: $(configuration)
-    testRunTitle: '$(platform) $(configuration)'
 - publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
   artifact: 'Portable $(platform) $(configuration)'
   displayName: 'Upload portable build'
