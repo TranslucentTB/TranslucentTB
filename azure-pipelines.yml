@@ -21,31 +21,30 @@ variables:
   acsTimestampServer: http://timestamp.acs.microsoft.com
   solution: $(Build.SourcesDirectory)/TranslucentTB.sln
 
-${{ if not(startsWith('refs/tags/', variables['Build.SourceBranch'])) }}:
-  variables:
-    VCPKG_BINARY_SOURCES: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,readwrite'
-
-  strategy:
-    matrix:
-      'ARM64 Debug':
-        configuration: Debug
-        platform: ARM64
-      'ARM64 Release':
-        configuration: Release
-        platform: ARM64
-      'x64 Debug':
-        configuration: Debug
-        platform: x64
-      'x64 Release':
-        configuration: Release
-        platform: x64
-${{ else }}:
-  variables:
+variables:
+- ${{ if not(startsWith('refs/tags/', variables['Build.SourceBranch'])) }}:
+  - VCPKG_BINARY_SOURCES: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,readwrite'
+- ${{ else }}:
   - group: Azure Code Signing
+  - configuration: Release
+  - packageSigningArgs: /p:AppxPackageSigningTimestampServerUrl="$(acsTimestampServer)" /p:AppxPackageSigningTimestampDigestAlgorithm=SHA256 /p:AzureCodeSigningEnabled=true /p:AzureCodeSigningEndpoint="$(acsEndpoint)" /p:AzureCodeSigningAccountName="$(acsAccountName)" /p:AzureCodeSigningCertificateProfileName="$(acsProfileName)"
 
-  variables:
-    configuration: Release
-    packageSigningArgs: /p:AppxPackageSigningTimestampServerUrl="$(acsTimestampServer)" /p:AppxPackageSigningTimestampDigestAlgorithm=SHA256 /p:AzureCodeSigningEnabled=true /p:AzureCodeSigningEndpoint="$(acsEndpoint)" /p:AzureCodeSigningAccountName="$(acsAccountName)" /p:AzureCodeSigningCertificateProfileName="$(acsProfileName)"
+strategy:
+- ${{ if not(startsWith('refs/tags/', variables['Build.SourceBranch'])) }}:
+  - matrix:
+    'ARM64 Debug':
+      configuration: Debug
+      platform: ARM64
+    'ARM64 Release':
+      configuration: Release
+      platform: ARM64
+    'x64 Debug':
+      configuration: Debug
+      platform: x64
+    'x64 Release':
+      configuration: Release
+      platform: x64
+
 
 steps:
 - checkout: self
