@@ -66,12 +66,13 @@ steps:
   - script: az account clear
     displayName: Logout from Azure
     condition: always()
-- task: VSTest@2
-  displayName: 'Run unit tests'
-  condition: and(succeededOrFailed(), ne(${{ parameters.platform }}, 'ARM64'))
-  inputs:
-    testAssemblyVer2: x64\$(configuration)\Tests.exe
-    runInParallel: true
-    platform: x64
-    configuration: $(configuration)
-    testRunTitle: 'x64 $(configuration)'
+- ${{ if ne(parameters.platform, 'ARM64') }}:
+  - task: VSTest@2
+    displayName: 'Run unit tests'
+    condition: succeededOrFailed()
+    inputs:
+      testAssemblyVer2: x64\$(configuration)\Tests.exe
+      runInParallel: true
+      platform: x64
+      configuration: $(configuration)
+      testRunTitle: 'x64 $(configuration)'
