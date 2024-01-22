@@ -100,7 +100,7 @@
     <PropertyPageSchema Include="ResourceFileMapping.xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.CodeSigning.Client" Version="1.0.38">
+    <PackageReference Include="Azure.CodeSigning.Client" Version="1.0.47">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428">

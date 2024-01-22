@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Azure.CodeSigning.Client.1.0.47\build\Azure.CodeSigning.Client.props" Condition="Exists('..\packages\Azure.CodeSigning.Client.1.0.47\build\Azure.CodeSigning.Client.props')" />
   <Import Project="..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.props" Condition="Exists('..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.props')" />
-  <Import Project="..\packages\Azure.CodeSigning.Client.1.0.43\build\Azure.CodeSigning.Client.props" Condition="Exists('..\packages\Azure.CodeSigning.Client.1.0.43\build\Azure.CodeSigning.Client.props')" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D0004E78-F00B-4943-B77E-9A278F8BA399}</ProjectGuid>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -51,11 +51,11 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Azure.CodeSigning.Client.1.0.43\build\Azure.CodeSigning.Client.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Azure.CodeSigning.Client.1.0.43\build\Azure.CodeSigning.Client.props'))" />
-    <Error Condition="!Exists('..\packages\Azure.CodeSigning.Client.1.0.43\build\Azure.CodeSigning.Client.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Azure.CodeSigning.Client.1.0.43\build\Azure.CodeSigning.Client.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.targets'))" />
+    <Error Condition="!Exists('..\packages\Azure.CodeSigning.Client.1.0.47\build\Azure.CodeSigning.Client.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Azure.CodeSigning.Client.1.0.47\build\Azure.CodeSigning.Client.props'))" />
+    <Error Condition="!Exists('..\packages\Azure.CodeSigning.Client.1.0.47\build\Azure.CodeSigning.Client.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Azure.CodeSigning.Client.1.0.47\build\Azure.CodeSigning.Client.targets'))" />
   </Target>
-  <Import Project="..\packages\Azure.CodeSigning.Client.1.0.43\build\Azure.CodeSigning.Client.targets" Condition="Exists('..\packages\Azure.CodeSigning.Client.1.0.43\build\Azure.CodeSigning.Client.targets')" />
   <Import Project="..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.targets" Condition="Exists('..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.targets')" />
+  <Import Project="..\packages\Azure.CodeSigning.Client.1.0.47\build\Azure.CodeSigning.Client.targets" Condition="Exists('..\packages\Azure.CodeSigning.Client.1.0.47\build\Azure.CodeSigning.Client.targets')" />
 </Project>
