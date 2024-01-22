@@ -34,7 +34,7 @@ steps:
     platform: $(platform)
     configuration: $(configuration)
     signBuild: true
-    extraMsbuildArgs: /p:AppxPackageSigningTimestampServerUrl="http://timestamp.acs.microsoft.com" /p:AppxPackageSigningTimestampDigestAlgorithm=SHA256 /p:AzureCodeSigningEnabled=true /p:AzureCodeSigningEndpoint="$(acsEndpoint)" /p:AzureCodeSigningAccountName="$(acsAccountName)" /p:AzureCodeSigningCertificateProfileName="$(acsProfileName)"
+    extraMsbuildArgs: /p:AppxPackageSigningEnabled=true /p:AppxPackageSigningTimestampServerUrl="http://timestamp.acs.microsoft.com" /p:AppxPackageSigningTimestampDigestAlgorithm=SHA256 /p:AzureCodeSigningEnabled=true /p:AzureCodeSigningEndpoint="$(acsEndpoint)" /p:AzureCodeSigningAccountName="$(acsAccountName)" /p:AzureCodeSigningCertificateProfileName="$(acsProfileName)"
     buildType: Canary
 - task: VSTest@2
   displayName: 'Run unit tests'

@@ -42,7 +42,6 @@
     <AppxDefaultResourceQualifiers>Language=en-us;de-de;es-us;id-id;ja-jp;tr-tr;zh-cn;zh-tw;ru-ru</AppxDefaultResourceQualifiers>
     <!-- Prevent ucrtbased.dll from being copied to the output -->
     <DisableImplicitUCRTReference>true</DisableImplicitUCRTReference>
-	  <UseSdkBuildToolsPackage>true</UseSdkBuildToolsPackage>
   </PropertyGroup>
   <PropertyGroup Condition="'$(BuildType)'=='Release'">
     <AppxBundle>Always</AppxBundle>
