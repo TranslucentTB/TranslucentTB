@@ -3,6 +3,8 @@ parameters:
   default: $(Build.SourcesDirectory)/TranslucentTB.sln
 - name: platform
   default: ''
+- name: configuration
+  default: ''
 - name: extraMsbuildArgs
   default: ''
 - name: signBuild
