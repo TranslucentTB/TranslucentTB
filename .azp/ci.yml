@@ -1,0 +1,53 @@
+pool:
+  vmImage: 'windows-2022'
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - '*'
+
+variables:
+- name: VCPKG_BINARY_SOURCES
+  value: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,readwrite'
+- group: Azure Code Signing
+- name: packageSigningArgs
+  value: /p:AppxPackageSigningTimestampServerUrl="http://timestamp.acs.microsoft.com" /p:AppxPackageSigningTimestampDigestAlgorithm=SHA256 /p:AzureCodeSigningEnabled=true /p:AzureCodeSigningEndpoint="$(acsEndpoint)" /p:AzureCodeSigningAccountName="$(acsAccountName)" /p:AzureCodeSigningCertificateProfileName="$(acsProfileName)"
+
+strategy:
+  matrix:
+    'ARM64 Debug':
+      configuration: Debug
+      platform: ARM64
+    'ARM64 Release':
+      configuration: Release
+      platform: ARM64
+    'x64 Debug':
+      configuration: Debug
+      platform: x64
+    'x64 Release':
+      configuration: Release
+      platform: x64
+
+
+steps:
+- template: templates/build.yml
+  parameters:
+    platform: $(platform)
+    configuration: $(configuration)
+    extraMsbuildArgs: $[packageSigningArgs] # important to use [], which will cause an empty string if the variable doesn't exist
+- task: VSTest@2
+  displayName: 'Run unit tests'
+  condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'))
+  inputs:
+    testAssemblyVer2: $(platform)\$(configuration)\Tests.exe
+    runInParallel: true
+    platform: $(platform)
+    configuration: $(configuration)
+    testRunTitle: '$(platform) $(configuration)'
+- publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
+  artifact: 'Portable $(platform) $(configuration)'
+  displayName: 'Upload portable build'
+- publish: $(Build.SourcesDirectory)\AppPackage\AppPackages
+  artifact: 'MSIX $(platform) $(configuration)'
+  displayName: 'Upload MSIX package'

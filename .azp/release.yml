@@ -1,0 +1,14 @@
+pool:
+  vmImage: 'windows-2022'
+
+trigger:
+  tags:
+    include:
+    - '*'
+
+steps:
+- template: templates/build.yml
+  parameters:
+    configuration: Release
+    fileToBuild: $(Build.SourcesDirectory)/AppPackage/AppPackage.wapproj
+# TODO: upload msixupload to the store (or artifacts), zip up portable release and create GH release draft.

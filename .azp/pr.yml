@@ -1,0 +1,50 @@
+pool:
+  vmImage: 'windows-2022'
+
+pr:
+  autoCancel: true
+  drafts: true
+  branches:
+    include:
+    - '*'
+
+variables:
+- name: VCPKG_BINARY_SOURCES
+  value: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,read'
+
+strategy:
+  matrix:
+    'ARM64 Debug':
+      configuration: Debug
+      platform: ARM64
+    'ARM64 Release':
+      configuration: Release
+      platform: ARM64
+    'x64 Debug':
+      configuration: Debug
+      platform: x64
+    'x64 Release':
+      configuration: Release
+      platform: x64
+
+
+steps:
+- template: templates/build.yml
+  parameters:
+    platform: $(platform)
+    configuration: $(configuration)
+- task: VSTest@2
+  displayName: 'Run unit tests'
+  condition: and(succeededOrFailed(), eq(variables['platform'], 'x64'))
+  inputs:
+    testAssemblyVer2: $(platform)\$(configuration)\Tests.exe
+    runInParallel: true
+    platform: $(platform)
+    configuration: $(configuration)
+    testRunTitle: '$(platform) $(configuration)'
+- publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
+  artifact: 'Portable $(platform) $(configuration)'
+  displayName: 'Upload portable build'
+- publish: $(Build.SourcesDirectory)\AppPackage\AppPackages
+  artifact: 'MSIX $(platform) $(configuration)'
+  displayName: 'Upload MSIX package'

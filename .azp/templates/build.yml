@@ -1,0 +1,68 @@
+parameters:
+- name: fileToBuild
+  default: $(Build.SourcesDirectory)/TranslucentTB.sln
+- name: platform
+  default: ''
+- name: extraMsbuildArgs
+  default: ''
+- name: signBuild
+  type: boolean
+  default: false
+
+steps:
+- checkout: self
+  fetchTags: true
+- powershell: .\update-version.ps1
+  displayName: Update version info
+- powershell: .\get-build-type.ps1
+  displayName: Determine build type
+- powershell: .\update-manifest.ps1
+  displayName: Update app manifest
+- script: git pull
+  displayName: 'Update vcpkg ports'
+  workingDirectory: C:\vcpkg
+- script: .\bootstrap-vcpkg.bat
+  displayName: 'Bootstrap vcpkg'
+  workingDirectory: C:\vcpkg
+- script: vcpkg integrate install
+  displayName: 'Integrate vcpkg'
+- task: NuGetAuthenticate@1
+  displayName: 'Authenticate NuGet'
+- task: NuGetCommand@2
+  displayName: 'Restore NuGet packages'
+  inputs:
+    restoreSolution: $(Build.SourcesDirectory)/TranslucentTB.sln
+- ${{ if eq(parameters.signBuild, true) }}:
+  - task: DownloadSecureFile@1
+    name: acsMetadata
+    displayName: 'Download Azure Code Signing metadata'
+    inputs:
+      secureFile: metadata.json
+  - task: AzureCLI@2
+    displayName: Get Azure Credentials
+    inputs:
+      azureSubscription: Azure Code Signing
+      scriptType: pscore
+      scriptLocation: inlineScript
+      addSpnToEnvironment: true
+      inlineScript: |
+        echo "##vso[task.setvariable variable=azure_tenant_id;issecret=true]$env:tenantId"
+        echo "##vso[task.setvariable variable=azure_service_principal_id;issecret=true]$env:servicePrincipalId"
+        echo "##vso[task.setvariable variable=azure_federated_token;issecret=true]$env:idToken"
+  - script: az login --service-principal -u "$(azure_service_principal_id)" --tenant "$(azure_tenant_id)" --allow-no-subscriptions --federated-token "$(azure_federated_token)"
+    displayName: Authenticate to Azure
+- task: VSBuild@1
+  displayName: 'Build solution'
+  inputs:
+    configuration: ${{ parameters.configuration }}
+    ${{ if ne(parameters.platform, '') }}:
+      platform: ${{ parameters.platform }}
+    solution: ${{ parameters.fileToBuild }}
+    ${{ if eq(parameters.signBuild, true) }}:
+      msbuildArgs: ${{ parameters.extraMsbuildArgs }} /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256 /p:BuildType=$(build_type)
+    ${{ else }}:
+      msbuildArgs: /p:BuildType=$(build_type)
+- ${{ if eq(parameters.signBuild, true) }}:
+  - script: az account clear
+    displayName: Logout from Azure
+    condition: always()
