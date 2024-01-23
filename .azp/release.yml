@@ -13,4 +13,7 @@ steps:
     configuration: Release
     signBuild: true
     buildType: Release
-# TODO: upload msixupload to the store (or artifacts), zip up portable release and create GH release draft.
+- publish: $(Build.SourcesDirectory)\AppPackage\AppPackages
+  artifact: 'MSIX'
+  displayName: 'Upload MSIX package'
+# TODO: zip up portable release and create GH release draft.
