@@ -32,7 +32,7 @@ strategy:
 steps:
 - template: templates/build.yml
   parameters:
-    platform: $(platform)
+    platform: ${{ variables.platform }}
     configuration: $(configuration)
     buildType: Dev
 - publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
