@@ -5,9 +5,6 @@ $is_shallow = git rev-parse --is-shallow-repository
 $tag_hash = git rev-list --tags --max-count=1
 $head_hash = git rev-parse HEAD
 
-echo $tag_hash
-echo $head_hash
-
 if ($is_shallow -eq "true")
 {
 	if ($is_ci)
