@@ -11,10 +11,7 @@ if ($is_shallow -eq "true")
 	{
 		if ($env:BUILD_REASON -eq "PullRequest")
 		{
-			echo $env:BUILD_REPOSITORY_NAME
-			echo $env:SYSTEM_PULLREQUEST_PULLREQUESTNUMBER
 			$repo_name = (Invoke-RestMethod -Uri "https://api.github.com/repos/$env:BUILD_REPOSITORY_NAME/pulls/$env:SYSTEM_PULLREQUEST_PULLREQUESTNUMBER").head.repo.full_name
-			echo $repo_name
 		}
 		else
 		{
