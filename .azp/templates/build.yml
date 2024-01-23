@@ -53,6 +53,7 @@ steps:
   - script: az login --service-principal -u "$(azure_service_principal_id)" --tenant "$(azure_tenant_id)" --allow-no-subscriptions --federated-token "$(azure_federated_token)"
     displayName: Authenticate to Azure
 - task: VSBuild@1
+  condition: not(always())
   displayName: 'Build solution'
   inputs:
     configuration: ${{ parameters.configuration }}
@@ -66,12 +67,15 @@ steps:
   - script: az account clear
     displayName: Logout from Azure
     condition: always()
-- script: echo "##vso[task.setvariable variable=parameters.platform]${{ parameters.platform }}"
+- powershell: echo "${{ parameters.platform }}"
+  displayName: test
+  condition: succeededOrFailed()
+- powershell: echo "##vso[task.setvariable variable=buildTemplatePlatform]${{ parameters.platform }}"
   displayName: Export platform template parameter to variable
   condition: succeededOrFailed()
 - task: VSTest@2
   displayName: 'Run unit tests'
-  condition: and(succeededOrFailed(), eq(variables['parameters.platform'], 'x64'))
+  condition: and(succeededOrFailed(), eq(variables['buildTemplatePlatform'], 'x64'))
   inputs:
     testAssemblyVer2: ${{ parameters.platform }}\${{ parameters.configuration }}\Tests.exe
     runInParallel: true
