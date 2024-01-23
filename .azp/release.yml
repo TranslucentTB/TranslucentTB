@@ -9,6 +9,7 @@ trigger:
 steps:
 - template: templates/build.yml
   parameters:
+    platform: x64
     configuration: Release
     signBuild: true
     buildType: Release

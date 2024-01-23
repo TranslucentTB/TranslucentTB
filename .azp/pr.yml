@@ -17,17 +17,17 @@ variables:
 strategy:
   matrix:
     'ARM64 Debug':
-      configuration: Debug
       platform: ARM64
+      configuration: Debug
     'ARM64 Release':
-      configuration: Release
       platform: ARM64
-    'x64 Debug':
-      configuration: Debug
-      platform: x64
-    'x64 Release':
       configuration: Release
+    'x64 Debug':
       platform: x64
+      configuration: Debug
+    'x64 Release':
+      platform: x64
+      configuration: Release
 
 steps:
 - template: templates/build.yml
