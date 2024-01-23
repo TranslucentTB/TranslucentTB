@@ -118,184 +118,184 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ColorPickerPage_AlwaysOnTopButton.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>始终置顶</value>
+    <value>Завжди зверху</value>
   </data>
   <data name="ColorPickerPage_AlwaysOnTopMenuItem.Text" xml:space="preserve">
-    <value>始终置顶</value>
+    <value>Завжди зверху</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.CloseButtonText" xml:space="preserve">
-    <value>取消</value>
+    <value>Відмінити</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.Content" xml:space="preserve">
-    <value>你是否要保存此颜色？</value>
+    <value>Ви бажаєте зберегти збереження кольору?</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.PrimaryButtonText" xml:space="preserve">
-    <value>是</value>
+    <value>Так</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.SecondaryButtonText" xml:space="preserve">
-    <value>否</value>
+    <value>Ні</value>
   </data>
   <data name="FramelessPage_CloseButton.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>关闭</value>
+    <value>Закрити</value>
   </data>
   <data name="FramelessPage_CloseMenuItem.Text" xml:space="preserve">
-    <value>关闭</value>
+    <value>Закрити</value>
   </data>
   <data name="TrayFlyoutPage_About.Text" xml:space="preserve">
-    <value>关于 TranslucentTB</value>
+    <value>Про TranslucentTB</value>
   </data>
   <data name="TrayFlyoutPage_AccentColor.Text" xml:space="preserve">
-    <value>主题色</value>
+    <value>Акцентий колір</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Acrylic.Text" xml:space="preserve">
-    <value>亚克力</value>
+    <value>Акриловий</value>
   </data>
   <data name="TrayFlyoutPage_Advanced.Text" xml:space="preserve">
-    <value>高级</value>
+    <value>Розширено</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_CompactThunkHeap.Text" xml:space="preserve">
-    <value>压缩 Thunk 堆</value>
+    <value>Компактний thunk heap</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_DisableHotSettings.Text" xml:space="preserve">
-    <value>禁用保存设置</value>
+    <value>Вимкнути збереження налаштувань</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_DumpDynamicState.Text" xml:space="preserve">
-    <value>将动态状态转储至日志</value>
+    <value>Зберегти динамічний стан в журнал</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_EditSettings.Text" xml:space="preserve">
-    <value>编辑设置</value>
+    <value>Редагувати налаштування</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_HideTrayIcon.Text" xml:space="preserve">
-    <value>隐藏托盘图标</value>
+    <value>Приховати іконку в лотку</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity.Text" xml:space="preserve">
-    <value>日志详细级别</value>
+    <value>Рівень деталізації журналу</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Critical.Text" xml:space="preserve">
-    <value>严重</value>
+    <value>Критичний</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Debug.Text" xml:space="preserve">
-    <value>调试</value>
+    <value>Налагодження</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Error.Text" xml:space="preserve">
-    <value>错误</value>
+    <value>Помилка</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Information.Text" xml:space="preserve">
-    <value>信息</value>
+    <value>Інформація</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Off.Text" xml:space="preserve">
-    <value>关闭</value>
+    <value>Вимкнено</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Trace.Text" xml:space="preserve">
-    <value>跟踪</value>
+    <value>Відстеження</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Warning.Text" xml:space="preserve">
-    <value>警告</value>
+    <value>Попередження</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_OpenLogFile.Text" xml:space="preserve">
-    <value>打开日志文件</value>
+    <value>Відкрити файл журналу</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_ResetDynamicState.Text" xml:space="preserve">
-    <value>重置动态状态</value>
+    <value>Скинути динамічний стан</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_ResetSettings.Text" xml:space="preserve">
-    <value>恢复默认设置</value>
+    <value>Повернутися до налаштувань за замовчуванням</value>
   </data>
   <data name="TrayFlyoutPage_BatterySaver.Text" xml:space="preserve">
-    <value>开启节电模式时</value>
+    <value>Режим енергозбереження</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Blur.Text" xml:space="preserve">
-    <value>模糊</value>
+    <value>Розмиття</value>
   </data>
   <data name="TrayFlyoutPage_Clear.Text" xml:space="preserve">
-    <value>透明</value>
+    <value>Чистий</value>
   </data>
   <data name="TrayFlyoutPage_Desktop.Text" xml:space="preserve">
-    <value>在桌面时</value>
+    <value>Робочий стіл</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Enabled.Text" xml:space="preserve">
-    <value>启用</value>
+    <value>Увімкнено</value>
   </data>
   <data name="TrayFlyoutPage_Exit.Text" xml:space="preserve">
-    <value>退出</value>
+    <value>Вийти</value>
   </data>
   <data name="TrayFlyoutPage_LineButton.Text" xml:space="preserve">
-    <value>显示任务栏细线</value>
+    <value>Показати межу панелі завдань</value>
   </data>
   <data name="TrayFlyoutPage_MaximizedWindow.Text" xml:space="preserve">
-    <value>窗口最大化时</value>
+    <value>Розгорнуте вікно</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Normal.Text" xml:space="preserve">
-    <value>正常</value>
+    <value>Звичайне</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Opaque.Text" xml:space="preserve">
-    <value>不透明</value>
+    <value>Непрозоре</value>
   </data>
   <data name="TrayFlyoutPage_OpenAtBoot.Text" xml:space="preserve">
-    <value>开机自启</value>
+    <value>Відкривати при запуску</value>
   </data>
   <data name="TrayFlyoutPage_PeekButton.Text" xml:space="preserve">
-    <value>显示桌面预览按钮</value>
+    <value>Показати кнопку перегляду робочого столу</value>
   </data>
   <data name="TrayFlyoutPage_SearchOpened.Text" xml:space="preserve">
-    <value>打开搜索菜单时</value>
+    <value>Відкрити пошук</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_StartOpened.Text" xml:space="preserve">
-    <value>打开开始菜单时</value>
+    <value>Відкрити меню "Пуск"</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_TaskViewOpened.Text" xml:space="preserve">
-    <value>打开任务视图时</value>
+    <value>Відкрити перегляд завдань</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_TipsAndTricks.Text" xml:space="preserve">
-    <value>提示和技巧</value>
+    <value>Поради та хитрощі</value>
   </data>
   <data name="TrayFlyoutPage_VisibleWindow.Text" xml:space="preserve">
-    <value>打开任何窗口时</value>
+    <value>Видиме вікно</value>
   </data>
   <data name="WelcomePage.Title" xml:space="preserve">
-    <value>欢迎使用 TranslucentTB！</value>
+    <value>Ласкаво просимо до TranslucentTB!</value>
   </data>
   <data name="WelcomePage_Action_Configure.Description" xml:space="preserve">
-    <value>你可以随时在托盘图标的菜单中点击 "高级" &gt; "编辑设置" 来打开配置文件
-保存文件后，TranslucentTB 将自动重载</value>
+    <value>и завжди можете зробити це, натиснувши "Додатково" &gt; "Редагувати налаштування" у контекстному меню іконки лотка
+Зміни автоматично перезавантажуються при збереженні файлу</value>
     <comment>Mind the newline (a.k.a. enter)</comment>
   </data>
   <data name="WelcomePage_Action_Configure.Name" xml:space="preserve">
-    <value>编辑配置文件</value>
+    <value>Редагувати файл конфігурації</value>
   </data>
   <data name="WelcomePage_Action_Discord.Description" xml:space="preserve">
-    <value>在 Discord 上与开发者联系并获得帮助</value>
+    <value>Чат з розробниками та отримання допомоги з програмою</value>
   </data>
   <data name="WelcomePage_Action_Discord.Name" xml:space="preserve">
-    <value>加入我们的 Discord 服务器</value>
+    <value>Приєднуйтеся до нашого серверу Discord</value>
   </data>
   <data name="WelcomePage_Action_Donate.Description" xml:space="preserve">
-    <value>单次或定期赞助我们以支持开发 ❤</value>
+    <value>Підтримайте нас, надавши одноразовий або регулярний внесок ❤</value>
   </data>
   <data name="WelcomePage_Action_Donate.Name" xml:space="preserve">
-    <value>通过 Liberapay 赞助此项目</value>
+    <value>Зробіть пожертвування на проекті через Liberapay</value>
   </data>
   <data name="WelcomePage_ButtonBar_Continue.Content" xml:space="preserve">
-    <value>继续</value>
+    <value>Продовжити</value>
   </data>
   <data name="WelcomePage_ButtonBar_Exit.Content" xml:space="preserve">
-    <value>退出</value>
+    <value>Вийти</value>
   </data>
   <data name="WelcomePage_Message_Hyperlink.Text" xml:space="preserve">
-    <value>在 GitHub 上反馈问题 (issue)</value>
+    <value>Відкрити проблему на GitHub</value>
   </data>
   <data name="WelcomePage_Message_Prefix.Text" xml:space="preserve">
-    <value>感谢你使用 TranslucentTB！点击 "继续" 后，你可以根据喜好自定义任务栏的外观。如果你有任何问题，或是想要建议新功能，欢迎</value>
+    <value>Дякуємо за спробу TranslucentTB! Після того, як ви натиснете "Продовжити", ви зможете налаштувати панель завдань на свій смак. Сподіваємося, вам сподобається</value>
   </data>
   <data name="WelcomePage_Message_Suffix.Text" xml:space="preserve">
-    <value>祝你使用愉快！</value>
+    <value>Якщо у вас виникли проблеми або ви хочете додати новий функціонал!</value>
   </data>
 </root>

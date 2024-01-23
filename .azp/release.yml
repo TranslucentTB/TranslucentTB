@@ -1,0 +1,19 @@
+pool:
+  vmImage: 'windows-2022'
+
+trigger:
+  tags:
+    include:
+    - '*'
+
+steps:
+- template: templates/build.yml
+  parameters:
+    platform: x64
+    configuration: Release
+    signBuild: true
+    buildType: Release
+- publish: $(Build.SourcesDirectory)\AppPackage\AppPackages
+  artifact: 'MSIX'
+  displayName: 'Upload MSIX package'
+# TODO: zip up portable release and create GH release draft.

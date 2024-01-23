@@ -1,0 +1,43 @@
+pool:
+  vmImage: 'windows-2022'
+
+trigger: none
+
+pr:
+  autoCancel: true
+  drafts: true
+  branches:
+    include:
+    - '*'
+
+variables:
+- name: VCPKG_BINARY_SOURCES
+  value: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,read'
+
+strategy:
+  matrix:
+    'ARM64 Debug':
+      platform: ARM64
+      configuration: Debug
+    'ARM64 Release':
+      platform: ARM64
+      configuration: Release
+    'x64 Debug':
+      platform: x64
+      configuration: Debug
+    'x64 Release':
+      platform: x64
+      configuration: Release
+
+steps:
+- template: templates/build.yml
+  parameters:
+    platform: $(platform)
+    configuration: $(configuration)
+    buildType: Dev
+- publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
+  artifact: 'Portable $(platform) $(configuration)'
+  displayName: 'Upload portable build'
+- publish: $(Build.SourcesDirectory)\AppPackage\AppPackages
+  artifact: 'MSIX $(platform) $(configuration)'
+  displayName: 'Upload MSIX package'

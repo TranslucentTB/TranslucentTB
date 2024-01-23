@@ -1,0 +1,68 @@
+#pragma code_page(65001)
+
+#ifdef APSTUDIO_INVOKED
+#error Please edit this file manually.
+#endif
+
+#include <ddeml.h>
+#include <winres.h>
+#include "../../../Common/appinfo.hpp"
+#include "../ids.h"
+
+LANGUAGE LANG_UKRAINIAN, SUBLANG_UKRAINIAN_UKRAINE
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION APP_VERSION_FIXED
+	PRODUCTVERSION APP_VERSION_FIXED
+	FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+	FILEFLAGS VS_FF_DEBUG
+#endif
+	FILEOS VOS_NT_WINDOWS32
+	FILETYPE VFT_APP
+{
+	BLOCK L"StringFileInfo"
+	{
+		BLOCK L"042204b0"
+		{
+			VALUE L"FileDescription", APP_NAME
+			VALUE L"FileVersion", APP_VERSION
+			VALUE L"InternalName", APP_NAME L".exe"
+			VALUE L"OriginalFilename", APP_NAME L".exe"
+			VALUE L"ProductName", APP_NAME
+			VALUE L"ProductVersion", APP_VERSION
+			VALUE L"Comments", L"A lightweight utility that makes the Windows taskbar translucent/transparent."
+			VALUE L"CompanyName", APP_NAME L" Open Source Developers"
+			VALUE L"LegalCopyright", L"Copyright © " APP_COPYRIGHT_YEAR L" " APP_NAME L" Open Source Developers"
+		}
+	}
+	BLOCK L"VarFileInfo"
+	{
+		VALUE L"Translation", 0x0422, CP_WINUNICODE
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Strings
+//
+
+STRINGTABLE
+{
+	IDS_WELCOME_NOTIFICATION APP_NAME L" lives in the system tray.\n\nRight-click on the tray icon to change settings, set the app to open at boot, view about information, exit the app, etc."
+	IDS_HIDE_TRAY L"This change is temporary and will be lost the next time " APP_NAME L" is started.\n\nTo make this permanent, edit the configuration file using ""Advanced"" > ""Edit settings"" and set ""hide_tray"" to ""true""."
+	IDS_ALREADY_RUNNING APP_NAME L" is already running! Right-click on the tray icon to access it."
+	IDS_LANGUAGE_CHANGED L"The language override setting in the configuration file has been changed. Please restart " APP_NAME L" for the changes to take effect."
+	IDS_RESTART_REQUIRED APP_NAME L" was recently updated. Please restart Windows to start using the latest version."
+	IDS_PORTABLE_UNSUPPORTED L"Portable mode only works on Windows 11."
+	IDS_MISSING_DEPENDENCIES APP_NAME L" cannot start in portable mode because {0} (version {1}) is not installed on the system."
+	IDS_EXPLORER_RESTARTED_TOO_MUCH L"Windows Explorer restarted twice in the last 30 seconds! This may be a conflict between " APP_NAME " and other shell customization software, or a Windows Update. To avoid further issues, " APP_NAME " will now exit."
+	IDS_STARTUPTASK_BROKEN APP_NAME L" asked Windows to enable a startup task but Windows did not enable it. This is typically the result of a corrupt registry, which could be caused by running debloating or privacy scripts on your computer."
+}

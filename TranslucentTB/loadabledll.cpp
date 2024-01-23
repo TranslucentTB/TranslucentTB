@@ -37,9 +37,15 @@ std::filesystem::path LoadableDll::GetDllPath(const std::optional<std::filesyste
 		}
 	}
 
+	std::filesystem::create_directories(tempFolder, err);
+	if (err) [[unlikely]]
+	{
+		StdErrorCodeHandle(err, spdlog::level::critical, L"Failed to create " APP_NAME " temp folder.");
+	}
+
 	auto tempDllPath = tempFolder / dll;
 	std::filesystem::copy_file(dllPath, tempDllPath, std::filesystem::copy_options::update_existing, err);
-	if (err)
+	if (err) [[unlikely]]
 	{
 		if (err.category() == std::system_category() && err.value() == ERROR_SHARING_VIOLATION)
 		{

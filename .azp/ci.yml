@@ -1,0 +1,44 @@
+pool:
+  vmImage: 'windows-2022'
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - '*'
+
+variables:
+- name: VCPKG_BINARY_SOURCES
+  value: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,readwrite'
+- group: Azure Code Signing
+
+strategy:
+  matrix:
+    'ARM64 Debug':
+      configuration: Debug
+      platform: ARM64
+    'ARM64 Release':
+      configuration: Release
+      platform: ARM64
+    'x64 Debug':
+      configuration: Debug
+      platform: x64
+    'x64 Release':
+      configuration: Release
+      platform: x64
+
+
+steps:
+- template: templates/build.yml
+  parameters:
+    platform: $(platform)
+    configuration: $(configuration)
+    signBuild: true
+    extraMsbuildArgs: /p:AppxPackageSigningEnabled=true /p:AppxPackageSigningTimestampServerUrl="http://timestamp.acs.microsoft.com" /p:AppxPackageSigningTimestampDigestAlgorithm=SHA256 /p:AzureCodeSigningEnabled=true /p:AzureCodeSigningEndpoint="$(acsEndpoint)" /p:AzureCodeSigningAccountName="$(acsAccountName)" /p:AzureCodeSigningCertificateProfileName="$(acsProfileName)"
+    buildType: Canary
+- publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
+  artifact: 'Portable $(platform) $(configuration)'
+  displayName: 'Upload portable build'
+- publish: $(Build.SourcesDirectory)\AppPackage\AppPackages
+  artifact: 'MSIX $(platform) $(configuration)'
+  displayName: 'Upload MSIX package'

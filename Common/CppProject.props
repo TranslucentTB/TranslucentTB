@@ -62,6 +62,11 @@
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
     <VcpkgTriplet>$(Platform.ToLowerInvariant())-windows</VcpkgTriplet>
     <VcpkgAdditionalInstallOptions>--overlay-ports="$(SolutionDir)\vcpkg\ports"</VcpkgAdditionalInstallOptions>
+
+    <BuildType Condition="'$(BuildType)'==''">Dev</BuildType>
+    <IntBuildType Condition="'$(BuildType)'=='Release'">0</IntBuildType>
+    <IntBuildType Condition="'$(BuildType)'=='Canary'">1</IntBuildType>
+    <IntBuildType Condition="'$(IntBuildType)'==''">2</IntBuildType>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -185,6 +190,8 @@
 
       <!-- Windows -->
       <PreprocessorDefinitions>_HIDE_GLOBAL_ASYNC_STATUS;STRICT_TYPED_ITEMIDS;NOMINMAX;_WINDOWS;WIN32_LEAN_AND_MEAN;WINRT_WINDOWS_ABI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+
+      <PreprocessorDefinitions>BUILD_TYPE=$(IntBuildType);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ResourceCompile>
       <NullTerminateStrings>true</NullTerminateStrings>
