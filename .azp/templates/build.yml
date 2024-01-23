@@ -68,6 +68,7 @@ steps:
     condition: always()
 - script: echo "##vso[task.setvariable variable=parameters.platform]${{ parameters.platform }}"
   displayName: Export platform template parameter to variable
+  condition: succeededOrFailed()
 - task: VSTest@2
   displayName: 'Run unit tests'
   condition: and(succeededOrFailed(), eq(variables['parameters.platform'], 'x64'))
