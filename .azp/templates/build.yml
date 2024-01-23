@@ -24,8 +24,9 @@ steps:
 - script: .\bootstrap-vcpkg.bat
   displayName: 'Bootstrap vcpkg'
   workingDirectory: C:\vcpkg
-- script: vcpkg integrate install
+- script: .\vcpkg.exe integrate install
   displayName: 'Integrate vcpkg'
+  workingDirectory: C:\vcpkg
 - task: NuGetAuthenticate@1
   displayName: 'Authenticate NuGet'
 - task: NuGetCommand@2
@@ -55,8 +56,7 @@ steps:
   displayName: 'Build solution'
   inputs:
     configuration: ${{ parameters.configuration }}
-    ${{ if ne(parameters.platform, '') }}:
-      platform: ${{ parameters.platform }}
+    platform: ${{ parameters.platform }}
     solution: $(Build.SourcesDirectory)/TranslucentTB.sln
     ${{ if eq(parameters.signBuild, true) }}:
       msbuildArgs: ${{ parameters.extraMsbuildArgs }} /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256 /p:BuildType=${{ parameters.buildType }}
@@ -66,13 +66,14 @@ steps:
   - script: az account clear
     displayName: Logout from Azure
     condition: always()
-- ${{ if eq(parameters.platform, 'x64') }}:
-  - task: VSTest@2
-    displayName: 'Run unit tests'
-    condition: succeededOrFailed()
-    inputs:
-      testAssemblyVer2: ${{ parameters.platform }}\${{ parameters.configuration }}\Tests.exe
-      runInParallel: true
-      platform: ${{ parameters.platform }}
-      configuration: ${{ parameters.configuration }}
-      testRunTitle: '${{ parameters.platform }} ${{ parameters.configuration }}'
+- script: echo "##vso[task.setvariable variable=parameters.platform]${{ parameters.platform }}"
+  displayName: Export platform template parameter to variable
+- task: VSTest@2
+  displayName: 'Run unit tests'
+  condition: and(succeededOrFailed(), eq(variables['parameters.platform'], 'x64'))
+  inputs:
+    testAssemblyVer2: ${{ parameters.platform }}\${{ parameters.configuration }}\Tests.exe
+    runInParallel: true
+    platform: ${{ parameters.platform }}
+    configuration: ${{ parameters.configuration }}
+    testRunTitle: '${{ parameters.platform }} ${{ parameters.configuration }}'

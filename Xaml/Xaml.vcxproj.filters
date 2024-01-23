@@ -54,6 +54,7 @@
       <Filter>Generated Files</Filter>
     </None>
     <None Include="packages.config" />
+    <None Include="vcpkg.json" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

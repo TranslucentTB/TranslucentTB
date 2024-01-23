@@ -162,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="vcpkg.json" />
     <None Include="Xaml.def" />
   </ItemGroup>
   <ItemGroup>

@@ -62,6 +62,7 @@
   <ItemGroup>
     <None Include="ExplorerTAP.def" />
     <None Include="packages.config" />
+    <None Include="vcpkg.json" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="api.hpp" />
