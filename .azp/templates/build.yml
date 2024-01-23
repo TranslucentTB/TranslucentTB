@@ -18,14 +18,6 @@ steps:
   displayName: Update version info
 - powershell: $(Build.SourcesDirectory)/.azp/update-manifest.ps1 -BuildType ${{ parameters.buildType }}
   displayName: Update app manifest
-- script: git pull
-  displayName: 'Update vcpkg ports'
-  workingDirectory: C:\vcpkg
-- script: .\bootstrap-vcpkg.bat
-  displayName: 'Bootstrap vcpkg'
-  workingDirectory: C:\vcpkg
-- script: vcpkg integrate install
-  displayName: 'Integrate vcpkg'
 - task: NuGetAuthenticate@1
   displayName: 'Authenticate NuGet'
 - task: NuGetCommand@2
@@ -65,9 +57,11 @@ steps:
   - script: az account clear
     displayName: Logout from Azure
     condition: always()
+- script: echo "##vso[task.setvariable variable=parameters.platform]${{ parameters.platform }}"
+  displayName: Export platform template parameter to variable
 - task: VSTest@2
   displayName: 'Run unit tests'
-  condition: and(succeededOrFailed(), eq(${{ parameters.platform }}, 'x64'))
+  condition: and(succeededOrFailed(), eq(variables['parameters.platform'], 'x64'))
   inputs:
     testAssemblyVer2: ${{ parameters.platform }}\${{ parameters.configuration }}\Tests.exe
     runInParallel: true
