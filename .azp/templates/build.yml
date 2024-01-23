@@ -18,6 +18,15 @@ steps:
   displayName: Update version info
 - powershell: $(Build.SourcesDirectory)/.azp/update-manifest.ps1 -BuildType ${{ parameters.buildType }}
   displayName: Update app manifest
+- script: git pull
+  displayName: 'Update vcpkg ports'
+  workingDirectory: C:\vcpkg
+- script: .\bootstrap-vcpkg.bat
+  displayName: 'Bootstrap vcpkg'
+  workingDirectory: C:\vcpkg
+- script: .\vcpkg.exe integrate install
+  displayName: 'Integrate vcpkg'
+  workingDirectory: C:\vcpkg
 - task: NuGetAuthenticate@1
   displayName: 'Authenticate NuGet'
 - task: NuGetCommand@2
