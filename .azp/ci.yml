@@ -31,7 +31,7 @@ strategy:
 steps:
 - template: templates/build.yml
   parameters:
-    platform: ${{ variables.platform }}
+    platform: $(platform)
     configuration: $(configuration)
     signBuild: true
     extraMsbuildArgs: /p:AppxPackageSigningEnabled=true /p:AppxPackageSigningTimestampServerUrl="http://timestamp.acs.microsoft.com" /p:AppxPackageSigningTimestampDigestAlgorithm=SHA256 /p:AzureCodeSigningEnabled=true /p:AzureCodeSigningEndpoint="$(acsEndpoint)" /p:AzureCodeSigningAccountName="$(acsAccountName)" /p:AzureCodeSigningCertificateProfileName="$(acsProfileName)"

@@ -55,7 +55,8 @@ steps:
   displayName: 'Build solution'
   inputs:
     configuration: ${{ parameters.configuration }}
-    platform: ${{ parameters.platform }}
+    ${{ if ne(parameters.platform, '') }}:
+      platform: ${{ parameters.platform }}
     solution: $(Build.SourcesDirectory)/TranslucentTB.sln
     ${{ if eq(parameters.signBuild, true) }}:
       msbuildArgs: ${{ parameters.extraMsbuildArgs }} /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256 /p:BuildType=${{ parameters.buildType }}
