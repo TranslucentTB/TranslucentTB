@@ -12,7 +12,7 @@ pr:
 
 variables:
 - name: VCPKG_BINARY_SOURCES
-  value: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,read'
+  value: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/TranslucentTB/_packaging/VcpkgCache/nuget/v3/index.json,read'
 
 strategy:
   matrix:
@@ -35,6 +35,7 @@ steps:
     platform: $(platform)
     configuration: $(configuration)
     buildType: Dev
+    includeNuGetOrg: true
 - publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
   artifact: 'Portable $(platform) $(configuration)'
   displayName: 'Upload portable build'
