@@ -10,6 +10,9 @@ parameters:
   default: false
 - name: buildType
   default: ''
+- name: includeNuGetOrg
+  type: boolean
+  default: false
 
 steps:
 - checkout: self
@@ -32,7 +35,11 @@ steps:
 - task: NuGetCommand@2
   displayName: 'Restore NuGet packages'
   inputs:
+    command: restore
     restoreSolution: $(Build.SourcesDirectory)/TranslucentTB.sln
+    feedsToUse: select
+    vstsFeed: TranslucentTB/NugetCache
+    includeNuGetOrg: ${{ parameters.includeNuGetOrg }}
 - ${{ if eq(parameters.signBuild, true) }}:
   - task: DownloadSecureFile@1
     name: acsMetadata
@@ -59,9 +66,9 @@ steps:
     platform: ${{ parameters.platform }}
     solution: $(Build.SourcesDirectory)/TranslucentTB.sln
     ${{ if eq(parameters.signBuild, true) }}:
-      msbuildArgs: ${{ parameters.extraMsbuildArgs }} /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256 /p:BuildType=${{ parameters.buildType }}
+      msbuildArgs: /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256 /p:BuildType=${{ parameters.buildType }}
     ${{ else }}:
-      msbuildArgs: ${{ parameters.extraMsbuildArgs }} /p:BuildType=${{ parameters.buildType }}
+      msbuildArgs: /p:BuildType=${{ parameters.buildType }}
 - ${{ if eq(parameters.signBuild, true) }}:
   - script: az account clear
     displayName: Logout from Azure

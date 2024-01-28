@@ -9,8 +9,7 @@ trigger:
 
 variables:
 - name: VCPKG_BINARY_SOURCES
-  value: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/_packaging/VcpkgArchives/nuget/v3/index.json,readwrite'
-- group: Azure Code Signing
+  value: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/TranslucentTB/_packaging/VcpkgCache/nuget/v3/index.json,readwrite'
 
 strategy:
   matrix:
@@ -27,14 +26,12 @@ strategy:
       configuration: Release
       platform: x64
 
-
 steps:
 - template: templates/build.yml
   parameters:
     platform: $(platform)
     configuration: $(configuration)
     signBuild: true
-    extraMsbuildArgs: /p:AppxPackageSigningEnabled=true /p:AppxPackageSigningTimestampServerUrl="http://timestamp.acs.microsoft.com" /p:AppxPackageSigningTimestampDigestAlgorithm=SHA256 /p:AzureCodeSigningEnabled=true /p:AzureCodeSigningEndpoint="$(acsEndpoint)" /p:AzureCodeSigningAccountName="$(acsAccountName)" /p:AzureCodeSigningCertificateProfileName="$(acsProfileName)"
     buildType: Canary
 - publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
   artifact: 'Portable $(platform) $(configuration)'
