@@ -30,11 +30,6 @@
         </uap:DefaultTile>
       </uap:VisualElements>
       <Extensions>
-        <uap:Extension Category="windows.protocol" Executable="TranslucentTB.exe" EntryPoint="Windows.FullTrustApplication">
-          <uap:Protocol Name="ttb">
-            <uap:DisplayName>TranslucentTB (Dev)</uap:DisplayName>
-          </uap:Protocol>
-        </uap:Extension>
         <uap3:Extension Category="windows.appExecutionAlias" Executable="TranslucentTB.exe" EntryPoint="Windows.FullTrustApplication">
           <uap3:AppExecutionAlias>
             <desktop:ExecutionAlias Alias="ttb.exe" />
