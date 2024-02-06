@@ -15,7 +15,7 @@ parameters:
 steps:
 - checkout: self
   fetchTags: true
-- powershell: $(Build.SourcesDirectory)/.azp/update-version.ps1 -RepoName "$(Build.RepositoryName)"
+- powershell: $(Build.SourcesDirectory)/.azp/update-version.ps1 -RepoName "$(Build.Repository.Name)"
   displayName: Update version info
 - powershell: $(Build.SourcesDirectory)/.azp/update-manifest.ps1 -BuildType "${{ parameters.buildType }}"
   displayName: Update app manifest
