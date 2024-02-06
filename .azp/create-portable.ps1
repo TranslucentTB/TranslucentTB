@@ -23,6 +23,7 @@ else
 	$filename = "TranslucentTB-portable-$platform_lower-$configuration_lower.zip"
 }
 
+New-Item -Path $OutputDir -ItemType "Directory"
 Compress-Archive -Path "$WorkDir\portable-$Platform-$Configuration\*" -DestinationPath "$OutputDir\$filename"
 
 Remove-Item -Path "$WorkDir\portable-$Platform-$Configuration" -Recurse
