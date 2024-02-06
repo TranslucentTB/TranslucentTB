@@ -8,7 +8,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-New-Item -Path $WorkDir -Name "portable-$Platform-$Configuration" -ItemType "Directory"
+New-Item -Path $WorkDir -Name "portable-$Platform-$Configuration" -ItemType "Directory" -Force
 
 Copy-Item -Path "$PSScriptRoot\..\AppPackage\bin\$Platform\$Configuration\*" -Destination "$WorkDir\portable-$Platform-$Configuration" -Recurse -Include @("*.exe", "*.dll", "resources.pri", "Assets")
 
@@ -23,7 +23,7 @@ else
 	$filename = "TranslucentTB-portable-$platform_lower-$configuration_lower.zip"
 }
 
-New-Item -Path $OutputDir -ItemType "Directory"
+New-Item -Path $OutputDir -ItemType "Directory" -Force
 Compress-Archive -Path "$WorkDir\portable-$Platform-$Configuration\*" -DestinationPath "$OutputDir\$filename"
 
 Remove-Item -Path "$WorkDir\portable-$Platform-$Configuration" -Recurse
