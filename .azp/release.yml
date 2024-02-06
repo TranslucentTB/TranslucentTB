@@ -11,9 +11,10 @@ steps:
   parameters:
     platform: x64
     configuration: Release
-    signBuild: true
     buildType: Release
-- publish: $(Build.SourcesDirectory)\AppPackage\AppPackages
-  artifact: 'MSIX'
-  displayName: 'Upload MSIX package'
-# TODO: zip up portable release and create GH release draft.
+- powershell: $(Build.SourcesDirectory)/.azp/create-portable.ps1 -Platform x64 -Configuration Release -WorkDir "$(Pipeline.Workspace)" -OutputDir "$(Build.ArtifactStagingDirectory)" -NoConfig
+  displayName: Create x64 portable build
+- powershell: $(Build.SourcesDirectory)/.azp/create-portable.ps1 -Platform ARM64 -Configuration Release -WorkDir "$(Pipeline.Workspace)" -OutputDir "$(Build.ArtifactStagingDirectory)" -NoConfig
+  displayName: Create ARM portable build
+# TODO: copy msixbundle and appxsym
+# TODO: create GH release draft.

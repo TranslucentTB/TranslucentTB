@@ -3,13 +3,11 @@ parameters:
   default: ''
 - name: configuration
   default: ''
-- name: extraMsbuildArgs
+- name: buildType
   default: ''
 - name: signBuild
   type: boolean
-  default: false
-- name: buildType
-  default: ''
+  default: true
 - name: includeNuGetOrg
   type: boolean
   default: false
@@ -17,9 +15,9 @@ parameters:
 steps:
 - checkout: self
   fetchTags: true
-- powershell: $(Build.SourcesDirectory)/.azp/update-version.ps1
+- powershell: $(Build.SourcesDirectory)/.azp/update-version.ps1 -RepoName "$(Build.RepositoryName)"
   displayName: Update version info
-- powershell: $(Build.SourcesDirectory)/.azp/update-manifest.ps1 -BuildType ${{ parameters.buildType }}
+- powershell: $(Build.SourcesDirectory)/.azp/update-manifest.ps1 -BuildType "${{ parameters.buildType }}"
   displayName: Update app manifest
 - script: git pull
   displayName: 'Update vcpkg ports'

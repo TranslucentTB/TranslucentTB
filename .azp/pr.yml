@@ -35,10 +35,9 @@ steps:
     platform: $(platform)
     configuration: $(configuration)
     buildType: Dev
+    signBuild: false
     includeNuGetOrg: true
-- publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
-  artifact: 'Portable $(platform) $(configuration)'
-  displayName: 'Upload portable build'
-- publish: $(Build.SourcesDirectory)\AppPackage\AppPackages
-  artifact: 'MSIX $(platform) $(configuration)'
-  displayName: 'Upload MSIX package'
+- template: templates/upload.yml
+  parameters:
+    platform: $(platform)
+    configuration: $(configuration)

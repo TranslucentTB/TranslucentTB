@@ -1,3 +1,7 @@
+param(
+    [string] $RepoName
+)
+
 $ErrorActionPreference = "Stop"
 
 $tag_hash = git rev-list --tags --max-count=1
@@ -6,7 +10,7 @@ $tag_name = git describe --tags $tag_hash
 $head_hash = git rev-parse HEAD
 $head_short = $head_hash.Substring(0, 7)
 
-$commits_since_tag = (Invoke-RestMethod -Uri "https://api.github.com/repos/$env:BUILD_REPOSITORY_NAME/compare/$tag_hash...$head_hash").ahead_by
+$commits_since_tag = (Invoke-RestMethod -Uri "https://api.github.com/repos/$RepoName/compare/$tag_hash...$head_hash").ahead_by
 
 $short_version = "$tag_name.$commits_since_tag.0"
 $full_version = "$tag_name.$commits_since_tag.$head_short"
