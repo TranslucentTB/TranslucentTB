@@ -4,7 +4,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$appx_file = "$PSScriptRoot\..\AppPackage\Package.appxmanifest"
+$appx_file = "$PSScriptRoot\..\..\AppPackage\Package.appxmanifest"
 $appx_content = Get-Content $appx_file
 $original_subject = "CN=TranslucentTB Open Source Developers, OID.2.25.311729368913984317654407730594956997722=1"
 

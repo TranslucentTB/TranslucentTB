@@ -5,7 +5,7 @@ parameters:
   default: ''
 
 steps:
-- powershell: $(Build.SourcesDirectory)/.azp/create-portable.ps1 -Platform "${{ parameters.platform }}" -Configuration "${{ parameters.configuration }}" -WorkDir "$(Pipeline.Workspace)" -OutputDir "$(Build.ArtifactStagingDirectory)\portable"
+- powershell: $(Build.SourcesDirectory)/.azp/scripts/create-portable.ps1 -Platform "${{ parameters.platform }}" -Configuration "${{ parameters.configuration }}" -WorkDir "$(Pipeline.Workspace)" -OutputDir "$(Build.ArtifactStagingDirectory)\portable"
   displayName: Create portable build
 - publish: $(Build.ArtifactStagingDirectory)\portable
   artifact: 'Portable ${{ parameters.platform }} ${{ parameters.configuration }}'

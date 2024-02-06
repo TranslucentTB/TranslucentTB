@@ -195,6 +195,7 @@
     </ClCompile>
     <ResourceCompile>
       <NullTerminateStrings>true</NullTerminateStrings>
+      <PreprocessorDefinitions>BUILD_TYPE=$(IntBuildType);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
 

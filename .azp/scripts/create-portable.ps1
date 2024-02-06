@@ -10,7 +10,7 @@ $ErrorActionPreference = "Stop"
 
 New-Item -Path $WorkDir -Name "portable-$Platform-$Configuration" -ItemType "Directory" -Force
 
-Copy-Item -Path "$PSScriptRoot\..\AppPackage\bin\$Platform\$Configuration\*" -Destination "$WorkDir\portable-$Platform-$Configuration" -Recurse -Include @("*.exe", "*.dll", "resources.pri", "Assets")
+Copy-Item -Path "$PSScriptRoot\..\..\AppPackage\bin\$Platform\$Configuration\*" -Destination "$WorkDir\portable-$Platform-$Configuration" -Recurse -Include @("*.exe", "*.dll", "resources.pri", "Assets")
 
 $platform_lower = $Platform.ToLower()
 if ($NoConfig)
