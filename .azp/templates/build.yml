@@ -8,6 +8,9 @@ parameters:
 - name: signBuild
   type: boolean
   default: true
+- name: signMsix
+  type: boolean
+  default: false
 - name: includeNuGetOrg
   type: boolean
   default: false
@@ -38,7 +41,7 @@ steps:
     feedsToUse: select
     vstsFeed: TranslucentTB/NugetCache
     includeNuGetOrg: ${{ parameters.includeNuGetOrg }}
-- ${{ if eq(parameters.signBuild, true) }}:
+- ${{ if eq(or(parameters.signBuild, parameters.signMsix), true) }}:
   - task: DownloadSecureFile@1
     name: acsMetadata
     displayName: 'Download Azure Code Signing metadata'
@@ -67,7 +70,11 @@ steps:
       msbuildArgs: /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256 /p:BuildType=${{ parameters.buildType }}
     ${{ else }}:
       msbuildArgs: /p:BuildType=${{ parameters.buildType }}
-- ${{ if eq(parameters.signBuild, true) }}:
+- ${{ if eq(parameters.signMsix, true) }}:
+  # TODO: use WAPPROJ built-in support once it no longer hangs.
+  - powershell: $(Build.SourcesDirectory)/.azp/scripts/sign-msix.ps1 -Platform "${{ parameters.platform }}" -Configuration "${{ parameters.configuration }}" -AcsMetadata "$(acsMetadata.secureFilePath)" -DigestAlgorithm sha256 -TimestampServer "http://timestamp.acs.microsoft.com"
+    displayName: Sign MSIX package
+- ${{ if eq(or(parameters.signBuild, parameters.signMsix), true) }}:
   - script: az account clear
     displayName: Logout from Azure
     condition: always()

@@ -9,8 +9,9 @@ steps:
   displayName: Create portable build
 - publish: $(Build.ArtifactStagingDirectory)\portable
   artifact: 'Portable ${{ parameters.platform }} ${{ parameters.configuration }}'
-  displayName: 'Upload portable build'
-# TODO: upload only msix and appxsym?
-- publish: $(Build.SourcesDirectory)\AppPackage\AppPackages
+  displayName: Upload portable build
+- powershell: $(Build.SourcesDirectory)/.azp/scripts/copy-msix.ps1 -OutputDir "$(Build.ArtifactStagingDirectory)\msix"
+  displayName: Copy MSIX package
+- publish: $(Build.ArtifactStagingDirectory)\msix
   artifact: 'MSIX ${{ parameters.platform }} ${{ parameters.configuration }}'
-  displayName: 'Upload MSIX package'
+  displayName: Upload MSIX package

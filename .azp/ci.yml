@@ -32,7 +32,7 @@ steps:
     platform: $(platform)
     configuration: $(configuration)
     buildType: Canary
-# TODO: sign msix
+    signMsix: true
 - template: templates/upload.yml
   parameters:
     platform: $(platform)
