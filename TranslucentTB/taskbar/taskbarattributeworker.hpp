@@ -110,6 +110,9 @@ private:
 	// ShellViewCoordinator
 	winrt::WindowsUdk::UI::Shell::ShellViewCoordinator m_SearchViewCoordinator;
 	winrt::event_token m_SearchViewVisibilityChangedToken;
+	winrt::WindowsUdk::UI::Shell::ShellViewCoordinator m_FindInStartViewCoordinator;
+	winrt::event_token m_FindInStartVisibilityChangedToken;
+	LPARAM m_highestSeenSearchSource;
 
 	// Messages
 	std::optional<UINT> m_TaskbarCreatedMessage;
