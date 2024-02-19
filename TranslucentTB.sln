@@ -75,7 +75,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "member-thunk", "member-thun
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{D465F744-CF30-4C38-82AB-22CA66B29B77}"
 	ProjectSection(SolutionItems) = preProject
+		.azp\scripts\copy-msix.ps1 = .azp\scripts\copy-msix.ps1
 		.azp\scripts\create-portable.ps1 = .azp\scripts\create-portable.ps1
+		.azp\scripts\sign-msix.ps1 = .azp\scripts\sign-msix.ps1
 		.azp\scripts\update-manifest.ps1 = .azp\scripts\update-manifest.ps1
 		.azp\scripts\update-version.ps1 = .azp\scripts\update-version.ps1
 	EndProjectSection
