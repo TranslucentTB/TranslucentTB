@@ -18,4 +18,12 @@ steps:
   displayName: Create ARM portable build
 - powershell: $(Build.SourcesDirectory)/.azp/scripts/copy-msix.ps1 -WorkDir "$(Pipeline.Workspace)" -OutputDir "$(Build.ArtifactStagingDirectory)\github" -FromUpload -UploadOutputDir "$(Build.ArtifactStagingDirectory)\upload"
   displayName: Copy MSIX upload
-# TODO: create GH release draft.
+- publish: $(Build.ArtifactStagingDirectory)\upload
+  artifact: 'Store MSIX upload'
+  displayName: Upload MSIX upload
+- task: GitHubRelease@1
+  displayName: Create draft GitHub release
+  inputs:
+    gitHubConnection: TranslucentTB
+    assets: $(Build.ArtifactStagingDirectory)\github\*
+    isDraft: true
