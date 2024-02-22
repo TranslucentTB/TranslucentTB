@@ -159,7 +159,7 @@ private:
 	void OnTaskViewVisibilityChange(bool state);
 	void OnSearchVisibilityChange(bool state);
 	void OnForceRefreshTaskbar(Window taskbar);
-	LRESULT OnSystemSettingsChange(UINT uiAction, std::wstring_view changedParameter);
+	LRESULT OnSystemSettingsChange(UINT uiAction);
 	LRESULT OnPowerBroadcast(const POWERBROADCAST_SETTING *settings);
 	LRESULT OnRequestAttributeRefresh(LPARAM lParam);
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;

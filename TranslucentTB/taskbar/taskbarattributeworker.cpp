@@ -248,7 +248,7 @@ void TaskbarAttributeWorker::OnForceRefreshTaskbar(Window taskbar)
 	}
 }
 
-LRESULT TaskbarAttributeWorker::OnSystemSettingsChange(UINT uiAction, std::wstring_view)
+LRESULT TaskbarAttributeWorker::OnSystemSettingsChange(UINT uiAction)
 {
 	if (uiAction == SPI_SETWORKAREA)
 	{
@@ -300,7 +300,7 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 		}
 		else
 		{
-			return OnSystemSettingsChange(static_cast<UINT>(wParam), lParam ? reinterpret_cast<const wchar_t*>(lParam) : std::wstring_view{ });
+			return OnSystemSettingsChange(static_cast<UINT>(wParam));
 		}
 	}
 	else if (uMsg == WM_DISPLAYCHANGE)
