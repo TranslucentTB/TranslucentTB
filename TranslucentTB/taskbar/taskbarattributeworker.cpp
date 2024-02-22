@@ -292,7 +292,16 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 {
 	if (uMsg == WM_SETTINGCHANGE)
 	{
-		return OnSystemSettingsChange(static_cast<UINT>(wParam), lParam ? reinterpret_cast<const wchar_t *>(lParam) : std::wstring_view { });
+		if (InSendMessage())
+		{
+			// post the message back to ourself to process outside of SendMessage
+			post_message(uMsg, wParam, lParam);
+			return 0;
+		}
+		else
+		{
+			return OnSystemSettingsChange(static_cast<UINT>(wParam), lParam ? reinterpret_cast<const wchar_t*>(lParam) : std::wstring_view{ });
+		}
 	}
 	else if (uMsg == WM_DISPLAYCHANGE)
 	{
