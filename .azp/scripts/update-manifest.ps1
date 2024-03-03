@@ -10,6 +10,7 @@ $original_subject = "CN=TranslucentTB Open Source Developers"
 
 if ($BuildType -eq "Release")
 {
+	$appx_content = $appx_content.Replace("Identity Name=`"TranslucentTB`"", "Identity Name=`"28017CharlesMilette.TranslucentTB`"")
 	$appx_content = $appx_content.Replace("TranslucentTB (Dev)", "TranslucentTB")
 	$appx_content = $appx_content.Replace("ms-resource:PublisherDisplayName", "Charles Milette")
 	$appx_content = $appx_content.Replace($original_subject, "CN=04797BBC-C7BB-462F-9B66-331C81E27C0E")
