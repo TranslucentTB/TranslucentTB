@@ -149,19 +149,19 @@
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Acrylic.Text" xml:space="preserve">
-    <value>Acryl</value>
+    <value>Acrylic</value>
   </data>
   <data name="TrayFlyoutPage_Advanced.Text" xml:space="preserve">
     <value>Erweitert</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_CompactThunkHeap.Text" xml:space="preserve">
-    <value>Kompakter dumpfer Haufen</value>
+    <value>Thunk-Heap kompaktifizieren</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_DisableHotSettings.Text" xml:space="preserve">
-    <value>Speichereinstellungen deaktivieren</value>
+    <value>Hot-Saving deaktivieren</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_DumpDynamicState.Text" xml:space="preserve">
-    <value>Dynamischen Status in Protokoll ausgeben</value>
+    <value>Dynamischen Zustand in Protokoll ausgeben</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_EditSettings.Text" xml:space="preserve">
     <value>Einstellungen bearbeiten</value>
@@ -170,7 +170,7 @@
     <value>Taskleistensymbol ausblenden</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity.Text" xml:space="preserve">
-    <value>Ausführlich protokollieren</value>
+    <value>Ausführlichkeit des Logs</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Critical.Text" xml:space="preserve">
     <value>Kritisch</value>
@@ -179,7 +179,7 @@
     <value>Debug</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Error.Text" xml:space="preserve">
-    <value>Fehler</value>
+    <value>Error</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Information.Text" xml:space="preserve">
     <value>Information</value>
@@ -188,16 +188,16 @@
     <value>Aus</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Trace.Text" xml:space="preserve">
-    <value>Verfolgen</value>
+    <value>Trace</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Warning.Text" xml:space="preserve">
-    <value>Warnung</value>
+    <value>Warning</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_OpenLogFile.Text" xml:space="preserve">
     <value>Protokolldatei öffnen</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_ResetDynamicState.Text" xml:space="preserve">
-    <value>Dynamischen Status zurücksetzen</value>
+    <value>Dynamischen Zustand zurücksetzen</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_ResetSettings.Text" xml:space="preserve">
     <value>Auf Standardeinstellungen zurücksetzen</value>
@@ -217,7 +217,7 @@
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Enabled.Text" xml:space="preserve">
-    <value>Aktiviert</value>
+    <value>Aktiv</value>
   </data>
   <data name="TrayFlyoutPage_Exit.Text" xml:space="preserve">
     <value>Beenden</value>
@@ -234,7 +234,7 @@
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_Opaque.Text" xml:space="preserve">
-    <value>Undurchsichtig</value>
+    <value>Opaque</value>
   </data>
   <data name="TrayFlyoutPage_OpenAtBoot.Text" xml:space="preserve">
     <value>Mit Windows starten</value>
@@ -251,7 +251,7 @@
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_TaskViewOpened.Text" xml:space="preserve">
-    <value>Taskansicht geöffnet</value>
+    <value>Task-Ansicht geöffnet</value>
     <comment>Also used to generate the title of color picker windows</comment>
   </data>
   <data name="TrayFlyoutPage_TipsAndTricks.Text" xml:space="preserve">
@@ -261,18 +261,18 @@
     <value>Sichtbares Fenster</value>
   </data>
   <data name="WelcomePage.Title" xml:space="preserve">
-    <value>Willkommen zuTranslucentTB!</value>
+    <value>Willkommen zu TranslucentTB!</value>
   </data>
   <data name="WelcomePage_Action_Configure.Description" xml:space="preserve">
-    <value>Sie können dies tun, indem Sie im Kontextmenü des Taskleistensymbols auf "Erweitert" &gt; "Einstellungen bearbeiten" klicken
-Änderungen werden automatisch neu geladen, wenn Sie die Datei speichern</value>
+    <value>Sie das jederzeit tun, indem Sie im Kontextmenü des Taskleistensymbols auf "Erweitert" &gt; "Einstellungen bearbeiten" klicken
+Änderungen an den Einstellungen werden automatisch neu geladen, wenn die Datei gespeichert wird</value>
     <comment>Mind the newline (a.k.a. enter)</comment>
   </data>
   <data name="WelcomePage_Action_Configure.Name" xml:space="preserve">
     <value>Konfigurationsdatei bearbeiten</value>
   </data>
   <data name="WelcomePage_Action_Discord.Description" xml:space="preserve">
-    <value>Chatten Sie mit den Entwicklern und erhalten Sie Hilfe zum Programm</value>
+    <value>Chatten Sie mit den Entwicklern und erhalten Sie Hilfe mit dem Programm</value>
   </data>
   <data name="WelcomePage_Action_Discord.Name" xml:space="preserve">
     <value>Treten Sie unserem Discord-Server bei</value>
@@ -290,7 +290,7 @@
     <value>Beenden</value>
   </data>
   <data name="WelcomePage_Message_Hyperlink.Text" xml:space="preserve">
-    <value>einen Fehler bei GitHub melden</value>
+    <value>Einen Fehler auf GitHub melden</value>
   </data>
   <data name="WelcomePage_Message_Prefix.Text" xml:space="preserve">
     <value>Danke, dass Sie TranslucentTB ausprobieren! Nachdem Sie auf „Weiter“ geklickt haben, können Sie das Aussehen der Taskleiste Ihren Wünschen anpassen. Wir hoffen, dass es Ihnen gefällt. Gerne können Sie</value>

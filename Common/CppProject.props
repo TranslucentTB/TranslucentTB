@@ -51,12 +51,22 @@
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
 
-    <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'!=''">/tr $(CertificateTimestampServer) /td sha512</SignToolAdditionalArguments>
-    <SignToolAdditionalArguments Condition="'$(CertificateTimestampServer)'==''"></SignToolAdditionalArguments>
+    <SignToolDigestAlgorithm Condition="'$(SignToolDigestAlgorithm)'==''">sha512</SignToolDigestAlgorithm>
+
+    <SignToolTimestampServer Condition="'$(CertificateTimestampServer)'!=''">/tr "$(CertificateTimestampServer)" /td $(SignToolDigestAlgorithm)</SignToolTimestampServer>
+    <SignToolTimestampServer Condition="'$(CertificateTimestampServer)'==''"></SignToolTimestampServer>
+
+    <SignToolSignatureMethod Condition="'$(CertificateThumbprint)'!=''">/sha1 $(CertificateThumbprint)</SignToolSignatureMethod>
+    <SignToolSignatureMethod Condition="'$(AcsMetadata)'!=''">/dlib "$(AzureCodeSigningDlibBinFolder)\$(SignToolArchitecture)\Azure.CodeSigning.Dlib.dll" /dmdf "$(AcsMetadata)"</SignToolSignatureMethod>
 
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
     <VcpkgTriplet>$(Platform.ToLowerInvariant())-windows</VcpkgTriplet>
     <VcpkgAdditionalInstallOptions>--overlay-ports="$(SolutionDir)\vcpkg\ports"</VcpkgAdditionalInstallOptions>
+
+    <BuildType Condition="'$(BuildType)'==''">Dev</BuildType>
+    <IntBuildType Condition="'$(BuildType)'=='Release'">0</IntBuildType>
+    <IntBuildType Condition="'$(BuildType)'=='Canary'">1</IntBuildType>
+    <IntBuildType Condition="'$(IntBuildType)'==''">2</IntBuildType>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -113,7 +123,7 @@
       <GuardEHContMetadata>true</GuardEHContMetadata>
     </ClCompile>
     <Link>
-      <CETCompat>true</CETCompat>
+      <CETCompat Condition="'$(Configuration)'=='Release'">true</CETCompat>
     </Link>
   </ItemDefinitionGroup>
 
@@ -124,15 +134,16 @@
     </ClCompile>
   </ItemDefinitionGroup>
 
-  <ItemDefinitionGroup Condition="'$(CertificateThumbprint)'!=''">
+  <ItemDefinitionGroup Condition="'$(SkipSigning)'!='True' And ('$(CertificateThumbprint)'!='' Or '$(AcsMetadata)'!='')">
     <ClCompile>
       <PreprocessorDefinitions>SIGNED_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalOptions>/ALLOWBIND:NO %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(AcsMetadata)'!=''">/INTEGRITYCHECK %(AdditionalOptions)</AdditionalOptions>
     </Link>
-    <CustomBuildStep Condition="'$(SkipSigning)'!='True'">
-      <Command>signtool.exe sign /ph $(SignToolAdditionalArguments) /fd sha512 /sha1 $(CertificateThumbprint) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>
+    <CustomBuildStep>
+      <Command>"$(WindowsSDKBuildToolsBinVersionedArchFolder)\signtool.exe" sign /ph $(SignToolTimestampServer) /fd $(SignToolDigestAlgorithm) $(SignToolSignatureMethod) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>
       <Message>Signing $(TargetPath)</Message>
       <Inputs>$(TargetPath)</Inputs>
       <Outputs>$(OutDir)sign\$(ProjectName)-sign.out</Outputs>
@@ -179,9 +190,12 @@
 
       <!-- Windows -->
       <PreprocessorDefinitions>_HIDE_GLOBAL_ASYNC_STATUS;STRICT_TYPED_ITEMIDS;NOMINMAX;_WINDOWS;WIN32_LEAN_AND_MEAN;WINRT_WINDOWS_ABI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+
+      <PreprocessorDefinitions>BUILD_TYPE=$(IntBuildType);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ResourceCompile>
       <NullTerminateStrings>true</NullTerminateStrings>
+      <PreprocessorDefinitions>BUILD_TYPE=$(IntBuildType);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
 

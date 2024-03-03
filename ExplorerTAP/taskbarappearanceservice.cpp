@@ -145,7 +145,7 @@ HRESULT TaskbarAppearanceService::RestoreAllTaskbarsToDefaultWhenProcessDies(DWO
 {
 	if (!m_Process)
 	{
-		m_Process.reset(OpenProcess(SYNCHRONIZE, false, pid));
+		m_Process.reset(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION | SYNCHRONIZE, false, pid));
 		if (!m_Process) [[unlikely]]
 		{
 			return HRESULT_FROM_WIN32(GetLastError());

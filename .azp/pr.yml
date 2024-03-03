@@ -1,0 +1,43 @@
+pool:
+  vmImage: 'windows-2022'
+
+trigger: none
+
+pr:
+  autoCancel: true
+  drafts: true
+  branches:
+    include:
+    - '*'
+
+variables:
+- name: VCPKG_BINARY_SOURCES
+  value: 'clear;nuget,https://pkgs.dev.azure.com/TranslucentTB/TranslucentTB/_packaging/VcpkgCache/nuget/v3/index.json,read'
+
+strategy:
+  matrix:
+    'ARM64 Debug':
+      platform: ARM64
+      configuration: Debug
+    'ARM64 Release':
+      platform: ARM64
+      configuration: Release
+    'x64 Debug':
+      platform: x64
+      configuration: Debug
+    'x64 Release':
+      platform: x64
+      configuration: Release
+
+steps:
+- template: templates/build.yml
+  parameters:
+    platform: $(platform)
+    configuration: $(configuration)
+    buildType: Dev
+    signBuild: false
+    includeNuGetOrg: true
+- template: templates/upload.yml
+  parameters:
+    platform: $(platform)
+    configuration: $(configuration)

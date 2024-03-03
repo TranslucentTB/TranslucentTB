@@ -38,6 +38,9 @@
     <Filter Include="Resources\Strings\ru-RU">
       <UniqueIdentifier>{dc632056-91f7-43ac-a253-f3c1bcd8c0f5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources\Strings\uk-UA">
+      <UniqueIdentifier>{09b0c717-6adc-41d5-85cd-c605b913d60b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -51,6 +54,7 @@
       <Filter>Generated Files</Filter>
     </None>
     <None Include="packages.config" />
+    <None Include="vcpkg.json" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -135,6 +139,9 @@
     </PRIResource>
     <PRIResource Include="Strings\ru-RU\Resources.resw">
       <Filter>Resources\Strings\ru-RU</Filter>
+    </PRIResource>
+    <PRIResource Include="Strings\uk-UA\Resources.resw">
+      <Filter>Resources\Strings\uk-UA</Filter>
     </PRIResource>
   </ItemGroup>
 </Project>

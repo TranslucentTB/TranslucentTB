@@ -1,0 +1,92 @@
+parameters:
+- name: platform
+  default: ''
+- name: configuration
+  default: ''
+- name: buildType
+  default: ''
+- name: signBuild
+  type: boolean
+  default: true
+- name: signMsix
+  type: boolean
+  default: false
+- name: includeNuGetOrg
+  type: boolean
+  default: false
+
+steps:
+- checkout: self
+  fetchTags: true
+- powershell: $(Build.SourcesDirectory)/.azp/scripts/update-version.ps1 -RepoName "$(Build.Repository.Name)"
+  displayName: Update version info
+- powershell: $(Build.SourcesDirectory)/.azp/scripts/update-manifest.ps1 -BuildType "${{ parameters.buildType }}"
+  displayName: Update app manifest
+- script: git pull
+  displayName: 'Update vcpkg ports'
+  workingDirectory: C:\vcpkg
+- script: .\bootstrap-vcpkg.bat
+  displayName: 'Bootstrap vcpkg'
+  workingDirectory: C:\vcpkg
+- script: .\vcpkg.exe integrate install
+  displayName: 'Integrate vcpkg'
+  workingDirectory: C:\vcpkg
+- task: NuGetAuthenticate@1
+  displayName: 'Authenticate NuGet'
+- task: NuGetCommand@2
+  displayName: 'Restore NuGet packages'
+  inputs:
+    command: restore
+    restoreSolution: $(Build.SourcesDirectory)/TranslucentTB.sln
+    feedsToUse: select
+    vstsFeed: TranslucentTB/NugetCache
+    includeNuGetOrg: ${{ parameters.includeNuGetOrg }}
+- ${{ if eq(or(parameters.signBuild, parameters.signMsix), true) }}:
+  - task: DownloadSecureFile@1
+    name: acsMetadata
+    displayName: 'Download Azure Code Signing metadata'
+    inputs:
+      secureFile: metadata.json
+  - task: AzureCLI@2
+    displayName: Get Azure Credentials
+    inputs:
+      azureSubscription: Azure Code Signing
+      scriptType: pscore
+      scriptLocation: inlineScript
+      addSpnToEnvironment: true
+      inlineScript: |
+        echo "##vso[task.setvariable variable=azure_tenant_id;issecret=true]$env:tenantId"
+        echo "##vso[task.setvariable variable=azure_service_principal_id;issecret=true]$env:servicePrincipalId"
+        echo "##vso[task.setvariable variable=azure_federated_token;issecret=true]$env:idToken"
+  - script: az login --service-principal -u "$(azure_service_principal_id)" --tenant "$(azure_tenant_id)" --allow-no-subscriptions --federated-token "$(azure_federated_token)"
+    displayName: Authenticate to Azure
+- task: VSBuild@1
+  displayName: 'Build solution'
+  inputs:
+    configuration: ${{ parameters.configuration }}
+    platform: ${{ parameters.platform }}
+    solution: $(Build.SourcesDirectory)/TranslucentTB.sln
+    ${{ if eq(parameters.signBuild, true) }}:
+      msbuildArgs: /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:AcsMetadata="$(acsMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256 /p:BuildType=${{ parameters.buildType }}
+    ${{ else }}:
+      msbuildArgs: /p:BuildType=${{ parameters.buildType }}
+- ${{ if eq(parameters.signMsix, true) }}:
+  # TODO: use WAPPROJ built-in support once it no longer hangs.
+  - powershell: $(Build.SourcesDirectory)/.azp/scripts/sign-msix.ps1 -Platform "${{ parameters.platform }}" -Configuration "${{ parameters.configuration }}" -AcsMetadata "$(acsMetadata.secureFilePath)" -DigestAlgorithm sha256 -TimestampServer "http://timestamp.acs.microsoft.com"
+    displayName: Sign MSIX package
+- ${{ if eq(or(parameters.signBuild, parameters.signMsix), true) }}:
+  - script: az account clear
+    displayName: Logout from Azure
+    condition: always()
+- powershell: echo "##vso[task.setvariable variable=buildTemplatePlatform]${{ parameters.platform }}"
+  displayName: Export platform template parameter to variable
+  condition: succeededOrFailed()
+- task: VSTest@2
+  displayName: 'Run unit tests'
+  condition: and(succeededOrFailed(), eq(variables['buildTemplatePlatform'], 'x64'))
+  inputs:
+    testAssemblyVer2: ${{ parameters.platform }}\${{ parameters.configuration }}\Tests.exe
+    runInParallel: true
+    platform: ${{ parameters.platform }}
+    configuration: ${{ parameters.configuration }}
+    testRunTitle: '${{ parameters.platform }} ${{ parameters.configuration }}'

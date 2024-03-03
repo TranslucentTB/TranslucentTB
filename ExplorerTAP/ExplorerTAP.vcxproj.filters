@@ -30,28 +30,28 @@
     <ClCompile Include="visualtreewatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Generated Files\dlldata.c">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Generated Files\ExplorerTAP_i.c">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Generated Files\ITaskbarAppearanceService_i.c">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Generated Files\ITaskbarAppearanceService_p.c">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Generated Files\IVersionedApi_i.c">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Generated Files\IVersionedApi_p.c">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="taskbarappearanceservice.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated Files\$(Platform)\dlldata.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated Files\$(Platform)\ExplorerTAP_i.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated Files\$(Platform)\ITaskbarAppearanceService_i.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated Files\$(Platform)\ITaskbarAppearanceService_p.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated Files\$(Platform)\IVersionedApi_i.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated Files\$(Platform)\IVersionedApi_p.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -65,19 +65,19 @@
     <ClInclude Include="tapsite.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Generated Files\ExplorerTAP.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated Files\ITaskbarAppearanceService.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated Files\TaskbarBrush.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated Files\IVersionedApi.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
     <ClInclude Include="taskbarappearanceservice.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated Files\$(Platform)\ExplorerTAP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated Files\$(Platform)\ITaskbarAppearanceService.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated Files\$(Platform)\IVersionedApi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated Files\$(Platform)\TaskbarBrush.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -86,6 +86,7 @@
       <Filter>Source Files</Filter>
     </None>
     <None Include="packages.config" />
+    <None Include="vcpkg.json" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="ExplorerTAP.idl">

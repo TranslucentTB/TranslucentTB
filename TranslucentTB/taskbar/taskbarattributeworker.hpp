@@ -110,6 +110,9 @@ private:
 	// ShellViewCoordinator
 	winrt::WindowsUdk::UI::Shell::ShellViewCoordinator m_SearchViewCoordinator;
 	winrt::event_token m_SearchViewVisibilityChangedToken;
+	winrt::WindowsUdk::UI::Shell::ShellViewCoordinator m_FindInStartViewCoordinator;
+	winrt::event_token m_FindInStartVisibilityChangedToken;
+	LPARAM m_highestSeenSearchSource;
 
 	// Messages
 	std::optional<UINT> m_TaskbarCreatedMessage;
@@ -156,7 +159,7 @@ private:
 	void OnTaskViewVisibilityChange(bool state);
 	void OnSearchVisibilityChange(bool state);
 	void OnForceRefreshTaskbar(Window taskbar);
-	LRESULT OnSystemSettingsChange(UINT uiAction, std::wstring_view changedParameter);
+	LRESULT OnSystemSettingsChange(UINT uiAction);
 	LRESULT OnPowerBroadcast(const POWERBROADCAST_SETTING *settings);
 	LRESULT OnRequestAttributeRefresh(LPARAM lParam);
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;

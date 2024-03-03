@@ -60,7 +60,8 @@ HRESULT InjectExplorerTAP(DWORD pid, REFIID riid, LPVOID* ppv) try
 				++attempts;
 				Sleep(500);
 			}
-		} while (FAILED(hr) && attempts < 20);
+		} while (FAILED(hr) && attempts < 60);
+		// 60 * 500ms = 30s
 
 		if (FAILED(hr)) [[unlikely]]
 		{
@@ -72,7 +73,7 @@ HRESULT InjectExplorerTAP(DWORD pid, REFIID riid, LPVOID* ppv) try
 			// do not timeout on debug builds, to allow debugging the DLL while it's loading in explorer
 			INFINITE;
 #else
-			1000;
+			5000;
 #endif
 
 		if (!event.wait(TIMEOUT)) [[unlikely]]

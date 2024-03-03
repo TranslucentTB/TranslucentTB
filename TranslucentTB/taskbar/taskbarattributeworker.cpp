@@ -11,6 +11,7 @@
 #include "undoc/winuser.hpp"
 #include "win32.hpp"
 #include "winrt/Windows.Foundation.h"
+#include "winrt/Windows.Foundation.Metadata.h"
 
 class TaskbarAttributeWorker::AttributeRefresher {
 private:
@@ -247,7 +248,7 @@ void TaskbarAttributeWorker::OnForceRefreshTaskbar(Window taskbar)
 	}
 }
 
-LRESULT TaskbarAttributeWorker::OnSystemSettingsChange(UINT uiAction, std::wstring_view)
+LRESULT TaskbarAttributeWorker::OnSystemSettingsChange(UINT uiAction)
 {
 	if (uiAction == SPI_SETWORKAREA)
 	{
@@ -291,7 +292,16 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 {
 	if (uMsg == WM_SETTINGCHANGE)
 	{
-		return OnSystemSettingsChange(static_cast<UINT>(wParam), lParam ? reinterpret_cast<const wchar_t *>(lParam) : std::wstring_view { });
+		if (InSendMessage())
+		{
+			// post the message back to ourself to process outside of SendMessage
+			post_message(uMsg, wParam, lParam);
+			return 0;
+		}
+		else
+		{
+			return OnSystemSettingsChange(static_cast<UINT>(wParam));
+		}
 	}
 	else if (uMsg == WM_DISPLAYCHANGE)
 	{
@@ -325,7 +335,11 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 	}
 	else if (uMsg == m_SearchVisibilityChangeMessage)
 	{
-		OnSearchVisibilityChange(wParam);
+		m_highestSeenSearchSource = std::max(m_highestSeenSearchSource, lParam);
+		if (lParam == m_highestSeenSearchSource)
+		{
+			OnSearchVisibilityChange(wParam);
+		}
 		return 0;
 	}
 	else if (uMsg == m_ForceRefreshTaskbar)
@@ -356,28 +370,25 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 	}
 
 	// on windows 11, search is considered open when start is, so we need to check for start first.
-	if (m_Config.StartOpenedAppearance.Enabled)
+	bool startOpened;
+	if (m_IsWindows11 && m_CurrentSearchMonitor != nullptr)
 	{
-		bool startOpened;
-		if (m_IsWindows11)
-		{
-			// checking the search monitor is more reliable on windows 11
-			// so check the start monitor to see if it's open and then use the search monitor
-			// to check *where* it's open.
-			startOpened = m_CurrentStartMonitor != nullptr && m_CurrentSearchMonitor == taskbar->first;
-		}
-		else
-		{
-			startOpened = m_CurrentStartMonitor == taskbar->first;
-		}
-
-		if (startOpened)
-		{
-			return WithPreview(txmp::TaskbarState::StartOpened, m_Config.StartOpenedAppearance);
-		}
+		// checking the search monitor is more reliable on windows 11 (if available)
+		// so check the start monitor to see if it's open and then use the search monitor
+		// to check *where* it's open.
+		startOpened = m_CurrentStartMonitor != nullptr && m_CurrentSearchMonitor == taskbar->first;
+	}
+	else
+	{
+		startOpened = m_CurrentStartMonitor == taskbar->first;
 	}
 
-	if (m_Config.SearchOpenedAppearance.Enabled && m_CurrentSearchMonitor == taskbar->first)
+	if (m_Config.StartOpenedAppearance.Enabled && startOpened)
+	{
+		return WithPreview(txmp::TaskbarState::StartOpened, m_Config.StartOpenedAppearance);
+	}
+
+	if (m_Config.SearchOpenedAppearance.Enabled && !startOpened && m_CurrentSearchMonitor == taskbar->first)
 	{
 		return WithPreview(txmp::TaskbarState::SearchOpened, m_Config.SearchOpenedAppearance);
 	}
@@ -801,6 +812,7 @@ void TaskbarAttributeWorker::CreateSearchManager()
 
 	m_SearchManager = nullptr;
 	m_SearchViewCoordinator = nullptr;
+	m_FindInStartViewCoordinator = nullptr;
 
 	if (m_SearchVisibilityChangeMessage)
 	{
@@ -808,12 +820,21 @@ void TaskbarAttributeWorker::CreateSearchManager()
 		{
 			try
 			{
+				using winrt::WindowsUdk::UI::Shell::ShellView;
 				using winrt::WindowsUdk::UI::Shell::ShellViewCoordinator;
-				m_SearchViewCoordinator = ShellViewCoordinator { winrt::WindowsUdk::UI::Shell::ShellView::Search };
+
+				m_SearchViewCoordinator = ShellViewCoordinator{winrt::WindowsUdk::UI::Shell::ShellView::Search};
 
 				m_SearchViewVisibilityChangedToken = m_SearchViewCoordinator.VisibilityChanged([this](const ShellViewCoordinator &coordinator, const wf::IInspectable &)
 				{
-					send_message(*m_SearchVisibilityChangeMessage, coordinator.Visibility() == winrt::WindowsUdk::UI::Shell::ViewVisibility::Visible);
+					post_message(*m_SearchVisibilityChangeMessage, coordinator.Visibility() == winrt::WindowsUdk::UI::Shell::ViewVisibility::Visible, 1);
+				});
+
+				m_FindInStartViewCoordinator = ShellViewCoordinator { winrt::WindowsUdk::UI::Shell::ShellView::FindInStart };
+
+				m_FindInStartVisibilityChangedToken = m_FindInStartViewCoordinator.VisibilityChanged([this](const ShellViewCoordinator& coordinator, const wf::IInspectable&)
+				{
+					post_message(*m_SearchVisibilityChangeMessage, coordinator.Visibility() == winrt::WindowsUdk::UI::Shell::ViewVisibility::Visible, 2);
 				});
 			}
 			HresultErrorCatch(spdlog::level::warn, L"Failed to create ShellViewCoordinator");
@@ -834,12 +855,12 @@ void TaskbarAttributeWorker::CreateSearchManager()
 
 				m_SuggestionsShownToken = m_SearchManager.SuggestionsShown([this](const ICortanaExperienceManager &, const wf::IInspectable &)
 				{
-					send_message(*m_SearchVisibilityChangeMessage, true);
+					post_message(*m_SearchVisibilityChangeMessage, true, 0);
 				});
 
 				m_SuggestionsHiddenToken = m_SearchManager.SuggestionsHidden([this](const ICortanaExperienceManager &, const wf::IInspectable &)
 				{
-					send_message(*m_SearchVisibilityChangeMessage, false);
+					post_message(*m_SearchVisibilityChangeMessage, false, 0);
 				});
 			}
 			ResultExceptionCatch(spdlog::level::warn, L"Failed to create immersive shell service provider")
@@ -862,6 +883,15 @@ void TaskbarAttributeWorker::UnregisterSearchCallbacks() noexcept
 		{
 			m_SearchManager.SuggestionsHidden(m_SuggestionsHiddenToken);
 			m_SuggestionsHiddenToken = { };
+		}
+	}
+
+	if (m_FindInStartViewCoordinator)
+	{
+		if (m_FindInStartVisibilityChangedToken)
+		{
+			m_FindInStartViewCoordinator.VisibilityChanged(m_FindInStartVisibilityChangedToken);
+			m_FindInStartVisibilityChangedToken = { };
 		}
 	}
 
@@ -1053,6 +1083,8 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(const Config &cfg, HINSTANCE hIns
 	m_OrderChangeHook(CreateHook(EVENT_OBJECT_REORDER, CreateThunk(&TaskbarAttributeWorker::OnWindowOrderChange))),
 	m_SearchManager(nullptr),
 	m_SearchViewCoordinator(nullptr),
+	m_FindInStartViewCoordinator(nullptr),
+	m_highestSeenSearchSource(0),
 	m_TaskbarCreatedMessage(Window::RegisterMessage(WM_TASKBARCREATED)),
 	m_RefreshRequestedMessage(Window::RegisterMessage(WM_TTBHOOKREQUESTREFRESH)),
 	m_TaskViewVisibilityChangeMessage(Window::RegisterMessage(WM_TTBHOOKTASKVIEWVISIBILITYCHANGE)),

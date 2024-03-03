@@ -90,10 +90,10 @@ Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> s
 		hInst,
 		L"Microsoft.UI.Xaml.2.8_8wekyb3d8bbwe",
 		PACKAGE_VERSION {
-			// 8.2305.5001.0 but the order is reversed because that's how the struct is.
+			// 8.2310.30001.0 but the order is reversed because that's how the struct is.
 			.Revision = 0,
-			.Build = 5001,
-			.Minor = 2305,
+			.Build = 30001,
+			.Minor = 2310,
 			.Major = 8
 		},
 		storageFolder.has_value()
@@ -122,17 +122,17 @@ Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> s
 
 void Application::OpenDonationPage()
 {
-	UWP::OpenUri(wf::Uri(L"https://liberapay.com/" APP_NAME));
+	UWP::OpenUri(wf::Uri(L"https://liberapay.com/TranslucentTB"));
 }
 
 void Application::OpenTipsPage()
 {
-	UWP::OpenUri(wf::Uri(L"https://" APP_NAME ".github.io/tips"));
+	UWP::OpenUri(wf::Uri(L"https://TranslucentTB.github.io/tips"));
 }
 
 void Application::OpenDiscordServer()
 {
-	UWP::OpenUri(wf::Uri(L"https://discord.gg/" APP_NAME));
+	UWP::OpenUri(wf::Uri(L"https://discord.gg/TranslucentTB"));
 }
 
 int Application::Run()

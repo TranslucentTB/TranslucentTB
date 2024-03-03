@@ -12,13 +12,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
-		azure-pipelines.yml = azure-pipelines.yml
 		CONTRIBUTING.md = CONTRIBUTING.md
-		.github\ISSUE_TEMPLATE.md = .github\ISSUE_TEMPLATE.md
 		LICENSE.md = LICENSE.md
 		README.md = README.md
 		settings.schema.json = settings.schema.json
-		update-version.ps1 = update-version.ps1
+		store-listing.csv = store-listing.csv
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExplorerHooks", "ExplorerHooks\ExplorerHooks.vcxproj", "{D0004E78-F00B-4943-B77E-9A278F8BA399}"
@@ -34,6 +32,55 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WindowsUdk", "WindowsUdk\WindowsUdk.vcxproj", "{55ED608B-B142-43A8-B42F-BBF292A61CBD}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExplorerTAP", "ExplorerTAP\ExplorerTAP.vcxproj", "{E759084F-6445-400D-8F43-A64A6E276659}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{5397B370-D633-4BD3-8F19-595EAD559E80}"
+	ProjectSection(SolutionItems) = preProject
+		.github\FUNDING.yml = .github\FUNDING.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEMPLATE", "{73DCA805-34B8-4193-AC26-E26253F613F5}"
+	ProjectSection(SolutionItems) = preProject
+		.github\ISSUE_TEMPLATE\bug.yaml = .github\ISSUE_TEMPLATE\bug.yaml
+		.github\ISSUE_TEMPLATE\config.yml = .github\ISSUE_TEMPLATE\config.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azp", ".azp", "{18F447A6-8673-4478-BDE8-DC39FB241CAD}"
+	ProjectSection(SolutionItems) = preProject
+		.azp\ci.yml = .azp\ci.yml
+		.azp\pr.yml = .azp\pr.yml
+		.azp\release.yml = .azp\release.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{0FF03715-FB82-410F-8D27-B28CF012E53D}"
+	ProjectSection(SolutionItems) = preProject
+		.azp\templates\build.yml = .azp\templates\build.yml
+		.azp\templates\upload.yml = .azp\templates\upload.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vcpkg", "vcpkg", "{95DD3133-7FFF-4DA5-ABA8-17D560EB0CF2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ports", "ports", "{C73B6D30-9C28-4662-BA69-198FAE269CA3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "detours", "detours", "{678763EE-1ED5-43E6-9A5C-9534697D80BB}"
+	ProjectSection(SolutionItems) = preProject
+		vcpkg\ports\detours\portfile.cmake = vcpkg\ports\detours\portfile.cmake
+		vcpkg\ports\detours\vcpkg.json = vcpkg\ports\detours\vcpkg.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "member-thunk", "member-thunk", "{CDADD0F5-BBF2-4D1E-B7B8-3C9D81305BDF}"
+	ProjectSection(SolutionItems) = preProject
+		vcpkg\ports\member-thunk\portfile.cmake = vcpkg\ports\member-thunk\portfile.cmake
+		vcpkg\ports\member-thunk\vcpkg.json = vcpkg\ports\member-thunk\vcpkg.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{D465F744-CF30-4C38-82AB-22CA66B29B77}"
+	ProjectSection(SolutionItems) = preProject
+		.azp\scripts\copy-msix.ps1 = .azp\scripts\copy-msix.ps1
+		.azp\scripts\create-portable.ps1 = .azp\scripts\create-portable.ps1
+		.azp\scripts\sign-msix.ps1 = .azp\scripts\sign-msix.ps1
+		.azp\scripts\update-manifest.ps1 = .azp\scripts\update-manifest.ps1
+		.azp\scripts\update-version.ps1 = .azp\scripts\update-version.ps1
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -114,6 +161,17 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5397B370-D633-4BD3-8F19-595EAD559E80} = {643CCC44-6675-4C3B-AF5B-B44DF4D7EBFF}
+		{73DCA805-34B8-4193-AC26-E26253F613F5} = {5397B370-D633-4BD3-8F19-595EAD559E80}
+		{18F447A6-8673-4478-BDE8-DC39FB241CAD} = {643CCC44-6675-4C3B-AF5B-B44DF4D7EBFF}
+		{0FF03715-FB82-410F-8D27-B28CF012E53D} = {18F447A6-8673-4478-BDE8-DC39FB241CAD}
+		{95DD3133-7FFF-4DA5-ABA8-17D560EB0CF2} = {643CCC44-6675-4C3B-AF5B-B44DF4D7EBFF}
+		{C73B6D30-9C28-4662-BA69-198FAE269CA3} = {95DD3133-7FFF-4DA5-ABA8-17D560EB0CF2}
+		{678763EE-1ED5-43E6-9A5C-9534697D80BB} = {C73B6D30-9C28-4662-BA69-198FAE269CA3}
+		{CDADD0F5-BBF2-4D1E-B7B8-3C9D81305BDF} = {C73B6D30-9C28-4662-BA69-198FAE269CA3}
+		{D465F744-CF30-4C38-82AB-22CA66B29B77} = {18F447A6-8673-4478-BDE8-DC39FB241CAD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {69F96DC4-E133-4A1B-8AB1-83EF70F8CE12}

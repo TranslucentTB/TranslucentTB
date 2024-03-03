@@ -11,7 +11,7 @@ class LauncherVisibilitySink : public winrt::implements<LauncherVisibilitySink, 
 
 	IFACEMETHODIMP LauncherVisibilityChange(BOOL currentVisibleState) noexcept override
 	{
-		m_Wnd.send_message(m_Msg, currentVisibleState);
+		m_Wnd.post_message(m_Msg, currentVisibleState);
 		return S_OK;
 	}
 

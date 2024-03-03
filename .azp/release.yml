@@ -1,0 +1,29 @@
+pool:
+  vmImage: 'windows-2022'
+
+trigger:
+  tags:
+    include:
+    - '*'
+
+steps:
+- template: templates/build.yml
+  parameters:
+    platform: x64
+    configuration: Release
+    buildType: Release
+- powershell: $(Build.SourcesDirectory)/.azp/scripts/create-portable.ps1 -Platform x64 -Configuration Release -WorkDir "$(Pipeline.Workspace)" -OutputDir "$(Build.ArtifactStagingDirectory)\github" -NoConfig -Compress
+  displayName: Create x64 portable build
+- powershell: $(Build.SourcesDirectory)/.azp/scripts/create-portable.ps1 -Platform ARM64 -Configuration Release -WorkDir "$(Pipeline.Workspace)" -OutputDir "$(Build.ArtifactStagingDirectory)\github" -NoConfig -Compress
+  displayName: Create ARM portable build
+- powershell: $(Build.SourcesDirectory)/.azp/scripts/copy-msix.ps1 -WorkDir "$(Pipeline.Workspace)" -OutputDir "$(Build.ArtifactStagingDirectory)\github" -FromUpload -UploadOutputDir "$(Build.ArtifactStagingDirectory)\upload"
+  displayName: Copy MSIX upload
+- publish: $(Build.ArtifactStagingDirectory)\upload
+  artifact: 'Store MSIX upload'
+  displayName: Upload MSIX upload
+- task: GitHubRelease@1
+  displayName: Create draft GitHub release
+  inputs:
+    gitHubConnection: TranslucentTB
+    assets: $(Build.ArtifactStagingDirectory)\github\*
+    isDraft: true

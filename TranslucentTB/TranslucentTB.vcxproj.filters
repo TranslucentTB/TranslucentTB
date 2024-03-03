@@ -195,6 +195,9 @@
     <ResourceCompile Include="resources\language\TranslucentTB.ru-RU.rc2">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+    <ResourceCompile Include="resources\language\TranslucentTB.uk-UA.rc2">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="resources\TranslucentTB.manifest">
@@ -208,6 +211,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="vcpkg.json" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="taskbar\ShellExperience.idl">

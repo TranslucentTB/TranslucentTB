@@ -39,18 +39,13 @@
     <DebuggerType>NativeOnly</DebuggerType>
     <DefaultLanguage>en-US</DefaultLanguage>
     <AppxBundleAutoResourcePackageQualifiers>Scale|DXFeatureLevel</AppxBundleAutoResourcePackageQualifiers>
-    <AppxDefaultResourceQualifiers>Language=en-us;de-de;es-us;id-id;ja-jp;tr-tr;zh-cn;zh-tw;ru-ru</AppxDefaultResourceQualifiers>
+    <AppxDefaultResourceQualifiers>Language=en-us;de-de;es-us;id-id;ja-jp;tr-tr;zh-cn;zh-tw;ru-ru;uk-ua</AppxDefaultResourceQualifiers>
     <!-- Prevent ucrtbased.dll from being copied to the output -->
     <DisableImplicitUCRTReference>true</DisableImplicitUCRTReference>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(CertificateThumbprint)'!=''">
-    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-    <PackageCertificateThumbprint>$(CertificateThumbprint)</PackageCertificateThumbprint>
-    <AppxPackageSigningTimestampServerUrl Condition="'$(CertificateTimestampServer)'!=''">$(CertificateTimestampServer)</AppxPackageSigningTimestampServerUrl>
-    <AppxPackageSigningTimestampDigestAlgorithm>SHA512</AppxPackageSigningTimestampDigestAlgorithm>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(CertificateThumbprint)'==''">
-    <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
+  <PropertyGroup Condition="'$(BuildType)'=='Release'">
+    <AppxBundle>Always</AppxBundle>
+    <UapAppxPackageBuildMode>StoreUpload</UapAppxPackageBuildMode>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -85,6 +80,7 @@
     <PRIResource Include="Strings\ja-JP\Resources.resw" />
     <PRIResource Include="Strings\ru-RU\Resources.resw" />
     <PRIResource Include="Strings\tr-TR\Resources.resw" />
+    <PRIResource Include="Strings\uk-UA\Resources.resw" />
     <PRIResource Include="Strings\zh-CN\Resources.resw" />
     <PRIResource Include="Strings\zh-TW\Resources.resw" />
   </ItemGroup>
@@ -96,6 +92,11 @@
   </ItemGroup>
   <ItemGroup>
     <PropertyPageSchema Include="ResourceFileMapping.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428">
+      <IncludeAssets>build</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <Target Name="FlattenPackage" BeforeTargets="_ConvertItems">
     <ItemGroup>
