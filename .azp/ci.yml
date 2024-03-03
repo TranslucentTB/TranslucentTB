@@ -31,11 +31,9 @@ steps:
   parameters:
     platform: $(platform)
     configuration: $(configuration)
-    signBuild: true
     buildType: Canary
-- publish: $(Build.SourcesDirectory)\AppPackage\bin\$(platform)\$(configuration)
-  artifact: 'Portable $(platform) $(configuration)'
-  displayName: 'Upload portable build'
-- publish: $(Build.SourcesDirectory)\AppPackage\AppPackages
-  artifact: 'MSIX $(platform) $(configuration)'
-  displayName: 'Upload MSIX package'
+    signMsix: true
+- template: templates/upload.yml
+  parameters:
+    platform: $(platform)
+    configuration: $(configuration)

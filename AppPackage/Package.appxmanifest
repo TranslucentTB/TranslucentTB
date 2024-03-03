@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
@@ -7,7 +7,7 @@
   xmlns:uap8="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10">
-  <Identity Name="TranslucentTB" Publisher="CN=TranslucentTB Open Source Developers, OID.2.25.311729368913984317654407730594956997722=1" Version="1.0.0.0" />
+  <Identity Name="TranslucentTB" Publisher="CN=TranslucentTB Open Source Developers" Version="1.0.0.0" />
   <Properties>
     <DisplayName>TranslucentTB (Dev)</DisplayName>
     <PublisherDisplayName>ms-resource:PublisherDisplayName</PublisherDisplayName>
@@ -30,11 +30,6 @@
         </uap:DefaultTile>
       </uap:VisualElements>
       <Extensions>
-        <uap:Extension Category="windows.protocol" Executable="TranslucentTB.exe" EntryPoint="Windows.FullTrustApplication">
-          <uap:Protocol Name="ttb">
-            <uap:DisplayName>TranslucentTB (Dev)</uap:DisplayName>
-          </uap:Protocol>
-        </uap:Extension>
         <uap3:Extension Category="windows.appExecutionAlias" Executable="TranslucentTB.exe" EntryPoint="Windows.FullTrustApplication">
           <uap3:AppExecutionAlias>
             <desktop:ExecutionAlias Alias="ttb.exe" />

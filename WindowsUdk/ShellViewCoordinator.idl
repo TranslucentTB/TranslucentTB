@@ -17,7 +17,7 @@ namespace WindowsUdk.UI
 
 	namespace Shell
 	{
-		[contractversion(7.0)]
+		[contractversion(8.0)]
 		apicontract ShellContract
 		{
 		}
@@ -78,7 +78,9 @@ namespace WindowsUdk.UI
 			[contract(WindowsUdk.UI.Shell.ShellContract, 5.0)]
 			NetworkFlyout                          = 23,
 			[contract(WindowsUdk.UI.Shell.ShellContract, 5.0)]
-			HardwareConfirmator                    = 24
+			HardwareConfirmator                    = 24,
+			[contract(WindowsUdk.UI.Shell.ShellContract, 8.0)]
+			FindInStart                            = 25
 		};
 
 		[contract(WindowsUdk.UI.Shell.ShellContract, 1.0)]

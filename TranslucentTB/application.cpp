@@ -122,17 +122,17 @@ Application::Application(HINSTANCE hInst, std::optional<std::filesystem::path> s
 
 void Application::OpenDonationPage()
 {
-	UWP::OpenUri(wf::Uri(L"https://liberapay.com/" APP_NAME));
+	UWP::OpenUri(wf::Uri(L"https://liberapay.com/TranslucentTB"));
 }
 
 void Application::OpenTipsPage()
 {
-	UWP::OpenUri(wf::Uri(L"https://" APP_NAME ".github.io/tips"));
+	UWP::OpenUri(wf::Uri(L"https://TranslucentTB.github.io/tips"));
 }
 
 void Application::OpenDiscordServer()
 {
-	UWP::OpenUri(wf::Uri(L"https://discord.gg/" APP_NAME));
+	UWP::OpenUri(wf::Uri(L"https://discord.gg/TranslucentTB"));
 }
 
 int Application::Run()

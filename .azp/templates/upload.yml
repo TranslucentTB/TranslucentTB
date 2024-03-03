@@ -1,0 +1,17 @@
+parameters:
+- name: platform
+  default: ''
+- name: configuration
+  default: ''
+
+steps:
+- powershell: $(Build.SourcesDirectory)/.azp/scripts/create-portable.ps1 -Platform "${{ parameters.platform }}" -Configuration "${{ parameters.configuration }}" -WorkDir "$(Pipeline.Workspace)" -OutputDir "$(Build.ArtifactStagingDirectory)\portable"
+  displayName: Create portable build
+- publish: $(Build.ArtifactStagingDirectory)\portable
+  artifact: 'Portable ${{ parameters.platform }} ${{ parameters.configuration }}'
+  displayName: Upload portable build
+- powershell: $(Build.SourcesDirectory)/.azp/scripts/copy-msix.ps1 -OutputDir "$(Build.ArtifactStagingDirectory)\msix"
+  displayName: Copy MSIX package
+- publish: $(Build.ArtifactStagingDirectory)\msix
+  artifact: 'MSIX ${{ parameters.platform }} ${{ parameters.configuration }}'
+  displayName: Upload MSIX package

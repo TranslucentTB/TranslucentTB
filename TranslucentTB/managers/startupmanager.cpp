@@ -10,7 +10,7 @@ winrt::fire_and_forget StartupManager::AcquireTask() try
 {
 	if (!m_StartupTask)
 	{
-		m_StartupTask = co_await winrt::Windows::ApplicationModel::StartupTask::GetAsync(APP_NAME);
+		m_StartupTask = co_await winrt::Windows::ApplicationModel::StartupTask::GetAsync(L"TranslucentTB");
 	}
 }
 HresultErrorCatch(spdlog::level::err, L"Failed to load startup task.");

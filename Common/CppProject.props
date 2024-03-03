@@ -123,7 +123,7 @@
       <GuardEHContMetadata>true</GuardEHContMetadata>
     </ClCompile>
     <Link>
-      <CETCompat>true</CETCompat>
+      <CETCompat Condition="'$(Configuration)'=='Release'">true</CETCompat>
     </Link>
   </ItemDefinitionGroup>
 
@@ -195,6 +195,7 @@
     </ClCompile>
     <ResourceCompile>
       <NullTerminateStrings>true</NullTerminateStrings>
+      <PreprocessorDefinitions>BUILD_TYPE=$(IntBuildType);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
 

@@ -49,13 +49,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azp", ".azp", "{18F447A6-8
 		.azp\ci.yml = .azp\ci.yml
 		.azp\pr.yml = .azp\pr.yml
 		.azp\release.yml = .azp\release.yml
-		.azp\update-manifest.ps1 = .azp\update-manifest.ps1
-		.azp\update-version.ps1 = .azp\update-version.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{0FF03715-FB82-410F-8D27-B28CF012E53D}"
 	ProjectSection(SolutionItems) = preProject
 		.azp\templates\build.yml = .azp\templates\build.yml
+		.azp\templates\upload.yml = .azp\templates\upload.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vcpkg", "vcpkg", "{95DD3133-7FFF-4DA5-ABA8-17D560EB0CF2}"
@@ -72,6 +71,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "member-thunk", "member-thun
 	ProjectSection(SolutionItems) = preProject
 		vcpkg\ports\member-thunk\portfile.cmake = vcpkg\ports\member-thunk\portfile.cmake
 		vcpkg\ports\member-thunk\vcpkg.json = vcpkg\ports\member-thunk\vcpkg.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{D465F744-CF30-4C38-82AB-22CA66B29B77}"
+	ProjectSection(SolutionItems) = preProject
+		.azp\scripts\copy-msix.ps1 = .azp\scripts\copy-msix.ps1
+		.azp\scripts\create-portable.ps1 = .azp\scripts\create-portable.ps1
+		.azp\scripts\sign-msix.ps1 = .azp\scripts\sign-msix.ps1
+		.azp\scripts\update-manifest.ps1 = .azp\scripts\update-manifest.ps1
+		.azp\scripts\update-version.ps1 = .azp\scripts\update-version.ps1
 	EndProjectSection
 EndProject
 Global
@@ -163,6 +171,7 @@ Global
 		{C73B6D30-9C28-4662-BA69-198FAE269CA3} = {95DD3133-7FFF-4DA5-ABA8-17D560EB0CF2}
 		{678763EE-1ED5-43E6-9A5C-9534697D80BB} = {C73B6D30-9C28-4662-BA69-198FAE269CA3}
 		{CDADD0F5-BBF2-4D1E-B7B8-3C9D81305BDF} = {C73B6D30-9C28-4662-BA69-198FAE269CA3}
+		{D465F744-CF30-4C38-82AB-22CA66B29B77} = {18F447A6-8673-4478-BDE8-DC39FB241CAD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {69F96DC4-E133-4A1B-8AB1-83EF70F8CE12}

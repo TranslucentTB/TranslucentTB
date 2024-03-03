@@ -15,8 +15,7 @@ private:
 	{
 		if (const auto worker = FindWindow(TTB_WORKERWINDOW.c_str(), TTB_WORKERWINDOW.c_str()))
 		{
-			// avoid freezing Explorer if our main process is frozen
-			SendMessageTimeout(worker, m_ChangeMessage, opened, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK | SMTO_ERRORONEXIT, 100, nullptr);
+			PostMessage(worker, m_ChangeMessage, opened, 0);
 		}
 	}
 
