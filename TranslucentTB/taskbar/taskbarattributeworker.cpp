@@ -518,12 +518,22 @@ void TaskbarAttributeWorker::SetAttribute(taskbar_iterator taskbar, TaskbarAppea
 			{
 				brush = Acrylic;
 			}
+			else if (config.Accent == ACCENT_ENABLE_BLURBEHIND)
+			{
+				brush = Blur;
+			}
 			else if (config.Accent == ACCENT_ENABLE_GRADIENT)
 			{
 				color.A = 0xFF;
 			}
 
-			HresultVerify(m_TaskbarService->SetTaskbarAppearance(taskbar->second.Taskbar.TaskbarWindow, brush, color.ToABGR()), spdlog::level::info, L"Failed to set taskbar brush");
+			uint32_t colorValue;
+			if (config.Accent == ACCENT_ENABLE_BLURBEHIND)
+				colorValue = config.BlurRadius;
+			else
+				colorValue = color.ToABGR();
+
+			HresultVerify(m_TaskbarService->SetTaskbarAppearance(taskbar->second.Taskbar.TaskbarWindow, brush, colorValue), spdlog::level::info, L"Failed to set taskbar brush");
 		}
 	}
 	else

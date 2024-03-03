@@ -6,6 +6,7 @@
 #include <winrt/Windows.System.h>
 #include <winrt/Windows.UI.Xaml.Media.h>
 #include <winrt/Windows.UI.Xaml.Shapes.h>
+#include <winrt/Windows.UI.Xaml.Hosting.h>
 #include "redefgetcurrenttime.h"
 #include <wil/resource.h>
 
@@ -69,6 +70,8 @@ private:
 
 	wil::unique_process_handle m_Process;
 	wilx::unique_any<UnregisterWait> m_WaitHandle;
+
+	bool m_wallpaperRefreshed;
 
 	static DWORD s_ProxyStubRegistrationCookie;
 };

@@ -6,6 +6,9 @@
 #include "constants.hpp"
 #include "util/color.hpp"
 
+#include "XamlCompositionBrush.h"
+#include "GaussianBlurEffect.h"
+
 extern "C"
 {
 	_Check_return_ HRESULT STDAPICALLTYPE DLLGETCLASSOBJECT_ENTRY(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ void** ppv);
@@ -62,8 +65,32 @@ HRESULT TaskbarAppearanceService::SetTaskbarAppearance(HWND taskbar, TaskbarBrus
 
 					newBrush = std::move(solidBrush);
 				}
+				else if (brush == Blur)
+				{
+					auto compositor = wuxh::ElementCompositionPreview::GetElementVisual(info.background.control).Compositor();
+					auto backdropBrush = compositor.CreateBackdropBrush();
+					auto blurEffect = winrt::make_self<GaussianBlurEffect>();
+					blurEffect->Source = wuc::CompositionEffectSourceParameter(L"blurSource");
+					blurEffect->BlurAmount = (float)color;
+					auto factory = compositor.CreateEffectFactory(blurEffect.as<wge::IGraphicsEffect>());
+					auto blurBrush = factory.CreateBrush();
+					blurBrush.SetSourceParameter(L"blurSource", backdropBrush);
+
+					wux::Media::XamlCompositionBrushBase compBrush = winrt::make<XamlCompositionBrush>(blurBrush);
+					newBrush = std::move(compBrush);
+				}
 
 				info.background.control.Fill(newBrush);
+
+				// TODO: this is a hack, we need to find a better way to handle this
+				// As it's not a proper way to do it and doesn't work when the taskbar is recreated (e.g. in cases where the taskbar is automatically hidden)
+				// It probably doesn't work on multi-monitor scenarios as well
+				if (brush == Blur && !m_wallpaperRefreshed)
+				{
+					// Refresh the desktop wallpaper so that DWM invalidates the rect behind the taskbar otherwise we will have a black background behind the blur
+					SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, NULL, SPIF_SENDCHANGE);
+					m_wallpaperRefreshed = true;
+				}
 			}
 
 			break;

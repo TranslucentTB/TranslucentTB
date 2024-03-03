@@ -14,6 +14,7 @@ namespace winrt {
 			namespace Controls {}
 			namespace Hosting {}
 		}
+		namespace UI::Composition {}
 	}
 }
 
@@ -27,3 +28,4 @@ namespace wfc = wf::Collections;
 namespace wux = winrt::Windows::UI::Xaml;
 namespace wuxc = wux::Controls;
 namespace wuxh = wux::Hosting;
+namespace wuc = winrt::Windows::UI::Composition;

@@ -38,13 +38,8 @@ struct TaskbarAppearance {
 					return false;
 				}
 			}
-			else
-			{
-				// always works in Windows 10, but broken in Windows 11 besides RTM with KB5006746.
-				// since we check IsExactBuild above, using an inverted IsAtLeastBuild here 
-				// makes sure we return false for future versions of Windows 11 as well.
-				return !win32::IsAtLeastBuild(22000);
-			}
+
+			return true;
 		}();
 
 		return isBlurSupported;
@@ -52,13 +47,15 @@ struct TaskbarAppearance {
 
 	ACCENT_STATE Accent = ACCENT_NORMAL;
 	Util::Color Color = { 0, 0, 0, 0 };
+	uint32_t BlurRadius = 3;
 	bool ShowPeek = true;
 	bool ShowLine = true;
 
 	constexpr TaskbarAppearance() noexcept = default;
-	constexpr TaskbarAppearance(ACCENT_STATE accent, Util::Color color, bool showPeek, bool showLine) noexcept :
+	constexpr TaskbarAppearance(ACCENT_STATE accent, Util::Color color, bool showPeek, bool showLine, uint32_t blurRadius = 3) noexcept :
 		Accent(accent),
 		Color(color),
+		BlurRadius(blurRadius),
 		ShowPeek(showPeek),
 		ShowLine(showLine)
 	{ }
@@ -69,6 +66,7 @@ struct TaskbarAppearance {
 	{
 		rjh::Serialize(writer, Accent, ACCENT_KEY, ACCENT_MAP);
 		rjh::Serialize(writer, Color.ToString(), COLOR_KEY);
+		rjh::Serialize(writer, BlurRadius, RADIUS_KEY);
 		rjh::Serialize(writer, ShowPeek, SHOW_PEEK_KEY);
 		rjh::Serialize(writer, ShowLine, SHOW_LINE_KEY);
 	}
@@ -114,6 +112,13 @@ protected:
 				};
 			}
 		}
+		else if (key == RADIUS_KEY)
+		{
+			rjh::Deserialize(val, BlurRadius, key);
+
+			if (BlurRadius > 250)
+				BlurRadius = 250;
+		}
 		else if (key == SHOW_PEEK_KEY)
 		{
 			rjh::Deserialize(val, ShowPeek, key);
@@ -139,6 +144,7 @@ private:
 
 	static constexpr std::wstring_view ACCENT_KEY = L"accent";
 	static constexpr std::wstring_view COLOR_KEY = L"color";
+	static constexpr std::wstring_view RADIUS_KEY = L"blur_radius";
 	static constexpr std::wstring_view SHOW_PEEK_KEY = L"show_peek";
 	static constexpr std::wstring_view SHOW_LINE_KEY = L"show_line";
 #endif
@@ -148,13 +154,14 @@ public:
 	TaskbarAppearance(const txmp::TaskbarAppearance &winrtObj) noexcept :
 		Accent(static_cast<ACCENT_STATE>(winrtObj.Accent())),
 		Color(winrtObj.Color()),
+		BlurRadius(winrtObj.BlurRadius()),
 		ShowPeek(winrtObj.ShowPeek()),
 		ShowLine(winrtObj.ShowLine())
 	{ }
 
 	operator txmp::TaskbarAppearance() const
 	{
-		return { static_cast<txmp::AccentState>(Accent), Color, ShowPeek, ShowLine };
+		return { static_cast<txmp::AccentState>(Accent), Color, ShowPeek, ShowLine, BlurRadius };
 	}
 #endif
 };
