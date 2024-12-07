@@ -118,184 +118,184 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ColorPickerPage_AlwaysOnTopButton.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Always on top</value>
+    <value>Sempre in primo piano</value>
   </data>
   <data name="ColorPickerPage_AlwaysOnTopMenuItem.Text" xml:space="preserve">
-    <value>Always on top</value>
+    <value>Sempre in primo piano</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.CloseButtonText" xml:space="preserve">
-    <value>Cancel</value>
+    <value>Annulla</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.Content" xml:space="preserve">
-    <value>Do you want to save changes to the color?</value>
+    <value>Vuoi salvare i cambiamenti al colore?</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.PrimaryButtonText" xml:space="preserve">
-    <value>Yes</value>
+    <value>Sì</value>
   </data>
   <data name="ColorPickerPage_ConfirmCloseDialog.SecondaryButtonText" xml:space="preserve">
     <value>No</value>
   </data>
   <data name="FramelessPage_CloseButton.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Close</value>
+    <value>Chiudi</value>
   </data>
   <data name="FramelessPage_CloseMenuItem.Text" xml:space="preserve">
-    <value>Close</value>
+    <value>Chiudi</value>
   </data>
   <data name="TrayFlyoutPage_About.Text" xml:space="preserve">
-    <value>About TranslucentTB</value>
+    <value>Info su TranslucentTB</value>
   </data>
   <data name="TrayFlyoutPage_AccentColor.Text" xml:space="preserve">
     <value>Accent Color</value>
-    <comment>Also used to generate the title of color picker windows</comment>
+    <comment>Utilizzato anche per generare il titolo delle finestre di selezione colore</comment>
   </data>
   <data name="TrayFlyoutPage_Acrylic.Text" xml:space="preserve">
-    <value>Acrylic</value>
+    <value>Acrilico</value>
   </data>
   <data name="TrayFlyoutPage_Advanced.Text" xml:space="preserve">
-    <value>Advanced</value>
+    <value>Avanzate</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_CompactThunkHeap.Text" xml:space="preserve">
-    <value>Compact thunk heap</value>
+    <value>Compressione heap thunk</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_DisableHotSettings.Text" xml:space="preserve">
-    <value>Disable saving settings</value>
+    <value>Disabilita salvataggio delle impostazioni</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_DumpDynamicState.Text" xml:space="preserve">
-    <value>Dump dynamic state to log</value>
+    <value>Scarica lo stato dinamico nel registro</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_EditSettings.Text" xml:space="preserve">
-    <value>Edit settings</value>
+    <value>Modifica impostazioni</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_HideTrayIcon.Text" xml:space="preserve">
-    <value>Hide tray icon</value>
+    <value>Nascondi icona vassoio</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity.Text" xml:space="preserve">
-    <value>Log verbosity</value>
+    <value>Verbosità del registro</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Critical.Text" xml:space="preserve">
-    <value>Critical</value>
+    <value>Critico</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Debug.Text" xml:space="preserve">
     <value>Debug</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Error.Text" xml:space="preserve">
-    <value>Error</value>
+    <value>Errore</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Information.Text" xml:space="preserve">
-    <value>Information</value>
+    <value>Informazione</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Off.Text" xml:space="preserve">
     <value>Off</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Trace.Text" xml:space="preserve">
-    <value>Trace</value>
+    <value>Traccia</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_LogVerbosity_Warning.Text" xml:space="preserve">
-    <value>Warning</value>
+    <value>Avviso</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_OpenLogFile.Text" xml:space="preserve">
-    <value>Open log file</value>
+    <value>Apri file del registro</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_ResetDynamicState.Text" xml:space="preserve">
-    <value>Reset dynamic state</value>
+    <value>Reset stato dinamico</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_ResetSettings.Text" xml:space="preserve">
-    <value>Return to default settings</value>
+    <value>Ripristina impostazioni predefinite</value>
   </data>
   <data name="TrayFlyoutPage_BatterySaver.Text" xml:space="preserve">
-    <value>Battery saver</value>
-    <comment>Also used to generate the title of color picker windows</comment>
+    <value>Risparmio batteria</value>
+    <comment>Utilizzato anche per generare il titolo delle finestre di selezione colore</comment>
   </data>
   <data name="TrayFlyoutPage_Blur.Text" xml:space="preserve">
-    <value>Blur</value>
+    <value>Sfocato</value>
   </data>
   <data name="TrayFlyoutPage_Clear.Text" xml:space="preserve">
-    <value>Clear</value>
+    <value>Lucido</value>
   </data>
   <data name="TrayFlyoutPage_Desktop.Text" xml:space="preserve">
     <value>Desktop</value>
-    <comment>Also used to generate the title of color picker windows</comment>
+    <comment>Utilizzato anche per generare il titolo delle finestre di selezione colore</comment>
   </data>
   <data name="TrayFlyoutPage_Enabled.Text" xml:space="preserve">
-    <value>Enabled</value>
+    <value>Abilitato</value>
   </data>
   <data name="TrayFlyoutPage_Exit.Text" xml:space="preserve">
-    <value>Exit</value>
+    <value>Esci</value>
   </data>
   <data name="TrayFlyoutPage_LineButton.Text" xml:space="preserve">
-    <value>Show taskbar border</value>
+    <value>Visualizza bordo barra delle applicazioni</value>
   </data>
   <data name="TrayFlyoutPage_MaximizedWindow.Text" xml:space="preserve">
-    <value>Maximized window</value>
-    <comment>Also used to generate the title of color picker windows</comment>
+    <value>Massimizza finestra</value>
+    <comment>Utilizzato anche per generare il titolo delle finestre di selezione colore</comment>
   </data>
   <data name="TrayFlyoutPage_Normal.Text" xml:space="preserve">
-    <value>Normal</value>
-    <comment>Also used to generate the title of color picker windows</comment>
+    <value>Normale</value>
+    <comment>Utilizzato anche per generare il titolo delle finestre di selezione colore</comment>
   </data>
   <data name="TrayFlyoutPage_Opaque.Text" xml:space="preserve">
-    <value>Opaque</value>
+    <value>Opaco</value>
   </data>
   <data name="TrayFlyoutPage_OpenAtBoot.Text" xml:space="preserve">
-    <value>Open at boot</value>
+    <value>Apri all'avvio</value>
   </data>
   <data name="TrayFlyoutPage_PeekButton.Text" xml:space="preserve">
-    <value>Show Desktop Peek Button</value>
+    <value>Mostra Pulsante Anteprima Desktop</value>
   </data>
   <data name="TrayFlyoutPage_SearchOpened.Text" xml:space="preserve">
-    <value>Search opened</value>
-    <comment>Also used to generate the title of color picker windows</comment>
+    <value>Ricerca aperta</value>
+    <comment>Utilizzato anche per generare il titolo delle finestre di selezione colore</comment>
   </data>
   <data name="TrayFlyoutPage_StartOpened.Text" xml:space="preserve">
-    <value>Start opened</value>
-    <comment>Also used to generate the title of color picker windows</comment>
+    <value>Start aperto</value>
+    <comment>Utilizzato anche per generare il titolo delle finestre di selezione colore</comment>
   </data>
   <data name="TrayFlyoutPage_TaskViewOpened.Text" xml:space="preserve">
-    <value>Task View opened</value>
-    <comment>Also used to generate the title of color picker windows</comment>
+    <value>Gestione attività aperta</value>
+    <comment>Utilizzato anche per generare il titolo delle finestre di selezione colore</comment>
   </data>
   <data name="TrayFlyoutPage_TipsAndTricks.Text" xml:space="preserve">
-    <value>Tips and tricks</value>
+    <value>Suggerimenti</value>
   </data>
   <data name="TrayFlyoutPage_VisibleWindow.Text" xml:space="preserve">
-    <value>Visible window</value>
+    <value>Finestra visibile</value>
   </data>
   <data name="WelcomePage.Title" xml:space="preserve">
-    <value>Welcome to TranslucentTB!</value>
+    <value>Benvenuto in TranslucentTB!</value>
   </data>
   <data name="WelcomePage_Action_Configure.Description" xml:space="preserve">
-    <value>You can always do this by clicking "Advanced" &gt; "Edit settings" in the tray icon's context menu
-Changes are automatically reloaded when you save the file</value>
-    <comment>Mind the newline (a.k.a. enter)</comment>
+    <value>Puoi sempre farlo cliccando su "Avanzate" &gt; "Modifica impostazioni" nel menu contestuale della barra delle applicazioni
+Le modifiche vengono ricaricate automaticamente quando si salva il file</value>
+    <comment>Fai attenzione alla nuova riga (noto anche come invio)</comment>
   </data>
   <data name="WelcomePage_Action_Configure.Name" xml:space="preserve">
-    <value>Edit the configuration file</value>
+    <value>Modifica il file di configurazione</value>
   </data>
   <data name="WelcomePage_Action_Discord.Description" xml:space="preserve">
-    <value>Chat with the developers and get help with the program</value>
+    <value>Chatta con gli sviluppatori e ricevi aiuto con il programma</value>
   </data>
   <data name="WelcomePage_Action_Discord.Name" xml:space="preserve">
-    <value>Join our Discord server</value>
+    <value>Unisciti al nostro server Discord</value>
   </data>
   <data name="WelcomePage_Action_Donate.Description" xml:space="preserve">
-    <value>Show us your support by offering a single-time or recurring donation ❤</value>
+    <value>Mostraci il tuo supporto offrendo una donazione una tantum o ricorrente ❤</value>
   </data>
   <data name="WelcomePage_Action_Donate.Name" xml:space="preserve">
-    <value>Donate to the project on Liberapay</value>
+    <value>Dona al progetto su Liberapay</value>
   </data>
   <data name="WelcomePage_ButtonBar_Continue.Content" xml:space="preserve">
-    <value>Continue</value>
+    <value>Continua</value>
   </data>
   <data name="WelcomePage_ButtonBar_Exit.Content" xml:space="preserve">
-    <value>Exit</value>
+    <value>Esci</value>
   </data>
   <data name="WelcomePage_Message_Hyperlink.Text" xml:space="preserve">
-    <value>open a GitHub issue</value>
+    <value>apri un problema su GitHub</value>
   </data>
   <data name="WelcomePage_Message_Prefix.Text" xml:space="preserve">
-    <value>Thanks for trying TranslucentTB! After you hit "Continue", you can personalize how the taskbar looks to your desires. We hope you enjoy it, and feel free to</value>
+    <value>Grazie per aver provato TranslucentTB! Dopo aver cliccato su "Continua", puoi personalizzare l'aspetto della barra delle applicazioni in base ai tuoi desideri. Ci auguriamo che ti piaccia e sentiti libero diGrazie per aver provato TranslucentTB! Dopo aver cliccato su "Continua", puoi personalizzare l'aspetto della barra delle applicazioni in base ai tuoi desideri. Ci auguriamo che ti piaccia e sentiti libero di</value>
   </data>
   <data name="WelcomePage_Message_Suffix.Text" xml:space="preserve">
-    <value>if you have any problem or want to see a feature added!</value>
+    <value>se riscontri qualche problema o vuoi vedere aggiunta una nuova funzionalità!</value>
   </data>
 </root>
