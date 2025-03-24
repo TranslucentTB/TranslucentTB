@@ -1,0 +1,67 @@
+#pragma code_page(65001)
+
+#ifdef APSTUDIO_INVOKED
+#error Please edit this file manually.
+#endif
+
+#include <ddeml.h>
+#include <winres.h>
+#include "../../../Common/appinfo.hpp"
+#include "../ids.h"
+
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION APP_VERSION_FIXED
+	PRODUCTVERSION APP_VERSION_FIXED
+	FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+	FILEFLAGS VS_FF_DEBUG
+#endif
+	FILEOS VOS_NT_WINDOWS32
+	FILETYPE VFT_APP
+{
+	BLOCK L"StringFileInfo"
+	{
+		BLOCK L"040904b0"
+		{
+			VALUE L"FileDescription", APP_NAME
+			VALUE L"FileVersion", APP_VERSION
+			VALUE L"InternalName", APP_NAME L".exe"
+			VALUE L"OriginalFilename", APP_NAME L".exe"
+			VALUE L"ProductName", APP_NAME
+			VALUE L"ProductVersion", APP_VERSION
+			VALUE L"Comments", L"כלי קל משקל שהופך את שורת המשימות של Windows לשקופה או חצי שקופה."
+			VALUE L"CompanyName", L"מפתחי הקוד הפתוח של " APP_NAME
+			VALUE L"LegalCopyright", L"זכויות יוצרים © " APP_COPYRIGHT_YEAR L" מפתחי הקוד הפתוח של " APP_NAME
+		}
+	}
+	BLOCK L"VarFileInfo"
+	{
+		VALUE L"Translation", 0x0409, CP_WINUNICODE
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Strings
+//
+
+STRINGTABLE
+{
+	IDS_WELCOME_NOTIFICATION APP_NAME L" פועלת באזור ההודעות.\n\nלחץ באמצעות לחצן ימני על הסמל במגש כדי לשנות הגדרות, להפעיל את האפליקציה באתחול, להציג מידע אודות, לצאת מהאפליקציה ועוד."
+	IDS_ALREADY_RUNNING APP_NAME L" כבר פועלת! לחץ באמצעות לחצן ימני על הסמל במגש כדי לגשת אליה."
+	IDS_LANGUAGE_CHANGED L"הגדרת שפת הממשק בקובץ התצורה שונתה. הפעל מחדש את " APP_NAME L" כדי שהשינויים ייכנסו לתוקף."
+	IDS_RESTART_REQUIRED APP_NAME L" עודכנה לאחרונה. הפעל את Windows מחדש כדי להתחיל להשתמש בגרסה העדכנית."
+	IDS_PORTABLE_UNSUPPORTED L"מצב נייד נתמך רק ב-Windows 11."
+	IDS_MISSING_DEPENDENCIES APP_NAME L" אינה יכולה לפעול במצב נייד מכיוון שהרכיב {0} (גרסה {1}) אינו מותקן במערכת."
+	IDS_EXPLORER_RESTARTED_TOO_MUCH L"סייר Windows הופעל מחדש פעמיים במהלך 30 השניות האחרונות! ייתכן שזהו קונפליקט בין " APP_NAME " לבין תוכנות התאמה אישית אחרות, או עדכון של Windows. כדי למנוע בעיות נוספות, " APP_NAME " תיסגר כעת."
+	IDS_STARTUPTASK_BROKEN APP_NAME L" ביקשה מ-Windows להפעיל משימת אתחול, אך Windows לא הפעיל אותה. לרוב מדובר בתוצאה של רישום פגום, שנגרם לעיתים על ידי הרצת סקריפטים להסרת רכיבים או פרטיות במחשב שלך."
+}
