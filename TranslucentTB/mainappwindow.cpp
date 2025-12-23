@@ -12,6 +12,14 @@ LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
+	case WM_HOTKEY:
+		if (wParam == RESET_STATE_GLOBAL_HOTKEY_ID)
+		{
+			ResetDynamicStateRequested();
+			return 0;
+		}
+		break;
+
 	case WM_CLOSE:
 		Exit();
 		return 1;
@@ -320,9 +328,27 @@ MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, bool hasPa
 	m_HideIconOverride(hideIconOverride),
 	m_NewInstanceMessage(Window::RegisterMessage(WM_TTBNEWINSTANCESTARTED))
 {
+	// Register global hotkey for resetting dynamic state
+	const BOOL hotkeyRegistered = RegisterHotKey(
+		handle(),
+		RESET_STATE_GLOBAL_HOTKEY_ID,
+		MOD_CONTROL | MOD_ALT | MOD_SHIFT | MOD_NOREPEAT,
+		VK_F1
+	);
+	if (!hotkeyRegistered)
+	{
+		LastErrorHandle(spdlog::level::warn, L"Unable to register global hotkey for dynamic state reset");
+	}
+
 	RegisterMenuHandlers();
 
 	ConfigurationChanged();
+}
+
+MainAppWindow::~MainAppWindow()
+{
+	// Unregister the global hotkey
+	UnregisterHotKey(handle(), RESET_STATE_GLOBAL_HOTKEY_ID);
 }
 
 void MainAppWindow::ConfigurationChanged()

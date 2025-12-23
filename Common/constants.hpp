@@ -53,6 +53,9 @@ static constexpr Util::null_terminated_wstring_view WM_TTBFORCEREFRESHTASKBAR = 
 // Sent by another instance of TranslucentTB to signal that it was started while this instance is running.
 static constexpr Util::null_terminated_wstring_view WM_TTBNEWINSTANCESTARTED = L"TTB_NewInstanceStarted";
 
+// Hotkey IDs
+static constexpr int RESET_STATE_GLOBAL_HOTKEY_ID = 2;
+
 #pragma endregion
 
 #pragma region Window classes

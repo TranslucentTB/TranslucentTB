@@ -75,6 +75,7 @@ private:
 
 public:
 	MainAppWindow(Application &app, bool hideIconOverride, bool hasPackageIdentity, HINSTANCE hInstance, DynamicLoader &loader);
+	~MainAppWindow();
 
 	void ConfigurationChanged();
 	void RemoveHideTrayIconOverride();
