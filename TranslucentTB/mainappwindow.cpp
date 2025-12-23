@@ -8,10 +8,20 @@
 #include "../ProgramLog/log.hpp"
 #include "../ProgramLog/error/win32.hpp"
 
+constexpr int HOTKEY_RESET_DYNAMIC_STATE_ID = 1;
+
 LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
+	case WM_HOTKEY:
+		if (wParam == HOTKEY_RESET_DYNAMIC_STATE_ID)
+		{
+			ResetDynamicStateRequested();
+			return 0;
+		}
+		break;
+
 	case WM_CLOSE:
 		Exit();
 		return 1;
@@ -320,6 +330,11 @@ MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, bool hasPa
 	m_HideIconOverride(hideIconOverride),
 	m_NewInstanceMessage(Window::RegisterMessage(WM_TTBNEWINSTANCESTARTED))
 {
+	if (!RegisterHotKey(handle(), HOTKEY_RESET_DYNAMIC_STATE_ID, MOD_CONTROL | MOD_ALT | MOD_SHIFT | MOD_NOREPEAT, VK_F1))
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to register reset dynamic state hotkey");
+	}
+
 	RegisterMenuHandlers();
 
 	ConfigurationChanged();

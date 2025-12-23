@@ -29,6 +29,10 @@ A lightweight (uses a few MB of RAM and almost no CPU) utility that makes the Wi
 - Compatible with [RoundedTB](https://github.com/torchgm/RoundedTB)!
 - Compatible with [ExplorerPatcher](https://github.com/valinet/ExplorerPatcher)!
 
+## Keyboard Shortcuts
+
+- **CTRL + ALT + SHIFT + F1**: Resets the dynamic state. Use this to restore functionality if TranslucentTB loses its state after hibernation or restore.
+
 ## Screenshots
 
 <img src="https://i.imgur.com/QbG7KQA.png" alt="windows 11 acrylic" width="243"> <img src="https://i.imgur.com/zabZ52s.png" alt="windows 11 clear" width="243">

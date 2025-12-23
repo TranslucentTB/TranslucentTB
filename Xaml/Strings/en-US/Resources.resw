@@ -197,7 +197,7 @@
     <value>Open log file</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_ResetDynamicState.Text" xml:space="preserve">
-    <value>Reset dynamic state</value>
+    <value>Reset dynamic state (^+%F1)</value>
   </data>
   <data name="TrayFlyoutPage_Advanced_ResetSettings.Text" xml:space="preserve">
     <value>Return to default settings</value>
