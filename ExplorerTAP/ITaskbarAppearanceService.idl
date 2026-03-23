@@ -12,4 +12,6 @@ interface ITaskbarAppearanceService : IUnknown
 
 	HRESULT RestoreAllTaskbarsToDefault();
 	HRESULT RestoreAllTaskbarsToDefaultWhenProcessDies([in] DWORD pid);
+
+	HRESULT KillExplorerWhenPackageUninstalls([in, string] LPCWSTR packageFullName);
 };

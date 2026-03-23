@@ -58,21 +58,20 @@ protected:
 					this->ShowAt(*rect, PointFromParam(wParam));
 					post_message(WM_NULL);
 				}
-
-				return 0;
+				break;
 
 			case NIN_POPUPOPEN:
 				if (const auto rect = GetTrayRect())
 				{
 					this->ShowTooltip(*rect);
 				}
-				return 0;
+				break;
 
 			case NIN_POPUPCLOSE:
 				this->HideTooltip();
-				return 0;
+				break;
 			}
-			break;
+			return 0;
 		}
 
 		return TrayIcon::MessageHandler(uMsg, wParam, lParam);

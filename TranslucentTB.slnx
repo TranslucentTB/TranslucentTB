@@ -1,0 +1,17 @@
+<Solution>
+  <Configurations>
+    <Platform Name="ARM64" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="AppPackage/AppPackage.wapproj" Type="c7167f0d-bc9f-4e6e-afe1-012c56b48db5" Id="0e91e5c8-0ee0-49c9-a0da-d25ab61a90c4">
+    <Deploy />
+  </Project>
+  <Project Path="Common/Common.vcxitems" Id="8a1baf89-44d0-4bbf-a64d-35e6ebebed06" />
+  <Project Path="ExplorerHooks/ExplorerHooks.vcxproj" Id="d0004e78-f00b-4943-b77e-9a278f8ba399" />
+  <Project Path="ExplorerTAP/ExplorerTAP.vcxproj" Id="e759084f-6445-400d-8f43-a64a6e276659" />
+  <Project Path="ProgramLog/ProgramLog.vcxproj" Id="62cd9de0-af10-40f0-b72c-7a7b5bbba3c7" />
+  <Project Path="Tests/Tests.vcxproj" Id="a61fe3be-19df-4dc8-931a-077181044b9a" />
+  <Project Path="TranslucentTB/TranslucentTB.vcxproj" Id="59f844aa-8d3c-431c-b8cc-57682915f551" />
+  <Project Path="WindowsUdk/WindowsUdk.vcxproj" Id="55ed608b-b142-43a8-b42f-bbf292a61cbd" />
+  <Project Path="Xaml/Xaml.vcxproj" Id="9875d8e1-9594-445e-a0e4-07c6027f85e0" />
+</Solution>

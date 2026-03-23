@@ -22,22 +22,19 @@ steps:
   displayName: Update version info
 - powershell: $(Build.SourcesDirectory)/.azp/scripts/update-manifest.ps1 -BuildType "${{ parameters.buildType }}"
   displayName: Update app manifest
-- script: git pull
-  displayName: 'Update vcpkg ports'
-  workingDirectory: C:\vcpkg
-- script: .\bootstrap-vcpkg.bat
-  displayName: 'Bootstrap vcpkg'
-  workingDirectory: C:\vcpkg
-- script: .\vcpkg.exe integrate install
+- script: C:\vcpkg\vcpkg.exe integrate install
   displayName: 'Integrate vcpkg'
-  workingDirectory: C:\vcpkg
+- task: NuGetToolInstaller@1
+  displayName: 'Install NuGet'
+  inputs:
+    versionSpec: '7.0.1'
 - task: NuGetAuthenticate@1
   displayName: 'Authenticate NuGet'
 - task: NuGetCommand@2
   displayName: 'Restore NuGet packages'
   inputs:
     command: restore
-    restoreSolution: $(Build.SourcesDirectory)/TranslucentTB.sln
+    restoreSolution: $(Build.SourcesDirectory)/TranslucentTB.slnx
     feedsToUse: select
     vstsFeed: TranslucentTB/NugetCache
     includeNuGetOrg: ${{ parameters.includeNuGetOrg }}
@@ -65,7 +62,7 @@ steps:
   inputs:
     configuration: ${{ parameters.configuration }}
     platform: ${{ parameters.platform }}
-    solution: $(Build.SourcesDirectory)/TranslucentTB.sln
+    solution: $(Build.SourcesDirectory)/TranslucentTB.slnx
     ${{ if eq(parameters.signBuild, true) }}:
       msbuildArgs: /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:TrustedSigningMetadata="$(trustedSigningMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256 /p:BuildType=${{ parameters.buildType }}
     ${{ else }}:

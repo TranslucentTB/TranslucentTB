@@ -4,6 +4,7 @@
 #include <xamlOM.h>
 #include "winrt.hpp"
 #include "undefgetcurrenttime.h"
+#include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.System.h>
 #include <winrt/Windows.UI.Xaml.Media.h>
 #include <winrt/Windows.UI.Xaml.Shapes.h>
@@ -36,6 +37,8 @@ public:
 	HRESULT STDMETHODCALLTYPE RestoreAllTaskbarsToDefault() override;
 	HRESULT STDMETHODCALLTYPE RestoreAllTaskbarsToDefaultWhenProcessDies(DWORD pid) override;
 
+	HRESULT STDMETHODCALLTYPE KillExplorerWhenPackageUninstalls(LPCWSTR packageFullName) override;
+
 	void RegisterTaskbar(InstanceHandle frameHandle, HWND window);
 	void RegisterTaskbarBackground(InstanceHandle frameHandle, wux::Shapes::Shape element);
 	void RegisterTaskbarBorder(InstanceHandle frameHandle, wux::Shapes::Shape element);
@@ -61,6 +64,7 @@ private:
 	};
 
 	winrt::fire_and_forget OnProcessDied();
+	void OnPackageUninstalling(const wam::PackageCatalog &catalog, const wam::PackageUninstallingEventArgs &args);
 	std::optional<TaskbarInfo> GetTaskbarInfo(HWND taskbar);
 
 	static void RestoreDefaultControlFill(const ControlInfo<wux::Shapes::Shape> &info);
@@ -73,6 +77,10 @@ private:
 
 	wil::unique_process_handle m_Process;
 	wilx::unique_any<UnregisterWait> m_WaitHandle;
+
+	wam::PackageCatalog m_PackageCatalog = nullptr;
+	winrt::event_token m_PackageUninstallingToken;
+	std::wstring m_PackageBeingWatched;
 
 	static DWORD s_ProxyStubRegistrationCookie;
 };

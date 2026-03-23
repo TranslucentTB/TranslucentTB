@@ -131,6 +131,7 @@ private:
 	std::optional<UINT> m_SearchVisibilityChangeMessage;
 	std::optional<UINT> m_FindInStartVisibilityChangeMessage;
 	std::optional<UINT> m_ForceRefreshTaskbar;
+	std::optional<UINT> m_ApplyColorPreview;
 
 	// Explorer crash detection
 	std::chrono::steady_clock::time_point m_LastExplorerRestart;

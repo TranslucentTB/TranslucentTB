@@ -64,7 +64,7 @@ void Application::CreateWelcomePage()
 					m_WelcomePage = nullptr;
 					m_Config.SaveConfig(); // create the config file, if not already present
 					m_AppWindow.RemoveHideTrayIconOverride();
-					m_AppWindow.SendNotification(IDS_WELCOME_NOTIFICATION);
+					m_AppWindow.SendNotification(IDS_WELCOME_NOTIFICATION, 0, NIIF_INFO);
 				});
 			});
 		});

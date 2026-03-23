@@ -9,8 +9,14 @@ VisualTreeWatcher::VisualTreeWatcher(winrt::com_ptr<IUnknown> site, wil::unique_
 	m_AppearanceService(winrt::make_self<TaskbarAppearanceService>()),
 	m_ReadyEvent(std::move(readyEvent))
 {
-	winrt::check_hresult(m_XamlDiagnostics.as<IVisualTreeService3>()->AdviseVisualTreeChange(this));
-	m_ReadyEvent.SetEvent();
+
+	// Calling AdviseVisualTreeChange from a separate thread solves some hangs.
+	std::thread([self_strong = get_strong()]
+	{
+		// AdviseVisualTreeChange is special-cased to bring us to the UI thread for the callback.
+		winrt::check_hresult(self_strong->m_XamlDiagnostics.as<IVisualTreeService3>()->AdviseVisualTreeChange(self_strong.get()));
+		self_strong->m_ReadyEvent.SetEvent();
+	}).detach();
 }
 
 HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation relation, VisualElement element, VisualMutationType mutationType) try
@@ -71,7 +77,7 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation relation, Visu
 				if (const auto frame = FindParent(L"TaskbarFrame", FromHandle<wux::FrameworkElement>(relation.Parent)))
 				{
 					InstanceHandle handle = 0;
-					winrt::check_hresult(m_XamlDiagnostics->GetHandleFromIInspectable(reinterpret_cast<::IInspectable*>(winrt::get_abi(frame)), &handle));
+					winrt::check_hresult(m_XamlDiagnostics->GetHandleFromIInspectable(static_cast<::IInspectable*>(winrt::get_abi(frame)), &handle));
 
 					const auto shape = FromHandle<wux::Shapes::Rectangle>(element.Handle);
 					if (backgroundFill)

@@ -7,7 +7,7 @@
 #include "taskviewvisibilitymonitor.hpp"
 #include "undoc/explorer.hpp"
 
-class MultitaskingViewVisibilitySink : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, IMultitaskingViewVisibilityNotification> {
+class MultitaskingViewVisibilitySink : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, IMultitaskingViewVisibilityNotification, Microsoft::WRL::FtmBase> {
 private:
 	UINT m_ChangeMessage;
 

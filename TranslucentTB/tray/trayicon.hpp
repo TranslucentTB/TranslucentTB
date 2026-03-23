@@ -50,7 +50,7 @@ public:
 	void Show();
 	void Hide();
 
-	void SendNotification(uint16_t textResource, DWORD infoFlags = NIIF_INFO);
+	void SendNotification(uint16_t textResource, UINT flags, DWORD infoFlags);
 
 	virtual ~TrayIcon() noexcept(false) = 0;
 };

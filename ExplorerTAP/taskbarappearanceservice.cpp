@@ -2,6 +2,7 @@
 #include <RpcProxy.h>
 #include <shellapi.h>
 #include <wil/cppwinrt_helpers.h>
+#include <winrt/Windows.Management.Deployment.h>
 
 #include "constants.hpp"
 #include "util/color.hpp"
@@ -195,6 +196,38 @@ HRESULT TaskbarAppearanceService::RestoreAllTaskbarsToDefaultWhenProcessDies(DWO
 	}
 }
 
+HRESULT TaskbarAppearanceService::KillExplorerWhenPackageUninstalls(LPCWSTR packageFullName) try
+{
+	const std::wstring_view packageFullNameSv { packageFullName };
+
+	if (!m_PackageCatalog)
+	{
+		winrt::Windows::Management::Deployment::PackageManager pm;
+		auto catalog = wam::PackageCatalog::OpenForPackage(pm.FindPackageForUser(L"", packageFullNameSv));
+
+		m_PackageUninstallingToken = catalog.PackageUninstalling({ get_weak(), &TaskbarAppearanceService::OnPackageUninstalling });
+		m_PackageBeingWatched = packageFullNameSv;
+		m_PackageCatalog = std::move(catalog);
+
+		return S_OK;
+	}
+	else
+	{
+		if (m_PackageBeingWatched == packageFullNameSv)
+		{
+			return S_OK; // already watching for this package to get uninstalled.
+		}
+		else
+		{
+			return E_ILLEGAL_METHOD_CALL;
+		}
+	}
+}
+catch (...)
+{
+	return winrt::to_hresult();
+}
+
 void TaskbarAppearanceService::RegisterTaskbar(InstanceHandle frameHandle, HWND window)
 {
 	m_Taskbars.insert_or_assign(frameHandle, TaskbarInfo { { }, { }, window });
@@ -225,6 +258,15 @@ void TaskbarAppearanceService::UnregisterTaskbar(InstanceHandle frameHandle)
 
 TaskbarAppearanceService::~TaskbarAppearanceService()
 {
+	if (m_PackageCatalog)
+	{
+		m_PackageCatalog.PackageUninstalling(m_PackageUninstallingToken);
+
+		m_PackageBeingWatched.clear();
+		m_PackageUninstallingToken = { };
+		m_PackageCatalog = nullptr;
+	}
+
 	// wait for all callbacks to be done, as they have a raw pointer to the instance.
 	winrt::check_bool(UnregisterWaitEx(m_WaitHandle.get(), INVALID_HANDLE_VALUE));
 	m_WaitHandle.release();
@@ -267,6 +309,15 @@ winrt::fire_and_forget TaskbarAppearanceService::OnProcessDied()
 	if (const auto self = self_weak.get())
 	{
 		self->RestoreAllTaskbarsToDefault();
+	}
+}
+
+void TaskbarAppearanceService::OnPackageUninstalling(const wam::PackageCatalog&, const wam::PackageUninstallingEventArgs &args)
+{
+	if (args.Package().Id().FullName() == m_PackageBeingWatched)
+	{
+		// kill explorer to force the system to restart it, thereby unloading our DLL.
+		TerminateProcess(GetCurrentProcess(), 0);
 	}
 }
 

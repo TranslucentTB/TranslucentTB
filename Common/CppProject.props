@@ -39,10 +39,10 @@
     <SpectreMitigation>Spectre</SpectreMitigation>
 
     <!-- Versions -->
-    <PlatformToolset Condition="'$(PlatformToolset)'==''">v143</PlatformToolset>
-    <VCProjectVersion>16.0</VCProjectVersion>
-    <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)'==''">17.0</MinimumVisualStudioVersion>
-    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
+    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' == '17.0'">v143</PlatformToolset> <!-- Until CI upgrades to VS 2026 -->
+    <VCProjectVersion>18.0</VCProjectVersion>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformMinVersion>10.0.18362.0</WindowsTargetPlatformMinVersion>
 
     <!-- WinRT -->
@@ -61,7 +61,6 @@
 
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
     <VcpkgTriplet>$(Platform.ToLowerInvariant())-windows</VcpkgTriplet>
-    <VcpkgAdditionalInstallOptions>--overlay-ports="$(SolutionDir)\vcpkg\ports"</VcpkgAdditionalInstallOptions>
 
     <BuildType Condition="'$(BuildType)'==''">Dev</BuildType>
     <IntBuildType Condition="'$(BuildType)'=='Release'">0</IntBuildType>

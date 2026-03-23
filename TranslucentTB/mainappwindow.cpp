@@ -46,7 +46,7 @@ LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			if (!m_App.BringWelcomeToFront())
 			{
-				SendNotification(IDS_ALREADY_RUNNING);
+				SendNotification(IDS_ALREADY_RUNNING, NIF_REALTIME, NIIF_INFO);
 				m_App.GetWorker().ResetState(true);
 			}
 

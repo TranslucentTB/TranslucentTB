@@ -173,13 +173,13 @@ void TrayIcon::Hide()
 	}
 }
 
-void TrayIcon::SendNotification(uint16_t textResource, DWORD infoFlags)
+void TrayIcon::SendNotification(uint16_t textResource, UINT flags, DWORD infoFlags)
 {
 	if (m_CurrentlyShowing)
 	{
 		// copy the data because if explorer restarts or the theme/settings change we don't want to re-send the notification
 		auto data = m_IconData;
-		data.uFlags |= NIF_INFO;
+		data.uFlags |= NIF_INFO | flags;
 		data.dwInfoFlags = infoFlags;
 		// don't set szInfoTitle, the OS will show the app name already.
 

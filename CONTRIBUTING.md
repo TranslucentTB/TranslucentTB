@@ -24,27 +24,20 @@ Receiving objects: 100% (909/909), 383.94 KiB | 2.78 MiB/s, done.
 Resolving deltas: 100% (624/624), done.
 ```
 
-### 2 - Install the build tools
+### 2 - Install the IDE and build tools
 
-Now that you have the source, you will need Visual Studio 2022 Preview. [You can get the free community edition here](https://visualstudio.microsoft.com/vs/preview/#download-preview).
-Install the following workloads:
+Now that you have the source, you will need Visual Studio 2026. [You can get the free Community edition here](https://visualstudio.microsoft.com/).
 
-- Desktop development with C++
-- Universal Windows Platform development
+Once the core editor is installed, in the Visual Studio Installer press More > Import configuration and open the `.vsconfig` file from this repository to install the required workloads and components. This doesn't remove anything already installed and just adds the required components.
+Alternatively, if you open this solution in your IDE, it will recommend you to install missing components.
 
-You also need to install the following individual components:
+### 3 - Integrate vcpkg
 
-- [Windows 11 SDK](https://developer.microsoft.com/en-ca/windows/downloads/sdk-archive/) (10.0.22621.0)
-- If building for x64: MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs (Latest)
-- If building for ARM64: MSVC v143 - VS 2022 C++ ARM64 Spectre-mitigated libs (Latest)
-
-### 3 - Install vcpkg
-
-We use vcpkg to manage our dependencies. You will need to [install it](https://vcpkg.io/en/getting-started.html). Make sure to run `vcpkg integrate install`.
+We use vcpkg to manage our dependencies, but it has to be manually integrated in Visual Studio first. Open a developer command prompt as administrator, and run `vcpkg integrate install`.
 
 ### 4 - Building and running the app
 
-Open the solution file in Visual Studio 2022 Preview. Set the AppPackage project as the startup project (right-click it in the Solution Explorer, then hit "Set as startup project").
+Open the solution file in Visual Studio 2026. Set the AppPackage project as the startup project (right-click it in the Solution Explorer, then hit "Set as startup project").
 
 Once this is done, you should be able to hit play, let the solution build (takes a couple minutes on a decent machine), and the app will launch.
 

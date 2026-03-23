@@ -44,6 +44,40 @@ std::optional<std::wstring> UWP::GetPackageFamilyName()
 	return familyName;
 }
 
+std::optional<std::wstring> UWP::GetPackageFullName()
+{
+	static constexpr std::wstring_view FAILED_TO_GET = L"Failed to get package full name";
+
+	UINT32 length = 0;
+	LONG result = GetCurrentPackageFullName(&length, nullptr);
+	if (result != ERROR_INSUFFICIENT_BUFFER) [[unlikely]]
+	{
+		if (result == APPMODEL_ERROR_NO_PACKAGE)
+		{
+			return std::nullopt;
+		}
+		else
+		{
+			HresultHandle(HRESULT_FROM_WIN32(result), spdlog::level::critical, FAILED_TO_GET);
+		}
+	}
+
+	std::wstring familyName;
+	familyName.resize_and_overwrite(length - 1, [](wchar_t* data, std::size_t count)
+		{
+			UINT32 length = static_cast<UINT32>(count) + 1;
+			const LONG result = GetCurrentPackageFullName(&length, data);
+			if (result != ERROR_SUCCESS) [[unlikely]]
+			{
+				HresultHandle(HRESULT_FROM_WIN32(result), spdlog::level::critical, FAILED_TO_GET);
+			}
+
+			return length - 1;
+		});
+
+	return familyName;
+}
+
 std::optional<std::filesystem::path> UWP::GetAppStorageFolder()
 {
 	if (const auto familyName = UWP::GetPackageFamilyName())
