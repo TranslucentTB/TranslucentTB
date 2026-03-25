@@ -386,7 +386,7 @@
                         <FontIcon Glyph="&#xE72C;" />
                     </MenuFlyoutItem.Icon>
                     <MenuFlyoutItem.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="F1" Modifiers="Control,Alt,Shift" />
+                        <KeyboardAccelerator Key="F1" Modifiers="Control,Menu,Shift" />
                     </MenuFlyoutItem.KeyboardAccelerators>
                 </MenuFlyoutItem>
                 <MenuFlyoutItem x:Uid="TrayFlyoutPage_Advanced_CompactThunkHeap" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="CompactThunkHeapClicked">
