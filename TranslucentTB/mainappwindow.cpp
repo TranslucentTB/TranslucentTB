@@ -16,9 +16,8 @@ LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (wParam == RESET_STATE_GLOBAL_HOTKEY_ID)
 		{
 			ResetDynamicStateRequested();
-			return 0;
 		}
-		break;
+		return 0;
 
 	case WM_CLOSE:
 		Exit();
