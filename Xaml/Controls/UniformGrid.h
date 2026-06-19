@@ -3,7 +3,7 @@
 #include "../factory.h"
 #include "winrt.hpp"
 
-#include <experimental/generator>
+#include <generator>
 #include <tuple>
 #include <vector>
 
@@ -101,7 +101,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 
 		bool GetSpot(int i, int j);
 		void FillSpots(bool value, int row, int column, int width, int height);
-		std::experimental::generator<std::tuple<int, int>> GetFreeSpots(int firstColumn, bool topDown);
+		std::generator<std::tuple<int, int>> GetFreeSpots(int firstColumn, bool topDown);
 
 		static wux::DependencyProperty m_AutoLayoutProperty;
 

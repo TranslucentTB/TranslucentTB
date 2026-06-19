@@ -315,7 +315,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 		}
 	}
 
-	std::experimental::generator<std::tuple<int, int>> UniformGrid::GetFreeSpots(int firstColumn, bool topDown)
+	std::generator<std::tuple<int, int>> UniformGrid::GetFreeSpots(int firstColumn, bool topDown)
 	{
 		// Provides the next spot in the boolean array with a 'false' value.
 		if (topDown)
