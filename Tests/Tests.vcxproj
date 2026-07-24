@@ -31,6 +31,7 @@
     <ClCompile Include="config\rapidjsonhelper.cpp" />
     <ClCompile Include="config\taskbarappearance.cpp" />
     <ClCompile Include="util\color.cpp" />
+    <ClCompile Include="util\adaptiveopacity.cpp" />
     <ClCompile Include="util\numbers.cpp" />
     <ClCompile Include="util\strings.cpp" />
     <ClCompile Include="version.cpp" />
