@@ -62,6 +62,14 @@ private:
 		HMONITOR monitor;
 	};
 
+	struct AdaptiveOpacityState {
+		uint8_t Alpha;
+		std::chrono::steady_clock::time_point LastSample;
+	};
+
+	inline static constexpr UINT_PTR AdaptiveOpacityTimer = 1;
+	inline static constexpr UINT AdaptiveOpacityIntervalMs = 1000;
+
 	// future improvements:
 	// - better aero peek support: detect current peeked to window and include in calculation
 	// - notification for owner changes
@@ -85,12 +93,14 @@ private:
 	bool m_disableAttributeRefreshReply;
 	bool m_ResettingState;
 	bool m_ResetStateReentered;
+	bool m_AdaptiveOpacityTimerActive;
 	HMONITOR m_CurrentStartMonitor;
 	HMONITOR m_CurrentSearchMonitor;
 	HMONITOR m_CurrentFindInStartMonitor;
 	Window m_ForegroundWindow;
 	TaskbarType m_TaskbarType;
 	std::unordered_map<HMONITOR, MonitorInfo> m_Taskbars;
+	std::unordered_map<HMONITOR, AdaptiveOpacityState> m_AdaptiveOpacityStates;
 	std::unordered_set<Window> m_NormalTaskbars;
 	ConfigManager &m_ConfigManager;
 
@@ -179,7 +189,9 @@ private:
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	// Config
-	TaskbarAppearance GetConfig(taskbar_iterator taskbar) const;
+	TaskbarAppearance SelectConfig(taskbar_iterator taskbar) const;
+	TaskbarAppearance GetConfig(taskbar_iterator taskbar);
+	void UpdateAdaptiveOpacityTimer();
 
 	// Attribute
 	void ShowAeroPeekButton(const TaskbarInfo &taskbar, bool show);
@@ -220,7 +232,7 @@ private:
 	static HMONITOR GetTaskbarMonitor(Window taskbar);
 	static TaskbarType GetTaskbarType(Window taskbar);
 
-	TaskbarAppearance ApplyAdaptiveContrast(taskbar_iterator taskbar, TaskbarAppearance config) const;
+	TaskbarAppearance ApplyAdaptiveOpacity(taskbar_iterator taskbar, TaskbarAppearance config);
 
 	inline TaskbarAppearance WithPreview(txmp::TaskbarState state, const TaskbarAppearance &appearance) const
 	{
@@ -230,7 +242,7 @@ private:
 		{
 			result = { appearance.Accent, *preview, appearance.ShowPeek, appearance.ShowLine, appearance.BlurRadius, appearance.AdaptiveOpacity };
 		}
-		return ApplyAdaptiveContrast(taskbar, result);
+		return result;
 	}
 
 	inline static HMONITOR GetStartMenuMonitor() noexcept
@@ -268,10 +280,7 @@ private:
 public:
 	TaskbarAttributeWorker(ConfigManager &cfgManager, HINSTANCE hInstance, DynamicLoader &loader, const std::optional<std::filesystem::path> &storageFolder);
 
-	inline void ConfigurationChanged()
-	{
-		RefreshAllAttributes();
-	}
+	void ConfigurationChanged();
 
 	void ApplyColorPreview(txmp::TaskbarState state, Util::Color color)
 	{

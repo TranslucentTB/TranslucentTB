@@ -4,6 +4,7 @@
 #include <tlhelp32.h>
 
 #include "constants.hpp"
+#include "taskbarbackgroundsampler.hpp"
 #include "../localization.hpp"
 #include "../uwp/uwp.hpp"
 #include "../../ProgramLog/error/win32.hpp"
@@ -12,6 +13,7 @@
 #include "undoc/user32.hpp"
 #include "undoc/winuser.hpp"
 #include "win32.hpp"
+#include "util/adaptiveopacity.hpp"
 #include "winrt/Windows.Foundation.h"
 #include "winrt/Windows.Foundation.Metadata.h"
 
@@ -340,6 +342,11 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 	{
 		return OnPowerBroadcast(reinterpret_cast<const POWERBROADCAST_SETTING *>(lParam));
 	}
+	else if (uMsg == WM_TIMER && wParam == AdaptiveOpacityTimer)
+	{
+		RefreshAllAttributes();
+		return 0;
+	}
 	else if (uMsg == m_TaskbarCreatedMessage)
 	{
 		MessagePrint(spdlog::level::debug, L"Main taskbar got created, refreshing...");
@@ -391,7 +398,7 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 	return MessageWindow::MessageHandler(uMsg, wParam, lParam);
 }
 
-TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) const
+TaskbarAppearance TaskbarAttributeWorker::SelectConfig(taskbar_iterator taskbar) const
 {
 	const auto& config = m_ConfigManager.GetConfig();
 
@@ -484,24 +491,85 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 	return WithPreview(txmp::TaskbarState::Desktop, config.DesktopAppearance);
 }
 
-TaskbarAppearance TaskbarAttributeWorker::ApplyAdaptiveContrast(taskbar_iterator taskbar, TaskbarAppearance config) const
+TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar)
+{
+	return ApplyAdaptiveOpacity(taskbar, SelectConfig(taskbar));
+}
+
+TaskbarAppearance TaskbarAttributeWorker::ApplyAdaptiveOpacity(taskbar_iterator taskbar, TaskbarAppearance config)
 {
 	if (!config.AdaptiveOpacity)
 	{
+		m_AdaptiveOpacityStates.erase(taskbar->first);
 		return config;
 	}
 
-	// =========================================================================
-	// CORE LOGIC STUB (ADAPTIVE OPACITY / CONTRAST CALCULATOR)
-	// =========================================================================
-	// When Adaptive Opacity is enabled:
-	// 1. Get taskbar window position: taskbar->second.Taskbar.TaskbarWindow.rect()
-	// 2. Sample background color / wallpaper luminance beneath the taskbar.
-	// 3. If luminance exceeds a threshold (light background), dynamically adjust
-	//    config.Color.A to increase opacity so white text/icons stay legible.
-	// =========================================================================
+	const auto [state, inserted] = m_AdaptiveOpacityStates.try_emplace(
+		taskbar->first,
+		AdaptiveOpacityState { config.Color.A, {} });
+	state->second.Alpha = std::max(state->second.Alpha, config.Color.A);
 
+	const auto now = std::chrono::steady_clock::now();
+	if (!inserted && now - state->second.LastSample < std::chrono::milliseconds(AdaptiveOpacityIntervalMs))
+	{
+		config.Color.A = state->second.Alpha;
+		return config;
+	}
+
+	const auto taskbarRect = taskbar->second.Taskbar.TaskbarWindow.rect();
+	MONITORINFO monitorInfo { .cbSize = sizeof(monitorInfo) };
+	if (!taskbarRect || !GetMonitorInfo(taskbar->first, &monitorInfo))
+	{
+		state->second = { config.Color.A, now };
+		return config;
+	}
+
+	const auto samples = TaskbarBackgroundSampler::Sample(*taskbarRect, monitorInfo.rcMonitor);
+	if (!samples)
+	{
+		state->second = { config.Color.A, now };
+		return config;
+	}
+
+	const uint8_t target = Util::AdaptiveOpacity::TargetAlpha(config.Color.A, *samples);
+	state->second.Alpha = Util::AdaptiveOpacity::StepAlpha(state->second.Alpha, target);
+	state->second.LastSample = now;
+	config.Color.A = state->second.Alpha;
 	return config;
+}
+
+void TaskbarAttributeWorker::UpdateAdaptiveOpacityTimer()
+{
+	bool enabled = false;
+	for (auto taskbar = m_Taskbars.begin(); taskbar != m_Taskbars.end(); ++taskbar)
+	{
+		if (SelectConfig(taskbar).AdaptiveOpacity)
+		{
+			enabled = true;
+			break;
+		}
+	}
+
+	if (enabled && !m_AdaptiveOpacityTimerActive)
+	{
+		m_AdaptiveOpacityTimerActive = SetTimer(m_WindowHandle, AdaptiveOpacityTimer, AdaptiveOpacityIntervalMs, nullptr) != 0;
+		if (!m_AdaptiveOpacityTimerActive)
+		{
+			LastErrorHandle(spdlog::level::warn, L"Failed to start adaptive opacity timer");
+		}
+	}
+	else if (!enabled && m_AdaptiveOpacityTimerActive)
+	{
+		KillTimer(m_WindowHandle, AdaptiveOpacityTimer);
+		m_AdaptiveOpacityTimerActive = false;
+		m_AdaptiveOpacityStates.clear();
+	}
+}
+
+void TaskbarAttributeWorker::ConfigurationChanged()
+{
+	m_AdaptiveOpacityStates.clear();
+	RefreshAllAttributes();
 }
 
 void TaskbarAttributeWorker::ShowAeroPeekButton(const TaskbarInfo &taskbar, bool show)
@@ -659,6 +727,8 @@ void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
 			ShowAeroPeekButton(taskbarInfo, cfg.ShowPeek);
 		}
 	}
+
+	UpdateAdaptiveOpacityTimer();
 }
 
 void TaskbarAttributeWorker::RefreshAllAttributes()
@@ -1245,6 +1315,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(ConfigManager &cfgManager, HINSTA
 	m_disableAttributeRefreshReply(false),
 	m_ResettingState(false),
 	m_ResetStateReentered(false),
+	m_AdaptiveOpacityTimerActive(false),
 	m_TaskbarType(TaskbarType::Unknown),
 	m_CurrentStartMonitor(nullptr),
 	m_CurrentSearchMonitor(nullptr),
@@ -1441,7 +1512,10 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 		m_CurrentFindInStartMonitor = nullptr;
 		m_ForegroundWindow = Window::NullWindow;
 
+		KillTimer(m_WindowHandle, AdaptiveOpacityTimer);
+		m_AdaptiveOpacityTimerActive = false;
 		m_Taskbars.clear();
+		m_AdaptiveOpacityStates.clear();
 		m_NormalTaskbars.clear();
 
 		m_TaskbarService = nullptr;
@@ -1591,6 +1665,8 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 
 TaskbarAttributeWorker::~TaskbarAttributeWorker() noexcept(false)
 {
+	KillTimer(m_WindowHandle, AdaptiveOpacityTimer);
+	m_AdaptiveOpacityTimerActive = false;
 	m_disableAttributeRefreshReply = true;
 	UnregisterTaskViewCallbacks();
 	UnregisterSearchCallbacks();
