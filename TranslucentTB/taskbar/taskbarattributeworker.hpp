@@ -220,17 +220,17 @@ private:
 	static HMONITOR GetTaskbarMonitor(Window taskbar);
 	static TaskbarType GetTaskbarType(Window taskbar);
 
+	TaskbarAppearance ApplyAdaptiveContrast(taskbar_iterator taskbar, TaskbarAppearance config) const;
+
 	inline TaskbarAppearance WithPreview(txmp::TaskbarState state, const TaskbarAppearance &appearance) const
 	{
 		const auto &preview = m_ColorPreviews.at(static_cast<std::size_t>(state));
+		TaskbarAppearance result = appearance;
 		if (preview)
 		{
-			return { appearance.Accent, *preview, appearance.ShowPeek, appearance.ShowLine, appearance.BlurRadius };
+			result = { appearance.Accent, *preview, appearance.ShowPeek, appearance.ShowLine, appearance.BlurRadius, appearance.AdaptiveOpacity };
 		}
-		else
-		{
-			return appearance;
-		}
+		return ApplyAdaptiveContrast(taskbar, result);
 	}
 
 	inline static HMONITOR GetStartMenuMonitor() noexcept

@@ -26,15 +26,17 @@ struct TaskbarAppearance {
 	Util::Color Color = { 0, 0, 0, 0 };
 	bool ShowPeek = true;
 	bool ShowLine = true;
+	bool AdaptiveOpacity = false;
 	float BlurRadius = 9.0f;
 
 	constexpr TaskbarAppearance() noexcept = default;
-	constexpr TaskbarAppearance(ACCENT_STATE accent, Util::Color color, bool showPeek, bool showLine, float blurRadius) noexcept :
+	constexpr TaskbarAppearance(ACCENT_STATE accent, Util::Color color, bool showPeek, bool showLine, float blurRadius, bool adaptiveOpacity = false) noexcept :
 		Accent(accent),
 		Color(color),
 		ShowPeek(showPeek),
 		ShowLine(showLine),
-		BlurRadius(blurRadius)
+		BlurRadius(blurRadius),
+		AdaptiveOpacity(adaptiveOpacity)
 	{ }
 
 #ifdef HAS_RAPIDJSON
@@ -45,6 +47,7 @@ struct TaskbarAppearance {
 		rjh::Serialize(writer, Color.ToString(), COLOR_KEY);
 		rjh::Serialize(writer, ShowPeek, SHOW_PEEK_KEY);
 		rjh::Serialize(writer, ShowLine, SHOW_LINE_KEY);
+		rjh::Serialize(writer, AdaptiveOpacity, ADAPTIVE_OPACITY_KEY);
 		rjh::Serialize(writer, BlurRadius, RADIUS_KEY);
 	}
 
@@ -91,6 +94,10 @@ protected:
 		{
 			rjh::Deserialize(val, ShowLine, key);
 		}
+		else if (key == ADAPTIVE_OPACITY_KEY)
+		{
+			rjh::Deserialize(val, AdaptiveOpacity, key);
+		}
 		else if (key == RADIUS_KEY)
 		{
 			rjh::Deserialize(val, BlurRadius, key);
@@ -120,6 +127,7 @@ private:
 	static constexpr std::wstring_view COLOR_KEY = L"color";
 	static constexpr std::wstring_view SHOW_PEEK_KEY = L"show_peek";
 	static constexpr std::wstring_view SHOW_LINE_KEY = L"show_line";
+	static constexpr std::wstring_view ADAPTIVE_OPACITY_KEY = L"adaptive_opacity";
 	static constexpr std::wstring_view RADIUS_KEY = L"blur_radius";
 #endif
 

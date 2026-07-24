@@ -25,6 +25,9 @@
         "show_line": {
           "type": "boolean"
         },
+        "adaptive_opacity": {
+          "type": "boolean"
+        },
         "blur_radius": {
           "type": "number",
           "minimum": 0,

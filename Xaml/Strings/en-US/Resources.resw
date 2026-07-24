@@ -245,6 +245,9 @@
   <data name="TrayFlyoutPage_PeekButton.Text" xml:space="preserve">
     <value>Show Desktop Peek Button</value>
   </data>
+  <data name="TrayFlyoutPage_AdaptiveOpacity.Text" xml:space="preserve">
+    <value>Adaptive Opacity</value>
+  </data>
   <data name="TrayFlyoutPage_SearchOpened.Text" xml:space="preserve">
     <value>Search opened</value>
     <comment>Also used to generate the title of color picker windows</comment>

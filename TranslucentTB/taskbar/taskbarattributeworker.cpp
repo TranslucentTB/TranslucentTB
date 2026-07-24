@@ -484,6 +484,26 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 	return WithPreview(txmp::TaskbarState::Desktop, config.DesktopAppearance);
 }
 
+TaskbarAppearance TaskbarAttributeWorker::ApplyAdaptiveContrast(taskbar_iterator taskbar, TaskbarAppearance config) const
+{
+	if (!config.AdaptiveOpacity)
+	{
+		return config;
+	}
+
+	// =========================================================================
+	// CORE LOGIC STUB (ADAPTIVE OPACITY / CONTRAST CALCULATOR)
+	// =========================================================================
+	// When Adaptive Opacity is enabled:
+	// 1. Get taskbar window position: taskbar->second.Taskbar.TaskbarWindow.rect()
+	// 2. Sample background color / wallpaper luminance beneath the taskbar.
+	// 3. If luminance exceeds a threshold (light background), dynamically adjust
+	//    config.Color.A to increase opacity so white text/icons stay legible.
+	// =========================================================================
+
+	return config;
+}
+
 void TaskbarAttributeWorker::ShowAeroPeekButton(const TaskbarInfo &taskbar, bool show)
 {
 	if (const auto style = taskbar.PeekWindow.get_long_ptr(GWL_EXSTYLE))

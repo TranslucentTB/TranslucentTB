@@ -65,6 +65,11 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 						toggleItem.IsChecked(appearance.ShowLine());
 						toggleItem.IsEnabled(enabled);
 					}
+					else if (stringTag == L"AdaptiveOpacity")
+					{
+						toggleItem.IsChecked(appearance.AdaptiveOpacity());
+						toggleItem.IsEnabled(enabled);
+					}
 				}
 				else if (tag.try_as<hstring>() == L"Color")
 				{
@@ -315,6 +320,10 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 				else if (tag.try_as<hstring>() == L"ShowLine")
 				{
 					appearance.ShowLine(toggleItem.IsChecked());
+				}
+				else if (tag.try_as<hstring>() == L"AdaptiveOpacity")
+				{
+					appearance.AdaptiveOpacity(toggleItem.IsChecked());
 				}
 			}
 		}
