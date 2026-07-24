@@ -36,6 +36,9 @@
     <ClCompile Include="taskbar\taskbarattributeworker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="taskbar\taskbarbackgroundsampler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="mainappwindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -93,6 +96,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="taskbar\taskbarattributeworker.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="taskbar\taskbarbackgroundsampler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="uwp\xamlpagehost.hpp">

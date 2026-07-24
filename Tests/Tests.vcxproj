@@ -30,6 +30,7 @@
   <ItemGroup>
     <ClCompile Include="config\rapidjsonhelper.cpp" />
     <ClCompile Include="config\taskbarappearance.cpp" />
+    <ClCompile Include="taskbar\taskbarbackgroundsampler.cpp" />
     <ClCompile Include="util\color.cpp" />
     <ClCompile Include="util\adaptiveopacity.cpp" />
     <ClCompile Include="util\numbers.cpp" />
