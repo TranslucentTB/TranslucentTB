@@ -5,7 +5,7 @@ namespace TranslucentTB.Xaml.Models.Primitives
 	runtimeclass OptionalTaskbarAppearance : TaskbarAppearance
 	{
 		OptionalTaskbarAppearance();
-		OptionalTaskbarAppearance(Boolean enabled, AccentState accent, Windows.UI.Color color, Boolean showPeek, Boolean showLine, Single blurRadius);
+		OptionalTaskbarAppearance(Boolean enabled, AccentState accent, Windows.UI.Color color, Boolean showPeek, Boolean showLine, Single blurRadius, Boolean adaptiveOpacity);
 
 		[noexcept]
 		Boolean Enabled;

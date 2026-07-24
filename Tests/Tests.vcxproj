@@ -19,6 +19,7 @@
     <ClCompile>
       <PreprocessorDefinitions>GTEST_LINKED_AS_SHARED_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4275;4389;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\Xaml\Generated Files;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>gmock_main.lib;ole32.lib;oleaut32.lib;runtimeobject.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -28,6 +29,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="config\rapidjsonhelper.cpp" />
+    <ClCompile Include="config\taskbarappearance.cpp" />
     <ClCompile Include="util\color.cpp" />
     <ClCompile Include="util\numbers.cpp" />
     <ClCompile Include="util\strings.cpp" />

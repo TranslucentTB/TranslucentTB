@@ -35,8 +35,8 @@ struct TaskbarAppearance {
 		Color(color),
 		ShowPeek(showPeek),
 		ShowLine(showLine),
-		BlurRadius(blurRadius),
-		AdaptiveOpacity(adaptiveOpacity)
+		AdaptiveOpacity(adaptiveOpacity),
+		BlurRadius(blurRadius)
 	{ }
 
 #ifdef HAS_RAPIDJSON
@@ -138,12 +138,13 @@ public:
 		Color(winrtObj.Color()),
 		ShowPeek(winrtObj.ShowPeek()),
 		ShowLine(winrtObj.ShowLine()),
+		AdaptiveOpacity(winrtObj.AdaptiveOpacity()),
 		BlurRadius(winrtObj.BlurRadius())
 	{ }
 
 	operator txmp::TaskbarAppearance() const
 	{
-		return { static_cast<txmp::AccentState>(Accent), Color, ShowPeek, ShowLine, BlurRadius };
+		return { static_cast<txmp::AccentState>(Accent), Color, ShowPeek, ShowLine, BlurRadius, AdaptiveOpacity };
 	}
 #endif
 };
