@@ -25,6 +25,7 @@
 #include "../windows/messagewindow.hpp"
 #include "undoc/user32.hpp"
 #include "undoc/uxtheme.hpp"
+#include "util/adaptiveopacity.hpp"
 #include "util/color.hpp"
 #include "util/null_terminated_string_view.hpp"
 #include "wilx.hpp"
@@ -62,11 +63,6 @@ private:
 		HMONITOR monitor;
 	};
 
-	struct AdaptiveOpacityState {
-		uint8_t Alpha;
-		std::chrono::steady_clock::time_point LastSample;
-	};
-
 	inline static constexpr UINT_PTR AdaptiveOpacityTimer = 1;
 	inline static constexpr UINT AdaptiveOpacityIntervalMs = 1000;
 
@@ -100,7 +96,7 @@ private:
 	Window m_ForegroundWindow;
 	TaskbarType m_TaskbarType;
 	std::unordered_map<HMONITOR, MonitorInfo> m_Taskbars;
-	std::unordered_map<HMONITOR, AdaptiveOpacityState> m_AdaptiveOpacityStates;
+	std::unordered_map<HMONITOR, Util::AdaptiveOpacity::OpacityState> m_AdaptiveOpacityStates;
 	std::unordered_set<Window> m_NormalTaskbars;
 	ConfigManager &m_ConfigManager;
 
@@ -191,6 +187,7 @@ private:
 	// Config
 	TaskbarAppearance SelectConfig(taskbar_iterator taskbar) const;
 	TaskbarAppearance GetConfig(taskbar_iterator taskbar);
+	void SampleAdaptiveOpacity();
 	void UpdateAdaptiveOpacityTimer();
 
 	// Attribute

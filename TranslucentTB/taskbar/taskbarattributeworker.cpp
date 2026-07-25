@@ -344,6 +344,7 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 	}
 	else if (uMsg == WM_TIMER && wParam == AdaptiveOpacityTimer)
 	{
+		SampleAdaptiveOpacity();
 		RefreshAllAttributes();
 		return 0;
 	}
@@ -504,38 +505,42 @@ TaskbarAppearance TaskbarAttributeWorker::ApplyAdaptiveOpacity(taskbar_iterator 
 		return config;
 	}
 
-	const auto [state, inserted] = m_AdaptiveOpacityStates.try_emplace(
-		taskbar->first,
-		AdaptiveOpacityState { config.Color.A, {} });
-	state->second.Alpha = std::max(state->second.Alpha, config.Color.A);
-
-	const auto now = std::chrono::steady_clock::now();
-	if (!inserted && now - state->second.LastSample < std::chrono::milliseconds(AdaptiveOpacityIntervalMs))
+	if (const auto state = m_AdaptiveOpacityStates.find(taskbar->first); state != m_AdaptiveOpacityStates.end())
 	{
-		config.Color.A = state->second.Alpha;
-		return config;
+		config.Color.A = state->second.Value(config.Color.A);
 	}
 
-	const auto taskbarRect = taskbar->second.Taskbar.TaskbarWindow.rect();
-	MONITORINFO monitorInfo { .cbSize = sizeof(monitorInfo) };
-	if (!taskbarRect || !GetMonitorInfo(taskbar->first, &monitorInfo))
-	{
-		state->second = { config.Color.A, now };
-		return config;
-	}
-
-	const auto samples = TaskbarBackgroundSampler::Sample(*taskbarRect, monitorInfo.rcMonitor);
-	if (!samples)
-	{
-		state->second = { config.Color.A, now };
-		return config;
-	}
-
-	const uint8_t target = Util::AdaptiveOpacity::TargetAlpha(config.Color.A, *samples);
-	state->second.Alpha = Util::AdaptiveOpacity::StepAlpha(state->second.Alpha, target);
-	state->second.LastSample = now;
-	config.Color.A = state->second.Alpha;
 	return config;
+}
+
+void TaskbarAttributeWorker::SampleAdaptiveOpacity()
+{
+	for (auto taskbar = m_Taskbars.begin(); taskbar != m_Taskbars.end(); ++taskbar)
+	{
+		const auto config = SelectConfig(taskbar);
+		if (!config.AdaptiveOpacity)
+		{
+			m_AdaptiveOpacityStates.erase(taskbar->first);
+			continue;
+		}
+
+		const auto taskbarRect = taskbar->second.Taskbar.TaskbarWindow.rect();
+		MONITORINFO monitorInfo { .cbSize = sizeof(monitorInfo) };
+		if (!taskbarRect || !GetMonitorInfo(taskbar->first, &monitorInfo))
+		{
+			m_AdaptiveOpacityStates.erase(taskbar->first);
+			continue;
+		}
+
+		const auto samples = TaskbarBackgroundSampler::Sample(*taskbarRect, monitorInfo.rcMonitor);
+		if (!samples)
+		{
+			m_AdaptiveOpacityStates.erase(taskbar->first);
+			continue;
+		}
+
+		m_AdaptiveOpacityStates[taskbar->first].Update(config.Color.A, *samples);
+	}
 }
 
 void TaskbarAttributeWorker::UpdateAdaptiveOpacityTimer()

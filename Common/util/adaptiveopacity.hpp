@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <optional>
 #include <span>
 #include <vector>
 
@@ -87,4 +88,22 @@ namespace Util::AdaptiveOpacity
 
 		return current;
 	}
+
+	class OpacityState
+	{
+	private:
+		std::optional<uint8_t> m_Alpha;
+
+	public:
+		uint8_t Value(uint8_t baseAlpha) const noexcept
+		{
+			return std::max(baseAlpha, m_Alpha.value_or(baseAlpha));
+		}
+
+		void Update(uint8_t baseAlpha, std::span<const Util::Color> samples) noexcept
+		{
+			const uint8_t current = Value(baseAlpha);
+			m_Alpha = StepAlpha(current, TargetAlpha(baseAlpha, samples));
+		}
+	};
 }

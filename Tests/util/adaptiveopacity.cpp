@@ -79,3 +79,22 @@ TEST(Util_AdaptiveOpacity, SmoothingRisesFasterThanItFalls)
 	EXPECT_GT(risen - 96, 255 - fallen);
 	EXPECT_EQ(StepAlpha(128, 128), 128);
 }
+
+TEST(Util_AdaptiveOpacity, CachedAlphaChangesOnlyWhenSamplesAreUpdated)
+{
+	OpacityState state;
+	const std::array white { Util::Color { 255, 255, 255 } };
+	const std::array dark { Util::Color { 0, 0, 0 } };
+
+	EXPECT_EQ(state.Value(96), 96);
+
+	state.Update(96, white);
+	const auto brightAlpha = state.Value(96);
+	EXPECT_GT(brightAlpha, 96);
+
+	// Reading the cached value cannot react to a changed background.
+	EXPECT_EQ(state.Value(96), brightAlpha);
+
+	state.Update(96, dark);
+	EXPECT_LT(state.Value(96), brightAlpha);
+}
