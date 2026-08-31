@@ -8,8 +8,8 @@ struct OptionalTaskbarAppearance : TaskbarAppearance {
 	bool Enabled = false;
 
 	constexpr OptionalTaskbarAppearance() noexcept = default;
-	constexpr OptionalTaskbarAppearance(bool enabled, ACCENT_STATE accent, Util::Color color, bool showPeek, bool showLine, float blurRadius) noexcept :
-		TaskbarAppearance(accent, color, showPeek, showLine, blurRadius),
+	constexpr OptionalTaskbarAppearance(bool enabled, ACCENT_STATE accent, Util::Color color, bool showPeek, bool showLine, float blurRadius, bool adaptiveOpacity = false) noexcept :
+		TaskbarAppearance(accent, color, showPeek, showLine, blurRadius, adaptiveOpacity),
 		Enabled(enabled)
 	{ }
 
@@ -40,7 +40,7 @@ struct OptionalTaskbarAppearance : TaskbarAppearance {
 
 	operator txmp::OptionalTaskbarAppearance() const
 	{
-		return { Enabled, static_cast<txmp::AccentState>(Accent), Color, ShowPeek, ShowLine, BlurRadius };
+		return { Enabled, static_cast<txmp::AccentState>(Accent), Color, ShowPeek, ShowLine, BlurRadius, AdaptiveOpacity };
 	}
 #endif
 

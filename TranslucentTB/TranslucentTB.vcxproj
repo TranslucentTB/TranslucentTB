@@ -86,6 +86,7 @@
     <ClCompile Include="mainappwindow.cpp" />
     <ClCompile Include="managers\startupmanager.cpp" />
     <ClCompile Include="taskbar\taskbarattributeworker.cpp" />
+    <ClCompile Include="taskbar\taskbarbackgroundsampler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="tray\basecontextmenu.cpp" />
     <ClCompile Include="uwp\basexamlpagehost.cpp" />
@@ -112,6 +113,7 @@
     <ClInclude Include="tray\basecontextmenu.hpp" />
     <ClInclude Include="tray\traycontextmenu.hpp" />
     <ClInclude Include="taskbar\taskbarattributeworker.hpp" />
+    <ClInclude Include="taskbar\taskbarbackgroundsampler.hpp" />
     <ClInclude Include="uwp\basexamlpagehost.hpp" />
     <ClInclude Include="uwp\dynamicdependency.hpp" />
     <ClInclude Include="uwp\xamldragregion.hpp" />

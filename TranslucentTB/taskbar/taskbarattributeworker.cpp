@@ -5,6 +5,7 @@
 #include <tlhelp32.h>
 
 #include "constants.hpp"
+#include "taskbarbackgroundsampler.hpp"
 #include "../localization.hpp"
 #include "../uwp/uwp.hpp"
 #include "../../ProgramLog/error/win32.hpp"
@@ -13,6 +14,7 @@
 #include "undoc/user32.hpp"
 #include "undoc/winuser.hpp"
 #include "win32.hpp"
+#include "util/adaptiveopacity.hpp"
 #include "winrt/Windows.Foundation.h"
 #include "winrt/Windows.Foundation.Metadata.h"
 
@@ -343,6 +345,12 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 	{
 		return OnPowerBroadcast(reinterpret_cast<const POWERBROADCAST_SETTING *>(lParam));
 	}
+	else if (uMsg == WM_TIMER && wParam == AdaptiveOpacityTimer)
+	{
+		SampleAdaptiveOpacity();
+		RefreshAllAttributes();
+		return 0;
+	}
 	else if (uMsg == m_TaskbarCreatedMessage)
 	{
 		MessagePrint(spdlog::level::debug, L"Main taskbar got created, refreshing...");
@@ -394,7 +402,7 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 	return MessageWindow::MessageHandler(uMsg, wParam, lParam);
 }
 
-TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) const
+TaskbarAppearance TaskbarAttributeWorker::SelectConfig(taskbar_iterator taskbar) const
 {
 	const auto& config = m_ConfigManager.GetConfig();
 
@@ -485,6 +493,91 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 	}
 
 	return WithPreview(txmp::TaskbarState::Desktop, config.DesktopAppearance);
+}
+
+TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar)
+{
+	return ApplyAdaptiveOpacity(taskbar, SelectConfig(taskbar));
+}
+
+TaskbarAppearance TaskbarAttributeWorker::ApplyAdaptiveOpacity(taskbar_iterator taskbar, TaskbarAppearance config)
+{
+	if (!config.AdaptiveOpacity)
+	{
+		m_AdaptiveOpacityStates.erase(taskbar->first);
+		return config;
+	}
+
+	if (const auto state = m_AdaptiveOpacityStates.find(taskbar->first); state != m_AdaptiveOpacityStates.end())
+	{
+		config.Color.A = state->second.Value(config.Color.A);
+	}
+
+	return config;
+}
+
+void TaskbarAttributeWorker::SampleAdaptiveOpacity()
+{
+	for (auto taskbar = m_Taskbars.begin(); taskbar != m_Taskbars.end(); ++taskbar)
+	{
+		const auto config = SelectConfig(taskbar);
+		if (!config.AdaptiveOpacity)
+		{
+			m_AdaptiveOpacityStates.erase(taskbar->first);
+			continue;
+		}
+
+		const auto taskbarRect = taskbar->second.Taskbar.TaskbarWindow.rect();
+		MONITORINFO monitorInfo { .cbSize = sizeof(monitorInfo) };
+		if (!taskbarRect || !GetMonitorInfo(taskbar->first, &monitorInfo))
+		{
+			m_AdaptiveOpacityStates.erase(taskbar->first);
+			continue;
+		}
+
+		const auto samples = TaskbarBackgroundSampler::Sample(*taskbarRect, monitorInfo.rcMonitor);
+		if (!samples)
+		{
+			m_AdaptiveOpacityStates.erase(taskbar->first);
+			continue;
+		}
+
+		m_AdaptiveOpacityStates[taskbar->first].Update(config.Color.A, *samples);
+	}
+}
+
+void TaskbarAttributeWorker::UpdateAdaptiveOpacityTimer()
+{
+	bool enabled = false;
+	for (auto taskbar = m_Taskbars.begin(); taskbar != m_Taskbars.end(); ++taskbar)
+	{
+		if (SelectConfig(taskbar).AdaptiveOpacity)
+		{
+			enabled = true;
+			break;
+		}
+	}
+
+	if (enabled && !m_AdaptiveOpacityTimerActive)
+	{
+		m_AdaptiveOpacityTimerActive = SetTimer(m_WindowHandle, AdaptiveOpacityTimer, AdaptiveOpacityIntervalMs, nullptr) != 0;
+		if (!m_AdaptiveOpacityTimerActive)
+		{
+			LastErrorHandle(spdlog::level::warn, L"Failed to start adaptive opacity timer");
+		}
+	}
+	else if (!enabled && m_AdaptiveOpacityTimerActive)
+	{
+		KillTimer(m_WindowHandle, AdaptiveOpacityTimer);
+		m_AdaptiveOpacityTimerActive = false;
+		m_AdaptiveOpacityStates.clear();
+	}
+}
+
+void TaskbarAttributeWorker::ConfigurationChanged()
+{
+	m_AdaptiveOpacityStates.clear();
+	RefreshAllAttributes();
 }
 
 void TaskbarAttributeWorker::ShowAeroPeekButton(const TaskbarInfo &taskbar, bool show)
@@ -642,6 +735,8 @@ void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
 			ShowAeroPeekButton(taskbarInfo, cfg.ShowPeek);
 		}
 	}
+
+	UpdateAdaptiveOpacityTimer();
 }
 
 void TaskbarAttributeWorker::RefreshAllAttributes()
@@ -1230,6 +1325,7 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(ConfigManager &cfgManager, HINSTA
 	m_disableAttributeRefreshReply(false),
 	m_ResettingState(false),
 	m_ResetStateReentered(false),
+	m_AdaptiveOpacityTimerActive(false),
 	m_TaskbarType(TaskbarType::Unknown),
 	m_CurrentStartMonitor(nullptr),
 	m_CurrentSearchMonitor(nullptr),
@@ -1426,7 +1522,10 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 		m_CurrentFindInStartMonitor = nullptr;
 		m_ForegroundWindow = Window::NullWindow;
 
+		KillTimer(m_WindowHandle, AdaptiveOpacityTimer);
+		m_AdaptiveOpacityTimerActive = false;
 		m_Taskbars.clear();
+		m_AdaptiveOpacityStates.clear();
 		m_NormalTaskbars.clear();
 
 		m_TaskbarService = nullptr;
@@ -1576,6 +1675,8 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 
 TaskbarAttributeWorker::~TaskbarAttributeWorker() noexcept(false)
 {
+	KillTimer(m_WindowHandle, AdaptiveOpacityTimer);
+	m_AdaptiveOpacityTimerActive = false;
 	m_disableAttributeRefreshReply = true;
 	UnregisterTaskViewCallbacks();
 	UnregisterSearchCallbacks();
