@@ -1,6 +1,7 @@
 #pragma once
 #include <optional>
 #include <unordered_map>
+#include <unordered_set>
 #include <xamlOM.h>
 #include "winrt.hpp"
 #include "undefgetcurrenttime.h"
@@ -67,7 +68,7 @@ private:
 	winrt::fire_and_forget OnProcessDied();
 	void OnPackageUninstalling(const wam::PackageCatalog &catalog, const wam::PackageUninstallingEventArgs &args);
 	void OnPackageUpdating(const wam::PackageCatalog &catalog, const wam::PackageUpdatingEventArgs &args);
-	std::optional<TaskbarInfo> GetTaskbarInfo(HWND taskbar);
+	std::optional<TaskbarInfo> GetTaskbarInfo(HWND taskbar) noexcept;
 
 	void OnTaskbarBackgroundUpdated(const wux::DependencyObject &sender, const wux::DependencyProperty &dp);
 	void OnTaskbarBorderUpdated(const wux::DependencyObject &sender, const wux::DependencyProperty &dp);
@@ -75,8 +76,12 @@ private:
 	static void RestoreDefaultControlFill(const ControlInfo<wux::Shapes::Shape> &info);
 	static void NTAPI ProcessWaitCallback(void *parameter, BOOLEAN timedOut);
 
+	void EnsureSubclass(HWND taskbar);
+	static LRESULT CALLBACK TaskbarSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
 	DWORD m_RegisterCookie;
 	std::unordered_map<InstanceHandle, TaskbarInfo> m_Taskbars;
+	std::unordered_set<HWND> m_SubclassedWindows;
 
 	winrt::Windows::System::DispatcherQueue m_XamlThreadQueue;
 

@@ -1,4 +1,5 @@
 #include "taskbarappearanceservice.hpp"
+#include <CommCtrl.h>
 #include <RpcProxy.h>
 #include <shellapi.h>
 #include <wil/cppwinrt_helpers.h>
@@ -40,6 +41,8 @@ HRESULT TaskbarAppearanceService::SetTaskbarAppearance(HWND taskbar, TaskbarBrus
 	{
 		if (info->background.control && info->background.originalFill)
 		{
+			EnsureSubclass(taskbar);
+
 			const winrt::Windows::UI::Color tint = Util::Color::FromABGR(color);
 			wux::Media::Brush newBrush = nullptr;
 			if (brush == Acrylic)
@@ -81,6 +84,8 @@ HRESULT TaskbarAppearanceService::SetTaskbarBlur(HWND taskbar, UINT color, FLOAT
 	{
 		if (info->background.control && info->background.originalFill)
 		{
+			EnsureSubclass(taskbar);
+
 			const winrt::Windows::UI::Color tint = Util::Color::FromABGR(color);
 			const wfn::float4 tintHdr = {
 				tint.R / 255.0f,
@@ -103,13 +108,9 @@ catch (...)
 
 HRESULT TaskbarAppearanceService::ReturnTaskbarToDefaultAppearance(HWND taskbar) try
 {
-	for (const auto& [handle, info] : m_Taskbars)
+	if (const auto info = GetTaskbarInfo(taskbar))
 	{
-		if (GetAncestor(info.window, GA_PARENT) == taskbar)
-		{
-			RestoreDefaultControlFill(info.background);
-			break;
-		}
+		RestoreDefaultControlFill(info->background);
 	}
 
 	return S_OK;
@@ -121,25 +122,17 @@ catch (...)
 
 HRESULT TaskbarAppearanceService::SetTaskbarBorderVisibility(HWND taskbar, BOOL visible) try
 {
-	for (const auto& [handle, info] : m_Taskbars)
+	if (const auto info = GetTaskbarInfo(taskbar))
 	{
-		if (GetAncestor(info.window, GA_PARENT) == taskbar)
+		if (visible)
 		{
-			if (visible)
-			{
-				RestoreDefaultControlFill(info.border);
-			}
-			else
-			{
-				if (info.border.control && info.border.originalFill)
-				{
-					wux::Media::SolidColorBrush brush;
-					brush.Opacity(0);
-					info.border.control.Fill(brush);
-				}
-			}
-
-			break;
+			RestoreDefaultControlFill(info->border);
+		}
+		else if (info->border.control && info->border.originalFill)
+		{
+			wux::Media::SolidColorBrush brush;
+			brush.Opacity(0);
+			info->border.control.Fill(brush);
 		}
 	}
 
@@ -242,7 +235,7 @@ void TaskbarAppearanceService::RegisterTaskbarBackground(InstanceHandle frameHan
 
 		// sometimes we may see objects come with their fill set to null, wait until the system initialized it before
 		// we start messing with it
-		// in the future if the taskbar doesn't change the original brush, but tries to change the entire brush
+		// in the future if the taskbar doesn't change the original brush's color, but tries to swap the entire brush
 		// this could be useful to suppress it and update the saved brush
 		element.RegisterPropertyChangedCallback(wux::Shapes::Shape::FillProperty(), { get_weak(), &TaskbarAppearanceService::OnTaskbarBackgroundUpdated });
 		it->second.background.originalFill = element.Fill();
@@ -355,7 +348,7 @@ void TaskbarAppearanceService::OnPackageUpdating(const wam::PackageCatalog&, con
 	}
 }
 
-std::optional<TaskbarAppearanceService::TaskbarInfo> TaskbarAppearanceService::GetTaskbarInfo(HWND taskbar)
+std::optional<TaskbarAppearanceService::TaskbarInfo> TaskbarAppearanceService::GetTaskbarInfo(HWND taskbar) noexcept
 {
 	for (const auto& [handle, info] : m_Taskbars)
 	{
@@ -400,5 +393,42 @@ void TaskbarAppearanceService::RestoreDefaultControlFill(const ControlInfo<wux::
 
 void TaskbarAppearanceService::ProcessWaitCallback(void* parameter, BOOLEAN)
 {
-	reinterpret_cast<TaskbarAppearanceService *>(parameter)->OnProcessDied();
+	static_cast<TaskbarAppearanceService *>(parameter)->OnProcessDied();
+}
+
+void TaskbarAppearanceService::EnsureSubclass(HWND taskbar)
+{
+	if (!m_SubclassedWindows.contains(taskbar))
+	{
+		if (SetWindowSubclass(taskbar, TaskbarSubclassProc, reinterpret_cast<UINT_PTR>(taskbar), reinterpret_cast<DWORD_PTR>(this)))
+		{
+			m_SubclassedWindows.insert(taskbar);
+		}
+	}
+}
+
+LRESULT TaskbarAppearanceService::TaskbarSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR, DWORD_PTR dwRefData)
+{
+	switch (uMsg)
+	{
+	case WM_PAINT:
+	{
+		RECT rect;
+		if (GetClientRect(hWnd, &rect))
+		{
+			if (wil::unique_hdc_window dc { wil::window_dc(GetDCEx(hWnd, nullptr, DCX_WINDOW | DCX_CACHE), hWnd) })
+			{
+				FillRect(dc.get(), &rect, reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
+			}
+		}
+
+		break;
+	}
+
+	case WM_NCDESTROY:
+		reinterpret_cast<TaskbarAppearanceService*>(dwRefData)->m_SubclassedWindows.erase(hWnd);
+		break;
+	}
+
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
