@@ -54,6 +54,10 @@ HRESULT InjectExplorerTAP(HWND window, REFIID riid, LPVOID* ppv) try
 			return HRESULT_FROM_WIN32(GetLastError());
 		}
 
+		// Wake Explorer UI thread message queue so CallWndProc hook is invoked immediately
+		DWORD_PTR smResult = 0;
+		SendMessageTimeout(window, WM_NULL, 0, 0, SMTO_NORMAL, 1000, &smResult);
+
 		static constexpr DWORD READY_TIMEOUT =
 #ifdef _DEBUG
 			// do not timeout on debug builds, to allow debugging the DLL while it's loading in explorer

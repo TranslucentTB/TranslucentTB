@@ -1467,6 +1467,12 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 						Localization::ShowLocalizedMessageBox(IDS_RESTART_REQUIRED, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND, hinstance()).join();
 						ExitProcess(1);
 					}
+					else if (hr == HRESULT_FROM_WIN32(WAIT_TIMEOUT) || hr == HRESULT_FROM_WIN32(ERROR_TIMEOUT))
+					{
+						// Explorer is still initializing during Windows startup. Retry on next taskbar event instead of terminating.
+						MessagePrint(spdlog::level::warn, L"Explorer XAML Diagnostics initialization timed out; Explorer is still loading. Retrying...");
+						return;
+					}
 					else
 					{
 						HresultVerify(hr, spdlog::level::critical, L"Failed to initialize XAML Diagnostics.");
