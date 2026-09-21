@@ -27,7 +27,7 @@ wf::IAsyncAction StartupManager::Enable() try
 	{
 		const auto result = co_await m_StartupTask.RequestEnableAsync();
 
-		using enum winrt::Windows::ApplicationModel::StartupTaskState;
+		using enum wam::StartupTaskState;
 		if (result != Enabled && result != EnabledByPolicy)
 		{
 			Localization::ShowLocalizedMessageBox(IDS_STARTUPTASK_BROKEN, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND).detach();
