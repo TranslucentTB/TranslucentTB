@@ -16,7 +16,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	{
 		ComponentConnectorT::InitializeComponent();
 
-		const auto resourceLoader = Windows::ApplicationModel::Resources::ResourceLoader::GetForUIContext(UIContext());
+		const auto resourceLoader = wam::Resources::ResourceLoader::GetForUIContext(UIContext());
 		Title(winrt::format(L"{} - {} - " APP_NAME,
 			resourceLoader.GetString(GetResourceForState(m_State)),
 			resourceLoader.GetString(L"/TranslucentTB.Xaml/Resources/TrayFlyoutPage_AccentColor/Text")));

@@ -9,7 +9,7 @@ TEST(Version_FromHighLow, ConvertsToSameVersion)
 
 TEST(Version_FromPackageVersion_WinRT, ConvertsToSameVersion)
 {
-	winrt::Windows::ApplicationModel::PackageVersion winRtVersion = {
+	wam::PackageVersion winRtVersion = {
 		.Major = 1,
 		.Minor = 2,
 		.Build = 3,

@@ -119,14 +119,14 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		DisableSavingSettings().IsChecked(disabled);
 	}
 
-	void TrayFlyoutPage::SetStartupState(const wf::IReference<Windows::ApplicationModel::StartupTaskState> &state)
+	void TrayFlyoutPage::SetStartupState(const wf::IReference<wam::StartupTaskState> &state)
 	{
 		const auto startup = StartupState();
 		if (state)
 		{
 			const auto stateUnbox = state.Value();
 
-			using enum Windows::ApplicationModel::StartupTaskState;
+			using enum wam::StartupTaskState;
 			startup.IsChecked(stateUnbox == Enabled || stateUnbox == EnabledByPolicy);
 			startup.IsEnabled(stateUnbox == Disabled || stateUnbox == DisabledByUser || stateUnbox == Enabled);
 		}
