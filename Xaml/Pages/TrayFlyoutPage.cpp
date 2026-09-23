@@ -6,6 +6,7 @@
 #endif
 
 #include "arch.h"
+#include <string>
 #include <winbase.h>
 
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
@@ -137,6 +138,25 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		}
 	}
 
+	void TrayFlyoutPage::SetAutoDarkLightEnabled(bool enabled)
+	{
+		AutoDarkLightState().IsChecked(enabled);
+	}
+
+	void TrayFlyoutPage::SetAutoDarkLightInterval(int32_t intervalMs)
+	{
+		AutoDarkLight100ms().IsChecked(intervalMs == 100);
+		AutoDarkLight250ms().IsChecked(intervalMs == 250);
+		AutoDarkLight500ms().IsChecked(intervalMs == 500);
+		AutoDarkLight1000ms().IsChecked(intervalMs == 1000);
+		AutoDarkLight2000ms().IsChecked(intervalMs == 2000);
+	}
+
+	void TrayFlyoutPage::SetKeepAutoHideEnabled(bool enabled)
+	{
+		KeepAutoHideState().IsChecked(enabled);
+	}
+
 	void TrayFlyoutPage::AppearanceClicked(const IInspectable &sender, const wux::RoutedEventArgs &)
 	{
 		if (const auto item = sender.try_as<wuxc::MenuFlyoutItemBase>())
@@ -214,6 +234,27 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	void TrayFlyoutPage::StartupClicked(const IInspectable &, const wux::RoutedEventArgs &)
 	{
 		m_StartupStateChangedDelegate();
+	}
+
+	void TrayFlyoutPage::AutoDarkLightClicked(const IInspectable &, const wux::RoutedEventArgs &)
+	{
+		m_AutoDarkLightChangedDelegate(AutoDarkLightState().IsChecked());
+	}
+
+	void TrayFlyoutPage::AutoDarkLightIntervalClicked(const IInspectable &sender, const wux::RoutedEventArgs &)
+	{
+		const auto item = sender.as<wuxc::ToggleMenuFlyoutItem>();
+		m_AutoDarkLightIntervalChangedDelegate(std::stoi(winrt::to_string(winrt::unbox_value<hstring>(item.Tag()))));
+	}
+
+	void TrayFlyoutPage::KeepAutoHideClicked(const IInspectable &, const wux::RoutedEventArgs &)
+	{
+		m_KeepAutoHideChangedDelegate(KeepAutoHideState().IsChecked());
+	}
+
+	void TrayFlyoutPage::FixTaskbarClicked(const IInspectable &, const wux::RoutedEventArgs &)
+	{
+		m_FixTaskbarRequestedDelegate();
 	}
 
 	void TrayFlyoutPage::TipsAndTricksClicked(const IInspectable &, const wux::RoutedEventArgs &)

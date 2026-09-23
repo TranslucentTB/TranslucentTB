@@ -53,6 +53,9 @@ public:
 	std::wstring Language;
 	std::optional<bool> UseXamlContextMenu;
 	std::optional<bool> CopyDlls;
+	bool AutoDarkLight = false;
+	int AutoDarkLightIntervalMs = 100;
+	bool KeepAutoHide = true;
 
 	template<class Writer>
 	inline void Serialize(Writer &writer) const
@@ -74,6 +77,9 @@ public:
 		}
 		rjh::Serialize(writer, UseXamlContextMenu, USE_XAML_CONTEXT_MENU_KEY);
 		rjh::Serialize(writer, CopyDlls, COPY_DLLS_KEY);
+		rjh::Serialize(writer, AutoDarkLight, AUTO_DARK_LIGHT_KEY);
+		rjh::Serialize(writer, AutoDarkLightIntervalMs, AUTO_DARK_LIGHT_INTERVAL_MS_KEY);
+		rjh::Serialize(writer, KeepAutoHide, KEEP_AUTO_HIDE_KEY);
 	}
 
 	inline void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view) = nullptr)
@@ -153,6 +159,18 @@ public:
 			{
 				rjh::Deserialize(it->value, CopyDlls, key);
 			}
+			else if (key == AUTO_DARK_LIGHT_KEY)
+			{
+				rjh::Deserialize(it->value, AutoDarkLight, key);
+			}
+			else if (key == KEEP_AUTO_HIDE_KEY)
+			{
+				rjh::Deserialize(it->value, KeepAutoHide, key);
+			}
+			else if (key == AUTO_DARK_LIGHT_INTERVAL_MS_KEY)
+			{
+				rjh::Deserialize(it->value, AutoDarkLightIntervalMs, key);
+			}
 			else if (unknownKeyCallback)
 			{
 				unknownKeyCallback(key);
@@ -185,4 +203,7 @@ private:
 	static constexpr std::wstring_view LANGUAGE_KEY = L"language";
 	static constexpr std::wstring_view USE_XAML_CONTEXT_MENU_KEY = L"use_xaml_context_menu";
 	static constexpr std::wstring_view COPY_DLLS_KEY = L"copy_dlls";
+	static constexpr std::wstring_view AUTO_DARK_LIGHT_KEY = L"auto_dark_light";
+	static constexpr std::wstring_view AUTO_DARK_LIGHT_INTERVAL_MS_KEY = L"auto_dark_light_interval_ms";
+	static constexpr std::wstring_view KEEP_AUTO_HIDE_KEY = L"keep_auto_hide";
 };

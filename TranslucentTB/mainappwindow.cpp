@@ -1,5 +1,13 @@
 #include "mainappwindow.hpp"
+#include <algorithm>
+#include <dwmapi.h>
+#include <chrono>
 #include <member_thunk/member_thunk.hpp>
+#include <shellapi.h>
+#include <thread>
+#include <winreg.h>
+#include <tlhelp32.h>
+#include <winuser.h>
 
 #include "application.hpp"
 #include "constants.hpp"
@@ -8,10 +16,157 @@
 #include "../ProgramLog/log.hpp"
 #include "../ProgramLog/error/win32.hpp"
 
+namespace
+{
+	std::optional<bool> IsPrimaryTaskbarAreaDark()
+	{
+		const int width = GetSystemMetrics(SM_CXSCREEN);
+		const int height = GetSystemMetrics(SM_CYSCREEN);
+		if (width <= 0 || height <= 0)
+		{
+			return std::nullopt;
+		}
+
+		HDC screen = GetDC(nullptr);
+		if (!screen)
+		{
+			return std::nullopt;
+		}
+
+		long brightnessSum = 0;
+		int samples = 0;
+		for (int yStep = 1; yStep <= 4; ++yStep)
+		{
+			const int y = height - 40 + (40 * yStep / 5);
+			for (int xStep = 1; xStep <= 32; ++xStep)
+			{
+				const COLORREF color = GetPixel(screen, width * xStep / 33, y);
+				if (color == CLR_INVALID)
+				{
+					ReleaseDC(nullptr, screen);
+					return std::nullopt;
+				}
+
+				brightnessSum += (GetRValue(color) * 299 + GetGValue(color) * 587 + GetBValue(color) * 114) / 1000;
+				++samples;
+			}
+		}
+
+		ReleaseDC(nullptr, screen);
+		return samples > 0 && brightnessSum / samples < 128;
+	}
+
+	void SetSystemTaskbarTheme(bool light)
+	{
+		HKEY key;
+		if (RegCreateKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", 0, nullptr, 0, KEY_SET_VALUE, nullptr, &key, nullptr) == ERROR_SUCCESS)
+		{
+			const DWORD value = light ? 1 : 0;
+			RegSetValueExW(key, L"SystemUsesLightTheme", 0, REG_DWORD, reinterpret_cast<const BYTE *>(&value), sizeof(value));
+			RegCloseKey(key);
+		}
+
+		DWORD_PTR ignored;
+		SendMessageTimeoutW(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>(L"ImmersiveColorSet"), SMTO_ABORTIFHUNG, 1000, &ignored);
+		SendMessageTimeoutW(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>(L"WindowsThemeElement"), SMTO_ABORTIFHUNG, 1000, &ignored);
+	}
+
+	void ReapplySystemTaskbarTheme()
+	{
+		DWORD value = 0;
+		DWORD size = sizeof(value);
+		if (RegGetValueW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", L"SystemUsesLightTheme", RRF_RT_REG_DWORD, nullptr, &value, &size) == ERROR_SUCCESS)
+		{
+			SetSystemTaskbarTheme(value != 0);
+		}
+	}
+
+	void NudgeSystemTaskbarTheme()
+	{
+		DWORD value = 0;
+		DWORD size = sizeof(value);
+		if (RegGetValueW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", L"SystemUsesLightTheme", RRF_RT_REG_DWORD, nullptr, &value, &size) != ERROR_SUCCESS)
+		{
+			return;
+		}
+
+		SetSystemTaskbarTheme(value == 0);
+		DwmFlush();
+		std::this_thread::sleep_for(std::chrono::milliseconds(75));
+		SetSystemTaskbarTheme(value != 0);
+	}
+
+	BOOL CALLBACK CollectDialogText(HWND window, LPARAM parameter)
+	{
+		auto text = reinterpret_cast<std::wstring *>(parameter);
+		const int length = GetWindowTextLengthW(window);
+		if (length > 0)
+		{
+			std::wstring childText(length + 1, L'\0');
+			GetWindowTextW(window, childText.data(), length + 1);
+			text->append(childText.c_str());
+		}
+		return TRUE;
+	}
+
+	void CloseTaskbarAutoHideConflictDialog()
+	{
+		const HWND dialog = FindWindowW(L"#32770", L"Taskbar");
+		if (!dialog)
+		{
+			return;
+		}
+
+		std::wstring content;
+		EnumChildWindows(dialog, CollectDialogText, reinterpret_cast<LPARAM>(&content));
+		if (content.find(L"A toolbar is already hidden on this side of your screen") != std::wstring::npos)
+		{
+			PostMessageW(dialog, WM_COMMAND, IDOK, 0);
+		}
+	}
+
+	void SetTaskbarAutoHide()
+	{
+		APPBARDATA data = { .cbSize = sizeof(data), .hWnd = FindWindowW(L"Shell_TrayWnd", nullptr), .lParam = ABS_AUTOHIDE | ABS_ALWAYSONTOP };
+		SHAppBarMessage(ABM_SETSTATE, &data);
+	}
+
+	void RefreshTaskbar()
+	{
+		const HWND taskbar = FindWindowW(L"Shell_TrayWnd", nullptr);
+		if (!taskbar)
+		{
+			return;
+		}
+
+		// Repaint Explorer's taskbar without tearing down Explorer or its windows.
+		DwmFlush();
+		SendMessageTimeoutW(taskbar, WM_DWMCOMPOSITIONCHANGED, 0, 0, SMTO_ABORTIFHUNG, 500, nullptr);
+		RedrawWindow(taskbar, nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN | RDW_UPDATENOW);
+		SetWindowPos(taskbar, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+		DwmFlush();
+	}
+}
+
 LRESULT MainAppWindow::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
+	case WM_DISPLAYCHANGE:
+	case WM_DEVICECHANGE:
+		if (m_App.GetConfigManager().GetConfig().KeepAutoHide)
+		{
+			ScheduleAutoHideRecovery();
+		}
+		return TrayContextMenu::MessageHandler(uMsg, wParam, lParam);
+
+	case WM_POWERBROADCAST:
+		if ((wParam == PBT_APMRESUMEAUTOMATIC || wParam == PBT_APMRESUMESUSPEND) && m_App.GetConfigManager().GetConfig().KeepAutoHide)
+		{
+			ScheduleAutoHideRecovery();
+		}
+		return TrayContextMenu::MessageHandler(uMsg, wParam, lParam);
+
 	case WM_HOTKEY:
 		if (wParam == RESET_STATE_GLOBAL_HOTKEY_ID)
 		{
@@ -86,6 +241,9 @@ void MainAppWindow::RefreshMenu()
 	}
 
 	trayPage.SetDisableSavingSettings(settings.DisableSaving);
+	trayPage.SetAutoDarkLightEnabled(settings.AutoDarkLight);
+	trayPage.SetAutoDarkLightInterval(settings.AutoDarkLightIntervalMs);
+	trayPage.SetKeepAutoHideEnabled(settings.KeepAutoHide);
 
 	trayPage.SetStartupState(m_App.GetStartupManager().GetState());
 }
@@ -107,6 +265,10 @@ void MainAppWindow::RegisterMenuHandlers()
 	m_CompactThunkHeapRequestedRevoker = menu.CompactThunkHeapRequested(winrt::auto_revoke, MainAppWindow::CompactThunkHeapRequested);
 
 	m_StartupStateChangedRevoker = menu.StartupStateChanged(winrt::auto_revoke, { this, &MainAppWindow::StartupStateChanged });
+	m_AutoDarkLightChangedRevoker = menu.AutoDarkLightChanged(winrt::auto_revoke, { this, &MainAppWindow::AutoDarkLightChanged });
+	m_AutoDarkLightIntervalChangedRevoker = menu.AutoDarkLightIntervalChanged(winrt::auto_revoke, { this, &MainAppWindow::AutoDarkLightIntervalChanged });
+	m_KeepAutoHideChangedRevoker = menu.KeepAutoHideChanged(winrt::auto_revoke, { this, &MainAppWindow::KeepAutoHideChanged });
+	m_FixTaskbarRequestedRevoker = menu.FixTaskbarRequested(winrt::auto_revoke, { this, &MainAppWindow::FixTaskbarRequested });
 	m_TipsAndTricksRequestedRevoker = menu.TipsAndTricksRequested(winrt::auto_revoke, MainAppWindow::TipsAndTricksRequested);
 	m_AboutRequestedRevoker = menu.AboutRequested(winrt::auto_revoke, { this, &MainAppWindow::AboutRequested });
 	m_ExitRequestedRevoker = menu.ExitRequested(winrt::auto_revoke, { this, &MainAppWindow::Exit });
@@ -273,6 +435,53 @@ winrt::fire_and_forget MainAppWindow::StartupStateChanged()
 	}
 }
 
+void MainAppWindow::AutoDarkLightChanged(bool enabled)
+{
+	m_App.GetConfigManager().GetConfig().AutoDarkLight = enabled;
+	m_App.GetConfigManager().SaveConfig();
+	UpdateAutoDarkLightWorker();
+}
+
+void MainAppWindow::AutoDarkLightIntervalChanged(int32_t intervalMs)
+{
+	if (intervalMs != 100 && intervalMs != 250 && intervalMs != 500 && intervalMs != 1000 && intervalMs != 2000)
+	{
+		return;
+	}
+
+	m_App.GetConfigManager().GetConfig().AutoDarkLightIntervalMs = intervalMs;
+	m_App.GetConfigManager().SaveConfig();
+	if (m_AutoDarkLightWorker.joinable())
+	{
+		m_AutoDarkLightWorker.request_stop();
+		m_AutoDarkLightWorker.join();
+	}
+	UpdateAutoDarkLightWorker();
+	RefreshMenu();
+}
+
+void MainAppWindow::KeepAutoHideChanged(bool enabled)
+{
+	m_App.GetConfigManager().GetConfig().KeepAutoHide = enabled;
+	m_App.GetConfigManager().SaveConfig();
+	if (enabled)
+	{
+		ScheduleAutoHideRecovery();
+	}
+}
+
+void MainAppWindow::FixTaskbarRequested()
+{
+	m_App.GetWorker().ConfigurationChanged();
+	ReapplySystemTaskbarTheme();
+	NudgeSystemTaskbarTheme();
+	RefreshTaskbar();
+	if (m_App.GetConfigManager().GetConfig().KeepAutoHide)
+	{
+		ScheduleAutoHideRecovery();
+	}
+}
+
 void MainAppWindow::TipsAndTricksRequested()
 {
 	Application::OpenTipsPage();
@@ -346,6 +555,17 @@ MainAppWindow::MainAppWindow(Application &app, bool hideIconOverride, bool hasPa
 
 MainAppWindow::~MainAppWindow()
 {
+	if (m_AutoDarkLightWorker.joinable())
+	{
+		m_AutoDarkLightWorker.request_stop();
+		m_AutoDarkLightWorker.join();
+	}
+	if (m_AutoHideRecoveryWorker.joinable())
+	{
+		m_AutoHideRecoveryWorker.request_stop();
+		m_AutoHideRecoveryWorker.join();
+	}
+
 	// Unregister the global hotkey
 	UnregisterHotKey(handle(), RESET_STATE_GLOBAL_HOTKEY_ID);
 }
@@ -356,6 +576,66 @@ void MainAppWindow::ConfigurationChanged()
 
 	UpdateTrayVisibility(!config.HideTray.value_or(false));
 	SetXamlContextMenuOverride(config.UseXamlContextMenu);
+	UpdateAutoDarkLightWorker();
+}
+
+void MainAppWindow::UpdateAutoDarkLightWorker()
+{
+	const bool enabled = m_App.GetConfigManager().GetConfig().AutoDarkLight;
+	if (enabled && !m_AutoDarkLightWorker.joinable())
+	{
+		const int interval = std::clamp(m_App.GetConfigManager().GetConfig().AutoDarkLightIntervalMs, 100, 2000);
+		m_AutoDarkLightWorker = std::jthread(RunAutoDarkLightWorker, std::chrono::milliseconds(interval));
+	}
+	else if (!enabled && m_AutoDarkLightWorker.joinable())
+	{
+		m_AutoDarkLightWorker.request_stop();
+		m_AutoDarkLightWorker.join();
+	}
+}
+
+void MainAppWindow::ScheduleAutoHideRecovery()
+{
+	if (m_AutoHideRecoveryWorker.joinable())
+	{
+		m_AutoHideRecoveryWorker.request_stop();
+		m_AutoHideRecoveryWorker.join();
+	}
+	m_AutoHideRecoveryWorker = std::jthread(RunAutoHideRecovery);
+}
+
+void MainAppWindow::RunAutoDarkLightWorker(std::stop_token stopToken, std::chrono::milliseconds interval)
+{
+	std::optional<bool> previousLight;
+	while (!stopToken.stop_requested())
+	{
+		if (const auto dark = IsPrimaryTaskbarAreaDark())
+		{
+			const bool light = !*dark;
+			if (previousLight != light)
+			{
+				SetSystemTaskbarTheme(light);
+				previousLight = light;
+			}
+		}
+		for (int elapsed = 0; elapsed < interval.count() && !stopToken.stop_requested(); elapsed += 50)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		}
+	}
+}
+
+void MainAppWindow::RunAutoHideRecovery(std::stop_token stopToken)
+{
+	for (int attempt = 0; attempt < 48 && !stopToken.stop_requested(); ++attempt)
+	{
+		CloseTaskbarAutoHideConflictDialog();
+		if (attempt == 4 || attempt == 16 || attempt == 32)
+		{
+			SetTaskbarAutoHide();
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(250));
+	}
 }
 
 void MainAppWindow::RemoveHideTrayIconOverride()

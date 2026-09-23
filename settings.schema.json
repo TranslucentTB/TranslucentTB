@@ -164,6 +164,16 @@
     },
     "copy_dlls": {
       "type": "boolean"
+    },
+    "auto_dark_light": {
+      "type": "boolean"
+    },
+    "auto_dark_light_interval_ms": {
+      "type": "integer",
+      "enum": [100, 250, 500, 1000, 2000]
+    },
+    "keep_auto_hide": {
+      "type": "boolean"
     }
   },
   "type": "object"

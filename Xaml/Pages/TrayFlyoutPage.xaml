@@ -396,6 +396,16 @@
                 </MenuFlyoutItem>
             </MenuFlyoutSubItem>
             <ToggleMenuFlyoutItem x:Name="StartupState" x:Uid="TrayFlyoutPage_OpenAtBoot" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="StartupClicked" Visibility="{x:Bind HasPackageIdentity, Mode = OneTime}" />
+            <ToggleMenuFlyoutItem x:Name="AutoDarkLightState" Text="Auto dark/light" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="AutoDarkLightClicked" />
+            <MenuFlyoutSubItem Text="Auto dark/light speed" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
+                <ToggleMenuFlyoutItem x:Name="AutoDarkLight100ms" Text="0.1 seconds" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Tag="100" Click="AutoDarkLightIntervalClicked" />
+                <ToggleMenuFlyoutItem x:Name="AutoDarkLight250ms" Text="0.25 seconds" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Tag="250" Click="AutoDarkLightIntervalClicked" />
+                <ToggleMenuFlyoutItem x:Name="AutoDarkLight500ms" Text="0.5 seconds" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Tag="500" Click="AutoDarkLightIntervalClicked" />
+                <ToggleMenuFlyoutItem x:Name="AutoDarkLight1000ms" Text="1 second" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Tag="1000" Click="AutoDarkLightIntervalClicked" />
+                <ToggleMenuFlyoutItem x:Name="AutoDarkLight2000ms" Text="2 seconds" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Tag="2000" Click="AutoDarkLightIntervalClicked" />
+            </MenuFlyoutSubItem>
+            <ToggleMenuFlyoutItem x:Name="KeepAutoHideState" Text="Keep auto-hide on" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="KeepAutoHideClicked" />
+            <MenuFlyoutItem Text="Fix taskbar" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="FixTaskbarClicked" />
             <MenuFlyoutSeparator Visibility="{x:Bind HasPackageIdentity, Mode = OneTime}" />
             <MenuFlyoutItem x:Uid="TrayFlyoutPage_TipsAndTricks" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="TipsAndTricksClicked">
                 <MenuFlyoutItem.Icon>
