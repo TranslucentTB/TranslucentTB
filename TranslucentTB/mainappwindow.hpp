@@ -1,8 +1,11 @@
 #pragma once
 #include "arch.h"
 #include "tray/traycontextmenu.hpp"
+#include <chrono>
 #include <cstddef>
+#include <stop_token>
 #include <spdlog/common.h>
+#include <thread>
 #include <tuple>
 #include <windef.h>
 #include "winrt.hpp"
@@ -42,11 +45,17 @@ private:
 	page_t::CompactThunkHeapRequested_revoker m_CompactThunkHeapRequestedRevoker;
 
 	page_t::StartupStateChanged_revoker m_StartupStateChangedRevoker;
+	page_t::AutoDarkLightChanged_revoker m_AutoDarkLightChangedRevoker;
+	page_t::AutoDarkLightIntervalChanged_revoker m_AutoDarkLightIntervalChangedRevoker;
+	page_t::KeepAutoHideChanged_revoker m_KeepAutoHideChangedRevoker;
+	page_t::FixTaskbarRequested_revoker m_FixTaskbarRequestedRevoker;
 	page_t::TipsAndTricksRequested_revoker m_TipsAndTricksRequestedRevoker;
 	page_t::AboutRequested_revoker m_AboutRequestedRevoker;
 	page_t::ExitRequested_revoker m_ExitRequestedRevoker;
 
 	std::optional<UINT> m_NewInstanceMessage;
+	std::jthread m_AutoDarkLightWorker;
+	std::jthread m_AutoHideRecoveryWorker;
 
 	LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
@@ -66,11 +75,19 @@ private:
 	static void CompactThunkHeapRequested();
 
 	winrt::fire_and_forget StartupStateChanged();
+	void AutoDarkLightChanged(bool enabled);
+	void AutoDarkLightIntervalChanged(int32_t intervalMs);
+	void KeepAutoHideChanged(bool enabled);
+	void FixTaskbarRequested();
 	static void TipsAndTricksRequested();
 	void AboutRequested();
 	void Exit();
 
 	TaskbarAppearance &GetConfigForState(const txmp::TaskbarState &state);
+	void UpdateAutoDarkLightWorker();
+	void ScheduleAutoHideRecovery();
+	static void RunAutoDarkLightWorker(std::stop_token stopToken, std::chrono::milliseconds interval);
+	static void RunAutoHideRecovery(std::stop_token stopToken);
 	void UpdateTrayVisibility(bool visible);
 
 public:

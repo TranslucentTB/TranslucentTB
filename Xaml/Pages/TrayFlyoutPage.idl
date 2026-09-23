@@ -19,6 +19,10 @@ namespace TranslucentTB.Xaml.Pages
 	delegate void CompactThunkHeapRequestedDelegate();
 
 	delegate void StartupStateChangedDelegate();
+	delegate void AutoDarkLightChangedDelegate(Boolean enabled);
+	delegate void AutoDarkLightIntervalChangedDelegate(Int32 intervalMs);
+	delegate void KeepAutoHideChangedDelegate(Boolean enabled);
+	delegate void FixTaskbarRequestedDelegate();
 	delegate void TipsAndTricksRequestedDelegate();
 	delegate void AboutRequestedDelegate();
 	delegate void ExitRequestedDelegate();
@@ -40,6 +44,10 @@ namespace TranslucentTB.Xaml.Pages
 		event CompactThunkHeapRequestedDelegate CompactThunkHeapRequested;
 
 		event StartupStateChangedDelegate StartupStateChanged;
+		event AutoDarkLightChangedDelegate AutoDarkLightChanged;
+		event AutoDarkLightIntervalChangedDelegate AutoDarkLightIntervalChanged;
+		event KeepAutoHideChangedDelegate KeepAutoHideChanged;
+		event FixTaskbarRequestedDelegate FixTaskbarRequested;
 		event TipsAndTricksRequestedDelegate TipsAndTricksRequested;
 		event AboutRequestedDelegate AboutRequested;
 		event ExitRequestedDelegate ExitRequested;
@@ -49,6 +57,9 @@ namespace TranslucentTB.Xaml.Pages
 		void SetLogLevel(TranslucentTB.Xaml.Models.Primitives.LogLevel level);
 		void SetDisableSavingSettings(Boolean disabled);
 		void SetStartupState(Windows.Foundation.IReference<Windows.ApplicationModel.StartupTaskState> state);
+		void SetAutoDarkLightEnabled(Boolean enabled);
+		void SetAutoDarkLightInterval(Int32 intervalMs);
+		void SetKeepAutoHideEnabled(Boolean enabled);
 
 		TranslucentTB.Xaml.Models.Primitives.LogSinkState SinkState;
 		Boolean IsBlurSupported;

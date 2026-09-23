@@ -36,6 +36,10 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		DECL_EVENT(CompactThunkHeapRequestedDelegate, CompactThunkHeapRequested, m_CompactThunkHeapRequestedDelegate);
 
 		DECL_EVENT(StartupStateChangedDelegate, StartupStateChanged, m_StartupStateChangedDelegate);
+		DECL_EVENT(AutoDarkLightChangedDelegate, AutoDarkLightChanged, m_AutoDarkLightChangedDelegate);
+		DECL_EVENT(AutoDarkLightIntervalChangedDelegate, AutoDarkLightIntervalChanged, m_AutoDarkLightIntervalChangedDelegate);
+		DECL_EVENT(KeepAutoHideChangedDelegate, KeepAutoHideChanged, m_KeepAutoHideChangedDelegate);
+		DECL_EVENT(FixTaskbarRequestedDelegate, FixTaskbarRequested, m_FixTaskbarRequestedDelegate);
 		DECL_EVENT(TipsAndTricksRequestedDelegate, TipsAndTricksRequested, m_TipsAndTricksRequestedDelegate);
 		DECL_EVENT(AboutRequestedDelegate, AboutRequested, m_AboutRequestedDelegate);
 		DECL_EVENT(ExitRequestedDelegate, ExitRequested, m_ExitRequestedDelegate);
@@ -45,6 +49,9 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void SetLogLevel(const txmp::LogLevel &level);
 		void SetDisableSavingSettings(const bool &disabled);
 		void SetStartupState(const wf::IReference<Windows::ApplicationModel::StartupTaskState> &state);
+		void SetAutoDarkLightEnabled(bool enabled);
+		void SetAutoDarkLightInterval(int32_t intervalMs);
+		void SetKeepAutoHideEnabled(bool enabled);
 
 		DECL_PROPERTY_CHANGED_FUNCS(txmp::LogSinkState, SinkState, m_SinkState);
 		DECL_PROPERTY_CHANGED_FUNCS(bool, IsBlurSupported, m_BlurSupported);
@@ -62,6 +69,10 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void CompactThunkHeapClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 
 		void StartupClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
+		void AutoDarkLightClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
+		void AutoDarkLightIntervalClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
+		void KeepAutoHideClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
+		void FixTaskbarClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void TipsAndTricksClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void AboutClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void ExitClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
