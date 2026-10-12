@@ -142,7 +142,7 @@ int Application::Run()
 		switch (MsgWaitForMultipleObjectsEx(0, nullptr, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE | MWMO_INPUTAVAILABLE))
 		{
 		case WAIT_OBJECT_0:
-			for (MSG msg; PeekMessage(&msg, 0, 0, 0, PM_REMOVE);)
+			for (MSG msg; PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE);)
 			{
 				if (msg.message != WM_QUIT)
 				{

@@ -74,7 +74,8 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 		}
 		else if (multiple > 1)
 		{
-			value = std::floor(value / multiple) * multiple;
+			float fmultiple = static_cast<float>(multiple);
+			value = std::floor(value / fmultiple) * fmultiple;
 		}
 	}
 

@@ -11,6 +11,7 @@
 namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	TrayFlyoutPage::TrayFlyoutPage(bool hasPackageIdentity) :
+		m_BlurSupported(true),
 		m_HasPackageIdentity(hasPackageIdentity)
 	{
 		SYSTEM_POWER_STATUS powerStatus;

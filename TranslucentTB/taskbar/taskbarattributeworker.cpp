@@ -23,7 +23,7 @@ private:
 	bool m_Armed;
 
 public:
-	AttributeRefresher(TaskbarAttributeWorker &worker, bool refresh = true) noexcept :
+	explicit AttributeRefresher(TaskbarAttributeWorker &worker, bool refresh = true) noexcept :
 		m_Worker(worker), m_Armed(refresh) { }
 
 	AttributeRefresher(const AttributeRefresher &) = delete;

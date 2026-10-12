@@ -30,7 +30,7 @@ namespace {
 		{ L"FOOBAR", L"foobar" },
 		{ L"foo", L"foo" },
 		{ L"\u00EB", L"\u00CB" },
-		{ L"aAa\u00CB\u00EB\u00CBAaA", L"AaA\u00EB\u00CB\u00EBaAa" }
+		{ L"aAa" L"\u00CB\u00EB\u00CB" L"AaA", L"AaA" L"\u00EB\u00CB\u00EB" L"aAa" }
 	};
 }
 

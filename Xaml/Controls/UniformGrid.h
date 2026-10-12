@@ -14,7 +14,7 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 	struct UniformGrid : UniformGridT<UniformGrid>
 	{
 	private:
-		static void OnDependencyPropertyChanged(const IInspectable &ender, const wux::DependencyPropertyChangedEventArgs &args);
+		static void OnDependencyPropertyChanged(const IInspectable &sender, const wux::DependencyPropertyChangedEventArgs &args);
 
 	public:
 		wf::Size MeasureOverride(const wf::Size &availableSize);

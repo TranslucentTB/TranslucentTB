@@ -31,10 +31,10 @@ namespace winrt::TranslucentTB::Xaml::Controls::implementation
 		}
 	}
 
-	ColorPickerSlider::ColorPickerSlider()
+	ColorPickerSlider::ColorPickerSlider() :
+		m_LoadedToken(Loaded({ get_weak(), &ColorPickerSlider::OnLoaded })),
+		m_UnloadedToken(Unloaded({ get_weak(), &ColorPickerSlider::OnUnloaded })),
 	{
-		m_LoadedToken = Loaded({ get_weak(), &ColorPickerSlider::OnLoaded });
-		m_UnloadedToken = Unloaded({ get_weak(), &ColorPickerSlider::OnUnloaded });
 		m_OrientationPropertyChangedToken.value = RegisterPropertyChangedCallback(composable_base::OrientationProperty(), OnOrientationPropertyChanged);
 		DefaultStyleKey(box_value(name_of<class_type>()));
 	}

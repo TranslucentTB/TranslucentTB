@@ -76,7 +76,7 @@ namespace {
 	public:
 		using is_gtest_matcher = void;
 
-		constexpr SameString(std::wstring_view str) noexcept : m_MatchStr(str) { }
+		explicit constexpr SameString(std::wstring_view str) noexcept : m_MatchStr(str) { }
 
 		constexpr bool MatchAndExplain(const std::tuple<const wchar_t *, rj::SizeType> &args, std::ostream *) const noexcept
 		{
@@ -294,7 +294,7 @@ TEST(RapidJSONHelper_Deserialize, DeserializesClass)
 
 	JsonObjectMock mock;
 	EXPECT_CALL(mock, Deserialize(testing::Ref(value), UnknownKeyCallback));
-	
+
 	rjh::Deserialize(value, mock, testObj, UnknownKeyCallback);
 }
 

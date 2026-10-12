@@ -424,7 +424,7 @@ private:
 	Util::null_terminated_wstring_view m_class, m_name;
 	Window m_parent;
 public:
-	constexpr FindEnum(Util::null_terminated_wstring_view className = { }, Util::null_terminated_wstring_view windowName = { }, Window parent = Window::NullWindow) noexcept :
+	explicit constexpr FindEnum(Util::null_terminated_wstring_view className = { }, Util::null_terminated_wstring_view windowName = { }, Window parent = Window::NullWindow) noexcept :
 		m_class(className),
 		m_name(windowName),
 		m_parent(parent)
@@ -445,7 +445,7 @@ class Window::OrderedEnum {
 private:
 	Window m_parent;
 public:
-	constexpr OrderedEnum(Window parent = Window::NullWindow) noexcept :
+	explicit constexpr OrderedEnum(Window parent = Window::NullWindow) noexcept :
 		m_parent(parent)
 	{ }
 
