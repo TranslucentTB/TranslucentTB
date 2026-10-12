@@ -42,10 +42,31 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation relation, Visu
 		}
 		else if (type_view == L"Taskbar.TaskbarFrame")
 		{
-			// assume it goes DesktopWindowXamlSource -> RootGrid -> TaskbarFrame.
-			// we need RootGrid's pointer to find the right source based on its contents.
-			const auto rootGrid = FromHandle<wux::UIElement>(relation.Parent);
+			// Window 11 build 26340 collapsed the extra layer that used to sit between the
+			// DesktopWindowXamlSource and the taskbar frame:
+			//   older builds: DesktopWindowXamlSource -> RootGrid -> TaskbarFrame
+			//   newer builds: DesktopWindowXamlSource -> TaskbarFrame
+			// Matching only against the parent (the old RootGrid) therefore stopped working
+			// and the taskbar was never registered, so no appearance was ever applied.
+			// Accept either shape, and compare XAML diagnostics instance handles as well as
+			// raw pointers: the diagnostics callback can hand back per-callback proxies whose
+			// pointers do not compare equal for the same element.
+			const auto frame = FromHandle<wux::FrameworkElement>(element.Handle);
 
+			wux::UIElement parent = nullptr;
+			if (frame)
+			{
+				parent = wux::Media::VisualTreeHelper::GetParent(frame).try_as<wux::UIElement>();
+			}
+
+			if (!parent)
+			{
+				parent = FromHandle<wux::UIElement>(relation.Parent);
+			}
+
+			const InstanceHandle parentHandle = HandleOf(parent);
+
+			auto matched = m_NonMatchingXamlSources.end();
 			for (auto it = m_NonMatchingXamlSources.begin(); it != m_NonMatchingXamlSources.end(); ++it)
 			{
 				const auto xamlSource = FromHandle<wuxh::DesktopWindowXamlSource>(*it);
@@ -59,18 +80,26 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation relation, Visu
 					continue;
 				}
 
-				if (content == rootGrid)
+				const InstanceHandle contentHandle = HandleOf(content);
+				const bool sameAsFrame = content == frame || (contentHandle != 0 && contentHandle == element.Handle);
+				const bool sameAsParent = content == parent || (contentHandle != 0 && contentHandle == parentHandle);
+				if (sameAsFrame || sameAsParent)
 				{
-					const auto nativeSource = xamlSource.as<IDesktopWindowXamlSourceNative>();
-
-					HWND hwnd = nullptr;
-					winrt::check_hresult(nativeSource->get_WindowHandle(&hwnd));
-
-					m_AppearanceService->RegisterTaskbar(element.Handle, hwnd);
-					m_NonMatchingXamlSources.erase(it);
-
+					matched = it;
 					break;
 				}
+			}
+
+			if (matched != m_NonMatchingXamlSources.end())
+			{
+				const auto xamlSource = FromHandle<wuxh::DesktopWindowXamlSource>(*matched);
+				const auto nativeSource = xamlSource.as<IDesktopWindowXamlSourceNative>();
+
+				HWND hwnd = nullptr;
+				winrt::check_hresult(nativeSource->get_WindowHandle(&hwnd));
+
+				m_AppearanceService->RegisterTaskbar(element.Handle, hwnd);
+				m_NonMatchingXamlSources.erase(matched);
 			}
 		}
 		else if (type_view == winrt::name_of<wux::Shapes::Rectangle>())

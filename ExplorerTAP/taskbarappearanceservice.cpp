@@ -8,6 +8,7 @@
 #include "util/color.hpp"
 
 #include "XamlBlurBrush.h"
+#include "crossilmarshal.hpp"
 
 extern "C"
 {
@@ -22,6 +23,10 @@ TaskbarAppearanceService::TaskbarAppearanceService() :
 {
 	InstallProxyStub();
 	winrt::check_hresult(RegisterActiveObject(static_cast<ITaskbarAppearanceService*>(this), CLSID_TaskbarAppearanceService, ACTIVEOBJECT_STRONG, &m_RegisterCookie));
+
+	// Fallback discovery channel: GetActiveObject is integrity-level scoped, so also expose
+	// a marshalled reference. Failures here are non-fatal, the ROT remains the primary path.
+	CrossILMarshal::Publish(static_cast<ITaskbarAppearanceService*>(this), GetCurrentProcessId());
 }
 
 HRESULT TaskbarAppearanceService::GetVersion(DWORD* apiVersion) noexcept

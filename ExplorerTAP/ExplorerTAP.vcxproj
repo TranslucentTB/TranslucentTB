@@ -51,6 +51,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="api.cpp" />
+    <ClCompile Include="crossilmarshal.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="effects\CompositeEffect.cpp" />
     <ClCompile Include="effects\FloodEffect.cpp" />

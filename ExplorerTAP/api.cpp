@@ -5,6 +5,7 @@
 #include <wil/resource.h>
 
 #include "constants.hpp"
+#include "crossilmarshal.hpp"
 #include "tapsite.hpp"
 #include "taskbarappearanceservice.hpp"
 #include "win32.hpp"
@@ -68,15 +69,27 @@ HRESULT InjectExplorerTAP(HWND window, REFIID riid, LPVOID* ppv) try
 		}
 	}
 
+	// Wait for the injection to complete. Note the ready event is not signalled
+	// immediately, so this is a real wait.
 	winrt::com_ptr<IUnknown> service;
-	HRESULT hr = GetActiveObject(CLSID_TaskbarAppearanceService, nullptr, service.put());
-	if (FAILED(hr)) [[unlikely]]
+	HRESULT hrRot = GetActiveObject(CLSID_TaskbarAppearanceService, nullptr, service.put());
+	if (FAILED(hrRot))
 	{
-		return hr;
+		// The ROT is integrity-level scoped: when TranslucentTB runs elevated and Explorer
+		// does not (or vice versa), the registered service is invisible here even though it
+		// is alive. Fall back to the shared-memory discovery channel.
+		if (auto fallback = CrossILMarshal::Retrieve(pid))
+		{
+			service = std::move(fallback);
+		}
+		else
+		{
+			return hrRot;
+		}
 	}
 
 	DWORD version = 0;
-	hr = service.as<IVersionedApi>()->GetVersion(&version);
+	const HRESULT hr = service.as<IVersionedApi>()->GetVersion(&version);
 	if (SUCCEEDED(hr))
 	{
 		if (version != TAP_API_VERSION)

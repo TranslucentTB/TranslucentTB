@@ -26,6 +26,24 @@ private:
 
 	wux::FrameworkElement FindParent(std::wstring_view name, wux::FrameworkElement element);
 
+	// Resolves an element to its XAML diagnostics instance handle. Handles are stable
+	// identifiers, unlike raw interface pointers which may refer to per-callback proxies.
+	InstanceHandle HandleOf(const wux::UIElement& element) noexcept
+	{
+		if (!element)
+		{
+			return 0;
+		}
+
+		InstanceHandle handle = 0;
+		if (FAILED(m_XamlDiagnostics->GetHandleFromIInspectable(static_cast<::IInspectable*>(winrt::get_abi(element)), &handle)))
+		{
+			return 0;
+		}
+
+		return handle;
+	}
+
 	template<typename T>
 	T FromHandle(InstanceHandle handle)
 	{
