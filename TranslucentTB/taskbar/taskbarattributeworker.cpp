@@ -1467,6 +1467,12 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 						Localization::ShowLocalizedMessageBox(IDS_RESTART_REQUIRED, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND, hinstance()).join();
 						ExitProcess(1);
 					}
+					else if (hr == HRESULT_FROM_WIN32(WAIT_TIMEOUT))
+					{
+						// Leave the worker alive for a later taskbar notification to reset its state.
+						MessagePrint(spdlog::level::warn, L"Explorer XAML Diagnostics initialization timed out. Waiting...");
+						return;
+					}
 					else
 					{
 						HresultVerify(hr, spdlog::level::critical, L"Failed to initialize XAML Diagnostics.");
