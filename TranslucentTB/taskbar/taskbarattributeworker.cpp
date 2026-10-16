@@ -1467,6 +1467,16 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 						Localization::ShowLocalizedMessageBox(IDS_RESTART_REQUIRED, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND, hinstance()).join();
 						ExitProcess(1);
 					}
+					else if (hr == HRESULT_FROM_WIN32(WAIT_TIMEOUT))
+					{
+						// The XAML taskbar wasn't ready yet when we hooked it - which happens when
+						// TranslucentTB starts before Explorer has finished setting up its taskbar
+						// (a cold boot is the common case). This is not fatal: ResetState runs again
+						// on taskbar refreshes, so leave the state dirty and let the next refresh
+						// retry the injection instead of killing the worker.
+						MessagePrint(spdlog::level::warn, L"Timed out waiting for the XAML taskbar to become ready; retrying on the next refresh.");
+						return;
+					}
 					else
 					{
 						HresultVerify(hr, spdlog::level::critical, L"Failed to initialize XAML Diagnostics.");
