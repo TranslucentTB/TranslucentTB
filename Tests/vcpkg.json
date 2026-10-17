@@ -3,6 +3,7 @@
   "dependencies": [
     "gtest",
     "rapidjson",
+    "spdlog",
     "wil"
   ]
 }

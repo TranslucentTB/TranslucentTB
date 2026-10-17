@@ -85,6 +85,7 @@
     <ClCompile Include="folderwatcher.cpp" />
     <ClCompile Include="mainappwindow.cpp" />
     <ClCompile Include="managers\startupmanager.cpp" />
+    <ClCompile Include="managers\virtualdesktopmanager.cpp" />
     <ClCompile Include="taskbar\taskbarattributeworker.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="tray\basecontextmenu.cpp" />
@@ -105,6 +106,7 @@
     <ClInclude Include="loadabledll.hpp" />
     <ClInclude Include="localization.hpp" />
     <ClInclude Include="managers\configmanager.hpp" />
+    <ClInclude Include="managers\virtualdesktopmanager.hpp" />
     <ClInclude Include="folderwatcher.hpp" />
     <ClInclude Include="mainappwindow.hpp" />
     <ClInclude Include="managers\startupmanager.hpp" />

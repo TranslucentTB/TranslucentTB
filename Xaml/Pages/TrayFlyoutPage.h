@@ -25,6 +25,9 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 		DECL_EVENT(TaskbarSettingsChangedDelegate, TaskbarSettingsChanged, m_TaskbarSettingsChangedDelegate);
 		DECL_EVENT(ColorRequestedDelegate, ColorRequested, m_ColorRequestedDelegate);
+		DECL_EVENT(DesktopColorRequestedDelegate, DesktopColorRequested, m_DesktopColorRequestedDelegate);
+		DECL_EVENT(DesktopColorClearedDelegate, DesktopColorCleared, m_DesktopColorClearedDelegate);
+		DECL_EVENT(DesktopColorsEnabledChangedDelegate, DesktopColorsEnabledChanged, m_DesktopColorsEnabledChangedDelegate);
 
 		DECL_EVENT(OpenLogFileRequestedDelegate, OpenLogFileRequested, m_OpenLogFileRequestedDelegate);
 		DECL_EVENT(LogLevelChangedDelegate, LogLevelChanged, m_LogLevelChangedDelegate);
@@ -44,6 +47,10 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void SetTaskbarType(const txmp::TaskbarType &type);
 		void SetLogLevel(const txmp::LogLevel &level);
 		void SetDisableSavingSettings(const bool &disabled);
+		void SetDesktopColorSettings(bool available, bool enabled, const guid &desktopId, const hstring &desktopName, bool assigned);
+		void DesktopColorClicked(const IInspectable &, const wux::RoutedEventArgs &);
+		void ClearDesktopColorClicked(const IInspectable &, const wux::RoutedEventArgs &);
+		void DesktopColorsEnabledClicked(const IInspectable &, const wux::RoutedEventArgs &);
 		void SetStartupState(const wf::IReference<Windows::ApplicationModel::StartupTaskState> &state);
 
 		DECL_PROPERTY_CHANGED_FUNCS(txmp::LogSinkState, SinkState, m_SinkState);
@@ -67,6 +74,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void ExitClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 
 	private:
+		guid m_DesktopId{};
 		static wuxc::MenuFlyoutSubItem GetContainingSubMenu(const wuxc::MenuFlyoutItemBase &item, const wuxc::MenuFlyoutSubItem &subItem);
 		wuxc::MenuFlyoutSubItem GetItemParent(const wuxc::MenuFlyoutItemBase &item);
 

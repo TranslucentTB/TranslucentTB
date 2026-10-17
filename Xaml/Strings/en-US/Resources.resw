@@ -301,4 +301,16 @@ Changes are automatically reloaded when you save the file</value>
   <data name="WelcomePage_Message_Suffix.Text" xml:space="preserve">
     <value>if you have any problem or want to see a feature added!</value>
   </data>
+  <data name="TrayFlyoutPage_DesktopColors.Text" xml:space="preserve">
+    <value>Virtual desktop colors</value>
+  </data>
+  <data name="TrayFlyoutPage_DesktopColorPicker.Text" xml:space="preserve">
+    <value>Set color for this desktop...</value>
+  </data>
+  <data name="TrayFlyoutPage_ClearDesktopColor.Text" xml:space="preserve">
+    <value>Clear color for this desktop</value>
+  </data>
+  <data name="DesktopColorsUnavailable" xml:space="preserve">
+    <value>Desktop detection unavailable</value>
+  </data>
 </root>

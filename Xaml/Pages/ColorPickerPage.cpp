@@ -12,13 +12,16 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	ColorPickerPage::ColorPickerPage(txmp::TaskbarState state, Windows::UI::Color originalColor) : m_State(state), m_OriginalColor(originalColor)
 	{ }
 
+	ColorPickerPage::ColorPickerPage(txmp::TaskbarState state, Windows::UI::Color originalColor, const hstring &context) : m_State(state), m_Context(context), m_OriginalColor(originalColor)
+	{ }
+
 	void ColorPickerPage::InitializeComponent()
 	{
 		ComponentConnectorT::InitializeComponent();
 
 		const auto resourceLoader = wam::Resources::ResourceLoader::GetForUIContext(UIContext());
 		Title(winrt::format(L"{} - {} - " APP_NAME,
-			resourceLoader.GetString(GetResourceForState(m_State)),
+			m_Context.empty() ? resourceLoader.GetString(GetResourceForState(m_State)) : m_Context,
 			resourceLoader.GetString(L"/TranslucentTB.Xaml/Resources/TrayFlyoutPage_AccentColor/Text")));
 	}
 

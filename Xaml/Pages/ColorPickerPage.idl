@@ -9,6 +9,7 @@ namespace TranslucentTB.Xaml.Pages
 	runtimeclass ColorPickerPage : FramelessPage
 	{
 		ColorPickerPage(TranslucentTB.Xaml.Models.Primitives.TaskbarState state, Windows.UI.Color originalColor);
+		ColorPickerPage(TranslucentTB.Xaml.Models.Primitives.TaskbarState state, Windows.UI.Color originalColor, String context);
 		event ColorChangedDelegate ColorChanged;
 		event ChangesCommittedDelegate ChangesCommitted;
 

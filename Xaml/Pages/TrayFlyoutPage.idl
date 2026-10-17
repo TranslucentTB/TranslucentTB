@@ -8,6 +8,9 @@ namespace TranslucentTB.Xaml.Pages
 {
 	delegate void TaskbarSettingsChangedDelegate(TranslucentTB.Xaml.Models.Primitives.TaskbarState state, TranslucentTB.Xaml.Models.Primitives.TaskbarAppearance appearance);
 	delegate void ColorRequestedDelegate(TranslucentTB.Xaml.Models.Primitives.TaskbarState state);
+	delegate void DesktopColorRequestedDelegate(Guid desktopId);
+	delegate void DesktopColorClearedDelegate(Guid desktopId);
+	delegate void DesktopColorsEnabledChangedDelegate(Boolean enabled);
 
 	delegate void OpenLogFileRequestedDelegate();
 	delegate void LogLevelChangedDelegate(TranslucentTB.Xaml.Models.Primitives.LogLevel level);
@@ -29,6 +32,9 @@ namespace TranslucentTB.Xaml.Pages
 
 		event TaskbarSettingsChangedDelegate TaskbarSettingsChanged;
 		event ColorRequestedDelegate ColorRequested;
+		event DesktopColorRequestedDelegate DesktopColorRequested;
+		event DesktopColorClearedDelegate DesktopColorCleared;
+		event DesktopColorsEnabledChangedDelegate DesktopColorsEnabledChanged;
 
 		event OpenLogFileRequestedDelegate OpenLogFileRequested;
 		event LogLevelChangedDelegate LogLevelChanged;
@@ -48,6 +54,7 @@ namespace TranslucentTB.Xaml.Pages
 		void SetTaskbarType(TranslucentTB.Xaml.Models.Primitives.TaskbarType type);
 		void SetLogLevel(TranslucentTB.Xaml.Models.Primitives.LogLevel level);
 		void SetDisableSavingSettings(Boolean disabled);
+		void SetDesktopColorSettings(Boolean available, Boolean enabled, Guid desktopId, String desktopName, Boolean assigned);
 		void SetStartupState(Windows.Foundation.IReference<Windows.ApplicationModel.StartupTaskState> state);
 
 		TranslucentTB.Xaml.Models.Primitives.LogSinkState SinkState;

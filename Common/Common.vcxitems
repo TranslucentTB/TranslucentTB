@@ -23,6 +23,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)undoc\winternl.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)util\color.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config\config.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)config\virtualdesktopcolors.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)undoc\virtualdesktop.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config\optionaltaskbarappearance.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config\rapidjsonhelper.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)config\taskbarappearance.hpp" />

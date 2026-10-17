@@ -16,6 +16,15 @@
     </ToolTipService.ToolTip>
     <Page.ContextFlyout>
         <MenuFlyout x:Name="ContextMenu" ShouldConstrainToRootBounds="False">
+            <MenuFlyoutSubItem x:Uid="TrayFlyoutPage_DesktopColors" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
+                <MenuFlyoutSubItem.Icon>
+                    <FontIcon Glyph="&#xE790;" />
+                </MenuFlyoutSubItem.Icon>
+                <ToggleMenuFlyoutItem x:Name="DesktopColorsEnabled" x:Uid="TrayFlyoutPage_Enabled" Style="{StaticResource MergeIconsToggleMenuFlyoutItem}" Click="DesktopColorsEnabledClicked" />
+                <MenuFlyoutItem x:Name="DesktopColorName" IsEnabled="False" />
+                <MenuFlyoutItem x:Name="DesktopColorPicker" x:Uid="TrayFlyoutPage_DesktopColorPicker" Click="DesktopColorClicked" />
+                <MenuFlyoutItem x:Name="ClearDesktopColor" x:Uid="TrayFlyoutPage_ClearDesktopColor" Click="ClearDesktopColorClicked" />
+            </MenuFlyoutSubItem>
             <MenuFlyoutSubItem x:Uid="TrayFlyoutPage_Desktop" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
                 <MenuFlyoutSubItem.Tag>
                     <primitives:TaskbarState>Desktop</primitives:TaskbarState>

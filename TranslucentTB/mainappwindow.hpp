@@ -28,9 +28,13 @@ private:
 
 	Util::thread_independent_mutex m_PickerMutex;
 	std::array<BaseXamlPageHost*, 7> m_ColorPickers{};
+	BaseXamlPageHost *m_DesktopColorPicker = nullptr;
 
 	page_t::TaskbarSettingsChanged_revoker m_TaskbarSettingsChangedRevoker;
 	page_t::ColorRequested_revoker m_ColorRequestedRevoker;
+	page_t::DesktopColorRequested_revoker m_DesktopColorRequestedRevoker;
+	page_t::DesktopColorCleared_revoker m_DesktopColorClearedRevoker;
+	page_t::DesktopColorsEnabledChanged_revoker m_DesktopColorsEnabledChangedRevoker;
 
 	page_t::OpenLogFileRequested_revoker m_OpenLogFileRequestedRevoker;
 	page_t::LogLevelChanged_revoker m_LogLevelChangedRevoker;
@@ -55,6 +59,9 @@ private:
 
 	void TaskbarSettingsChanged(const txmp::TaskbarState &state, const txmp::TaskbarAppearance &appearance);
 	void ColorRequested(const txmp::TaskbarState &state);
+	void DesktopColorRequested(const winrt::guid &desktopId);
+	void DesktopColorCleared(const winrt::guid &desktopId);
+	void DesktopColorsEnabledChanged(bool enabled);
 
 	void OpenLogFileRequested();
 	void LogLevelChanged(const txmp::LogLevel &level);

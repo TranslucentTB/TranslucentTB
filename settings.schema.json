@@ -102,6 +102,19 @@
     }
   },
   "properties": {
+    "virtual_desktop_colors": {
+      "description": "Assign a taskbar tint to each virtual desktop. Assigned colors override all appearance states; Normal uses Opaque.",
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "colors": {
+          "type": "object",
+          "propertyNames": { "pattern": "^\\{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\}$" },
+          "additionalProperties": { "type": "string", "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$" }
+        }
+      },
+      "additionalProperties": false
+    },
     "desktop_appearance": {
       "$ref": "#/$defs/TaskbarAppearance"
     },

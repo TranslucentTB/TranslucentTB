@@ -24,10 +24,35 @@ A lightweight (uses a few MB of RAM and almost no CPU) utility that makes the Wi
   - **Start opened**: Will change the taskbar appearance when the start menu is opened.
   - **Search opened**: Will change the taskbar appearance when the search menu (previously Cortana) is open.
   - **Task View opened**: Will change the taskbar apperance when the Task View (previously Timeline) is open.
+- **Virtual desktop colors** on supported Windows 11 builds: assign a taskbar color to each desktop through the tray menu. Colors follow desktop identity when desktops are renamed or reordered. See [Virtual desktop colors](#virtual-desktop-colors) for compatibility and appearance behavior.
 - On Windows 10, ability to **show or hide the Aero Peek button** depending on the currently active dynamic mode.
 - On Windows 11, ability to **show or hide the taskbar line** depending on the currently active dynamic mode.
 - Compatible with [RoundedTB](https://github.com/torchgm/RoundedTB)!
 - Compatible with [ExplorerPatcher](https://github.com/valinet/ExplorerPatcher)!
+
+## Virtual desktop colors
+
+Open **Virtual desktop colors > Set color for this desktop...** in the tray menu.
+The existing color picker previews the change live; accepting it saves the color
+and enables the feature. **Enabled** toggles the feature without discarding saved
+colors. **Clear color for this desktop** removes only the current assignment.
+
+An assigned color overrides the tint in every dynamic mode. Other appearance
+properties still apply. **Normal** uses **Opaque** while a desktop color is
+assigned, because Windows ignores custom colors in Normal mode. Unassigned
+desktops continue to use global appearance settings.
+
+Desktop assignments use GUIDs rather than names or positions. Renaming or
+reordering a desktop preserves its color. A newly created desktop gets global
+appearances; an old assignment is retained in the configuration and applies
+again only if Windows restores the same desktop identity.
+
+Detection uses undocumented shell interfaces and is restricted to Windows 11
+build 26100.2605 or later within the 26100 family, and build 26200. Other builds
+use global appearances. Runtime behavior has been verified on Windows 11
+26200.9457 x64; other supported builds and ARM64 need separate runtime validation.
+Future Windows updates can require an interface adapter update. If detection
+fails, global appearances apply while the app attempts to reconnect.
 
 ## Screenshots
 

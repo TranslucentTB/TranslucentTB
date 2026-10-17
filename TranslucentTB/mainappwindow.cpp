@@ -74,6 +74,11 @@ void MainAppWindow::RefreshMenu()
 	trayPage.SetTaskbarSettings(txmp::TaskbarState::SearchOpened, txmp::OptionalTaskbarAppearance(settings.SearchOpenedAppearance));
 	trayPage.SetTaskbarSettings(txmp::TaskbarState::TaskViewOpened, txmp::OptionalTaskbarAppearance(settings.TaskViewOpenedAppearance));
 	trayPage.SetTaskbarSettings(txmp::TaskbarState::BatterySaver, txmp::OptionalTaskbarAppearance(settings.BatterySaverAppearance));
+	const auto &desktop = m_App.GetWorker().CurrentDesktop();
+	trayPage.SetDesktopColorSettings(desktop.has_value(), settings.DesktopColors.Enabled,
+		desktop ? winrt::guid(desktop->Id) : winrt::guid{},
+		desktop ? winrt::hstring(desktop->Name) : winrt::hstring{},
+		desktop && settings.DesktopColors.Colors.contains(VirtualDesktopColors::Key(desktop->Id)));
 
 	if (const auto sink = Log::GetSink())
 	{
@@ -95,6 +100,9 @@ void MainAppWindow::RegisterMenuHandlers()
 	const auto &menu = page();
 	m_TaskbarSettingsChangedRevoker = menu.TaskbarSettingsChanged(winrt::auto_revoke, { this, &MainAppWindow::TaskbarSettingsChanged });
 	m_ColorRequestedRevoker = menu.ColorRequested(winrt::auto_revoke, { this, &MainAppWindow::ColorRequested });
+	m_DesktopColorRequestedRevoker = menu.DesktopColorRequested(winrt::auto_revoke, { this, &MainAppWindow::DesktopColorRequested });
+	m_DesktopColorClearedRevoker = menu.DesktopColorCleared(winrt::auto_revoke, { this, &MainAppWindow::DesktopColorCleared });
+	m_DesktopColorsEnabledChangedRevoker = menu.DesktopColorsEnabledChanged(winrt::auto_revoke, { this, &MainAppWindow::DesktopColorsEnabledChanged });
 
 	m_OpenLogFileRequestedRevoker = menu.OpenLogFileRequested(winrt::auto_revoke, { this, &MainAppWindow::OpenLogFileRequested });
 	m_LogLevelChangedRevoker = menu.LogLevelChanged(winrt::auto_revoke, { this, &MainAppWindow::LogLevelChanged });
@@ -191,6 +199,91 @@ void MainAppWindow::ColorRequested(const txmp::TaskbarState &state)
 	{
 		SetForegroundWindow(pickerHost->handle());
 	}
+}
+
+void MainAppWindow::DesktopColorsEnabledChanged(bool enabled)
+{
+	m_App.GetConfigManager().GetConfig().DesktopColors.Enabled = enabled;
+	m_App.GetWorker().ConfigurationChanged();
+	m_App.GetConfigManager().SaveConfig();
+}
+
+void MainAppWindow::DesktopColorCleared(const winrt::guid &desktopId)
+{
+	m_App.GetConfigManager().GetConfig().DesktopColors.Colors.erase(VirtualDesktopColors::Key(desktopId));
+	m_App.GetWorker().RemoveDesktopColorPreview();
+	m_App.GetConfigManager().SaveConfig();
+}
+
+void MainAppWindow::DesktopColorRequested(const winrt::guid &desktopId)
+{
+	std::unique_lock lock(m_PickerMutex);
+	if (m_DesktopColorPicker)
+	{
+		SetForegroundWindow(m_DesktopColorPicker->handle());
+		return;
+	}
+	std::wstring name;
+	for (const auto &desktop : m_App.GetWorker().Desktops())
+	{
+		if (IsEqualGUID(desktop.Id, desktopId))
+		{
+			name = desktop.Name;
+			break;
+		}
+	}
+	if (name.empty())
+	{
+		return; // the desktop may have been deleted since the menu opened
+	}
+
+	const auto &config = m_App.GetConfigManager().GetConfig();
+	Util::Color original = config.DesktopAppearance.Color;
+	original.A = 255;
+	if (const auto it = config.DesktopColors.Colors.find(VirtualDesktopColors::Key(desktopId)); it != config.DesktopColors.Colors.end())
+	{
+		original = it->second;
+	}
+
+	using winrt::TranslucentTB::Xaml::Pages::ColorPickerPage;
+	m_App.CreateXamlWindow<ColorPickerPage>(xaml_startup_position::mouse,
+		[this, desktopId, innerLock = std::move(lock)](const ColorPickerPage &picker, BaseXamlPageHost *host) mutable
+		{
+			m_DesktopColorPicker = host;
+			innerLock.unlock();
+			auto closed = picker.Closed(winrt::auto_revoke, [this]
+			{
+				m_App.DispatchToMainThread([this]
+				{
+					m_App.GetWorker().RemoveDesktopColorPreview();
+					std::scoped_lock guard(m_PickerMutex);
+					m_DesktopColorPicker = nullptr;
+				});
+			});
+			picker.ChangesCommitted([this, desktopId, revoker = std::move(closed)](const winrt::Windows::UI::Color &color) mutable
+			{
+				revoker.revoke();
+				m_App.DispatchToMainThread([this, desktopId, color]
+				{
+					// Resolve by ID on commit; never retain a reference into a config
+					// map that a file reload could replace while the picker is open.
+					auto &colors = m_App.GetConfigManager().GetConfig().DesktopColors;
+					colors.Colors.insert_or_assign(VirtualDesktopColors::Key(desktopId), Util::Color(color));
+					colors.Enabled = true;
+					m_App.GetWorker().RemoveDesktopColorPreview();
+					m_App.GetConfigManager().SaveConfig();
+					std::scoped_lock guard(m_PickerMutex);
+					m_DesktopColorPicker = nullptr;
+				});
+			});
+			picker.ColorChanged([this, desktopId](const winrt::Windows::UI::Color &color)
+			{
+				m_App.DispatchToMainThread([this, desktopId, color]
+				{
+					m_App.GetWorker().ApplyDesktopColorPreview(desktopId, Util::Color(color));
+				});
+			});
+		}, txmp::TaskbarState::Desktop, static_cast<winrt::Windows::UI::Color>(original), winrt::hstring(name));
 }
 
 void MainAppWindow::OpenLogFileRequested()

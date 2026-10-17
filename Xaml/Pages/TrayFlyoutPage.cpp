@@ -75,6 +75,44 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		}
 	}
 
+	void TrayFlyoutPage::SetDesktopColorSettings(bool available, bool enabled, const guid &desktopId, const hstring &desktopName, bool assigned)
+	{
+		m_DesktopId = desktopId;
+		DesktopColorsEnabled().IsChecked(enabled);
+		DesktopColorPicker().IsEnabled(available);
+		ClearDesktopColor().IsEnabled(available && assigned);
+		const auto loader = Windows::ApplicationModel::Resources::ResourceLoader::GetForUIContext(UIContext());
+		DesktopColorName().Text(available ? desktopName : loader.GetString(L"/TranslucentTB.Xaml/Resources/DesktopColorsUnavailable"));
+		if (available && enabled && assigned)
+		{
+			// State colors are retained for unassigned desktops, but editing them
+			// here would preview a color hidden by the active desktop override.
+			for (const auto item : ContextMenu().Items())
+			{
+				if (const auto submenu = item.try_as<wuxc::MenuFlyoutSubItem>(); submenu && submenu.Tag().try_as<txmp::TaskbarState>())
+				{
+					for (const auto child : submenu.Items())
+						if (child.Tag().try_as<hstring>() == L"Color") child.IsEnabled(false);
+				}
+			}
+		}
+	}
+
+	void TrayFlyoutPage::DesktopColorClicked(const IInspectable &, const wux::RoutedEventArgs &)
+	{
+		m_DesktopColorRequestedDelegate(m_DesktopId);
+	}
+
+	void TrayFlyoutPage::ClearDesktopColorClicked(const IInspectable &, const wux::RoutedEventArgs &)
+	{
+		m_DesktopColorClearedDelegate(m_DesktopId);
+	}
+
+	void TrayFlyoutPage::DesktopColorsEnabledClicked(const IInspectable &, const wux::RoutedEventArgs &)
+	{
+		m_DesktopColorsEnabledChangedDelegate(DesktopColorsEnabled().IsChecked());
+	}
+
 	void TrayFlyoutPage::SetTaskbarType(const txmp::TaskbarType &type)
 	{
 		for (const wuxc::MenuFlyoutItemBase item : ContextMenu().Items())

@@ -31,6 +31,7 @@
 #include "../ProgramLog/error/win32.hpp"
 #include "../loadabledll.hpp"
 #include "../managers/configmanager.hpp"
+#include "../managers/virtualdesktopmanager.hpp"
 
 enum class TaskbarType {
 	Unknown,
@@ -93,6 +94,10 @@ private:
 	std::unordered_map<HMONITOR, MonitorInfo> m_Taskbars;
 	std::unordered_set<Window> m_NormalTaskbars;
 	ConfigManager &m_ConfigManager;
+	VirtualDesktopManager m_DesktopManager;
+	static constexpr UINT DesktopChangedMessage = WM_APP + 0x120;
+	static constexpr UINT_PTR DesktopRetryTimer = 0x120;
+	std::optional<std::pair<GUID, Util::Color>> m_DesktopColorPreview;
 
 	// Hooks
 	member_thunk::page m_ThunkPage;
@@ -180,6 +185,15 @@ private:
 
 	// Config
 	TaskbarAppearance GetConfig(taskbar_iterator taskbar) const;
+	TaskbarAppearance GetStateConfig(taskbar_iterator taskbar) const;
+	TaskbarAppearance GetWindowConfig(taskbar_iterator taskbar) const;
+	std::optional<TaskbarAppearance> GetStartOrSearchConfig(taskbar_iterator taskbar) const;
+	TaskbarAppearance GetVisibleWindowConfig(taskbar_iterator taskbar) const;
+	TaskbarAppearance GetMaximisedWindowConfig(taskbar_iterator taskbar) const;
+	bool IsSearchOpenedOnMonitor(HMONITOR monitor) const;
+	bool IsStartOpenedOnMonitor(HMONITOR monitor) const;
+	void ConnectVirtualDesktops();
+	void OnVirtualDesktopChanged();
 
 	// Attribute
 	void ShowAeroPeekButton(const TaskbarInfo &taskbar, bool show);
@@ -266,6 +280,18 @@ private:
 	}
 
 public:
+	const std::optional<VirtualDesktopInfo> &CurrentDesktop() const noexcept { return m_DesktopManager.Current(); }
+	const std::vector<VirtualDesktopInfo> &Desktops() const noexcept { return m_DesktopManager.Desktops(); }
+	void ApplyDesktopColorPreview(const GUID &id, Util::Color color)
+	{
+		m_DesktopColorPreview = std::pair { id, color };
+		RefreshAllAttributes();
+	}
+	void RemoveDesktopColorPreview()
+	{
+		m_DesktopColorPreview.reset();
+		RefreshAllAttributes();
+	}
 	TaskbarAttributeWorker(ConfigManager &cfgManager, HINSTANCE hInstance, DynamicLoader &loader, const std::optional<std::filesystem::path> &storageFolder);
 
 	inline void ConfigurationChanged()

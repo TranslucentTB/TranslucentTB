@@ -320,7 +320,18 @@ LRESULT TaskbarAttributeWorker::OnRequestAttributeRefresh(LPARAM lParam)
 
 LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (uMsg == WM_SETTINGCHANGE)
+	if (uMsg == DesktopChangedMessage)
+	{
+		OnVirtualDesktopChanged();
+		return 0;
+	}
+	else if (uMsg == WM_TIMER && wParam == DesktopRetryTimer)
+	{
+		ConnectVirtualDesktops();
+		RefreshAllAttributes();
+		return 0;
+	}
+	else if (uMsg == WM_SETTINGCHANGE)
 	{
 		if (InSendMessage())
 		{
@@ -396,6 +407,48 @@ LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM 
 
 TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) const
 {
+	const auto appearance = GetStateConfig(taskbar);
+	if (const auto &desktop = m_DesktopManager.Current())
+	{
+		if (m_DesktopColorPreview && IsEqualGUID(m_DesktopColorPreview->first, desktop->Id))
+			return VirtualDesktopColors::Apply(appearance, m_DesktopColorPreview->second);
+		return VirtualDesktopColors::Apply(appearance, m_ConfigManager.GetConfig().DesktopColors.Find(desktop->Id));
+	}
+	return appearance;
+}
+
+void TaskbarAttributeWorker::ConnectVirtualDesktops()
+{
+	const HRESULT previousError = m_DesktopManager.LastError();
+	const HRESULT hr = m_DesktopManager.Connect(handle(), DesktopChangedMessage);
+	if (FAILED(hr) && hr != HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED))
+	{
+		if (hr != previousError)
+		{
+			HresultHandle(hr, spdlog::level::info, L"Virtual desktop detection unavailable; using global appearances");
+		}
+		SetTimer(handle(), DesktopRetryTimer, 5000, nullptr);
+	}
+	else
+	{
+		KillTimer(handle(), DesktopRetryTimer);
+	}
+}
+
+void TaskbarAttributeWorker::OnVirtualDesktopChanged()
+{
+	// CurrentDesktopChanged and DesktopSwitched can arrive together. Query the
+	// latest snapshot on our thread rather than retaining callback COM pointers.
+	if (FAILED(m_DesktopManager.Refresh()))
+	{
+		SetTimer(handle(), DesktopRetryTimer, 5000, nullptr);
+	}
+	else KillTimer(handle(), DesktopRetryTimer);
+	RefreshAllAttributes();
+}
+
+TaskbarAppearance TaskbarAttributeWorker::GetStateConfig(taskbar_iterator taskbar) const
+{
 	const auto& config = m_ConfigManager.GetConfig();
 
 	if (config.BatterySaverAppearance.Enabled && m_PowerSaver)
@@ -414,77 +467,115 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 		return WithPreview(txmp::TaskbarState::Desktop, config.DesktopAppearance);
 	}
 
-	// on windows 11, search is considered open when start is, so we need to check for start first.
-	bool startOpened;
-	if (m_IsWindows11 && (m_CurrentSearchMonitor != nullptr || m_CurrentFindInStartMonitor != nullptr))
+	if (const auto appearance = GetStartOrSearchConfig(taskbar))
 	{
-		// checking the search monitor is more reliable on windows 11 (if available)
-		// so check the start monitor to see if it's open and then use the search monitor
-		// to check *where* it's open.
-		startOpened = m_CurrentStartMonitor != nullptr && (m_CurrentSearchMonitor == taskbar->first || m_CurrentFindInStartMonitor == taskbar->first);
+		return *appearance;
 	}
-	else
+
+	return GetWindowConfig(taskbar);
+}
+
+TaskbarAppearance TaskbarAttributeWorker::GetWindowConfig(taskbar_iterator taskbar) const
+{
+	const auto &config = m_ConfigManager.GetConfig();
+
+	auto &maximisedWindows = taskbar->second.MaximisedWindows;
+	if (config.MaximisedWindowAppearance.Enabled && !maximisedWindows.empty())
 	{
-		startOpened = m_CurrentStartMonitor == taskbar->first;
+		return GetMaximisedWindowConfig(taskbar);
 	}
+
+	if (config.VisibleWindowAppearance.Enabled && (!maximisedWindows.empty() || !taskbar->second.NormalWindows.empty()))
+	{
+		return GetVisibleWindowConfig(taskbar);
+	}
+
+	return WithPreview(txmp::TaskbarState::Desktop, config.DesktopAppearance);
+}
+
+std::optional<TaskbarAppearance> TaskbarAttributeWorker::GetStartOrSearchConfig(taskbar_iterator taskbar) const
+{
+	const auto &config = m_ConfigManager.GetConfig();
+	const bool startOpened = IsStartOpenedOnMonitor(taskbar->first);
 
 	if (config.StartOpenedAppearance.Enabled && startOpened)
 	{
 		return WithPreview(txmp::TaskbarState::StartOpened, config.StartOpenedAppearance);
 	}
 
-	if (config.SearchOpenedAppearance.Enabled && !startOpened && (m_CurrentSearchMonitor == taskbar->first || m_CurrentFindInStartMonitor == taskbar->first))
+	if (config.SearchOpenedAppearance.Enabled && !startOpened && IsSearchOpenedOnMonitor(taskbar->first))
 	{
 		return WithPreview(txmp::TaskbarState::SearchOpened, config.SearchOpenedAppearance);
 	}
 
-	auto &maximisedWindows = taskbar->second.MaximisedWindows;
-	if (config.MaximisedWindowAppearance.Enabled && !maximisedWindows.empty())
+	return std::nullopt;
+}
+
+TaskbarAppearance TaskbarAttributeWorker::GetVisibleWindowConfig(taskbar_iterator taskbar) const
+{
+	const auto &config = m_ConfigManager.GetConfig();
+	const auto &maximisedWindows = taskbar->second.MaximisedWindows;
+
+	// if there is no maximized window, and the foreground window is on the current monitor
+	if (config.VisibleWindowAppearance.HasRules() && maximisedWindows.empty() && m_ForegroundWindow.monitor() == taskbar->first)
 	{
-		if (config.MaximisedWindowAppearance.HasRules())
+		// find a rule for the foreground window
+		if (const auto rule = config.VisibleWindowAppearance.FindRule(m_ForegroundWindow))
 		{
-			for (const Window wnd : Window::DesktopWindow().get_ordered_childrens())
+			// if it has a rule, use that rule
+			return *rule;
+		}
+	}
+
+	// otherwise use normal visible state
+	return WithPreview(txmp::TaskbarState::VisibleWindow, config.VisibleWindowAppearance);
+}
+
+TaskbarAppearance TaskbarAttributeWorker::GetMaximisedWindowConfig(taskbar_iterator taskbar) const
+{
+	const auto &config = m_ConfigManager.GetConfig();
+	const auto &maximisedWindows = taskbar->second.MaximisedWindows;
+
+	if (config.MaximisedWindowAppearance.HasRules())
+	{
+		for (const Window wnd : Window::DesktopWindow().get_ordered_childrens())
+		{
+			// find the highest maximized window in the z-order.
+			if (maximisedWindows.contains(wnd))
 			{
-				// find the highest maximized window in the z-order.
-				if (maximisedWindows.contains(wnd))
+				if (const auto rule = config.MaximisedWindowAppearance.FindRule(wnd))
 				{
-					if (const auto rule = config.MaximisedWindowAppearance.FindRule(wnd))
-					{
-						// if it has a rule, use that rule
-						return *rule;
-					}
-					else
-					{
-						// we only consider the highest z-order maximized window for rules
-						// so stop looking through the z-order
-						break;
-					}
+					// if it has a rule, use that rule
+					return *rule;
+				}
+				else
+				{
+					// we only consider the highest z-order maximized window for rules
+					// so stop looking through the z-order
+					break;
 				}
 			}
 		}
-
-		// otherwise, use the normal maximized state
-		return WithPreview(txmp::TaskbarState::MaximisedWindow, config.MaximisedWindowAppearance);
 	}
 
-	if (config.VisibleWindowAppearance.Enabled && (!maximisedWindows.empty() || !taskbar->second.NormalWindows.empty()))
+	// otherwise, use the normal maximized state
+	return WithPreview(txmp::TaskbarState::MaximisedWindow, config.MaximisedWindowAppearance);
+}
+
+bool TaskbarAttributeWorker::IsSearchOpenedOnMonitor(HMONITOR monitor) const
+{
+	return m_CurrentSearchMonitor == monitor || m_CurrentFindInStartMonitor == monitor;
+}
+
+bool TaskbarAttributeWorker::IsStartOpenedOnMonitor(HMONITOR monitor) const
+{
+	// On Windows 11, Start also opens Search. Search identifies its monitor more
+	// reliably when available, but Start still determines whether it is open.
+	if (m_IsWindows11 && (m_CurrentSearchMonitor != nullptr || m_CurrentFindInStartMonitor != nullptr))
 	{
-		// if there is no maximized window, and the foreground window is on the current monitor
-		if (config.VisibleWindowAppearance.HasRules() && maximisedWindows.empty() && m_ForegroundWindow.monitor() == taskbar->first)
-		{
-			// find a rule for the foreground window
-			if (const auto rule = config.VisibleWindowAppearance.FindRule(m_ForegroundWindow))
-			{
-				// if it has a rule, use that rule
-				return *rule;
-			}
-		}
-
-		// otherwise use normal visible state
-		return WithPreview(txmp::TaskbarState::VisibleWindow, config.VisibleWindowAppearance);
+		return m_CurrentStartMonitor != nullptr && IsSearchOpenedOnMonitor(monitor);
 	}
-
-	return WithPreview(txmp::TaskbarState::Desktop, config.DesktopAppearance);
+	return m_CurrentStartMonitor == monitor;
 }
 
 void TaskbarAttributeWorker::ShowAeroPeekButton(const TaskbarInfo &taskbar, bool show)
@@ -1507,6 +1598,7 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 
 		CreateSearchManager();
 		CreateTaskViewManager();
+		ConnectVirtualDesktops();
 
 		// This might race but it's not an issue because
 		// it'll race on a single thread and only ends up
@@ -1576,6 +1668,8 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 
 TaskbarAttributeWorker::~TaskbarAttributeWorker() noexcept(false)
 {
+	KillTimer(handle(), DesktopRetryTimer);
+	m_DesktopManager.Disconnect();
 	m_disableAttributeRefreshReply = true;
 	UnregisterTaskViewCallbacks();
 	UnregisterSearchCallbacks();
