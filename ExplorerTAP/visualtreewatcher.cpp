@@ -4,6 +4,38 @@
 #include <winrt/Windows.UI.Xaml.Hosting.h>
 #include "redefgetcurrenttime.h"
 
+namespace
+{
+	// Some taskbar builds put containers between the content of a
+	// DesktopWindowXamlSource and the Taskbar.TaskbarFrame, so comparing the
+	// frame's parent against the source content never matches. When that happens
+	// the frame is never registered, and every appearance change becomes a no-op
+	// that still returns S_OK.
+	// The owning source can then be identified by its island window instead: the
+	// taskbar's XAML island is parented to that monitor's Shell_TrayWnd.
+	bool IsTaskbarIslandWindow(HWND window) noexcept
+	{
+		if (!window)
+		{
+			return false;
+		}
+
+		const HWND parent = GetAncestor(window, GA_PARENT);
+		if (!parent)
+		{
+			return false;
+		}
+
+		wchar_t className[64];
+		if (!GetClassNameW(parent, className, ARRAYSIZE(className)))
+		{
+			return false;
+		}
+
+		return lstrcmpW(className, L"Shell_TrayWnd") == 0;
+	}
+}
+
 VisualTreeWatcher::VisualTreeWatcher(winrt::com_ptr<IUnknown> site, wil::unique_event_nothrow&& readyEvent) :
 	m_XamlDiagnostics(site.as<IXamlDiagnostics>()),
 	m_AppearanceService(winrt::make_self<TaskbarAppearanceService>()),
@@ -46,6 +78,10 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation relation, Visu
 			// we need RootGrid's pointer to find the right source based on its contents.
 			const auto rootGrid = FromHandle<wux::UIElement>(relation.Parent);
 
+			InstanceHandle matchedHandle = 0;
+			HWND matchedWindow = nullptr;
+			bool matched = false;
+
 			for (auto it = m_NonMatchingXamlSources.begin(); it != m_NonMatchingXamlSources.end(); ++it)
 			{
 				const auto xamlSource = FromHandle<wuxh::DesktopWindowXamlSource>(*it);
@@ -66,11 +102,42 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation relation, Visu
 					HWND hwnd = nullptr;
 					winrt::check_hresult(nativeSource->get_WindowHandle(&hwnd));
 
-					m_AppearanceService->RegisterTaskbar(element.Handle, hwnd);
-					m_NonMatchingXamlSources.erase(it);
-
+					matchedHandle = *it;
+					matchedWindow = hwnd;
+					matched = true;
 					break;
 				}
+			}
+
+			// Fallback for taskbar builds where the content comparison above
+			// never matches, which would otherwise leave the frame unregistered.
+			if (!matched)
+			{
+				for (auto it = m_NonMatchingXamlSources.begin(); it != m_NonMatchingXamlSources.end(); ++it)
+				{
+					const auto xamlSource = FromHandle<wuxh::DesktopWindowXamlSource>(*it);
+					const auto nativeSource = xamlSource.as<IDesktopWindowXamlSourceNative>();
+
+					HWND hwnd = nullptr;
+					if (FAILED(nativeSource->get_WindowHandle(&hwnd)))
+					{
+						continue;
+					}
+
+					if (IsTaskbarIslandWindow(hwnd))
+					{
+						matchedHandle = *it;
+						matchedWindow = hwnd;
+						matched = true;
+						break;
+					}
+				}
+			}
+
+			if (matched)
+			{
+				m_AppearanceService->RegisterTaskbar(element.Handle, matchedWindow);
+				m_NonMatchingXamlSources.erase(matchedHandle);
 			}
 		}
 		else if (type_view == winrt::name_of<wux::Shapes::Rectangle>())
