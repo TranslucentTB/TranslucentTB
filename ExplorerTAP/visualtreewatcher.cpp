@@ -42,35 +42,26 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation relation, Visu
 		}
 		else if (type_view == L"Taskbar.TaskbarFrame")
 		{
-			// assume it goes DesktopWindowXamlSource -> RootGrid -> TaskbarFrame.
-			// we need RootGrid's pointer to find the right source based on its contents.
-			const auto rootGrid = FromHandle<wux::UIElement>(relation.Parent);
+			// On build 29695+ the taskbar nests the frame deeper:
+			//   DesktopWindowXamlSource -> PopupRoot -> RootScrollViewer -> ... -> Border -> TaskbarFrame
+			// Do not rely on "source content == frame's parent" anymore; match by XamlRoot instead.
+			InstanceHandle matchedSource = FindSourceForFrame(FromHandle<wux::FrameworkElement>(element.Handle));
 
-			for (auto it = m_NonMatchingXamlSources.begin(); it != m_NonMatchingXamlSources.end(); ++it)
+			// fallback: XamlRoot comparison inconclusive -> use the first pending source
+			if (!matchedSource && !m_NonMatchingXamlSources.empty())
 			{
-				const auto xamlSource = FromHandle<wuxh::DesktopWindowXamlSource>(*it);
-				wux::UIElement content = nullptr;
-				try
-				{
-					content = xamlSource.Content();
-				}
-				catch (const winrt::hresult_wrong_thread&)
-				{
-					continue;
-				}
+				matchedSource = *m_NonMatchingXamlSources.begin();
+			}
 
-				if (content == rootGrid)
-				{
-					const auto nativeSource = xamlSource.as<IDesktopWindowXamlSourceNative>();
+			if (matchedSource)
+			{
+				const auto nativeSource = FromHandle<wuxh::DesktopWindowXamlSource>(matchedSource).as<IDesktopWindowXamlSourceNative>();
 
-					HWND hwnd = nullptr;
-					winrt::check_hresult(nativeSource->get_WindowHandle(&hwnd));
+				HWND hwnd = nullptr;
+				winrt::check_hresult(nativeSource->get_WindowHandle(&hwnd));
 
-					m_AppearanceService->RegisterTaskbar(element.Handle, hwnd);
-					m_NonMatchingXamlSources.erase(it);
-
-					break;
-				}
+				m_AppearanceService->RegisterTaskbar(element.Handle, hwnd);
+				m_NonMatchingXamlSources.erase(matchedSource);
 			}
 		}
 		else if (type_view == winrt::name_of<wux::Shapes::Rectangle>())
@@ -117,6 +108,43 @@ catch (...)
 HRESULT VisualTreeWatcher::OnElementStateChanged(InstanceHandle, VisualElementState, LPCWSTR) noexcept
 {
 	return S_OK;
+}
+
+InstanceHandle VisualTreeWatcher::FindSourceForFrame(const wux::FrameworkElement& frame)
+{
+	wux::XamlRoot frameRoot = nullptr;
+	try
+	{
+		frameRoot = frame.XamlRoot();
+	}
+	catch (...)
+	{
+		return 0;
+	}
+
+	if (!frameRoot)
+	{
+		return 0;
+	}
+
+	for (const auto handle : m_NonMatchingXamlSources)
+	{
+		try
+		{
+			const auto content = FromHandle<wuxh::DesktopWindowXamlSource>(handle).Content();
+			const auto contentElement = content.try_as<wux::FrameworkElement>();
+			if (contentElement && contentElement.XamlRoot() == frameRoot)
+			{
+				return handle;
+			}
+		}
+		catch (...)
+		{
+			// the source may live on another thread; skip it
+		}
+	}
+
+	return 0;
 }
 
 wux::FrameworkElement VisualTreeWatcher::FindParent(std::wstring_view name, wux::FrameworkElement element)
