@@ -42,9 +42,8 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation relation, Visu
 		}
 		else if (type_view == L"Taskbar.TaskbarFrame")
 		{
-			// assume it goes DesktopWindowXamlSource -> RootGrid -> TaskbarFrame.
-			// we need RootGrid's pointer to find the right source based on its contents.
-			const auto rootGrid = FromHandle<wux::UIElement>(relation.Parent);
+			// we found a taskbar. match it up to the xaml source.
+			const auto rootContent = FromHandle<wux::UIElement>(element.Handle).XamlRoot().Content();
 
 			for (auto it = m_NonMatchingXamlSources.begin(); it != m_NonMatchingXamlSources.end(); ++it)
 			{
@@ -59,7 +58,7 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation relation, Visu
 					continue;
 				}
 
-				if (content == rootGrid)
+				if (content == rootContent)
 				{
 					const auto nativeSource = xamlSource.as<IDesktopWindowXamlSourceNative>();
 
