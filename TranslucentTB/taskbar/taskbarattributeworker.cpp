@@ -289,14 +289,23 @@ LRESULT TaskbarAttributeWorker::OnSystemSettingsChange(UINT uiAction)
 	return 0;
 }
 
-LRESULT TaskbarAttributeWorker::OnPowerBroadcast(const POWERBROADCAST_SETTING *settings)
+LRESULT TaskbarAttributeWorker::OnPowerBroadcast(const POWERBROADCAST_SETTING* settings)
 {
-	if (settings && settings->PowerSetting == GUID_POWER_SAVING_STATUS && settings->DataLength == sizeof(DWORD))
+	if (settings && settings->DataLength == sizeof(DWORD))
 	{
-		m_PowerSaver = *reinterpret_cast<const DWORD *>(&settings->Data);
-		RefreshAllAttributes();
+		const DWORD value = *reinterpret_cast<const DWORD*>(&settings->Data);
+		if (settings->PowerSetting == GUID_POWER_SAVING_STATUS)
+		{
+			m_PowerSaver = (value != 0);
+			RefreshAllAttributes();
+		}
+		else if (settings->PowerSetting == GUID_ENERGY_SAVER_STATUS)
+		{
+			// ENERGY_SAVER_STATUS: 0 = off, 1 = standard, 2 = high savings
+			m_PowerSaver = (value != 0);
+			RefreshAllAttributes();
+		}
 	}
-
 	return TRUE;
 }
 
@@ -1271,6 +1280,11 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(ConfigManager &cfgManager, HINSTA
 	m_ThunkPage.mark_executable();
 
 	m_PowerSaverHook.reset(RegisterPowerSettingNotification(m_WindowHandle, &GUID_POWER_SAVING_STATUS, DEVICE_NOTIFY_WINDOW_HANDLE));
+	m_EnergySaverHook.reset(RegisterPowerSettingNotification(m_WindowHandle, &GUID_ENERGY_SAVER_STATUS, DEVICE_NOTIFY_WINDOW_HANDLE));
+	if (!m_EnergySaverHook)
+	{
+		LastErrorHandle(spdlog::level::warn, L"Failed to create energy saver notification handle");
+	}
 	if (!m_PowerSaverHook)
 	{
 		LastErrorHandle(spdlog::level::warn, L"Failed to create battery saver notification handle");
