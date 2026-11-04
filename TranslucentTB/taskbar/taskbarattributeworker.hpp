@@ -80,6 +80,7 @@ private:
 
 	// State
 	bool m_PowerSaver;
+	bool m_EnergySaver;
 	bool m_TaskViewActive;
 	bool m_PeekActive;
 	bool m_disableAttributeRefreshReply;
