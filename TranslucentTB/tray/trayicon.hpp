@@ -43,10 +43,10 @@ protected:
 
 	std::optional<RECT> GetTrayRect();
 
-public:
 	TrayIcon(const GUID &iconId, const wchar_t *whiteIconResource,
 		const wchar_t *darkIconResource, PFN_SHOULD_SYSTEM_USE_DARK_MODE ssudm);
 
+public:
 	void Show();
 	void Hide();
 

@@ -50,10 +50,10 @@ FolderWatcher::FolderWatcher(const std::filesystem::path &path, bool recursive, 
 	m_Overlapped {
 		.hEvent = context // not used for ReadDirectoryChanges so we can stash the user context pointer in it.
 	},
+	m_BufferSize(),
 	m_Recursive(recursive),
 	m_Filter(filter),
-	m_Callback(callback),
-	m_BufferSize()
+	m_Callback(callback)
 {
 	m_FolderHandle.reset(CreateFile(
 		path.c_str(), FILE_LIST_DIRECTORY,

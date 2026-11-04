@@ -11,7 +11,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 {
 	struct TrayFlyoutPage : TrayFlyoutPageT<TrayFlyoutPage>, PropertyChangedBase
 	{
-		TrayFlyoutPage(bool hasPackageIdentity);
+		explicit TrayFlyoutPage(bool hasPackageIdentity);
 
 		bool HasPackageIdentity() noexcept
 		{

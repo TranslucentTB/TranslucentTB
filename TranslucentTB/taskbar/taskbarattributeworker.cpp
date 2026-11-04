@@ -23,7 +23,7 @@ private:
 	bool m_Armed;
 
 public:
-	AttributeRefresher(TaskbarAttributeWorker &worker, bool refresh = true) noexcept :
+	explicit AttributeRefresher(TaskbarAttributeWorker &worker, bool refresh = true) noexcept :
 		m_Worker(worker), m_Armed(refresh) { }
 
 	AttributeRefresher(const AttributeRefresher &) = delete;
@@ -1239,10 +1239,10 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(ConfigManager &cfgManager, HINSTA
 	m_disableAttributeRefreshReply(false),
 	m_ResettingState(false),
 	m_ResetStateReentered(false),
-	m_TaskbarType(TaskbarType::Unknown),
 	m_CurrentStartMonitor(nullptr),
 	m_CurrentSearchMonitor(nullptr),
 	m_CurrentFindInStartMonitor(nullptr),
+	m_TaskbarType(TaskbarType::Unknown),
 	m_ConfigManager(cfgManager),
 	m_ThunkPage(member_thunk::allocate_page()),
 	m_PeekUnpeekHook(CreateHook(EVENT_SYSTEM_PEEKSTART, EVENT_SYSTEM_PEEKEND, CreateThunk(&TaskbarAttributeWorker::OnAeroPeekEnterExit))),
@@ -1459,7 +1459,7 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 					if (m_LastExplorerPid != 0 && pid != m_LastExplorerPid)
 					{
 						const auto now = std::chrono::steady_clock::now();
-						if (now < m_LastExplorerRestart + std::chrono::seconds(30)) [[unlikely]]
+						if (!m_ConfigManager.GetConfig().DisableExplorerCrashDetection.value_or(false) && now < m_LastExplorerRestart + std::chrono::seconds(30))
 						{
 							Localization::ShowLocalizedMessageBox(IDS_EXPLORER_RESTARTED_TOO_MUCH, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND, hinstance()).join();
 							ExitProcess(1);

@@ -40,5 +40,5 @@ private:
 	}
 
 public:
-	MultitaskingViewVisibilitySink(UINT changeMessage) noexcept : m_ChangeMessage(changeMessage) { }
+	explicit MultitaskingViewVisibilitySink(UINT changeMessage) noexcept : m_ChangeMessage(changeMessage) { }
 };

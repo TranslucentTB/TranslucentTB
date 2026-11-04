@@ -53,6 +53,7 @@ public:
 	std::wstring Language;
 	std::optional<bool> UseXamlContextMenu;
 	std::optional<bool> CopyDlls;
+	std::optional<bool> DisableExplorerCrashDetection;
 
 	template<class Writer>
 	inline void Serialize(Writer &writer) const
@@ -74,6 +75,7 @@ public:
 		}
 		rjh::Serialize(writer, UseXamlContextMenu, USE_XAML_CONTEXT_MENU_KEY);
 		rjh::Serialize(writer, CopyDlls, COPY_DLLS_KEY);
+		rjh::Serialize(writer, DisableExplorerCrashDetection, DISABLE_EXPLORER_CRASH_DETECTION_KEY);
 	}
 
 	inline void Deserialize(const rjh::value_t &obj, void (*unknownKeyCallback)(std::wstring_view) = nullptr)
@@ -153,6 +155,10 @@ public:
 			{
 				rjh::Deserialize(it->value, CopyDlls, key);
 			}
+			else if (key == DISABLE_EXPLORER_CRASH_DETECTION_KEY)
+			{
+				rjh::Deserialize(it->value, DisableExplorerCrashDetection, key);
+			}
 			else if (unknownKeyCallback)
 			{
 				unknownKeyCallback(key);
@@ -185,4 +191,5 @@ private:
 	static constexpr std::wstring_view LANGUAGE_KEY = L"language";
 	static constexpr std::wstring_view USE_XAML_CONTEXT_MENU_KEY = L"use_xaml_context_menu";
 	static constexpr std::wstring_view COPY_DLLS_KEY = L"copy_dlls";
+	static constexpr std::wstring_view DISABLE_EXPLORER_CRASH_DETECTION_KEY = L"disable_explorer_crash_detection";
 };

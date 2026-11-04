@@ -22,7 +22,7 @@ public:
 	XamlThreadPool(const XamlThreadPool &) = delete;
 	XamlThreadPool &operator =(const XamlThreadPool &) = delete;
 
-	inline XamlThreadPool(HINSTANCE hInst) :
+	inline explicit XamlThreadPool(HINSTANCE hInst) :
 		m_WndClass(MessageWindow::MakeWindowClass(L"XamlPageHost", hInst)),
 		m_DragRegionClass(MessageWindow::MakeWindowClass(L"XamlDragRegion", hInst))
 	{ }

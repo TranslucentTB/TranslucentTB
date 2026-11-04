@@ -41,7 +41,7 @@ bool Localization::SetProcessLangOverride(std::wstring_view langOverride)
 	// set for WinRT resources
 	try
 	{
-		winrt::Windows::ApplicationModel::Resources::Core::ResourceContext::SetGlobalQualifierValue(L"Language", langOverride);
+		wam::Resources::Core::ResourceContext::SetGlobalQualifierValue(L"Language", langOverride);
 	}
 	catch (const winrt::hresult_error& err)
 	{

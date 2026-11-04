@@ -149,40 +149,33 @@ void BaseContextMenu::CleanupClassicContextMenu()
 
 bool BaseContextMenu::ShouldUseXamlMenu()
 {
-	if (!m_UseXamlMenu)
+	static const bool xamlMenuWorks = []
 	{
-		static const bool xamlMenuWorks = []
+		if (win32::IsAtLeastBuild(19045))
 		{
-			if (win32::IsAtLeastBuild(19045))
+			// Windows 10 22H2 and up (including Windows 11) - always works
+			return true;
+		}
+		else if (win32::IsAtLeastBuild(19041))
+		{
+			// Windows 10 21H2, 21H1, 20H2, 2004 - requires KB5007253 (which is revision number 1387 on all of those)
+			if (const auto [version, hr] = win32::GetWindowsBuild(); SUCCEEDED(hr))
 			{
-				// Windows 10 22H2 and up (including Windows 11) - always works
-				return true;
-			}
-			else if (win32::IsAtLeastBuild(19041))
-			{
-				// Windows 10 21H2, 21H1, 20H2, 2004 - requires KB5007253 (which is revision number 1387 on all of those)
-				if (const auto [version, hr] = win32::GetWindowsBuild(); SUCCEEDED(hr))
-				{
-					return version.Revision >= 1387;
-				}
-				else
-				{
-					return false;
-				}
+				return version.Revision >= 1387;
 			}
 			else
 			{
-				// older than 2004 - always broken
 				return false;
 			}
-		}();
+		}
+		else
+		{
+			// older than 2004 - always broken
+			return false;
+		}
+	}();
 
-		return xamlMenuWorks;
-	}
-	else
-	{
-		return *m_UseXamlMenu;
-	}
+	return m_UseXamlMenu.value_or(xamlMenuWorks);
 }
 
 void BaseContextMenu::ShowClassicContextMenu(const wuxc::MenuFlyout &flyout, POINT pt)

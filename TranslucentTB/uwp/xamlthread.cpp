@@ -103,8 +103,8 @@ winrt::fire_and_forget XamlThread::ThreadDeinit()
 }
 
 XamlThread::XamlThread() :
-	m_Dispatcher(nullptr),
-	m_Manager(nullptr)
+	m_Manager(nullptr),
+	m_Dispatcher(nullptr)
 {
 	m_Thread.reset(CreateThread(nullptr, 0, XamlThread::ThreadProc, this, 0, nullptr));
 	if (!m_Thread)

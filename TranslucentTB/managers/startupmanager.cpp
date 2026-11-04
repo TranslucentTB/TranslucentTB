@@ -10,12 +10,12 @@ winrt::fire_and_forget StartupManager::AcquireTask() try
 {
 	if (!m_StartupTask)
 	{
-		m_StartupTask = co_await winrt::Windows::ApplicationModel::StartupTask::GetAsync(L"TranslucentTB");
+		m_StartupTask = co_await wam::StartupTask::GetAsync(L"TranslucentTB");
 	}
 }
 HresultErrorCatch(spdlog::level::err, L"Failed to load startup task.");
 
-std::optional<winrt::Windows::ApplicationModel::StartupTaskState> StartupManager::GetState() const try
+std::optional<wam::StartupTaskState> StartupManager::GetState() const try
 {
 	return m_StartupTask ? std::optional(m_StartupTask.State()) : std::nullopt;
 }
@@ -27,7 +27,7 @@ wf::IAsyncAction StartupManager::Enable() try
 	{
 		const auto result = co_await m_StartupTask.RequestEnableAsync();
 
-		using enum winrt::Windows::ApplicationModel::StartupTaskState;
+		using enum wam::StartupTaskState;
 		if (result != Enabled && result != EnabledByPolicy)
 		{
 			Localization::ShowLocalizedMessageBox(IDS_STARTUPTASK_BROKEN, MB_OK | MB_ICONWARNING | MB_SETFOREGROUND).detach();
