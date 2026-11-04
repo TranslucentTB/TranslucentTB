@@ -56,7 +56,7 @@
     <SignToolTimestampServer Condition="'$(CertificateTimestampServer)'==''"></SignToolTimestampServer>
 
     <SignToolSignatureMethod Condition="'$(CertificateThumbprint)'!=''">/sha1 $(CertificateThumbprint)</SignToolSignatureMethod>
-    <SignToolSignatureMethod Condition="'$(TrustedSigningMetadata)'!=''">/dlib "$(TrustedSigningDlibBinFolder)\$(SignToolArchitecture)\Azure.CodeSigning.Dlib.dll" /dmdf "$(TrustedSigningMetadata)"</SignToolSignatureMethod>
+    <SignToolSignatureMethod Condition="'$(ArtifactSigningMetadata)'!=''">/dlib "$(ArtifactSigningDlibBinFolder)\$(SignToolArchitecture)\Azure.CodeSigning.Dlib.dll" /dmdf "$(ArtifactSigningMetadata)"</SignToolSignatureMethod>
 
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
     <VcpkgTriplet>$(Platform.ToLowerInvariant())-windows</VcpkgTriplet>
@@ -129,13 +129,13 @@
     </ClCompile>
   </ItemDefinitionGroup>
 
-  <ItemDefinitionGroup Condition="'$(SkipSigning)'!='True' And ('$(CertificateThumbprint)'!='' Or '$(TrustedSigningMetadata)'!='')">
+  <ItemDefinitionGroup Condition="'$(SkipSigning)'!='True' And ('$(CertificateThumbprint)'!='' Or '$(ArtifactSigningMetadata)'!='')">
     <ClCompile>
       <PreprocessorDefinitions>SIGNED_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalOptions>/ALLOWBIND:NO %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(TrustedSigningMetadata)'!=''">/INTEGRITYCHECK %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(ArtifactSigningMetadata)'!=''">/INTEGRITYCHECK %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <CustomBuildStep>
       <Command>"$(WindowsSDKBuildToolsBinVersionedArchFolder)\signtool.exe" sign /ph $(SignToolTimestampServer) /fd $(SignToolDigestAlgorithm) $(SignToolSignatureMethod) "$(TargetPath)" > "$(OutDir)sign\$(ProjectName)-sign.out"</Command>

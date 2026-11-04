@@ -40,14 +40,14 @@ steps:
     includeNuGetOrg: ${{ parameters.includeNuGetOrg }}
 - ${{ if eq(or(parameters.signBuild, parameters.signMsix), true) }}:
   - task: DownloadSecureFile@1
-    name: trustedSigningMetadata
-    displayName: 'Download Trusted Signing metadata'
+    name: artifactSigningMetadata
+    displayName: 'Download Artifact Signing metadata'
     inputs:
       secureFile: metadata.json
   - task: AzureCLI@2
     displayName: Get Azure Credentials
     inputs:
-      azureSubscription: Trusted Signing
+      azureSubscription: Artifact Signing
       scriptType: pscore
       scriptLocation: inlineScript
       addSpnToEnvironment: true
@@ -64,12 +64,12 @@ steps:
     platform: ${{ parameters.platform }}
     solution: $(Build.SourcesDirectory)/TranslucentTB.slnx
     ${{ if eq(parameters.signBuild, true) }}:
-      msbuildArgs: /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:TrustedSigningMetadata="$(trustedSigningMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256 /p:BuildType=${{ parameters.buildType }}
+      msbuildArgs: /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:ArtifactSigningMetadata="$(artifactSigningMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256 /p:BuildType=${{ parameters.buildType }}
     ${{ else }}:
       msbuildArgs: /p:BuildType=${{ parameters.buildType }}
 - ${{ if eq(parameters.signMsix, true) }}:
   # TODO: use WAPPROJ built-in support once it no longer hangs.
-  - powershell: $(Build.SourcesDirectory)/.azp/scripts/sign-msix.ps1 -Platform "${{ parameters.platform }}" -Configuration "${{ parameters.configuration }}" -TrustedSigningMetadata "$(trustedSigningMetadata.secureFilePath)" -DigestAlgorithm sha256 -TimestampServer "http://timestamp.acs.microsoft.com"
+  - powershell: $(Build.SourcesDirectory)/.azp/scripts/sign-msix.ps1 -Platform "${{ parameters.platform }}" -Configuration "${{ parameters.configuration }}" -ArtifactSigningMetadata "$(artifactSigningMetadata.secureFilePath)" -DigestAlgorithm sha256 -TimestampServer "http://timestamp.acs.microsoft.com"
     displayName: Sign MSIX package
 - ${{ if eq(or(parameters.signBuild, parameters.signMsix), true) }}:
   - script: az account clear
