@@ -39,6 +39,7 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation relation, Visu
 			// without containing anything initially. save the source to a set
 			// of handles so we can later match it against the added TaskbarFrame.
 			m_NonMatchingXamlSources.insert(element.Handle);
+			m_AppearanceService->RegisterXamlSource(FromHandle<wuxh::DesktopWindowXamlSource>(element.Handle));
 		}
 		else if (type_view == L"Taskbar.TaskbarFrame")
 		{
@@ -65,12 +66,16 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation relation, Visu
 					HWND hwnd = nullptr;
 					winrt::check_hresult(nativeSource->get_WindowHandle(&hwnd));
 
-					m_AppearanceService->RegisterTaskbar(element.Handle, hwnd);
+					m_AppearanceService->RegisterTaskbar(element.Handle, hwnd, rootGrid.try_as<wux::FrameworkElement>());
 					m_NonMatchingXamlSources.erase(it);
 
 					break;
 				}
 			}
+		}
+		else if (type_view == winrt::name_of<wuxc::TextBlock>())
+		{
+			m_AppearanceService->RegisterTextBlock(FromHandle<wuxc::TextBlock>(element.Handle));
 		}
 		else if (type_view == winrt::name_of<wux::Shapes::Rectangle>())
 		{

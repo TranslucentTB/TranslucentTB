@@ -301,4 +301,22 @@ Changes are automatically reloaded when you save the file</value>
   <data name="WelcomePage_Message_Suffix.Text" xml:space="preserve">
     <value>if you have any problem or want to see a feature added!</value>
   </data>
+  <data name="TrayFlyoutPage_TextColor.Text" xml:space="preserve">
+    <value>Text color</value>
+  </data>
+  <data name="TrayFlyoutPage_TextColor_Default.Text" xml:space="preserve">
+    <value>System default</value>
+  </data>
+  <data name="TrayFlyoutPage_TextColor_White.Text" xml:space="preserve">
+    <value>White</value>
+  </data>
+  <data name="TrayFlyoutPage_TextColor_Black.Text" xml:space="preserve">
+    <value>Black</value>
+  </data>
+  <data name="TrayFlyoutPage_TextColor_Custom.Text" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="TrayFlyoutPage_TextColor_Pick.Text" xml:space="preserve">
+    <value>Pick a color...</value>
+  </data>
 </root>

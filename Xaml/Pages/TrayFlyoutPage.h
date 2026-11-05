@@ -25,6 +25,8 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 		DECL_EVENT(TaskbarSettingsChangedDelegate, TaskbarSettingsChanged, m_TaskbarSettingsChangedDelegate);
 		DECL_EVENT(ColorRequestedDelegate, ColorRequested, m_ColorRequestedDelegate);
+		DECL_EVENT(TextColorChangedDelegate, TextColorChanged, m_TextColorChangedDelegate);
+		DECL_EVENT(TextColorRequestedDelegate, TextColorRequested, m_TextColorRequestedDelegate);
 
 		DECL_EVENT(OpenLogFileRequestedDelegate, OpenLogFileRequested, m_OpenLogFileRequestedDelegate);
 		DECL_EVENT(LogLevelChangedDelegate, LogLevelChanged, m_LogLevelChangedDelegate);
@@ -43,6 +45,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		void SetTaskbarSettings(const txmp::TaskbarState &state, const txmp::TaskbarAppearance &appearance);
 		void SetTaskbarType(const txmp::TaskbarType &type);
 		void SetLogLevel(const txmp::LogLevel &level);
+		void SetTextColor(const hstring &color);
 		void SetDisableSavingSettings(const bool &disabled);
 		void SetStartupState(const wf::IReference<Windows::ApplicationModel::StartupTaskState> &state);
 
@@ -54,6 +57,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 		void OpenLogFileClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void LogLevelClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
+		void TextColorClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void DumpDynamicStateClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void EditSettingsClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);
 		void ResetSettingsClicked(const IInspectable &sender, const wux::RoutedEventArgs &args);

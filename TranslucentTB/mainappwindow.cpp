@@ -85,6 +85,8 @@ void MainAppWindow::RefreshMenu()
 		trayPage.SinkState(txmp::LogSinkState::Failed);
 	}
 
+	trayPage.SetTextColor(settings.TextColor.empty() ? winrt::hstring(L"default") : winrt::hstring(settings.TextColor));
+
 	trayPage.SetDisableSavingSettings(settings.DisableSaving);
 
 	trayPage.SetStartupState(m_App.GetStartupManager().GetState());
@@ -95,6 +97,8 @@ void MainAppWindow::RegisterMenuHandlers()
 	const auto &menu = page();
 	m_TaskbarSettingsChangedRevoker = menu.TaskbarSettingsChanged(winrt::auto_revoke, { this, &MainAppWindow::TaskbarSettingsChanged });
 	m_ColorRequestedRevoker = menu.ColorRequested(winrt::auto_revoke, { this, &MainAppWindow::ColorRequested });
+	m_TextColorChangedRevoker = menu.TextColorChanged(winrt::auto_revoke, { this, &MainAppWindow::TextColorChanged });
+	m_TextColorRequestedRevoker = menu.TextColorRequested(winrt::auto_revoke, { this, &MainAppWindow::TextColorRequested });
 
 	m_OpenLogFileRequestedRevoker = menu.OpenLogFileRequested(winrt::auto_revoke, { this, &MainAppWindow::OpenLogFileRequested });
 	m_LogLevelChangedRevoker = menu.LogLevelChanged(winrt::auto_revoke, { this, &MainAppWindow::LogLevelChanged });
@@ -190,6 +194,87 @@ void MainAppWindow::ColorRequested(const txmp::TaskbarState &state)
 	else
 	{
 		SetForegroundWindow(pickerHost->handle());
+	}
+}
+
+void MainAppWindow::TextColorChanged(const winrt::hstring &color)
+{
+	auto &textColor = m_App.GetConfigManager().GetConfig().TextColor;
+	textColor = color == L"default" ? std::wstring { } : std::wstring { color };
+
+	m_App.GetWorker().ConfigurationChanged();
+}
+
+void MainAppWindow::TextColorRequested()
+{
+	std::unique_lock lock(m_PickerMutex);
+	if (!m_TextColorPicker)
+	{
+		Util::Color originalColor = { 0xFF, 0xFF, 0xFF };
+		if (const auto &textColor = m_App.GetConfigManager().GetConfig().TextColor; !textColor.empty())
+		{
+			try
+			{
+				originalColor = Util::Color::FromString(textColor);
+			}
+			catch (...)
+			{
+				// validated when the config was loaded
+			}
+		}
+
+		using winrt::TranslucentTB::Xaml::Pages::ColorPickerPage;
+		m_App.CreateXamlWindow<ColorPickerPage>(xaml_startup_position::mouse,
+			[this, inner_lock = std::move(lock)](const ColorPickerPage &picker, BaseXamlPageHost *host) mutable
+			{
+				m_TextColorPicker = host;
+				inner_lock.unlock();
+
+				auto closeRevoker = picker.Closed(winrt::auto_revoke, [this]
+				{
+					m_App.DispatchToMainThread([this]
+					{
+						m_App.GetWorker().RemoveTextColorPreview();
+
+						std::scoped_lock guard(m_PickerMutex);
+						m_TextColorPicker = nullptr;
+					});
+				});
+
+				picker.ChangesCommitted([this, revoker = std::move(closeRevoker)](const winrt::Windows::UI::Color &color) mutable
+				{
+					revoker.revoke(); // we're already doing this.
+
+					m_App.DispatchToMainThread([this, color]
+					{
+						// the text color has no use for transparency.
+						Util::Color textColor = color;
+						textColor.A = 0xFF;
+						m_App.GetConfigManager().GetConfig().TextColor = std::format(L"#{:02X}{:02X}{:02X}", textColor.R, textColor.G, textColor.B);
+						m_App.GetWorker().RemoveTextColorPreview(); // remove color preview implicitly refreshes config
+
+						std::scoped_lock guard(m_PickerMutex);
+						m_TextColorPicker = nullptr;
+					});
+				});
+
+				picker.ColorChanged([this](const winrt::Windows::UI::Color &color)
+				{
+					m_App.DispatchToMainThread([this, color]
+					{
+						Util::Color textColor = color;
+						textColor.A = 0xFF;
+						m_App.GetWorker().ApplyTextColorPreview(textColor);
+					});
+				});
+			},
+			txmp::TaskbarState::Desktop,
+			winrt::Windows::UI::Color(originalColor),
+			winrt::hstring(L"/TranslucentTB.Xaml/Resources/TrayFlyoutPage_TextColor/Text"));
+	}
+	else
+	{
+		SetForegroundWindow(m_TextColorPicker->handle());
 	}
 }
 

@@ -45,6 +45,10 @@ public:
 	OptionalTaskbarAppearance TaskViewOpenedAppearance = { true, ACCENT_NORMAL, { 0, 0, 0, 0 }, false, true, 9.0f };
 	OptionalTaskbarAppearance BatterySaverAppearance = { false, ACCENT_ENABLE_GRADIENT, { 0, 0, 0, 0 }, true, false, 9.0f };
 
+	// Color of the taskbar text and system tray glyphs while TranslucentTB styles the taskbar (Windows 11 only).
+	// Empty means follow the system theme.
+	std::wstring TextColor;
+
 	// Advanced
 	WindowFilter IgnoredWindows;
 	std::optional<bool> HideTray;
@@ -65,6 +69,10 @@ public:
 		rjh::Serialize(writer, SearchOpenedAppearance, SEARCH_KEY);
 		rjh::Serialize(writer, TaskViewOpenedAppearance, TASKVIEW_KEY);
 		rjh::Serialize(writer, BatterySaverAppearance, BATTERYSAVER_KEY);
+		if (!TextColor.empty())
+		{
+			rjh::Serialize(writer, TextColor, TEXT_COLOR_KEY);
+		}
 		rjh::Serialize(writer, IgnoredWindows, IGNORED_WINDOWS_KEY);
 		rjh::Serialize(writer, HideTray, TRAY_KEY);
 		rjh::Serialize(writer, DisableSaving, SAVING_KEY);
@@ -114,6 +122,31 @@ public:
 			else if (key == BATTERYSAVER_KEY)
 			{
 				rjh::Deserialize(it->value, BatterySaverAppearance, key, unknownKeyCallback);
+			}
+			else if (key == TEXT_COLOR_KEY)
+			{
+				rjh::EnsureType(rj::Type::kStringType, it->value.GetType(), key);
+
+				const auto colorStr = rjh::ValueToStringView(it->value);
+				if (colorStr.empty() || colorStr == L"default")
+				{
+					TextColor.clear();
+				}
+				else
+				{
+					try
+					{
+						Util::Color::FromString(colorStr);
+					}
+					catch (...)
+					{
+						throw rjh::DeserializationError {
+							std::format(L"Found invalid string \"{}\" while deserializing {}", colorStr, key)
+						};
+					}
+
+					TextColor = colorStr;
+				}
 			}
 			else if (key == IGNORED_WINDOWS_KEY)
 			{
@@ -184,6 +217,7 @@ private:
 	static constexpr std::wstring_view SEARCH_KEY = L"search_opened_appearance";
 	static constexpr std::wstring_view TASKVIEW_KEY = L"task_view_opened_appearance";
 	static constexpr std::wstring_view BATTERYSAVER_KEY = L"battery_saver_appearance";
+	static constexpr std::wstring_view TEXT_COLOR_KEY = L"text_color";
 	static constexpr std::wstring_view IGNORED_WINDOWS_KEY = L"ignored_windows";
 	static constexpr std::wstring_view TRAY_KEY = L"hide_tray";
 	static constexpr std::wstring_view SAVING_KEY = L"disable_saving";

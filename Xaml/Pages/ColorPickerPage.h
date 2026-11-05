@@ -12,6 +12,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 	struct ColorPickerPage : wux::Markup::ComponentConnectorT<ColorPickerPageT<ColorPickerPage>>
 	{
 		ColorPickerPage(txmp::TaskbarState state, Windows::UI::Color originalColor);
+		ColorPickerPage(txmp::TaskbarState state, Windows::UI::Color originalColor, const hstring &title);
 		void InitializeComponent();
 
 		bool CanMoveCore() noexcept override;
@@ -36,6 +37,7 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 
 		bool m_DialogOpened = false;
 		txmp::TaskbarState m_State;
+		hstring m_Title; // used instead of the state name when set
 		Windows::UI::Color m_OriginalColor;
 	};
 }

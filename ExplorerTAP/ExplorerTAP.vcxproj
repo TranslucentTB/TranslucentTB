@@ -64,6 +64,7 @@
     <ClCompile Include="module.cpp" />
     <ClCompile Include="tapsite.cpp" />
     <ClCompile Include="taskbarappearanceservice.cpp" />
+    <ClCompile Include="trayiconrecolor.cpp" />
     <ClCompile Include="visualtreewatcher.cpp" />
     <ClCompile Include="XamlBlurBrush.cpp" />
   </ItemGroup>
@@ -83,6 +84,7 @@
     <ClInclude Include="Generated Files\$(Platform)\TaskbarBrush.h" />
     <ClInclude Include="tapsite.hpp" />
     <ClInclude Include="taskbarappearanceservice.hpp" />
+    <ClInclude Include="trayiconrecolor.hpp" />
     <ClInclude Include="visualtreewatcher.hpp" />
     <ClInclude Include="XamlBlurBrush.h" />
   </ItemGroup>
