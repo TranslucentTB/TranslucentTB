@@ -105,7 +105,7 @@ HRESULT TaskbarAppearanceService::ReturnTaskbarToDefaultAppearance(HWND taskbar)
 {
 	for (const auto& [handle, info] : m_Taskbars)
 	{
-		if (GetAncestor(info.window, GA_PARENT) == taskbar)
+		if (IsWindowOfTaskbar(info.window, taskbar))
 		{
 			RestoreDefaultControlFill(info.background);
 			break;
@@ -123,7 +123,7 @@ HRESULT TaskbarAppearanceService::SetTaskbarBorderVisibility(HWND taskbar, BOOL 
 {
 	for (const auto& [handle, info] : m_Taskbars)
 	{
-		if (GetAncestor(info.window, GA_PARENT) == taskbar)
+		if (IsWindowOfTaskbar(info.window, taskbar))
 		{
 			if (visible)
 			{
@@ -231,33 +231,43 @@ catch (...)
 
 void TaskbarAppearanceService::RegisterTaskbar(InstanceHandle frameHandle, HWND window)
 {
-	m_Taskbars.insert_or_assign(frameHandle, TaskbarInfo { { }, { }, window });
+	// the frame's background shapes may have been registered before we could match the frame
+	// to its window (e.g. secondary taskbars whose XAML source gets its content late), keep them.
+	m_Taskbars[frameHandle].window = window;
 }
 
 void TaskbarAppearanceService::RegisterTaskbarBackground(InstanceHandle frameHandle, wux::Shapes::Shape element)
 {
-	if (const auto it = m_Taskbars.find(frameHandle); it != m_Taskbars.end())
-	{
-		it->second.background.control = element;
-
-		// sometimes we may see objects come with their fill set to null, wait until the system initialized it before
-		// we start messing with it
-		// in the future if the taskbar doesn't change the original brush, but tries to change the entire brush
-		// this could be useful to suppress it and update the saved brush
-		element.RegisterPropertyChangedCallback(wux::Shapes::Shape::FillProperty(), { get_weak(), &TaskbarAppearanceService::OnTaskbarBackgroundUpdated });
-		it->second.background.originalFill = element.Fill();
-	}
+	// sometimes we may see objects come with their fill set to null, wait until the system initialized it before
+	// we start messing with it
+	// in the future if the taskbar doesn't change the original brush, but tries to change the entire brush
+	// this could be useful to suppress it and update the saved brush
+	RegisterControl(m_Taskbars[frameHandle].background, std::move(element), { get_weak(), &TaskbarAppearanceService::OnTaskbarBackgroundUpdated });
 }
 
 void TaskbarAppearanceService::RegisterTaskbarBorder(InstanceHandle frameHandle, wux::Shapes::Shape element)
 {
-	if (const auto it = m_Taskbars.find(frameHandle); it != m_Taskbars.end())
-	{
-		it->second.border.control = element;
+	RegisterControl(m_Taskbars[frameHandle].border, std::move(element), { get_weak(), &TaskbarAppearanceService::OnTaskbarBorderUpdated });
+}
 
-		element.RegisterPropertyChangedCallback(wux::Shapes::Shape::FillProperty(), { get_weak(), &TaskbarAppearanceService::OnTaskbarBorderUpdated });
-		it->second.border.originalFill = element.Fill();
+void TaskbarAppearanceService::RegisterControl(ControlInfo<wux::Shapes::Shape> &info, wux::Shapes::Shape element, const wux::DependencyPropertyChangedCallback &callback)
+{
+	const auto fillProperty = wux::Shapes::Shape::FillProperty();
+	if (info.control && info.fillChangedToken != 0)
+	{
+		info.control.UnregisterPropertyChangedCallback(fillProperty, info.fillChangedToken);
 	}
+
+	info.control = std::move(element);
+	info.fillChangedToken = info.control.RegisterPropertyChangedCallback(fillProperty, callback);
+	info.originalFill = info.control.Fill();
+}
+
+bool TaskbarAppearanceService::IsWindowOfTaskbar(HWND xamlWindow, HWND taskbar) noexcept
+{
+	// the XAML island window used to be a direct child of Shell_TrayWnd/Shell_SecondaryTrayWnd,
+	// but it can be nested deeper (notably on secondary monitors on newer builds), so accept any descendant.
+	return xamlWindow && taskbar && (xamlWindow == taskbar || IsChild(taskbar, xamlWindow));
 }
 
 void TaskbarAppearanceService::UnregisterTaskbar(InstanceHandle frameHandle)
@@ -359,7 +369,7 @@ std::optional<TaskbarAppearanceService::TaskbarInfo> TaskbarAppearanceService::G
 {
 	for (const auto& [handle, info] : m_Taskbars)
 	{
-		if (GetAncestor(info.window, GA_PARENT) == taskbar)
+		if (IsWindowOfTaskbar(info.window, taskbar))
 		{
 			return info;
 		}

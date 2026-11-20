@@ -1,5 +1,6 @@
 #pragma once
 #include <string_view>
+#include <unordered_map>
 #include <unordered_set>
 #include <xamlOM.h>
 #include "winrt.hpp"
@@ -25,6 +26,8 @@ private:
 	HRESULT STDMETHODCALLTYPE OnElementStateChanged(InstanceHandle element, VisualElementState elementState, LPCWSTR context) noexcept override;
 
 	wux::FrameworkElement FindParent(std::wstring_view name, wux::FrameworkElement element);
+	bool TryMatchFrame(InstanceHandle frameHandle, InstanceHandle rootGridHandle);
+	void RetryPendingFrames();
 
 	template<typename T>
 	T FromHandle(InstanceHandle handle)
@@ -38,5 +41,6 @@ private:
 	winrt::com_ptr<IXamlDiagnostics> m_XamlDiagnostics;
 	winrt::com_ptr<TaskbarAppearanceService> m_AppearanceService;
 	std::unordered_set<InstanceHandle> m_NonMatchingXamlSources;
+	std::unordered_map<InstanceHandle, InstanceHandle> m_PendingFrames; // TaskbarFrame -> its parent (RootGrid)
 	wil::unique_event_nothrow m_ReadyEvent; // keep a hold of the event so it stays set
 };

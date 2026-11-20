@@ -44,33 +44,12 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation relation, Visu
 		{
 			// assume it goes DesktopWindowXamlSource -> RootGrid -> TaskbarFrame.
 			// we need RootGrid's pointer to find the right source based on its contents.
-			const auto rootGrid = FromHandle<wux::UIElement>(relation.Parent);
-
-			for (auto it = m_NonMatchingXamlSources.begin(); it != m_NonMatchingXamlSources.end(); ++it)
+			if (!TryMatchFrame(element.Handle, relation.Parent))
 			{
-				const auto xamlSource = FromHandle<wuxh::DesktopWindowXamlSource>(*it);
-				wux::UIElement content = nullptr;
-				try
-				{
-					content = xamlSource.Content();
-				}
-				catch (const winrt::hresult_wrong_thread&)
-				{
-					continue;
-				}
-
-				if (content == rootGrid)
-				{
-					const auto nativeSource = xamlSource.as<IDesktopWindowXamlSourceNative>();
-
-					HWND hwnd = nullptr;
-					winrt::check_hresult(nativeSource->get_WindowHandle(&hwnd));
-
-					m_AppearanceService->RegisterTaskbar(element.Handle, hwnd);
-					m_NonMatchingXamlSources.erase(it);
-
-					break;
-				}
+				// the source may not have its content set yet (or may not have been added yet),
+				// which happens when a taskbar is created for an additional monitor. retry later
+				// instead of dropping this taskbar forever.
+				m_PendingFrames.insert_or_assign(element.Handle, relation.Parent);
 			}
 		}
 		else if (type_view == winrt::name_of<wux::Shapes::Rectangle>())
@@ -98,12 +77,14 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation relation, Visu
 			}
 		}
 
+		RetryPendingFrames();
 		break;
 	}
 
 	case Remove: // only element.Handle is valid
 		m_AppearanceService->UnregisterTaskbar(element.Handle);
 		m_NonMatchingXamlSources.erase(element.Handle);
+		m_PendingFrames.erase(element.Handle);
 		break;
 	}
 
@@ -112,6 +93,64 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation relation, Visu
 catch (...)
 {
 	return winrt::to_hresult();
+}
+
+bool VisualTreeWatcher::TryMatchFrame(InstanceHandle frameHandle, InstanceHandle rootGridHandle)
+{
+	const auto rootGrid = FromHandle<wux::UIElement>(rootGridHandle);
+
+	for (auto it = m_NonMatchingXamlSources.begin(); it != m_NonMatchingXamlSources.end(); ++it)
+	{
+		const auto xamlSource = FromHandle<wuxh::DesktopWindowXamlSource>(*it);
+		wux::UIElement content = nullptr;
+		try
+		{
+			content = xamlSource.Content();
+		}
+		catch (const winrt::hresult_wrong_thread&)
+		{
+			continue;
+		}
+
+		if (content && content == rootGrid)
+		{
+			const auto nativeSource = xamlSource.as<IDesktopWindowXamlSourceNative>();
+
+			HWND hwnd = nullptr;
+			winrt::check_hresult(nativeSource->get_WindowHandle(&hwnd));
+			if (!hwnd)
+			{
+				// source isn't attached to its window yet, try again later.
+				return false;
+			}
+
+			m_AppearanceService->RegisterTaskbar(frameHandle, hwnd);
+			m_NonMatchingXamlSources.erase(it);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void VisualTreeWatcher::RetryPendingFrames()
+{
+	for (auto it = m_PendingFrames.begin(); it != m_PendingFrames.end();)
+	{
+		bool matched = false;
+		try
+		{
+			matched = TryMatchFrame(it->first, it->second);
+		}
+		catch (...)
+		{
+			// the frame or its parent went away; forget about it.
+			matched = true;
+		}
+
+		it = matched ? m_PendingFrames.erase(it) : std::next(it);
+	}
 }
 
 HRESULT VisualTreeWatcher::OnElementStateChanged(InstanceHandle, VisualElementState, LPCWSTR) noexcept

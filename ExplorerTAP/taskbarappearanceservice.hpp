@@ -61,7 +61,7 @@ private:
 	struct TaskbarInfo
 	{
 		ControlInfo<wux::Shapes::Shape> background, border;
-		HWND window;
+		HWND window = nullptr;
 	};
 
 	winrt::fire_and_forget OnProcessDied();
@@ -71,6 +71,9 @@ private:
 
 	void OnTaskbarBackgroundUpdated(const wux::DependencyObject &sender, const wux::DependencyProperty &dp);
 	void OnTaskbarBorderUpdated(const wux::DependencyObject &sender, const wux::DependencyProperty &dp);
+
+	void RegisterControl(ControlInfo<wux::Shapes::Shape> &info, wux::Shapes::Shape element, const wux::DependencyPropertyChangedCallback &callback);
+	static bool IsWindowOfTaskbar(HWND xamlWindow, HWND taskbar) noexcept;
 
 	static void RestoreDefaultControlFill(const ControlInfo<wux::Shapes::Shape> &info);
 	static void NTAPI ProcessWaitCallback(void *parameter, BOOLEAN timedOut);
