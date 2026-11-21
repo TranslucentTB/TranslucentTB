@@ -237,7 +237,7 @@ void TaskbarAppearanceService::RegisterTaskbarBackground(InstanceHandle frameHan
 		// we start messing with it
 		// in the future if the taskbar doesn't change the original brush's color, but tries to swap the entire brush
 		// this could be useful to suppress it and update the saved brush
-		element.RegisterPropertyChangedCallback(wux::Shapes::Shape::FillProperty(), { get_weak(), &TaskbarAppearanceService::OnTaskbarBackgroundUpdated });
+		it->second.background.fillChangedToken = element.RegisterPropertyChangedCallback(wux::Shapes::Shape::FillProperty(), { get_weak(), &TaskbarAppearanceService::OnTaskbarBackgroundUpdated });
 		it->second.background.originalFill = element.Fill();
 	}
 }
@@ -248,7 +248,7 @@ void TaskbarAppearanceService::RegisterTaskbarBorder(InstanceHandle frameHandle,
 	{
 		it->second.border.control = element;
 
-		element.RegisterPropertyChangedCallback(wux::Shapes::Shape::FillProperty(), { get_weak(), &TaskbarAppearanceService::OnTaskbarBorderUpdated });
+		it->second.border.fillChangedToken = element.RegisterPropertyChangedCallback(wux::Shapes::Shape::FillProperty(), { get_weak(), &TaskbarAppearanceService::OnTaskbarBorderUpdated });
 		it->second.border.originalFill = element.Fill();
 	}
 }
