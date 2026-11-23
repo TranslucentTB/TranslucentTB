@@ -25,6 +25,8 @@ private:
 	HRESULT STDMETHODCALLTYPE OnElementStateChanged(InstanceHandle element, VisualElementState elementState, LPCWSTR context) noexcept override;
 
 	wux::FrameworkElement FindParent(std::wstring_view name, wux::FrameworkElement element);
+	void HandleTaskbarFrame(const ParentChildRelation& relation, const VisualElement& element);
+	void HandleBackgroundShape(const ParentChildRelation& relation, const VisualElement& element, std::wstring_view name);
 
 	template<typename T>
 	T FromHandle(InstanceHandle handle)

@@ -42,98 +42,11 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation relation, Visu
 		}
 		else if (type_view == L"Taskbar.TaskbarFrame")
 		{
-			// we found a taskbar. match it up to the xaml source.
-			wux::UIElement rootContent = nullptr;
-			const auto frameElement = TryFromHandle<wux::UIElement>(element.Handle);
-			if (frameElement)
-			{
-				try
-				{
-					if (const auto xamlRoot = frameElement.XamlRoot())
-					{
-						rootContent = xamlRoot.Content();
-					}
-				}
-				catch (...)
-				{
-				}
-
-				// Fallback 1: walk visual tree upwards if XamlRoot is not yet populated
-				if (!rootContent)
-				{
-					wux::DependencyObject current = frameElement;
-					wux::DependencyObject parent = nullptr;
-					while ((parent = wux::Media::VisualTreeHelper::GetParent(current)) != nullptr)
-					{
-						current = parent;
-					}
-					rootContent = current.try_as<wux::UIElement>();
-				}
-			}
-
-			// Fallback 2: direct relation.Parent (for older builds where TaskbarFrame is a direct child of RootGrid)
-			const auto rootGrid = TryFromHandle<wux::UIElement>(relation.Parent);
-
-			for (auto it = m_NonMatchingXamlSources.begin(); it != m_NonMatchingXamlSources.end(); ++it)
-			{
-				const auto xamlSource = TryFromHandle<wuxh::DesktopWindowXamlSource>(*it);
-				if (!xamlSource)
-				{
-					continue;
-				}
-
-				wux::UIElement content = nullptr;
-				try
-				{
-					content = xamlSource.Content();
-				}
-				catch (const winrt::hresult_wrong_thread&)
-				{
-					continue;
-				}
-
-				if ((rootContent && content == rootContent) || (rootGrid && content == rootGrid))
-				{
-					if (const auto nativeSource = xamlSource.try_as<IDesktopWindowXamlSourceNative>())
-					{
-						HWND hwnd = nullptr;
-						if (SUCCEEDED(nativeSource->get_WindowHandle(&hwnd)) && hwnd)
-						{
-							m_AppearanceService->RegisterTaskbar(element.Handle, hwnd);
-							m_NonMatchingXamlSources.erase(it);
-							break;
-						}
-					}
-				}
-			}
+			HandleTaskbarFrame(relation, element);
 		}
 		else if (type_view == winrt::name_of<wux::Shapes::Rectangle>())
 		{
-			const std::wstring_view name_view { name.get(), SysStringLen(name.get())};
-			const auto backgroundFill = name_view == L"BackgroundFill";
-			const auto backgroundStroke = name_view == L"BackgroundStroke";
-			if (backgroundFill || backgroundStroke)
-			{
-				if (const auto frame = FindParent(L"TaskbarFrame", TryFromHandle<wux::FrameworkElement>(relation.Parent)))
-				{
-					InstanceHandle handle = 0;
-					if (SUCCEEDED(m_XamlDiagnostics->GetHandleFromIInspectable(static_cast<::IInspectable*>(winrt::get_abi(frame)), &handle)) && handle != 0)
-					{
-						const auto shape = TryFromHandle<wux::Shapes::Rectangle>(element.Handle);
-						if (shape)
-						{
-							if (backgroundFill)
-							{
-								m_AppearanceService->RegisterTaskbarBackground(handle, shape);
-							}
-							else if (backgroundStroke)
-							{
-								m_AppearanceService->RegisterTaskbarBorder(handle, shape);
-							}
-						}
-					}
-				}
-			}
+			HandleBackgroundShape(relation, element, { name.get(), SysStringLen(name.get()) });
 		}
 
 		break;
@@ -150,6 +63,111 @@ HRESULT VisualTreeWatcher::OnVisualTreeChange(ParentChildRelation relation, Visu
 catch (...)
 {
 	return winrt::to_hresult();
+}
+
+void VisualTreeWatcher::HandleTaskbarFrame(const ParentChildRelation& relation, const VisualElement& element)
+{
+	// we found a taskbar. match it up to the xaml source.
+	wux::UIElement rootContent = nullptr;
+	const auto frameElement = TryFromHandle<wux::UIElement>(element.Handle);
+	if (frameElement)
+	{
+		try
+		{
+			if (const auto xamlRoot = frameElement.XamlRoot())
+			{
+				rootContent = xamlRoot.Content();
+			}
+		}
+		catch (...)
+		{
+		}
+
+		// Fallback 1: walk visual tree upwards if XamlRoot is not yet populated
+		if (!rootContent)
+		{
+			wux::DependencyObject current = frameElement;
+			wux::DependencyObject parent = nullptr;
+			while ((parent = wux::Media::VisualTreeHelper::GetParent(current)) != nullptr)
+			{
+				current = parent;
+			}
+			rootContent = current.try_as<wux::UIElement>();
+		}
+	}
+
+	// Fallback 2: direct relation.Parent (for older builds where TaskbarFrame is a direct child of RootGrid)
+	const auto rootGrid = TryFromHandle<wux::UIElement>(relation.Parent);
+
+	for (auto it = m_NonMatchingXamlSources.begin(); it != m_NonMatchingXamlSources.end(); ++it)
+	{
+		const auto xamlSource = TryFromHandle<wuxh::DesktopWindowXamlSource>(*it);
+		if (!xamlSource)
+		{
+			continue;
+		}
+
+		wux::UIElement content = nullptr;
+		try
+		{
+			content = xamlSource.Content();
+		}
+		catch (const winrt::hresult_wrong_thread&)
+		{
+			continue;
+		}
+
+		if ((rootContent && content == rootContent) || (rootGrid && content == rootGrid))
+		{
+			if (const auto nativeSource = xamlSource.try_as<IDesktopWindowXamlSourceNative>())
+			{
+				HWND hwnd = nullptr;
+				if (SUCCEEDED(nativeSource->get_WindowHandle(&hwnd)) && hwnd)
+				{
+					m_AppearanceService->RegisterTaskbar(element.Handle, hwnd);
+					m_NonMatchingXamlSources.erase(it);
+					break;
+				}
+			}
+		}
+	}
+}
+
+void VisualTreeWatcher::HandleBackgroundShape(const ParentChildRelation& relation, const VisualElement& element, std::wstring_view name)
+{
+	const auto backgroundFill = name == L"BackgroundFill";
+	const auto backgroundStroke = name == L"BackgroundStroke";
+	if (!backgroundFill && !backgroundStroke)
+	{
+		return;
+	}
+
+	const auto frame = FindParent(L"TaskbarFrame", TryFromHandle<wux::FrameworkElement>(relation.Parent));
+	if (!frame)
+	{
+		return;
+	}
+
+	InstanceHandle handle = 0;
+	if (FAILED(m_XamlDiagnostics->GetHandleFromIInspectable(static_cast<::IInspectable*>(winrt::get_abi(frame)), &handle)) || handle == 0)
+	{
+		return;
+	}
+
+	const auto shape = TryFromHandle<wux::Shapes::Rectangle>(element.Handle);
+	if (!shape)
+	{
+		return;
+	}
+
+	if (backgroundFill)
+	{
+		m_AppearanceService->RegisterTaskbarBackground(handle, shape);
+	}
+	else if (backgroundStroke)
+	{
+		m_AppearanceService->RegisterTaskbarBorder(handle, shape);
+	}
 }
 
 HRESULT VisualTreeWatcher::OnElementStateChanged(InstanceHandle, VisualElementState, LPCWSTR) noexcept
