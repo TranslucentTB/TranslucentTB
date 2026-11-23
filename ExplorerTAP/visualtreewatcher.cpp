@@ -65,38 +65,40 @@ catch (...)
 	return winrt::to_hresult();
 }
 
-void VisualTreeWatcher::HandleTaskbarFrame(const ParentChildRelation& relation, const VisualElement& element)
+wux::UIElement VisualTreeWatcher::GetRootContent(const wux::UIElement& frameElement)
 {
-	// we found a taskbar. match it up to the xaml source.
-	wux::UIElement rootContent = nullptr;
-	const auto frameElement = TryFromHandle<wux::UIElement>(element.Handle);
-	if (frameElement)
+	if (!frameElement)
 	{
-		try
-		{
-			if (const auto xamlRoot = frameElement.XamlRoot())
-			{
-				rootContent = xamlRoot.Content();
-			}
-		}
-		catch (...)
-		{
-		}
-
-		// Fallback 1: walk visual tree upwards if XamlRoot is not yet populated
-		if (!rootContent)
-		{
-			wux::DependencyObject current = frameElement;
-			wux::DependencyObject parent = nullptr;
-			while ((parent = wux::Media::VisualTreeHelper::GetParent(current)) != nullptr)
-			{
-				current = parent;
-			}
-			rootContent = current.try_as<wux::UIElement>();
-		}
+		return nullptr;
 	}
 
-	// Fallback 2: direct relation.Parent (for older builds where TaskbarFrame is a direct child of RootGrid)
+	try
+	{
+		if (const auto xamlRoot = frameElement.XamlRoot())
+		{
+			if (const auto content = xamlRoot.Content())
+			{
+				return content;
+			}
+		}
+	}
+	catch (...)
+	{
+	}
+
+	// Fallback: walk visual tree upwards if XamlRoot is not yet populated
+	wux::DependencyObject current = frameElement;
+	wux::DependencyObject parent = nullptr;
+	while ((parent = wux::Media::VisualTreeHelper::GetParent(current)) != nullptr)
+	{
+		current = parent;
+	}
+	return current.try_as<wux::UIElement>();
+}
+
+void VisualTreeWatcher::HandleTaskbarFrame(const ParentChildRelation& relation, const VisualElement& element)
+{
+	const auto rootContent = GetRootContent(TryFromHandle<wux::UIElement>(element.Handle));
 	const auto rootGrid = TryFromHandle<wux::UIElement>(relation.Parent);
 
 	for (auto it = m_NonMatchingXamlSources.begin(); it != m_NonMatchingXamlSources.end(); ++it)
@@ -117,7 +119,7 @@ void VisualTreeWatcher::HandleTaskbarFrame(const ParentChildRelation& relation, 
 			continue;
 		}
 
-		if ((rootContent && content == rootContent) || (rootGrid && content == rootGrid))
+		if (content && (content == rootContent || content == rootGrid))
 		{
 			if (const auto nativeSource = xamlSource.try_as<IDesktopWindowXamlSourceNative>())
 			{
