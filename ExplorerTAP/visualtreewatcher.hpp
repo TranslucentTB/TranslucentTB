@@ -35,6 +35,31 @@ private:
 		return obj.as<T>();
 	}
 
+	template<typename T>
+	T TryFromHandle(InstanceHandle handle) noexcept
+	{
+		if (handle == 0)
+		{
+			return nullptr;
+		}
+
+		try
+		{
+			wf::IInspectable obj;
+			HRESULT hr = m_XamlDiagnostics->GetIInspectableFromHandle(handle, reinterpret_cast<::IInspectable**>(winrt::put_abi(obj)));
+			if (FAILED(hr) || !obj)
+			{
+				return nullptr;
+			}
+
+			return obj.try_as<T>();
+		}
+		catch (...)
+		{
+			return nullptr;
+		}
+	}
+
 	winrt::com_ptr<IXamlDiagnostics> m_XamlDiagnostics;
 	winrt::com_ptr<TaskbarAppearanceService> m_AppearanceService;
 	std::unordered_set<InstanceHandle> m_NonMatchingXamlSources;

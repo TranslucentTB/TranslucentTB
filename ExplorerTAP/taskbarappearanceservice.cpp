@@ -113,6 +113,12 @@ HRESULT TaskbarAppearanceService::ReturnTaskbarToDefaultAppearance(HWND taskbar)
 		RestoreDefaultControlFill(info->background);
 	}
 
+	if (m_SubclassedWindows.contains(taskbar))
+	{
+		RemoveWindowSubclass(taskbar, TaskbarSubclassProc, reinterpret_cast<UINT_PTR>(taskbar));
+		m_SubclassedWindows.erase(taskbar);
+	}
+
 	return S_OK;
 }
 catch (...)
@@ -150,6 +156,12 @@ HRESULT TaskbarAppearanceService::RestoreAllTaskbarsToDefault() try
 		RestoreDefaultControlFill(info.background);
 		RestoreDefaultControlFill(info.border);
 	}
+
+	for (HWND taskbar : m_SubclassedWindows)
+	{
+		RemoveWindowSubclass(taskbar, TaskbarSubclassProc, reinterpret_cast<UINT_PTR>(taskbar));
+	}
+	m_SubclassedWindows.clear();
 
 	return S_OK;
 }
@@ -237,7 +249,7 @@ void TaskbarAppearanceService::RegisterTaskbarBackground(InstanceHandle frameHan
 		// we start messing with it
 		// in the future if the taskbar doesn't change the original brush's color, but tries to swap the entire brush
 		// this could be useful to suppress it and update the saved brush
-		element.RegisterPropertyChangedCallback(wux::Shapes::Shape::FillProperty(), { get_weak(), &TaskbarAppearanceService::OnTaskbarBackgroundUpdated });
+		it->second.background.fillChangedToken = element.RegisterPropertyChangedCallback(wux::Shapes::Shape::FillProperty(), { get_weak(), &TaskbarAppearanceService::OnTaskbarBackgroundUpdated });
 		it->second.background.originalFill = element.Fill();
 	}
 }
@@ -248,7 +260,7 @@ void TaskbarAppearanceService::RegisterTaskbarBorder(InstanceHandle frameHandle,
 	{
 		it->second.border.control = element;
 
-		element.RegisterPropertyChangedCallback(wux::Shapes::Shape::FillProperty(), { get_weak(), &TaskbarAppearanceService::OnTaskbarBorderUpdated });
+		it->second.border.fillChangedToken = element.RegisterPropertyChangedCallback(wux::Shapes::Shape::FillProperty(), { get_weak(), &TaskbarAppearanceService::OnTaskbarBorderUpdated });
 		it->second.border.originalFill = element.Fill();
 	}
 }
@@ -258,14 +270,16 @@ void TaskbarAppearanceService::UnregisterTaskbar(InstanceHandle frameHandle)
 	if (auto it = m_Taskbars.find(frameHandle); it != m_Taskbars.end())
 	{
 		const auto fillProperty = wux::Shapes::Shape::FillProperty();
-		if (it->second.background.fillChangedToken != 0)
+		if (it->second.background.fillChangedToken != 0 && it->second.background.control)
 		{
 			it->second.background.control.UnregisterPropertyChangedCallback(fillProperty, it->second.background.fillChangedToken);
+			it->second.background.fillChangedToken = 0;
 		}
 
-		if (it->second.border.fillChangedToken != 0)
+		if (it->second.border.fillChangedToken != 0 && it->second.border.control)
 		{
 			it->second.border.control.UnregisterPropertyChangedCallback(fillProperty, it->second.border.fillChangedToken);
+			it->second.border.fillChangedToken = 0;
 		}
 
 		m_Taskbars.erase(it);
@@ -292,6 +306,13 @@ TaskbarAppearanceService::~TaskbarAppearanceService()
 	m_Process.reset();
 
 	winrt::check_hresult(RestoreAllTaskbarsToDefault());
+
+	for (HWND taskbar : m_SubclassedWindows)
+	{
+		RemoveWindowSubclass(taskbar, TaskbarSubclassProc, reinterpret_cast<UINT_PTR>(taskbar));
+	}
+	m_SubclassedWindows.clear();
+
 	winrt::check_hresult(RevokeActiveObject(m_RegisterCookie, nullptr));
 }
 
@@ -352,7 +373,7 @@ std::optional<TaskbarAppearanceService::TaskbarInfo> TaskbarAppearanceService::G
 {
 	for (const auto& [handle, info] : m_Taskbars)
 	{
-		if (GetAncestor(info.window, GA_PARENT) == taskbar)
+		if (GetAncestor(info.window, GA_PARENT) == taskbar || GetAncestor(info.window, GA_ROOT) == taskbar || IsChild(taskbar, info.window))
 		{
 			return info;
 		}
@@ -407,7 +428,7 @@ void TaskbarAppearanceService::EnsureSubclass(HWND taskbar)
 	}
 }
 
-LRESULT TaskbarAppearanceService::TaskbarSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR, DWORD_PTR dwRefData)
+LRESULT TaskbarAppearanceService::TaskbarSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
 	switch (uMsg)
 	{
@@ -426,7 +447,11 @@ LRESULT TaskbarAppearanceService::TaskbarSubclassProc(HWND hWnd, UINT uMsg, WPAR
 	}
 
 	case WM_NCDESTROY:
-		reinterpret_cast<TaskbarAppearanceService*>(dwRefData)->m_SubclassedWindows.erase(hWnd);
+		RemoveWindowSubclass(hWnd, TaskbarSubclassProc, uIdSubclass);
+		if (dwRefData)
+		{
+			reinterpret_cast<TaskbarAppearanceService*>(dwRefData)->m_SubclassedWindows.erase(hWnd);
+		}
 		break;
 	}
 
