@@ -13,7 +13,7 @@ template<typename T>
 class ContextMenu : public BaseContextMenu {
 private:
 	T m_Page;
-	event_token m_FlyoutOpenedToken, m_FlyoutClosedToken;
+	winrt::event_token m_FlyoutOpenedToken, m_FlyoutClosedToken;
 
 	void ShowTooltip(bool visible)
 	{
