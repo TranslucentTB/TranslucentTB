@@ -6,12 +6,14 @@
 #include "winrt.hpp"
 #include "undefgetcurrenttime.h"
 #include <winrt/Windows.UI.Xaml.Controls.h>
+#include <winrt/Windows.UI.Xaml.Controls.Primitives.h>
 #include "redefgetcurrenttime.h"
 
 template<typename T>
 class ContextMenu : public BaseContextMenu {
 private:
 	T m_Page;
+	event_token m_FlyoutOpenedToken, m_FlyoutClosedToken;
 
 	void ShowTooltip(bool visible)
 	{
@@ -31,6 +33,17 @@ protected:
 	ContextMenu(Args&&... args) : m_Page(std::forward<Args>(args)...)
 	{
 		source().Content(m_Page);
+
+		// prevent the shy taskbar from auto dismissing while the user is in the menu
+		const auto flyout = m_Page.ContextFlyout();
+		m_FlyoutOpenedToken = flyout.Opened([wnd = m_WindowHandle](const wf::IInspectable&, const wf::IInspectable&)
+		{
+			NotifyWinEvent(EVENT_SYSTEM_MENUPOPUPSTART, wnd, OBJID_WINDOW, CHILDID_SELF);
+		});
+		m_FlyoutClosedToken = flyout.Closed([wnd = m_WindowHandle](const wf::IInspectable&, const wf::IInspectable&)
+		{
+			NotifyWinEvent(EVENT_SYSTEM_MENUPOPUPEND, wnd, OBJID_WINDOW, CHILDID_SELF);
+		});
 	}
 
 	void ShowAt(RECT rect, POINT pt)
@@ -68,6 +81,10 @@ protected:
 	~ContextMenu()
 	{
 		source().Content(nullptr);
+
+		const auto flyout = m_Page.ContextFlyout();
+		flyout.Closed(m_FlyoutClosedToken);
+		flyout.Opened(m_FlyoutOpenedToken);
 		m_Page = nullptr;
 	}
 };
