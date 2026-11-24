@@ -63,6 +63,7 @@ steps:
     configuration: ${{ parameters.configuration }}
     platform: ${{ parameters.platform }}
     solution: $(Build.SourcesDirectory)/TranslucentTB.slnx
+    msbuildArchitecture: x64
     ${{ if eq(parameters.signBuild, true) }}:
       msbuildArgs: /p:CertificateTimestampServer="http://timestamp.acs.microsoft.com" /p:ArtifactSigningMetadata="$(artifactSigningMetadata.secureFilePath)" /p:SignToolDigestAlgorithm=sha256 /p:BuildType=${{ parameters.buildType }}
     ${{ else }}:
