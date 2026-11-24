@@ -133,8 +133,6 @@ DWORD WINAPI TaskViewVisibilityMonitor::ThreadProc(LPVOID) noexcept
 
 	// if the thread somehow gets resumed, something is very wrong.
 	__fastfail(FAST_FAIL_FATAL_APP_EXIT);
-
-	return static_cast<DWORD>(-1); // make the compiler happy
 }
 
 LRESULT CALLBACK TaskViewVisibilityMonitor::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
