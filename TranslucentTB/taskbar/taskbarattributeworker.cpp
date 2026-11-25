@@ -640,6 +640,14 @@ void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
 	if (m_TaskbarService)
 	{
 		HresultVerify(m_TaskbarService->SetTaskbarBorderVisibility(taskbarInfo.TaskbarWindow, cfg.ShowLine), spdlog::level::info, L"Failed to set taskbar border visibility");
+
+		// only override the text color while we style the taskbar, normal mode should look like stock Windows.
+		const auto textColor = GetTextColor();
+		HresultVerify(m_TaskbarService->SetTaskbarTextColor(taskbarInfo.TaskbarWindow, cfg.Accent != ACCENT_NORMAL ? textColor.ToABGR() : 0), spdlog::level::info, L"Failed to set taskbar text color");
+
+		// tray icons follow the setting itself rather than the current state, because
+		// updating them makes every app resend its icons.
+		HresultVerify(m_TaskbarService->SetTrayIconColor(textColor.ToABGR()), spdlog::level::info, L"Failed to set tray icon color");
 	}
 	else if (taskbarInfo.InnerXamlContent || taskbarInfo.WorkerWWindow)
 	{
@@ -653,6 +661,28 @@ void TaskbarAttributeWorker::RefreshAttribute(taskbar_iterator taskbar)
 			ShowAeroPeekButton(taskbarInfo, cfg.ShowPeek);
 		}
 	}
+}
+
+Util::Color TaskbarAttributeWorker::GetTextColor() const
+{
+	if (m_TextColorPreview)
+	{
+		return *m_TextColorPreview;
+	}
+
+	if (const auto &textColorStr = m_ConfigManager.GetConfig().TextColor; !textColorStr.empty())
+	{
+		try
+		{
+			return Util::Color::FromString(textColorStr);
+		}
+		catch (...)
+		{
+			// validated when the config was loaded
+		}
+	}
+
+	return { 0, 0, 0, 0 };
 }
 
 void TaskbarAttributeWorker::RefreshAllAttributes()

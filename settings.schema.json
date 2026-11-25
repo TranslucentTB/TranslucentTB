@@ -123,6 +123,19 @@
     "battery_saver_appearance": {
       "$ref": "#/$defs/OptionalTaskbarAppearance"
     },
+    "text_color": {
+      "description": "Color of the taskbar text and system tray icons while TranslucentTB is active (Windows 11). Use \"default\" to follow the system theme.",
+      "anyOf": [
+        {
+          "pattern": "^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
+          "type": "string",
+          "format": "color"
+        },
+        {
+          "const": "default"
+        }
+      ]
+    },
     "ignored_windows": {
       "properties": {
         "window_class": {

@@ -292,4 +292,22 @@
   <data name="WelcomePage_Message_Suffix.Text" xml:space="preserve">
     <value>если возникла проблема или хотите увидеть новую функцию!</value>
   </data>
+  <data name="TrayFlyoutPage_TextColor.Text" xml:space="preserve">
+    <value>Цвет текста</value>
+  </data>
+  <data name="TrayFlyoutPage_TextColor_Default.Text" xml:space="preserve">
+    <value>Как в системе</value>
+  </data>
+  <data name="TrayFlyoutPage_TextColor_White.Text" xml:space="preserve">
+    <value>Белый</value>
+  </data>
+  <data name="TrayFlyoutPage_TextColor_Black.Text" xml:space="preserve">
+    <value>Чёрный</value>
+  </data>
+  <data name="TrayFlyoutPage_TextColor_Custom.Text" xml:space="preserve">
+    <value>Свой</value>
+  </data>
+  <data name="TrayFlyoutPage_TextColor_Pick.Text" xml:space="preserve">
+    <value>Выбрать цвет…</value>
+  </data>
 </root>

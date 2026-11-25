@@ -115,6 +115,38 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 		}
 	}
 
+	void TrayFlyoutPage::SetTextColor(const hstring &color)
+	{
+		muxc::RadioMenuFlyoutItem custom = nullptr;
+		bool found = false;
+		for (const auto item : TextColorSubMenu().Items())
+		{
+			if (const auto radioItem = item.try_as<muxc::RadioMenuFlyoutItem>())
+			{
+				const auto tag = radioItem.Tag().try_as<hstring>().value_or(hstring { });
+				if (tag == L"Custom")
+				{
+					custom = radioItem;
+				}
+				else if (_wcsicmp(tag.c_str(), color.c_str()) == 0)
+				{
+					radioItem.IsChecked(true);
+					found = true;
+				}
+			}
+		}
+
+		// any other color was picked with the color picker or written in the settings file.
+		if (custom)
+		{
+			custom.Visibility(found ? wux::Visibility::Collapsed : wux::Visibility::Visible);
+			if (!found)
+			{
+				custom.IsChecked(true);
+			}
+		}
+	}
+
 	void TrayFlyoutPage::SetDisableSavingSettings(const bool &disabled)
 	{
 		DisableSavingSettings().IsChecked(disabled);
@@ -178,6 +210,24 @@ namespace winrt::TranslucentTB::Xaml::Pages::implementation
 			if (const auto tag = item.Tag().try_as<txmp::LogLevel>())
 			{
 				m_LogLevelChangedDelegate(*tag);
+			}
+		}
+	}
+
+	void TrayFlyoutPage::TextColorClicked(const IInspectable &sender, const wux::RoutedEventArgs &)
+	{
+		if (const auto item = sender.try_as<wuxc::MenuFlyoutItemBase>())
+		{
+			if (const auto tag = item.Tag().try_as<hstring>())
+			{
+				if (*tag == L"Pick" || *tag == L"Custom")
+				{
+					m_TextColorRequestedDelegate();
+				}
+				else
+				{
+					m_TextColorChangedDelegate(*tag);
+				}
 			}
 		}
 	}

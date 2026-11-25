@@ -312,6 +312,21 @@
                     </muxc:RadioMenuFlyoutItem.Tag>
                 </muxc:RadioMenuFlyoutItem>
             </MenuFlyoutSubItem>
+            <MenuFlyoutSubItem x:Name="TextColorSubMenu" x:Uid="TrayFlyoutPage_TextColor" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
+                <MenuFlyoutSubItem.Icon>
+                    <FontIcon Glyph="&#xE8D3;" />
+                </MenuFlyoutSubItem.Icon>
+                <muxc:RadioMenuFlyoutItem Tag="default" x:Uid="TrayFlyoutPage_TextColor_Default" GroupName="TextColor" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="TextColorClicked" />
+                <muxc:RadioMenuFlyoutItem Tag="#FFFFFF" x:Uid="TrayFlyoutPage_TextColor_White" GroupName="TextColor" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="TextColorClicked" />
+                <muxc:RadioMenuFlyoutItem Tag="#000000" x:Uid="TrayFlyoutPage_TextColor_Black" GroupName="TextColor" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="TextColorClicked" />
+                <muxc:RadioMenuFlyoutItem Tag="Custom" x:Uid="TrayFlyoutPage_TextColor_Custom" GroupName="TextColor" Style="{StaticResource MergeIconsRadioMenuFlyoutItem}" Click="TextColorClicked" Visibility="Collapsed" />
+                <MenuFlyoutSeparator />
+                <MenuFlyoutItem Tag="Pick" x:Uid="TrayFlyoutPage_TextColor_Pick" Style="{StaticResource MergeIconsMenuFlyoutItem}" Click="TextColorClicked">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE790;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+            </MenuFlyoutSubItem>
             <MenuFlyoutSeparator />
             <MenuFlyoutSubItem x:Uid="TrayFlyoutPage_Advanced" Style="{StaticResource MergeIconsMenuFlyoutSubItem}">
                 <MenuFlyoutSubItem.Icon>

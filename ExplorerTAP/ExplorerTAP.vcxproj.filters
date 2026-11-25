@@ -33,6 +33,9 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="trayiconrecolor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="taskbarappearanceservice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -75,6 +78,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tapsite.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="trayiconrecolor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="taskbarappearanceservice.hpp">

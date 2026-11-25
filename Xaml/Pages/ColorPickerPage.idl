@@ -9,6 +9,8 @@ namespace TranslucentTB.Xaml.Pages
 	runtimeclass ColorPickerPage : FramelessPage
 	{
 		ColorPickerPage(TranslucentTB.Xaml.Models.Primitives.TaskbarState state, Windows.UI.Color originalColor);
+		// title is a resource path, used instead of the state name.
+		ColorPickerPage(TranslucentTB.Xaml.Models.Primitives.TaskbarState state, Windows.UI.Color originalColor, String title);
 		event ColorChangedDelegate ColorChanged;
 		event ChangesCommittedDelegate ChangesCommitted;
 

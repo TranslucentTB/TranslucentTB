@@ -10,6 +10,12 @@ interface ITaskbarAppearanceService : IUnknown
 
 	HRESULT SetTaskbarBorderVisibility([in] HWND taskbar, [in] BOOL visible);
 
+	// color is ABGR, an alpha of 0 restores the default text color.
+	HRESULT SetTaskbarTextColor([in] HWND taskbar, [in] UINT color);
+
+	// recolors monochrome third party notification area icons, color is ABGR, an alpha of 0 disables it.
+	HRESULT SetTrayIconColor([in] UINT color);
+
 	HRESULT RestoreAllTaskbarsToDefault();
 	HRESULT RestoreAllTaskbarsToDefaultWhenProcessDies([in] DWORD pid);
 
